@@ -1,0 +1,32 @@
+<connector xmlns="http://java.sun.com/xml/ns/j2ee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+           http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
+           version="1.5">
+
+  <description>Simple Resource Adapter</description>
+  <display-name>Simple Resource Adapter</display-name>
+
+  <vendor-name>JBoss</vendor-name>
+
+  <eis-type>Simple Adapter</eis-type>
+
+  <resourceadapter-version>1.0</resourceadapter-version>
+
+  <resourceadapter id="SimpleResourceAdapter">
+
+    <resourceadapter-class>org.jboss.as.test.integration.ejb.mdb.activationname.adapter.SimpleResourceAdapter</resourceadapter-class>
+
+    <inbound-resourceadapter>
+      <messageadapter>
+        <messagelistener>
+          <messagelistener-type>org.jboss.as.test.integration.ejb.mdb.activationname.adapter.SimpleListener</messagelistener-type>
+          <activationspec>
+            <activationspec-class>org.jboss.as.test.integration.ejb.mdb.activationname.adapter.SimpleActivationSpec</activationspec-class>
+          </activationspec>
+        </messagelistener>
+      </messageadapter>
+    </inbound-resourceadapter>
+
+  </resourceadapter>
+</connector>
