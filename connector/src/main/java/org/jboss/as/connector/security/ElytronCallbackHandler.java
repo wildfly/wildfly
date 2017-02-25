@@ -153,15 +153,24 @@ public class ElytronCallbackHandler implements CallbackHandler, Serializable {
             if (passwordValidationCallback != null) {
                 final String username = passwordValidationCallback.getUsername();
                 final char[] password = passwordValidationCallback.getPassword();
-                identity = this.authenticate(username, password);
-                // add a password credential to the execution subject and set the successful result in the callback.
-                this.addPrivateCredential(this.executionSubject, new PasswordCredential(username, password));
-                passwordValidationCallback.setResult(true);
+                try {
+                    identity = this.authenticate(username, password);
+                    // add a password credential to the execution subject and set the successful result in the callback.
+                    this.addPrivateCredential(this.executionSubject, new PasswordCredential(username, password));
+                    passwordValidationCallback.setResult(true);
+                } catch (SecurityException e) {
+                    passwordValidationCallback.setResult(false);
+                    return;
+                }
             } else {
                 // identity not established using the callback - check if the execution subject contains a password credential.
                 PasswordCredential passwordCredential = this.getPrivateCredential(this.executionSubject, PasswordCredential.class);
                 if (passwordCredential != null) {
-                    identity = this.authenticate(passwordCredential.getUserName(), passwordCredential.getPassword());
+                    try {
+                        identity = this.authenticate(passwordCredential.getUserName(), passwordCredential.getPassword());
+                    } catch (SecurityException e) {
+                        return;
+                    }
                 }
             }
 
