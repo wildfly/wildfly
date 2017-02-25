@@ -61,5 +61,7 @@
         <module name="org.jboss.remoting"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.narayana.compensations"/>
+        <module name="io.undertow.core"/>
+        <module name="org.wildfly.http-client.transaction" />
     </dependencies>
 </module>

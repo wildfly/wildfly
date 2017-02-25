@@ -293,6 +293,7 @@
             <xs:element name="access-log" type="accessLogType" maxOccurs="1" minOccurs="0"/>
             <xs:element name="filter-ref" type="filter-refType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="single-sign-on" minOccurs="0" maxOccurs="1" type="singleSignOnType"/>
+            <xs:element name="http-invoker" minOccurs="0" maxOccurs="1" type="http-invokerType"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="alias" use="optional" type="xs:string"/>
@@ -305,6 +306,11 @@
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="disable-console-redirect" use="optional" type="xs:boolean" default="false"/>
+    </xs:complexType>
+
+    <xs:complexType name="http-invokerType">
+        <xs:attribute name="path" use="optional" type="xs:string" default="wildfly-services"/>
+        <xs:attribute name="http-authentication-factory" type="xs:string" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="websocketsType">
