@@ -34,7 +34,6 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatelessEJBLocator;
@@ -66,11 +65,6 @@ public class EJBClientUserTransactionTestCase {
 
     @ArquillianResource
     private ManagementClient managementClient;
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     /**
      * Creates an EJB deployment
@@ -302,8 +296,6 @@ public class EJBClientUserTransactionTestCase {
             ModelNode op = new ModelNode();
             op.get(OP).set("resume");
             managementClient.getControllerClient().execute(op);
-
-            Thread.sleep(2000);
         }
 
         try {
