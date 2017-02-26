@@ -74,7 +74,7 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
                             .setInitialMode(Mode.PASSIVE);
                     if (mdbDescription.isClusteredSingleton()) {
                         clusteredSingletonFound = true;
-                        builder.addDependency(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName().append("service"));
+                        builder.addDependency(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName().append("primary"));
                     }
                     if (mdbDescription.getDeliveryGroup() != null) {
                         final ServiceName deliveyGroupServiceName = MdbDeliveryGroupResourceDefinition.getDeliveryGroupServiceName(
