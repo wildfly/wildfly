@@ -315,7 +315,7 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
      */
     private void doneSuspended() {
         final ServerActivityCallback oldListener = listener;
-        if (listenerUpdater.compareAndSet(this, oldListener, null)) {
+        if (oldListener != null && listenerUpdater.compareAndSet(this, oldListener, null)) {
             deploymentRepositoryInjectedValue.getValue().suspend();
             oldListener.done();
             EjbLogger.ROOT_LOGGER.suspensionComplete();
