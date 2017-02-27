@@ -38,6 +38,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ExternalContextObjectFactory;
@@ -298,11 +299,16 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
     }
 
     @Override
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.populateModel(context, operation, resource);
+        context.addStep(NamingBindingResourceDefinition.VALIDATE_RESOURCE_MODEL_OPERATION_STEP_HANDLER, OperationContext.Stage.MODEL);
+    }
+
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         for (AttributeDefinition attr : NamingBindingResourceDefinition.ATTRIBUTES) {
             attr.validateAndSet(operation, model);
         }
-        NamingBindingResourceDefinition.validateResourceModel(model, true);
     }
 
     void doRebind(OperationContext context, ModelNode model, BinderService service) throws OperationFailedException {

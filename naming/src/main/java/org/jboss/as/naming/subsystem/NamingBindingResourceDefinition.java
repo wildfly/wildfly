@@ -109,6 +109,8 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
         ACCESS_CONSTRAINTS = Collections.unmodifiableList(constraints);
     }
 
+    static final OperationStepHandler VALIDATE_RESOURCE_MODEL_OPERATION_STEP_HANDLER = (context, op) -> validateResourceModel(context.readResource(PathAddress.EMPTY_ADDRESS).getModel(), true);
+
     private NamingBindingResourceDefinition() {
         super(NamingSubsystemModel.BINDING_PATH,
                 NamingExtension.getResourceDescriptionResolver(NamingSubsystemModel.BINDING),
@@ -183,7 +185,7 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
         @Override
         protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
             super.validateUpdatedModel(context, model);
-            validateResourceModel(model.getModel(), true);
+            context.addStep(VALIDATE_RESOURCE_MODEL_OPERATION_STEP_HANDLER, OperationContext.Stage.MODEL);
         }
     }
 
