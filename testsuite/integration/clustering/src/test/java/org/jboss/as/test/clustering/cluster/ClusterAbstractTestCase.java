@@ -37,7 +37,6 @@ import org.jboss.as.web.session.SimpleRoutingSupport;
 import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 
 /**
  * Base cluster test that guarantees a framework contract as follows:
@@ -129,16 +128,6 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
 
     protected String findContainer(String node) {
         return NODE_TO_CONTAINER.get(node);
-    }
-
-    /**
-     * Printout some debug info.
-     */
-    @BeforeClass
-    public static void printSystemProperties() {
-        // Enable for debugging if you like:
-        //Properties systemProperties = System.getProperties();
-        //log.trace("System properties:\n" + systemProperties);
     }
 
     public interface Lifecycle {

@@ -22,10 +22,11 @@
 
 package org.jboss.as.test.clustering.cluster.singleton;
 
-import java.io.IOException;
+import static org.jboss.as.test.clustering.ClusterTestUtil.executeOnNodesAndReload;
+
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -39,6 +40,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.servlet.TraceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
@@ -89,9 +91,14 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
 
     @Test
     public void test(
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2,
             @ArquillianResource(TraceServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(TraceServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-                    throws IOException, URISyntaxException, InterruptedException {
+            throws Exception {
+
+        // In order to test undeploy in case another node becomes elected as the master, we need an election policy that will ever trigger that code path (WFLY-8184)
+        executeOnNodesAndReload("/subsystem=singleton/singleton-policy=default/election-policy=simple:write-attribute(name=name-preferences,value=" + Arrays.toString(NODES) + ")", client1, client2);
 
         this.deploy(SINGLETON_DEPLOYMENT_1);
         Thread.sleep(DELAY);
@@ -140,14 +147,14 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
 
             response = client.execute(new HttpGet(uri1));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             response = client.execute(new HttpGet(uri2));
             try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, response.getStatusLine().getStatusCode());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -189,6 +196,8 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
             }
         } finally {
             this.undeploy(SINGLETON_DEPLOYMENT_1, SINGLETON_DEPLOYMENT_2);
+
+            executeOnNodesAndReload("/subsystem=singleton/singleton-policy=default/election-policy=simple:undefine-attribute(name=name-preferences)", client1, client2);
         }
     }
 }

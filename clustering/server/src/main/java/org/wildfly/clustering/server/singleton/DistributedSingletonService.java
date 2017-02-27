@@ -83,8 +83,8 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
     @Override
     public void start(StartContext context) throws StartException {
         ServiceTarget target = context.getChildTarget();
-        this.primaryController = target.addService(this.serviceName.append("primary"), this.primaryService).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        this.backupController = target.addService(this.serviceName.append("backup"), this.backupService.orElse(new PrimaryProxyService<>(this))).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        this.primaryController = target.addService(this.serviceName.append("primary"), this.primaryService).setInitialMode(ServiceController.Mode.NEVER).install();
+        this.backupController = target.addService(this.serviceName.append("backup"), this.backupService.orElse(new PrimaryProxyService<>(this))).setInitialMode(ServiceController.Mode.ACTIVE).install();
         this.dispatcher = this.dispatcherFactory.getValue().<SingletonContext<T>>createCommandDispatcher(this.serviceName, this);
         this.registration = this.registry.getValue().register(this.serviceName, this);
         this.started = true;
