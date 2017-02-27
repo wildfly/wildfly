@@ -286,6 +286,7 @@
                     <xs:attribute name="name" type="xs:string" use="required" />
                     <xs:attribute name="socket-binding" type="xs:string" use="required" />
                     <xs:attribute name="endpoint" type="xs:string" use="required" />
+                    <xs:attribute name="server-name" type="xs:string" use="optional" />
                 </xs:complexType>
             </xs:element>
 

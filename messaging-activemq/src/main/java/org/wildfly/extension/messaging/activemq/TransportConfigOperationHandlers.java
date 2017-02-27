@@ -348,7 +348,11 @@ public class TransportConfigOperationHandlers {
                 parameters.put(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, HTTPConnectorDefinition.ENDPOINT.resolveModelAttribute(context, config).asString());
                 // uses the parameters to pass the socket binding name that will be read in ActiveMQServerService.start()
                 parameters.put(HTTPConnectorDefinition.SOCKET_BINDING.getName(), binding);
-                parameters.put(ACTIVEMQ_SERVER_NAME, configuration.getName());
+                ModelNode serverNameModelNode = HTTPConnectorDefinition.SERVER_NAME.resolveModelAttribute(context, config);
+                // use the name of this server if the server-name attribute is undefined
+                String serverName = serverNameModelNode.isDefined() ? serverNameModelNode.asString() : configuration.getName();
+                parameters.put(ACTIVEMQ_SERVER_NAME, serverName);
+
                 connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName));
             }
         }
