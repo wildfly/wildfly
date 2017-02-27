@@ -166,6 +166,7 @@ final class AssociationImpl implements Association {
                 EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Cannot handle method invocation: %s on bean: %s due to EJB component stopped exception. Returning a no such EJB available message back to client", invokedMethod, beanName);
                 if (! oneWay) invocationRequest.writeNoSuchEJB();
                 return;
+                // TODO should we write a specifc response with a specific protocol letting client know that server is suspending?
             } catch (CancellationException ex) {
                 if (! oneWay) invocationRequest.writeCancelResponse();
                 return;
@@ -339,6 +340,14 @@ final class AssociationImpl implements Association {
 
             public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
                 moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
+            }
+
+            @Override public void deploymentSuspended(DeploymentModuleIdentifier deployment) {
+                moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
+            }
+
+            @Override public void deploymentResumed(DeploymentModuleIdentifier deployment) {
+                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
         };
         deploymentRepository.addListener(listener);

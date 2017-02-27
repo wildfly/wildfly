@@ -25,8 +25,10 @@ package org.jboss.as.ejb3.deployment;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.msc.service.Service;
@@ -52,6 +54,11 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
 
     private final List<DeploymentRepositoryListener> listeners = new ArrayList<DeploymentRepositoryListener>();
 
+    /**
+     * Keeps track of whether the repository is suspended or not
+     */
+    private volatile boolean suspended = false;
+
 
     @Override
     public void start(StartContext context) throws StartException {
@@ -70,15 +77,20 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
 
     public void add(DeploymentModuleIdentifier identifier, ModuleDeployment deployment) {
         final List<DeploymentRepositoryListener> listeners;
+        final boolean suspended;
         synchronized (this) {
             final Map<DeploymentModuleIdentifier, DeploymentHolder> modules = new HashMap<DeploymentModuleIdentifier, DeploymentHolder>(this.modules);
             modules.put(identifier, new DeploymentHolder(deployment));
             this.modules = Collections.unmodifiableMap(modules);
             listeners = new ArrayList<DeploymentRepositoryListener>(this.listeners);
+            suspended = this.suspended;
         }
         for (final DeploymentRepositoryListener listener : listeners) {
             try {
                 listener.deploymentAvailable(identifier, deployment);
+                if (suspended) {
+                    listener.deploymentSuspended(identifier);
+                }
             } catch (Throwable t) {
                 EjbLogger.DEPLOYMENT_LOGGER.deploymentAddListenerException(t);
             }
@@ -130,6 +142,42 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
             } catch (Throwable t) {
                 EjbLogger.DEPLOYMENT_LOGGER.deploymentRemoveListenerException(t);
             }
+        }
+    }
+
+    public void suspend() {
+        final List<DeploymentRepositoryListener> listeners;
+        final Set<DeploymentModuleIdentifier> moduleIdentifiers;
+        synchronized (this) {
+            moduleIdentifiers = new HashSet<>(this.modules.keySet());
+            listeners = new ArrayList<>(this.listeners);
+            suspended = true;
+        }
+        for (final DeploymentRepositoryListener listener : listeners) {
+            for (DeploymentModuleIdentifier moduleIdentifier : moduleIdentifiers)
+            try {
+                listener.deploymentSuspended(moduleIdentifier);
+            } catch (Throwable t) {
+                EjbLogger.DEPLOYMENT_LOGGER.deploymentAddListenerException(t);
+            }
+        }
+    }
+
+    public void resume() {
+        final List<DeploymentRepositoryListener> listeners;
+        final Set<DeploymentModuleIdentifier> moduleIdentifiers;
+        synchronized (this) {
+            moduleIdentifiers = new HashSet<>(this.modules.keySet());
+            listeners = new ArrayList<>(this.listeners);
+            suspended = false;
+        }
+        for (final DeploymentRepositoryListener listener : listeners) {
+            for (DeploymentModuleIdentifier moduleIdentifier : moduleIdentifiers)
+                try {
+                    listener.deploymentResumed(moduleIdentifier);
+                } catch (Throwable t) {
+                    EjbLogger.DEPLOYMENT_LOGGER.deploymentAddListenerException(t);
+                }
         }
     }
 
