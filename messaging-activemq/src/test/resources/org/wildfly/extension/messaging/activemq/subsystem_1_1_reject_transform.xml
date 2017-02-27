@@ -14,6 +14,13 @@
                  large-messages-table="MY_LARGE_MESSAGES"
                  page-store-table="MY_PAGE_STORE" />
 
+        <http-connector name="http"
+                        socket-binding="http"
+                        endpoint="http"
+                        server-name="=foo">
+            <param name="batch-delay" value="${batch.delay:50}"/>
+        </http-connector>
+
         <cluster-connection name="cc1"
                             address="${address:cc1-address}"
                             connector-name="netty"

@@ -134,7 +134,8 @@
 
         <http-connector name="http"
                         socket-binding="http"
-                        endpoint="http">
+                        endpoint="http"
+                        server-name="=foo">
             <param name="batch-delay" value="${batch.delay:50}"/>
         </http-connector>
         <remote-connector name="netty"

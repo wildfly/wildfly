@@ -293,6 +293,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                 .addAttributes(
                                                         HTTPConnectorDefinition.SOCKET_BINDING,
                                                         HTTPConnectorDefinition.ENDPOINT,
+                                                        HTTPConnectorDefinition.SERVER_NAME,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
                                         builder(RemoteTransportDefinition.CONNECTOR_INSTANCE)

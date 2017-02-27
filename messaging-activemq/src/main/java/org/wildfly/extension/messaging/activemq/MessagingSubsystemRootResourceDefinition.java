@@ -116,7 +116,9 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
         bridge.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.ALWAYS, BridgeDefinition.CREDENTIAL_REFERENCE)
                 .addRejectCheck(DEFINED, BridgeDefinition.CREDENTIAL_REFERENCE);
-
+        ResourceTransformationDescriptionBuilder httpConnector = server.addChildResource(HTTPConnectorDefinition.INSTANCE);
+        // reject server-name introduced in management version 2.0.0 if it is defined
+        rejectDefinedAttributeWithDefaultValue(httpConnector, HTTPConnectorDefinition.SERVER_NAME);
         // reject producer-window-size introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(bridge, BridgeDefinition.PRODUCER_WINDOW_SIZE);
         ResourceTransformationDescriptionBuilder jmsBridge = server.addChildResource(MessagingExtension.JMS_BRIDGE_PATH);

@@ -61,9 +61,14 @@ public class HTTPConnectorDefinition extends AbstractTransportDefinition {
             .setAllowExpression(false) // references another resource
             .build();
 
+    public static final SimpleAttributeDefinition SERVER_NAME = create("server-name", ModelType.STRING)
+            .setRequired(false)
+            .setAllowExpression(false)
+            .build();
+
     static final HTTPConnectorDefinition INSTANCE = new HTTPConnectorDefinition();
 
     public HTTPConnectorDefinition() {
-        super(false, CommonAttributes.HTTP_CONNECTOR, SOCKET_BINDING, ENDPOINT, PARAMS);
+        super(false, CommonAttributes.HTTP_CONNECTOR, SOCKET_BINDING, ENDPOINT, SERVER_NAME, PARAMS);
     }
 }
