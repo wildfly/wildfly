@@ -52,8 +52,8 @@ import org.wildfly.test.security.common.elytron.SimpleAuthContext;
  * @author <a href="mailto:vrastsel@redhat.com"> Vladimir Rastseluev</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(DsWithElytronSecurityDomainTestCase.ElytronSetup.class)
-public class DsWithElytronSecurityDomainTestCase {
+@ServerSetup(DsWithElytronAuthContextTestCase.ElytronSetup.class)
+public class DsWithElytronAuthContextTestCase {
 
     private static final String AUTH_CONFIG = "MyAuthConfig";
     private static final String AUTH_CONTEXT = "MyAuthContext";
@@ -78,7 +78,7 @@ public class DsWithElytronSecurityDomainTestCase {
 
     @Deployment
     public static Archive<?> deployment() {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar").addClasses(DsWithElytronSecurityDomainTestCase.class);
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar").addClasses(DsWithElytronAuthContextTestCase.class);
         jar.addClasses(AbstractElytronSetupTask.class, ServerSetupTask.class);
         return ShrinkWrap.create(EnterpriseArchive.class, "test.ear").addAsLibrary(jar)
                 .addAsManifestResource(DsWithSecurityDomainTestCase.class.getPackage(), "security-ds-elytron.xml", "security-ds.xml");
