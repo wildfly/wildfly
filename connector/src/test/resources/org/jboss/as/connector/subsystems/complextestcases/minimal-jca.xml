@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:jca:4.0">
+<subsystem xmlns="urn:jboss:domain:jca:5.0">
             <default-workmanager>
                 <short-running-threads>
                     <queue-length count="50"/>

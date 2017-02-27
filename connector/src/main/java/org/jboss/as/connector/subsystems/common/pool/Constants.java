@@ -98,6 +98,7 @@ public class Constants {
             .setMeasurementUnit(MeasurementUnit.MINUTES)
             .setAllowExpression(true)
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true))
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition BACKGROUNDVALIDATIONMILLIS = new SimpleAttributeDefinitionBuilder(BACKGROUNDVALIDATIONMILLIS_NAME, ModelType.LONG, true)
@@ -105,24 +106,28 @@ public class Constants {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setValidator(new IntRangeValidator(1, true, true))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition BACKGROUNDVALIDATION = new SimpleAttributeDefinitionBuilder(BACKGROUNDVALIDATION_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Validation.Tag.BACKGROUND_VALIDATION.getLocalName())
             .setAllowExpression(true)
             //.setDefaultValue(new ModelNode(Defaults.BACKGROUND_VALIDATION))
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition USE_FAST_FAIL = new SimpleAttributeDefinitionBuilder(USE_FAST_FAIL_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Validation.Tag.USE_FAST_FAIL.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.USE_FAST_FAIL))
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     public static SimpleAttributeDefinition VALIDATE_ON_MATCH = new SimpleAttributeDefinitionBuilder(VALIDATEONMATCH_NAME, ModelType.BOOLEAN, true)
-                .setXmlName(Validation.Tag.VALIDATE_ON_MATCH.getLocalName())
-                .setAllowExpression(true)
-                .build();
+            .setXmlName(Validation.Tag.VALIDATE_ON_MATCH.getLocalName())
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
     public static final SimpleAttributeDefinition MAX_POOL_SIZE = new SimpleAttributeDefinitionBuilder(MAX_POOL_SIZE_NAME, ModelType.INT, true)
             .setXmlName(Pool.Tag.MAX_POOL_SIZE.getLocalName())
@@ -144,8 +149,8 @@ public class Constants {
 
     public static SimpleAttributeDefinition CAPACITY_INCREMENTER_CLASS = new SimpleAttributeDefinitionBuilder(CAPACITY_INCREMENTER_CLASS_NAME, ModelType.STRING, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
-
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     public static PropertiesAttributeDefinition CAPACITY_INCREMENTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CAPACITY_INCREMENTER_PROPERTIES_NAME, true)
@@ -161,15 +166,16 @@ public class Constants {
                         writer.writeCharacters(property.asProperty().getValue().asString());
                         writer.writeEndElement();
                     }
-
                 }
 
             })
+            .setRestartAllServices()
             .build();
 
     public static SimpleAttributeDefinition CAPACITY_DECREMENTER_CLASS = new SimpleAttributeDefinitionBuilder(CAPACITY_DECREMENTER_CLASS_NAME, ModelType.STRING, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     public static PropertiesAttributeDefinition CAPACITY_DECREMENTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CAPACITY_DECREMENTER_PROPERTIES_NAME, true)
@@ -185,10 +191,10 @@ public class Constants {
                         writer.writeCharacters(property.asProperty().getValue().asString());
                         writer.writeEndElement();
                     }
-
                 }
 
             })
+            .setRestartAllServices()
             .build();
 
 
@@ -196,6 +202,7 @@ public class Constants {
             .setDefaultValue(new ModelNode(Defaults.PREFILL))
             .setAllowExpression(true)
             .setXmlName(Pool.Tag.PREFILL.getLocalName())
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition POOL_FAIR = new SimpleAttributeDefinitionBuilder(POOL_FAIR_NAME, ModelType.BOOLEAN, true)
@@ -217,6 +224,7 @@ public class Constants {
             .setAllowExpression(true)
             .setAllowedValues(Stream.of(FlushStrategy.values()).map(FlushStrategy::toString).filter(Objects::nonNull).toArray(String[]::new))
             .setValidator(new EnumValidator<FlushStrategy>(FlushStrategy.class, true, true))
+            .setRestartAllServices()
             .build();
 
 

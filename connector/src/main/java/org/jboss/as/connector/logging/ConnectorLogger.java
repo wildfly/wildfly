@@ -901,4 +901,7 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 110, value = "CredentialSourceSupplier is invalid for DSSecurity")
     IllegalStateException invalidCredentialSourceSupplier(@Cause Throwable cause);
 
+    @Message(id = 111, value = "WorkManager hasn't elytron-enabled flag set accordingly with RA one")
+    IllegalStateException invalidElytronWorkManagerSetting();
+
 }

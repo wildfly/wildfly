@@ -282,10 +282,10 @@ public class RaOperationUtil {
 
 
         Recovery recovery = null;
-        if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null || noRecovery != null) {
+        if ((recoveryUsername != null && (recoveryPassword != null || recoveryCredentialSourceSupplier != null)) || recoverySecurityDomain != null || noRecovery != null) {
             Credential credential = null;
 
-            if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null)
+            if ((recoveryUsername != null && (recoveryPassword != null || recoveryCredentialSourceSupplier != null)) || recoverySecurityDomain != null)
                 credential = new CredentialImpl(recoveryUsername, recoveryPassword,
                         recoveryElytronEnabled ? recoveryAuthenticationContext : recoverySecurityDomain, recoveryElytronEnabled, recoveryCredentialSourceSupplier);
 

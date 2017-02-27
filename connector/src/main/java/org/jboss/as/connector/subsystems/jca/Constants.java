@@ -49,4 +49,10 @@ public class Constants {
 
     static final String TX = "TX";
     static final String NON_TX = "NonTX";
+
+    static final Boolean ELYTRON_MANAGED_SECURITY = Boolean.FALSE;
+
+    static final String ELYTRON_ENABLED_NAME = "elytron-enabled";
+
+
 }

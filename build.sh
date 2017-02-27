@@ -106,6 +106,13 @@ main() {
     #  to be in the same directory as build.xml.
     cd $DIRNAME
 
+    # Add default settings.xml file if it exists
+    MVN_SETTINGS_XML_DEFAULT="$DIRNAME/tools/maven/conf/settings.xml"
+    if [ -f "$MVN_SETTINGS_XML_DEFAULT" ]; then
+        MVN_SETTINGS_XML_ARGS="-s $MVN_SETTINGS_XML_DEFAULT"
+    else
+        MVN_SETTINGS_XML_ARGS=""
+    fi
     MVN_GOAL="";
     ADDIT_PARAMS="";
     #  For each parameter, check for testsuite directives.
@@ -125,6 +132,11 @@ main() {
     done
     #  Default goal if none specified.
     if [ -z "$MVN_GOAL" ]; then MVN_GOAL="install"; fi
+
+    # WFLY-8175 requires that we keep installing Maven under the tools directory
+    # the current project, at least when mvnw is invoked from build and integration-tests
+    # scripts
+    MVN_GOAL="-Dmaven.user.home=$DIRNAME/tools $MVN_GOAL"
 
     #  Export some stuff for maven.
     export MVN MAVEN_HOME MVN_OPTS MVN_GOAL

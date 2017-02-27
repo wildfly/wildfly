@@ -84,12 +84,20 @@ public class JcaSubsystemRootDefinition extends SimpleResourceDefinition {
         ResourceTransformationDescriptionBuilder builder12 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder12.rejectChildResource(JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER);
         builder12.discardChildResource(TracerDefinition.PATH_TRACER);
+        JcaWorkManagerDefinition.registerElytronTransformers(builder12);
         TransformationDescription.Tools.register(builder12.build(), subsystem, ModelVersion.create(1, 2, 0));
         ResourceTransformationDescriptionBuilder builder20 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder20.discardChildResource(TracerDefinition.PATH_TRACER);
+        JcaDistributedWorkManagerDefinition.registerElytronTransformers(builder20);
+        JcaWorkManagerDefinition.registerElytronTransformers(builder20);
         TransformationDescription.Tools.register(builder20.build(), subsystem, ModelVersion.create(2, 0, 0));
         ResourceTransformationDescriptionBuilder builder30 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         JcaDistributedWorkManagerDefinition.registerTransformers300(builder30);
+        JcaWorkManagerDefinition.registerElytronTransformers(builder30);
         TransformationDescription.Tools.register(builder30.build(), subsystem, ModelVersion.create(3, 0, 0));
+        ResourceTransformationDescriptionBuilder builder40 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        JcaDistributedWorkManagerDefinition.registerElytronTransformers(builder40);
+        JcaWorkManagerDefinition.registerElytronTransformers(builder40);
+        TransformationDescription.Tools.register(builder40.build(), subsystem, ModelVersion.create(4, 0, 0));
     }
 }

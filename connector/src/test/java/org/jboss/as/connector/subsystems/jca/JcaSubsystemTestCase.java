@@ -64,7 +64,7 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-jca_4_0.xsd";
+        return "schema/wildfly-jca_5_0.xsd";
     }
 
     @Override

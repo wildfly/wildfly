@@ -21,38 +21,38 @@
  */
 package org.wildfly.test.security.common.elytron;
 
+
+import java.util.Objects;
+
+
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 
 /**
- * Updates Undertow https-listener of the defaul-server to use given (Elytron server-ssl-context) SSL context
- * instead of SSL context from legacy security-realm.
+ * Elytron key-store-realm configuration implementation.
  *
  * @author Ondrej Kotek
  */
-public class UndertowSslContext  extends AbstractConfigurableElement {
+public class KeyStoreRealm extends AbstractConfigurableElement {
 
-    private UndertowSslContext(Builder builder) {
+    private final String keyStore;
+
+    private KeyStoreRealm(Builder builder) {
         super(builder);
+        this.keyStore = Objects.requireNonNull(builder.keyStore, "Key-store name has to be provided");
     }
 
     @Override
     public void create(CLIWrapper cli) throws Exception {
-        cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":undefine-attribute(name=security-realm)");
-        cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":write-attribute(name=ssl-context,value=%s)", name));
+        cli.sendLine(String.format("/subsystem=elytron/key-store-realm=%s:add(key-store=\"%s\")", name, keyStore));
     }
 
     @Override
     public void remove(CLIWrapper cli) throws Exception {
-        cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":undefine-attribute(name=ssl-context)");
-        cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":write-attribute(name=security-realm,value=ApplicationRealm)");
+        cli.sendLine(String.format("/subsystem=elytron/key-store-realm=%s:remove()", name));
     }
 
     /**
-     * Creates builder to build {@link UndertowSslContext}. The name attribute refers to ssl-context capability name.
+     * Creates builder to build {@link KeyStoreRealm}.
      *
      * @return created builder
      */
@@ -61,15 +61,21 @@ public class UndertowSslContext  extends AbstractConfigurableElement {
     }
 
     /**
-     * Builder to build {@link UndertowSslContext}. The name attribute refers to ssl-context capability name.
+     * Builder to build {@link KeyStoreRealm}.
      */
     public static final class Builder extends AbstractConfigurableElement.Builder<Builder> {
+        private String keyStore;
 
         private Builder() {
         }
 
-        public UndertowSslContext build() {
-            return new UndertowSslContext(this);
+        public Builder withKeyStore(String keyStore) {
+            this.keyStore = keyStore;
+            return this;
+        }
+
+        public KeyStoreRealm build() {
+            return new KeyStoreRealm(this);
         }
 
         @Override

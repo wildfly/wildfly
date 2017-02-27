@@ -32,7 +32,9 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.as.connector.subsystems.datasources.WildFlyDataSource;
 import org.jboss.jca.adapters.jdbc.WrapperDataSource;
+import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
+import org.jboss.jca.core.connectionmanager.pool.api.Pool;
 import org.jboss.jca.core.connectionmanager.pool.mcp.ManagedConnectionPool;
 import org.jboss.jca.core.util.Injection;
 
@@ -77,6 +79,38 @@ public class JcaTestsUtil {
             getManagedConnectionPools.setAccessible(true);
             ConcurrentMap<Object, ManagedConnectionPool> mcps = (ConcurrentMap<Object, ManagedConnectionPool>) getManagedConnectionPools.invoke(onePool);
             return mcps.values().iterator().next();
+        } catch (Throwable t) {
+            fail(t.getMessage());
+        }
+        return null;
+    }
+
+    public static PoolConfiguration exctractPoolConfiguration(Object connectionFactory) {
+        ConnectionManager cm = extractConnectionManager(connectionFactory);
+
+        // org.jboss.jca.core.connectionmanager.pool.strategy.OnePool
+        Pool pool = cm.getPool();
+        Class<?> clz = pool.getClass();
+        // org.jboss.jca.core.connectionmanager.pool.AbstractPrefillPool
+        clz = clz.getSuperclass();
+        // org.jboss.jca.core.connectionmanager.pool.AbstractPool
+        clz = clz.getSuperclass();
+
+        try {
+            Method getPoolConfiguration = clz.getDeclaredMethod("getPoolConfiguration");
+            getPoolConfiguration.setAccessible(true);
+
+            return (PoolConfiguration) getPoolConfiguration.invoke(pool);
+        } catch (Throwable t) {
+            fail(t.getMessage());
+        }
+        return null;
+    }
+
+    public static PoolConfiguration extractDSPoolConfiguration(Object datasource) {
+        try {
+            Field delegateField = datasource.getClass().getDeclaredField("delegate");
+            Object delegate = delegateField.get(datasource);
         } catch (Throwable t) {
             fail(t.getMessage());
         }

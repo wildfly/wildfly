@@ -6,6 +6,7 @@ target
 # ignore downloaded maven
 /tools/maven
 /tools/maven.zip
+/tools/wrapper
 # ignore eclipse files
 .project
 .classpath
