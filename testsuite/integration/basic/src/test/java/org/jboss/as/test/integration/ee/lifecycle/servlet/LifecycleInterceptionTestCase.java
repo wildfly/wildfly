@@ -31,6 +31,7 @@ import java.util.concurrent.TimeoutException;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -53,7 +54,7 @@ public abstract class LifecycleInterceptionTestCase {
                 .addAsWebInfResource(EmptyAsset.INSTANCE, BEANS_XML)
                 // InfoClient requires SocketPermission
                 .addAsManifestResource(
-                        createPermissionsXmlAsset(new SocketPermission("127.0.0.1:8080", "connect,resolve")),
+                        createPermissionsXmlAsset(new SocketPermission(TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")),
                         "permissions.xml");
     }
 
