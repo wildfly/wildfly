@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_0_0;
 import static org.junit.Assert.assertTrue;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getActiveMQDependencies;
@@ -29,6 +31,8 @@ import static org.wildfly.extension.messaging.activemq.MessagingDependencies.get
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.BRIDGE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CLUSTER_CONNECTION_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.POOLED_CONNECTION_FACTORY_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_COLOCATED_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_MASTER_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.SERVER_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.SUBSYSTEM_PATH;
 
@@ -36,6 +40,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -49,6 +54,7 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
 /**
@@ -161,6 +167,10 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
                                 ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE,
                                 ServerDefinition.JOURNAL_PAGE_STORE_TABLE,
                                 ServerDefinition.JOURNAL_DATABASE))
+                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_MASTER_PATH),
+                        new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
+                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_COLOCATED_PATH, MessagingExtension.CONFIGURATION_MASTER_PATH),
+                        new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, PathElement.pathElement(CommonAttributes.HTTP_CONNECTOR)),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 HTTPConnectorDefinition.SERVER_NAME))
@@ -182,5 +192,39 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
         return AdditionalInitialization.withCapabilities(JGroupsRequirement.CHANNEL_FACTORY.resolve("udp"),
                 Capabilities.ELYTRON_DOMAIN_CAPABILITY,
                 Capabilities.ELYTRON_DOMAIN_CAPABILITY + ".elytronDomain");
+    }
+
+    private static class ChangeToTrueConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<ChangeToTrueConfig> {
+
+        private final String attribute;
+
+        ChangeToTrueConfig(String attribute) {
+            super(attribute);
+            this.attribute = attribute;
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(ModelNode operation, String attrName, ModelNode attribute, boolean isGeneratedWriteAttribute) {
+            if (!isGeneratedWriteAttribute && Operations.getName(operation).equals(WRITE_ATTRIBUTE_OPERATION) && operation.hasDefined(NAME) && operation.get(NAME).asString().equals(this.attribute)) {
+                // The attribute won't be defined in the :write-attribute(name=<attribute name>,.. boot operation so don't reject in that case
+                return false;
+            }
+            return !attribute.equals(new ModelNode(true));
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            throw new IllegalStateException();
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            return new ModelNode(true);
+        }
     }
 }
