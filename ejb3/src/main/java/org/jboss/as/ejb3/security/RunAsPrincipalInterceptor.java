@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.security;
 
+import java.security.PrivilegedActionException;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -74,6 +76,17 @@ public class RunAsPrincipalInterceptor implements Interceptor {
             }
             ejbComponent.setIncomingRunAsIdentity(currentIdentity);
             return newIdentity.runAs(context);
+        } catch (PrivilegedActionException e) {
+            Throwable cause = e.getCause();
+            if(cause != null) {
+                if(cause instanceof Exception) {
+                    throw (Exception) cause;
+                } else {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                throw e;
+            }
         } finally {
             ejbComponent.setIncomingRunAsIdentity(oldIncomingRunAsIdentity);
         }
