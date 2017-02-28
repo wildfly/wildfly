@@ -39,7 +39,7 @@ import org.jboss.as.test.integration.transactions.TxTestUtil;
 
 @MessageDriven(activationConfig = {
     @ActivationConfigProperty(propertyName = "destination", propertyValue = TransactionTimeoutQueueSetupTask.PROPERTY_TIMEOUT_JNDI_NAME),
-    @ActivationConfigProperty(propertyName = "transactionTimeout", propertyValue = "1"),
+    @ActivationConfigProperty(propertyName = "transactionTimeout", propertyValue = "1")
 })
 public class ActivationPropertyTimeoutMDB implements MessageListener {
     private static final Logger log = Logger.getLogger(ActivationPropertyTimeoutMDB.class);
@@ -72,7 +72,7 @@ public class ActivationPropertyTimeoutMDB implements MessageListener {
                     + " and bean does not know where to reply to");
             }
 
-            TxTestUtil.enlistTestXAResource(tm.getTransaction());
+            TxTestUtil.enlistTestXAResource(tm.getTransaction(), checker);
 
             try (
                 JMSContext context = factory.createContext()
@@ -82,7 +82,8 @@ public class ActivationPropertyTimeoutMDB implements MessageListener {
                     .send(replyTo, REPLY_PREFIX + ((TextMessage) message).getText());
             }
 
-            // would timeout txn when TransactionTimeout be cared
+            // would timeout txn - this timeout waiting has to be greater than 1 s
+            // (see transactionTimeout activation config property)
             TxTestUtil.waitForTimeout(tm);
         } catch (Exception e) {
             throw new RuntimeException("onMessage method execution failed", e);

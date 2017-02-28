@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.transaction.bmt.timeout;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -29,16 +31,15 @@ import org.jboss.as.test.integration.transactions.TransactionTestLookupUtil;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import java.util.PropertyPermission;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -49,11 +50,6 @@ import javax.naming.NamingException;
  */
 @RunWith(Arquillian.class)
 public class StatelessTimeoutTestCase {
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     @ArquillianResource
     private InitialContext initCtx;
@@ -67,7 +63,10 @@ public class StatelessTimeoutTestCase {
             .addPackage(StatelessTimeoutTestCase.class.getPackage())
             .addPackage(TxTestUtil.class.getPackage())
             .addClasses(TimeoutUtil.class)
-            .addAsManifestResource(new StringAsset("<beans></beans>"),  "beans.xml");
+            .addAsManifestResource(new StringAsset("<beans></beans>"),  "beans.xml")
+            // grant necessary permissions for -Dsecurity.manager
+            .addAsResource(createPermissionsXmlAsset(
+                new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
         return jar;
     }
 

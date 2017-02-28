@@ -22,7 +22,10 @@
 
 package org.jboss.as.test.iiop.transaction.timeout;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.rmi.RemoteException;
+import java.util.PropertyPermission;
 
 import javax.naming.NamingException;
 import javax.transaction.TransactionRolledbackException;
@@ -38,14 +41,12 @@ import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingletonRemote;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,11 +65,6 @@ public class IIOPTimeoutTestCase {
 
     private TransactionCheckerSingletonRemote checker;
 
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
-
     @Deployment(name = DEPLOYMENT_NAME)
     @TargetsContainer("iiop-client")
     public static Archive<?> deploy() {
@@ -78,7 +74,10 @@ public class IIOPTimeoutTestCase {
                 .addPackage(TxTestUtil.class.getPackage())
                 .addClasses(TimeoutUtil.class)
                 .addAsManifestResource(IIOPTimeoutTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(new StringAsset("<beans></beans>"),  "beans.xml");
+                .addAsManifestResource(new StringAsset("<beans></beans>"),  "beans.xml")
+                // grant necessary permissions for -Dsecurity.manager
+                .addAsResource(createPermissionsXmlAsset(
+                    new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
     }
 
     @Before
