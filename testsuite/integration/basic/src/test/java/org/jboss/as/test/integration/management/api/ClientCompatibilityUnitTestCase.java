@@ -45,6 +45,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
 import org.jboss.as.process.protocol.StreamUtils;
 import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -53,6 +54,7 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -102,6 +104,11 @@ public class ClientCompatibilityUnitTestCase {
                     .append(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT)
                     .append(ModelDescriptionConstants.MANAGEMENT_INTERFACE, ModelDescriptionConstants.NATIVE_INTERFACE).toModelNode();
         }
+    }
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
     }
 
     // Arquillian requires a deployment to trigger @ServerSetup handling

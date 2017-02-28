@@ -55,11 +55,13 @@ import org.jboss.as.test.integration.ejb.security.base.WhoAmIBean;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.security.client.SecurityClient;
 import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -69,10 +71,15 @@ import org.junit.Test;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-abstract class AbstractAuthenticationTestCase {
+public abstract class AbstractAuthenticationTestCase {
 
     private static final String SERVER_HOST_PORT = TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort();
     private static final String WAR_URL = "http://" + SERVER_HOST_PORT + "/ejb3security/";
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
+    }
 
     /*
      * Authentication Scenarios

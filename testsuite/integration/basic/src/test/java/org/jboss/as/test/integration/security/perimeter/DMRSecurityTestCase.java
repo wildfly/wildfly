@@ -27,6 +27,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -57,6 +58,11 @@ public class DMRSecurityTestCase {
 
     private static File originalTokenDir = new File(JBOSS_INST, "/standalone/tmp/auth");
     private static File renamedTokenDir = new File(JBOSS_INST, "/standalone/tmp/auth.renamed");
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
+    }
 
     /**
      * Workaround to disable silent login on localhost.
