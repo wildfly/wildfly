@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -97,5 +98,41 @@ public class NamingSubsystemTestCase extends AbstractSubsystemBaseTest {
         for (int i = 1 ; i < list.size() ; i++) {
 
         }
+    }
+
+    /**
+     * Asserts that bindings may be added through composite ops.
+     * @throws Exception
+     */
+    @Test
+    public void testCompositeBindingOps() throws Exception {
+        final KernelServices services = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(getSubsystemXml()).build();
+        // add binding 'alookup' through composite op
+        // note that a binding-type of 'lookup' requires 'lookup' attr value, which in this case is set by a followup step
+        final ModelNode addr = Operations.createAddress(ModelDescriptionConstants.SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME, NamingSubsystemModel.BINDING, "java:global/alookup");
+        final ModelNode addOp = Operations.createAddOperation(addr);
+        addOp.get(NamingSubsystemModel.BINDING_TYPE).set(NamingSubsystemModel.LOOKUP);
+        final ModelNode compositeOp = Operations.CompositeOperationBuilder.create()
+                .addStep(addOp)
+                .addStep(Operations.createWriteAttributeOperation(addr, NamingSubsystemModel.LOOKUP, "java:global/a"))
+                .build().getOperation();
+        ModelTestUtils.checkOutcome(services.executeOperation(compositeOp));
+    }
+
+    /**
+     * Asserts that bindings may be updated through composite ops.
+     * @throws Exception
+     */
+    @Test
+    public void testCompositeBindingUpdate() throws Exception {
+        final KernelServices services = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(getSubsystemXml()).build();
+        // updates binding 'a' through composite op
+        // binding-type used is lookup, op should succeed even if lookup value is set by a followup step
+        final ModelNode addr = Operations.createAddress(ModelDescriptionConstants.SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME, NamingSubsystemModel.BINDING, "java:global/a");
+        final ModelNode compositeOp = Operations.CompositeOperationBuilder.create()
+                .addStep(Operations.createWriteAttributeOperation(addr, NamingSubsystemModel.BINDING_TYPE, NamingSubsystemModel.LOOKUP))
+                .addStep(Operations.createWriteAttributeOperation(addr, NamingSubsystemModel.LOOKUP, "java:global/b"))
+                .build().getOperation();
+        ModelTestUtils.checkOutcome(services.executeOperation(compositeOp));
     }
 }
