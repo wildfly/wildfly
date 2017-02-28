@@ -63,18 +63,23 @@ public class WorkManagerStatisticsService implements Service<ManagementResourceR
                                         final String name,
                                         final boolean statsEnabled) {
         super();
-        overrideRegistration = registration.registerOverrideModel(name, new OverrideDescriptionProvider() {
-            @Override
-            public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
-                return Collections.emptyMap();
-            }
+        if (registration.isAllowsOverride()) {
 
-            @Override
-            public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                return Collections.emptyMap();
-            }
+            overrideRegistration = registration.registerOverrideModel(name, new OverrideDescriptionProvider() {
+                @Override
+                public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
+                    return Collections.emptyMap();
+                }
 
-        });
+                @Override
+                public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
+                    return Collections.emptyMap();
+                }
+
+            });
+        } else {
+            overrideRegistration = registration;
+        }
         this.statsEnabled = statsEnabled;
 
     }
