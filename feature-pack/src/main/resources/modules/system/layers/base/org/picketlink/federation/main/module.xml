@@ -62,6 +62,7 @@
                 </exclude-set>
             </imports>
         </module>
+        <module name="org.bouncycastle" />
     </dependencies>
 
 </module>
