@@ -139,8 +139,8 @@ public class PropertySQLProviderFactory implements SQLProvider.Factory {
         }
 
         @Override
-        public int getMaxBlobSize() {
-            return Integer.valueOf(sql("max-blob-size"));
+        public long getMaxBlobSize() {
+            return Long.valueOf(sql("max-blob-size"));
         }
 
         @Override
