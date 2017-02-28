@@ -24,6 +24,10 @@
 
 <module xmlns="urn:jboss:module:1.5" name="org.opensaml">
 
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
     <resources>
         <artifact name="${org.opensaml:opensaml-core}"/>
         <artifact name="${org.opensaml:opensaml-profile-api}"/>
