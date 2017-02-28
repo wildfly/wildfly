@@ -28,6 +28,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.params.ClientPNames;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
@@ -206,6 +207,7 @@ public class FormAuthUnitTestCase {
     @Test
     @OperateOnDeployment("form-auth.war")
     public void testPostDataFormAuth() throws Exception {
+        httpclient.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
         log.trace("+++ testPostDataFormAuth");
 
         URL url = new URL(baseURLNoAuth + "unsecure_form.html");
@@ -336,6 +338,7 @@ public class FormAuthUnitTestCase {
     }
 
     public HttpPost doSecureGetWithLogin(String path, String username, String password) throws Exception {
+        httpclient.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
         log.trace("+++ doSecureGetWithLogin : " + path);
 
         URL url = new URL(baseURLNoAuth + path);
@@ -384,7 +387,7 @@ public class FormAuthUnitTestCase {
 
         // Follow the redirect to the SecureServlet
         Header location = postResponse.getFirstHeader("Location");
-        URL indexURI = new URL(location.getValue());
+        URL indexURI = new URL(baseURLNoAuth + location.getValue());
         HttpGet war1Index = new HttpGet(url.toURI());
 
         log.trace("Executing request " + war1Index.getRequestLine());
@@ -408,6 +411,7 @@ public class FormAuthUnitTestCase {
     }
 
     public void doSecureGet(String path) throws Exception {
+        httpclient.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
         log.trace("+++ doSecureGet : " + path);
 
         String sessionID = null;
