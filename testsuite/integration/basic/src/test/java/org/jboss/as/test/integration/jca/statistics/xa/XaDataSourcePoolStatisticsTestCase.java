@@ -39,6 +39,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatelessEJBLocator;
@@ -50,6 +51,11 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.File;
+import java.io.FilePermission;
+import java.nio.file.Paths;
+import java.util.PropertyPermission;
 
 /**
  * XA Data source statistics testCase
@@ -75,6 +81,14 @@ public class XaDataSourcePoolStatisticsTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
+        // This ugly hack is needed because of the following line on TxTestUtil
+        // return CDI.current().select(TransactionCheckerSingleton.class).get();
+        final String jbossHome = System.getProperty("jboss.dist");
+        final String modulesDir = jbossHome + "/modules/system/layers/base/org/jboss/as/weld/main/";
+        final File weldModuleFile = Paths.get(modulesDir).toFile().listFiles(pathname ->
+                pathname.getName().startsWith("wildfly-weld")
+                        && pathname.getName().endsWith("-SNAPSHOT.jar"))[0];
+
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(TestEntity.class, SLSB1.class, SLSB.class, TimeoutUtil.class);
@@ -82,6 +96,10 @@ public class XaDataSourcePoolStatisticsTestCase {
         jar.addAsManifestResource(XaDataSourcePoolStatisticsTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         ear.addAsModule(jar);
         ear.addAsManifestResource(new StringAsset("Dependencies: com.h2database.h2\n"), "MANIFEST.MF");
+        ear.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                new FilePermission(weldModuleFile.getAbsolutePath(), "read"),
+                new PropertyPermission("ts.timeout.factor", "read")
+        ), "permissions.xml");
         return ear;
     }
 

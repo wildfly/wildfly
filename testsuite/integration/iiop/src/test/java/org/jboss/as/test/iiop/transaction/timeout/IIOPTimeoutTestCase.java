@@ -22,7 +22,11 @@
 
 package org.jboss.as.test.iiop.transaction.timeout;
 
+import java.io.File;
+import java.io.FilePermission;
+import java.nio.file.Paths;
 import java.rmi.RemoteException;
+import java.util.PropertyPermission;
 
 import javax.naming.NamingException;
 import javax.transaction.TransactionRolledbackException;
@@ -39,6 +43,7 @@ import org.jboss.as.test.integration.transactions.TransactionCheckerSingletonRem
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -73,12 +78,25 @@ public class IIOPTimeoutTestCase {
     @TargetsContainer("iiop-client")
     public static Archive<?> deploy() {
         System.setProperty("com.sun.CORBA.ORBUseDynamicStub", "true");
+
+        // This ugly hack is needed because of the following line on TxTestUtil
+        // return CDI.current().select(TransactionCheckerSingleton.class).get();
+        final String jbossHome = System.getProperty("jboss.dist");
+        final String modulesDir = jbossHome + "/modules/system/layers/base/org/jboss/as/weld/main/";
+        final File weldModuleFile = Paths.get(modulesDir).toFile().listFiles(pathname ->
+                pathname.getName().startsWith("wildfly-weld")
+                        && pathname.getName().endsWith("-SNAPSHOT.jar"))[0];
+
         return ShrinkWrap.create(JavaArchive.class, DEPLOYMENT_NAME + ".jar")
                 .addPackage(IIOPTimeoutTestCase.class.getPackage())
                 .addPackage(TxTestUtil.class.getPackage())
                 .addClasses(TimeoutUtil.class)
                 .addAsManifestResource(IIOPTimeoutTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(new StringAsset("<beans></beans>"),  "beans.xml");
+                .addAsManifestResource(new StringAsset("<beans></beans>"),  "beans.xml")
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                        new FilePermission(weldModuleFile.getAbsolutePath(), "read"),
+                        new PropertyPermission("ts.timeout.factor", "read")
+                ), "permissions.xml");
     }
 
     @Before
