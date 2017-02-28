@@ -25,11 +25,13 @@ import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
+import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 
 /**
@@ -48,10 +50,13 @@ public class SLSB1 implements SLSB {
     @Resource
     private UserTransaction tx;
 
+    @Inject
+    private TransactionCheckerSingleton checker;
+
     @Override
     public void commit() throws Exception {
         tx.begin();
-        TxTestUtil.enlistTestXAResource(tm.getTransaction());
+        TxTestUtil.enlistTestXAResource(tm.getTransaction(), checker);
         em.persist(new TestEntity());
         tx.commit();
     }
@@ -59,7 +64,7 @@ public class SLSB1 implements SLSB {
     @Override
     public void rollback() throws Exception {
         tx.begin();
-        TxTestUtil.enlistTestXAResource(tm.getTransaction());
+        TxTestUtil.enlistTestXAResource(tm.getTransaction(), checker);
         em.persist(new TestEntity());
         tx.rollback();
     }

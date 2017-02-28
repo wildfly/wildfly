@@ -27,11 +27,13 @@ import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
+import javax.inject.Inject;
 import javax.naming.NamingException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
+import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.logging.Logger;
 
@@ -45,6 +47,9 @@ public class StatelessBmtBean {
 
     @Resource(name = "java:jboss/TransactionManager")
     private TransactionManager tm;
+
+    @Inject
+    private TransactionCheckerSingleton checker;
 
     public String testTransaction(int transactionCount, int timeoutCount)
             throws RemoteException, NamingException, SystemException {
@@ -71,8 +76,8 @@ public class StatelessBmtBean {
 
             txnToString = txn.toString();
 
-            TxTestUtil.enlistTestXAResource(tm.getTransaction());
-            TxTestUtil.enlistTestXAResource(tm.getTransaction());
+            TxTestUtil.enlistTestXAResource(tm.getTransaction(), checker);
+            TxTestUtil.enlistTestXAResource(tm.getTransaction(), checker);
 
             if(isTimeout) {
                 TxTestUtil.waitForTimeout(tm);

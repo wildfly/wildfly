@@ -27,6 +27,7 @@ import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
 import javax.ejb.TransactionAttribute;
+import javax.inject.Inject;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSContext;
@@ -36,13 +37,18 @@ import javax.jms.TextMessage;
 import javax.transaction.TransactionManager;
 import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.jboss.logging.Logger;
+import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 
 /**
+ * <p>
  * It's expected that {@link TransactionTimeout} annotation does not work for MDB
  * with {@link TransactionAttribute} set as REQUIRED because transaction is already started
  * at time of calling onMessage method and as such timeout can't be changed at that time
  * (can't change timeout of already started txn).
+ * <p>
+ * In other words, using {@link TransactionTimeout} does not change transaction timeout
+ * for this bean.
  */
 @MessageDriven(activationConfig = {
         @ActivationConfigProperty(propertyName = "destination", propertyValue = TransactionTimeoutQueueSetupTask.ANNOTATION_TIMEOUT_JNDI_NAME)
@@ -58,6 +64,9 @@ public class AnnotationTimeoutMDB implements MessageListener {
     @Resource(name = "java:jboss/TransactionManager")
     private TransactionManager tm;
 
+    @Inject
+    private TransactionCheckerSingleton checker;
+
     @Override
     public void onMessage(Message message) {
         try {
@@ -70,7 +79,7 @@ public class AnnotationTimeoutMDB implements MessageListener {
                     + " and bean does not know where to reply to");
             }
 
-            TxTestUtil.enlistTestXAResource(tm.getTransaction());
+            TxTestUtil.enlistTestXAResource(tm.getTransaction(), checker);
 
             try (
                 JMSContext context = factory.createContext()
@@ -79,7 +88,6 @@ public class AnnotationTimeoutMDB implements MessageListener {
                     .setJMSCorrelationID(message.getJMSMessageID())
                     .send(replyTo, REPLY_PREFIX + ((TextMessage) message).getText());
             }
-
             // would timeout txn when TransactionTimeout be cared
             TxTestUtil.waitForTimeout(tm);
         } catch (Exception e) {

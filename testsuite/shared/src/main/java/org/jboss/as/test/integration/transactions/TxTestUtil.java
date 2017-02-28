@@ -22,13 +22,13 @@
 
 package org.jboss.as.test.integration.transactions;
 
-import javax.enterprise.inject.spi.CDI;
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.Assert;
 
 /**
@@ -44,8 +44,8 @@ public final class TxTestUtil {
         // no instance here
     }
 
-    public static TestXAResource enlistTestXAResource(Transaction txn) {
-        return enlistTestXAResource(txn, getChecker());
+    public static TestXAResource enlistTestXAResource(Transaction txn, TransactionCheckerSingletonRemote checker) {
+        return enlistTestXAResource(txn, checker);
     }
 
     public static TestXAResource enlistTestXAResource(Transaction txn, TransactionCheckerSingleton checker) {
@@ -58,8 +58,8 @@ public final class TxTestUtil {
         return xaResource;
     }
 
-    public static void addSynchronization(Transaction txn) {
-        TestSynchronization synchro = new TestSynchronization(getChecker());
+    public static void addSynchronization(Transaction txn, TransactionCheckerSingletonRemote checker) {
+        TestSynchronization synchro = new TestSynchronization(checker);
         try {
             txn.registerSynchronization(synchro);
         } catch (IllegalStateException | RollbackException | SystemException e) {
@@ -67,8 +67,8 @@ public final class TxTestUtil {
         }
     }
 
-    public static void addSynchronization(TransactionSynchronizationRegistry registry) {
-        TestSynchronization synchro = new TestSynchronization(getChecker());
+    public static void addSynchronization(TransactionSynchronizationRegistry registry, TransactionCheckerSingletonRemote checker) {
+        TestSynchronization synchro = new TestSynchronization(checker);
         try {
             registry.registerInterposedSynchronization(synchro);
         } catch (IllegalStateException e) {
@@ -79,7 +79,7 @@ public final class TxTestUtil {
     public static void waitForTimeout(TransactionManager tm) throws SystemException, InterruptedException {
         // waiting for timeout
         long startTime = System.currentTimeMillis();
-        while(System.currentTimeMillis() - startTime < timeoutWaitTime_ms && tm.getStatus() == Status.STATUS_ACTIVE) {
+        while(System.currentTimeMillis() - startTime < TimeoutUtil.adjust(timeoutWaitTime_ms) && tm.getStatus() == Status.STATUS_ACTIVE) {
             Thread.sleep(200);
         }
     }
@@ -114,9 +114,5 @@ public final class TxTestUtil {
                 throw new IllegalStateException("Can't determine status code " + statusCode
                     + " as transaction status code defined under " + Status.class.getName());
         }
-    }
-
-    private static TransactionCheckerSingleton getChecker() {
-        return CDI.current().select(TransactionCheckerSingleton.class).get();
     }
 }

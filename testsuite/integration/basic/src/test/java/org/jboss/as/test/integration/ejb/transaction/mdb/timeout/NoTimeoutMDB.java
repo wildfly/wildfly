@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.ejb.transaction.mdb.timeout;
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
+import javax.inject.Inject;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSContext;
@@ -34,6 +35,7 @@ import javax.jms.TextMessage;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.logging.Logger;
 
@@ -50,6 +52,9 @@ public class NoTimeoutMDB implements MessageListener {
     @Resource(name = "java:jboss/TransactionManager")
     private TransactionManager tm;
 
+    @Inject
+    private TransactionCheckerSingleton checker;
+
     @Resource
     private TransactionSynchronizationRegistry synchroRegistry;
 
@@ -65,8 +70,8 @@ public class NoTimeoutMDB implements MessageListener {
                     + " and bean does not know where to reply to");
             }
 
-            TxTestUtil.enlistTestXAResource(tm.getTransaction());
-            TxTestUtil.addSynchronization(tm.getTransaction());
+            TxTestUtil.enlistTestXAResource(tm.getTransaction(), checker);
+            TxTestUtil.addSynchronization(tm.getTransaction(), checker);
 
             try (
                 JMSContext context = factory.createContext()

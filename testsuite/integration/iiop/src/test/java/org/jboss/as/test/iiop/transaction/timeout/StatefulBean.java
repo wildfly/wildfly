@@ -75,8 +75,8 @@ public class StatefulBean implements SessionSynchronization {
         Transaction txn;
         txn = tm.getTransaction();
 
-        TxTestUtil.enlistTestXAResource(txn);
-        TxTestUtil.enlistTestXAResource(txn);
+        TxTestUtil.enlistTestXAResource(txn, checker);
+        TxTestUtil.enlistTestXAResource(txn, checker);
     }
 
     @TransactionTimeout(value = 1)
@@ -85,8 +85,8 @@ public class StatefulBean implements SessionSynchronization {
         Transaction txn;
         txn = tm.getTransaction();
 
-        TxTestUtil.enlistTestXAResource(txn);
-        TxTestUtil.enlistTestXAResource(txn);
+        TxTestUtil.enlistTestXAResource(txn, checker);
+        TxTestUtil.enlistTestXAResource(txn, checker);
 
         try {
             TxTestUtil.waitForTimeout(tm);

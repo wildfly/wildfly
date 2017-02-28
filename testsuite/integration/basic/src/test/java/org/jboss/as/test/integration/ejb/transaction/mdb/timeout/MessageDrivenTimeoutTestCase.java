@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.transaction.mdb.timeout;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.util.PropertyPermission;
 import javax.inject.Inject;
 import javax.jms.Destination;
 import javax.jms.Message;
@@ -36,7 +39,6 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.xa.XAResource;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -44,13 +46,11 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,11 +61,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup(TransactionTimeoutQueueSetupTask.class)
 public class MessageDrivenTimeoutTestCase {
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     @ArquillianResource
     private InitialContext initCtx;
@@ -78,7 +73,10 @@ public class MessageDrivenTimeoutTestCase {
         final Archive<?> deployment = ShrinkWrap.create(JavaArchive.class, "mdb-timeout.jar")
             .addPackage(MessageDrivenTimeoutTestCase.class.getPackage())
             .addPackage(TxTestUtil.class.getPackage())
-            .addClass(TimeoutUtil.class);
+            .addClass(TimeoutUtil.class)
+            // grant necessary permissions for -Dsecurity.manager because of usage TimeoutUtil
+            .addAsResource(createPermissionsXmlAsset(
+                new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
         return deployment;
     }
 
@@ -114,7 +112,7 @@ public class MessageDrivenTimeoutTestCase {
         String text = "annotation timeout";
         Queue q = sendMessage(text, TransactionTimeoutQueueSetupTask.ANNOTATION_TIMEOUT_JNDI_NAME);
         Assert.assertEquals("Sent and received message does not match at expected way",
-                NoTimeoutMDB.REPLY_PREFIX + text, receiveMessage(q));
+                AnnotationTimeoutMDB.REPLY_PREFIX + text, receiveMessage(q));
 
         Assert.assertEquals("Expecting one test XA resources being commmitted", 1, checker.getCommitted());
         Assert.assertEquals("Expecting no rollback happened", 0, checker.getRolledback());
@@ -167,7 +165,7 @@ public class MessageDrivenTimeoutTestCase {
             final QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
             final QueueReceiver receiver = session.createReceiver(replyQueue);
-            final Message reply = receiver.receive(5000);
+            final Message reply = receiver.receive(TimeoutUtil.adjust(5000));
             Thread.sleep(TimeoutUtil.adjust(500)); // waiting for synchro could be finished before checking
             if(reply == null) return null;
             return ((TextMessage) reply).getText();
