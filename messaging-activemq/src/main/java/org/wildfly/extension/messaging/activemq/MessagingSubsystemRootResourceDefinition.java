@@ -24,6 +24,7 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.DEFINED;
+import static org.jboss.as.controller.transform.description.RejectAttributeChecker.UNDEFINED;
 import static org.jboss.dmr.ModelType.INT;
 
 import java.util.Arrays;
@@ -41,6 +42,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 
@@ -111,7 +113,15 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
         server.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.ALWAYS, ServerDefinition.CREDENTIAL_REFERENCE)
                     .addRejectCheck(DEFINED, ServerDefinition.CREDENTIAL_REFERENCE);
-
+        ResourceTransformationDescriptionBuilder replicationMaster = server.addChildResource(MessagingExtension.REPLICATION_MASTER_PATH);
+        replicationMaster.getAttributeBuilder()
+                // reject if the attribute is undefined as its default value was changed from false to true in EAP 7.1.0
+                .addRejectCheck(UNDEFINED, HAAttributes.CHECK_FOR_LIVE_SERVER);
+        ResourceTransformationDescriptionBuilder replicationColocated = server.addChildResource(MessagingExtension.REPLICATION_COLOCATED_PATH);
+        ResourceTransformationDescriptionBuilder masterForReplicationColocated = replicationColocated.addChildResource(MessagingExtension.CONFIGURATION_MASTER_PATH);
+        masterForReplicationColocated.getAttributeBuilder()
+                // reject if the attribute is undefined as its default value was changed from false to true in EAP 7.1.0
+                .addRejectCheck(UNDEFINED, HAAttributes.CHECK_FOR_LIVE_SERVER);
         ResourceTransformationDescriptionBuilder bridge = server.addChildResource(MessagingExtension.BRIDGE_PATH);
         bridge.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.ALWAYS, BridgeDefinition.CREDENTIAL_REFERENCE)

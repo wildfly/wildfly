@@ -26,7 +26,6 @@ package org.wildfly.extension.messaging.activemq.ha;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONFIGURATION;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA_POLICY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.MASTER;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.REPLICATION_COLOCATED;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SLAVE;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.BACKUP_PORT_OFFSET;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.BACKUP_REQUEST_RETRIES;
@@ -47,7 +46,6 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -59,8 +57,6 @@ import org.wildfly.extension.messaging.activemq.MessagingExtension;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
 public class ReplicationColocatedDefinition extends PersistentResourceDefinition {
-
-    public static final PathElement PATH = PathElement.pathElement(HA_POLICY, REPLICATION_COLOCATED);
 
     public static Collection<AttributeDefinition> ATTRIBUTES =  Collections.unmodifiableList(Arrays.asList(
             REQUEST_BACKUP,
@@ -74,7 +70,7 @@ public class ReplicationColocatedDefinition extends PersistentResourceDefinition
     public static final ReplicationColocatedDefinition INSTANCE = new ReplicationColocatedDefinition();
 
     private ReplicationColocatedDefinition() {
-        super(PATH,
+        super(MessagingExtension.REPLICATION_COLOCATED_PATH,
                 MessagingExtension.getResourceDescriptionResolver(HA_POLICY),
                 createAddOperation(HA_POLICY, false, ATTRIBUTES),
                 ReloadRequiredRemoveStepHandler.INSTANCE);

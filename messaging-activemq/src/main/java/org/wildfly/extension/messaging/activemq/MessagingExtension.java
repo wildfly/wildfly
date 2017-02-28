@@ -44,6 +44,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.LIVE_ONL
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.MASTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.PAGING_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.QUEUE;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.REPLICATION_COLOCATED;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REPLICATION_MASTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REPLICATION_SLAVE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ROLE;
@@ -110,6 +111,7 @@ public class MessagingExtension implements Extension {
     public static final PathElement REPLICATION_SLAVE_PATH = pathElement(HA_POLICY, REPLICATION_SLAVE);
     public static final PathElement SHARED_STORE_MASTER_PATH = pathElement(HA_POLICY, SHARED_STORE_MASTER);
     public static final PathElement SHARED_STORE_SLAVE_PATH = pathElement(HA_POLICY, SHARED_STORE_SLAVE);
+    public static final PathElement REPLICATION_COLOCATED_PATH = pathElement(HA_POLICY, REPLICATION_COLOCATED);
     public static final PathElement CONFIGURATION_MASTER_PATH = pathElement(CONFIGURATION, MASTER);
     public static final PathElement CONFIGURATION_SLAVE_PATH = pathElement(CONFIGURATION, SLAVE);
     static final PathElement BINDINGS_DIRECTORY_PATH = pathElement(PATH, BINDINGS_DIRECTORY);
