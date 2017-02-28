@@ -131,6 +131,9 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
     private Context createContext(Deployment deployment, Host host) {
         return new UndertowContext(deployment, new UndertowHost(host, new UndertowEngine(host.getServer().getValue(), this.service.getValue(), this.connector)));
     }
+    private Context createContext(String deployment, Host host) {
+        return new SimpleContext(deployment, new UndertowHost(host, new UndertowEngine(host.getServer().getValue(), this.service.getValue(), this.connector)));
+    }
 
     @Override
     public synchronized void onDeploymentStart(Deployment deployment, Host host) {
@@ -152,6 +155,25 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
         contexts.remove(context);
     }
 
+    @Override
+    public synchronized void onDeploymentStart(String deployment, Host host) {
+        Context context = this.createContext(deployment, host);
+        this.eventHandler.getValue().add(context);
+
+        // TODO break into onDeploymentAdd once implemented in Undertow
+        this.eventHandler.getValue().start(context);
+        contexts.add(context);
+    }
+
+    @Override
+    public synchronized void onDeploymentStop(String deployment, Host host) {
+        Context context = this.createContext(deployment, host);
+        this.eventHandler.getValue().stop(context);
+
+        // TODO break into onDeploymentRemove once implemented in Undertow
+        this.eventHandler.getValue().remove(context);
+        contexts.remove(context);
+    }
     @Override
     public void onShutdown() {
         // Do nothing
