@@ -45,6 +45,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -59,6 +61,11 @@ public class SecurityTestCase {
 
     @ContainerResource
     private ManagementClient managementClient;
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
+    }
 
     @Test
     public void testFailedAuthenticationBadUserPass() throws Exception {

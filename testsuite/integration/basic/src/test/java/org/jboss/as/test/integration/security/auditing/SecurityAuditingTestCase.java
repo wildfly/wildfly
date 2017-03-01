@@ -50,12 +50,14 @@ import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServ
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -130,6 +132,11 @@ public class SecurityAuditingTestCase extends AnnSBTest {
             executeOperations(updates);
 
         }
+    }
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
     }
 
     @Deployment
