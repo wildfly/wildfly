@@ -104,10 +104,6 @@ public class WildFlyDataSource implements DataSource, Serializable {
         return delegate.getParentLogger();
     }
 
-    public String getJndiName() {
-        return jndiName;
-    }
-
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
         out.writeObject(jndiName);
