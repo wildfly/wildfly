@@ -70,7 +70,7 @@ public class ContextServiceImpl extends org.glassfish.enterprise.concurrent.Cont
                 }
             });
         } else {
-            return super.createContextualProxy(instance, executionProperties, intf);
+            return internalCreateContextualProxy(instance, executionProperties, intf);
         }
     }
 
@@ -100,7 +100,7 @@ public class ContextServiceImpl extends org.glassfish.enterprise.concurrent.Cont
                 }
             });
         } else {
-            return super.createContextualProxy(instance, executionProperties, interfaces);
+            return internalCreateContextualProxy(instance, executionProperties, interfaces);
         }
     }
 
