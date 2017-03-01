@@ -44,7 +44,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.extension.messaging.activemq.AlternativeAttributeCheckHandler;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common;
@@ -61,8 +60,6 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(final OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         ModelNode model = resource.getModel();
-
-        AlternativeAttributeCheckHandler.checkAlternatives(operation, Common.CONNECTORS.getName(), Common.DISCOVERY_GROUP.getName(), false);
 
         for(final AttributeDefinition attribute : getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES)) {
             attribute.validateAndSet(operation, model);

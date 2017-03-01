@@ -79,7 +79,7 @@ public class ScaleDownAttributes {
     public static SimpleAttributeDefinition SCALE_DOWN_DISCOVERY_GROUP =  SimpleAttributeDefinitionBuilder.create(SCALE_DOWN_DISCOVERY_GROUP_STR, STRING)
             .setAttributeGroup(CommonAttributes.SCALE_DOWN)
             .setXmlName(CommonAttributes.DISCOVERY_GROUP)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAlternatives(SCALE_DOWN_CONNECTORS_STR)
             .setRestartAllServices()
             .build();
@@ -88,7 +88,7 @@ public class ScaleDownAttributes {
             .setAttributeGroup(CommonAttributes.SCALE_DOWN)
             .setXmlName(CommonAttributes.CONNECTORS)
             .setAlternatives(SCALE_DOWN_DISCOVERY_GROUP_STR)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
             .setAttributeParser(AttributeParser.STRING_LIST)
             .setRestartAllServices()

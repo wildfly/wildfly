@@ -34,6 +34,7 @@ import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
@@ -132,7 +133,8 @@ public class PooledConnectionFactoryDefinition extends PersistentResourceDefinit
                 if (deployed) {
                     registry.registerReadOnlyAttribute(attr, PooledConnectionFactoryConfigurationRuntimeHandler.INSTANCE);
                 } else {
-                    registry.registerReadWriteAttribute(attr, null, PooledConnectionFactoryWriteAttributeHandler.INSTANCE);
+                    registry.registerReadWriteAttribute(attr, null,
+                            new ReloadRequiredWriteAttributeHandler(getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES)));
                 }
             }
         }

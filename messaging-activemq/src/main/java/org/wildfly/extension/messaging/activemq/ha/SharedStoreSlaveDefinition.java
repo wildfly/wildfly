@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq.ha;
 
-import static org.jboss.as.controller.OperationContext.Stage.MODEL;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA_POLICY;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.ALLOW_FAILBACK;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
@@ -45,7 +44,6 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.ActiveMQReloadRequiredHandlers;
-import org.wildfly.extension.messaging.activemq.AlternativeAttributeCheckHandler;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 
 /**
@@ -66,14 +64,7 @@ public class SharedStoreSlaveDefinition extends PersistentResourceDefinition {
         ATTRIBUTES = Collections.unmodifiableCollection(attributes);
     }
 
-    private static final AbstractWriteAttributeHandler WRITE_ATTRIBUTE = new ActiveMQReloadRequiredHandlers.WriteAttributeHandler(ATTRIBUTES) {
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            context.addStep(new AlternativeAttributeCheckHandler(ATTRIBUTES), MODEL);
-
-            super.execute(context, operation);
-        }
-    };
+    private static final AbstractWriteAttributeHandler WRITE_ATTRIBUTE = new ActiveMQReloadRequiredHandlers.WriteAttributeHandler(ATTRIBUTES);
 
     public static SharedStoreSlaveDefinition INSTANCE = new SharedStoreSlaveDefinition(MessagingExtension.SHARED_STORE_SLAVE_PATH, false);
     public static SharedStoreSlaveDefinition CONFIGURATION_INSTANCE = new SharedStoreSlaveDefinition(MessagingExtension.CONFIGURATION_SLAVE_PATH, true);

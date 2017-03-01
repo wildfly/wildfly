@@ -45,6 +45,7 @@ import org.jboss.as.controller.AttributeParsers;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -248,7 +249,7 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
         for (AttributeDefinition attr : ATTRIBUTES) {
-            registry.registerReadWriteAttribute(attr, null, JMSBridgeWriteAttributeHandler.INSTANCE);
+            registry.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(ATTRIBUTES));
         }
         for (AttributeDefinition attr : READONLY_ATTRIBUTES) {
             registry.registerReadOnlyAttribute(attr, JMSBridgeHandler.INSTANCE);

@@ -35,6 +35,7 @@ import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -100,7 +101,7 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration registry) {
         for (AttributeDefinition attr : ATTRIBUTES) {
             if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, DiscoveryGroupWriteAttributeHandler.INSTANCE);
+                registry.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(ATTRIBUTES));
             }
         }
     }
