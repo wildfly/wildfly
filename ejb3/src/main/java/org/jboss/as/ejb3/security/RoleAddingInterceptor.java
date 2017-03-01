@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.security;
 
+import java.security.PrivilegedActionException;
+
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.wildfly.common.Assert;
@@ -47,6 +49,19 @@ public class RoleAddingInterceptor implements Interceptor {
         final SecurityIdentity currentIdentity = securityDomain.getCurrentSecurityIdentity();
         final RoleMapper mergeMapper = roleMapper.or((roles) -> currentIdentity.getRoles(category));
         final SecurityIdentity newIdentity = currentIdentity.withRoleMapper(category, mergeMapper);
-        return newIdentity.runAs(context);
+        try {
+            return newIdentity.runAs(context);
+        } catch (PrivilegedActionException e) {
+            Throwable cause = e.getCause();
+            if(cause != null) {
+                if(cause instanceof Exception) {
+                    throw (Exception) cause;
+                } else {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                throw e;
+            }
+        }
     }
 }
