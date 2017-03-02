@@ -101,6 +101,7 @@ import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jts.common.jtsPropertyManager;
+import org.wildfly.transaction.client.ContextTransactionManager;
 import org.wildfly.transaction.client.LocalTransactionContext;
 
 /**
@@ -248,7 +249,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         performCoordinatorEnvBoottime(context, model, jts);
 
         //object store
-        performObjectStoreBoottime(context, model, jts);
+        performObjectStoreBoottime(context, model);
 
         // Register WildFly transaction services - TODO: this should eventually be separated from the Narayana subsystem
         final LocalTransactionContextService localTransactionContextService = new LocalTransactionContextService();
@@ -360,7 +361,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .install();
     }
 
-    private void performObjectStoreBoottime(OperationContext context, ModelNode model,final boolean jts) throws OperationFailedException {
+    private void performObjectStoreBoottime(OperationContext context, ModelNode model) throws OperationFailedException {
         boolean useJournalStore = model.hasDefined(USE_JOURNAL_STORE) && model.get(USE_JOURNAL_STORE).asBoolean();
         final boolean enableAsyncIO = TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO.resolveModelAttribute(context, model).asBoolean();
         final String objectStorePathRef = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.resolveModelAttribute(context, model).isDefined() ?
@@ -396,19 +397,11 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-
-        if(!jts) {
-            TransactionManagerService.addService(target);
-            UserTransactionService.addService(target);
-            TransactionSynchronizationRegistryService.addService(target);
-        } else {
-            org.jboss.as.txn.service.jts.TransactionManagerService.addService(target);
-            org.jboss.as.txn.service.jts.UserTransactionService.addService(target);
-            org.jboss.as.txn.service.jts.TransactionSynchronizationRegistryService.addService(target);
-        }
-            target.addService(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, new UserTransactionRegistryService())
+        TransactionManagerService.addService(target);
+        UserTransactionService.addService(target);
+        target.addService(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, new UserTransactionRegistryService())
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
-
+        TransactionSynchronizationRegistryService.addService(target);
 
     }
 
@@ -498,6 +491,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .setInitialMode(Mode.ACTIVE)
                 .install();
 
+        ContextTransactionManager.setGlobalDefaultTransactionTimeout(coordinatorDefaultTimeout);
         final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable, jts);
         final ServiceBuilder<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerServiceServiceBuilder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService);
         // add dependency on JTA environment bean service

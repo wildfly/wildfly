@@ -22,6 +22,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 
+import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
@@ -85,6 +86,11 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
     private final InjectedValue<LocalTransactionContext> localTransactionContextInjectedValue = new InjectedValue<>();
 
     /**
+     * Injection of DeploymentRepository, for suspending and resuming deployments
+     */
+    private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<>();
+
+    /**
      * The number of active requests that are using this entry point
      */
     @SuppressWarnings("unused") private volatile int activeInvocationCount = 0;
@@ -138,6 +144,15 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
      */
     public InjectedValue<LocalTransactionContext> getLocalTransactionContextInjectedValue() {
         return localTransactionContextInjectedValue;
+    }
+
+    /**
+     * Returns deployment repository injected value.
+     *
+     * @return local transaction context injected value
+     */
+    public InjectedValue<DeploymentRepository> getDeploymentRepositoryInjectedValue() {
+        return deploymentRepositoryInjectedValue;
     }
 
     /**
@@ -214,6 +229,7 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
         if (listener != null) {
             listenerUpdater.compareAndSet(this, listener, null);
         }
+        deploymentRepositoryInjectedValue.getValue().resume();
     }
 
     /**
@@ -299,7 +315,8 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
      */
     private void doneSuspended() {
         final ServerActivityCallback oldListener = listener;
-        if (listenerUpdater.compareAndSet(this, oldListener, null)) {
+        if (oldListener != null && listenerUpdater.compareAndSet(this, oldListener, null)) {
+            deploymentRepositoryInjectedValue.getValue().suspend();
             oldListener.done();
             EjbLogger.ROOT_LOGGER.suspensionComplete();
         }

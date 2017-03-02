@@ -46,7 +46,7 @@ public enum IIOPInitializer {
     // the transaction group encompasses the Interposition and InboundCurrent initializers.
     TRANSACTIONS("transactions",
             "com.arjuna.ats.jts.orbspecific.javaidl.interceptors.interposition.InterpositionORBInitializerImpl",
-            "com.arjuna.ats.jbossatx.jts.InboundTransactionCurrentInitializer",
+            "org.jboss.iiop.tm.InboundTransactionCurrentInitializer",
             "org.wildfly.iiop.openjdk.tm.TxIORInterceptorInitializer",
             "org.wildfly.iiop.openjdk.tm.TxServerInterceptorInitializer"),
 

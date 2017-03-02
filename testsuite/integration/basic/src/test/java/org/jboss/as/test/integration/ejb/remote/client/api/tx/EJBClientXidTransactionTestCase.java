@@ -39,7 +39,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatelessEJBLocator;
@@ -78,11 +77,6 @@ public class EJBClientXidTransactionTestCase {
 
     @ArquillianResource
     private ManagementClient managementClient;
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     /**
      * Creates an EJB deployment
@@ -341,9 +335,8 @@ public class EJBClientXidTransactionTestCase {
             op.get(OP).set("suspend");
             managementClient.getControllerClient().execute(op);
 
-            // FIXME check with remoting team why this transaction is not recognized as active in EJBSuspendHandlerService
             // can continue invoking bean with current transaction
-            //cmtRemoteBean.mandatoryTxOp();
+            cmtRemoteBean.mandatoryTxOp();
         } catch (Exception e) {
             e.printStackTrace();
             // resume server

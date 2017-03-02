@@ -37,7 +37,7 @@ public interface DeploymentRepositoryListener {
     /**
      * Callback when a deployment becomes available
      * @param deployment The deployment
-     * @param moduleDeployment
+     * @param moduleDeployment module deployment
      */
     void deploymentAvailable(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment);
 
@@ -45,7 +45,7 @@ public interface DeploymentRepositoryListener {
     /**
      * Callback when a deployment has started, i.e. all components have started
      * @param deployment The deployment
-     * @param moduleDeployment
+     * @param moduleDeployment module deployment
      */
     void deploymentStarted(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment);
 
@@ -55,4 +55,20 @@ public interface DeploymentRepositoryListener {
      * @param deployment The deployment
      */
     void deploymentRemoved(final DeploymentModuleIdentifier deployment);
+
+    /**
+     * Called when a deployment is suspended, as a result of server suspension.
+     * @param deployment The deployment
+     */
+    default void deploymentSuspended(final DeploymentModuleIdentifier deployment){}
+
+    /**
+     * Called when a deployment is no longer suspended, as a result of server resume.
+     * <br>
+     * Can only be invoked after {@link #deploymentSuspended(DeploymentModuleIdentifier)}, i.e, if none of these two
+     * methods have been invoked is because the server is not suspended.
+     *
+     * @param deployment The deployment
+     */
+    default void deploymentResumed(final DeploymentModuleIdentifier deployment) {}
 }
