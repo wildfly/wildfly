@@ -57,11 +57,13 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.remoting3.Connection;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.common.annotation.NotNull;
+import org.wildfly.security.auth.server.SecurityIdentity;
 
 import javax.ejb.EJBException;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -354,7 +356,7 @@ final class AssociationImpl implements Association {
         return () -> deploymentRepository.removeListener(listener);
     }
 
-    protected EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {
+    private EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {
         final DeploymentModuleIdentifier ejbModule = new DeploymentModuleIdentifier(appName, moduleName, distinctName);
         final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = this.deploymentRepository.getStartedModules();
         if (modules == null || modules.isEmpty()) {
@@ -367,7 +369,7 @@ final class AssociationImpl implements Association {
         return moduleDeployment.getEjbs().get(beanName);
     }
 
-    private Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag) throws Exception {
+    static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag) throws Exception {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(content.getParameters());
         interceptorContext.setMethod(method);
@@ -409,6 +411,8 @@ final class AssociationImpl implements Association {
         if (content.hasTransaction()) {
             interceptorContext.setTransactionSupplier(content::getTransaction);
         }
+        // add security identity
+        final SecurityIdentity securityIdentity = incomingInvocation.getSecurityIdentity();
         final boolean isAsync = componentView.isAsynchronous(method);
         final boolean oneWay = isAsync && method.getReturnType() == void.class;
         final boolean isSessionBean = componentView.getComponent() instanceof SessionBeanComponent;
@@ -416,14 +420,21 @@ final class AssociationImpl implements Association {
             if (! oneWay) {
                 interceptorContext.putPrivateData(CancellationFlag.class, cancellationFlag);
             }
-            final Object result = componentView.invoke(interceptorContext);
+            final Object result = invokeWithIdentity(componentView, interceptorContext, securityIdentity);
             return result == null ? null : ((Future<?>) result).get();
         } else {
-            return componentView.invoke(interceptorContext);
+            return invokeWithIdentity(componentView, interceptorContext, securityIdentity);
         }
     }
 
-    private Method findMethod(final ComponentView componentView, final EJBMethodLocator ejbMethodLocator) {
+    private static Object invokeWithIdentity(final ComponentView componentView, final InterceptorContext interceptorContext, final SecurityIdentity securityIdentity) throws Exception {
+        return securityIdentity == null ? componentView.invoke(interceptorContext) : securityIdentity.runAs((PrivilegedExceptionAction<Object>) () -> {
+            // TODO: replace this with identity.runAsFunctionEx() once it is available
+            return componentView.invoke(interceptorContext);
+        });
+    }
+
+    private static Method findMethod(final ComponentView componentView, final EJBMethodLocator ejbMethodLocator) {
         final Set<Method> viewMethods = componentView.getViewMethods();
         for (final Method method : viewMethods) {
             if (method.getName().equals(ejbMethodLocator.getMethodName())) {
@@ -446,7 +457,7 @@ final class AssociationImpl implements Association {
         return null;
     }
 
-    private Affinity getWeakAffinity(final StatefulSessionComponent statefulSessionComponent, final StatefulEJBLocator<?> statefulEJBLocator) {
+    private static Affinity getWeakAffinity(final StatefulSessionComponent statefulSessionComponent, final StatefulEJBLocator<?> statefulEJBLocator) {
         final SessionID sessionID = statefulEJBLocator.getSessionId();
         return statefulSessionComponent.getCache().getWeakAffinity(sessionID);
     }
