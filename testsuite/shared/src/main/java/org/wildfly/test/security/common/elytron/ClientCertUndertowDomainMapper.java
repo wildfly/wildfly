@@ -52,7 +52,7 @@ public class ClientCertUndertowDomainMapper extends AbstractConfigurableElement 
         // mechanism-configurations=[{mechanism-name=CLIENT-CERT,mechanism-realm-configurations=[{realm-name=test}]}])
         cli.sendLine(String.format("/subsystem=elytron/http-authentication-factory=%1$s:add(security-domain=%2$s,"
                 + "http-server-mechanism-factory=%1$s,"
-                + "mechanism-configurations=[{mechanism-name=CLIENT-CERT,mechanism-realm-configurations=[{realm-name=%1$s}]}])",
+                + "mechanism-configurations=[{mechanism-name=CLIENT_CERT,mechanism-realm-configurations=[{realm-name=%1$s}]}])",
                 name, securityDomain));
 
         // /subsystem=undertow/application-security-domain=test:add(http-authentication-factory=test)
