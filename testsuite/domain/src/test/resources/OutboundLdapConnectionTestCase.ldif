@@ -1,0 +1,20 @@
+dn: dc=wildfly,dc=org
+objectclass: top
+objectclass: dcObject
+objectclass: organization
+dc: WildFly
+o: WildFly
+
+dn: ou=People,dc=wildfly,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: People
+
+dn: uid=jduke,ou=People,dc=wildfly,dc=org
+objectclass: top
+objectclass: uidObject
+objectclass: person
+uid: jduke
+cn: Java Duke
+sn: Duke
+userPassword: theduke
