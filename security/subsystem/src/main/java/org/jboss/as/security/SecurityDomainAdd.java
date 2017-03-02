@@ -107,6 +107,7 @@ import org.jboss.security.config.MappingInfo;
 import org.jboss.security.identitytrust.config.IdentityTrustModuleEntry;
 import org.jboss.security.mapping.MappingType;
 import org.jboss.security.mapping.config.MappingModuleEntry;
+import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 
 /**
@@ -129,10 +130,12 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
     private SecurityDomainAdd() {
     }
 
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         SecurityDomainResourceDefinition.CACHE_TYPE.validateAndSet(operation, model);
     }
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, final ModelNode model) {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String securityDomain = address.getLastElement().getValue();
@@ -147,6 +150,14 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
+    }
+
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) {
+        String cacheType = getAuthenticationCacheType(resource.getModel());
+        if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {
+            context.registerAdditionalCapabilityRequirement(InfinispanDefaultCacheRequirement.CONFIGURATION.resolve(CACHE_CONTAINER_NAME), SecurityDomainResourceDefinition.INFINISPAN.getDynamicName(context.getCurrentAddressValue()), SecurityDomainResourceDefinition.CACHE_TYPE.getName());
+        }
     }
 
     public void launchServices(OperationContext context, String securityDomain, ModelNode model) throws OperationFailedException {
@@ -164,9 +175,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                 .addDependency(JaasConfigurationService.SERVICE_NAME, Configuration.class,
                         securityDomainService.getConfigurationInjector());
 
-        if ("infinispan".equals(cacheType)) {
+        if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {
             builder.addDependency(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), CACHE_CONTAINER_NAME),
                     Object.class, securityDomainService.getCacheManagerInjector());
+            builder.addDependency(InfinispanDefaultCacheRequirement.CONFIGURATION.getServiceName(context, CACHE_CONTAINER_NAME));
         }
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();

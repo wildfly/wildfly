@@ -43,6 +43,7 @@ import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -63,9 +64,12 @@ import org.jboss.security.SimplePrincipal;
  */
 class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
+    static final String INFINISPAN_CACHE_TYPE = "infinispan";
+    static final RuntimeCapability<Void> INFINISPAN = RuntimeCapability.Builder.of("org.wildfly.security.domain.infinispan", true).build();
+
     public static final SimpleAttributeDefinition CACHE_TYPE = new SimpleAttributeDefinitionBuilder(Constants.CACHE_TYPE, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setAllowedValues("default", "infinispan")
+            .setAllowedValues("default", INFINISPAN_CACHE_TYPE)
             .build();
 
     private final boolean registerRuntimeOnly;
@@ -74,7 +78,7 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
     SecurityDomainResourceDefinition(boolean registerRuntimeOnly) {
         super(SecurityExtension.SECURITY_DOMAIN_PATH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN), SecurityDomainAdd.INSTANCE,
-                new ServiceRemoveStepHandler(SecurityDomainService.SERVICE_NAME, SecurityDomainAdd.INSTANCE));
+                new ServiceRemoveStepHandler(SecurityDomainService.SERVICE_NAME, SecurityDomainAdd.INSTANCE, INFINISPAN));
         this.registerRuntimeOnly = registerRuntimeOnly;
         ApplicationTypeConfig atc = new ApplicationTypeConfig(SecurityExtension.SUBSYSTEM_NAME, Constants.SECURITY_DOMAIN);
         AccessConstraintDefinition acd = new ApplicationTypeAccessConstraintDefinition(atc);
@@ -95,6 +99,11 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
             resourceRegistration.registerOperationHandler(ListCachePrincipals.DEFINITION, ListCachePrincipals.INSTANCE);
             resourceRegistration.registerOperationHandler(FlushOperation.DEFINITION,FlushOperation.INSTANCE);
         }
+    }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration registration) {
+        registration.registerCapability(INFINISPAN);
     }
 
     @Override
