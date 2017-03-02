@@ -68,6 +68,11 @@ public class EjbExceptionTransformingInterceptorFactories {
         return newThrowable;
     }
 
+    private static <T extends Throwable> T copyStackTrace(T newThrowable, Throwable originalThrowable) {
+        newThrowable.setStackTrace(originalThrowable.getStackTrace());
+        return newThrowable;
+    }
+
     public static final InterceptorFactory REMOTE_INSTANCE = new ImmediateInterceptorFactory(new Interceptor() {
         @Override
         public Object processInvocation(final InterceptorContext context) throws Exception {
@@ -75,16 +80,16 @@ public class EjbExceptionTransformingInterceptorFactories {
                 return context.proceed();
             } catch (EJBTransactionRequiredException e) {
                 // this exception explicitly forbids initializing a cause
-                throw new TransactionRequiredException(e.getMessage());
+                throw copyStackTrace(new TransactionRequiredException(e.getMessage()), e);
             } catch (EJBTransactionRolledbackException e) {
                 // this exception explicitly forbids initializing a cause
-                throw new TransactionRolledbackException(e.getMessage());
+                throw copyStackTrace(new TransactionRolledbackException(e.getMessage()), e);
             } catch (NoSuchEJBException e) {
                 // this exception explicitly forbids initializing a cause
-                throw new NoSuchObjectException(e.getMessage());
+                throw copyStackTrace(new NoSuchObjectException(e.getMessage()), e);
             } catch (NoSuchEntityException e) {
                 // this exception explicitly forbids initializing a cause
-                throw new NoSuchObjectException(e.getMessage());
+                throw copyStackTrace(new NoSuchObjectException(e.getMessage()), e);
             } catch (EJBException e) {
                 //as the create exception is not propagated the init method interceptor just stashes it in a ThreadLocal
                 CreateException createException = popCreateException();
@@ -102,13 +107,13 @@ public class EjbExceptionTransformingInterceptorFactories {
             try {
                 return context.proceed();
             } catch (EJBTransactionRequiredException e) {
-                throw copyCause(new TransactionRequiredLocalException(e.getMessage()), e);
+                throw copyStackTrace(copyCause(new TransactionRequiredLocalException(e.getMessage()), e), e);
             } catch (EJBTransactionRolledbackException e) {
-                throw new TransactionRolledbackLocalException(e.getMessage(), e);
+                throw copyStackTrace(new TransactionRolledbackLocalException(e.getMessage(), e), e);
             } catch (NoSuchEJBException e) {
-                throw new NoSuchObjectLocalException(e.getMessage(), e);
+                throw copyStackTrace(new NoSuchObjectLocalException(e.getMessage(), e), e);
             } catch (NoSuchEntityException e) {
-                throw new NoSuchObjectLocalException(e.getMessage(), e);
+                throw copyStackTrace(new NoSuchObjectLocalException(e.getMessage(), e), e);
             } catch (EJBException e) {
                 CreateException createException = popCreateException();
                 if (createException != null) {
