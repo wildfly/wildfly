@@ -31,6 +31,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.codehaus.plexus.util.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -60,7 +61,10 @@ import org.wildfly.test.security.common.elytron.SimpleTrustManagers;
 import org.wildfly.test.security.common.elytron.UndertowSslContext;
 
 /**
- * Smoke test for two way SSL authentication using Elytron server-ssl-context added to default server configuration.
+ * Smoke test for two way SSL connection with Undertow HTTPS listener backed by Elytron server-ssl-context with default
+ * settings (client certificate is not required).
+ *
+ * In case the client certificate is not trusted or present, the request should be successful.
  *
  * @author Ondrej Kotek
  */
@@ -101,6 +105,7 @@ public class UndertowTwoWaySslTestCase {
         HttpClient client = SSLTruststoreUtil
                 .getHttpClientWithSSL(CLIENT_KEYSTORE_FILE, PASSWORD, CLIENT_TRUSTSTORE_FILE, PASSWORD);
         assertConnectionToServer(client, SC_OK);
+        closeClient(client);
     }
 
     @Test
@@ -108,12 +113,14 @@ public class UndertowTwoWaySslTestCase {
         HttpClient client = SSLTruststoreUtil
                 .getHttpClientWithSSL(UNTRUSTED_STORE_FILE, PASSWORD, CLIENT_TRUSTSTORE_FILE, PASSWORD);
         assertConnectionToServer(client, SC_OK);
+        closeClient(client);
     }
 
     @Test
     public void testSendingNoClientCertificate() {
         HttpClient client = SSLTruststoreUtil.getHttpClientWithSSL(CLIENT_TRUSTSTORE_FILE, PASSWORD);
         assertConnectionToServer(client, SC_OK);
+        closeClient(client);
     }
 
     private void assertConnectionToServer(HttpClient client, int expectedStatusCode) {
@@ -121,6 +128,14 @@ public class UndertowTwoWaySslTestCase {
             Utils.makeCallWithHttpClient(securedRootUrl, client, expectedStatusCode);
         } catch (IOException | URISyntaxException ex) {
             throw new IllegalStateException("Unable to request server root over HTTPS", ex);
+        }
+    }
+
+    private void closeClient(HttpClient client) {
+        try {
+            ((CloseableHttpClient) client).close();
+        } catch (IOException ex) {
+            throw new IllegalStateException("Unable to close HTTP client", ex);
         }
     }
 

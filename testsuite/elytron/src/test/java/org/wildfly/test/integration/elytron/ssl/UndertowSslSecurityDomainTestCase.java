@@ -24,7 +24,6 @@ package org.wildfly.test.integration.elytron.ssl;
 
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT;
 
 import java.io.File;
@@ -33,12 +32,14 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.codehaus.plexus.util.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
@@ -49,8 +50,8 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ClientCertUndertowDomainMapper;
@@ -70,13 +71,19 @@ import org.wildfly.test.security.common.elytron.UndertowSslContext;
 import org.wildfly.test.security.common.elytron.UserWithRoles;
 
 /**
- * Smoke test for two way SSL authentication using Elytron server-ssl-context added to default server configuration.
+ * Smoke tests for certificate based authentication using Elytron server-ssl-context, security domain,
+ * and key store realm.
+ *
+ * This test case is preparation and temporary replacement for
+ * testsuite/integration/web/src/test/java/org/jboss/as/test/integration/web/security/cert/WebSecurityCERTTestCase.java
+ * before making it work with Elytron.
  *
  * @author Ondrej Kotek
  */
 @RunWith(Arquillian.class)
 @ServerSetup({ UndertowSslSecurityDomainTestCase.ElytronSslContextInUndertowSetupTask.class })
 @RunAsClient
+@Category(CommonCriteria.class)
 public class UndertowSslSecurityDomainTestCase {
 
     private static final String NAME = UndertowSslSecurityDomainTestCase.class.getSimpleName();
@@ -122,17 +129,18 @@ public class UndertowSslSecurityDomainTestCase {
         HttpClient client = SSLTruststoreUtil
                 .getHttpClientWithSSL(CLIENT_KEYSTORE_FILE, PASSWORD, CLIENT_TRUSTSTORE_FILE, PASSWORD);
         assertUnprotectedAccess(client);
+        closeClient(client);
     }
 
     /**
      * Tests access to resource that requires authentication and authorization.
      */
     @Test
-    @Ignore("ELY-978")
     public void testProtectedAccess() {
         HttpClient client = SSLTruststoreUtil
                 .getHttpClientWithSSL(CLIENT_KEYSTORE_FILE, PASSWORD, CLIENT_TRUSTSTORE_FILE, PASSWORD);
         assertProtectedAccess(client, SC_OK);
+        closeClient(client);
     }
 
     /**
@@ -143,17 +151,18 @@ public class UndertowSslSecurityDomainTestCase {
         HttpClient client = SSLTruststoreUtil
                 .getHttpClientWithSSL(CLIENT_KEYSTORE_FILE, PASSWORD, CLIENT_TRUSTSTORE_FILE, PASSWORD);
         assertAccessForbidden(client);
+        closeClient(client);
     }
 
     /**
      * Tests access to resource that requires authentication and authorization. Client has not trusted certificate.
      */
     @Test
-    @Ignore("ELY-978")
     public void testUntrustedCertificate() {
         HttpClient client = SSLTruststoreUtil
                 .getHttpClientWithSSL(UNTRUSTED_STORE_FILE, PASSWORD, CLIENT_TRUSTSTORE_FILE, PASSWORD);
-        assertProtectedAccess(client, SC_UNAUTHORIZED);
+        assertProtectedAccess(client, SC_FORBIDDEN);
+        closeClient(client);
     }
 
     private void assertUnprotectedAccess(HttpClient client) {
@@ -177,6 +186,14 @@ public class UndertowSslSecurityDomainTestCase {
             Utils.makeCallWithHttpClient(securedUrlRole2, client, SC_FORBIDDEN);
         } catch (IOException | URISyntaxException ex) {
             throw new IllegalStateException("Unable to request " + securedUrlRole2.toExternalForm(), ex);
+        }
+    }
+
+    private void closeClient(HttpClient client) {
+        try {
+            ((CloseableHttpClient) client).close();
+        } catch (IOException ex) {
+            throw new IllegalStateException("Unable to close HTTP client", ex);
         }
     }
 
