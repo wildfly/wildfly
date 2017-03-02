@@ -87,9 +87,9 @@ public class JaxrsExtension implements Extension {
     public void initialize(final ExtensionContext context) {
         JAXRS_LOGGER.debug("Activating JAX-RS Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JaxrsDeploymentDefinition.SUBSYSTEM_INSTANCE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JaxrsSubsystemDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        ManagementResourceRegistration jaxrsResReg = subsystem.registerDeploymentModel(JaxrsDeploymentDefinition.DEPLOYMENT_INSTANCE);
+        ManagementResourceRegistration jaxrsResReg = subsystem.registerDeploymentModel(JaxrsDeploymentDefinition.INSTANCE);
         jaxrsResReg.registerSubModel(DeploymentRestResourcesDefintion.INSTANCE);
         subsystem.registerXMLElementWriter(parser);
     }

@@ -61,6 +61,7 @@ import static org.jboss.as.jaxrs.DeploymentRestResourcesDefintion.REST_RESOURCE_
 import static org.jboss.as.jaxrs.DeploymentRestResourcesDefintion.SUB_RESOURCE_LOCATORS;
 import static org.junit.Assert.assertThat;
 
+import org.hamcrest.CoreMatchers;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.jaxrs.JaxrsDeploymentDefinition;
 import org.jboss.as.jaxrs.JaxrsExtension;
@@ -136,6 +137,8 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
 
     @Test
     public void testReadRestResource() throws Exception {
+        ModelNode removeResource =  Util.createRemoveOperation(PathAddress.pathAddress(DEPLOYMENT, DEPLOYMENT_NAME).append(SUBSYSTEM, JaxrsExtension.SUBSYSTEM_NAME));
+        assertThat(Operations.getFailureDescription(controllerClient.execute(removeResource)).asString(), CoreMatchers.containsString("WFLYCTL0031"));
         ModelNode readResource =  Util.createOperation(READ_RESOURCE_OPERATION, PathAddress.pathAddress(DEPLOYMENT, DEPLOYMENT_NAME)
                 .append(SUBSYSTEM, JaxrsExtension.SUBSYSTEM_NAME)
                 .append(REST_RESOURCE_NAME, HelloResource.class.getCanonicalName()));
