@@ -63,7 +63,6 @@ import javax.ejb.EJBException;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -428,10 +427,7 @@ final class AssociationImpl implements Association {
     }
 
     private static Object invokeWithIdentity(final ComponentView componentView, final InterceptorContext interceptorContext, final SecurityIdentity securityIdentity) throws Exception {
-        return securityIdentity == null ? componentView.invoke(interceptorContext) : securityIdentity.runAs((PrivilegedExceptionAction<Object>) () -> {
-            // TODO: replace this with identity.runAsFunctionEx() once it is available
-            return componentView.invoke(interceptorContext);
-        });
+        return securityIdentity == null ? componentView.invoke(interceptorContext) : securityIdentity.runAsFunctionEx(ComponentView::invoke, componentView, interceptorContext);
     }
 
     private static Method findMethod(final ComponentView componentView, final EJBMethodLocator ejbMethodLocator) {
