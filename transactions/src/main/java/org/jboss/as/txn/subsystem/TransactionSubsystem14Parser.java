@@ -218,7 +218,7 @@ class TransactionSubsystem14Parser implements XMLStreamConstants, XMLElementRead
                     break;
                 case PATH:
                     TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.parseAndSetParameter(value, operation, reader);
-                    if (!value.equals(TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.getDefaultValue())) {
+                    if (!value.equals(TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.getDefaultValue().asString())) {
                         needsDefaultRelativeTo = false;
                     }
                     break;
