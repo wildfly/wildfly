@@ -81,15 +81,15 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
         JCHANNEL_MODULE(JGroupsRequirement.CHANNEL_MODULE),
         JCHANNEL_CLUSTER(JGroupsRequirement.CHANNEL_CLUSTER),
         ;
-        private org.jboss.as.clustering.controller.Capability capablity;
+        private org.jboss.as.clustering.controller.Capability capability;
 
         Capability(UnaryRequirement requirement) {
-            this.capablity = new UnaryRequirementCapability(requirement);
+            this.capability = new UnaryRequirementCapability(requirement);
         }
 
         @Override
         public org.jboss.as.clustering.controller.Capability getCapability() {
-            return this.capablity;
+            return this.capability;
         }
     }
 
