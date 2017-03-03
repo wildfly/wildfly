@@ -37,9 +37,12 @@ public abstract class AbstractUserRolesSecurityDomain extends AbstractConfigurab
 
     private final List<UserWithRoles> usersWithRoles;
 
+    protected final String permissionMapper;
+
     protected AbstractUserRolesSecurityDomain(Builder<?> builder) {
         super(builder);
         this.usersWithRoles = Collections.unmodifiableList(new ArrayList<>(builder.usersWithRoles));
+        this.permissionMapper = builder.permMapper;
     }
 
     @Override
@@ -52,6 +55,7 @@ public abstract class AbstractUserRolesSecurityDomain extends AbstractConfigurab
      */
     public abstract static class Builder<T extends Builder<T>> extends AbstractConfigurableElement.Builder<T> {
         private List<UserWithRoles> usersWithRoles = new ArrayList<>();
+        private String permMapper;
 
         protected Builder() {
         }
@@ -75,6 +79,11 @@ public abstract class AbstractUserRolesSecurityDomain extends AbstractConfigurab
          */
         public final T withUser(String username, String password, String... roles) {
             this.usersWithRoles.add(UserWithRoles.builder().withName(username).withPassword(password).withRoles(roles).build());
+            return self();
+        }
+
+        public final T permissionMapper(String name) {
+            permMapper = name;
             return self();
         }
 

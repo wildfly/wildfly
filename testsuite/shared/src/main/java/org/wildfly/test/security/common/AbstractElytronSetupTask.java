@@ -38,7 +38,7 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
  * @author Josef Cacek
  */
 public abstract class AbstractElytronSetupTask
-        implements org.wildfly.core.testrunner.ServerSetupTask, org.jboss.as.arquillian.api.ServerSetupTask {
+        implements org.jboss.as.arquillian.api.ServerSetupTask {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractElytronSetupTask.class);
 
@@ -53,16 +53,6 @@ public abstract class AbstractElytronSetupTask
     @Override
     public void tearDown(final org.jboss.as.arquillian.container.ManagementClient managementClient, final String containerId)
             throws Exception {
-        tearDown(managementClient.getControllerClient());
-    }
-
-    @Override
-    public void setup(org.wildfly.core.testrunner.ManagementClient managementClient) throws Exception {
-        setup(managementClient.getControllerClient());
-    }
-
-    @Override
-    public void tearDown(org.wildfly.core.testrunner.ManagementClient managementClient) throws Exception {
         tearDown(managementClient.getControllerClient());
     }
 
