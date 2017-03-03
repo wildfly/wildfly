@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="failing-batchlet" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+
+    <step id="perform">
+        <batchlet ref="failingBatchlet">
+            <properties>
+                <property name="should.fail" value="#{jobParameters['should.fail']}"/>
+            </properties>
+        </batchlet>
+    </step>
+
+</job>
