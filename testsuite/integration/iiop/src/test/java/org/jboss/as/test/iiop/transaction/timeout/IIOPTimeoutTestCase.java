@@ -41,12 +41,14 @@ import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingletonRemote;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -59,6 +61,11 @@ import org.junit.runner.RunWith;
 public class IIOPTimeoutTestCase {
     private static final int DEFAULT_IIOP_PORT = 3528;
     private static final String DEPLOYMENT_NAME = "stateless-iiop-txn-timeout";
+
+    @BeforeClass
+    public static void beforeClass() {
+        DisableInvocationTestUtil.disable();
+    }
 
     @ContainerResource("iiop-client")
     private ManagementClient mgmtClient;
