@@ -29,6 +29,7 @@ import java.util.concurrent.Executor;
 import org.jboss.as.connector.security.ElytronSecurityIntegration;
 import org.jboss.as.connector.services.workmanager.transport.ForkChannelTransport;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.txn.integration.JBossContextXATerminator;
 import org.jboss.jca.core.security.picketbox.PicketBoxSecurityIntegration;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
 import org.jboss.jca.core.workmanager.WorkManagerCoordinator;
@@ -40,7 +41,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.BlockingExecutor;
-import org.jboss.tm.JBossXATerminator;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
@@ -57,7 +57,7 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
 
     private final InjectedValue<Executor> executorLong = new InjectedValue<Executor>();
 
-    private final InjectedValue<JBossXATerminator> xaTerminator = new InjectedValue<JBossXATerminator>();
+    private final InjectedValue<JBossContextXATerminator> xaTerminator = new InjectedValue<JBossContextXATerminator>();
 
     private final InjectedValue<ChannelFactory> jGroupsChannelFactory = new InjectedValue<ChannelFactory>();
 
@@ -150,7 +150,7 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
         return executorLong;
     }
 
-    public Injector<JBossXATerminator> getXaTerminatorInjector() {
+    public Injector<JBossContextXATerminator> getXaTerminatorInjector() {
         return xaTerminator;
     }
 
