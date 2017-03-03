@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.jca.flushing;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ReflectPermission;
-import java.net.SocketPermission;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -41,7 +40,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.adapters.jdbc.WrappedConnection;
 import org.jboss.remoting3.security.RemotingPermission;
@@ -92,11 +90,10 @@ public class FlushOperationsTestCase {
                                 + "org.jboss.remoting\n"),
                 "MANIFEST.MF");
         archive.addAsManifestResource(createPermissionsXmlAsset(
+                // ModelControllerClient needs the following
                 new RemotingPermission("createEndpoint"),
-                new RemotingPermission("addConnectionProvider"),
                 new RemotingPermission("connect"),
-                new RuntimePermission("createXnioWorker"),
-                new SocketPermission(TestSuiteEnvironment.getServerAddress(), "connect,resolve"),
+                // flushInvalidConnectionsInPool needs the following
                 new RuntimePermission("accessDeclaredMembers"),
                 new ReflectPermission("suppressAccessChecks")
         ), "permissions.xml");
