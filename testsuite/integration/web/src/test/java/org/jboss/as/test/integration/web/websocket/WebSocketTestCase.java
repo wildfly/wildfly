@@ -18,6 +18,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,6 +49,9 @@ public class WebSocketTestCase {
 
     @Test
     public void testWebSocket() throws Exception {
+        // See WFLY-7538 - disable in 10.x, is fixed in master
+        Assume.assumeTrue(System.getSecurityManager() == null);
+
         AnnotatedClient endpoint = new AnnotatedClient();
         WebSocketContainer serverContainer = ContainerProvider.getWebSocketContainer();
         Session session = serverContainer.connectToServer(endpoint, new URI("ws", "", TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getHttpPort(), "/websocket/websocket/Stuart", "", ""));
