@@ -219,7 +219,7 @@
         <version.org.wildfly.core>3.0.0.Beta6</version.org.wildfly.core>
         <version.org.wildfly.plugin>1.2.0.Alpha2</version.org.wildfly.plugin>
         <version.org.wildfly.arquillian>2.1.0.Alpha1</version.org.wildfly.arquillian>
-        <version.org.wildfly.http-client>1.0.0.Alpha2</version.org.wildfly.http-client>
+        <version.org.wildfly.http-client>1.0.0.Alpha3</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.0.Beta11</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-subsystem>1.0.0.Beta10</version.org.wildfly.security.elytron-subsystem>
         <version.org.wildfly.transaction.client>1.0.0.Beta17</version.org.wildfly.transaction.client>
