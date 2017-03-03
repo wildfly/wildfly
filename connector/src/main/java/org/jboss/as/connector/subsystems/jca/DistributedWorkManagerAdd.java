@@ -42,6 +42,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.threads.ThreadsServices;
+import org.jboss.as.txn.integration.JBossContextXATerminator;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.api.workmanager.DistributedWorkManager;
@@ -55,7 +56,6 @@ import org.jboss.jca.core.workmanager.selector.PingTime;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.tm.JBossXATerminator;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
 
@@ -153,7 +153,7 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
         builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING).append(name), Executor.class, wmService.getExecutorLongInjector());
         builder.addDependency(ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING).append(name), Executor.class, wmService.getExecutorShortInjector());
 
-        builder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, wmService.getXaTerminatorInjector())
+        builder.addDependency(TxnServices.JBOSS_TXN_CONTEXT_XA_TERMINATOR, JBossContextXATerminator.class, wmService.getXaTerminatorInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
         WorkManagerStatisticsService wmStatsService = new WorkManagerStatisticsService(context.getResourceRegistrationForUpdate(), name, true);
