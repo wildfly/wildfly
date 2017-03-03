@@ -248,8 +248,9 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
+        ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
-            registry.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(ATTRIBUTES));
+            registry.registerReadWriteAttribute(attr, null, reloadRequiredWriteAttributeHandler);
         }
         for (AttributeDefinition attr : READONLY_ATTRIBUTES) {
             registry.registerReadOnlyAttribute(attr, JMSBridgeHandler.INSTANCE);

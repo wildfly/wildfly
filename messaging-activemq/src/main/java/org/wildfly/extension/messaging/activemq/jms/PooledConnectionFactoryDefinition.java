@@ -128,13 +128,14 @@ public class PooledConnectionFactoryDefinition extends PersistentResourceDefinit
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
-        for (AttributeDefinition attr : getDefinitions(ATTRIBUTES)) {
+        AttributeDefinition[] definitions = getDefinitions(ATTRIBUTES);
+        ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler(definitions);
+        for (AttributeDefinition attr : definitions) {
             if (!attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
                 if (deployed) {
                     registry.registerReadOnlyAttribute(attr, PooledConnectionFactoryConfigurationRuntimeHandler.INSTANCE);
                 } else {
-                    registry.registerReadWriteAttribute(attr, null,
-                            new ReloadRequiredWriteAttributeHandler(getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES)));
+                    registry.registerReadWriteAttribute(attr, null, reloadRequiredWriteAttributeHandler);
                 }
             }
         }
