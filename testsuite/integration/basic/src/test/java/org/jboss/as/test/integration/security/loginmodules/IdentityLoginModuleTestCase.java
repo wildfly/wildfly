@@ -181,7 +181,7 @@ public class IdentityLoginModuleTestCase {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         Credentials creds = new UsernamePasswordCredentials("anyUsername");
         httpclient.getCredentialsProvider().setCredentials(new AuthScope(url.getHost(), url.getPort()), creds);
-        HttpGet httpget = new HttpGet(url.toExternalForm() + PrincipalPrintingServlet.SERVLET_PATH);
+        HttpGet httpget = new HttpGet(url.toExternalForm());
         String text;
 
         try {
