@@ -35,6 +35,7 @@ import javax.naming.Name;
 import javax.naming.NameClassPair;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -56,6 +57,15 @@ import org.jboss.security.SecurityConstants;
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
 public class SecurityDomainJndiInjectable implements InvocationHandler, ContextListAndJndiViewManagedReferenceFactory {
+
+    private static final String ACTIVE_SUBJECT = "subject";
+    private static final String AUTHENTICATION_MGR = "authenticationMgr";
+    private static final String AUTHORIZATION_MGR = "authorizationMgr";
+    private static final String AUDIT_MGR = "auditMgr";
+    private static final String MAPPING_MGR = "mappingMgr";
+    private static final String IDENTITY_TRUST_MGR = "identityTrustMgr";
+    private static final String DOMAIN_CONTEXT = "domainContext";
+    private static final String JSSE = "jsse";
 
     private final InjectedValue<ISecurityManagement> securityManagementValue = new InjectedValue<ISecurityManagement>();
 
@@ -129,7 +139,7 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, ContextL
         // Look for requests against the security domain context
         if (name.size() == 2) {
             String request = name.get(1);
-            binding = securityDomainCtx.lookup(request);
+            binding = lookup(securityDomainCtx, request);
         }
         return binding;
     }
@@ -152,6 +162,32 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, ContextL
             securityManagerMap.put(securityDomain, sdc);
         }
         return sdc;
+    }
+
+    private static Object lookup(SecurityDomainContext securityDomainContext, String name) throws NamingException {
+        Object binding = null;
+        if (name == null || name.length() == 0)
+            throw SecurityLogger.ROOT_LOGGER.nullName();
+
+        if (name.equals(ACTIVE_SUBJECT))
+            binding = securityDomainContext.getSubject();
+        else if (name.equals(AUTHENTICATION_MGR))
+            binding = securityDomainContext.getAuthenticationManager();
+        else if (name.equals(AUTHORIZATION_MGR))
+            binding = securityDomainContext.getAuthorizationManager();
+        else if (name.equals(AUDIT_MGR))
+            binding = securityDomainContext.getAuditManager();
+        else if (name.equals(MAPPING_MGR))
+            binding = securityDomainContext.getMappingManager();
+        else if (name.equals(IDENTITY_TRUST_MGR))
+            binding = securityDomainContext.getIdentityTrustManager();
+        else if (name.equals(DOMAIN_CONTEXT))
+            binding = securityDomainContext;
+        else if (name.equals(JSSE))
+            binding = securityDomainContext.getJSSE();
+
+        return binding;
+
     }
 
     public Injector<ISecurityManagement> getSecurityManagementInjector() {

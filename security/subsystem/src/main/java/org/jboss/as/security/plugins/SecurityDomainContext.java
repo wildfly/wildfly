@@ -22,12 +22,10 @@
 
 package org.jboss.as.security.plugins;
 
-import javax.naming.NamingException;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
 
-import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.JSSESecurityDomain;
@@ -42,53 +40,28 @@ import org.jboss.security.mapping.MappingManager;
  * @author Anil.Saldhana@jboss.org
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
-public class SecurityDomainContext {
+public final class SecurityDomainContext {
 
-    static final String ACTIVE_SUBJECT = "subject";
-    static final String AUTHENTICATION_MGR = "authenticationMgr";
-    static final String AUTHORIZATION_MGR = "authorizationMgr";
-    static final String AUDIT_MGR = "auditMgr";
-    static final String MAPPING_MGR = "mappingMgr";
-    static final String IDENTITY_TRUST_MGR = "identityTrustMgr";
-    static final String DOMAIN_CONTEXT = "domainContext";
-    static final String JSSE = "jsse";
-
-    AuthenticationManager authenticationMgr;
-    AuthorizationManager authorizationMgr;
-    AuditManager auditMgr;
-    MappingManager mappingMgr;
-    IdentityTrustManager identityTrustMgr;
-    JSSESecurityDomain jsseSecurityDomain;
+    private final AuthenticationManager authenticationMgr;
+    private final AuthorizationManager authorizationMgr;
+    private final AuditManager auditMgr;
+    private final MappingManager mappingMgr;
+    private final IdentityTrustManager identityTrustMgr;
+    private final JSSESecurityDomain jsseSecurityDomain;
 
     private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
 
-    public SecurityDomainContext(AuthenticationManager authenticationMgr) {
+    public SecurityDomainContext(AuthenticationManager authenticationMgr,
+                                 AuthorizationManager authorizationMgr,
+                                 AuditManager auditMgr,
+                                 IdentityTrustManager identityTrustMgr, MappingManager mappingMgr,
+                                 JSSESecurityDomain jsseSecurityDomain) {
         this.authenticationMgr = authenticationMgr;
-    }
-
-    public Object lookup(String name) throws NamingException {
-        Object binding = null;
-        if (name == null || name.length() == 0)
-            throw SecurityLogger.ROOT_LOGGER.nullName();
-
-        if (name.equals(ACTIVE_SUBJECT))
-            binding = getSubject();
-        else if (name.equals(AUTHENTICATION_MGR))
-            binding = getAuthenticationManager();
-        else if (name.equals(AUTHORIZATION_MGR))
-            binding = getAuthorizationManager();
-        else if (name.equals(AUDIT_MGR))
-            binding = getAuditManager();
-        else if (name.equals(MAPPING_MGR))
-            binding = getMappingManager();
-        else if (name.equals(IDENTITY_TRUST_MGR))
-            binding = getIdentityTrustManager();
-        else if (name.equals(DOMAIN_CONTEXT))
-            binding = this;
-        else if (name.equals(JSSE))
-            binding = getJSSE();
-
-        return binding;
+        this.authorizationMgr = authorizationMgr;
+        this.auditMgr = auditMgr;
+        this.mappingMgr = mappingMgr;
+        this.identityTrustMgr = identityTrustMgr;
+        this.jsseSecurityDomain = jsseSecurityDomain;
     }
 
     public Subject getSubject() {
@@ -104,14 +77,6 @@ public class SecurityDomainContext {
         return authenticationMgr;
     }
 
-    public void setAuthenticationManager(AuthenticationManager am) {
-        this.authenticationMgr = am;
-    }
-
-    public void setAuthorizationManager(AuthorizationManager am) {
-        this.authorizationMgr = am;
-    }
-
     public AuthorizationManager getAuthorizationManager() {
         return authorizationMgr;
     }
@@ -120,31 +85,15 @@ public class SecurityDomainContext {
         return auditMgr;
     }
 
-    public void setAuditManager(AuditManager auditMgr) {
-        this.auditMgr = auditMgr;
-    }
-
     public MappingManager getMappingManager() {
         return mappingMgr;
-    }
-
-    public void setMappingManager(MappingManager mappingMgr) {
-        this.mappingMgr = mappingMgr;
     }
 
     public IdentityTrustManager getIdentityTrustManager() {
         return identityTrustMgr;
     }
 
-    public void setIdentityTrustManager(IdentityTrustManager identityTrustMgr) {
-        this.identityTrustMgr = identityTrustMgr;
-    }
-
     public JSSESecurityDomain getJSSE() {
         return jsseSecurityDomain;
-    }
-
-    public void setJSSE(JSSESecurityDomain jsseSecurityDomain) {
-        this.jsseSecurityDomain = jsseSecurityDomain;
     }
 }
