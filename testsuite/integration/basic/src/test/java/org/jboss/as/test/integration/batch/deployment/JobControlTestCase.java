@@ -173,7 +173,7 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         ModelNode properties = op.get("properties");
         properties.get("reader.end").set("20");
         // We're adding a long wait time to ensure we can stop, 1 seconds should be okay
-        properties.get("writer.sleep.time").set(Integer.toString(TimeoutUtil.adjust(1000)));
+        properties.get("writer.sleep.time").set(Integer.toString(TimeoutUtil.adjust(2000)));
         ModelNode result = executeOperation(op);
         long executionId = result.asLong();
         Assert.assertTrue("Execution id should be greater than 0", executionId > 0L);
@@ -188,8 +188,8 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         JobExecution execution = jobOperator.getJobExecution(executionId);
         Assert.assertNotNull(execution);
 
-        // Wait for 3 seconds max for the execution to finish.
-        waitForTermination(execution, 3);
+        // Wait for 5 seconds max for the execution to finish.
+        waitForTermination(execution, 5);
 
         // Reset the counter as we're not sure how many were actually written
         currentCount = countingItemWriter.getWrittenItemSize();
@@ -209,8 +209,8 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         execution = jobOperator.getJobExecution(executionId);
         Assert.assertNotNull(execution);
 
-        // Wait for 3 seconds max for the execution to finish.
-        waitForTermination(execution, 3);
+        // Wait for 5 seconds max for the execution to finish.
+        waitForTermination(execution, 5);
 
         // Check that the status is stopped
         Assert.assertEquals(BatchStatus.COMPLETED, execution.getBatchStatus());
