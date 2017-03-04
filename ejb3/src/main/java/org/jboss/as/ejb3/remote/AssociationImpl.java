@@ -57,6 +57,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.remoting3.Connection;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.common.annotation.NotNull;
+import org.wildfly.security.auth.server.SecurityIdentity;
 
 import javax.ejb.EJBException;
 
@@ -166,6 +167,7 @@ final class AssociationImpl implements Association {
                 EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Cannot handle method invocation: %s on bean: %s due to EJB component stopped exception. Returning a no such EJB available message back to client", invokedMethod, beanName);
                 if (! oneWay) invocationRequest.writeNoSuchEJB();
                 return;
+                // TODO should we write a specifc response with a specific protocol letting client know that server is suspending?
             } catch (CancellationException ex) {
                 if (! oneWay) invocationRequest.writeCancelResponse();
                 return;
@@ -340,12 +342,20 @@ final class AssociationImpl implements Association {
             public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
                 moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
+
+            @Override public void deploymentSuspended(DeploymentModuleIdentifier deployment) {
+                moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
+            }
+
+            @Override public void deploymentResumed(DeploymentModuleIdentifier deployment) {
+                moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
+            }
         };
         deploymentRepository.addListener(listener);
         return () -> deploymentRepository.removeListener(listener);
     }
 
-    protected EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {
+    private EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {
         final DeploymentModuleIdentifier ejbModule = new DeploymentModuleIdentifier(appName, moduleName, distinctName);
         final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = this.deploymentRepository.getStartedModules();
         if (modules == null || modules.isEmpty()) {
@@ -358,7 +368,7 @@ final class AssociationImpl implements Association {
         return moduleDeployment.getEjbs().get(beanName);
     }
 
-    private Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag) throws Exception {
+    static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag) throws Exception {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(content.getParameters());
         interceptorContext.setMethod(method);
@@ -400,6 +410,8 @@ final class AssociationImpl implements Association {
         if (content.hasTransaction()) {
             interceptorContext.setTransactionSupplier(content::getTransaction);
         }
+        // add security identity
+        final SecurityIdentity securityIdentity = incomingInvocation.getSecurityIdentity();
         final boolean isAsync = componentView.isAsynchronous(method);
         final boolean oneWay = isAsync && method.getReturnType() == void.class;
         final boolean isSessionBean = componentView.getComponent() instanceof SessionBeanComponent;
@@ -407,14 +419,18 @@ final class AssociationImpl implements Association {
             if (! oneWay) {
                 interceptorContext.putPrivateData(CancellationFlag.class, cancellationFlag);
             }
-            final Object result = componentView.invoke(interceptorContext);
+            final Object result = invokeWithIdentity(componentView, interceptorContext, securityIdentity);
             return result == null ? null : ((Future<?>) result).get();
         } else {
-            return componentView.invoke(interceptorContext);
+            return invokeWithIdentity(componentView, interceptorContext, securityIdentity);
         }
     }
 
-    private Method findMethod(final ComponentView componentView, final EJBMethodLocator ejbMethodLocator) {
+    private static Object invokeWithIdentity(final ComponentView componentView, final InterceptorContext interceptorContext, final SecurityIdentity securityIdentity) throws Exception {
+        return securityIdentity == null ? componentView.invoke(interceptorContext) : securityIdentity.runAsFunctionEx(ComponentView::invoke, componentView, interceptorContext);
+    }
+
+    private static Method findMethod(final ComponentView componentView, final EJBMethodLocator ejbMethodLocator) {
         final Set<Method> viewMethods = componentView.getViewMethods();
         for (final Method method : viewMethods) {
             if (method.getName().equals(ejbMethodLocator.getMethodName())) {
@@ -437,7 +453,7 @@ final class AssociationImpl implements Association {
         return null;
     }
 
-    private Affinity getWeakAffinity(final StatefulSessionComponent statefulSessionComponent, final StatefulEJBLocator<?> statefulEJBLocator) {
+    private static Affinity getWeakAffinity(final StatefulSessionComponent statefulSessionComponent, final StatefulEJBLocator<?> statefulEJBLocator) {
         final SessionID sessionID = statefulEJBLocator.getSessionId();
         return statefulSessionComponent.getCache().getWeakAffinity(sessionID);
     }

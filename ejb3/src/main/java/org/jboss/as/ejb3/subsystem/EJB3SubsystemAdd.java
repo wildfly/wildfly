@@ -409,6 +409,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.getServiceTarget().addService(EJBSuspendHandlerService.SERVICE_NAME, ejbSuspendHandlerService)
                 .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, ejbSuspendHandlerService.getSuspendControllerInjectedValue())
                 .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, ejbSuspendHandlerService.getLocalTransactionContextInjectedValue())
+                .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, ejbSuspendHandlerService.getDeploymentRepositoryInjectedValue())
                 .install();
 
         if (!appclient) {

@@ -94,9 +94,9 @@ public class SecurityDomainMergingProcessor extends AbstractMergingProcessor<EJB
                 }
             }
         }
-        if (securityDomain != null && ! securityDomain.isEmpty())
+        if (securityDomain != null)
             description.setSecurityDomain(securityDomain);
-        else if (globalSecurityDomain != null && !globalSecurityDomain.isEmpty())
+        else if (globalSecurityDomain != null)
             description.setSecurityDomain(globalSecurityDomain);
     }
 
