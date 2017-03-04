@@ -143,4 +143,7 @@ public interface JGroupsLogger extends BasicLogger {
 
     @Message(id = 25, value = "Configured credential source does not reference a clear-text password credential")
     IllegalArgumentException unexpectedCredentialSource();
+
+    @Message(id = 26, value = "No %s operation registered at %s")
+    OperationFailedException operationNotDefined(String operation, String address);
 }
