@@ -1,8 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!--
+<%--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ Copyright 2017, Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -20,21 +18,15 @@
   ~ License along with this software; if not, write to the Free
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-  -->
+  --%>
 
-<project>
+<html> <head> <title>Error!</title></head>
+<body>
+<p style="font-size:x-large; color: red">
+  The username and password you supplied are not valid.
+</p>
+Click <a href='<%= response.encodeURL("login.jsp") %>'>here</a>
+to retry login
 
-    <!-- import shared ant targets -->
-    <import file="common-targets.xml" as="common"/>
-
-    <target name="build-basic-integration" description="Builds server configuration for basic-integration tests">
-        <condition property="basic-jts-tests">
-            <equals arg1="${jboss.test.jts}" arg2="true"/>
-        </condition>
-    </target>
-
-    <target name="build-basic-integration-jts" depends="build-basic-integration" if="basic-jts-tests">
-        <add-jts name="jbossas"/>
-    </target>
-
-</project>
+</body>
+</html>

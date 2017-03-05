@@ -85,12 +85,14 @@
                             </includes>
                             <runOrder>alphabetical</runOrder>
 
-							<environmentVariables>
-                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
+                            <environmentVariables>
+                                <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
                             </environmentVariables>
 
                             <!-- Parameters to test cases. -->
                             <systemPropertyVariables combine.children="append">
+                                <!--<management.address>${node0}</management.address>-->
+                                <jvm.args>${jvm.args.ip.server} ${modular.jdk.args}</jvm.args>
                                 <arquillian.launch>manual-mode</arquillian.launch>
                                 <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                 <!-- needed for SSLEJBRemoteClientTestCase only, however setting them from within the test itself isn't possible -->
@@ -100,7 +102,6 @@
                                 <javax.net.ssl.keyStorePassword>clientPassword</javax.net.ssl.keyStorePassword>
                                 <!-- EJB client library hack, see WFLY-4973-->
                                 <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
-                                <jvm.args>${modular.jdk.args}</jvm.args>
                             </systemPropertyVariables>
                         </configuration>
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -74,14 +74,14 @@
                                     <target>
                                         <!-- Configure IIOP server and client. -->
                                         <ant
-                                            antfile="${jbossas.ts.integ.dir}/src/test/scripts/iiop-build.xml">
+                                                antfile="${jbossas.ts.integ.dir}/src/test/scripts/iiop-build.xml">
                                             <property name="node0"
-                                                value="${node0}" /> <!-- inheritAll="true" doesn't work. -->
+                                                      value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
                                             <property name="node1"
-                                                value="${node1}" />
+                                                      value="${node1}"/>
                                             <property name="keystore.file" value="${basedir}/target/iiop-test.keystore"/>
                                             <property name="keystore.password" value="password"/>
-                                            <target name="build-iiop" />
+                                            <target name="build-iiop"/>
                                         </ant>
                                     </target>
                                 </configuration>
@@ -90,9 +90,28 @@
                     </plugin>
 
                     <!-- Surefire test executions -->
+                    <!--
+                    -Djboss.socket.binding.port-offset=100
+                    -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- Parameters to test cases. -->
+                            <systemPropertyVariables combine.children="append">
+                                <arquillian.launch>iiop</arquillian.launch>
+                                <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                <!-- EJB client library hack, see WFLY-4973-->
+                                <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} -Dnode1=${node1}</server.jvm.args>
+                                <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1}</server.jvm2.args>
+                            </systemPropertyVariables>
+                            <argLine>
+                                ${modular.jdk.args} ${iiop.endorsed.argline}
+                                -Dcom.sun.CORBA.ORBUseDynamicStub=true
+                                -Dcom.arjuna.ats.arjuna.common.propertiesFile=jbossts-properties.xml
+                            </argLine>
+                        </configuration>
                         <executions combine.children="append">
 
                             <!-- Disable default-test execution. -->
@@ -115,19 +134,6 @@
                                     <includes>
                                         <include>org/jboss/as/test/iiop/**/*TestCase.java</include>
                                     </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables
-                                        combine.children="append">
-                                        <arquillian.launch>iiop</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
-                                        <!-- EJB client library hack, see WFLY-4973-->
-                                        <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
-                                    </systemPropertyVariables>
-                                    <argLine>
-                                        ${modular.jdk.args} ${iiop.endorsed.argline}
-                                        -Dcom.sun.CORBA.ORBUseDynamicStub=true
-                                        -Dcom.arjuna.ats.arjuna.common.propertiesFile=jbossts-properties.xml</argLine>
                                 </configuration>
                             </execution>
 
@@ -135,23 +141,18 @@
                             <execution>
                                 <id>tests-iiop-ssl.surefire</id>
                                 <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>-->
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
                                         <include>org/jboss/as/test/iiopssl/**/*TestCase.java</include>
                                     </includes>
-
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>iiop-ssl</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
-                                        <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
                                     </systemPropertyVariables>
-                                    <argLine>
-                                        ${modular.jdk.args} ${iiop.endorsed.argline}
-                                        -Dcom.sun.CORBA.ORBUseDynamicStub=true
-                                        -Dcom.arjuna.ats.arjuna.common.propertiesFile=jbossts-properties.xml</argLine>
                                 </configuration>
                             </execution>
 
@@ -162,12 +163,12 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>keytool-maven-plugin</artifactId>
-                        <version>1.4</version>
+                        <version>1.5</version>
                         <dependencies>
                             <dependency>
                                 <groupId>org.codehaus.mojo</groupId>
                                 <artifactId>keytool-api-1.7</artifactId>
-                                <version>1.4</version>
+                                <version>1.5</version>
                             </dependency>
                         </dependencies>
                         <executions>
