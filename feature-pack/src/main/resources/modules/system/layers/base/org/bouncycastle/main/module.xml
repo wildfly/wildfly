@@ -31,6 +31,7 @@
     <resources>
         <artifact name="${org.bouncycastle:bcprov-jdk15on}"/>
         <artifact name="${org.bouncycastle:bcmail-jdk15on}"/>
+        <artifact name="${org.bouncycastle:bcpg-jdk15on}"/>
         <artifact name="${org.bouncycastle:bcpkix-jdk15on}"/>
     </resources>
     <dependencies>
