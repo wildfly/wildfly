@@ -64,7 +64,10 @@ import org.wildfly.iiop.openjdk.logging.IIOPLogger;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.AuthenticationContextConfigurationClient;
+import org.wildfly.security.auth.client.MatchRule;
 import org.wildfly.security.auth.principal.AnonymousPrincipal;
+import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -165,8 +168,19 @@ public class ElytronSASClientInterceptor extends LocalObject implements ClientRe
             if(uri == null) {
                 return;
             }
-
-            AuthenticationContext authContext = this.authContext == null ? AuthenticationContext.captureCurrent() : this.authContext;
+            SecurityDomain domain = SecurityDomain.getCurrent();
+            SecurityIdentity currentIdentity = null;
+            if(domain != null) {
+                currentIdentity = domain.getCurrentSecurityIdentity();
+            }
+            final AuthenticationContext authContext;
+            if(this.authContext != null) {
+                authContext = this.authContext;
+            } else if(currentIdentity == null || currentIdentity.isAnonymous()) {
+                authContext = AuthenticationContext.captureCurrent();
+            } else {
+                authContext = AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.EMPTY.useForwardedIdentity(domain));
+            }
 
             if ((secMech.sas_context_mech.target_supports & IdentityAssertion.value) != 0) {
                 final AuthenticationConfiguration configuration = AUTH_CONFIG_CLIENT.
