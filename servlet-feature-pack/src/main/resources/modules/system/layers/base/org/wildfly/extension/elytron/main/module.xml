@@ -31,7 +31,7 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly.security:elytron-subsystem}"/>
+        <artifact name="${org.wildfly.core:wildfly-elytron}"/>
     </resources>
 
     <dependencies>
