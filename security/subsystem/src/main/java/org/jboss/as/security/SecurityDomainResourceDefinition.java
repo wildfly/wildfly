@@ -47,7 +47,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -59,7 +58,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.security.CacheableManager;
 import org.jboss.security.SimplePrincipal;
-import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
 
 /**
  * @author Jason T. Greene
@@ -68,8 +66,9 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
     static final String CACHE_CONTAINER_NAME = "security";
     static final String INFINISPAN_CACHE_TYPE = "infinispan";
-    // Private capability used for Infinispan cache-container capability reference
-    static final RuntimeCapability<Void> CACHE_CONTAINER = RuntimeCapability.Builder.of("org.wildfly.security.legacy-domain.cache-container", true).build();
+    static final RuntimeCapability<Void> LEGACY_SECURITY_DOMAIN = RuntimeCapability.Builder.of("org.wildfly.security.legacy-security-domain", true)
+            .setServiceType(SecurityDomainContext.class)
+            .build();
 
     public static final SimpleAttributeDefinition CACHE_TYPE = new SimpleAttributeDefinitionBuilder(Constants.CACHE_TYPE, ModelType.STRING, true)
             .setAllowExpression(true)
@@ -80,17 +79,11 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
     private final List<AccessConstraintDefinition> accessConstraints;
 
     SecurityDomainResourceDefinition(boolean registerRuntimeOnly) {
-        super(SecurityExtension.SECURITY_DOMAIN_PATH, SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN),
-                SecurityDomainAdd.INSTANCE, new ServiceRemoveStepHandler(SecurityDomainService.SERVICE_NAME, SecurityDomainAdd.INSTANCE, CACHE_CONTAINER) {
-                    @Override
-                    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-                        String cacheType = SecurityDomainAdd.getAuthenticationCacheType(resource.getModel());
-                        if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {
-                            context.deregisterCapabilityRequirement(InfinispanDefaultCacheRequirement.CONFIGURATION.resolve(CACHE_CONTAINER_NAME), SecurityDomainResourceDefinition.CACHE_CONTAINER.getDynamicName(context.getCurrentAddressValue()));
-                        }
-                        super.recordCapabilitiesAndRequirements(context, operation, resource);
-                    }
-                });
+        super(new Parameters(SecurityExtension.SECURITY_DOMAIN_PATH,
+                SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN))
+                .setAddHandler(SecurityDomainAdd.INSTANCE)
+                .setRemoveHandler(new ServiceRemoveStepHandler(SecurityDomainService.SERVICE_NAME, SecurityDomainAdd.INSTANCE))
+                .setCapabilities(LEGACY_SECURITY_DOMAIN));
         this.registerRuntimeOnly = registerRuntimeOnly;
         ApplicationTypeConfig atc = new ApplicationTypeConfig(SecurityExtension.SUBSYSTEM_NAME, Constants.SECURITY_DOMAIN);
         AccessConstraintDefinition acd = new ApplicationTypeAccessConstraintDefinition(atc);
@@ -111,11 +104,6 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
             resourceRegistration.registerOperationHandler(ListCachePrincipals.DEFINITION, ListCachePrincipals.INSTANCE);
             resourceRegistration.registerOperationHandler(FlushOperation.DEFINITION,FlushOperation.INSTANCE);
         }
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration registration) {
-        registration.registerCapability(CACHE_CONTAINER);
     }
 
     @Override
