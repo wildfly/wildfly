@@ -22,9 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.wildfly.extension.messaging.activemq.ClusterConnectionDefinition.CONNECTOR_REFS;
-import static org.wildfly.extension.messaging.activemq.ClusterConnectionDefinition.DISCOVERY_GROUP_NAME;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,8 +56,6 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
         model.setEmptyObject();
-
-        AlternativeAttributeCheckHandler.checkAlternatives(operation, CONNECTOR_REFS.getName(), (DISCOVERY_GROUP_NAME.getName()), true);
 
         for (final AttributeDefinition attributeDefinition : ClusterConnectionDefinition.ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);

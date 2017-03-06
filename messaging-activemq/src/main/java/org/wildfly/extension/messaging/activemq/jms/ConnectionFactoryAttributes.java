@@ -115,7 +115,7 @@ public interface ConnectionFactoryAttributes {
 
         StringListAttributeDefinition CONNECTORS = new StringListAttributeDefinition.Builder(CommonAttributes.CONNECTORS)
                 .setAlternatives(CommonAttributes.DISCOVERY_GROUP)
-                .setAllowNull(true)
+                .setRequired(true)
                 .setAttributeParser(AttributeParser.STRING_LIST)
                 .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
                 .setRestartAllServices()
@@ -136,7 +136,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         SimpleAttributeDefinition DISCOVERY_GROUP =  SimpleAttributeDefinitionBuilder.create(CommonAttributes.DISCOVERY_GROUP, STRING)
-                .setAllowNull(true)
+                .setRequired(true)
                 .setAlternatives(CommonAttributes.CONNECTORS)
                 .setRestartAllServices()
                 .build();

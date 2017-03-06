@@ -23,7 +23,6 @@
 package org.wildfly.extension.messaging.activemq;
 
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.ATTRIBUTES;
-import static org.wildfly.extension.messaging.activemq.BridgeDefinition.CONNECTOR_REFS;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.DISCOVERY_GROUP_NAME;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.FORWARDING_ADDRESS;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.INITIAL_CONNECT_ATTEMPTS;
@@ -70,8 +69,6 @@ public class BridgeAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
         model.setEmptyObject();
-
-        AlternativeAttributeCheckHandler.checkAlternatives(operation, CONNECTOR_REFS.getName(), DISCOVERY_GROUP_NAME.getName(), false);
 
         for (final AttributeDefinition attributeDefinition : ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);

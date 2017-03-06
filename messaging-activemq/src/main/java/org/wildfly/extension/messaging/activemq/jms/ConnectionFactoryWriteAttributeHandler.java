@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static org.jboss.as.controller.OperationContext.Stage.MODEL;
-
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
 import org.apache.activemq.artemis.api.jms.management.ConnectionFactoryControl;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
@@ -39,7 +37,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.wildfly.extension.messaging.activemq.ActiveMQActivationService;
-import org.wildfly.extension.messaging.activemq.AlternativeAttributeCheckHandler;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common;
@@ -56,13 +53,6 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
 
     private ConnectionFactoryWriteAttributeHandler() {
         super(ConnectionFactoryDefinition.ATTRIBUTES);
-    }
-
-    @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        context.addStep(new AlternativeAttributeCheckHandler(ConnectionFactoryDefinition.ATTRIBUTES), MODEL);
-
-        super.execute(context, operation);
     }
 
     @Override

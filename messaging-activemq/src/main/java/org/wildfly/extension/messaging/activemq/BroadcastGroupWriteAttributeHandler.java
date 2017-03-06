@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.jboss.as.controller.OperationContext.Stage.MODEL;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -40,13 +38,6 @@ public class BroadcastGroupWriteAttributeHandler extends ReloadRequiredWriteAttr
 
     private BroadcastGroupWriteAttributeHandler() {
         super(BroadcastGroupDefinition.ATTRIBUTES);
-    }
-
-    @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        context.addStep(new AlternativeAttributeCheckHandler(BroadcastGroupDefinition.ATTRIBUTES), MODEL);
-
-        super.execute(context, operation);
     }
 
     @Override
