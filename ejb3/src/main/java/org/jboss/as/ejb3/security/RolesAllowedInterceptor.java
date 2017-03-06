@@ -59,7 +59,7 @@ class RolesAllowedInterceptor implements Interceptor {
             final Roles ejbRoles = identity.getRoles("ejb", true);
             do {
                 final String role = iterator.next();
-                if (ejbRoles.contains(role)) {
+                if (ejbRoles.contains(role) || (role.equals("**") && !identity.isAnonymous())) {
                     return context.proceed();
                 }
             } while (iterator.hasNext());
