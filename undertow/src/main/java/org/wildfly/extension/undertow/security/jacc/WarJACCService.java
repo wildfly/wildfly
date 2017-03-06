@@ -26,13 +26,13 @@ package org.wildfly.extension.undertow.security.jacc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.security.jacc.PolicyConfiguration;
 import javax.security.jacc.PolicyContextException;
 import javax.security.jacc.WebResourcePermission;
@@ -46,7 +46,11 @@ import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossServletsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.metadata.web.spec.EmptyRoleSemanticType;
+import org.jboss.metadata.web.spec.HttpMethodConstraintMetaData;
 import org.jboss.metadata.web.spec.SecurityConstraintMetaData;
+import org.jboss.metadata.web.spec.ServletMappingMetaData;
+import org.jboss.metadata.web.spec.ServletSecurityMetaData;
 import org.jboss.metadata.web.spec.UserDataConstraintMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionsMetaData;
@@ -95,29 +99,43 @@ public class WarJACCService extends JaccService<WarMetaData> {
                     if (secConstraint.isExcluded() || secConstraint.isUnchecked()) {
                         // Process the permissions for the excluded/unchecked resources
                         for (WebResourceCollectionMetaData resourceCollectionMetaData : resourceCollectionsMetaData) {
-                            List<String> httpMethods = resourceCollectionMetaData.getHttpMethods();
+                            List<String> httpMethods = new ArrayList<>(resourceCollectionMetaData.getHttpMethods());
+                            List<String> ommisions = resourceCollectionMetaData.getHttpMethodOmissions();
+                            if(httpMethods.isEmpty() && !ommisions.isEmpty()) {
+                                httpMethods.addAll(WebResourceCollectionMetaData.ALL_HTTP_METHODS);
+                                httpMethods.removeAll(ommisions);
+                            }
                             List<String> urlPatterns = resourceCollectionMetaData.getUrlPatterns();
                             for (String urlPattern : urlPatterns) {
                                 PatternInfo info = patternMap.get(urlPattern);
-
+                                info.descriptor=true;
                                 // Add the excluded methods
                                 if (secConstraint.isExcluded()) {
                                     info.addExcludedMethods(httpMethods);
                                 }
 
                                 // SECURITY-63: Missing auth-constraint needs unchecked policy
-                                if (secConstraint.isUnchecked())
+                                if (secConstraint.isUnchecked() && httpMethods.isEmpty()) {
                                     info.isMissingAuthConstraint = true;
+                                } else {
+                                    info.missingAuthConstraintMethods.addAll(httpMethods);
+                                }
                             }
                         }
                     } else {
                         // Process the permission for the resources x roles
                         for (WebResourceCollectionMetaData resourceCollectionMetaData : resourceCollectionsMetaData) {
-                            List<String> httpMethods = resourceCollectionMetaData.getHttpMethods();
+                            List<String> httpMethods = new ArrayList<>(resourceCollectionMetaData.getHttpMethods());
+                            List<String> methodOmissions = resourceCollectionMetaData.getHttpMethodOmissions();
+                            if(httpMethods.isEmpty() && !methodOmissions.isEmpty()) {
+                                httpMethods.addAll(WebResourceCollectionMetaData.ALL_HTTP_METHODS);
+                                httpMethods.removeAll(methodOmissions);
+                            }
                             List<String> urlPatterns = resourceCollectionMetaData.getUrlPatterns();
                             for (String urlPattern : urlPatterns) {
                                 // Get the qualified url pattern
                                 PatternInfo info = patternMap.get(urlPattern);
+                                info.descriptor=true;
                                 HashSet<String> mappedRoles = new HashSet<String>();
                                 secConstraint.getAuthConstraint().getRoleNames();
                                 List<String> authRoles = secConstraint.getAuthConstraint().getRoleNames();
@@ -141,13 +159,127 @@ public class WarJACCService extends JaccService<WarMetaData> {
             }
         }
 
+        JBossServletsMetaData servlets = jbossWebMetaData.getServlets();
+        List<ServletMappingMetaData> mappings = jbossWebMetaData.getServletMappings();
+        if(servlets != null && mappings != null) {
+
+            Map<String, List<String>> servletMappingMap = new HashMap<>();
+            for(ServletMappingMetaData mapping : mappings) {
+                List<String> list = servletMappingMap.get(mapping.getServletName());
+                if(list == null) {
+                    servletMappingMap.put(mapping.getServletName(), list = new ArrayList<>());
+                }
+                list.addAll(mapping.getUrlPatterns());
+            }
+            if(!jbossWebMetaData.isMetadataComplete()) {
+                for (JBossServletMetaData servlet : servlets) {
+                    ServletSecurityMetaData security = servlet.getServletSecurity();
+                    if (security != null) {
+                        List<String> servletMappings = servletMappingMap.get(servlet.getServletName());
+                        if (servletMappings != null) {
+
+                            if (security.getHttpMethodConstraints() != null) {
+                                for (HttpMethodConstraintMetaData s : security.getHttpMethodConstraints()) {
+                                    if (s.getRolesAllowed() == null || s.getRolesAllowed().isEmpty()) {
+                                        for (String urlPattern : servletMappings) {
+                                            // Get the qualified url pattern
+                                            PatternInfo info = patternMap.get(urlPattern);
+                                            if (info.descriptor) {
+                                                continue;
+                                            }
+                                            // Add the excluded methods
+                                            if (s.getEmptyRoleSemantic() == null || s.getEmptyRoleSemantic() == EmptyRoleSemanticType.PERMIT) {
+                                                info.missingAuthConstraintMethods.add(s.getMethod());
+                                            } else {
+                                                info.addExcludedMethods(Collections.singletonList(s.getMethod()));
+                                            }
+                                            // Add the transport to methods
+                                            if (s.getTransportGuarantee() != null)
+                                                info.addTransport(s.getTransportGuarantee().name(), Collections.singletonList(s.getMethod()));
+                                        }
+                                    } else {
+                                        for (String urlPattern : servletMappings) {
+                                            // Get the qualified url pattern
+                                            PatternInfo info = patternMap.get(urlPattern);
+                                            if (info.descriptor) {
+                                                continue;
+                                            }
+                                            HashSet<String> mappedRoles = new HashSet<String>();
+                                            List<String> authRoles = s.getRolesAllowed();
+                                            for (String role : authRoles) {
+                                                if ("*".equals(role)) {
+                                                    // The wildcard ref maps to all declared security-role names
+                                                    mappedRoles.addAll(jbossWebMetaData.getSecurityRoleNames());
+                                                } else {
+                                                    mappedRoles.add(role);
+                                                }
+                                            }
+                                            info.addRoles(mappedRoles, Collections.singletonList(s.getMethod()));
+                                            // Add the transport to methods
+                                            if (s.getTransportGuarantee() != null)
+                                                info.addTransport(s.getTransportGuarantee().name(), Collections.singletonList(s.getMethod()));
+                                        }
+                                    }
+                                }
+                            }
+                            if (security.getRolesAllowed() == null || security.getRolesAllowed().isEmpty()) {
+                                for (String urlPattern : servletMappings) {
+                                    // Get the qualified url pattern
+                                    PatternInfo info = patternMap.get(urlPattern);
+                                    if (info.descriptor) {
+                                        continue;
+                                    }
+                                    // Add the excluded methods
+                                    if (security.getEmptyRoleSemantic() == null || security.getEmptyRoleSemantic() == EmptyRoleSemanticType.PERMIT) {
+                                        info.isMissingAuthConstraint = true;
+                                    } else {
+                                        Set<String> methods = new HashSet<>(WebResourceCollectionMetaData.ALL_HTTP_METHODS);
+                                        if (security.getHttpMethodConstraints() != null) {
+                                            for (HttpMethodConstraintMetaData method : security.getHttpMethodConstraints()) {
+                                                methods.remove(method.getMethod());
+                                            }
+                                        }
+                                        info.addExcludedMethods(new ArrayList<>(methods));
+                                    }
+                                    // Add the transport to methods
+                                    if (security.getTransportGuarantee() != null)
+                                        info.addTransport(security.getTransportGuarantee().name(), Collections.emptyList());
+                                }
+                            } else {
+                                for (String urlPattern : servletMappings) {
+                                    // Get the qualified url pattern
+                                    PatternInfo info = patternMap.get(urlPattern);
+                                    if (info.descriptor) {
+                                        continue;
+                                    }
+                                    HashSet<String> mappedRoles = new HashSet<String>();
+                                    List<String> authRoles = security.getRolesAllowed();
+                                    for (String role : authRoles) {
+                                        if ("*".equals(role)) {
+                                            // The wildcard ref maps to all declared security-role names
+                                            mappedRoles.addAll(jbossWebMetaData.getSecurityRoleNames());
+                                        } else {
+                                            mappedRoles.add(role);
+                                        }
+                                    }
+                                    info.addRoles(mappedRoles, Collections.emptyList());
+                                    // Add the transport to methods
+                                    if (security.getTransportGuarantee() != null)
+                                        info.addTransport(security.getTransportGuarantee().name(), Collections.emptyList());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Create the permissions
         for (PatternInfo info : patternMap.values()) {
             String qurl = info.getQualifiedPattern();
             if (info.isOverridden) {
                 continue;
             }
-
             // Create the excluded permissions
             String[] httpMethods = info.getExcludedMethods();
             if (httpMethods != null) {
@@ -157,48 +289,56 @@ public class WarJACCService extends JaccService<WarMetaData> {
                 pc.addToExcludedPolicy(wrp);
                 pc.addToExcludedPolicy(wudp);
 
-                // !(excluded methods) [JACC 1.1]
-                String excludedString = "!" + getCommaSeparatedString(httpMethods);
-                WebResourcePermission wrp1 = new WebResourcePermission(qurl, excludedString);
-                WebUserDataPermission wudp1 = new WebUserDataPermission(qurl, excludedString);
-                pc.addToUncheckedPolicy(wrp1);
-                pc.addToUncheckedPolicy(wudp1);
             }
 
             // Create the role permissions
             Iterator<Map.Entry<String, Set<String>>> roles = info.getRoleMethods();
+            Set<String> seenMethods = new HashSet<>();
             while (roles.hasNext()) {
                 Map.Entry<String, Set<String>> roleMethods = roles.next();
                 String role = roleMethods.getKey();
                 Set<String> methods = roleMethods.getValue();
+                seenMethods.addAll(methods);
                 httpMethods = methods.toArray(new String[methods.size()]);
                 pc.addToRole(role, new WebResourcePermission(qurl, httpMethods));
 
-                //there are totally 7 http methods from the jacc spec (See WebResourceCollectionMetaData.ALL_HTTP_METHOD_NAMES)
-                final int NUMBER_OF_HTTP_METHODS = 7;
-                // JACC 1.1: create !(httpmethods) in unchecked perms
-                if (httpMethods != null && httpMethods.length != NUMBER_OF_HTTP_METHODS) {
+            }
+
+            //there are totally 7 http methods from the jacc spec (See WebResourceCollectionMetaData.ALL_HTTP_METHOD_NAMES)
+            final int NUMBER_OF_HTTP_METHODS = 7;
+            // JACC 1.1: create !(httpmethods) in unchecked perms
+            if(jbossWebMetaData.getDenyUncoveredHttpMethods() == null) {
+                if (seenMethods.size() != NUMBER_OF_HTTP_METHODS) {
                     WebResourcePermission wrpUnchecked = new WebResourcePermission(qurl, "!"
-                            + getCommaSeparatedString(httpMethods));
+                            + getCommaSeparatedString(seenMethods.toArray(new String[seenMethods.size()])));
                     pc.addToUncheckedPolicy(wrpUnchecked);
                 }
             }
+            if (jbossWebMetaData.getDenyUncoveredHttpMethods() == null) {
+                // Create the unchecked permissions
+                String[] missingHttpMethods = info.getMissingMethods();
+                int length = missingHttpMethods.length;
+                roles = info.getRoleMethods();
+                if (length > 0 && !roles.hasNext()) {
+                    // Create the unchecked permissions WebResourcePermissions
+                    WebResourcePermission wrp = new WebResourcePermission(qurl, missingHttpMethods);
+                    pc.addToUncheckedPolicy(wrp);
+                } else if (!roles.hasNext()) {
+                    pc.addToUncheckedPolicy(new WebResourcePermission(qurl, (String) null));
+                }
 
-            // Create the unchecked permissions
-            String[] missingHttpMethods = info.getMissingMethods();
-            int length = missingHttpMethods.length;
-            roles = info.getRoleMethods();
-            if( length > 0 && !roles.hasNext() ){
-                // Create the unchecked permissions WebResourcePermissions
-                WebResourcePermission wrp = new WebResourcePermission(qurl, missingHttpMethods);
-                pc.addToUncheckedPolicy(wrp);
-            } else if( !roles.hasNext()) {
-                pc.addToUncheckedPolicy(new WebResourcePermission(qurl, (String) null));
-            }
+                // SECURITY-63: Missing auth-constraint needs unchecked policy
+                if (info.isMissingAuthConstraint) {
+                    pc.addToUncheckedPolicy(new WebResourcePermission(qurl, (String) null));
+                } else if (!info.allMethods.containsAll(WebResourceCollectionMetaData.ALL_HTTP_METHODS)) {
+                    List<String> methods = new ArrayList<>(WebResourceCollectionMetaData.ALL_HTTP_METHODS);
+                    methods.removeAll(info.allMethods);
+                    pc.addToUncheckedPolicy(new WebResourcePermission(qurl, methods.toArray(new String[methods.size()])));
 
-            // SECURITY-63: Missing auth-constraint needs unchecked policy
-            if (info.isMissingAuthConstraint) {
-                pc.addToUncheckedPolicy(new WebResourcePermission(qurl, (String) null));
+                }
+                if (!info.missingAuthConstraintMethods.isEmpty()) {
+                    pc.addToUncheckedPolicy(new WebResourcePermission(qurl, info.missingAuthConstraintMethods.toArray(new String[info.missingAuthConstraintMethods.size()])));
+                }
             }
 
             // Create the unchecked permissions WebUserDataPermissions
@@ -367,6 +507,50 @@ public class WarJACCService extends JaccService<WarMetaData> {
                 }
             }
         }
+        JBossServletsMetaData servlets = metaData.getServlets();
+        List<ServletMappingMetaData> mappings = metaData.getServletMappings();
+        if(!metaData.isMetadataComplete() && servlets != null && mappings != null) {
+
+            Map<String, List<String>> servletMappingMap = new HashMap<>();
+            for(ServletMappingMetaData mapping : mappings) {
+                List<String> list = servletMappingMap.get(mapping.getServletName());
+                if(list == null) {
+                    servletMappingMap.put(mapping.getServletName(), list = new ArrayList<>());
+                }
+                list.addAll(mapping.getUrlPatterns());
+            }
+            for (JBossServletMetaData servlet : servlets) {
+                ServletSecurityMetaData security = servlet.getServletSecurity();
+                if(security != null) {
+                    List<String> servletMappings = servletMappingMap.get(servlet.getServletName());
+                    if(servletMappings != null) {
+                        for (String url : servletMappings) {
+                            int type = getPatternType(url);
+                            PatternInfo info = patternMap.get(url);
+                            if (info == null) {
+                                info = new PatternInfo(url, type);
+                                patternMap.put(url, info);
+                                switch (type) {
+                                    case PREFIX:
+                                        prefixList.add(info);
+                                        break;
+                                    case EXTENSION:
+                                        extensionList.add(info);
+                                        break;
+                                    case EXACT:
+                                        exactList.add(info);
+                                        break;
+                                    case DEFAULT:
+                                        defaultInfo = info;
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Qualify all prefix patterns
         for (int i = 0; i < prefixList.size(); i++) {
             PatternInfo info = prefixList.get(i);
@@ -457,6 +641,10 @@ public class WarJACCService extends JaccService<WarMetaData> {
          * A Security Constraint is missing an <auth-constraint/>
          */
         boolean isMissingAuthConstraint;
+
+        Set<String> missingAuthConstraintMethods = new HashSet<>();
+
+        boolean descriptor = false;
 
         /**
          * @param pattern - the url-pattern value
