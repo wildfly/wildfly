@@ -230,7 +230,14 @@ public class MessagingSubsystem30TestCase extends AbstractLegacySubsystemBaseTes
     }
 
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion, ModelFixer fixer) throws Exception {
-        testTransformers(controllerVersion, messagingVersion, fixer, null);
+        testTransformers(controllerVersion, messagingVersion, fixer, new ModelFixer() {
+            @Override
+            public ModelNode fixModel(ModelNode modelNode) {
+                modelNode.get("hornetq-server").get("default").get("broadcast-group").get("groupS").remove("local-bind-port");
+                modelNode.get("hornetq-server").get("default").get("cluster-connection").get("cc3").remove("allow-direct-connections-only");
+                return modelNode;
+            }
+        });
     }
 
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion, ModelFixer fixer, ModelFixer legacyModelFixer) throws Exception {
