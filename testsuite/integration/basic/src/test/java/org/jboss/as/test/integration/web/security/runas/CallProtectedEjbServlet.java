@@ -96,17 +96,29 @@ public class CallProtectedEjbServlet extends HttpServlet {
 
     @Override
     public void destroy() {
-        LOGGER.debug("Calling EJB protected method in init() method.");
-        try (PrintWriter writer = new PrintWriter(filePath)) {
+        LOGGER.debug("Calling EJB protected method in destroy() method.");
+        if (filePath == null) {
+            LOGGER.warnf("RunAs testing servlet was not called with '%s' parameter provided.", FILE_PARAM);
             try {
                 String callProtectedEJB = callProtectedEJB();
-                writer.println(DESTROY_METHOD_PASS + callProtectedEJB);
+                LOGGER.info(DESTROY_METHOD_PASS + callProtectedEJB);
             } catch (Exception e) {
-                writer.println(DESTROY_METHOD_NOT_PASS);
+                LOGGER.info(DESTROY_METHOD_NOT_PASS);
                 LOGGER.debug(e);
             }
-        } catch (FileNotFoundException ex) {
-            throw new RuntimeException(ex);
+        } else {
+            try (PrintWriter writer = new PrintWriter(filePath)) {
+                LOGGER.infof("RunAs testing servlet will write result into file '%s'.", filePath);
+                try {
+                    String callProtectedEJB = callProtectedEJB();
+                    writer.println(DESTROY_METHOD_PASS + callProtectedEJB);
+                } catch (Exception e) {
+                    writer.println(DESTROY_METHOD_NOT_PASS);
+                    LOGGER.debug(e);
+                }
+            } catch (FileNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
