@@ -60,9 +60,11 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
     private final String name;
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
     private final InjectedValue<ProtocolDefaults> defaults = new InjectedValue<>();
-
     private volatile Map<String, String> properties;
     private volatile String moduleName;
+    private volatile String stack;
+    private final InjectedValue<Boolean> stackStatisticsEnabled = new InjectedValue<>();
+    private volatile ModelNode statisticsEnabled;
 
     protected AbstractProtocolConfigurationBuilder(String name) {
         this.name = name;
@@ -73,6 +75,7 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
         return target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 .addDependency(ProtocolDefaultsBuilder.SERVICE_NAME, ProtocolDefaults.class, this.defaults)
+                .addDependency(new StackStatisticsEnabledServiceBuilder(stack).getServiceName(), Boolean.class, this.stackStatisticsEnabled)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
@@ -80,6 +83,8 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
     public Builder<C> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.moduleName = MODULE.resolveModelAttribute(context, model).asString();
         this.properties = ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).orElse(Collections.emptyList()).stream().collect(Collectors.toMap(Property::getName, property -> property.getValue().asString()));
+        this.stack = context.getCurrentAddress().getParent().getLastElement().getValue();
+        this.statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model);
         return this;
     }
 
@@ -105,6 +110,7 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
             properties.putAll(this.properties);
             Configurator.resolveAndAssignFields(result, properties);
             Configurator.resolveAndInvokePropertyMethods(result, properties);
+            result.enableStats(ModelNodes.optionalBoolean(statisticsEnabled).orElse(stackStatisticsEnabled.getValue()));
             this.accept(result);
             return result;
         } catch (Exception e) {

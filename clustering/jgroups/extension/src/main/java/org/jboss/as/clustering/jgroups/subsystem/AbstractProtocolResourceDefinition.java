@@ -40,12 +40,10 @@ import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
-import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -72,20 +70,17 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING, new ModelNode("org.jgroups"), new ModuleIdentifierValidatorBuilder()),
         PROPERTIES(ModelDescriptionConstants.PROPERTIES),
+        STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
-            this.definition = createBuilder(name, type, null).setCapabilityReference(reference).build();
+        Attribute(String name, ModelType type) {
+            this.definition = createBuilder(name, type, null).build();
         }
 
         Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder) {
             SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
             this.definition = builder.setValidator(validatorBuilder.configure(builder).build()).build();
-        }
-
-        Attribute(String name, ModelType type, AccessConstraintDefinition constraint, CapabilityReferenceRecorder reference) {
-            this.definition = createBuilder(name, type, null).setAccessConstraints(constraint).setCapabilityReference(reference).build();
         }
 
         Attribute(String name) {
@@ -134,6 +129,13 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
      */
     @SuppressWarnings("deprecation")
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+
+        if (JGroupsModel.VERSION_4_1_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
+                    .end();
+        }
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
             AttributeConverter typeConverter = new AttributeConverter.DefaultAttributeConverter() {

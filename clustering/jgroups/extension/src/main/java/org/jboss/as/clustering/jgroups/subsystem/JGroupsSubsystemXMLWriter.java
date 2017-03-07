@@ -85,6 +85,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
                     writer.writeStartElement(XMLElement.STACK.getLocalName());
                     writer.writeAttribute(XMLAttribute.NAME.getLocalName(), property.getName());
                     ModelNode stack = property.getValue();
+                    writeAttributes(writer, stack, StackResourceDefinition.Attribute.class);
                     if (stack.hasDefined(TransportResourceDefinition.WILDCARD_PATH.getKey())) {
                         writeTransport(writer, stack.get(TransportResourceDefinition.WILDCARD_PATH.getKey()).asProperty());
                     }
