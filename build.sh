@@ -17,7 +17,8 @@
 ### ====================================================================== ###
 
 PROGNAME=`basename $0`
-DIRNAME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIRNAME=`dirname "${BASH_SOURCE[0]}"`
+DIRNAME=`cd "$DIRNAME" && pwd`
 GREP="grep"
 ROOT="/"
 
