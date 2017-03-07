@@ -38,6 +38,7 @@ import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.wildfly.transaction.client.AbstractTransaction;
 import org.wildfly.transaction.client.AssociationListener;
 import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.CreationListener;
 import org.wildfly.transaction.client.LocalTransactionContext;
 
 /**
@@ -67,12 +68,17 @@ public class TransactionManagerService extends AbstractService<TransactionManage
     public void start(final StartContext context) throws StartException {
         final UserTransactionRegistry registry = registryInjector.getValue();
 
-        LocalTransactionContext.getCurrent().registerCreationListener(txn -> txn.registerAssociationListener(new AssociationListener() {
-            private final AtomicBoolean first = new AtomicBoolean();
-            public void associationChanged(final AbstractTransaction t, final boolean a) {
-                if (a && first.compareAndSet(false, true)) registry.userTransactionStarted();
+        LocalTransactionContext.getCurrent().registerCreationListener((txn, createdBy) -> {
+            if (createdBy == CreationListener.CreatedBy.USER_TRANSACTION) {
+                txn.registerAssociationListener(new AssociationListener() {
+                    private final AtomicBoolean first = new AtomicBoolean();
+
+                    public void associationChanged(final AbstractTransaction t, final boolean a) {
+                        if (a && first.compareAndSet(false, true)) registry.userTransactionStarted();
+                    }
+                });
             }
-        }));
+        });
     }
 
     @Override
