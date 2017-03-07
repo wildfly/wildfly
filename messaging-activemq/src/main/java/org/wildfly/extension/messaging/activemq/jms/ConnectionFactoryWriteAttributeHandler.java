@@ -174,6 +174,8 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
                 control.setUseGlobalPools(value.asBoolean());
             } else if (attributeName.equals(Common.CONNECTION_LOAD_BALANCING_CLASS_NAME.getName())) {
                 control.setConnectionLoadBalancingPolicyClassName(value.asString());
+            } else if (attributeName.equals(Common.PROTOCOL_MANAGER_FACTORY.getName())) {
+                control.setProtocolManagerFactoryStr(value.asString());
             } else {
                 // Bug! Someone added the attribute to the set but did not implement
                 throw MessagingLogger.ROOT_LOGGER.unsupportedRuntimeAttribute(attributeName);
