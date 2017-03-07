@@ -187,14 +187,14 @@ CLASSWORLDS_LAUNCHER=org.codehaus.plexus.classworlds.launcher.Launcher
 # traverses directory structure from process work directory to filesystem root
 # first directory with .mvn subdirectory is considered project base directory
 find_maven_basedir() {
-  local basedir=$(pwd)
-  local wdir=$(pwd)
+  basedir="`pwd`"
+  wdir="`pwd`"
   while [ "$wdir" != '/' ] ; do
     if [ -d "$wdir"/.mvn ] ; then
       basedir=$wdir
       break
     fi
-    wdir=$(cd "$wdir/.."; pwd)
+    wdir="`(cd "$wdir/.."; pwd)`"
   done
   echo "${basedir}"
 }
@@ -202,12 +202,12 @@ find_maven_basedir() {
 # concatenates all lines of a file
 concat_lines() {
   if [ -f "$1" ]; then
-    echo "$(tr -s '\n' ' ' < "$1")"
+    echo "`(tr -s '\n' ' ' < "$1")`"
   fi
 }
 
-export MAVEN_PROJECTBASEDIR=${MAVEN_BASEDIR:-$(find_maven_basedir)}
-MAVEN_OPTS="$(concat_lines "$MAVEN_PROJECTBASEDIR/.mvn/jvm.config") $MAVEN_OPTS"
+export MAVEN_PROJECTBASEDIR="${MAVEN_BASEDIR:-`find_maven_basedir`}"
+MAVEN_OPTS="`(concat_lines "$MAVEN_PROJECTBASEDIR/.mvn/jvm.config")` $MAVEN_OPTS"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
