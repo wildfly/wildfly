@@ -221,7 +221,6 @@
         <version.org.wildfly.arquillian>2.1.0.Alpha1</version.org.wildfly.arquillian>
         <version.org.wildfly.http-client>1.0.0.Alpha3</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.0.Beta11</version.org.wildfly.naming-client>
-        <version.org.wildfly.security.elytron-subsystem>1.0.0.Beta11</version.org.wildfly.security.elytron-subsystem>
         <version.org.wildfly.transaction.client>1.0.0.Beta18</version.org.wildfly.transaction.client>
         <version.org.yaml.snakeyaml>1.17</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.11.jbossorg-1</version.sun.jaxb>
@@ -6248,12 +6247,6 @@
                 <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
                 <version>${version.org.wildfly.arquillian}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.security</groupId>
-                <artifactId>elytron-subsystem</artifactId>
-                <version>${version.org.wildfly.security.elytron-subsystem}</version>
             </dependency>
 
             <dependency>
