@@ -133,16 +133,16 @@ main() {
     #  Default goal if none specified.
     if [ -z "$MVN_GOAL" ]; then MVN_GOAL="install"; fi
 
-    # WFLY-8175 requires that we keep installing Maven under the tools directory
-    # the current project, at least when mvnw is invoked from build and integration-tests
-    # scripts
-    MVN_GOAL="-Dmaven.user.home=$DIRNAME/tools $MVN_GOAL"
-
     #  Export some stuff for maven.
     export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
 
     # The default arguments.  `mvn -s ...` will override this.
     MVN_ARGS=${MVN_ARGS:-"$MVN_SETTINGS_XML_ARGS"};
+
+    # WFLY-8175 requires that we keep installing Maven under the tools directory
+    # the current project, at least when mvnw is invoked from build and integration-tests
+    # scripts
+    MVN_ARGS="-Dmaven.user.home=$DIRNAME/tools $MVN_ARGS"
 
     echo "$MVN $MVN_ARGS $MVN_GOAL $ADDIT_PARAMS"
 
