@@ -46,6 +46,9 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
 public class PropertySQLProviderFactory implements SQLProvider.Factory {
+
+    private static final String ORACLE = "oracle";
+
     String database;
     private volatile Properties sql;
     /** List of extracted known dialects*/
@@ -62,7 +65,9 @@ public class PropertySQLProviderFactory implements SQLProvider.Factory {
 
     @Override
     public SQLProvider create(String tableName) {
-        return new PropertySQLProvider(tableName);
+        // WFLY-8307 - Oracle driver does not support lower case for table names
+        String name = ORACLE.equals(database) ? tableName.toUpperCase() : tableName;
+        return new PropertySQLProvider(name);
     }
 
     /**
@@ -118,8 +123,8 @@ public class PropertySQLProviderFactory implements SQLProvider.Factory {
                 unified = "hsql";
             } else if (name.toLowerCase().contains("h2")) {
                 unified = "h2";
-            } else if (name.toLowerCase().contains("oracle")) {
-                unified = "oracle";
+            } else if (name.toLowerCase().contains(ORACLE)) {
+                unified = ORACLE;
             }else if (name.toLowerCase().contains("microsoft")) {
                 unified = "mssql";
             }else if (name.toLowerCase().contains("jconnect")) {
