@@ -33,7 +33,6 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.ServerSecurityManager;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilderRegistryService;
 import org.jboss.as.ejb3.clustering.ClusteredSingletonServiceCreator;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -502,7 +501,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (appclient) {
             return;
         }
-        target.addService(CacheFactoryBuilderRegistryService.SERVICE_NAME, new CacheFactoryBuilderRegistryService<>()).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         if (context.hasOptionalCapability(SingletonDefaultRequirement.SINGLETON_POLICY.getName(), CLUSTERED_SINGLETON_CAPABILITY.getName(), null)) {
             final ClusteredSingletonServiceCreator singletonBarrierCreator = new ClusteredSingletonServiceCreator();
             target.addService(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName().append("creator"), singletonBarrierCreator)
