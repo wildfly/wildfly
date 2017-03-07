@@ -36,4 +36,20 @@ public class CacheInfo {
     public String getName() {
         return name;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof CacheInfo)) return false;
+        return this.name.equals(((CacheInfo) object).name);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
 }

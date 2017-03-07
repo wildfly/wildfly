@@ -21,15 +21,13 @@
  */
 package org.jboss.as.ejb3.cache;
 
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.Value;
 
-public abstract class CacheFactoryBuilderService<K, V extends Identifiable<K>> implements Service<CacheFactoryBuilder<K, V>> {
+public abstract class CacheFactoryBuilderService<K, V extends Identifiable<K>> implements Value<CacheFactoryBuilder<K, V>> {
 
     public static final ServiceName BASE_CACHE_SERVICE_NAME = ServiceName.JBOSS.append("ejb", "cache");
     public static final ServiceName DEFAULT_CACHE_SERVICE_NAME = BASE_CACHE_SERVICE_NAME.append("sfsb-default");
@@ -42,26 +40,28 @@ public abstract class CacheFactoryBuilderService<K, V extends Identifiable<K>> i
     }
 
     private final String name;
-    @SuppressWarnings("rawtypes")
-    private final InjectedValue<CacheFactoryBuilderRegistry> registry = new InjectedValue<>();
 
     protected CacheFactoryBuilderService(String name) {
         this.name = name;
     }
 
     public ServiceBuilder<CacheFactoryBuilder<K, V>> build(ServiceTarget target) {
-        return target.addService(getServiceName(this.name), this)
-                .addDependency(CacheFactoryBuilderRegistryService.SERVICE_NAME, CacheFactoryBuilderRegistry.class, this.registry)
-        ;
+        return target.addService(getServiceName(this.name), new ValueService<>(this));
     }
 
     @Override
-    public void start(StartContext context) {
-        this.registry.getValue().add(this.name, this.getValue());
+    public int hashCode() {
+        return this.name.hashCode();
     }
 
     @Override
-    public void stop(StopContext context) {
-        this.registry.getValue().remove(this.name);
+    public boolean equals(Object object) {
+        if (!(object instanceof CacheFactoryBuilderService)) return false;
+        return this.name.equals(((CacheFactoryBuilderService<?, ?>) object).name);
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
     }
 }

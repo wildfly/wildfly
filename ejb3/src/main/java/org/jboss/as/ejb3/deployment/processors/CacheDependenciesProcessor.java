@@ -1,12 +1,16 @@
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilderRegistry;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilderRegistryService;
+import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
+import org.jboss.as.ejb3.cache.CacheInfo;
 import org.jboss.as.ejb3.component.stateful.MarshallingConfigurationRepositoryValue;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -14,6 +18,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -21,8 +26,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
-
-import java.util.Collection;
+import org.jboss.msc.value.Value;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * @author Paul Ferraro
@@ -42,21 +48,24 @@ public class CacheDependenciesProcessor implements DeploymentUnitProcessor {
         final CapabilityServiceSupport support = unit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
         final ServiceTarget target = context.getServiceTarget();
         @SuppressWarnings("rawtypes")
-        final InjectedValue<CacheFactoryBuilderRegistry> registry = new InjectedValue<>();
+        Collection<ValueDependency<CacheFactoryBuilder>> cacheDependencies = moduleDescription.getComponentDescriptions().stream()
+                .filter(StatefulComponentDescription.class::isInstance)
+                .map(description -> new InjectedValueDependency<>(getCacheFactoryBuilderServiceName((StatefulComponentDescription) description), CacheFactoryBuilder.class))
+                .distinct()
+                .collect(Collectors.toList());
         Service<Void> service = new AbstractService<Void>() {
             @Override
             public void start(StartContext context) {
-                // Install dependencies for each registered cache factory builder
-                Collection<CacheFactoryBuilder<?, ?>> builders = registry.getValue().getBuilders();
-                for (CacheFactoryBuilder<?, ?> builder: builders) {
-                    builder.installDeploymentUnitDependencies(support, target, name);
-                }
+                // Install dependencies for each distinct cache factory builder referenced by the deployment
+                cacheDependencies.stream()
+                        .map(Value::getValue)
+                        .distinct()
+                        .forEach(builder -> builder.installDeploymentUnitDependencies(support, target, name));
             }
         };
-        target.addService(name.append("cache-dependencies-installer"), service)
-                .addDependency(CacheFactoryBuilderRegistryService.SERVICE_NAME, CacheFactoryBuilderRegistry.class, registry)
-                .install()
-        ;
+        ServiceBuilder<Void> builder = target.addService(name.append("cache-dependencies-installer"), service);
+        cacheDependencies.forEach(dependency -> dependency.register(builder));
+        builder.install();
 
         // Install versioned marshalling configuration
         InjectedValue<ModuleDeployment> deployment = new InjectedValue<>();
@@ -71,5 +80,11 @@ public class CacheDependenciesProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(DeploymentUnit context) {
         // Do nothing
+    }
+
+    private static ServiceName getCacheFactoryBuilderServiceName(StatefulComponentDescription description) {
+        if (!description.isPassivationApplicable()) return CacheFactoryBuilderService.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME;
+        CacheInfo cache = description.getCache();
+        return (cache != null) ? CacheFactoryBuilderService.getServiceName(cache.getName()) : CacheFactoryBuilderService.DEFAULT_CACHE_SERVICE_NAME;
     }
 }
