@@ -138,6 +138,11 @@
                 <provider-module code="org.myorg.security.MyCustomLogAuditProvider" module="org.myorg.security" />
             </audit>
         </security-domain>
+        <security-domain name="infinispan-cache" cache-type="infinispan">
+            <authorization>
+                <policy-module code="Delegating" flag="required"/>
+            </authorization>
+        </security-domain>
     </security-domains>
     <vault code="somevault">
         <vault-option name="xyz" value="zxc"/>
