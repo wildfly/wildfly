@@ -30,6 +30,7 @@ import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
@@ -81,6 +82,7 @@ import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.authz.Roles;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -611,7 +613,24 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     private boolean checkCallerSecurityIdentityRole(String roleName) {
         final SecurityIdentity identity = getCallerSecurityIdentity();
-        return "**".equals(roleName) ? ! identity.isAnonymous() : identity.getRoles("ejb", true).contains(roleName);
+        if("**".equals(roleName)) {
+            return !identity.isAnonymous();
+        }
+        Roles roles = identity.getRoles("ejb", true);
+        if(roles.contains(roleName)) {
+            return true;
+        }
+        if(securityMetaData.getSecurityRoleLinks() != null) {
+            Collection<String> linked = securityMetaData.getSecurityRoleLinks().get(roleName);
+            if(linked != null) {
+                for (String role : roles) {
+                    if (linked.contains(role)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private SecurityIdentity getCallerSecurityIdentity() {
