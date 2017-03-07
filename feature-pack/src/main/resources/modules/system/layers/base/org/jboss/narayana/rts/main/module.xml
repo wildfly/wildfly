@@ -42,6 +42,11 @@
         <module name="javax.xml.bind.api"/>
         <module name="javax.ejb.api"/>
         <module name="org.jboss.jts"/>
+        <module name="org.wildfly.extension.rts" export="true">
+            <imports>
+                <include path="org/wildfly/extension/rts/jaxrs"/>
+            </imports>
+        </module>
         <module name="org.jboss.logging"/>
 
         <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
