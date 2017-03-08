@@ -289,7 +289,12 @@ final class AssociationImpl implements Association {
             }
 
             public void registryRemoved(final Registry<String, List<ClientMapping>> registry) {
-                clusterTopologyListener.clusterRemoval(Collections.singletonList(registry.getGroup().getName()));
+                // Only send the cluster removal message if the cluster node count reaches 0
+                final Map.Entry<String, List<ClientMapping>> localEntry = registry.getEntry(registry.getGroup().getLocalNode());
+                final Map<String, List<ClientMapping>> entries = registry.getEntries();
+                if ((localEntry != null) ? (entries.size() == 1) && entries.containsKey(localEntry.getKey()) : entries.isEmpty()) {
+                    clusterTopologyListener.clusterRemoval(Collections.singletonList(registry.getGroup().getName()));
+                }
             }
         };
         clientMappingRegistryCollector.addListener(listener);
