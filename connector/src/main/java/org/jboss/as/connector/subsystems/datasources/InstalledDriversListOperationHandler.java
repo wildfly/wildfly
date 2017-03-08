@@ -105,7 +105,7 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                 }
             }, OperationContext.Stage.RUNTIME);
         } else {
-            context.getResult().set(ConnectorLogger.ROOT_LOGGER.noMetricsAvailable());
+            context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.noMetricsAvailable());
         }
     }
 }
