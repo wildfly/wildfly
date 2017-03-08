@@ -29,7 +29,6 @@
 
     <resources>
         <artifact name="${org.apache.activemq:artemis-ra}"/>
-        <artifact name="${org.apache.activemq:artemis-service-extensions}"/>
     </resources>
 
     <dependencies>
