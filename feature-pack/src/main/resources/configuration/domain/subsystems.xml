@@ -6,6 +6,7 @@
         <subsystem>logging.xml</subsystem>
         <subsystem>batch-jberet.xml</subsystem>
         <subsystem>bean-validation.xml</subsystem>
+        <subsystem>core-management.xml</subsystem>
         <subsystem>datasources.xml</subsystem>
         <subsystem>ee.xml</subsystem>
         <subsystem>ejb3.xml</subsystem>
@@ -37,6 +38,7 @@
         <subsystem>logging.xml</subsystem>
         <subsystem>batch-jberet.xml</subsystem>
         <subsystem>bean-validation.xml</subsystem>
+        <subsystem>core-management.xml</subsystem>
         <subsystem>datasources.xml</subsystem>
         <subsystem>ee.xml</subsystem>
         <subsystem supplement="ha">ejb3.xml</subsystem>
@@ -71,6 +73,7 @@
         <subsystem>logging.xml</subsystem>
         <subsystem>batch-jberet.xml</subsystem>
         <subsystem>bean-validation.xml</subsystem>
+        <subsystem>core-management.xml</subsystem>
         <subsystem>datasources.xml</subsystem>
         <subsystem supplement="full">ee.xml</subsystem>
         <subsystem supplement="full">ejb3.xml</subsystem>
@@ -105,6 +108,7 @@
         <subsystem>logging.xml</subsystem>
         <subsystem>batch-jberet.xml</subsystem>
         <subsystem>bean-validation.xml</subsystem>
+        <subsystem>core-management.xml</subsystem>
         <subsystem>datasources.xml</subsystem>
         <subsystem supplement="full">ee.xml</subsystem>
         <subsystem supplement="full-ha">ejb3.xml</subsystem>

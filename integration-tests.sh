@@ -3,7 +3,8 @@
 # Shell script to run the integration tests
 
 PROGNAME=`basename $0`
-DIRNAME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIRNAME=`dirname "${BASH_SOURCE[0]}"`
+DIRNAME=`cd "$DIRNAME" && pwd`
 GREP="grep"
 ROOT="/"
 
@@ -159,13 +160,13 @@ main() {
     process_test_directives $MVN_GOAL
     MVN_GOAL=$CMD_LINE_PARAMS
 
+    # Export some stuff for maven.
+    export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
+
     # WFLY-8175 requires that we keep installing Maven under the tools directory
     # the current project, at least when mvnw is invoked from build and integration-tests
     # scripts
-    MVN_GOAL="-Dmaven.user.home=$DIRNAME/tools $MVN_GOAL"
-
-    # Export some stuff for maven.
-    export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
+    MVN_ARGS="-Dmaven.user.home=$DIRNAME/tools $MVN_ARGS"
 
     echo "$MVN $MVN_ARGS $MVN_GOAL"
 

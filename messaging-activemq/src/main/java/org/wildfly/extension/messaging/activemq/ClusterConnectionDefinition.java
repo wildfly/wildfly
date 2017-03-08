@@ -44,6 +44,7 @@ import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
@@ -78,9 +79,9 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
 
     public static final SimpleAttributeDefinition ALLOW_DIRECT_CONNECTIONS_ONLY = create("allow-direct-connections-only", BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
-            .setAlternatives(CommonAttributes.DISCOVERY_GROUP)
+            .setRequires(STATIC_CONNECTORS)
             .setRestartAllServices()
             .build();
 
@@ -105,7 +106,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = new StringListAttributeDefinition.Builder(STATIC_CONNECTORS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setElementValidator(new StringLengthValidator(1))
             .setAttributeParser(AttributeParser.STRING_LIST)
             .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
@@ -114,8 +115,8 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition DISCOVERY_GROUP_NAME = create(CommonAttributes.DISCOVERY_GROUP, STRING)
-            .setAllowNull(true)
-            .setAlternatives(ALLOW_DIRECT_CONNECTIONS_ONLY.getName(), CONNECTOR_REFS.getName())
+            .setRequired(false)
+            .setAlternatives(CONNECTOR_REFS.getName())
             .setRestartAllServices()
             .build();
 
@@ -252,9 +253,10 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
+        ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
             if (!attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, ClusterConnectionWriteAttributeHandler.INSTANCE);
+                registry.registerReadWriteAttribute(attr, null, reloadRequiredWriteAttributeHandler);
             }
         }
 

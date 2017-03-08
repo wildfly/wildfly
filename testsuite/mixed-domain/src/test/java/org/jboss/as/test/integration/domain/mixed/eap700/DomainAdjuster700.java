@@ -36,6 +36,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.core.management.CoreManagementExtension;
 import org.wildfly.extension.elytron.ElytronExtension;
 import org.wildfly.extension.undertow.UndertowExtension;
 
@@ -51,6 +52,7 @@ public class DomainAdjuster700 extends DomainAdjuster {
         final List<ModelNode> list = new ArrayList<>();
 
         list.addAll(removeElytron(profileAddress.append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)));
+        list.addAll(removeCoreManagement(profileAddress.append(SUBSYSTEM, CoreManagementExtension.SUBSYSTEM_NAME)));
         adjustUndertow(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), list);
         return list;
     }
@@ -78,6 +80,14 @@ public class DomainAdjuster700 extends DomainAdjuster {
         //elytron and extension don't exist
         list.add(createRemoveOperation(subsystem));
         list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.elytron")));
+        return list;
+    }
+
+    private Collection<? extends ModelNode> removeCoreManagement(final PathAddress subsystem) {
+        final List<ModelNode> list = new ArrayList<>();
+        //core-management subsystem and extension don't exist
+        list.add(createRemoveOperation(subsystem));
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.core-management")));
         return list;
     }
 }

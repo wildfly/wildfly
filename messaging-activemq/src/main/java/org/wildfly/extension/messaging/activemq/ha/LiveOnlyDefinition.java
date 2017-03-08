@@ -23,10 +23,7 @@
 package org.wildfly.extension.messaging.activemq.ha;
 
 import static org.jboss.as.controller.OperationContext.Stage.MODEL;
-import static org.wildfly.extension.messaging.activemq.AlternativeAttributeCheckHandler.checkAlternatives;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA_POLICY;
-import static org.wildfly.extension.messaging.activemq.ha.ScaleDownAttributes.SCALE_DOWN_CONNECTORS;
-import static org.wildfly.extension.messaging.activemq.ha.ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP;
 
 import java.util.Collection;
 
@@ -43,7 +40,6 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.ActiveMQReloadRequiredHandlers;
-import org.wildfly.extension.messaging.activemq.AlternativeAttributeCheckHandler;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 
 /**
@@ -62,20 +58,11 @@ public class LiveOnlyDefinition extends PersistentResourceDefinition {
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            checkAlternatives(operation, SCALE_DOWN_CONNECTORS.getName(), SCALE_DOWN_DISCOVERY_GROUP.getName(), true);
-
             super.populateModel(operation, model);
         }
     };
 
-    private static final AbstractWriteAttributeHandler WRITE_ATTRIBUTE = new ActiveMQReloadRequiredHandlers.WriteAttributeHandler(ATTRIBUTES) {
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            context.addStep(new AlternativeAttributeCheckHandler(ATTRIBUTES), MODEL);
-
-            super.execute(context, operation);
-        }
-    };
+    private static final AbstractWriteAttributeHandler WRITE_ATTRIBUTE = new ActiveMQReloadRequiredHandlers.WriteAttributeHandler(ATTRIBUTES);
 
     public static final LiveOnlyDefinition INSTANCE = new LiveOnlyDefinition();
 

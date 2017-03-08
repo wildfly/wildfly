@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,37 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.integration.jaxrs.spec.basic.resource;
 
-package org.jboss.as.ejb3.cache;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 
 /**
- * @author Paul Ferraro
- *
+ * User: rsearls
+ * Date: 2/2/17
  */
-public class CacheInfo {
-    private final String name;
-
-    public CacheInfo(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof CacheInfo)) return false;
-        return this.name.equals(((CacheInfo) object).name);
-    }
-
-    @Override
-    public int hashCode() {
-        return this.name.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return this.name;
+@Path("exampleTwo")
+public class JaxrsAppResourceTwo {
+    @GET
+    @Produces("text/plain")
+    public String get() {
+        return "Two Hello world!";
     }
 }

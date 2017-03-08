@@ -4,7 +4,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
-import java.net.SocketPermission;
 import java.net.URL;
 import java.util.PropertyPermission;
 
@@ -13,9 +12,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
-import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -58,11 +55,7 @@ public class NestedRemoteContextTestCase {
                 .addAsManifestResource(thisPackage, "ear-jboss-deployment-structure.xml", "jboss-deployment-structure.xml")
                 .addAsManifestResource(createPermissionsXmlAsset(
                         // CallEjbServlet reads node0 system property
-                        new PropertyPermission("node0", "read"),
-                        // CallEjbServlet looks up for MyObject using connection through http-remoting Endpoint
-                        new RemotingPermission("connect"),
-                        new SocketPermission(Utils.getDefaultHost(true), "accept,connect,listen,resolve"),
-                        new RuntimePermission("getClassLoader")),
+                        new PropertyPermission("node0", "read")),
                         "permissions.xml");
         return ear;
     }

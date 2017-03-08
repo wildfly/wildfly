@@ -33,6 +33,7 @@
         <artifact name="${org.apache.activemq:artemis-jdbc-store}"/>
         <artifact name="${org.apache.activemq:artemis-jms-client}"/>
         <artifact name="${org.apache.activemq:artemis-jms-server}"/>
+        <artifact name="${org.apache.activemq:artemis-service-extensions}"/>
     </resources>
 
     <dependencies>

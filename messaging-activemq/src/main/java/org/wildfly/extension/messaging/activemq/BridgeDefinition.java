@@ -27,7 +27,6 @@ import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.STRING;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.PASSWORD;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.STATIC_CONNECTORS;
 
@@ -41,6 +40,7 @@ import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -58,7 +58,7 @@ import org.jboss.dmr.ModelNode;
 public class BridgeDefinition extends PersistentResourceDefinition {
 
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = new StringListAttributeDefinition.Builder(CommonAttributes.STATIC_CONNECTORS)
-            .setAllowNull(true)
+            .setRequired(true)
             .setElementValidator(new StringLengthValidator(1))
             .setAttributeParser(AttributeParser.STRING_LIST)
             .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
@@ -68,7 +68,7 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition DISCOVERY_GROUP_NAME = create(CommonAttributes.DISCOVERY_GROUP, STRING)
-            .setAllowNull(true)
+            .setRequired(true)
             .setAlternatives(STATIC_CONNECTORS)
             .setRestartAllServices()
             .build();
@@ -179,9 +179,10 @@ public class BridgeDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
+        ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
             if (!attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, BridgeWriteAttributeHandler.INSTANCE);
+                registry.registerReadWriteAttribute(attr, null, reloadRequiredWriteAttributeHandler);
             }
         }
 

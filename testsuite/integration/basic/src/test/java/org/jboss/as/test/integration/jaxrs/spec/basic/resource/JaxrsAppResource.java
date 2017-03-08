@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.cache;
+package org.jboss.as.test.integration.jaxrs.spec.basic.resource;
 
-
-import java.util.Collection;
-import java.util.Set;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 
 /**
- * A registry of all cache factory builders that are available to a deployment unit.
- * @author Paul Ferraro
- *
- * @param <K> the cache key type
- * @param <V> the cache value type
+ * User: rsearls
+ * Date: 2/2/17
  */
-public interface CacheFactoryBuilderRegistry<K, V extends Identifiable<K>> {
-    Set<String> getBuilderNames();
-    Collection<CacheFactoryBuilder<K, V>> getBuilders();
-
-    void add(String name, CacheFactoryBuilder<K, V> bulder);
-    void remove(String name);
+@Path("example")
+public class JaxrsAppResource {
+    @GET
+    @Produces("text/plain")
+    public String get() {
+        return "Hello world!";
+    }
 }
