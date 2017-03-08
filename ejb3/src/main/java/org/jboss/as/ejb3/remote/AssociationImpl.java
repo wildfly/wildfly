@@ -270,22 +270,7 @@ final class AssociationImpl implements Association {
         final RegistryCollector.Listener<String, List<ClientMapping>> listener = new RegistryCollector.Listener<String, List<ClientMapping>>() {
             public void registryAdded(final Registry<String, List<ClientMapping>> registry) {
                 final String clusterName = registry.getGroup().getName();
-                final Registry.Listener<String, List<ClientMapping>> listener = new Registry.Listener<String, List<ClientMapping>>() {
-                    public void addedEntries(final Map<String, List<ClientMapping>> added) {
-                        clusterTopologyListener.clusterNewNodesAdded(getClusterInfo(added, clusterName));
-                    }
-
-                    public void updatedEntries(final Map<String, List<ClientMapping>> updated) {
-                        clusterTopologyListener.clusterNewNodesAdded(getClusterInfo(updated, clusterName));
-                    }
-
-                    public void removedEntries(final Map<String, List<ClientMapping>> removed) {
-                        final ArrayList<ClusterTopologyListener.ClusterRemovalInfo> list = new ArrayList<>();
-                        list.add(new ClusterTopologyListener.ClusterRemovalInfo(clusterName, new ArrayList<String>(removed.keySet())));
-                        clusterTopologyListener.clusterNodesRemoved(list);
-                    }
-                };
-                registry.addListener(listener);
+                registry.addListener(new ClusterTopologyUpdateListener(clusterName, clusterTopologyListener));
             }
 
             public void registryRemoved(final Registry<String, List<ClientMapping>> registry) {
@@ -298,6 +283,10 @@ final class AssociationImpl implements Association {
             }
         };
         clientMappingRegistryCollector.addListener(listener);
+        // Ensure the cluster topology listener is also added for any registries that have already been added to clientMappingRegistryCollector
+        for (Registry<String, List<ClientMapping>> registry : clientMappingRegistryCollector.getRegistries()) {
+            registry.addListener(new ClusterTopologyUpdateListener(registry.getGroup().getName(), clusterTopologyListener));
+        }
         clusterTopologyListener.clusterTopology(clientMappingRegistryCollector.getRegistries().parallelStream().map(r -> getClusterInfo(r.getEntries(), r.getGroup().getName())).collect(Collectors.toList()));
         return () -> clientMappingRegistryCollector.removeListener(listener);
     }
@@ -371,6 +360,30 @@ final class AssociationImpl implements Association {
             return null;
         }
         return moduleDeployment.getEjbs().get(beanName);
+    }
+
+    private class ClusterTopologyUpdateListener implements Registry.Listener<String, List<ClientMapping>> {
+        private final String clusterName;
+        private final ClusterTopologyListener delegate;
+
+        ClusterTopologyUpdateListener(final String clusterName, final ClusterTopologyListener delegate) {
+            this.clusterName = clusterName;
+            this.delegate = delegate;
+        }
+
+        public void addedEntries(final Map<String, List<ClientMapping>> added) {
+            delegate.clusterNewNodesAdded(getClusterInfo(added, clusterName));
+        }
+
+        public void updatedEntries(final Map<String, List<ClientMapping>> updated) {
+            delegate.clusterNewNodesAdded(getClusterInfo(updated, clusterName));
+        }
+
+        public void removedEntries(final Map<String, List<ClientMapping>> removed) {
+            final ArrayList<ClusterTopologyListener.ClusterRemovalInfo> list = new ArrayList<>();
+            list.add(new ClusterTopologyListener.ClusterRemovalInfo(clusterName, new ArrayList<>(removed.keySet())));
+            delegate.clusterNodesRemoved(list);
+        }
     }
 
     static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag) throws Exception {
