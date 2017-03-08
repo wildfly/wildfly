@@ -31,6 +31,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_ELYTRON_ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
@@ -206,6 +207,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 dataSourceService.getDriverInjector());
 
          // If the authentication context is defined, add the capability
+         boolean requireLegacySecurity = false;
         if (ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
             if (model.hasDefined(AUTHENTICATION_CONTEXT.getName())) {
                 dataSourceServiceBuilder.addDependency(
@@ -218,23 +220,31 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 );
             }
         } else {
-            dataSourceServiceBuilder.addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
-                    dataSourceService.getSubjectFactoryInjector())
-                    .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, dataSourceService.getServerSecurityManager());
-
-
+            String secDomain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asStringOrNull();
+            requireLegacySecurity = (secDomain != null && secDomain.length() > 0) ;
         }
-         if (isXa() && RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
-             if (model.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName())) {
-                 dataSourceServiceBuilder.addDependency(
-                         context.getCapabilityServiceName(
-                                 Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
-                                 RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).asString(),
-                                 AuthenticationContext.class),
-                         AuthenticationContext.class,
-                         dataSourceService.getRecoveryAuthenticationContext()
-                 );
+
+         if (isXa()) {
+             if (RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
+                 if (model.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName())) {
+                     dataSourceServiceBuilder.addDependency(
+                             context.getCapabilityServiceName(
+                                     Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
+                                     RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).asString(),
+                                     AuthenticationContext.class),
+                             AuthenticationContext.class,
+                             dataSourceService.getRecoveryAuthenticationContext()
+                     );
+                 }
+             } else if (!requireLegacySecurity) {
+                 String secDomain = RECOVERY_SECURITY_DOMAIN.resolveModelAttribute(context, model).asStringOrNull();
+                 requireLegacySecurity = (secDomain != null && secDomain.length() > 0);
              }
+         }
+
+         if (requireLegacySecurity) {
+             dataSourceServiceBuilder.addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, dataSourceService.getSubjectFactoryInjector())
+                     .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, dataSourceService.getServerSecurityManager());
          }
 
          ModelNode credentialReference = Constants.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model);
