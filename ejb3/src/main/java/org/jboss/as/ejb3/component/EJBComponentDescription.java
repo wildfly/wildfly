@@ -23,13 +23,6 @@ package org.jboss.as.ejb3.component;
 
 import static org.jboss.as.ejb3.subsystem.IdentityResourceDefinition.IDENTITY_CAPABILITY;
 
-import javax.ejb.EJBLocalObject;
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
 import java.rmi.Remote;
 import java.util.ArrayList;
@@ -45,6 +38,14 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
+
+import javax.ejb.EJBLocalObject;
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.core.security.ServerSecurityManager;
@@ -68,12 +69,11 @@ import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.naming.ContextInjectionSource;
-import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.interceptors.AdditionalSetupInterceptor;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactories;
 import org.jboss.as.ejb3.component.interceptors.LoggingInterceptor;
+import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
 import org.jboss.as.ejb3.component.invocationmetrics.ExecutionTimeInterceptor;
 import org.jboss.as.ejb3.component.invocationmetrics.WaitTimeInterceptor;
 import org.jboss.as.ejb3.deployment.ApplicableMethodInformation;
@@ -81,6 +81,7 @@ import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
@@ -100,7 +101,6 @@ import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
 import org.jboss.as.security.deployment.SecurityAttachments;
 import org.jboss.as.security.service.SecurityDomainService;
-import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -119,8 +119,8 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.security.SecurityConstants;
-import org.wildfly.security.authz.Roles;
 import org.wildfly.security.authz.RoleMapper;
+import org.wildfly.security.authz.Roles;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -604,10 +604,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
                 if (! ((EJBComponentDescription) description).isSecurityDomainKnown()) {
+                    final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
+                    final CapabilityServiceSupport support = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
                     componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
                         @Override
                         public void configureDependency(final ServiceBuilder<?> serviceBuilder, final EJBComponentCreateService ejbComponentCreateService) throws DeploymentUnitProcessingException {
-                            serviceBuilder.addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, ejbComponentCreateService.getServerSecurityManagerInjector());
+                            serviceBuilder.addDependency(support.getCapabilityServiceName("org.wildfly.legacy-security.server-security-manager"), ServerSecurityManager.class, ejbComponentCreateService.getServerSecurityManagerInjector());
                         }
                     });
                 }
