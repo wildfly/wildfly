@@ -503,14 +503,14 @@ public class JcaExtension implements Extension {
 
                         org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_1;
                         ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
-                                ns, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name);
+                                ns, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name + "-" + WORKMANAGER_LONG_RUNNING);
                         break;
                     }
                     case SHORT_RUNNING_THREADS: {
 
                         org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_1;
                         ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
-                                ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name);
+                                ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name + "-" + WORKMANAGER_SHORT_RUNNING);
 
                         break;
                     }

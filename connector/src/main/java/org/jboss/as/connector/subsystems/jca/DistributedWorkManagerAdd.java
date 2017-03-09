@@ -150,8 +150,8 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
                 .addService(ConnectorServices.WORKMANAGER_SERVICE.append(name), wmService);
         builder.addDependency(JGroupsDefaultRequirement.CHANNEL_FACTORY.getServiceName(context), ChannelFactory.class, wmService.getJGroupsChannelFactoryInjector());
 
-        builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING).append(name), Executor.class, wmService.getExecutorLongInjector());
-        builder.addDependency(ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING).append(name), Executor.class, wmService.getExecutorShortInjector());
+        builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING).append(name + "-" + WORKMANAGER_LONG_RUNNING), Executor.class, wmService.getExecutorLongInjector());
+        builder.addDependency(ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING).append(name + "-" + WORKMANAGER_SHORT_RUNNING), Executor.class, wmService.getExecutorShortInjector());
 
         builder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, wmService.getXaTerminatorInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
