@@ -342,6 +342,7 @@
                            <additionalClasspathElement>${basedir}/src/test/config/arq</additionalClasspathElement>
                        </additionalClasspathElements>
                        <argLine>${surefire.system.args}</argLine>
+                       <trimStackTrace>false</trimStackTrace>
                    </configuration>
                </plugin>
 
