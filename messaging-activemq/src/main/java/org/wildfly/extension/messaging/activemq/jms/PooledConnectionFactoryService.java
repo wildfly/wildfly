@@ -54,7 +54,6 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.service.SecurityBootstrapService;
-import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.jca.common.api.metadata.Defaults;
@@ -116,7 +115,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.security.SubjectFactory;
 import org.wildfly.extension.messaging.activemq.ActiveMQActivationService;
 import org.wildfly.extension.messaging.activemq.JGroupsChannelLocator;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
@@ -430,8 +428,12 @@ public class PooledConnectionFactoryService implements Service<Void> {
                             activator.getTxIntegrationInjector())
                     .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE,
                             JcaSubsystemConfiguration.class, activator.getConfigInjector())
+                    // No legacy security services needed as this activation's sole connection definition
+                    // does not configure a legacy security domain
+                    /*
                     .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
                             activator.getSubjectFactoryInjector())
+                    */
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
                             activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)

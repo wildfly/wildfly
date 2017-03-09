@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.metadata.api.resourceadapter.ActivationSecurityUtil;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
@@ -212,8 +213,6 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, raDeploymentService.getRegistryInjector())
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, raDeploymentService.getTxIntegrationInjector())
                 .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, raDeploymentService.getConfigInjector())
-                .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, raDeploymentService.getSubjectFactoryInjector())
-                .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, raDeploymentService.getServerSecurityManager())
                 .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
                 .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
                 .addDependency(NamingService.SERVICE_NAME);
@@ -222,6 +221,11 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
             } else {
                 builder.addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector());
             }
+            if (activation != null && ActivationSecurityUtil.isLegacySecurityRequired(activation)) {
+                builder.addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class, raDeploymentService.getSubjectFactoryInjector())
+                        .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, raDeploymentService.getServerSecurityManager());
+            }
+
             return builder;
         } catch (Throwable t) {
             throw new DeploymentUnitProcessingException(t);

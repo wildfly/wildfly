@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
+import org.jboss.as.connector.metadata.api.resourceadapter.ActivationSecurityUtil;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
@@ -85,16 +86,20 @@ public class RaServicesFactory {
                         service.getTxIntegrationInjector())
                 .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class,
                         service.getConfigInjector())
-                .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
-                        service.getSubjectFactoryInjector())
-                .addDependency(SimpleSecurityManagerService.SERVICE_NAME,
-                        ServerSecurityManager.class, service.getServerSecurityManager())
                 .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, service.getCcmInjector())
                 .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
                 .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
                 .addDependency(NamingService.SERVICE_NAME)
                 .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName))
                 .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()));
+
+        if (ActivationSecurityUtil.isLegacySecurityRequired(raxml)) {
+            builder.addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
+                            service.getSubjectFactoryInjector())
+                    .addDependency(SimpleSecurityManagerService.SERVICE_NAME,
+                            ServerSecurityManager.class, service.getServerSecurityManager());
+        }
+
         String raName = deployment;
         if (raxml.getId() != null) {
             raName = raxml.getId();
