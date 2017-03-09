@@ -30,6 +30,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.TransformerOperationAttachment;
@@ -39,13 +41,24 @@ import org.jboss.dmr.ModelNode;
  * Convenience extension of {@link org.jboss.as.controller.ReloadRequiredWriteAttributeHandler} that can be initialized with an {@link Attribute} set.
  * @author Paul Ferraro
  */
-public class ReloadRequiredWriteAttributeHandler extends org.jboss.as.controller.ReloadRequiredWriteAttributeHandler implements Registration<ManagementResourceRegistration> {
+public class WriteAttributeStepHandler extends ReloadRequiredWriteAttributeHandler implements Registration<ManagementResourceRegistration> {
 
     private final WriteAttributeStepHandlerDescriptor descriptor;
+    private final ResourceServiceHandler handler;
 
-    public ReloadRequiredWriteAttributeHandler(WriteAttributeStepHandlerDescriptor descriptor) {
+    public WriteAttributeStepHandler(WriteAttributeStepHandlerDescriptor descriptor) {
+        this(descriptor, null);
+    }
+
+    public WriteAttributeStepHandler(WriteAttributeStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
         super(descriptor.getAttributes());
         this.descriptor = descriptor;
+        this.handler = handler;
+    }
+
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return super.requiresRuntime(context) && (this.handler != null);
     }
 
     @Override
@@ -77,6 +90,38 @@ public class ReloadRequiredWriteAttributeHandler extends org.jboss.as.controller
             }
         }
         super.recordCapabilitiesAndRequirements(context, attribute, newValue, oldValue);
+    }
+
+    @Override
+    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handback) throws OperationFailedException {
+        boolean updated = super.applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);
+        if (updated) {
+            PathAddress address = context.getCurrentAddress();
+            if (context.isResourceServiceRestartAllowed() && this.getAttributeDefinition(attributeName).getFlags().contains(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES) && context.markResourceRestarted(address, this.handler)) {
+                this.restartServices(context);
+                // Returning false prevents going into reload required state
+                return false;
+            }
+        }
+        return updated;
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode resolvedValue, Void handback) {
+        PathAddress address = context.getCurrentAddress();
+        if (context.isResourceServiceRestartAllowed() && this.getAttributeDefinition(attributeName).getFlags().contains(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES) && context.revertResourceRestarted(address, this.handler)) {
+            try {
+                this.restartServices(context);
+            } catch (OperationFailedException e) {
+                // AbstractWriterAttributeHandler.revertUpdateToRuntime(...) throws this exception, but the super implementation does not :(
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void restartServices(OperationContext context) throws OperationFailedException {
+        this.handler.removeServices(context, context.getOriginalRootResource().navigate(context.getCurrentAddress()).getModel());
+        this.handler.installServices(context, context.readResource(PathAddress.EMPTY_ADDRESS).getModel());
     }
 
     @Override

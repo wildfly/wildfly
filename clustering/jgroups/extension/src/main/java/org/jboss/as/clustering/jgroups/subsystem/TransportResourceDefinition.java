@@ -32,9 +32,9 @@ import java.util.stream.Collectors;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.Definable;
-import org.jboss.as.clustering.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.WriteAttributeStepHandler;
 import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
@@ -243,7 +243,7 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
                 .addExtraParameters(ThreadingAttribute.class)
                 .addRequiredChildren(ThreadPoolResourceDefinition.class)
             , builderFactory, parentBuilderFactory, (parent, registration) -> {
-                new ModelOnlyWriteAttributeHandler(() -> EnumSet.allOf(ThreadingAttribute.class).stream().map(Definable::getDefinition).collect(Collectors.toList())) {
+                new WriteAttributeStepHandler(() -> EnumSet.allOf(ThreadingAttribute.class).stream().map(Definable::getDefinition).collect(Collectors.toList())) {
                     @Override
                     protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
                         // Add a new step to validate instead of doing it directly in this method.
