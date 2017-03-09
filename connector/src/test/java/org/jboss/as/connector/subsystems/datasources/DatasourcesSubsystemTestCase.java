@@ -32,6 +32,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 import java.io.IOException;
 import java.util.List;
 
+import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -100,7 +101,12 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.MANAGEMENT;
+        // Create a AdditionalInitialization.MANAGEMENT variant that has all the external
+        // capabilities used by the various configs used in this test class
+        return AdditionalInitialization.withCapabilities(
+                Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY + ".DsAuthCtxt",
+                Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY + ".CredentialAuthCtxt"
+        );
     }
 
     @Test
@@ -203,7 +209,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
      */
     private void testTransformerElytronEnabled(String subsystemXml, ModelTestControllerVersion controllerVersion, final ModelVersion modelVersion) throws Exception {
         //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
         KernelServices mainServices = initialKernelServices(builder, controllerVersion, modelVersion);
         List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
         PathAddress subsystemAddress = PathAddress.pathAddress(DataSourcesSubsystemRootDefinition.PATH_SUBSYSTEM);
