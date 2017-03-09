@@ -33,6 +33,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.security.spi.SecurityServices;
+import org.wildfly.security.auth.server.SecurityDomain;
 
 public class WeldSecurityServices implements Service<WeldSecurityServices>, SecurityServices {
 
@@ -57,6 +58,11 @@ public class WeldSecurityServices implements Service<WeldSecurityServices>, Secu
 
     @Override
     public Principal getPrincipal() {
+        SecurityDomain elytronDomain = SecurityDomain.getCurrent();
+        if(elytronDomain != null) {
+            return elytronDomain.getCurrentSecurityIdentity().getPrincipal();
+        }
+
         final SimpleSecurityManager securityManager = securityManagerValue.getOptionalValue();
         if (securityManager == null)
             throw WeldLogger.ROOT_LOGGER.securityNotEnabled();
