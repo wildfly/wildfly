@@ -33,12 +33,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
-import org.jboss.as.clustering.function.Predicates;
+import org.jboss.as.clustering.function.BiPredicates;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -64,7 +65,7 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     };
 
     private final ResourceDescriptionResolver resolver;
-    private final Map<Capability, Predicate<ModelNode>> capabilities = new HashMap<>();
+    private final Map<Capability, BiPredicate<OperationContext, ModelNode>> capabilities = new HashMap<>();
     private final List<AttributeDefinition> attributes = new LinkedList<>();
     private final List<AttributeDefinition> parameters = new LinkedList<>();
     private final Set<PathElement> requiredChildren = new TreeSet<>(PATH_COMPARATOR);
@@ -84,7 +85,7 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     }
 
     @Override
-    public Map<Capability, Predicate<ModelNode>> getCapabilities() {
+    public Map<Capability, BiPredicate<OperationContext, ModelNode>> getCapabilities() {
         return this.capabilities;
     }
 
@@ -145,26 +146,26 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     }
 
     public <E extends Enum<E> & Capability> ResourceDescriptor addCapabilities(Class<E> enumClass) {
-        return this.addCapabilities(Predicates.always(), enumClass);
+        return this.addCapabilities(BiPredicates.always(), enumClass);
     }
 
     public ResourceDescriptor addCapabilities(Capability... capabilities) {
-        return this.addCapabilities(Predicates.always(), capabilities);
+        return this.addCapabilities(BiPredicates.always(), capabilities);
     }
 
     public ResourceDescriptor addCapabilities(Collection<? extends Capability> capabilities) {
-        return this.addCapabilities(Predicates.always(), capabilities);
+        return this.addCapabilities(BiPredicates.always(), capabilities);
     }
 
-    public <E extends Enum<E> & Capability> ResourceDescriptor addCapabilities(Predicate<ModelNode> predicate, Class<E> enumClass) {
+    public <E extends Enum<E> & Capability> ResourceDescriptor addCapabilities(BiPredicate<OperationContext, ModelNode> predicate, Class<E> enumClass) {
         return this.addCapabilities(predicate, EnumSet.allOf(enumClass));
     }
 
-    public ResourceDescriptor addCapabilities(Predicate<ModelNode> predicate, Capability... capabilities) {
+    public ResourceDescriptor addCapabilities(BiPredicate<OperationContext, ModelNode> predicate, Capability... capabilities) {
         return this.addCapabilities(predicate, Arrays.asList(capabilities));
     }
 
-    public ResourceDescriptor addCapabilities(Predicate<ModelNode> predicate, Collection<? extends Capability> capabilities) {
+    public ResourceDescriptor addCapabilities(BiPredicate<OperationContext, ModelNode> predicate, Collection<? extends Capability> capabilities) {
         capabilities.forEach(capability -> this.capabilities.put(capability, predicate));
         return this;
     }

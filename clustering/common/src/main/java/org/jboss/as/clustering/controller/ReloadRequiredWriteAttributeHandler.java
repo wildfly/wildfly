@@ -23,7 +23,7 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Map;
-import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 
 import org.jboss.as.clustering.controller.transform.InitialAttributeValueOperationContextAttachment;
 import org.jboss.as.controller.AttributeDefinition;
@@ -55,18 +55,18 @@ public class ReloadRequiredWriteAttributeHandler extends org.jboss.as.controller
 
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, AttributeDefinition attribute, ModelNode newValue, ModelNode oldValue) {
-        Map<Capability, Predicate<ModelNode>> capabilities = this.descriptor.getCapabilities();
+        Map<Capability, BiPredicate<OperationContext, ModelNode>> capabilities = this.descriptor.getCapabilities();
         if (!capabilities.isEmpty()) {
             PathAddress address = context.getCurrentAddress();
             // newValue is already applied to the model
             ModelNode newModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
             ModelNode oldModel = newModel.clone();
             oldModel.get(attribute.getName()).set(oldValue);
-            for (Map.Entry<Capability, Predicate<ModelNode>> entry : capabilities.entrySet()) {
+            for (Map.Entry<Capability, BiPredicate<OperationContext, ModelNode>> entry : capabilities.entrySet()) {
                 Capability capability = entry.getKey();
-                Predicate<ModelNode> predicate = entry.getValue();
-                boolean registered = predicate.test(oldModel);
-                boolean shouldRegister = predicate.test(newModel);
+                BiPredicate<OperationContext, ModelNode> predicate = entry.getValue();
+                boolean registered = predicate.test(context, oldModel);
+                boolean shouldRegister = predicate.test(context, newModel);
                 if (!registered && shouldRegister) {
                     // Attribute change enables capability registration
                     context.registerCapability(capability.resolve(address));

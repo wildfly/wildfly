@@ -179,7 +179,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         ModelNode model = resource.getModel();
         // The super implementation assumes that the capability name is a simple extension of the base name - we do not.
         // Only register capabilities when allowed by the associated predicate
-        this.descriptor.getCapabilities().entrySet().stream().filter(entry -> entry.getValue().test(model)).map(Map.Entry::getKey).forEach(capability -> context.registerCapability(capability.resolve(address)));
+        this.descriptor.getCapabilities().entrySet().stream().filter(entry -> entry.getValue().test(context, model)).map(Map.Entry::getKey).forEach(capability -> context.registerCapability(capability.resolve(address)));
 
         ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
         registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
