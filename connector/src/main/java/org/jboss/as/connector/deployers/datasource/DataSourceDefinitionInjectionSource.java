@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.connector.deployers.datasource;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
@@ -31,7 +30,13 @@ import org.jboss.as.connector.subsystems.datasources.LocalDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.ModifiableDataSource;
 import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
 import org.jboss.as.connector.subsystems.datasources.XaDataSourceService;
+import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
+import org.jboss.as.connector.subsystems.datasources.XMLDataSourceRuntimeHandler;
+import org.jboss.as.connector.subsystems.datasources.XMLXaDataSourceRuntimeHandler;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -46,13 +51,17 @@ import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.jca.common.api.metadata.Defaults;
+import org.jboss.jca.common.api.metadata.ds.CommonDataSource;
+import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.TransactionIsolation;
+import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.metadata.ds.DsPoolImpl;
 import org.jboss.jca.common.metadata.ds.DsXaPoolImpl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
@@ -73,7 +82,9 @@ import javax.sql.XADataSource;
 
 import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
@@ -128,6 +139,12 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
     private String user;
     private String password;
 
+    // Management Model constants
+    private static final String DATA_SOURCE = "data-source";
+    private static final String XA_DATA_SOURCE = "xa-data-source";
+    private static final String CONNECTION_PROPERTIES = "connection-properties";
+    private static final String XA_CONNECTION_PROPERTIES = "xa-datasource-properties";
+
     public DataSourceDefinitionInjectionSource(final String jndiName) {
         super(jndiName);
     }
@@ -163,6 +180,8 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                 final XaDataSourceService xds = new XaDataSourceService(bindInfo.getBinderServiceName().getCanonicalName(), bindInfo, module.getClassLoader());
                 xds.getDataSourceConfigInjector().inject(dataSource);
                 startDataSource(xds, bindInfo, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector, securityEnabled);
+                PathAddress dataSourceAddress = getDataSourceAddress(jndiName, deploymentUnit, true);
+                installManagementModel(dataSource, deploymentUnit, dataSourceAddress);
             } else {
                 final DsPoolImpl commonPool = new DsPoolImpl(minPoolSize < 0 ? Defaults.MIN_POOL_SIZE : Integer.valueOf(minPoolSize),
                                                              initialPoolSize < 0 ? Defaults.INITIAL_POOL_SIZE : Integer.valueOf(initialPoolSize),
@@ -174,6 +193,8 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                 final LocalDataSourceService ds = new LocalDataSourceService(bindInfo.getBinderServiceName().getCanonicalName(), bindInfo, module.getClassLoader());
                 ds.getDataSourceConfigInjector().inject(dataSource);
                 startDataSource(ds, bindInfo, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector, securityEnabled);
+                PathAddress dataSourceAddress = getDataSourceAddress(jndiName, deploymentUnit, false);
+                installManagementModel(dataSource, deploymentUnit, dataSourceAddress);
             }
 
         } catch (Exception e) {
@@ -352,6 +373,41 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
             if (setterMethod != null) {
                 properties.put(name, value.toString());
             }
+        }
+    }
+
+    private static PathAddress getDataSourceAddress(final String jndiName, DeploymentUnit deploymentUnit, boolean xa) {
+        List<PathElement> elements = new ArrayList<>();
+        if (deploymentUnit.getParent() == null) {
+            elements.add(PathElement.pathElement(ModelDescriptionConstants.DEPLOYMENT, deploymentUnit.getName()));
+        } else {
+            elements.add(PathElement.pathElement(ModelDescriptionConstants.DEPLOYMENT, deploymentUnit.getParent().getName()));
+            elements.add(PathElement.pathElement(ModelDescriptionConstants.SUBDEPLOYMENT, deploymentUnit.getName()));
+        }
+        elements.add(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, DataSourcesExtension.SUBSYSTEM_NAME));
+        if (xa) {
+            elements.add(PathElement.pathElement(XA_DATA_SOURCE, jndiName));
+        } else {
+            elements.add(PathElement.pathElement(DATA_SOURCE, jndiName));
+        }
+        return PathAddress.pathAddress(elements);
+    }
+
+    private void installManagementModel(final CommonDataSource ds, final DeploymentUnit deploymentUnit, final PathAddress addr) {
+        final boolean xa = ds instanceof XaDataSource;
+
+        if (xa) {
+            XMLXaDataSourceRuntimeHandler.INSTANCE.registerDataSource(addr, (XaDataSource) ds);
+        } else {
+            XMLDataSourceRuntimeHandler.INSTANCE.registerDataSource(addr, (DataSource) ds);
+        }
+
+        final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
+        deploymentResourceSupport.getDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, addr.getLastElement());
+
+        for (final Map.Entry<String, String> prop : properties.entrySet()) {
+            PathAddress registration = PathAddress.pathAddress(addr.getLastElement(), PathElement.pathElement(xa ? XA_CONNECTION_PROPERTIES : CONNECTION_PROPERTIES, prop.getKey()));
+            deploymentResourceSupport.getDeploymentSubModel(DataSourcesExtension.SUBSYSTEM_NAME, registration);
         }
     }
 
