@@ -78,9 +78,13 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
 
         RegistrationService registrationService = new RegistrationService(module);
         ServiceName registrationServiceName = deploymentUnit.getServiceName().append("ejb3","client-context","registration-service");
+        final ServiceName profileServiceName = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME);
         final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(registrationServiceName, registrationService)
             .addDependency(getEJBClientContextServiceName(phaseContext), EJBClientContextService.class, registrationService.ejbClientContextInjectedValue)
             .addDependency(getDiscoveryServiceName(phaseContext), Discovery.class, registrationService.discoveryInjector);
+        if (profileServiceName != null) {
+            builder.addDependency(profileServiceName, RemotingProfileService.class, registrationService.profileServiceInjectedValue);
+        }
         builder.install();
 
 
