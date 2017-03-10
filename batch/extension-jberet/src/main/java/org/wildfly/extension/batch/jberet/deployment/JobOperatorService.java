@@ -517,7 +517,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
                 if (WildFlySecurityManager.isChecking()) {
                     securityIdentity = AccessController.doPrivileged((PrivilegedAction<SecurityIdentity>) () -> securityDomain.getAnonymousSecurityIdentity().createRunAsIdentity(user, false));
                 } else {
-                    securityIdentity = securityDomain.getAnonymousSecurityIdentity().createRunAsIdentity(user);
+                    securityIdentity = securityDomain.getAnonymousSecurityIdentity().createRunAsIdentity(user, false);
                 }
             } else {
                 securityIdentity = securityDomain.getCurrentSecurityIdentity();
