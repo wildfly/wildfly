@@ -30,7 +30,6 @@ import java.util.OptionalLong;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.modules.ModuleIdentifier;
 
 /**
  * Utility methods for extracting values from a {@link ModelNode}.
@@ -54,15 +53,6 @@ public class ModelNodes {
      */
     public static <E extends Enum<E>> E asEnum(ModelNode value, Class<E> targetClass) {
         return Enum.valueOf(targetClass, value.asString());
-    }
-
-    /**
-     * Returns the value of the node as a module identifier.
-     * @param value a model node
-     * @return the value of the node as a module identifier.
-     */
-    public static ModuleIdentifier asModuleIdentifier(ModelNode value) {
-        return ModuleIdentifier.fromString(value.asString());
     }
 
     /**
@@ -153,15 +143,6 @@ public class ModelNodes {
      */
     public static <E extends Enum<E>> Optional<E> optionalEnum(ModelNode value, Class<E> targetClass) {
         return value.isDefined() ? Optional.of(asEnum(value, targetClass)) : Optional.empty();
-    }
-
-    /**
-     * Returns the optional module identifier value of the specified {@link ModelNode}.
-     * @param value the model node
-     * @return an optional value
-     */
-    public static Optional<ModuleIdentifier> optionalModuleIdentifier(ModelNode value) {
-        return value.isDefined() ? Optional.of(asModuleIdentifier(value)) : Optional.empty();
     }
 
     private ModelNodes() {
