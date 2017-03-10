@@ -414,7 +414,7 @@
                         <xs:documentation>Number of hash space segments (per cluster).</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="l1-lifespan" type="xs:long" default="600000">
+                <xs:attribute name="l1-lifespan" type="xs:long" default="0">
                     <xs:annotation>
                         <xs:documentation>Maximum lifespan in milliseconds of an entry placed in the L1 cache.</xs:documentation>
                     </xs:annotation>
