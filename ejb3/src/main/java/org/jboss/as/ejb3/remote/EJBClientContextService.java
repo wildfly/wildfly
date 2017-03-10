@@ -26,8 +26,11 @@ import static java.security.AccessController.doPrivileged;
 
 import java.net.URI;
 import java.security.PrivilegedAction;
+import java.util.List;
 
 import org.jboss.as.ejb3.subsystem.EJBClientConfiguratorService;
+import org.jboss.ejb.client.DeploymentNodeSelector;
+import org.jboss.ejb.client.EJBClientCluster;
 import org.jboss.ejb.client.EJBClientConnection;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBTransportProvider;
@@ -37,6 +40,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.security.auth.client.AuthenticationContext;
 
 /**
  * The EJB client context service.
@@ -66,6 +70,9 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
      */
     private final boolean makeGlobal;
     private long invocationTimeout;
+    private DeploymentNodeSelector deploymentNodeSelector;
+    private List<EJBClientCluster> clientClusters = null;
+    private AuthenticationContext clustersAuthenticationContext = null;
 
     public EJBClientContextService(final boolean makeGlobal) {
         this.makeGlobal = makeGlobal;
@@ -100,6 +107,16 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
             final EJBClientConnection.Builder connBuilder = new EJBClientConnection.Builder();
             connBuilder.setDestination(appClientUri.getOptionalValue());
             builder.addClientConnection(connBuilder.build());
+        }
+
+        if (clientClusters != null) {
+            for (EJBClientCluster clientCluster : clientClusters) {
+                builder.addClientCluster(clientCluster);
+            }
+        }
+
+        if (deploymentNodeSelector != null) {
+            builder.setDeploymentNodeSelector(deploymentNodeSelector);
         }
 
         clientContext = builder.build();
@@ -148,5 +165,21 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
 
     public void setInvocationTimeout(final long invocationTimeout) {
         this.invocationTimeout = invocationTimeout;
+    }
+
+    public void setDeploymentNodeSelector(final DeploymentNodeSelector deploymentNodeSelector) {
+        this.deploymentNodeSelector = deploymentNodeSelector;
+    }
+
+    public void setClientClusters(final List<EJBClientCluster> clientClusters) {
+        this.clientClusters = clientClusters;
+    }
+
+    public void setClustersAuthenticationContext(final AuthenticationContext clustersAuthenticationContext) {
+        this.clustersAuthenticationContext = clustersAuthenticationContext;
+    }
+
+    public AuthenticationContext getClustersAuthenticationContext() {
+        return clustersAuthenticationContext;
     }
 }
