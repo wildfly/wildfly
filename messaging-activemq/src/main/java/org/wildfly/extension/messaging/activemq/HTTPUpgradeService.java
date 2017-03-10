@@ -139,11 +139,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
                             if (endpoint == null) {
                                 return true;
                             } else {
-                                if (acceptorName.equals(endpoint)) {
-                                    return !remotingService.isPaused();
-                                } else {
-                                    return false;
-                                }
+                                return acceptorName.equals(endpoint);
                             }
                         } else {
                             return false;
