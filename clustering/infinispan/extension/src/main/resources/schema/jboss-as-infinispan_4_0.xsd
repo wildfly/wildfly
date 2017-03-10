@@ -334,7 +334,7 @@
     <xs:complexType name="clustered-cache" abstract="true">
         <xs:complexContent>
             <xs:extension base="tns:cache">
-                <xs:attribute name="mode" type="tns:mode" use="required">
+                <xs:attribute name="mode" type="tns:mode" default="SYNC">
                     <xs:annotation>
                         <xs:documentation>Sets the clustered cache mode, ASYNC for asynchronous operation, or SYNC for synchronous operation.</xs:documentation>
                     </xs:annotation>

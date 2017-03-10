@@ -23,12 +23,12 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -72,18 +72,13 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        MODE("mode", ModelType.STRING, new EnumValidatorBuilder<>(Mode.class)),
-        REMOTE_TIMEOUT("remote-timeout", ModelType.LONG, new ModelNode(10000L)),
+        MODE("mode", ModelType.STRING, new ModelNode(Mode.SYNC.name()), builder -> builder.setValidator(new EnumValidatorBuilder<>(Mode.class).configure(builder).build())),
+        REMOTE_TIMEOUT("remote-timeout", ModelType.LONG, new ModelNode(10000L), UnaryOperator.identity()),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type, defaultValue).build();
-        }
-
-        Attribute(String name, ModelType type, ParameterValidatorBuilder validator) {
-            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, null);
-            this.definition = builder.setValidator(validator.configure(builder).build()).build();
+        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(createBuilder(name, type, defaultValue)).build();
         }
 
         @Override
@@ -123,7 +118,10 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
         if (InfinispanModel.VERSION_4_2_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(Attribute.REMOTE_TIMEOUT.getDefinition()), Attribute.REMOTE_TIMEOUT.getDefinition());
+            builder.getAttributeBuilder()
+                    .setValueConverter(new DefaultValueAttributeConverter(Attribute.REMOTE_TIMEOUT.getDefinition()), Attribute.REMOTE_TIMEOUT.getDefinition())
+                    .setValueConverter(new DefaultValueAttributeConverter(Attribute.MODE.getDefinition()), Attribute.MODE.getDefinition())
+                    .end();
         }
 
         CacheResourceDefinition.buildTransformation(version, builder);
