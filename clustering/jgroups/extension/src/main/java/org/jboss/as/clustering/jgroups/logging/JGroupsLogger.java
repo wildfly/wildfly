@@ -54,8 +54,8 @@ public interface JGroupsLogger extends BasicLogger {
      * Logs an informational message indicating the JGroups subsystem is being activated.
      */
     @LogMessage(level = INFO)
-    @Message(id = 1, value = "Activating JGroups subsystem.")
-    void activatingSubsystem();
+    @Message(id = 1, value = "Activating JGroups subsystem. JGroups version %s")
+    void activatingSubsystem(String version);
 
     @LogMessage(level = TRACE)
     @Message(id = 2, value = "Setting %s.%s=%d")
