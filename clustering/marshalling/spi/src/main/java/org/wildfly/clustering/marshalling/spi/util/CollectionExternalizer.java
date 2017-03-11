@@ -49,9 +49,9 @@ public class CollectionExternalizer<T extends Collection<Object>> implements Ext
     private final Class<T> targetClass;
     private final IntFunction<T> factory;
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    CollectionExternalizer(Class targetClass, IntFunction<T> factory) {
-        this.targetClass = targetClass;
+    @SuppressWarnings("unchecked")
+    CollectionExternalizer(Class<?> targetClass, IntFunction<T> factory) {
+        this.targetClass = (Class<T>) targetClass;
         this.factory = factory;
     }
 
@@ -81,7 +81,7 @@ public class CollectionExternalizer<T extends Collection<Object>> implements Ext
     }
 
     @Override
-    public Class<? extends T> getTargetClass() {
+    public Class<T> getTargetClass() {
         return this.targetClass;
     }
 

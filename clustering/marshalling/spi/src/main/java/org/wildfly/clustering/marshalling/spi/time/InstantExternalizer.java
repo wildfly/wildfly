@@ -51,7 +51,7 @@ public class InstantExternalizer implements Externalizer<Instant> {
     }
 
     @Override
-    public Class<? extends Instant> getTargetClass() {
+    public Class<Instant> getTargetClass() {
         return Instant.class;
     }
 }

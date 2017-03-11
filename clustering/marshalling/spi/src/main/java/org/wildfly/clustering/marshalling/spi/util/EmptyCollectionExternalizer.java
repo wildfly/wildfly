@@ -64,8 +64,8 @@ public class EmptyCollectionExternalizer<T> implements Externalizer<T> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Class<? extends T> getTargetClass() {
-        return (Class<? extends T>) this.factory.get().getClass();
+    public Class<T> getTargetClass() {
+        return (Class<T>) this.factory.get().getClass();
     }
 
     @MetaInfServices(Externalizer.class)

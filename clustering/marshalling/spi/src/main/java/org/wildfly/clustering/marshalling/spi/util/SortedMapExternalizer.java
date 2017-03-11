@@ -45,9 +45,9 @@ public class SortedMapExternalizer<T extends SortedMap<Object, Object>> implemen
     private final Class<T> targetClass;
     private final Function<Comparator<? super Object>, T> factory;
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    SortedMapExternalizer(Class targetClass, Function<Comparator<? super Object>, T> factory) {
-        this.targetClass = targetClass;
+    @SuppressWarnings("unchecked")
+    SortedMapExternalizer(Class<?> targetClass, Function<Comparator<? super Object>, T> factory) {
+        this.targetClass = (Class<T>) targetClass;
         this.factory = factory;
     }
 
@@ -66,7 +66,7 @@ public class SortedMapExternalizer<T extends SortedMap<Object, Object>> implemen
     }
 
     @Override
-    public Class<? extends T> getTargetClass() {
+    public Class<T> getTargetClass() {
         return this.targetClass;
     }
 

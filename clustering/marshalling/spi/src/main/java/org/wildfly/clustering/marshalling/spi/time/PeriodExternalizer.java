@@ -53,7 +53,7 @@ public class PeriodExternalizer implements Externalizer<Period> {
     }
 
     @Override
-    public Class<? extends Period> getTargetClass() {
+    public Class<Period> getTargetClass() {
         return Period.class;
     }
 }

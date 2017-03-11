@@ -53,7 +53,7 @@ public class MonthDayExternalizer implements Externalizer<MonthDay> {
     }
 
     @Override
-    public Class<? extends MonthDay> getTargetClass() {
+    public Class<MonthDay> getTargetClass() {
         return MonthDay.class;
     }
 }

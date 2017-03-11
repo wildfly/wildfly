@@ -44,9 +44,9 @@ public class CopyOnWriteCollectionExternalizer<T extends Collection<Object>> imp
     private final Class<T> targetClass;
     private final Function<Collection<Object>, T> factory;
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    CopyOnWriteCollectionExternalizer(Class targetClass, Function<Collection<Object>, T> factory) {
-        this.targetClass = targetClass;
+    @SuppressWarnings("unchecked")
+    CopyOnWriteCollectionExternalizer(Class<?> targetClass, Function<Collection<Object>, T> factory) {
+        this.targetClass = (Class<T>) targetClass;
         this.factory = factory;
     }
 
@@ -63,7 +63,7 @@ public class CopyOnWriteCollectionExternalizer<T extends Collection<Object>> imp
     }
 
     @Override
-    public Class<? extends T> getTargetClass() {
+    public Class<T> getTargetClass() {
         return this.targetClass;
     }
 

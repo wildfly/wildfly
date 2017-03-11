@@ -56,7 +56,7 @@ public class URLExternalizer implements Externalizer<URL> {
     }
 
     @Override
-    public Class<? extends URL> getTargetClass() {
+    public Class<URL> getTargetClass() {
         return URL.class;
     }
 }

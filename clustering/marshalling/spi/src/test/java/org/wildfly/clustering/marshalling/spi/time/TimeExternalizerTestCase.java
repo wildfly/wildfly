@@ -59,7 +59,7 @@ public class TimeExternalizerTestCase {
         ExternalizerTestUtil.test(new PeriodExternalizer(), Period.between(LocalDate.ofEpochDay(0), LocalDate.now()));
         ExternalizerTestUtil.test(new YearExternalizer(), Year.now());
         ExternalizerTestUtil.test(new YearMonthExternalizer(), YearMonth.now());
-        ExternalizerTestUtil.test(new ZoneIdExternalizer(), ZoneOffset.UTC);
+        ExternalizerTestUtil.test(new ZoneOffsetExternalizer(), ZoneOffset.UTC);
     }
 
     private static <E extends Enum<E>> void test(Externalizer<E> externalizer) throws ClassNotFoundException, IOException {
