@@ -46,10 +46,9 @@ public class SessionFilterExternalizer<D, S> implements Externalizer<SessionFilt
         return new SessionFilter<>((S) input.readObject());
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("unchecked")
     @Override
-    public Class<? extends SessionFilter<D, S>> getTargetClass() {
-        Class targetClass = SessionFilter.class;
-        return targetClass;
+    public Class<SessionFilter<D, S>> getTargetClass() {
+        return (Class<SessionFilter<D, S>>) (Class<?>) SessionFilter.class;
     }
 }

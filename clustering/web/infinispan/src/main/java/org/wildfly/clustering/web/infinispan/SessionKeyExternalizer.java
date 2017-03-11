@@ -68,7 +68,7 @@ public abstract class SessionKeyExternalizer<K extends Key<String>> implements E
     }
 
     @Override
-    public Class<? extends K> getTargetClass() {
+    public Class<K> getTargetClass() {
         return this.targetClass;
     }
 }

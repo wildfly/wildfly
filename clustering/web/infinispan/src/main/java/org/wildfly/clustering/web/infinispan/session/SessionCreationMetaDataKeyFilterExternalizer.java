@@ -45,7 +45,7 @@ public class SessionCreationMetaDataKeyFilterExternalizer implements Externalize
     }
 
     @Override
-    public Class<? extends SessionCreationMetaDataKeyFilter> getTargetClass() {
+    public Class<SessionCreationMetaDataKeyFilter> getTargetClass() {
         return SessionCreationMetaDataKeyFilter.class;
     }
 }

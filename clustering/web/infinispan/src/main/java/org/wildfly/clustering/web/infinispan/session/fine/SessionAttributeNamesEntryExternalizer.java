@@ -64,7 +64,7 @@ public class SessionAttributeNamesEntryExternalizer implements Externalizer<Sess
     }
 
     @Override
-    public Class<? extends SessionAttributeNamesEntry> getTargetClass() {
+    public Class<SessionAttributeNamesEntry> getTargetClass() {
         return SessionAttributeNamesEntry.class;
     }
 }

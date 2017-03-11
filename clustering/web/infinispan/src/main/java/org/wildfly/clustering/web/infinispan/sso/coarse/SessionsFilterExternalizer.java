@@ -46,10 +46,9 @@ public class SessionsFilterExternalizer<D, S> implements Externalizer<SessionsFi
         return this.filter;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("unchecked")
     @Override
-    public Class<? extends SessionsFilter<D, S>> getTargetClass() {
-        Class targetClass = SessionsFilter.class;
-        return targetClass;
+    public Class<SessionsFilter<D, S>> getTargetClass() {
+        return (Class<SessionsFilter<D, S>>) (Class<?>) SessionsFilter.class;
     }
 }
