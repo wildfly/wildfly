@@ -22,17 +22,19 @@
 
 package org.wildfly.clustering.marshalling.spi.time;
 
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.StringExternalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class ZoneIdExternalizer extends StringExternalizer<ZoneId> {
+@MetaInfServices(Externalizer.class)
+public class ZoneOffsetExternalizer extends StringExternalizer<ZoneOffset> {
 
-    public ZoneIdExternalizer() {
-        super(ZoneOffset.class, ZoneId::of, ZoneId::getId);
+    public ZoneOffsetExternalizer() {
+        super(ZoneOffset.class, ZoneOffset::of, ZoneOffset::getId);
     }
 }
