@@ -23,12 +23,12 @@
 package org.jboss.as.clustering.controller;
 
 /**
- * Registers a {@link AddStepHandler}, {@link RemoveStepHandler}, and {@link ReloadRequiredWriteAttributeHandler} on behalf of a resource definition.
+ * Registers a {@link AddStepHandler}, {@link RemoveStepHandler}, and {@link WriteAttributeStepHandler} on behalf of a resource definition.
  * @author Paul Ferraro
  */
 public class SimpleResourceRegistration extends ResourceRegistration {
 
     public SimpleResourceRegistration(ResourceDescriptor descriptor, ResourceServiceHandler handler) {
-        super(descriptor, new AddStepHandler(descriptor, handler), new RemoveStepHandler(descriptor, handler), (handler != null) ? new ReloadRequiredWriteAttributeHandler(descriptor) : new ModelOnlyWriteAttributeHandler(descriptor));
+        super(descriptor, new AddStepHandler(descriptor, handler), new RemoveStepHandler(descriptor, handler), new WriteAttributeStepHandler(descriptor, handler));
     }
 }

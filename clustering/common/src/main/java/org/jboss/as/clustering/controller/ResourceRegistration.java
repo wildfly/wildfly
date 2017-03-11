@@ -36,7 +36,7 @@ public class ResourceRegistration implements Registration<ManagementResourceRegi
     private final Registration<ManagementResourceRegistration> writeAttributeRegistration;
 
     protected ResourceRegistration(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler, Registration<ManagementResourceRegistration> addRegistration, Registration<ManagementResourceRegistration> removeRegistration) {
-        this(descriptor, addRegistration, removeRegistration, (handler != null) ? new ReloadRequiredWriteAttributeHandler(descriptor) : new ModelOnlyWriteAttributeHandler(descriptor));
+        this(descriptor, addRegistration, removeRegistration, new WriteAttributeStepHandler(descriptor, handler));
     }
 
     protected ResourceRegistration(AddStepHandlerDescriptor descriptor, Registration<ManagementResourceRegistration> addRegistration, Registration<ManagementResourceRegistration> removeRegistration, Registration<ManagementResourceRegistration> writeAttributeRegistration) {

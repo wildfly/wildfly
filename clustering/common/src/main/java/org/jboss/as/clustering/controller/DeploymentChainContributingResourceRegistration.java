@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 import org.jboss.as.server.DeploymentProcessorTarget;
 
 /**
- * Registers a {@link DeploymentChainContributingAddStepHandler}, {@link ReloadRequiredRemoveStepHandler}, and {@link ReloadRequiredWriteAttributeHandler} on behalf of a resource definition.
+ * Registers a {@link DeploymentChainContributingAddStepHandler}, {@link ReloadRequiredRemoveStepHandler}, and {@link WriteAttributeStepHandler} on behalf of a resource definition.
  * @author Paul Ferraro
  */
 public class DeploymentChainContributingResourceRegistration extends ResourceRegistration {
