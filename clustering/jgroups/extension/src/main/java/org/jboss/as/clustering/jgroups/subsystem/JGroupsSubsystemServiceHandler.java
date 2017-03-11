@@ -42,6 +42,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
+import org.jgroups.Version;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.ServiceNameProvider;
@@ -54,7 +55,7 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
 
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
-        ROOT_LOGGER.activatingSubsystem();
+        ROOT_LOGGER.activatingSubsystem(Version.printVersion());
 
         ServiceTarget target = context.getServiceTarget();
         PathAddress address = context.getCurrentAddress();
