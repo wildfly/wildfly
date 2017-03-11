@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
+import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Credential;
 import org.jboss.as.connector.metadata.api.common.Security;
@@ -455,11 +456,12 @@ public class Constants {
             .build();
     public static SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT.getLocalName())
-            .setAllowExpression(true)
+            .setAllowExpression(false)
             .setRequires(ELYTRON_ENABLED_NAME)
             .addAlternatives(SECURITY_DOMAIN_NAME, USERNAME_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
             .addAccessConstraint(DS_SECURITY_DEF)
+            .setCapabilityReference(Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY, Capabilities.DATA_SOURCE_CAPABILITY)
             .setRestartAllServices()
             .build();
 
@@ -758,9 +760,10 @@ public class Constants {
 
     static SimpleAttributeDefinition RECOVERY_AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(RECOVERY_AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT.getLocalName())
-            .setAllowExpression(true)
+            .setAllowExpression(false)
             .setRequires(RECOVERY_ELYTRON_ENABLED_NAME)
             .addAlternatives(RECOVERY_SECURITY_DOMAIN_NAME, RECOVERY_USERNAME_NAME)
+            .setCapabilityReference(Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY, Capabilities.DATA_SOURCE_CAPABILITY)
             .setRestartAllServices()
             .build();
 

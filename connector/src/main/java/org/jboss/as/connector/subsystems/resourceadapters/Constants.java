@@ -447,7 +447,7 @@ public class Constants {
             .build();
     static SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT.getLocalName())
-            .setAllowExpression(true)
+            .setAllowExpression(false)
             .setRequires(ELYTRON_ENABLED_NAME)
             .setAlternatives(SECURITY_DOMAIN_NAME, SECURITY_DOMAIN_AND_APPLICATION_NAME, APPLICATION_NAME,
                     AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME)
@@ -457,7 +457,7 @@ public class Constants {
             .build();
     static final SimpleAttributeDefinition AUTHENTICATION_CONTEXT_AND_APPLICATION = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT_AND_APPLICATION.getLocalName())
-            .setAllowExpression(true)
+            .setAllowExpression(false)
             .setRequires(ELYTRON_ENABLED_NAME)
             .setAlternatives(SECURITY_DOMAIN_NAME, SECURITY_DOMAIN_AND_APPLICATION_NAME, APPLICATION_NAME,
                     AUTHENTICATION_CONTEXT_NAME)
@@ -631,7 +631,7 @@ public class Constants {
 
     static SimpleAttributeDefinition RECOVERY_AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(RECOVERY_AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
             .setXmlName(Credential.Tag.AUTHENTICATION_CONTEXT.getLocalName())
-            .setAllowExpression(true)
+            .setAllowExpression(false)
             .setRequires(RECOVERY_ELYTRON_ENABLED_NAME)
             .setAlternatives(RECOVERY_SECURITY_DOMAIN_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)

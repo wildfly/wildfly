@@ -38,6 +38,11 @@ import java.util.Properties;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.jca.ConnectionSecurityType;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.dmr.ModelNode;
@@ -59,7 +64,25 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(DataSourceOperationsUnitTestCase.ServerSetup.class)
 public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
+
+    public static class ServerSetup implements ServerSetupTask {
+
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            ModelNode authContextAdd = Util.createAddOperation(PathAddress.pathAddress("subsystem", "elytron").append("authentication-context", "HsqlAuthCtxt"));
+            ModelNode response = managementClient.getControllerClient().execute(authContextAdd);
+            Assert.assertEquals(response.toString(), "success", response.get("outcome").asString());
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            ModelNode authContextRemove = Util.createRemoveOperation(PathAddress.pathAddress("subsystem", "elytron").append("authentication-context", "HsqlAuthCtxt"));
+            ModelNode response = managementClient.getControllerClient().execute(authContextRemove);
+            Assert.assertEquals(response.toString(), "success", response.get("outcome").asString());
+        }
+    }
 
     @Deployment
     public static Archive<?> fakeDeployment() {
@@ -545,6 +568,4 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         Assert.assertNotNull("xa-datasource-properties not propagated ", findNodeWithProperty(newList, "value", "jdbc:h2:mem:test"));
     }
-
-
 }
