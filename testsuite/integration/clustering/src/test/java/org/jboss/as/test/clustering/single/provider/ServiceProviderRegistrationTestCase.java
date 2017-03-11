@@ -31,12 +31,12 @@ import java.util.PropertyPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetriever;
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
+import org.jboss.ejb.client.legacy.JBossEJBProperties;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -71,17 +71,15 @@ public class ServiceProviderRegistrationTestCase {
 
     @Test
     public void test() throws Exception {
-
-        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
-        // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset
-        // to its original state at the end of the test
-        EJBClientContextSelector.setup(CLIENT_PROPERTIES);
-
-        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
-            ServiceProviderRetriever bean = directory.lookupStateless(ServiceProviderRetrieverBean.class, ServiceProviderRetriever.class);
-            Collection<String> names = bean.getProviders();
-            assertEquals(1, names.size());
-            assertTrue(names.toString(), names.contains(NODE_1));
-        }
+        JBossEJBProperties properties = JBossEJBProperties.fromClassPath(ServiceProviderRegistrationTestCase.class.getClassLoader(), CLIENT_PROPERTIES);
+        properties.runCallable(() -> {
+            try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
+                ServiceProviderRetriever bean = directory.lookupStateless(ServiceProviderRetrieverBean.class, ServiceProviderRetriever.class);
+                Collection<String> names = bean.getProviders();
+                assertEquals(1, names.size());
+                assertTrue(names.toString(), names.contains(NODE_1));
+            }
+            return null;
+        });
     }
 }
