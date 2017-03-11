@@ -33,11 +33,8 @@ import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
-import org.jboss.as.security.service.SimpleSecurityManagerService;
-import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
@@ -62,7 +59,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.security.SubjectFactory;
 
 public class DirectAdminObjectActivatorService implements Service<ContextNames.BindInfo> {
     public static final ServiceName SERVICE_NAME_BASE =
@@ -172,10 +168,14 @@ public class DirectAdminObjectActivatorService implements Service<ContextNames.B
                             activator.getTxIntegrationInjector())
                     .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE,
                             JcaSubsystemConfiguration.class, activator.getConfigInjector())
+                    // No legacy security services needed as this activation has no connection definitions
+                    // or work manager, so nothing configures a legacy security domain
+                    /*
                     .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
                             activator.getSubjectFactoryInjector())
                     .addDependency(SimpleSecurityManagerService.SERVICE_NAME,
                             ServerSecurityManager.class, activator.getServerSecurityManager())
+                    */
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
                             activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)

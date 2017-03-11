@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.metadata.api.common.SecurityMetadata;
 import org.jboss.as.connector.metadata.api.ds.DsSecurity;
 import org.jboss.as.connector.services.datasources.statistics.DataSourceStatisticsService;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
@@ -124,7 +125,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
 
         final List<DataSources> dataSourcesList = deploymentUnit.getAttachmentList(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
 
-        final boolean securityEnabled = phaseContext.getDeploymentUnit().hasAttachment(SecurityAttachments.SECURITY_ENABLED);
+        final boolean legacySecurityPresent = phaseContext.getDeploymentUnit().hasAttachment(SecurityAttachments.SECURITY_ENABLED);
 
         for(DataSources dataSources : dataSourcesList) {
             if (dataSources.getDrivers() != null && dataSources.getDrivers().size() > 0) {
@@ -144,8 +145,10 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             final String dsName = ds.getJndiName();
                             final PathAddress addr = getDataSourceAddress(dsName, deploymentUnit, false);
                             installManagementModel(ds, deploymentUnit, addr);
+                            // TODO why have we been ignoring a configured legacy security domain but no legacy security present?
+                            boolean useLegacySecurity = legacySecurityPresent && isLegacySecurityRequired(ds.getSecurity());
                             startDataSource(lds, jndiName, ds.getDriver(), serviceTarget,
-                                    getRegistration(false, deploymentUnit), getResource(dsName, false, deploymentUnit), dsName, securityEnabled, ds.isJTA());
+                                    getRegistration(false, deploymentUnit), getResource(dsName, false, deploymentUnit), dsName, useLegacySecurity, ds.isJTA());
                         } catch (Exception e) {
                             throw ConnectorLogger.ROOT_LOGGER.exceptionDeployingDatasource(e, ds.getJndiName());
                         }
@@ -166,8 +169,10 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             final String dsName = xads.getJndiName();
                             final PathAddress addr = getDataSourceAddress(dsName, deploymentUnit, true);
                             installManagementModel(xads, deploymentUnit, addr);
+                            // TODO why have we been ignoring a configured legacy security domain but no legacy security present?
+                            boolean useLegacySecurity = legacySecurityPresent && isLegacySecurityRequired(xads.getSecurity());
                             startDataSource(xds, jndiName, xads.getDriver(), serviceTarget,
-                                    getRegistration(true, deploymentUnit), getResource(dsName, true, deploymentUnit), dsName, securityEnabled, true);
+                                    getRegistration(true, deploymentUnit), getResource(dsName, true, deploymentUnit), dsName, useLegacySecurity, true);
 
                         } catch (Exception e) {
                             throw ConnectorLogger.ROOT_LOGGER.exceptionDeployingDatasource(e, xads.getJndiName());
@@ -284,7 +289,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                                  final ServiceTarget serviceTarget,
                                  final ManagementResourceRegistration registration,
                                  final Resource resource,
-                                 final String managementName, boolean securityEnabled,
+                                 final String managementName,
+                                 boolean requireLegacySecurity,
                                  final boolean isTransactional) {
 
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
@@ -296,7 +302,6 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                         dataSourceService.getExecutorServiceInjector(), false)
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector())
-                .addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class, dataSourceService.getServerSecurityManager())
                 .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME))
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                         dataSourceService.getTransactionIntegrationInjector())
@@ -306,8 +311,9 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
 
-        if(securityEnabled) {
-            // FIXME
+        if (requireLegacySecurity) {
+            dataSourceServiceBuilder.addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class,
+                    dataSourceService.getServerSecurityManager());
             dataSourceServiceBuilder.addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
                     dataSourceService.getSubjectFactoryInjector());
         }
@@ -432,5 +438,12 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
         }
     }
 
-
+    private static boolean isLegacySecurityRequired(org.jboss.jca.common.api.metadata.ds.DsSecurity config) {
+        boolean result = config instanceof SecurityMetadata && !((SecurityMetadata) config).isElytronEnabled();
+        if (result) {
+            String domain = config.getSecurityDomain();
+            result = domain != null && domain.trim().length() > 0;
+        }
+        return result;
+    }
 }

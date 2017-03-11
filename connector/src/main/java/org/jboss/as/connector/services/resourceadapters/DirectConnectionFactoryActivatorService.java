@@ -24,6 +24,7 @@ package org.jboss.as.connector.services.resourceadapters;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Security;
+import org.jboss.as.connector.metadata.api.resourceadapter.ActivationSecurityUtil;
 import org.jboss.as.connector.metadata.common.SecurityImpl;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
@@ -242,10 +243,6 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
                             ResourceAdapterDeploymentRegistry.class, activator.getRegistryInjector())
                     .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE,
                             JcaSubsystemConfiguration.class, activator.getConfigInjector())
-                    .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
-                            activator.getSubjectFactoryInjector())
-                    .addDependency(SimpleSecurityManagerService.SERVICE_NAME,
-                            ServerSecurityManager.class, activator.getServerSecurityManager())
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
                             activator.getCcmInjector())
                     .addDependency(NamingService.SERVICE_NAME)
@@ -254,6 +251,13 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
                     .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
 
+            if (ActivationSecurityUtil.isLegacySecurityRequired(security)) {
+                connectionFactoryServiceBuilder
+                        .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
+                                activator.getSubjectFactoryInjector())
+                        .addDependency(SimpleSecurityManagerService.SERVICE_NAME,
+                                ServerSecurityManager.class, activator.getServerSecurityManager());
+            }
 
             connectionFactoryServiceBuilder.setInitialMode(org.jboss.msc.service.ServiceController.Mode.ACTIVE).install();
 
