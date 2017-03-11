@@ -81,7 +81,8 @@ public class ExternalizerObjectTable implements ObjectTable {
 
     @Override
     public Writer getObjectWriter(final Object object) throws IOException {
-        return this.writers.get(object.getClass());
+        Class<?> targetClass = object.getClass();
+        return this.writers.get(targetClass.isEnum() ? ((Enum<?>) object).getDeclaringClass() : targetClass);
     }
 
     @Override
