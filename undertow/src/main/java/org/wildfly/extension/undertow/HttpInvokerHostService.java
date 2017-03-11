@@ -65,11 +65,13 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
             handler = secureAccess(handler, httpAuthenticationFactoryInjectedValue.getOptionalValue());
         }
         host.getValue().registerHandler(path, handler);
+        host.getValue().registerModClusterPath(path);
     }
 
     @Override
     public void stop(StopContext stopContext) {
         host.getValue().unregisterHandler(path);
+        host.getValue().unregisterModClusterPath(path);
     }
 
     private static HttpHandler secureAccess(HttpHandler domainHandler, final HttpAuthenticationFactory httpAuthenticationFactory) {

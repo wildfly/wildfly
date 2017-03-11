@@ -44,6 +44,14 @@ public interface UndertowEventListener {
     default void onDeploymentStop(Deployment deployment, Host host) {
     }
 
+    default void onDeploymentStart(String contextPath, Host host) {
+
+    }
+
+    default void onDeploymentStop(String contextPath, Host host) {
+
+    }
+
     //void onDeploymentRemove(DeploymentInfo deploymentInfo, Host host);
 
     //void onHostAdd(Host host);
