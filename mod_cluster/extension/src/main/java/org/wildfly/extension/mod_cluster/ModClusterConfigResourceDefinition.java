@@ -202,7 +202,8 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition MAX_ATTEMPTS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.MAX_ATTEMPTS, ModelType.INT, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(1))
-            .setValidator(new IntRangeValidator(-1, true, true))
+            .setValidator(new IntRangeValidator(0, true, true))
+            .setCorrector((newValue, currentValue) -> (newValue.getType().equals(ModelType.INT) && newValue.asInt() == -1) ? new ModelNode(1) : newValue)
             .setRestartAllServices()
             .build();
 
