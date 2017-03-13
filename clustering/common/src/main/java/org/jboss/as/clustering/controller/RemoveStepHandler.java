@@ -87,7 +87,7 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
                         .filter(AttributeDefinition::hasCapabilityRequirements)
                         .forEach(attribute -> attribute.removeCapabilityRequirements(context, model.get(attribute.getName())));
 
-            this.descriptor.getResourceCapabilityReferences().forEach((reference, resolver) -> reference.removeCapabilityRequirements(context, null, resolver.apply(address)));
+            this.descriptor.getResourceCapabilityReferences().forEach((reference, resolver) -> reference.removeCapabilityRequirements(context, (String)null, resolver.apply(address)));
 
             // Remove any runtime child resources
             removeRuntimeChildren(context, PathAddress.EMPTY_ADDRESS);
