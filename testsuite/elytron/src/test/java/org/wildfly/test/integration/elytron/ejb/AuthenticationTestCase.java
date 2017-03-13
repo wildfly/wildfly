@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.security;
+package org.wildfly.test.integration.elytron.ejb;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
@@ -44,25 +44,31 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.jboss.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBAccessException;
 import javax.security.auth.AuthPermission;
 import javax.security.auth.login.LoginContext;
 
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
-import org.jboss.as.test.integration.ejb.security.authentication.EntryBean;
-import org.jboss.as.test.integration.ejb.security.base.WhoAmIBean;
+import org.junit.Ignore;
+import org.wildfly.test.integration.elytron.ejb.authentication.EntryBean;
+import org.wildfly.test.integration.elytron.ejb.base.WhoAmIBean;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.security.client.SecurityClient;
 import org.jboss.security.client.SecurityClientFactory;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 /**
  * Test case to hold the authentication scenarios, these range from calling a servlet which calls a bean to calling a bean which
@@ -71,15 +77,15 @@ import org.junit.Test;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public abstract class AbstractAuthenticationTestCase {
+@RunWith(Arquillian.class)
+@ServerSetup({EjbElytronDomainSetup.class})
+@Category(CommonCriteria.class)
+public class AuthenticationTestCase {
 
     private static final String SERVER_HOST_PORT = TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort();
     private static final String WAR_URL = "http://" + SERVER_HOST_PORT + "/ejb3security/";
 
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
-    }
+    private static final Logger log = Logger.getLogger(AuthenticationTestCase.class.getName());
 
     /*
      * Authentication Scenarios
@@ -93,13 +99,16 @@ public abstract class AbstractAuthenticationTestCase {
      * Client -> Servlet -> Bean (Re Auth) -> Bean
      */
 
-    protected static WebArchive getDeployment() {
-        final Package currentPackage = AbstractAuthenticationTestCase.class.getPackage();
+    @Deployment
+    public static Archive<?> deployment() {
+        final Package currentPackage = AuthenticationTestCase.class.getPackage();
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
                 .addPackage(WhoAmIBean.class.getPackage()).addPackage(EntryBean.class.getPackage())
-                .addClasses(WhoAmI.class, Util.class, Entry.class, TestSuiteEnvironment.class)
-                .addClasses(WhoAmIServlet.class, AbstractAuthenticationTestCase.class, AbstractSecurityDomainSetup.class)
+                .addClass(WhoAmI.class).addClass(Util.class).addClass(Entry.class)
+                .addClasses(WhoAmIServlet.class, AuthenticationTestCase.class)
+                .addClasses(AbstractSecurityDomainSetup.class, EjbElytronDomainSetup.class)
+                .addClass(TestSuiteEnvironment.class)
                 .addAsResource(currentPackage, "users.properties", "users.properties")
                 .addAsResource(currentPackage, "roles.properties", "roles.properties")
                 .addAsWebInfResource(currentPackage, "web.xml", "web.xml")
@@ -107,17 +116,17 @@ public abstract class AbstractAuthenticationTestCase {
                 .addAsWebInfResource(currentPackage, "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        // login module needs to modify pricipal to commit logging in
+                        // login module needs to modify principal to commit logging in
                         new AuthPermission("modifyPrincipals"),
-                        // AbstractAuthenticationTestCase#testAuthenticatedCall calls org.jboss.security.client.JBossSecurityClient#performSimpleLogin
+                        // AuthenticationTestCase#testAuthenticatedCall calls org.jboss.security.client.JBossSecurityClient#performSimpleLogin
                         new RuntimePermission("org.jboss.security.getSecurityContext"),
                         new RuntimePermission("org.jboss.security.SecurityContextFactory.createSecurityContext"),
                         new RuntimePermission("org.jboss.security.SecurityContextFactory.createUtil"),
                         new RuntimePermission("org.jboss.security.plugins.JBossSecurityContext.setSubjectInfo"),
                         new RuntimePermission("org.jboss.security.setSecurityContext"),
-                        // AbstractAuthenticationTestCase#execute calls ExecutorService#shutdownNow
+                        // AuthenticationTestCase#execute calls ExecutorService#shutdownNow
                         new RuntimePermission("modifyThread"),
-                        // AbstractAuthenticationTestCase#execute calls sun.net.www.http.HttpClient#openServer under the hood
+                        // AuthenticationTestCase#execute calls sun.net.www.http.HttpClient#openServer under the hood
                         new SocketPermission(SERVER_HOST_PORT, "connect,resolve"),
                         // TestSuiteEnvironment reads system properties
                         new PropertyPermission("management.address", "read"),
@@ -135,6 +144,7 @@ public abstract class AbstractAuthenticationTestCase {
     private Entry entryBean;
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication() throws Exception {
         LoginContext lc = Util.getCLMLoginContext("user1", "password1");
         lc.login();
@@ -147,6 +157,7 @@ public abstract class AbstractAuthenticationTestCase {
     }
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_BadPwd() throws Exception {
         LoginContext lc = Util.getCLMLoginContext("user1", "wrong_password");
         lc.login();
@@ -160,6 +171,7 @@ public abstract class AbstractAuthenticationTestCase {
     }
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_TwoBeans() throws Exception {
         LoginContext lc = Util.getCLMLoginContext("user1", "password1");
         lc.login();
@@ -173,6 +185,7 @@ public abstract class AbstractAuthenticationTestCase {
     }
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_TwoBeans_ReAuth() throws Exception {
         LoginContext lc = Util.getCLMLoginContext("user1", "password1");
         lc.login();
@@ -187,6 +200,7 @@ public abstract class AbstractAuthenticationTestCase {
 
     // TODO - Similar test with first bean @RunAs - does it make sense to also manually switch?
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_TwoBeans_ReAuth_BadPwd() throws Exception {
         LoginContext lc = Util.getCLMLoginContext("user1", "password1");
         lc.login();
@@ -200,6 +214,7 @@ public abstract class AbstractAuthenticationTestCase {
     }
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthenticatedCall() throws Exception {
         // TODO: this is not spec
         final SecurityClient client = SecurityClientFactory.getSecurityClient();
@@ -237,30 +252,35 @@ public abstract class AbstractAuthenticationTestCase {
     }
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_ViaServlet() throws Exception {
         final String result = getWhoAmI("?method=whoAmI");
         assertEquals("user1", result);
     }
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_ReAuth_ViaServlet() throws Exception {
         final String result = getWhoAmI("?method=whoAmI&username=user2&password=password2");
         assertEquals("user2", result);
     }
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_TwoBeans_ViaServlet() throws Exception {
         final String result = getWhoAmI("?method=doubleWhoAmI");
         assertEquals("user1,user1", result);
     }
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_TwoBeans_ReAuth_ViaServlet() throws Exception {
         final String result = getWhoAmI("?method=doubleWhoAmI&username=user2&password=password2");
         assertEquals("user1,user2", result);
     }
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_TwoBeans_ReAuth__BadPwd_ViaServlet() throws Exception {
         try {
             getWhoAmI("?method=doubleWhoAmI&username=user2&password=bad_password");
@@ -275,6 +295,7 @@ public abstract class AbstractAuthenticationTestCase {
      */
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIRSingle() throws Exception {
         LoginContext lc = Util.getCLMLoginContext("user1", "password1");
         lc.login();
@@ -288,6 +309,7 @@ public abstract class AbstractAuthenticationTestCase {
     }
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIR_TwoBeans() throws Exception {
         LoginContext lc = Util.getCLMLoginContext("user1", "password1");
         lc.login();
@@ -310,6 +332,7 @@ public abstract class AbstractAuthenticationTestCase {
     }
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIR_TwoBeans_ReAuth() throws Exception {
         LoginContext lc = Util.getCLMLoginContext("user1", "password1");
         lc.login();
@@ -410,6 +433,7 @@ public abstract class AbstractAuthenticationTestCase {
 
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIR_ViaServlet() throws Exception {
         String result = getWhoAmI("?method=doIHaveRole&role=Users");
         assertEquals("true", result);
@@ -420,6 +444,7 @@ public abstract class AbstractAuthenticationTestCase {
     }
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIR_ReAuth_ViaServlet() throws Exception {
         String result = getWhoAmI("?method=doIHaveRole&role=Users&username=user2&password=password2");
         assertEquals("true", result);
@@ -430,6 +455,7 @@ public abstract class AbstractAuthenticationTestCase {
     }
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIR_TwoBeans_ViaServlet() throws Exception {
         String result = getWhoAmI("?method=doubleDoIHaveRole&role=Users");
         assertEquals("true,true", result);
@@ -440,6 +466,7 @@ public abstract class AbstractAuthenticationTestCase {
     }
 
     @Test
+    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIR_TwoBeans_ReAuth_ViaServlet() throws Exception {
         String result = getWhoAmI("?method=doubleDoIHaveRole&role=Users&username=user2&password=password2");
         assertEquals("true,true", result);

@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.security;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +35,7 @@ import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.authz.RoleMapper;
 import org.wildfly.security.authz.Roles;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
@@ -54,7 +57,12 @@ public class SecurityRolesAddingInterceptor implements Interceptor {
         if (securityRoles != null && ! securityRoles.isEmpty()) {
             final RoleMapper roleMapper = RoleMapper.constant(Roles.fromSet(securityRoles));
             final RoleMapper mergeMapper = roleMapper.or((roles) -> currentIdentity.getRoles(category));
-            final SecurityIdentity newIdentity = currentIdentity.withRoleMapper(category, mergeMapper);
+            final SecurityIdentity newIdentity;
+            if(WildFlySecurityManager.isChecking()) {
+                newIdentity = AccessController.doPrivileged((PrivilegedAction<SecurityIdentity>) () -> currentIdentity.withRoleMapper(category, mergeMapper));
+            } else {
+                newIdentity = currentIdentity.withRoleMapper(category, mergeMapper);
+            }
             try {
                 return newIdentity.runAs(context);
             } catch (PrivilegedActionException e) {

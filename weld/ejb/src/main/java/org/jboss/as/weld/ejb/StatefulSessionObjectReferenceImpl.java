@@ -29,7 +29,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
+import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.weld._private.WeldEjbLogger;
@@ -131,7 +133,11 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     @Override
     public boolean isRemoved() {
         if (!removed) {
-            return !ejbComponent.getCache().contains(id);
+            Cache<SessionID, StatefulSessionComponentInstance> cache = ejbComponent.getCache();
+            if(cache == null) {
+                return true;
+            }
+            return !cache.contains(id);
         }
         return true;
     }

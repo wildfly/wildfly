@@ -85,8 +85,13 @@ public class JACCAuthorizationManager implements AuthorizationManager {
                     return TransportGuaranteeType.NONE;
                 }
                 else {
-                    // if permission was not implied we require protection for the connection.
-                    return TransportGuaranteeType.CONFIDENTIAL;
+                    permission = new WebUserDataPermission(canonicalURI, httpMethod, TransportGuaranteeType.CONFIDENTIAL.name());
+                    // permission is only granted with CONFIDENTIAL
+                    if (hasPermission(domain, permission)) {
+                        return TransportGuaranteeType.CONFIDENTIAL;
+                    }
+                    //either way we just don't have permission, let the request proceed and be rejected later
+                    return TransportGuaranteeType.NONE;
                 }
             }
             case INTEGRAL:

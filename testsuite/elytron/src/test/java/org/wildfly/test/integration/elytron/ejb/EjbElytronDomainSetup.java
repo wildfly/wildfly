@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ejb.security;
+package org.wildfly.test.integration.elytron.ejb;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
@@ -35,7 +35,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assume;
 import org.wildfly.extension.elytron.ElytronExtension;
 
 /**
@@ -68,7 +67,7 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
     }
 
     protected String getSecurityRealmName() {
-        return "UsersRoles";
+        return "ejb3-UsersRoles";
     }
 
     protected String getUndertowDomainName() {
@@ -92,11 +91,11 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
     }
 
     protected String getUsersFile() {
-        return new File(EjbSecurityDomainSetup.class.getResource("users.properties").getFile()).getAbsolutePath();
+        return new File(EjbElytronDomainSetup.class.getResource("users.properties").getFile()).getAbsolutePath();
     }
 
     protected String getGroupsFile() {
-        return new File(EjbSecurityDomainSetup.class.getResource("roles.properties").getFile()).getAbsolutePath();
+        return new File(EjbElytronDomainSetup.class.getResource("roles.properties").getFile()).getAbsolutePath();
     }
 
     protected boolean isUsersFilePlain() {
@@ -106,9 +105,6 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
         System.out.println("elytron setup...");
-        Assume.assumeTrue(System.getProperty("elytron") != null);
-        System.out.println("...elytron setup...");
-
 
         realmAddress = PathAddress.pathAddress()
                 .append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)
@@ -198,8 +194,6 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) {
         System.out.println("tearing down...");
-        Assume.assumeTrue(System.getProperty("elytron") != null);
-        System.out.println("...tearing down...");
 
         List<ModelNode> updates = new LinkedList<>();
         updates.add(createRemoveIgnoring(undertowDomainAddress));
@@ -223,7 +217,7 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         ModelNode remove = Util.createRemoveOperation(address);
         // Don't rollback when the AS detects the war needs the module
         remove.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        remove.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        remove.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(false);
         return remove;
     }
 

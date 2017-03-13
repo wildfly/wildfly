@@ -171,6 +171,8 @@ public class ElytronCallbackHandler implements CallbackHandler, Serializable {
                     } catch (SecurityException e) {
                         return;
                     }
+                } else {
+                    identity = securityDomain.createAdHocIdentity(callerPrincipal);
                 }
             }
 

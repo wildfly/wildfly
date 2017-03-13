@@ -22,7 +22,10 @@
 package org.jboss.as.ejb3.tx;
 
 import javax.ejb.TransactionAttributeType;
+import javax.transaction.InvalidTransactionException;
+import javax.transaction.NotSupportedException;
 import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
@@ -35,6 +38,9 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.LocalTransaction;
+import org.wildfly.transaction.client.LocalTransactionContext;
 
 /**
  * Transaction interceptor for Singleton and Stateless beans,
@@ -70,6 +76,23 @@ public class LifecycleCMTTxInterceptor extends CMTTxInterceptor {
                 return supports(invocation, component);
             default:
                 throw EjbLogger.ROOT_LOGGER.unknownTxAttributeOnInvocation(transactionAttributeType, invocation);
+        }
+    }
+
+    protected Transaction beginTransaction(final TransactionManager tm) throws NotSupportedException, SystemException {
+        if (tm instanceof ContextTransactionManager) {
+            final ContextTransactionManager contextTransactionManager = (ContextTransactionManager) tm;
+            int timeout = contextTransactionManager.getTransactionTimeout();
+            final LocalTransaction transaction = LocalTransactionContext.getCurrent().beginTransaction(timeout, false);
+            try {
+                contextTransactionManager.resume(transaction);
+            } catch (InvalidTransactionException e) {
+                // should not be possible
+                throw new IllegalStateException(e);
+            }
+            return transaction;
+        } else {
+            return super.beginTransaction(tm);
         }
     }
 
