@@ -48,10 +48,9 @@ public class AuthenticationEntryExternalizer<V, L> implements Externalizer<Authe
         return new AuthenticationEntry<>((V) input.readObject());
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     @Override
     public Class<AuthenticationEntry<V, L>> getTargetClass() {
-        Class targetClass = AuthenticationEntry.class;
-        return targetClass;
+        return (Class<AuthenticationEntry<V, L>>) (Class<?>) AuthenticationEntry.class;
     }
 }

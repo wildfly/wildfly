@@ -47,10 +47,9 @@ public class OptionalExternalizer implements Externalizer<Optional<Object>> {
         return Optional.ofNullable(input.readObject());
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     @Override
-    public Class<? extends Optional<Object>> getTargetClass() {
-        Class targetClass = Optional.class;
-        return targetClass;
+    public Class<Optional<Object>> getTargetClass() {
+        return (Class<Optional<Object>>) (Class<?>) Optional.class;
     }
 }

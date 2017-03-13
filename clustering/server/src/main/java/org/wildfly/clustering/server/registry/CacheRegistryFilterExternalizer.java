@@ -45,7 +45,7 @@ public class CacheRegistryFilterExternalizer implements Externalizer<CacheRegist
     }
 
     @Override
-    public Class<? extends CacheRegistryFilter> getTargetClass() {
+    public Class<CacheRegistryFilter> getTargetClass() {
         return CacheRegistryFilter.class;
     }
 }

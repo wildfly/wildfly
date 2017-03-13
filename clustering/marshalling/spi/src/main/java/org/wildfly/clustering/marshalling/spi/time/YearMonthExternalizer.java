@@ -52,7 +52,7 @@ public class YearMonthExternalizer implements Externalizer<YearMonth> {
     }
 
     @Override
-    public Class<? extends YearMonth> getTargetClass() {
+    public Class<YearMonth> getTargetClass() {
         return YearMonth.class;
     }
 }

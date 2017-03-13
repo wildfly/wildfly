@@ -57,8 +57,8 @@ public class SingletonCollectionExternalizer<T extends Collection<Object>> imple
 
     @SuppressWarnings("unchecked")
     @Override
-    public Class<? extends T> getTargetClass() {
-        return (Class<? extends T>) this.factory.apply(null).getClass();
+    public Class<T> getTargetClass() {
+        return (Class<T>) this.factory.apply(null).getClass();
     }
 
     @MetaInfServices(Externalizer.class)

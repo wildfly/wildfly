@@ -45,7 +45,7 @@ public class CounterExternalizer implements Externalizer<Counter> {
     }
 
     @Override
-    public Class<? extends Counter> getTargetClass() {
+    public Class<Counter> getTargetClass() {
         return Counter.class;
     }
 }

@@ -48,7 +48,7 @@ public class AtomicBooleanExternalizer implements Externalizer<AtomicBoolean> {
     }
 
     @Override
-    public Class<? extends AtomicBoolean> getTargetClass() {
+    public Class<AtomicBoolean> getTargetClass() {
         return AtomicBoolean.class;
     }
 }

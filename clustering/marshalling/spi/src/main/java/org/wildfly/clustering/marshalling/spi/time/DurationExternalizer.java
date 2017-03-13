@@ -51,7 +51,7 @@ public class DurationExternalizer implements Externalizer<Duration> {
     }
 
     @Override
-    public Class<? extends Duration> getTargetClass() {
+    public Class<Duration> getTargetClass() {
         return Duration.class;
     }
 }

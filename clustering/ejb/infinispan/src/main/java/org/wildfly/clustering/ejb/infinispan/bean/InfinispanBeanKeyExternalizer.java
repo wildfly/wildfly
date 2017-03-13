@@ -27,7 +27,7 @@ import java.io.ObjectOutput;
 
 import org.jboss.ejb.client.SessionID;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ejb.infinispan.BasicSessionIDExternalizer;
+import org.wildfly.clustering.ejb.infinispan.SessionIDExternalizer;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
@@ -36,7 +36,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
 @MetaInfServices(Externalizer.class)
 public class InfinispanBeanKeyExternalizer implements Externalizer<InfinispanBeanKey<SessionID>> {
 
-    private final Externalizer<SessionID> externalizer = new BasicSessionIDExternalizer();
+    private final Externalizer<SessionID> externalizer = new SessionIDExternalizer<>(SessionID.class);
 
     @Override
     public void writeObject(ObjectOutput output, InfinispanBeanKey<SessionID> key) throws IOException {
@@ -48,10 +48,9 @@ public class InfinispanBeanKeyExternalizer implements Externalizer<InfinispanBea
         return new InfinispanBeanKey<>(this.externalizer.readObject(input));
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("unchecked")
     @Override
     public Class<InfinispanBeanKey<SessionID>> getTargetClass() {
-        Class targetClass = InfinispanBeanKey.class;
-        return targetClass;
+        return (Class<InfinispanBeanKey<SessionID>>) (Class<?>) InfinispanBeanKey.class;
     }
 }

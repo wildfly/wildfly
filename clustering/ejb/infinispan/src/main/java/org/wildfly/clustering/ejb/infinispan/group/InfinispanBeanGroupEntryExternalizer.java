@@ -50,10 +50,9 @@ public class InfinispanBeanGroupEntryExternalizer<I, T> implements Externalizer<
         return new InfinispanBeanGroupEntry<>(this.externalizer.readObject(input));
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     @Override
     public Class<InfinispanBeanGroupEntry<I, T>> getTargetClass() {
-        Class targetClass = InfinispanBeanGroupEntry.class;
-        return targetClass;
+        return (Class<InfinispanBeanGroupEntry<I, T>>) (Class<?>) InfinispanBeanGroupEntry.class;
     }
 }

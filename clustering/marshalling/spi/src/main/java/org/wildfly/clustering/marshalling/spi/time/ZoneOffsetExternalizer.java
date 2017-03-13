@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,41 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.util;
+package org.wildfly.clustering.marshalling.spi.time;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.sql.Timestamp;
+import java.time.ZoneOffset;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.StringExternalizer;
 
 /**
- * Externalizer for a {@link Timestamp}.
- *
- * @author Radoslav Husar
+ * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class SqlTimestampExternalizer implements Externalizer<Timestamp> {
+public class ZoneOffsetExternalizer extends StringExternalizer<ZoneOffset> {
 
-    @Override
-    public void writeObject(ObjectOutput output, Timestamp timestamp) throws IOException {
-        output.writeLong(timestamp.getTime());
-        output.writeInt(timestamp.getNanos());
-    }
-
-    @Override
-    public Timestamp readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        long time = input.readLong();
-        int nanos = input.readInt();
-        Timestamp timestamp = new Timestamp(time);
-        timestamp.setNanos(nanos);
-        return timestamp;
-    }
-
-    @Override
-    public Class<? extends Timestamp> getTargetClass() {
-        return Timestamp.class;
+    public ZoneOffsetExternalizer() {
+        super(ZoneOffset.class, ZoneOffset::of, ZoneOffset::getId);
     }
 }

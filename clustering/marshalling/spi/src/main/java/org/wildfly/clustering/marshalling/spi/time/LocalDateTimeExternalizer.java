@@ -56,7 +56,7 @@ public class LocalDateTimeExternalizer implements Externalizer<LocalDateTime> {
     }
 
     @Override
-    public Class<? extends LocalDateTime> getTargetClass() {
+    public Class<LocalDateTime> getTargetClass() {
         return LocalDateTime.class;
     }
 }

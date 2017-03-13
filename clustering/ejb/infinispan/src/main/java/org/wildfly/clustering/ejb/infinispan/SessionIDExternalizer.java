@@ -25,39 +25,63 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.jboss.ejb.client.BasicSessionID;
 import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.UUIDSessionID;
+import org.jboss.ejb.client.UnknownSessionID;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class SessionIDExternalizer implements Externalizer<SessionID> {
+public class SessionIDExternalizer<T extends SessionID> implements Externalizer<T> {
 
-    private final Class<? extends SessionID> targetClass;
-    private final IndexExternalizer lengthExternalizer;
+    private final Class<T> targetClass;
 
-    SessionIDExternalizer(Class<? extends SessionID> targetClass, IndexExternalizer lengthExternalizer) {
+    public SessionIDExternalizer(Class<T> targetClass) {
         this.targetClass = targetClass;
-        this.lengthExternalizer = lengthExternalizer;
     }
 
     @Override
     public void writeObject(ObjectOutput output, SessionID id) throws IOException {
         byte[] encoded = id.getEncodedForm();
-        this.lengthExternalizer.writeData(output, encoded.length);
+        IndexExternalizer.UNSIGNED_BYTE.writeData(output, encoded.length);
         output.write(encoded);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public SessionID readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        byte[] encoded = new byte[this.lengthExternalizer.readData(input)];
+    public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        byte[] encoded = new byte[IndexExternalizer.UNSIGNED_BYTE.readData(input)];
         input.readFully(encoded);
-        return SessionID.createSessionID(encoded);
+        return (T) SessionID.createSessionID(encoded);
     }
 
     @Override
-    public Class<? extends SessionID> getTargetClass() {
+    public Class<T> getTargetClass() {
         return this.targetClass;
+    }
+
+    @MetaInfServices(Externalizer.class)
+    public static class BasicSessionIDExternalizer extends SessionIDExternalizer<BasicSessionID> {
+        public BasicSessionIDExternalizer() {
+            super(BasicSessionID.class);
+        }
+    }
+
+    @MetaInfServices(Externalizer.class)
+    public static class UnknownSessionIDExternalizer extends SessionIDExternalizer<UnknownSessionID> {
+        public UnknownSessionIDExternalizer() {
+            super(UnknownSessionID.class);
+        }
+    }
+
+    @MetaInfServices(Externalizer.class)
+    public static class UUIDSessionIDExternalizer extends SessionIDExternalizer<UUIDSessionID> {
+        public UUIDSessionIDExternalizer() {
+            super(UUIDSessionID.class);
+        }
     }
 }

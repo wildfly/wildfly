@@ -33,6 +33,8 @@ import org.junit.Test;
 import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
 import org.wildfly.clustering.marshalling.spi.util.DateExternalizer.SqlDateExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.DateExternalizer.SqlTimeExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.DateExternalizer.SqlTimestampExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.DateExternalizer.UtilDateExternalizer;
 
 /**
  * Unit test for {@link Date} externalizers.
@@ -42,7 +44,7 @@ public class DateExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        ExternalizerTestUtil.test(new DateExternalizer<>(), Date.from(Instant.now()));
+        ExternalizerTestUtil.test(new UtilDateExternalizer(), Date.from(Instant.now()));
         ExternalizerTestUtil.test(new SqlDateExternalizer(), java.sql.Date.valueOf(LocalDate.now()));
         ExternalizerTestUtil.test(new SqlTimeExternalizer(), java.sql.Time.valueOf(LocalTime.now()));
         ExternalizerTestUtil.test(new SqlTimestampExternalizer(), java.sql.Timestamp.valueOf(LocalDateTime.now()));

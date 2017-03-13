@@ -36,9 +36,9 @@ import org.wildfly.clustering.marshalling.Externalizer;
 public class StringExternalizer<T> implements Externalizer<T> {
     private final Function<String, T> reader;
     private final Function<T, String> writer;
-    private final Class<? extends T> targetClass;
+    private final Class<T> targetClass;
 
-    public StringExternalizer(Class<? extends T> targetClass, Function<String, T> reader, Function<T, String> writer) {
+    public StringExternalizer(Class<T> targetClass, Function<String, T> reader, Function<T, String> writer) {
         this.reader = reader;
         this.writer = writer;
         this.targetClass = targetClass;
@@ -55,7 +55,7 @@ public class StringExternalizer<T> implements Externalizer<T> {
     }
 
     @Override
-    public Class<? extends T> getTargetClass() {
+    public Class<T> getTargetClass() {
         return this.targetClass;
     }
 }
