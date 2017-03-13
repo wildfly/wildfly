@@ -82,10 +82,6 @@ public class DynamicMessageListenerTestCase {
         ear.addAsManifestResource(createPermissionsXmlAsset(
                 // Cmd (TelnetServer package) uses PropertyEditorManager#registerEditor during static initialization
                 new PropertyPermission("*", "read,write"),
-                // TelnetResourceAdapter#endpointActivation instantiates new end point using reflection
-                new RuntimePermission("accessDeclaredMembers"),
-                new RuntimePermission("defineClassInPackage." + MyMdb.class.getPackage().getName()),
-                new RuntimePermission("getClassLoader"),
                 // TelnetServer binds socket and accepts connections
                 new SocketPermission("*", "accept,listen")),
                 "permissions.xml");

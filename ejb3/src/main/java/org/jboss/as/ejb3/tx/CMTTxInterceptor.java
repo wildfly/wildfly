@@ -33,6 +33,7 @@ import javax.ejb.NoSuchEntityException;
 import javax.ejb.TransactionAttributeType;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
@@ -269,8 +270,7 @@ public class CMTTxInterceptor implements Interceptor {
 
     protected Object invokeInOurTx(InterceptorContext invocation, TransactionManager tm, final EJBComponent component) throws Exception {
         for (int i = 0; i < MAX_RETRIES; i++) {
-            tm.begin();
-            Transaction tx = tm.getTransaction();
+            Transaction tx = beginTransaction(tm);
             try {
                 return invocation.proceed();
             } catch (Throwable t) {
@@ -280,6 +280,11 @@ public class CMTTxInterceptor implements Interceptor {
             }
         }
         throw new RuntimeException("UNREACHABLE");
+    }
+
+    protected Transaction beginTransaction(final TransactionManager tm) throws NotSupportedException, SystemException {
+        tm.begin();
+        return tm.getTransaction();
     }
 
     protected Object mandatory(InterceptorContext invocation, final EJBComponent component) throws Exception {

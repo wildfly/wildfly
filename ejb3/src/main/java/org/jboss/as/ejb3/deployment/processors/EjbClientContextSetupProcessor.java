@@ -78,9 +78,13 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
 
         RegistrationService registrationService = new RegistrationService(module);
         ServiceName registrationServiceName = deploymentUnit.getServiceName().append("ejb3","client-context","registration-service");
+        final ServiceName profileServiceName = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME);
         final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(registrationServiceName, registrationService)
             .addDependency(getEJBClientContextServiceName(phaseContext), EJBClientContextService.class, registrationService.ejbClientContextInjectedValue)
             .addDependency(getDiscoveryServiceName(phaseContext), Discovery.class, registrationService.discoveryInjector);
+        if (profileServiceName != null) {
+            builder.addDependency(profileServiceName, RemotingProfileService.class, registrationService.profileServiceInjectedValue);
+        }
         builder.install();
 
 
@@ -142,20 +146,27 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
 
             doPrivileged((PrivilegedAction<Void>) () -> {
                 // associate the EJB client context and discovery setup with the deployment classloader
-                final EJBClientContext ejbClientContext = ejbClientContextInjectedValue.getValue().getClientContext();
+                final EJBClientContextService ejbClientContextService = ejbClientContextInjectedValue.getValue();
+                final EJBClientContext ejbClientContext = ejbClientContextService.getClientContext();
+                final AuthenticationContext ejbClientClustersAuthenticationContext = ejbClientContextService.getClustersAuthenticationContext();
                 final ModuleClassLoader classLoader = module.getClassLoader();
                 EjbLogger.DEPLOYMENT_LOGGER.debugf("Registering EJB client context %s for classloader %s", ejbClientContext, classLoader);
                 final ContextManager<AuthenticationContext> authenticationContextManager = AuthenticationContext.getContextManager();
                 final RemotingProfileService profileService = profileServiceInjectedValue.getOptionalValue();
-                if (profileService != null) {
+                if (profileService != null || ejbClientClustersAuthenticationContext != null)  {
                     // this is cheating but it works for our purposes
                     AuthenticationContext authenticationContext = authenticationContextManager.getClassLoaderDefault(classLoader);
                     if (authenticationContext == null) {
                         authenticationContext = authenticationContextManager.get();
                     }
                     // now transform it
-                    for (RemotingProfileService.ConnectionSpec connectionSpec : profileService.getConnectionSpecs()) {
-                        authenticationContext = transformOne(connectionSpec, authenticationContext);
+                    if (profileService != null) {
+                        for (RemotingProfileService.ConnectionSpec connectionSpec : profileService.getConnectionSpecs()) {
+                            authenticationContext = transformOne(connectionSpec, authenticationContext);
+                        }
+                    }
+                    if (ejbClientClustersAuthenticationContext != null) {
+                        authenticationContext = authenticationContext.with(0, ejbClientClustersAuthenticationContext);
                     }
                     // and set the result
                     authenticationContextManager.setClassLoaderDefault(classLoader, authenticationContext);

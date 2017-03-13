@@ -70,6 +70,9 @@ import org.omg.PortableServer.POA;
 import org.omg.PortableServer.Servant;
 import org.wildfly.iiop.openjdk.rmi.RmiIdlUtil;
 import org.wildfly.iiop.openjdk.rmi.marshal.strategy.SkeletonStrategy;
+import org.wildfly.security.auth.client.AuthenticationConfiguration;
+import org.wildfly.security.auth.client.AuthenticationContext;
+import org.wildfly.security.auth.client.MatchRule;
 import org.wildfly.security.auth.principal.NamePrincipal;
 import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.auth.server.SecurityDomain;
@@ -297,6 +300,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                         if (this.securityDomain != null) {
                             // an elytron security domain is available: authenticate and authorize the client before invoking the component.
                             SecurityIdentity identity = this.securityDomain.getAnonymousSecurityIdentity();
+                            AuthenticationConfiguration authenticationConfiguration = AuthenticationConfiguration.EMPTY;
 
                             if (identityPrincipal != null) {
                                 // we have an identity token principal - check if the TLS identity, if available,
@@ -307,7 +311,10 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                                 // authenticate the incoming username/password and check if the resulting identity has
                                 // permission to run as the identity token principal.
                                 if (principal != null) {
-                                    SecurityIdentity authenticatedIdentity = this.authenticate(principal, (char[]) credential);
+                                    char[] password = (char[]) credential;
+                                    authenticationConfiguration = authenticationConfiguration.useName(principal.getName())
+                                            .usePassword(password);
+                                    SecurityIdentity authenticatedIdentity = this.authenticate(principal, password);
                                     identity = authenticatedIdentity.createRunAsIdentity(identityPrincipal.getName(), true);
                                 } else {
                                     // no TLS nor initial context token found - check if the anonymous identity has
@@ -315,13 +322,17 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                                     identity = this.securityDomain.getAnonymousSecurityIdentity().createRunAsIdentity(identityPrincipal.getName(), true);
                                 }
                             } else if (principal != null) {
+                                char[] password = (char[]) credential;
                                 // we have an initial context token containing a username/password pair.
-                                identity = this.authenticate(principal, (char[]) credential);
+                                authenticationConfiguration = authenticationConfiguration.useName(principal.getName())
+                                        .usePassword(password);
+                                identity = this.authenticate(principal, password);
                             }
                             final InterceptorContext interceptorContext = new InterceptorContext();
                             this.prepareInterceptorContext(op, params, interceptorContext);
                             try {
-                                retVal = identity.runAs((PrivilegedExceptionAction<Object>) () -> this.componentView.invoke(interceptorContext));
+                                final AuthenticationContext context = AuthenticationContext.captureCurrent().with(MatchRule.ALL.matchProtocol("iiop"), authenticationConfiguration);
+                                retVal = identity.runAs((PrivilegedExceptionAction<Object>) () -> context.run((PrivilegedExceptionAction<Object>) () -> this.componentView.invoke(interceptorContext)));
                             } catch (PrivilegedActionException e) {
                                 throw e.getCause();
                             }

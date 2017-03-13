@@ -79,21 +79,27 @@ public class PropertyFileBasedDomain extends AbstractUserRolesSecurityDomain {
         // /subsystem=elytron/simple-role-decoder=test:add(attribute=groups)
         cli.sendLine(String.format("/subsystem=elytron/simple-role-decoder=%s:add(attribute=groups)", name));
 
-        // /subsystem=elytron/constant-permission-mapper=test:add(permissions=[{class-name="org.wildfly.security.auth.permission.LoginPermission"}])
-        cli.sendLine(String.format("/subsystem=elytron/constant-permission-mapper=%s:add(permissions=[{class-name=\"%s\"}])",
-                name, LoginPermission.class.getName()));
+        if(permissionMapper == null) {  // create a default permission mapper if a custom one wasn't specified
+            // /subsystem=elytron/constant-permission-mapper=test:add(permissions=[{class-name="org.wildfly.security.auth.permission.LoginPermission"}])
+            cli.sendLine(String.format("/subsystem=elytron/constant-permission-mapper=%s:add(permissions=[{class-name=\"%s\"}])",
+                    name, LoginPermission.class.getName()));
+        }
 
-        // /subsystem=elytron/security-domain=test:add(default-realm=test, permission-mapper=test, realms=[{role-decoder=test,
+
+        final String permissionMapperName = permissionMapper == null ? name : permissionMapper;
+        // /subsystem=elytron/security-domain=test:add(default-realm=test, permission-mapper=PERMISSION_MAPPER, realms=[{role-decoder=test,
         // realm=test}]
         cli.sendLine(String.format(
-                "/subsystem=elytron/security-domain=%s:add(default-realm=%1$s, permission-mapper=%1$s, realms=[{role-decoder=%1$s, realm=%1$s}]",
-                name));
+                "/subsystem=elytron/security-domain=%s:add(default-realm=%1$s, permission-mapper=%2$s, realms=[{role-decoder=%1$s, realm=%1$s}]",
+                name, permissionMapperName));
     }
 
     @Override
     public void remove(CLIWrapper cli) throws Exception {
         cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:remove()", name));
-        cli.sendLine(String.format("/subsystem=elytron/constant-permission-mapper=%s:remove()", name));
+        if(permissionMapper == null) {
+            cli.sendLine(String.format("/subsystem=elytron/constant-permission-mapper=%s:remove()", name));
+        }
         cli.sendLine(String.format("/subsystem=elytron/simple-role-decoder=%s:remove()", name));
         cli.sendLine(String.format("/subsystem=elytron/properties-realm=%s:remove()", name));
 

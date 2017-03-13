@@ -54,8 +54,19 @@
             </exclusions>
         </dependency>
 
-		<!-- module and copy artifact dependencies -->
-		
+        <!-- module and copy artifact dependencies -->
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-elytron</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-servlet</artifactId>
@@ -122,6 +133,11 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.el-impl</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
         </dependency>
 
         <dependency>
@@ -395,11 +411,6 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>elytron-subsystem</artifactId>
         </dependency>
 
         <dependency>
