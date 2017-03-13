@@ -273,7 +273,7 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
     /**
      * Notifies handler that a new transaction has been created.
      */
-    @Override public void transactionCreated(AbstractTransaction transaction) {
+    @Override public void transactionCreated(AbstractTransaction transaction, CreatedBy createdBy) {
         activeTransactionCountUpdater.incrementAndGet(this);
         try {
             transaction.registerSynchronization(this);

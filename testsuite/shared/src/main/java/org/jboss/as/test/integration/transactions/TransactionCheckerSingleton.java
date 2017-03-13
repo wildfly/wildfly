@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.integration.transactions;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import javax.annotation.ManagedBean;
 import javax.ejb.LocalBean;
 import javax.ejb.Remote;
@@ -37,9 +40,10 @@ import javax.ejb.Singleton;
 @Remote
 @ManagedBean
 public class TransactionCheckerSingleton implements TransactionCheckerSingletonRemote {
-    private int committed, rolledback;
+    private int committed, prepared, rolledback;
     private int  synchronizedBegin, synchronizedBefore, synchronizedAfter,
         synchronizedAfterCommitted, synchronizedAfterRolledBack;
+    private Collection<String> messages = new ArrayList<>();
 
     @Override
     public int getCommitted() {
@@ -49,6 +53,16 @@ public class TransactionCheckerSingleton implements TransactionCheckerSingletonR
     @Override
     public void addCommit() {
         committed++;
+    }
+
+    @Override
+    public int getPrepared() {
+        return prepared;
+    }
+
+    @Override
+    public void addPrepare() {
+        prepared++;
     }
 
     @Override
@@ -102,6 +116,11 @@ public class TransactionCheckerSingleton implements TransactionCheckerSingletonR
     }
 
     @Override
+    public void resetPrepared() {
+        prepared = 0;
+    }
+
+    @Override
     public void resetRolledback() {
         rolledback = 0;
     }
@@ -149,11 +168,28 @@ public class TransactionCheckerSingleton implements TransactionCheckerSingletonR
     }
 
     @Override
+    public void addMessage(String msg) {
+        messages.add(msg);
+    }
+
+    @Override
+    public Collection<String> getMessages() {
+        return messages;
+    }
+
+    @Override
+    public void resetMessages() {
+        messages.clear();
+    }
+
+    @Override
     public void resetAll() {
         resetCommitted();
+        resetPrepared();
         resetRolledback();
         resetSynchronizedAfter();
         resetSynchronizedBefore();
         resetSynchronizedBegin();
+        resetMessages();
     }
 }
