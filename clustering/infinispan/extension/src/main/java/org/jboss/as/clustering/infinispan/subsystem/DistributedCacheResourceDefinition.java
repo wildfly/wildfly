@@ -57,7 +57,7 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         CAPACITY_FACTOR("capacity-factor", ModelType.DOUBLE, new ModelNode(1.0f), new DoubleRangeValidatorBuilder().lowerBound(0).upperBound(Float.MAX_VALUE)),
         CONSISTENT_HASH_STRATEGY("consistent-hash-strategy", ModelType.STRING, new ModelNode(ConsistentHashStrategy.INTER_CACHE.name()), new EnumValidatorBuilder<>(ConsistentHashStrategy.class)),
-        L1_LIFESPAN("l1-lifespan", ModelType.LONG, new ModelNode(600000L), new LongRangeValidatorBuilder().min(0)),
+        L1_LIFESPAN("l1-lifespan", ModelType.LONG, new ModelNode(0L), new LongRangeValidatorBuilder().min(0)),
         OWNERS("owners", ModelType.INT, new ModelNode(2), new IntRangeValidatorBuilder().min(1)),
         SEGMENTS("segments", ModelType.INT, new ModelNode(256), new IntRangeValidatorBuilder().min(1)),
         ;
@@ -86,6 +86,12 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        if (InfinispanModel.VERSION_4_2_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.L1_LIFESPAN.getDefinition()), Attribute.L1_LIFESPAN.getDefinition())
+                    .end();
+        }
 
         if (InfinispanModel.VERSION_4_1_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
