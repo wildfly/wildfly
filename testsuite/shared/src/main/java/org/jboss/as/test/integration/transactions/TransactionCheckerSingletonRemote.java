@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.transactions;
 
+import java.util.Collection;
+
 /**
  * Interface used as remote point to {@link TransactionCheckerSingleton} class
  * that is used for verification of test workflow.
@@ -32,6 +34,9 @@ public interface TransactionCheckerSingletonRemote {
     int getCommitted();
     void addCommit();
     void resetCommitted();
+    int getPrepared();
+    void addPrepare();
+    void resetPrepared();
     int getRolledback();
     void addRollback();
     void resetRolledback();
@@ -49,5 +54,8 @@ public interface TransactionCheckerSingletonRemote {
     int countSynchronizedBegin();
     void setSynchronizedBegin();
     void resetSynchronizedBegin();
+    void addMessage(String msg);
+    Collection<String> getMessages();
+    void resetMessages();
     void resetAll();
 }

@@ -67,7 +67,7 @@ public class TransactionManagerService extends AbstractService<TransactionManage
     public void start(final StartContext context) throws StartException {
         final UserTransactionRegistry registry = registryInjector.getValue();
 
-        LocalTransactionContext.getCurrent().registerCreationListener(txn -> txn.registerAssociationListener(new AssociationListener() {
+        LocalTransactionContext.getCurrent().registerCreationListener((txn, createdBy) -> txn.registerAssociationListener(new AssociationListener() {
             private final AtomicBoolean first = new AtomicBoolean();
             public void associationChanged(final AbstractTransaction t, final boolean a) {
                 if (a && first.compareAndSet(false, true)) registry.userTransactionStarted();
