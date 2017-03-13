@@ -22,8 +22,11 @@
 
 package org.wildfly.extension.rts.logging;
 
+import javax.transaction.SystemException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
@@ -36,4 +39,6 @@ public interface RTSLogger extends BasicLogger {
 
     RTSLogger ROOT_LOGGER = Logger.getMessageLogger(RTSLogger.class, "org.wildfly.extension.rts");
 
+    @Message(id = 1, value = "Can't import global transaction to wildfly transaction client.")
+    IllegalStateException failueOnImportingGlobalTransactionFromWildflyClient(@Cause SystemException se);
 }

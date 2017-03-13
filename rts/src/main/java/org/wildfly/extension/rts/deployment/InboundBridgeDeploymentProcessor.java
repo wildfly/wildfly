@@ -35,6 +35,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.narayana.rest.bridge.inbound.EJBExceptionMapper;
 import org.jboss.narayana.rest.bridge.inbound.InboundBridgeFilter;
 import org.jboss.narayana.rest.bridge.inbound.TransactionalExceptionMapper;
+import org.wildfly.extension.rts.jaxrs.ImportWildflyClientGlobalTransactionFilter;
 
 import javax.ejb.TransactionAttribute;
 import javax.transaction.Transactional;
@@ -54,6 +55,7 @@ public class InboundBridgeDeploymentProcessor implements DeploymentUnitProcessor
 
     private static final String[] PROVIDERS = new String[] {
             InboundBridgeFilter.class.getName(),
+            ImportWildflyClientGlobalTransactionFilter.class.getName(),
             TransactionalExceptionMapper.class.getName(),
             EJBExceptionMapper.class.getName()
     };

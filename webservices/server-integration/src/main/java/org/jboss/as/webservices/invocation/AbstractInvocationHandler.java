@@ -44,6 +44,8 @@ import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.EndpointState;
 import org.jboss.wsf.spi.invocation.Invocation;
 import org.jboss.wsf.spi.security.SecurityDomainContext;
+import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.LocalTransactionContext;
 
 /**
  * Invocation abstraction for all endpoint types
@@ -149,6 +151,9 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
         context.setParameters(wsInvocation.getArgs());
         context.putPrivateData(Component.class, component);
         context.putPrivateData(ComponentView.class, componentView);
+        // pull in any XTS transaction
+        LocalTransactionContext.getCurrent().importProviderTransaction();
+        context.setTransaction(ContextTransactionManager.getInstance().getTransaction());
         if (forceTargetBean) {
             context.putPrivateData(ManagedReference.class, reference);
         }
