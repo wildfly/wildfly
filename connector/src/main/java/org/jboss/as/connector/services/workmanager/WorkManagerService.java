@@ -29,6 +29,7 @@ import java.util.concurrent.Executor;
 
 import org.jboss.as.connector.security.ElytronSecurityIntegration;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.txn.integration.JBossContextXATerminator;
 import org.jboss.jca.core.security.picketbox.PicketBoxSecurityIntegration;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
 import org.jboss.jca.core.workmanager.WorkManagerCoordinator;
@@ -39,7 +40,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.BlockingExecutor;
-import org.jboss.tm.JBossXATerminator;
 
 /**
  * A WorkManager Service.
@@ -55,7 +55,7 @@ public final class WorkManagerService implements Service<NamedWorkManager> {
 
     private final InjectedValue<Executor> executorLong = new InjectedValue<Executor>();
 
-    private final InjectedValue<JBossXATerminator> xaTerminator = new InjectedValue<JBossXATerminator>();
+    private final InjectedValue<JBossContextXATerminator> xaTerminator = new InjectedValue<JBossContextXATerminator>();
 
     /**
      * create an instance
@@ -132,7 +132,7 @@ public final class WorkManagerService implements Service<NamedWorkManager> {
         return executorLong;
     }
 
-    public Injector<JBossXATerminator> getXaTerminatorInjector() {
+    public Injector<JBossContextXATerminator> getXaTerminatorInjector() {
         return xaTerminator;
     }
 }

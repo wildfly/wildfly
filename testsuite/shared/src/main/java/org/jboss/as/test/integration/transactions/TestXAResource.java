@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.transactions;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
 import org.jboss.logging.Logger;
 
 /**
@@ -75,6 +74,7 @@ public class TestXAResource implements XAResource {
     @Override
     public int prepare(Xid xid) throws XAException {
         log.tracef("prepare xid: [%s]", xid);
+        checker.addPrepare();
         return prepareReturnValue;
     }
 
