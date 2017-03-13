@@ -44,10 +44,6 @@ public final class TxTestUtil {
         // no instance here
     }
 
-    public static TestXAResource enlistTestXAResource(Transaction txn, TransactionCheckerSingletonRemote checker) {
-        return enlistTestXAResource(txn, checker);
-    }
-
     public static TestXAResource enlistTestXAResource(Transaction txn, TransactionCheckerSingleton checker) {
         TestXAResource xaResource = new TestXAResource(checker);
         try {
