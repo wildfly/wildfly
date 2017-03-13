@@ -76,12 +76,14 @@ class HostAdd extends AbstractAddStepHandler {
         final boolean enableConsoleRedirect = !HostDefinition.DISABLE_CONSOLE_REDIRECT.resolveModelAttribute(context, model).asBoolean();
         DefaultDeploymentMappingProvider.instance().addMapping(defaultWebModule, serverName, name);
 
-        final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
+        //final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
+        final ServiceName virtualHostServiceName = HostDefinition.HOST_CAPABILITY.fromBaseCapability(address).getCapabilityServiceName();
 
         final Host service = new Host(name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode);
-        final ServiceBuilder<Host> builder = context.getServiceTarget().addService(virtualHostServiceName, service)
-                .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerInjection())
-                .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService())
+
+        final ServiceBuilder<Host> builder = context.getServiceTarget().addCapability(HostDefinition.HOST_CAPABILITY, service)
+                .addCapabilityRequirement(UndertowService.CAPABILITY_NAME_SERVER, Server.class, service.getServerInjection(), serverName)
+                .addCapabilityRequirement(UndertowService.CAPABILITY_NAME_UNDERTOW, UndertowService.class, service.getUndertowService())
                 .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getControlledProcessStateServiceInjectedValue());
 
         builder.setInitialMode(Mode.ON_DEMAND);
@@ -90,7 +92,8 @@ class HostAdd extends AbstractAddStepHandler {
             addCommonHost(context, name, aliases, serverName, virtualHostServiceName);
             builder.addAliases(UndertowService.DEFAULT_HOST);//add alias for default host of default server service
         }
-
+        //this is workaround for a bit so old service names still work!
+        builder.addAliases(UndertowService.virtualHostName(serverName, name));
         builder.install();
 
         if (enableConsoleRedirect) {

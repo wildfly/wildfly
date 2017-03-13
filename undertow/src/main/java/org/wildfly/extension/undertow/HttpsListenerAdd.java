@@ -21,7 +21,7 @@
  */
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.extension.undertow.HttpsListenerResourceDefinition.SSL_CONTEXT_CAPABILITY;
+import static org.wildfly.extension.undertow.UndertowService.CAP_REF_SSL_CONTEXT;
 
 import javax.net.ssl.SSLContext;
 
@@ -89,7 +89,7 @@ public class HttpsListenerAdd extends ListenerAdd {
         }
 
         if (sslContextRef != null) {
-            String runtimeCapability = RuntimeCapability.buildDynamicCapabilityName(SSL_CONTEXT_CAPABILITY, sslContextRef);
+            String runtimeCapability = RuntimeCapability.buildDynamicCapabilityName(CAP_REF_SSL_CONTEXT, sslContextRef);
             ServiceName sslContextServiceName = context.getCapabilityServiceName(runtimeCapability, SSLContext.class);
 
             serviceBuilder.addDependency(sslContextServiceName, SSLContext.class, sslContextInjector);

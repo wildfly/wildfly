@@ -85,7 +85,6 @@ import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.ControlPointService;
 import org.wildfly.extension.requestcontroller.RequestControllerActivationMarker;
-import org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
@@ -325,7 +324,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 infoBuilder.addDependency(
                         deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
                                 .getCapabilityServiceName(
-                                        ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY,
+                                        UndertowService.CAPABILITY_NAME_APPLICATION_SECURITY_DOMAIN,
                                         securityDomain),
                         BiFunction.class, undertowDeploymentInfoService.getSecurityFunctionInjector());
             } else {

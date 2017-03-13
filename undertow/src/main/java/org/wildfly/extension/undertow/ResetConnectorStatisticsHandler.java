@@ -27,11 +27,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Defines and handles reseting connector statistics
@@ -52,13 +50,12 @@ public class ResetConnectorStatisticsHandler implements OperationStepHandler {
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-        ListenerService service = (ListenerService) context.getServiceRegistry(false).getService(UndertowService.listenerName(name)).getValue();
-        ConnectorStatistics stats = service.getOpenListener().getConnectorStatistics();
-        if(stats != null) {
-            stats.reset();
+        ListenerService service = ListenerResourceDefinition.getListenerService(context);
+        if (service != null) {
+            ConnectorStatistics stats = service.getOpenListener().getConnectorStatistics();
+            if (stats != null) {
+                stats.reset();
+            }
         }
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }

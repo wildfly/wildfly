@@ -47,7 +47,7 @@ import org.wildfly.extension.undertow.UndertowService;
 abstract class Handler extends PersistentResourceDefinition {
 
     public static final String REQUEST_CONTROLLER = "org.wildfly.request-controller";
-    static final RuntimeCapability CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.undertow.handler", true)
+    static final RuntimeCapability CAPABILITY = RuntimeCapability.Builder.of(UndertowService.CAPABILITY_NAME_HANDLER, true, HttpHandler.class)
             .addOptionalRequirements(REQUEST_CONTROLLER).build();
 
     private static final List<AccessConstraintDefinition> CONSTRAINTS = new SensitiveTargetAccessConstraintDefinition(

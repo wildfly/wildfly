@@ -23,6 +23,10 @@
 package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.wildfly.extension.undertow.UndertowService.CAP_REF_BUFFER_POOL;
+import static org.wildfly.extension.undertow.UndertowService.CAP_REF_IO_WORKER;
+import static org.wildfly.extension.undertow.UndertowService.CAP_REF_SOCKET_BINDING;
+import static org.wildfly.extension.undertow.UndertowService.CAP_REF_SSL_CONTEXT;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -69,34 +73,31 @@ import org.xnio.Options;
  */
 abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
-    static final String IO_WORKER_CAPABILITY = "org.wildfly.io.worker";
-    static final String IO_BUFFER_POOL_CAPABILITY = "org.wildfly.io.buffer-pool";
-    static final String SOCKET_CAPABILITY = "org.wildfly.network.socket-binding";
 
-    static final String LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
-    static final RuntimeCapability<Void> LISTENER_CAPABILITY = RuntimeCapability.Builder.of(LISTENER_CAPABILITY_NAME, true, UndertowListener.class)
+
+    static final RuntimeCapability<Void> LISTENER_CAPABILITY = RuntimeCapability.Builder.of(UndertowService.CAPABILITY_NAME_LISTENER, true, UndertowListener.class)
+            .addDynamicOptionalRequirements(CAP_REF_SSL_CONTEXT)
             .build();
-
     protected static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.SOCKET_BINDING, ModelType.STRING)
             .setAllowNull(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .setCapabilityReference(SOCKET_CAPABILITY, LISTENER_CAPABILITY)
+            .setCapabilityReference(CAP_REF_SOCKET_BINDING, LISTENER_CAPABILITY)
             .build();
     protected static final SimpleAttributeDefinition WORKER = new SimpleAttributeDefinitionBuilder(Constants.WORKER, ModelType.STRING)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setDefaultValue(new ModelNode("default"))
-            .setCapabilityReference(IO_WORKER_CAPABILITY, LISTENER_CAPABILITY)
+            .setCapabilityReference(CAP_REF_IO_WORKER, LISTENER_CAPABILITY)
             .build();
     protected static final SimpleAttributeDefinition BUFFER_POOL = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_POOL, ModelType.STRING)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setDefaultValue(new ModelNode("default"))
-            .setCapabilityReference(IO_BUFFER_POOL_CAPABILITY, LISTENER_CAPABILITY)
+            .setCapabilityReference(CAP_REF_BUFFER_POOL, LISTENER_CAPABILITY)
             .build();
     protected static final SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(Constants.ENABLED, ModelType.BOOLEAN)
             .setAllowNull(true)
@@ -111,7 +112,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setAllowExpression(false)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .setCapabilityReference(SOCKET_CAPABILITY, LISTENER_CAPABILITY)
+            .setCapabilityReference(CAP_REF_SOCKET_BINDING, LISTENER_CAPABILITY)
             .build();
 
     protected static final SimpleAttributeDefinition RESOLVE_PEER_ADDRESS = new SimpleAttributeDefinitionBuilder(Constants.RESOLVE_PEER_ADDRESS, ModelType.BOOLEAN)
@@ -271,14 +272,12 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         }
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final String name = context.getCurrentAddressValue();
-            ServiceController<ListenerService> listenerSC = (ServiceController<ListenerService>) context.getServiceRegistry(false).getService(UndertowService.listenerName(name));
-            if (listenerSC ==null || listenerSC.getState() != ServiceController.State.UP){
+            ListenerService service =  getListenerService(context);
+            if (service == null) {
                 context.getResult().set(0L);
                 return;
             }
             String op = operation.get(NAME).asString();
-            ListenerService service = listenerSC.getValue();
             ConnectorStatistics stats = service.getOpenListener().getConnectorStatistics();
             if(stats != null) {
                 ConnectorStat element = ConnectorStat.getStat(op);
@@ -309,6 +308,16 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         }
     }
 
+    static ListenerService getListenerService(OperationContext context) {
+        final String name = context.getCurrentAddressValue();
+        ServiceName serviceName = LISTENER_CAPABILITY.getCapabilityServiceName(name);
+        ServiceController<ListenerService> listenerSC = (ServiceController<ListenerService>) context.getServiceRegistry(false).getService(serviceName);
+        if (listenerSC == null || listenerSC.getState() != ServiceController.State.UP) {
+            return null;
+        }
+        return listenerSC.getValue();
+    }
+
     @Override
     public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerCapability(LISTENER_CAPABILITY);
@@ -318,28 +327,26 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         @Override
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {
 
-            final ServiceName listenerServiceName = UndertowService.listenerName(context.getCurrentAddressValue());
-
             boolean enabled = resolvedValue.asBoolean();
             // We don't try and analyze currentValue to see if we were already enabled, as the resolution result
             // may be different now than it was before (different system props, or vault contents)
             // Instead we consider the previous setting to be enabled if the service Mode != Mode.NEVER
-            final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(listenerServiceName);
-            ListenerService listenerService = (ListenerService) controller.getService();
-            boolean currentEnabled = listenerService.isEnabled();
-            handbackHolder.setHandback(currentEnabled);
-            listenerService.setEnabled(enabled);
+            ListenerService listenerService = getListenerService(context);
+            if (listenerService != null) {
+                boolean currentEnabled = listenerService.isEnabled();
+                handbackHolder.setHandback(currentEnabled);
+                listenerService.setEnabled(enabled);
+            }
             return false;
         }
 
         @Override
         protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Boolean handback) throws OperationFailedException {
             if (handback != null) {
-
-                final ServiceName listenerServiceName = UndertowService.listenerName(context.getCurrentAddressValue());
-                final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(listenerServiceName);
-                ListenerService listenerService = (ListenerService) controller.getService();
-                listenerService.setEnabled(handback);
+                ListenerService listenerService = getListenerService(context);
+                if (listenerService != null) {
+                    listenerService.setEnabled(handback);
+                }
             }
         }
     }

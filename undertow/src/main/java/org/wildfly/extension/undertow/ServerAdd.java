@@ -55,11 +55,11 @@ class ServerAdd extends AbstractAddStepHandler {
         final String servletContainer = ServerDefinition.SERVLET_CONTAINER.resolveModelAttribute(context, resource.getModel()).asString();
         final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context,subsystemModel).asString();
 
-        final ServiceName serverName = UndertowService.SERVER.append(name);
+
         final Server service = new Server(name, defaultHost);
-        final ServiceBuilder<Server> builder = context.getServiceTarget().addService(serverName, service)
-                .addDependency(UndertowService.SERVLET_CONTAINER.append(servletContainer), ServletContainerService.class, service.getServletContainerInjector())
-                .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowServiceInjector());
+        final ServiceBuilder<Server> builder = context.getServiceTarget().addCapability(ServerDefinition.SERVER_CAPABILITY, service)
+                .addCapabilityRequirement(UndertowService.CAPABILITY_NAME_SERVLET_CONTAINER, ServletContainerService.class, service.getServletContainerInjector(), servletContainer)
+                .addCapabilityRequirement(UndertowService.CAPABILITY_NAME_UNDERTOW, UndertowService.class, service.getUndertowServiceInjector());
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE);
         boolean isDefaultServer = name.equals(defaultServerName);
@@ -68,8 +68,10 @@ class ServerAdd extends AbstractAddStepHandler {
             builder.addAliases(UndertowService.DEFAULT_SERVER);//register default server service name
 
             WebServerService commonWebServer = new WebServerService();
+            final ServiceName serverServiceName = ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName(name);
+
             final ServiceBuilder<WebServerService> commonServerBuilder = context.getServiceTarget().addService(CommonWebServer.SERVICE_NAME, commonWebServer)
-                    .addDependency(serverName, Server.class, commonWebServer.getServerInjectedValue())
+                    .addDependency(serverServiceName, Server.class, commonWebServer.getServerInjectedValue())
                     .setInitialMode(ServiceController.Mode.PASSIVE);
 
             addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.HTTP_LISTENER_PATH);
@@ -87,7 +89,7 @@ class ServerAdd extends AbstractAddStepHandler {
         if (listeners.isDefined()) {
             for (Property p : listeners.asPropertyList()) {
                 for (Property listener : p.getValue().asPropertyList()) {
-                    builder.addDependency(UndertowService.listenerName(listener.getName()));
+                    builder.addDependency(ListenerResourceDefinition.LISTENER_CAPABILITY.getCapabilityServiceName(listener.getName()));
                 }
             }
         }

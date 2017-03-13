@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.wildfly.extension.undertow.UndertowService.CAP_REF_SSL_CONTEXT;
 import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
 
 import java.util.Collection;
@@ -51,13 +52,11 @@ import org.xnio.SslClientAuthMode;
  */
 public class HttpsListenerResourceDefinition extends ListenerResourceDefinition {
 
-    static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
-
     protected static final HttpsListenerResourceDefinition INSTANCE = new HttpsListenerResourceDefinition();
 
     protected static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, true)
             .setAlternatives(Constants.SECURITY_REALM)
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY, LISTENER_CAPABILITY_NAME, true)
+            .setCapabilityReference(CAP_REF_SSL_CONTEXT)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
@@ -110,7 +109,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .build();
 
     public static final OptionAttributeDefinition SSL_SESSION_CACHE_SIZE = OptionAttributeDefinition.builder(Constants.SSL_SESSION_CACHE_SIZE, Options.SSL_SERVER_SESSION_CACHE_SIZE)
-            .setDeprecated(ModelVersion.create(4, 0, 0)).setAllowNull(true).setAllowExpression(true).build();
+            .setDeprecated(ModelVersion.create(4, 0, 0)).setRequired(false).setAllowExpression(true).build();
     public static final OptionAttributeDefinition SSL_SESSION_TIMEOUT = OptionAttributeDefinition.builder(Constants.SSL_SESSION_TIMEOUT, Options.SSL_SERVER_SESSION_TIMEOUT)
             .setDeprecated(ModelVersion.create(4, 0, 0)).setMeasurementUnit(MeasurementUnit.SECONDS).setAllowNull(true).setAllowExpression(true).build();
 

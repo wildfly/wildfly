@@ -108,10 +108,6 @@ public class UndertowExtension implements Extension {
         deployments.registerSubModel(DeploymentWebSocketDefinition.INSTANCE);
 
         subsystem.registerXMLElementWriter(UndertowSubsystemParser_4_0.INSTANCE);
-
-        if (context.isRegisterTransformers()) {
-            UndertowRootDefinition.registerTransformers(subsystem);
-        }
     }
 
 }

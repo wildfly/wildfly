@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.wildfly.extension.undertow.UndertowService.CAP_REF_SOCKET_BINDING;
+
 import io.undertow.server.ListenerRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -69,7 +71,8 @@ public class HttpListenerAdd extends ListenerAdd {
     void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends UndertowListener> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
         ModelNode redirectBindingRef = ListenerResourceDefinition.REDIRECT_SOCKET.resolveModelAttribute(context, model);
         if (redirectBindingRef.isDefined()) {
-            serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(redirectBindingRef.asString()), SocketBinding.class, service.getRedirectSocket());
+            ServiceName serviceName = context.getCapabilityServiceName(CAP_REF_SOCKET_BINDING, redirectBindingRef.asString(), SocketBinding.class);
+            serviceBuilder.addDependency(serviceName, SocketBinding.class, service.getRedirectSocket());
         }
         serviceBuilder.addDependency(REGISTRY_SERVICE_NAME, ListenerRegistry.class, ((HttpListenerService) service).getHttpListenerRegistry());
     }

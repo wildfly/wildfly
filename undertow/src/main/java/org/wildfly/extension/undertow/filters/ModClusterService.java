@@ -1,19 +1,19 @@
 package org.wildfly.extension.undertow.filters;
 
-import static org.wildfly.extension.undertow.filters.ModClusterDefinition.SSL_CONTEXT_CAPABILITY_NAME;
+import static org.wildfly.extension.undertow.UndertowService.CAP_REF_SSL_CONTEXT;
 import io.undertow.Handlers;
 import io.undertow.UndertowOptions;
 import io.undertow.client.UndertowClient;
 import io.undertow.predicate.PredicateParser;
 import io.undertow.protocols.ssl.UndertowXnioSsl;
+import org.jboss.as.controller.CapabilitiesServiceBuilder;
+import org.jboss.as.controller.CapabilitiesServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -119,7 +119,6 @@ public class ModClusterService extends FilterService {
         }
 
         //TODO: SSL support for the client
-        //TODO: wire up idle timeout when new version of undertow arrives
         final ModCluster.Builder modClusterBuilder;
         final XnioWorker worker = workerInjectedValue.getValue();
         if(sslContext == null) {
@@ -221,7 +220,7 @@ public class ModClusterService extends FilterService {
         }
     }
 
-    static ServiceController<FilterService> install(String name, ServiceTarget serviceTarget, ModelNode model, OperationContext operationContext) throws OperationFailedException {
+    static ServiceController<FilterService> install(String name, CapabilitiesServiceTarget serviceTarget, ModelNode model, OperationContext operationContext) throws OperationFailedException {
         String securityKey = null;
         ModelNode securityKeyNode = ModClusterDefinition.SECURITY_KEY.resolveModelAttribute(operationContext, model);
         if(securityKeyNode.isDefined()) {
@@ -269,16 +268,19 @@ public class ModClusterService extends FilterService {
                 ModClusterDefinition.MAX_RETRIES.resolveModelAttribute(operationContext, model).asInt(),
                 Enum.valueOf(FailoverStrategy.class, ModClusterDefinition.FAILOVER_STRATEGY.resolveModelAttribute(operationContext, model).asString()),
                 builder.getMap());
-        ServiceBuilder<FilterService> serviceBuilder = serviceTarget.addService(UndertowService.FILTER.append(name), service);
-        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.managementSocketBinding);
-        final ModelNode advertiseSocketBinding = ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model);
-        if (advertiseSocketBinding.isDefined()) {
-            serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(advertiseSocketBinding.asString()), SocketBinding.class, service.advertiseSocketBinding);
+
+        final String mgmtSocketBindingRef = ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString();
+        final ModelNode advertiseSocketBindingRef = ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model);
+        final String workerRef = ModClusterDefinition.WORKER.resolveModelAttribute(operationContext, model).asString();
+        CapabilitiesServiceBuilder<FilterService> serviceBuilder = serviceTarget.addService(UndertowService.FILTER.append(name), service);
+        serviceBuilder.addCapabilityRequirement(UndertowService.CAP_REF_SOCKET_BINDING, SocketBinding.class, service.managementSocketBinding, mgmtSocketBindingRef);
+        if (advertiseSocketBindingRef.isDefined()) {
+            serviceBuilder.addCapabilityRequirement(UndertowService.CAP_REF_SOCKET_BINDING, SocketBinding.class, service.advertiseSocketBinding, advertiseSocketBindingRef.asString());
         }
-        serviceBuilder.addDependency(IOServices.WORKER.append(ModClusterDefinition.WORKER.resolveModelAttribute(operationContext, model).asString()), XnioWorker.class, service.workerInjectedValue);
+        serviceBuilder.addCapabilityRequirement(IOServices.IO_WORKER_CAPABILITY_NAME,XnioWorker.class, service.workerInjectedValue, workerRef);
 
         if (sslContext.isDefined()) {
-            serviceBuilder.addDependency(operationContext.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY_NAME, sslContext.asString(), SSLContext.class), SSLContext.class, service.sslContext);
+            serviceBuilder.addCapabilityRequirement(CAP_REF_SSL_CONTEXT, SSLContext.class, service.sslContext, sslContext.asString());
         }
         if(securityRealm.isDefined()) {
             SecurityRealm.ServiceUtil.addDependency(serviceBuilder, service.securityRealm, securityRealm.asString(), false);

@@ -44,7 +44,6 @@ import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
 import org.wildfly.clustering.web.undertow.sso.SSOManagerBuilder;
-import org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition;
 import org.wildfly.extension.undertow.security.sso.DistributableApplicationSecurityDomainSingleSignOnManagerBuilder;
 import org.wildfly.security.http.util.sso.SingleSignOnManager;
 
@@ -55,6 +54,7 @@ import io.undertow.server.session.SessionIdGenerator;
  */
 @MetaInfServices(DistributableApplicationSecurityDomainSingleSignOnManagerBuilder.class)
 public class DistributableSingleSignOnManagerBuilder implements DistributableApplicationSecurityDomainSingleSignOnManagerBuilder, Value<SingleSignOnManager> {
+    private static final String APPLICATION_SECURITY_DOMAIN_CAPABILITY = "org.wildfly.undertow.application-security-domain";
 
     private static final SSOManagerFactoryBuilderProvider<Batch> PROVIDER = StreamSupport.stream(ServiceLoader.load(SSOManagerFactoryBuilderProvider.class, SSOManagerFactoryBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst().get();
 
@@ -63,7 +63,7 @@ public class DistributableSingleSignOnManagerBuilder implements DistributableApp
 
     @Override
     public ServiceBuilder<SingleSignOnManager> build(ServiceTarget target, ServiceName name, CapabilityServiceSupport support, String securityDomainName, SessionIdGenerator generator) {
-        ServiceName securityDomainServiceName = support.getCapabilityServiceName(ApplicationSecurityDomainDefinition.APPLICATION_SECURITY_DOMAIN_CAPABILITY, securityDomainName);
+        ServiceName securityDomainServiceName = support.getCapabilityServiceName(APPLICATION_SECURITY_DOMAIN_CAPABILITY, securityDomainName);
 
         Builder<SSOManagerFactory<ElytronAuthentication, String, Map.Entry<String, URI>, Batch>> factoryBuilder = PROVIDER.<ElytronAuthentication, String, Map.Entry<String, URI>>getBuilder(securityDomainName).configure(support);
         Builder<SessionIdGenerator> generatorBuilder = new SimpleBuilder<>(securityDomainServiceName.append("generator"), generator);
