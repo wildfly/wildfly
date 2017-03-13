@@ -31,5 +31,5 @@ public interface ProtocolConfiguration<P extends Protocol> {
 
     String getName();
 
-    P createProtocol();
+    P createProtocol(ProtocolStackConfiguration stackConfiguration);
 }

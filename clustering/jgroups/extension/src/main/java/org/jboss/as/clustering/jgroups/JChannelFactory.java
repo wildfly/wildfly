@@ -22,7 +22,10 @@
 package org.jboss.as.clustering.jgroups;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jgroups.Channel;
 import org.jgroups.Event;
@@ -35,9 +38,7 @@ import org.jgroups.fork.UnknownForkHandler;
 import org.jgroups.protocols.FORK;
 import org.jgroups.stack.ProtocolStack;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
-import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 
 /**
@@ -64,16 +65,15 @@ public class JChannelFactory implements ChannelFactory {
         JChannel channel = new JChannel(false);
         ProtocolStack stack = new ProtocolStack();
         channel.setProtocolStack(stack);
-        stack.addProtocol(this.configuration.getTransport().createProtocol());
-        stack.addProtocols(this.configuration.getProtocols().stream().map(ProtocolConfiguration::createProtocol).collect(Collectors.toList()));
-
-        RelayConfiguration relay = this.configuration.getRelay();
-        if (relay != null) {
-            stack.addProtocol(relay.createProtocol());
-        }
+        stack.addProtocols(Stream.of(
+                Stream.of(this.configuration.getTransport()),
+                this.configuration.getProtocols().stream(),
+                Stream.of(this.configuration.getRelay())
+        ).flatMap(Function.identity()).filter(Objects::nonNull).map(pc -> pc.createProtocol(this.configuration)).collect(Collectors.toList()));
 
         // Add implicit FORK to the top of the stack
         FORK fork = new FORK();
+        fork.enableStats(this.configuration.isStatisticsEnabled());
         fork.setUnknownForkHandler(new UnknownForkHandler() {
             private final short id = ClassConfigurator.getProtocolId(RequestCorrelator.class);
 

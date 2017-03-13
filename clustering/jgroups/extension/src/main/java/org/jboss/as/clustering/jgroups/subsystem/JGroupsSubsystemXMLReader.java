@@ -268,6 +268,26 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            ParseUtils.requireNoNamespaceAttribute(reader, i);
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    // Already parsed
+                    break;
+                }
+                case STATISTICS_ENABLED: {
+                    if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
+                        readAttribute(reader, i, operation, StackResourceDefinition.Attribute.STATISTICS_ENABLED);
+                        break;
+                    }
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
@@ -531,6 +551,12 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             case MODULE: {
                 if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
                     readAttribute(reader, index, operation, AbstractProtocolResourceDefinition.Attribute.MODULE);
+                    break;
+                }
+            }
+            case STATISTICS_ENABLED: {
+                if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
+                    readAttribute(reader, index, operation, AbstractProtocolResourceDefinition.Attribute.STATISTICS_ENABLED);
                     break;
                 }
             }

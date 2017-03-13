@@ -65,6 +65,7 @@ public class JChannelFactoryBuilder implements ResourceServiceBuilder<ChannelFac
     private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
     private final String name;
     private final ServiceName serviceName;
+    private volatile boolean statisticsEnabled;
 
     @SuppressWarnings("rawtypes")
     private volatile ValueDependency<TransportConfiguration> transport = null;
@@ -100,6 +101,7 @@ public class JChannelFactoryBuilder implements ResourceServiceBuilder<ChannelFac
     public Builder<ChannelFactory> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
         Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        this.statisticsEnabled = StackResourceDefinition.Attribute.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
         Optional<PathElement> transport = resource.getChildren(TransportResourceDefinition.WILDCARD_PATH.getKey()).stream().map(Resource.ResourceEntry::getPathElement).findFirst();
         if (!transport.isPresent()) {
             throw JGroupsLogger.ROOT_LOGGER.transportNotDefined(this.getName());
@@ -141,5 +143,10 @@ public class JChannelFactoryBuilder implements ResourceServiceBuilder<ChannelFac
     @Override
     public RelayConfiguration getRelay() {
         return (this.relay != null) ? this.relay.getValue() : null;
+    }
+
+    @Override
+    public boolean isStatisticsEnabled() {
+        return statisticsEnabled;
     }
 }

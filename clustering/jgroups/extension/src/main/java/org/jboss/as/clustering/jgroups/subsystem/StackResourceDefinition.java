@@ -22,13 +22,15 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -40,16 +42,21 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
@@ -66,6 +73,25 @@ public class StackResourceDefinition extends ChildResourceDefinition {
 
     public static PathElement pathElement(String name) {
         return PathElement.pathElement("stack", name);
+    }
+
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN, builder -> builder.setDefaultValue(new ModelNode(false))),
+        ;
+        private final AttributeDefinition definition;
+
+        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setRequired(false)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            ).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
     }
 
     enum Capability implements CapabilityProvider {
@@ -104,6 +130,15 @@ public class StackResourceDefinition extends ChildResourceDefinition {
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        if (JGroupsModel.VERSION_4_1_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), Attribute.STATISTICS_ENABLED.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.STATISTICS_ENABLED.getDefinition())
+                    .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), Attribute.STATISTICS_ENABLED.getDefinition())
+                    .end();
+        }
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
             // Create legacy "protocols" attributes, which lists protocols by name
@@ -144,6 +179,7 @@ public class StackResourceDefinition extends ChildResourceDefinition {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
                 .addExtraParameters(TRANSPORT, PROTOCOLS)
                 .addCapabilities(Capability.class)
                 .addOperationTranslator(new OperationStepHandler() {

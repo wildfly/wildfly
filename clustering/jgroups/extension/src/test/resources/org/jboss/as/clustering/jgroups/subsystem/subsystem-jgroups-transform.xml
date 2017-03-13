@@ -22,7 +22,7 @@
 
 <subsystem xmlns="urn:jboss:domain:jgroups:4.1">
     <stacks default="maximal">
-        <stack name="maximal">
+        <stack name="maximal" statistics-enabled="true">
             <transport type="TCP"
                        module="org.jgroups"
                        socket-binding="jgroups-tcp"
@@ -54,7 +54,7 @@
             <protocol type="FRAG2"/>
             <protocol type="RSVP"/>
         </stack>
-        <stack name="minimal">
+        <stack name="minimal" statistics-enabled="true">
             <transport type="UDP" socket-binding="jgroups-udp"/>
         </stack>
     </stacks>

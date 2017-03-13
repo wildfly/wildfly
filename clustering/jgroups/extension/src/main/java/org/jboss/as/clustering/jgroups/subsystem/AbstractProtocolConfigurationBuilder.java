@@ -50,6 +50,7 @@ import org.jboss.msc.value.Value;
 import org.jgroups.stack.Configurator;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 import org.wildfly.clustering.service.Builder;
 
 /**
@@ -63,6 +64,7 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
 
     private volatile Map<String, String> properties;
     private volatile String moduleName;
+    private volatile Boolean statisticsEnabled;
 
     protected AbstractProtocolConfigurationBuilder(String name) {
         this.name = name;
@@ -80,6 +82,7 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
     public Builder<C> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.moduleName = MODULE.resolveModelAttribute(context, model).asString();
         this.properties = ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).orElse(Collections.emptyList()).stream().collect(Collectors.toMap(Property::getName, property -> property.getValue().asString()));
+        this.statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBooleanOrNull();
         return this;
     }
 
@@ -90,7 +93,7 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
 
     @SuppressWarnings("unchecked")
     @Override
-    public final P createProtocol() {
+    public final P createProtocol(ProtocolStackConfiguration stackConfiguration) {
         StringBuilder builder = new StringBuilder();
         if (this.moduleName.equals(AbstractProtocolResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue().asString()) && !this.name.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix)) {
             builder.append(org.jgroups.conf.ProtocolConfiguration.protocol_prefix).append('.');
@@ -106,6 +109,7 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
             Configurator.resolveAndAssignFields(result, properties);
             Configurator.resolveAndInvokePropertyMethods(result, properties);
             this.accept(result);
+            result.enableStats(this.statisticsEnabled != null ? this.statisticsEnabled : stackConfiguration.isStatisticsEnabled());
             return result;
         } catch (Exception e) {
             throw new IllegalArgumentException(e);

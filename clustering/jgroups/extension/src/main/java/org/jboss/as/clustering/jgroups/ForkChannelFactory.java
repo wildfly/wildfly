@@ -58,7 +58,7 @@ public class ForkChannelFactory implements ChannelFactory {
 
         String stackName = this.protocols.isEmpty() ? this.channel.getClusterName() : id;
 
-        return new ForkChannel(this.channel, stackName, id, this.protocols.stream().map(ProtocolConfiguration::createProtocol).toArray(Protocol[]::new));
+        return new ForkChannel(this.channel, stackName, id, this.protocols.stream().map(pc -> pc.createProtocol(this.parentFactory.getProtocolStackConfiguration())).toArray(Protocol[]::new));
     }
 
     @Override
@@ -89,6 +89,11 @@ public class ForkChannelFactory implements ChannelFactory {
         @Override
         public String getName() {
             return this.name;
+        }
+
+        @Override
+        public boolean isStatisticsEnabled() {
+            return this.parentStack.isStatisticsEnabled();
         }
 
         @Override
