@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connector xmlns="http://java.sun.com/xml/ns/j2ee" version="1.5">
+  <display-name>Inflow Transaction Test Resource Adapter</display-name>
+  <vendor-name>WildFly</vendor-name>
+  <eis-type>Test RA</eis-type>
+  <resourceadapter-version>1.0</resourceadapter-version>
+  <resourceadapter>
+    <resourceadapter-class>org.jboss.as.test.integration.transaction.inflow.TransactionInflowResourceAdapter</resourceadapter-class>
+    <inbound-resourceadapter>
+      <messageadapter>
+        <messagelistener>
+          <messagelistener-type>javax.jms.MessageListener</messagelistener-type>
+          <activationspec>
+            <activationspec-class>org.jboss.as.test.integration.transaction.inflow.TransactionInflowRaSpec</activationspec-class>
+          </activationspec>
+        </messagelistener>
+      </messageadapter>
+    </inbound-resourceadapter>
+    <config-property>
+      <config-property-name>action</config-property-name>
+      <config-property-type>java.lang.String</config-property-type>
+    </config-property>
+  </resourceadapter>
+</connector>

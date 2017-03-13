@@ -27,8 +27,11 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
 
+import javax.resource.spi.work.Work;
+import javax.resource.spi.work.WorkCompletedException;
 import javax.transaction.Synchronization;
 import javax.transaction.Transaction;
+import javax.transaction.xa.Xid;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
@@ -234,5 +237,17 @@ public interface TransactionLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 34, value = "relative_to property of the object-store is set to the default value with jboss.server.data.dir")
     void objectStoreRelativeToIsSetToDefault();
+
+    @Message(id = 35, value = "Cannot find or import inflow transaction for xid %s and work %s")
+    WorkCompletedException cannotFindOrImportInflowTransaction(Xid xid, Work work, @Cause Exception e);
+
+    @Message(id = 36, value = "Imported jca inflow transaction with xid %s of work %s is inactive")
+    WorkCompletedException importedInflowTransactionIsInactive(Xid xid, Work work, @Cause Exception e);
+
+    @Message(id = 37, value = "Unexpected error on resuming transaction %s for work %s")
+    WorkCompletedException cannotResumeInflowTransactionUnexpectedError(Transaction txn, Work work, @Cause Exception e);
+
+    @Message(id = 38, value = "Unexpected error on suspending transaction for work %s")
+    RuntimeException cannotSuspendInflowTransactionUnexpectedError(Work txn, @Cause Exception e);
 
 }
