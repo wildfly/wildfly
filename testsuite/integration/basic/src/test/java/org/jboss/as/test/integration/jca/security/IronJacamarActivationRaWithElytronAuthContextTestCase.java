@@ -30,7 +30,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.core.testrunner.ServerSetupTask;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.CredentialReference;
@@ -39,13 +38,13 @@ import org.wildfly.test.security.common.elytron.SimpleAuthConfig;
 import org.wildfly.test.security.common.elytron.SimpleAuthContext;
 
 /**
- * Test for RA with elytron security domain
+ * Test for RA with elytron security domain, RA is activated using bundled ironjacamar.xml
  *
  * @author Flavia Rainone
  */
 @RunWith(Arquillian.class)
-@ServerSetup(RaWithElytronAuthContextTestCase.ElytronSetup.class)
-public class RaWithElytronAuthContextTestCase {
+@ServerSetup(IronJacamarActivationRaWithElytronAuthContextTestCase.ElytronSetup.class)
+public class IronJacamarActivationRaWithElytronAuthContextTestCase {
 
     private static final String AUTH_CONFIG = "MyAuthConfig";
     private static final String AUTH_CONTEXT = "MyAuthContext";
@@ -70,13 +69,13 @@ public class RaWithElytronAuthContextTestCase {
     public static Archive<?> deploymentSingleton() {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar")
-                .addClass(RaWithElytronAuthContextTestCase.class)
+                .addClass(IronJacamarActivationRaWithElytronAuthContextTestCase.class)
                 .addPackage(MultipleConnectionFactory1.class.getPackage());
-        jar.addClasses(AbstractElytronSetupTask.class, ServerSetupTask.class);
+        jar.addClasses(AbstractElytronSetupTask.class);
         final ResourceAdapterArchive rar = ShrinkWrap.create(ResourceAdapterArchive.class, "test.rar")
                 .addAsLibrary(jar)
-                .addAsManifestResource(RaWithElytronAuthContextTestCase.class.getPackage(), "ra.xml", "ra.xml")
-                .addAsManifestResource(RaWithElytronAuthContextTestCase.class.getPackage(), "ironjacamar-elytron.xml",
+                .addAsManifestResource(IronJacamarActivationRaWithElytronAuthContextTestCase.class.getPackage(), "ra.xml", "ra.xml")
+                .addAsManifestResource(IronJacamarActivationRaWithElytronAuthContextTestCase.class.getPackage(), "ironjacamar-elytron.xml",
                         "ironjacamar.xml");
 
         return rar;
