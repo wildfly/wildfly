@@ -31,10 +31,12 @@ import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefiniti
 import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.SINGLETON;
 
 import java.util.Properties;
+import java.util.function.Consumer;
 
+import org.infinispan.configuration.cache.AbstractStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
-import org.infinispan.configuration.cache.StoreConfigurationBuilder;
+import org.infinispan.configuration.cache.StoreConfiguration;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
@@ -45,20 +47,23 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.common.function.ExceptionBiFunction;
 
 /**
  * @author Paul Ferraro
  */
-public abstract class StoreBuilder extends ComponentBuilder<PersistenceConfiguration> implements ResourceServiceBuilder<PersistenceConfiguration> {
+public abstract class StoreBuilder<C extends StoreConfiguration, B extends AbstractStoreConfigurationBuilder<C, B>> extends ComponentBuilder<PersistenceConfiguration> implements ResourceServiceBuilder<PersistenceConfiguration>, Consumer<B> {
 
     private final InjectedValue<AsyncStoreConfiguration> async = new InjectedValue<>();
     private final PathAddress cacheAddress;
+    private final ExceptionBiFunction<OperationContext, ModelNode, B, OperationFailedException> storeBuilderFactory;
 
-    private volatile StoreConfigurationBuilder<?, ?> storeBuilder;
+    private volatile B storeBuilder;
 
-    StoreBuilder(PathAddress cacheAddress) {
+    StoreBuilder(PathAddress cacheAddress, ExceptionBiFunction<OperationContext, ModelNode, B, OperationFailedException> storeBuilderFactory) {
         super(CacheComponent.PERSISTENCE, cacheAddress);
         this.cacheAddress = cacheAddress;
+        this.storeBuilderFactory = storeBuilderFactory;
     }
 
     @Override
@@ -70,7 +75,7 @@ public abstract class StoreBuilder extends ComponentBuilder<PersistenceConfigura
 
     @Override
     public Builder<PersistenceConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.storeBuilder = this.createStore(context, model);
+        this.storeBuilder = this.storeBuilderFactory.apply(context, model);
         this.storeBuilder.persistence().passivation(PASSIVATION.resolveModelAttribute(context, model).asBoolean());
         Properties properties = new Properties();
         ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).ifPresent(list -> list.forEach(property -> properties.setProperty(property.getName(), property.getValue().asString())));
@@ -84,10 +89,9 @@ public abstract class StoreBuilder extends ComponentBuilder<PersistenceConfigura
         return this;
     }
 
-    abstract StoreConfigurationBuilder<?, ?> createStore(OperationContext context, ModelNode model) throws OperationFailedException;
-
     @Override
-    public PersistenceConfiguration getValue() {
+    public final PersistenceConfiguration getValue() {
+        this.accept(this.storeBuilder);
         return this.storeBuilder.async().read(this.async.getValue()).persistence().create();
     }
 }

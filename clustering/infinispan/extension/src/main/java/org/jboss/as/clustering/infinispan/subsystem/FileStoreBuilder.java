@@ -29,8 +29,8 @@ import java.io.File;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
+import org.infinispan.configuration.cache.SingleFileStoreConfiguration;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
-import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -41,21 +41,21 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.service.Builder;
 
 /**
  * @author Paul Ferraro
  */
-public class FileStoreBuilder extends StoreBuilder {
+public class FileStoreBuilder extends StoreBuilder<SingleFileStoreConfiguration, SingleFileStoreConfigurationBuilder> {
 
     private final InjectedValue<PathManager> pathManager = new InjectedValue<>();
     private final String containerName;
 
-    private volatile SingleFileStoreConfigurationBuilder builder;
     private volatile String relativePath;
     private volatile String relativeTo;
 
     FileStoreBuilder(PathAddress cacheAddress) {
-        super(cacheAddress);
+        super(cacheAddress, (context, model) -> new ConfigurationBuilder().persistence().addSingleFileStore());
         this.containerName = cacheAddress.getParent().getLastElement().getValue();
     }
 
@@ -65,16 +65,14 @@ public class FileStoreBuilder extends StoreBuilder {
     }
 
     @Override
-    public PersistenceConfiguration getValue() {
-        this.builder.location(this.pathManager.getValue().resolveRelativePathEntry(this.relativePath, this.relativeTo));
-        return super.getValue();
+    public Builder<PersistenceConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.relativePath = ModelNodes.optionalString(RELATIVE_PATH.resolveModelAttribute(context, model)).orElse(InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + this.containerName);
+        this.relativeTo = RELATIVE_TO.resolveModelAttribute(context, model).asString();
+        return super.configure(context, model);
     }
 
     @Override
-    StoreConfigurationBuilder<?, ?> createStore(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.relativePath = ModelNodes.optionalString(RELATIVE_PATH.resolveModelAttribute(context, model)).orElse(InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + this.containerName);
-        this.relativeTo = RELATIVE_TO.resolveModelAttribute(context, model).asString();
-        this.builder = new ConfigurationBuilder().persistence().addSingleFileStore();
-        return this.builder;
+    public void accept(SingleFileStoreConfigurationBuilder builder) {
+        builder.location(this.pathManager.getValue().resolveRelativePathEntry(this.relativePath, this.relativeTo));
     }
 }

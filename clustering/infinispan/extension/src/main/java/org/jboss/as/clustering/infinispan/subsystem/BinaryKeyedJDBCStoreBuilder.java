@@ -26,10 +26,7 @@ import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.jdbc.configuration.JdbcBinaryStoreConfiguration;
 import org.infinispan.persistence.jdbc.configuration.JdbcBinaryStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
@@ -43,8 +40,6 @@ public class BinaryKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcBinaryStor
     private final InjectedValue<TableManipulationConfiguration> table = new InjectedValue<>();
     private final PathAddress cacheAddress;
 
-    private volatile JdbcBinaryStoreConfigurationBuilder builder;
-
     BinaryKeyedJDBCStoreBuilder(PathAddress cacheAddress) {
         super(JdbcBinaryStoreConfigurationBuilder.class, cacheAddress);
         this.cacheAddress = cacheAddress;
@@ -56,14 +51,8 @@ public class BinaryKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcBinaryStor
     }
 
     @Override
-    public PersistenceConfiguration getValue() {
-        this.builder.table().read(this.table.getValue());
-        return super.getValue();
-    }
-
-    @Override
-    JdbcBinaryStoreConfigurationBuilder createStore(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.builder = super.createStore(context, model);
-        return this.builder;
+    public void accept(JdbcBinaryStoreConfigurationBuilder builder) {
+        builder.table().read(this.table.getValue());
+        super.accept(builder);
     }
 }

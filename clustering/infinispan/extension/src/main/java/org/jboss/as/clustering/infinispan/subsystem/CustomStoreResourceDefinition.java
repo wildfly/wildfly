@@ -78,6 +78,6 @@ public class CustomStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     CustomStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor.addAttributes(Attribute.class), address -> new CustomStoreBuilder(address.getParent()), Consumers.empty());
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor.addAttributes(Attribute.class), address -> new CustomStoreBuilder<>(address.getParent()), Consumers.empty());
     }
 }

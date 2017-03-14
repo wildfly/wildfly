@@ -41,21 +41,21 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * @author Paul Ferraro
  */
-public abstract class JDBCStoreBuilder<C extends AbstractJdbcStoreConfiguration, B extends AbstractJdbcStoreConfigurationBuilder<C, B>> extends StoreBuilder {
-
-    private final Class<B> builderClass;
+public abstract class JDBCStoreBuilder<C extends AbstractJdbcStoreConfiguration, B extends AbstractJdbcStoreConfigurationBuilder<C, B>> extends StoreBuilder<C, B> {
 
     private volatile ValueDependency<DataSource> dataSourceDepencency;
 
     JDBCStoreBuilder(Class<B> builderClass, PathAddress cacheAddress) {
-        super(cacheAddress);
-        this.builderClass = builderClass;
+        super(cacheAddress, (context, model) -> new ConfigurationBuilder().persistence().addStore(builderClass)
+                .dialect(ModelNodes.optionalEnum(DIALECT.resolveModelAttribute(context, model), DatabaseType.class).orElse(null))
+        );
     }
 
     @Override
@@ -64,12 +64,14 @@ public abstract class JDBCStoreBuilder<C extends AbstractJdbcStoreConfiguration,
     }
 
     @Override
-    B createStore(OperationContext context, ModelNode model) throws OperationFailedException {
+    public Builder<PersistenceConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String dataSource = DATA_SOURCE.resolveModelAttribute(context, model).asString();
         this.dataSourceDepencency = new InjectedValueDependency<>(CommonUnaryRequirement.DATA_SOURCE.getServiceName(context, dataSource), DataSource.class);
-        B storeBuilder = new ConfigurationBuilder().persistence().addStore(this.builderClass);
-        ModelNodes.optionalEnum(DIALECT.resolveModelAttribute(context, model), DatabaseType.class).ifPresent(dialect -> storeBuilder.dialect(dialect));
-        storeBuilder.connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).setDataSourceDependency(this.dataSourceDepencency);
-        return storeBuilder;
+        return super.configure(context, model);
+    }
+
+    @Override
+    public void accept(B builder) {
+        builder.connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).setDataSourceDependency(this.dataSourceDepencency);
     }
 }

@@ -26,10 +26,7 @@ import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.jdbc.configuration.JdbcMixedStoreConfiguration;
 import org.infinispan.persistence.jdbc.configuration.JdbcMixedStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
@@ -43,8 +40,6 @@ public class MixedKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcMixedStoreC
     private final InjectedValue<TableManipulationConfiguration> stringTable = new InjectedValue<>();
 
     private final PathAddress cacheAddress;
-
-    private volatile JdbcMixedStoreConfigurationBuilder builder;
 
     MixedKeyedJDBCStoreBuilder(PathAddress cacheAddress) {
         super(JdbcMixedStoreConfigurationBuilder.class, cacheAddress);
@@ -60,15 +55,9 @@ public class MixedKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcMixedStoreC
     }
 
     @Override
-    public PersistenceConfiguration getValue() {
-        this.builder.binaryTable().read(this.binaryTable.getValue());
-        this.builder.stringTable().read(this.stringTable.getValue());
-        return super.getValue();
-    }
-
-    @Override
-    JdbcMixedStoreConfigurationBuilder createStore(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.builder = super.createStore(context, model);
-        return this.builder;
+    public void accept(JdbcMixedStoreConfigurationBuilder builder) {
+        builder.binaryTable().read(this.binaryTable.getValue());
+        builder.stringTable().read(this.stringTable.getValue());
+        super.accept(builder);
     }
 }
