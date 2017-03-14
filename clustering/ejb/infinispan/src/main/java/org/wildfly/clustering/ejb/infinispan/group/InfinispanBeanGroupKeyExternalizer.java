@@ -29,29 +29,30 @@ import java.io.ObjectOutput;
 import org.jboss.ejb.client.SessionID;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ejb.infinispan.SessionIDExternalizer;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
+import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class InfinispanBeanGroupKeyExternalizer implements Externalizer<InfinispanBeanGroupKey<SessionID>> {
+@MetaInfServices({ Externalizer.class, KeyFormat.class })
+public class InfinispanBeanGroupKeyExternalizer extends SimpleKeyFormat<InfinispanBeanGroupKey<SessionID>> implements Externalizer<InfinispanBeanGroupKey<SessionID>> {
 
-    private final Externalizer<SessionID> externalizer = new SessionIDExternalizer<>(SessionID.class);
+    private static final SessionIDExternalizer<SessionID> EXTERNALIZER = new SessionIDExternalizer<>(SessionID.class);
+
+    @SuppressWarnings("unchecked")
+    public InfinispanBeanGroupKeyExternalizer() {
+        super((Class<InfinispanBeanGroupKey<SessionID>>) (Class<?>) InfinispanBeanGroupKey.class, value -> new InfinispanBeanGroupKey<>(EXTERNALIZER.parse(value)), key -> EXTERNALIZER.format(key.getId()));
+    }
 
     @Override
     public void writeObject(ObjectOutput output, InfinispanBeanGroupKey<SessionID> key) throws IOException {
-        this.externalizer.writeObject(output, key.getId());
+        EXTERNALIZER.writeObject(output, key.getId());
     }
 
     @Override
     public InfinispanBeanGroupKey<SessionID> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new InfinispanBeanGroupKey<>(this.externalizer.readObject(input));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Class<InfinispanBeanGroupKey<SessionID>> getTargetClass() {
-        return (Class<InfinispanBeanGroupKey<SessionID>>) (Class<?>) InfinispanBeanGroupKey.class;
+        return new InfinispanBeanGroupKey<>(EXTERNALIZER.readObject(input));
     }
 }

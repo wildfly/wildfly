@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,35 +22,18 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.util.ServiceLoader;
-
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
-import org.junit.Test;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactoryProvider;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.spi.CacheAliasBuilderProvider;
-import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
-import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.infinispan.spi.persistence.DynamicKeyFormatMapper;
 
 /**
- * Validates loading of services.
- *
+ * {@link TwoWayKey2StringMapper} for EJB cache keys.
  * @author Paul Ferraro
  */
-public class ServiceLoaderTestCase {
+@MetaInfServices(TwoWayKey2StringMapper.class)
+public class KeyMapper extends DynamicKeyFormatMapper {
 
-    private static <T> void load(Class<T> targetClass) {
-        System.out.println(targetClass.getName() + ":");
-        ServiceLoader.load(targetClass, ServiceLoaderTestCase.class.getClassLoader()).forEach(object -> System.out.println("\t" + object.getClass().getName()));
-    }
-
-    @Test
-    public void load() {
-        load(Externalizer.class);
-        load(BeanManagerFactoryBuilderFactoryProvider.class);
-        load(DistributedCacheBuilderProvider.class);
-        load(LocalCacheBuilderProvider.class);
-        load(CacheAliasBuilderProvider.class);
-        load(TwoWayKey2StringMapper.class);
+    public KeyMapper() {
+        super(KeyMapper.class.getClassLoader());
     }
 }
