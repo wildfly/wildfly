@@ -28,7 +28,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service that exposes the TransactionSynchronizationRegistry
@@ -38,19 +38,22 @@ import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 public class TransactionSynchronizationRegistryService extends AbstractService<TransactionSynchronizationRegistry> {
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY;
 
-    private static final TransactionSynchronizationRegistryService INSTANCE = new TransactionSynchronizationRegistryService();
+    private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
+
 
     private TransactionSynchronizationRegistryService() {
     }
 
     public static ServiceController<TransactionSynchronizationRegistry> addService(final ServiceTarget target) {
-        ServiceBuilder<TransactionSynchronizationRegistry> serviceBuilder = target.addService(SERVICE_NAME, INSTANCE);
+        TransactionSynchronizationRegistryService service = new TransactionSynchronizationRegistryService();
+        ServiceBuilder<TransactionSynchronizationRegistry> serviceBuilder = target.addService(SERVICE_NAME, service);
         serviceBuilder.addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
+        serviceBuilder.addDependency(ArjunaTransactionManagerService.SERVICE_NAME, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, service.injectedArjunaTM);
         return serviceBuilder.install();
     }
 
     @Override
     public TransactionSynchronizationRegistry getValue() throws IllegalStateException {
-        return ContextTransactionSynchronizationRegistry.getInstance();
+        return injectedArjunaTM.getValue().getTransactionSynchronizationRegistry();
     }
 }
