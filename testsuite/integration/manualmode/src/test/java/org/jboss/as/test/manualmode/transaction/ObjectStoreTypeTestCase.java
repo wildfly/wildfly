@@ -114,23 +114,32 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
 
     @Test
     public void testJdbcObjectStore() throws IOException, MgmtOperationException {
-
         try {
             String objectStoreType = readObjectStoreType();
             assertEquals("default", objectStoreType);
-
             // add data source
             createDataSource();
-
             cli.sendLine("/subsystem=transactions:write-attribute(name=jdbc-store-datasource, value=java:jboss/datasources/ObjectStoreTestDS)");
             cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=true)");
-            final CLIOpResult ret = cli.readAllAsOpResult();
-            assertEquals("restart-required", ((Map) ret.getFromResponse(RESPONSE_HEADERS)).get(PROCESS_STATE));
 
+            CLIOpResult ret = cli.readAllAsOpResult();
+            assertEquals("restart-required", ((Map) ret.getFromResponse(RESPONSE_HEADERS)).get(PROCESS_STATE));
             cli.sendLine("reload");
 
             objectStoreType = readObjectStoreType();
             assertEquals("jdbc", objectStoreType);
+
+            // set journal store
+            cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=false)");
+            cli.sendLine("/subsystem=transactions:write-attribute(name=use-journal-store, value=true)");
+
+            ret = cli.readAllAsOpResult();
+            assertEquals("restart-required", ((Map) ret.getFromResponse(RESPONSE_HEADERS)).get(PROCESS_STATE));
+            cli.sendLine("reload");
+
+            objectStoreType = readObjectStoreType();
+            assertEquals("journal", objectStoreType);
+
 
         } finally {
             try {
