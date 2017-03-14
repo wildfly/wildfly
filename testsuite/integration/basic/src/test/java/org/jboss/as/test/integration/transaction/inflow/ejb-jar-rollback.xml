@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+     version="3.2"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/ejb-jar_3_2.xsd">
+  <enterprise-beans>
+    <message-driven>
+      <ejb-name>TransactionInflowMessageDrivenBeanCommit</ejb-name>
+      <ejb-class>org.jboss.as.test.integration.transaction.inflow.TransactionInflowMdb</ejb-class>
+      <messaging-type>javax.jms.MessageListener</messaging-type>
+      <transaction-type>Container</transaction-type>
+      <activation-config>
+        <activation-config-property>
+          <activation-config-property-name>action</activation-config-property-name>
+          <activation-config-property-value>rollback</activation-config-property-value>
+        </activation-config-property>
+      </activation-config>
+    </message-driven>
+  </enterprise-beans>
+</ejb-jar>
