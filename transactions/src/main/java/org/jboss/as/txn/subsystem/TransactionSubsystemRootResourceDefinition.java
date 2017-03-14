@@ -54,6 +54,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
@@ -496,6 +497,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                                                final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
             throws OperationFailedException {
             TxControl.setDefaultTimeout(resolvedValue.asInt());
+            ContextTransactionManager.setGlobalDefaultTransactionTimeout(resolvedValue.asInt());
             return false;
         }
 
@@ -505,6 +507,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                                              final ModelNode valueToRevert, final Void handback)
             throws OperationFailedException {
             TxControl.setDefaultTimeout(valueToRestore.asInt());
+            ContextTransactionManager.setGlobalDefaultTransactionTimeout(valueToRestore.asInt());
         }
     }
 

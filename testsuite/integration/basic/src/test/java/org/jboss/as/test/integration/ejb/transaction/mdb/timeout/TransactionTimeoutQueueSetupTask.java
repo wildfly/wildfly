@@ -31,6 +31,8 @@ public class TransactionTimeoutQueueSetupTask implements ServerSetupTask {
 
     public static final String NO_TIMEOUT_QUEUE_NAME = "noTimeoutQueue";
     public static final String NO_TIMEOUT_JNDI_NAME = "queue/" + NO_TIMEOUT_QUEUE_NAME;
+    public static final String DEFAULT_TIMEOUT_QUEUE_NAME = "defaultTimeoutQueue";
+    public static final String DEFAULT_TIMEOUT_JNDI_NAME = "queue/" + DEFAULT_TIMEOUT_QUEUE_NAME;
     public static final String ANNOTATION_TIMEOUT_QUEUE_NAME = "annotationTimeoutQueue";
     public static final String ANNOTATION_TIMEOUT_JNDI_NAME = "queue/" + ANNOTATION_TIMEOUT_QUEUE_NAME;
     public static final String PROPERTY_TIMEOUT_QUEUE_NAME = "propertyTimeoutQueue";
@@ -46,6 +48,7 @@ public class TransactionTimeoutQueueSetupTask implements ServerSetupTask {
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         adminOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
         adminOperations.createJmsQueue(NO_TIMEOUT_QUEUE_NAME, NO_TIMEOUT_JNDI_NAME);
+        adminOperations.createJmsQueue(DEFAULT_TIMEOUT_QUEUE_NAME, DEFAULT_TIMEOUT_JNDI_NAME);
         adminOperations.createJmsQueue(ANNOTATION_TIMEOUT_QUEUE_NAME, ANNOTATION_TIMEOUT_JNDI_NAME);
         adminOperations.createJmsQueue(PROPERTY_TIMEOUT_QUEUE_NAME, PROPERTY_TIMEOUT_JNDI_NAME);
         adminOperations.createJmsQueue(REPLY_QUEUE_NAME, REPLY_QUEUE_JNDI_NAME);
@@ -56,6 +59,7 @@ public class TransactionTimeoutQueueSetupTask implements ServerSetupTask {
         if (adminOperations != null) {
             try {
                 adminOperations.removeJmsQueue(NO_TIMEOUT_QUEUE_NAME);
+                adminOperations.removeJmsQueue(DEFAULT_TIMEOUT_QUEUE_NAME);
                 adminOperations.removeJmsQueue(ANNOTATION_TIMEOUT_QUEUE_NAME);
                 adminOperations.removeJmsQueue(PROPERTY_TIMEOUT_QUEUE_NAME);
                 adminOperations.removeJmsQueue(REPLY_QUEUE_NAME);
