@@ -21,6 +21,8 @@
  */
 package org.jboss.as.jdr;
 
+import static org.jboss.as.jdr.logger.JdrLogger.ROOT_LOGGER;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,9 +30,13 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
-import static org.jboss.as.jdr.logger.JdrLogger.ROOT_LOGGER;
+
+import org.jboss.dmr.ModelNode;
 
 /**
  * Provides metadata about and access to the data collected by a {@link JdrReportCollector}.
@@ -59,7 +65,18 @@ public class JdrReport {
     private String location;
     private String jdrUuid;
 
+    private static DateFormat DATE_FORMAT = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+
     public JdrReport() {
+    }
+
+    public JdrReport(ModelNode result) {
+        try {
+            setStartTime(DATE_FORMAT.parse(result.get("start-time").asString()));
+            setEndTime(DATE_FORMAT.parse(result.get("end-time").asString()));
+        } catch(ParseException pe) {
+        }
+        setLocation(result.get("report-location").asString());
     }
 
     /**
