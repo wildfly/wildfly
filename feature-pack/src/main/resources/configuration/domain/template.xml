@@ -92,4 +92,23 @@
         </server-group>
     </server-groups>
 
+    <host-excludes>
+        <host-exclude name="WildFly10.0">
+            <host-release id="WildFly10.0"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.core-management"/>
+                <extension module="org.wildfly.extension.discovery"/>
+                <extension module="org.wildfly.extension.elytron"/>
+            </excluded-extensions>
+        </host-exclude>
+        <host-exclude name="WildFly10.1">
+            <host-release id="WildFly10.1"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.core-management"/>
+                <extension module="org.wildfly.extension.discovery"/>
+                <extension module="org.wildfly.extension.elytron"/>
+            </excluded-extensions>
+        </host-exclude>
+    </host-excludes>
+
 </domain>
