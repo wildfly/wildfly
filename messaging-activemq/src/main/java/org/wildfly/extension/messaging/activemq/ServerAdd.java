@@ -616,7 +616,7 @@ class ServerAdd extends AbstractAddStepHandler {
             String name = bridgeConfiguration.getName();
             InjectedValue<ExceptionSupplier<CredentialSource, Exception>> injector = amqService.getBridgeCredentialSourceSupplierInjector(name);
 
-            String[] modelFilter = {name};
+            String[] modelFilter = { CommonAttributes.BRIDGE, name };
 
             ModelNode filteredModelNode = model;
             if (modelFilter != null && modelFilter.length > 0) {
