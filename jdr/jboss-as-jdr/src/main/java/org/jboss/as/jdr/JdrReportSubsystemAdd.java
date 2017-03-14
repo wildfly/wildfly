@@ -43,4 +43,9 @@ public class JdrReportSubsystemAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         JdrReportService.addService(context.getServiceTarget());
     }
+
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getProcessType().isServer();
+    }
 }
