@@ -39,7 +39,6 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.manualmode.ejb.Util;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.logging.Logger;
@@ -111,7 +110,6 @@ public class EJBClientReconnectionTestCase {
 
     @Test
     public void testReconnection() throws Throwable {
-        DisableInvocationTestUtil.disable();
         SimpleCrashBeanRemote bean = lookup(SimpleCrashBeanRemote.class, SimpleCrashBean.class, DEPLOYMENT);
         assertNotNull(bean);
         String echo = bean.echo("Hello!");
