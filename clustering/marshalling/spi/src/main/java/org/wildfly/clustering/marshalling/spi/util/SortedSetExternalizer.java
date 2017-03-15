@@ -45,9 +45,9 @@ public class SortedSetExternalizer<T extends SortedSet<Object>> implements Exter
     private final Class<T> targetClass;
     private final Function<Comparator<? super Object>, T> factory;
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    SortedSetExternalizer(Class targetClass, Function<Comparator<? super Object>, T> factory) {
-        this.targetClass = targetClass;
+    @SuppressWarnings("unchecked")
+    SortedSetExternalizer(Class<?> targetClass, Function<Comparator<? super Object>, T> factory) {
+        this.targetClass = (Class<T>) targetClass;
         this.factory = factory;
     }
 
@@ -66,7 +66,7 @@ public class SortedSetExternalizer<T extends SortedSet<Object>> implements Exter
     }
 
     @Override
-    public Class<? extends T> getTargetClass() {
+    public Class<T> getTargetClass() {
         return this.targetClass;
     }
 

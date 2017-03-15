@@ -47,10 +47,9 @@ public class AtomicReferenceExternalizer implements Externalizer<AtomicReference
         return new AtomicReference<>(input.readObject());
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     @Override
-    public Class<? extends AtomicReference<Object>> getTargetClass() {
-        Class targetClass = AtomicReference.class;
-        return targetClass;
+    public Class<AtomicReference<Object>> getTargetClass() {
+        return (Class<AtomicReference<Object>>) (Class<?>) AtomicReference.class;
     }
 }

@@ -50,10 +50,9 @@ public class HashableMarshalledValueExternalizer<T> implements Externalizer<Hash
         return new HashableMarshalledValue<>(value.getBytes(), hashCode);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     @Override
     public Class<HashableMarshalledValue<T>> getTargetClass() {
-        Class targetClass = HashableMarshalledValue.class;
-        return targetClass;
+        return (Class<HashableMarshalledValue<T>>) (Class<?>) HashableMarshalledValue.class;
     }
 }

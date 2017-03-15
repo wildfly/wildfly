@@ -51,7 +51,7 @@ public class SingletonMapExternalizer implements Externalizer<Map<Object, Object
 
     @SuppressWarnings("unchecked")
     @Override
-    public Class<? extends Map<Object, Object>> getTargetClass() {
-        return (Class<? extends Map<Object, Object>>) Collections.singletonMap(null, null).getClass();
+    public Class<Map<Object, Object>> getTargetClass() {
+        return (Class<Map<Object, Object>>) Collections.singletonMap(null, null).getClass();
     }
 }

@@ -53,7 +53,7 @@ public class EnumExternalizer<E extends Enum<E>> implements Externalizer<E> {
     }
 
     @Override
-    public Class<? extends E> getTargetClass() {
+    public Class<E> getTargetClass() {
         return this.enumClass;
     }
 }

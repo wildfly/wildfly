@@ -48,7 +48,7 @@ public class LocalNodeExternalizer implements Externalizer<LocalNode> {
     }
 
     @Override
-    public Class<? extends LocalNode> getTargetClass() {
+    public Class<LocalNode> getTargetClass() {
         return LocalNode.class;
     }
 }

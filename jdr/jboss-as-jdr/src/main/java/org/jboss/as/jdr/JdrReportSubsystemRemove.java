@@ -42,5 +42,8 @@ public class JdrReportSubsystemRemove extends AbstractRemoveStepHandler {
         // TODO remove any other services we add in JdrReportSubsystemAdd
     }
 
-
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getProcessType().isServer();
+    }
 }

@@ -69,6 +69,7 @@ public class AS7Plugin implements JdrPlugin {
         );
     }
 
+    @Override
     public PluginId getPluginId() {
         return pluginId;
     }

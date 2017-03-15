@@ -37,9 +37,9 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class ExternalizableExternalizer<T extends Externalizable> implements Externalizer<T> {
 
-    private final Class<? extends T> targetClass;
+    private final Class<T> targetClass;
 
-    public ExternalizableExternalizer(Class<? extends T> targetClass) {
+    public ExternalizableExternalizer(Class<T> targetClass) {
         this.targetClass = targetClass;
     }
 
@@ -66,7 +66,7 @@ public class ExternalizableExternalizer<T extends Externalizable> implements Ext
     }
 
     @Override
-    public Class<? extends T> getTargetClass() {
+    public Class<T> getTargetClass() {
         return this.targetClass;
     }
 }

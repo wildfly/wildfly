@@ -145,7 +145,7 @@ public enum IndexExternalizer implements Externalizer<Integer> {
     }
 
     @Override
-    public Class<? extends Integer> getTargetClass() {
+    public Class<Integer> getTargetClass() {
         return Integer.class;
     }
 }

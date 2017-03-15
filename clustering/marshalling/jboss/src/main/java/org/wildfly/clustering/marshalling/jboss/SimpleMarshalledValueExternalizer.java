@@ -57,10 +57,9 @@ public class SimpleMarshalledValueExternalizer<T> implements Externalizer<Simple
         }
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     @Override
-    public Class<? extends SimpleMarshalledValue<T>> getTargetClass() {
-        Class targetClass = SimpleMarshalledValue.class;
-        return targetClass;
+    public Class<SimpleMarshalledValue<T>> getTargetClass() {
+        return (Class<SimpleMarshalledValue<T>>) (Class<?>) SimpleMarshalledValue.class;
     }
 }

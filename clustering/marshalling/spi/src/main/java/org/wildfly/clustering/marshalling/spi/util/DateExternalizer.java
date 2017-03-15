@@ -22,6 +22,10 @@
 
 package org.wildfly.clustering.marshalling.spi.util;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.function.LongFunction;
 
@@ -33,15 +37,17 @@ import org.wildfly.clustering.marshalling.spi.LongExternalizer;
  * Externalizers for {@link Date} implementations.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class DateExternalizer<D extends Date> extends LongExternalizer<Date> {
+public class DateExternalizer<D extends Date> extends LongExternalizer<D> {
 
-    public DateExternalizer() {
-        this(Date::new, Date.class);
+    DateExternalizer(LongFunction<D> factory, Class<D> targetClass) {
+        super(targetClass, factory, Date::getTime);
     }
 
-    DateExternalizer(LongFunction<Date> factory, Class<? extends Date> targetClass) {
-        super(targetClass, factory, Date::getTime);
+    @MetaInfServices(Externalizer.class)
+    public static class UtilDateExternalizer extends DateExternalizer<Date> {
+        public UtilDateExternalizer() {
+            super(Date::new, Date.class);
+        }
     }
 
     @MetaInfServices(Externalizer.class)
@@ -55,6 +61,26 @@ public class DateExternalizer<D extends Date> extends LongExternalizer<Date> {
     public static class SqlTimeExternalizer extends DateExternalizer<java.sql.Time> {
         public SqlTimeExternalizer() {
             super(java.sql.Time::new, java.sql.Time.class);
+        }
+    }
+
+    @MetaInfServices(Externalizer.class)
+    public static class SqlTimestampExternalizer extends DateExternalizer<java.sql.Timestamp> {
+        public SqlTimestampExternalizer() {
+            super(java.sql.Timestamp::new, java.sql.Timestamp.class);
+        }
+
+        @Override
+        public void writeObject(ObjectOutput output, Timestamp timestamp) throws IOException {
+            super.writeObject(output, timestamp);
+            output.writeInt(timestamp.getNanos());
+        }
+
+        @Override
+        public Timestamp readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+            Timestamp timestamp = super.readObject(input);
+            timestamp.setNanos(input.readInt());
+            return timestamp;
         }
     }
 }

@@ -58,5 +58,5 @@ public interface Externalizer<T> {
      * Returns the target class of the object to externalize.
      * @return a class to be externalized
      */
-    Class<? extends T> getTargetClass();
+    Class<T> getTargetClass();
 }

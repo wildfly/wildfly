@@ -362,10 +362,6 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             this.parseClusteredCacheAttribute(reader, i, address, operations);
         }
 
-        if (!operation.hasDefined(ClusteredCacheResourceDefinition.Attribute.MODE.getName())) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(XMLAttribute.MODE));
-        }
-
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseSharedStateCacheElement(reader, address, operations);
         }
@@ -423,10 +419,6 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             }
         }
 
-        if (!operation.hasDefined(ClusteredCacheResourceDefinition.Attribute.MODE.getName())) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(XMLAttribute.MODE));
-        }
-
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             if (this.schema.since(InfinispanSchema.VERSION_1_1)) {
                 this.parseSharedStateCacheElement(reader, address, operations);
@@ -454,10 +446,6 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             this.parseClusteredCacheAttribute(reader, i, address, operations);
-        }
-
-        if (!operation.hasDefined(ClusteredCacheResourceDefinition.Attribute.MODE.getName())) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(XMLAttribute.MODE));
         }
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {

@@ -27,7 +27,6 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.modules.ModuleIdentifier;
 
 /**
  * {@link ParameterValidatorBuilder} that builds a validator that validates that a given value is a valid {@link ModuleIdentifier}.
@@ -46,13 +45,14 @@ public class ModuleIdentifierValidatorBuilder extends AbstractParameterValidator
             super(ModelType.STRING, allowsUndefined, allowsExpression);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
             super.validateParameter(parameterName, value);
             if (value.isDefined()) {
                 String module = value.asString();
                 try {
-                    ModuleIdentifier.fromString(module);
+                    org.jboss.modules.ModuleIdentifier.fromString(module);
                 } catch (IllegalArgumentException e) {
                     throw new OperationFailedException(e.getMessage() + ": " + module, e);
                 }

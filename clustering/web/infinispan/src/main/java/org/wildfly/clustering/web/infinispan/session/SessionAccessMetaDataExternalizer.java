@@ -36,22 +36,22 @@ import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class SessionAccessMetaDataExternalizer implements Externalizer<SessionAccessMetaData> {
+public class SessionAccessMetaDataExternalizer implements Externalizer<SimpleSessionAccessMetaData> {
 
     @Override
-    public void writeObject(ObjectOutput output, SessionAccessMetaData metaData) throws IOException {
+    public void writeObject(ObjectOutput output, SimpleSessionAccessMetaData metaData) throws IOException {
         IndexExternalizer.VARIABLE.writeData(output, (int) metaData.getLastAccessedDuration().getSeconds());
     }
 
     @Override
-    public SessionAccessMetaData readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        SessionAccessMetaData metaData = new SimpleSessionAccessMetaData();
+    public SimpleSessionAccessMetaData readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        SimpleSessionAccessMetaData metaData = new SimpleSessionAccessMetaData();
         metaData.setLastAccessedDuration(Duration.ofSeconds(IndexExternalizer.VARIABLE.readData(input)));
         return metaData;
     }
 
     @Override
-    public Class<? extends SessionAccessMetaData> getTargetClass() {
+    public Class<SimpleSessionAccessMetaData> getTargetClass() {
         return SimpleSessionAccessMetaData.class;
     }
 }

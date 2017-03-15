@@ -86,7 +86,7 @@ public enum IdentifierExternalizer implements Externalizer<String> {
     ;
 
     @Override
-    public Class<? extends String> getTargetClass() {
+    public Class<String> getTargetClass() {
         return String.class;
     }
 }

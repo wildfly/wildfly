@@ -40,9 +40,9 @@ public class MapEntryExternalizer<T extends Map.Entry<Object, Object>> implement
     private final Class<T> targetClass;
     private final BiFunction<Object, Object, T> factory;
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    MapEntryExternalizer(Class targetClass, BiFunction<Object, Object, T> factory) {
-        this.targetClass = targetClass;
+    @SuppressWarnings("unchecked")
+    MapEntryExternalizer(Class<?> targetClass, BiFunction<Object, Object, T> factory) {
+        this.targetClass = (Class<T>) targetClass;
         this.factory = factory;
     }
 
@@ -58,7 +58,7 @@ public class MapEntryExternalizer<T extends Map.Entry<Object, Object>> implement
     }
 
     @Override
-    public Class<? extends T> getTargetClass() {
+    public Class<T> getTargetClass() {
         return this.targetClass;
     }
 

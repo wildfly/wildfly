@@ -44,9 +44,9 @@ public class MapExternalizer<T extends Map<Object, Object>> implements Externali
     private final Class<T> targetClass;
     private final IntFunction<T> factory;
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    MapExternalizer(Class targetClass, IntFunction<T> factory) {
-        this.targetClass = targetClass;
+    @SuppressWarnings("unchecked")
+    MapExternalizer(Class<?> targetClass, IntFunction<T> factory) {
+        this.targetClass = (Class<T>) targetClass;
         this.factory = factory;
     }
 
@@ -77,7 +77,7 @@ public class MapExternalizer<T extends Map<Object, Object>> implements Externali
     }
 
     @Override
-    public Class<? extends T> getTargetClass() {
+    public Class<T> getTargetClass() {
         return this.targetClass;
     }
 

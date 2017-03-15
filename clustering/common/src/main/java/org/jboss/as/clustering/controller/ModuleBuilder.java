@@ -22,13 +22,11 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
@@ -51,7 +49,7 @@ public class ModuleBuilder implements ResourceServiceBuilder<Module>, Service<Mo
     private final ServiceName name;
     private final Attribute attribute;
 
-    private volatile ModuleIdentifier identifier;
+    private volatile String identifier;
     private volatile Module module;
 
     public ModuleBuilder(ServiceName name, Attribute attribute) {
@@ -74,7 +72,7 @@ public class ModuleBuilder implements ResourceServiceBuilder<Module>, Service<Mo
 
     @Override
     public Builder<Module> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.identifier = ModelNodes.asModuleIdentifier(this.attribute.resolveModelAttribute(context, model));
+        this.identifier = this.attribute.resolveModelAttribute(context, model).asString();
         return this;
     }
 

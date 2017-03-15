@@ -189,7 +189,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
                     .filter(AttributeDefinition::hasCapabilityRequirements)
                     .forEach(attribute -> attribute.addCapabilityRequirements(context, model.get(attribute.getName())));
 
-        this.descriptor.getResourceCapabilityReferences().forEach((reference, resolver) -> reference.addCapabilityRequirements(context, null, resolver.apply(address)));
+        this.descriptor.getResourceCapabilityReferences().forEach((reference, resolver) -> reference.addCapabilityRequirements(context, (String)null, resolver.apply(address)));
     }
 
     @Override
