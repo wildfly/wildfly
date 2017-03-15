@@ -92,9 +92,9 @@ public class MessageDrivenTimeoutTestCase {
     @Test
     public void noTimeout() throws Exception {
         String text = "no timeout";
-        Queue q = sendMessage(text, TransactionTimeoutQueueSetupTask.NO_TIMEOUT_JNDI_NAME);
+        Queue q = sendMessage(text, TransactionTimeoutQueueSetupTask.NO_TIMEOUT_JNDI_NAME, initCtx);
         Assert.assertEquals("Sent and received message does not match at expected way",
-                NoTimeoutMDB.REPLY_PREFIX + text, receiveMessage(q));
+                NoTimeoutMDB.REPLY_PREFIX + text, receiveMessage(q, initCtx));
 
         Assert.assertEquals("Synchronization before completion has to be called", 1, checker.countSynchronizedBefore());
         Assert.assertEquals("Synchronization after completion has to be called", 1, checker.countSynchronizedAfter());
@@ -110,9 +110,9 @@ public class MessageDrivenTimeoutTestCase {
     @Test
     public void transactionTimeoutAnnotation() throws Exception {
         String text = "annotation timeout";
-        Queue q = sendMessage(text, TransactionTimeoutQueueSetupTask.ANNOTATION_TIMEOUT_JNDI_NAME);
+        Queue q = sendMessage(text, TransactionTimeoutQueueSetupTask.ANNOTATION_TIMEOUT_JNDI_NAME, initCtx);
         Assert.assertEquals("Sent and received message does not match at expected way",
-                AnnotationTimeoutMDB.REPLY_PREFIX + text, receiveMessage(q));
+                AnnotationTimeoutMDB.REPLY_PREFIX + text, receiveMessage(q, initCtx));
 
         Assert.assertEquals("Expecting one test XA resources being commmitted", 1, checker.getCommitted());
         Assert.assertEquals("Expecting no rollback happened", 0, checker.getRolledback());
@@ -127,15 +127,15 @@ public class MessageDrivenTimeoutTestCase {
     @Test
     public void transactionTimeoutActivationProperty() throws Exception {
         String text = "activation property timeout";
-            Queue q = sendMessage(text, TransactionTimeoutQueueSetupTask.PROPERTY_TIMEOUT_JNDI_NAME);
-        Assert.assertNull("No message should be received as mdb timeouted", receiveMessage(q));
+            Queue q = sendMessage(text, TransactionTimeoutQueueSetupTask.PROPERTY_TIMEOUT_JNDI_NAME, initCtx);
+        Assert.assertNull("No message should be received as mdb timeouted", receiveMessage(q, initCtx));
 
         Assert.assertEquals("Expecting no commmit happened", 0, checker.getCommitted());
         Assert.assertTrue("Expecting a rollback happened", checker.getRolledback() > 0);
     }
 
-    private Queue sendMessage(String text, String queueJndi) throws Exception {
-        QueueConnection connection = getConnection();
+    static Queue sendMessage(String text, String queueJndi, InitialContext initCtx) throws Exception {
+        QueueConnection connection = getConnection(initCtx);
         connection.start();
 
         Queue replyDestination = null;
@@ -157,8 +157,8 @@ public class MessageDrivenTimeoutTestCase {
         return replyDestination;
     }
 
-    private String receiveMessage(Queue replyQueue) throws Exception {
-        QueueConnection connection = getConnection();
+    static String receiveMessage(Queue replyQueue, InitialContext initCtx) throws Exception {
+        QueueConnection connection = getConnection(initCtx);
         connection.start();
 
         try {
@@ -174,7 +174,7 @@ public class MessageDrivenTimeoutTestCase {
         }
     }
 
-    private QueueConnection getConnection() throws Exception {
+    static QueueConnection getConnection(InitialContext initCtx) throws Exception {
         final QueueConnectionFactory factory = (QueueConnectionFactory) initCtx.lookup("java:/JmsXA");
         return factory.createQueueConnection();
     }
