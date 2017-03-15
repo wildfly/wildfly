@@ -6376,7 +6376,7 @@
                 <checkstyle.skip>true</checkstyle.skip>
                 <!-- we override javassist to version that works on JDK9 -->
                 <version.org.javassist>3.22.0-CR1</version.org.javassist>
-                <version.org.jboss.byteman>4.0.0-BETA2</version.org.jboss.byteman>
+                <version.org.jboss.byteman>4.0.0-BETA3</version.org.jboss.byteman>
             </properties>
             <build>
                 <plugins>
@@ -6386,11 +6386,10 @@
                         <version>${version.compiler.plugin}</version>
                         <configuration>
                             <!-- fork is needed so compiler args can be used -->
-                            <!--<release>8</release>-->
+                          <!--  <release>8</release>-->
                             <fork>true</fork>
-                            <compilerArgs>
-                                <arg>-J--add-modules=java.annotations.common,jdk.unsupported</arg>
-                            </compilerArgs>
+                            <!-- jdk.unsupported is needed for security subsystem FastConcurrentDirectDeque-->
+                            <compilerArgument>-J--add-modules=java.xml.ws.annotation,jdk.unsupported</compilerArgument>
                         </configuration>
                     </plugin>
 
