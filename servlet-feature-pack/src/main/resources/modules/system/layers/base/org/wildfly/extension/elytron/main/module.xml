@@ -27,7 +27,7 @@
     <exports>
         <exclude path="org/wildfly/extension/elytron/ElytronExtension"/>
         <exclude path="org/wildfly/extension/elytron/_private"/>
-        <exclude path="org/wildfly/extension/elytron/capabilities"/>
+        <exclude path="org/wildfly/extension/elytron/capabilities/_private"/>
     </exports>
 
     <resources>
