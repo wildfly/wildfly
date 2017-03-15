@@ -20,32 +20,59 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.deployment.deploymentoverlay.jar;
+package org.jboss.as.test.integration.deployment.deploymentoverlay;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.integration.security.common.SecurityTraceLoggingServerSetupTask;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+import org.junit.BeforeClass;
 
 /**
  * @author baranowb
  * @author lgao
  */
-public final class OverlayUtils {
+@ServerSetup(AbstractOverlayTestBase.TraceLoggingSetup.class)
+public abstract class AbstractOverlayTestBase {
 
-    public static void setupOverlay(final ManagementClient managementClient, final String deployment, final String overlayName, final Map<String, String> overlay) throws Exception {
+    protected static final Logger LOGGER = Logger.getLogger(AbstractOverlayTestBase.class);
+
+    @ArquillianResource
+    protected ManagementClient managementClient;
+
+    @ArquillianResource
+    protected Deployer deployer;
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
+    }
+
+    private boolean removeOverlay = false;
+
+    public void setupOverlay(final String deployment, final String overlayName, final Map<String, String> overlay)
+            throws Exception {
 
         // create overlay
         ModelNode op = new ModelNode();
         op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, overlayName);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        removeOverlay=true;
 
         for (Map.Entry<String, String> overlayItem : overlay.entrySet()) {
             // add content
@@ -84,27 +111,33 @@ public final class OverlayUtils {
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
     }
 
-    public static void setupOverlay(final ManagementClient managementClient, final String deployment, final String overlayName, final String overlayPath, final String overlayedContent) throws Exception {
-        setupOverlay(managementClient, deployment, overlayName, Collections.singletonMap(overlayPath, overlayedContent));
+    public void setupOverlay(final String deployment, final String overlayName, final String overlayPath,
+            final String overlayedContent) throws Exception {
+        setupOverlay(deployment, overlayName, Collections.singletonMap(overlayPath, overlayedContent));
     }
 
-    public static void removeOverlay(final ManagementClient managementClient, final String deployment, final String overlayName, final Set<String> overlayPaths) throws Exception {
-        for (String overlayPath : overlayPaths) {
-            removeContentItem(managementClient, overlayName, overlayPath);
+    public void removeOverlay(final String deployment, final String overlayName, final Set<String> overlayPaths)
+            throws Exception {
+        if (!removeOverlay) {
+            return;
         }
-        removeDeploymentItem(managementClient, overlayName, deployment);
+        for (String overlayPath : overlayPaths) {
+            removeContentItem(overlayName, overlayPath);
+        }
+        removeDeploymentItem(overlayName, deployment);
 
         ModelNode op = new ModelNode();
         op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, overlayName);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        removeOverlay = false;
     }
 
-    public static void removeOverlay(final ManagementClient managementClient, final String deployment, final String overlayName, final String overlayPath) throws Exception {
-        removeOverlay(managementClient, deployment, overlayName, Collections.singleton(overlayPath));
+    public void removeOverlay(final String deployment, final String overlayName, final String overlayPath) throws Exception {
+        removeOverlay(deployment, overlayName, Collections.singleton(overlayPath));
     }
 
-    protected static void removeContentItem(final ManagementClient managementClient, final String w, final String a) throws IOException, MgmtOperationException {
+    protected void removeContentItem(final String w, final String a) throws IOException, MgmtOperationException {
         final ModelNode op;
         final ModelNode addr;
         op = new ModelNode();
@@ -116,8 +149,7 @@ public final class OverlayUtils {
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
     }
 
-
-    protected static void removeDeploymentItem(final ManagementClient managementClient, final String w, final String a) throws IOException, MgmtOperationException {
+    protected void removeDeploymentItem(final String w, final String a) throws IOException, MgmtOperationException {
         final ModelNode op;
         final ModelNode addr;
         op = new ModelNode();
@@ -129,4 +161,18 @@ public final class OverlayUtils {
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
     }
 
+    public static class TraceLoggingSetup extends SecurityTraceLoggingServerSetupTask {
+
+        @Override
+        protected Collection<String> getCategories(ManagementClient managementClient, String containerId) {
+            Set<String> coll = new HashSet<>(super.getCategories(managementClient, containerId));
+            coll.add("org.jboss.sasl");
+            coll.add("org.jboss.as.ejb3");
+            coll.add("org.jboss.as.remoting");
+            coll.add("org.jboss.remoting3");
+            coll.add("org.jboss.remoting");
+            coll.add("org.jboss.naming.remote");
+            return coll;
+        }
+    }
 }

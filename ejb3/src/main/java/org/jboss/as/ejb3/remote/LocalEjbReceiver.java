@@ -53,6 +53,7 @@ import org.jboss.marshalling.cloner.ObjectCloner;
 import org.jboss.marshalling.cloner.ObjectCloners;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
+import org.wildfly.naming.client.NamingProvider;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import java.lang.reflect.Method;
@@ -329,7 +330,7 @@ public class LocalEjbReceiver extends EJBReceiver {
     }
 
     @Override
-    protected <T> StatefulEJBLocator<T> createSession(StatelessEJBLocator<T> statelessLocator) throws Exception {
+    protected <T> StatefulEJBLocator<T> createSession(StatelessEJBLocator<T> statelessLocator, NamingProvider namingProvider) throws Exception {
         final EjbDeploymentInformation ejbInfo = findBean(statelessLocator);
         final EJBComponent component = ejbInfo.getEjbComponent();
         if (!(component instanceof StatefulSessionComponent)) {

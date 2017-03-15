@@ -37,6 +37,7 @@ public class SecurityTraceLoggingServerSetupTask extends AbstractTraceLoggingSer
     @Override
     protected Collection<String> getCategories(ManagementClient managementClient, String containerId) {
         return Arrays.asList("org.jboss.security", "org.jboss.as.security", "org.picketbox",
-                "org.apache.catalina.authenticator", "org.jboss.as.web.security", "org.jboss.as.domain.management.security");
+                "org.apache.catalina.authenticator", "org.jboss.as.web.security", "org.jboss.as.domain.management.security",
+                "org.wildfly.security", "org.wildfly.elytron");
     }
 }
