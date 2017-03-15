@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.remote;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.server.ServerEnvironment;
@@ -60,11 +61,13 @@ public final class AssociationService implements Service<AssociationService> {
     private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
     private final InjectedValue<ServerEnvironment> serverEnvironmentServiceInjector = new InjectedValue<>();
 
+
     private final LocalRegistryAndDiscoveryProvider localRegistry = new LocalRegistryAndDiscoveryProvider();
 
-    private Association value;
+    private AssociationImpl value;
     private ListenerHandle handle;
     private ServiceRegistration serviceRegistration;
+
 
     public AssociationService() {
     }
@@ -159,6 +162,12 @@ public final class AssociationService implements Service<AssociationService> {
 
     public Association getAssociation() {
         return value;
+    }
+
+    void setExecutor(Executor executor) {
+        if(value != null) {
+            value.setExecutor(executor);
+        }
     }
 }
 

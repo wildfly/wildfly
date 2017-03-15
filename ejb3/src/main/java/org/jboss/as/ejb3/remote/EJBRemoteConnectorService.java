@@ -23,6 +23,8 @@ package org.jboss.as.ejb3.remote;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ControlledProcessStateService;
@@ -52,6 +54,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
+    private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
     private final InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfoInjectedValue = new InjectedValue<>();
     private final InjectedValue<AssociationService> associationServiceInjectedValue = new InjectedValue<>();
     private final InjectedValue<RemotingTransactionService> remotingTransactionServiceInjectedValue = new InjectedValue<>();
@@ -71,6 +74,10 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     public void start(StartContext context) throws StartException {
         final AssociationService associationService = associationServiceInjectedValue.getValue();
         final Endpoint endpoint = endpointValue.getValue();
+        Executor executor = executorService.getOptionalValue();
+        if(executor != null) {
+            associationService.setExecutor(executor);
+        }
         RemoteEJBService remoteEJBService = RemoteEJBService.create(
             associationService.getAssociation(),
             remotingTransactionServiceInjectedValue.getValue()
@@ -109,6 +116,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     @Override
     public void stop(StopContext context) {
+        associationServiceInjectedValue.getValue().setExecutor(null);
         registration.close();
     }
 
@@ -139,5 +147,9 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     public InjectedValue<AssociationService> getAssociationServiceInjector() {
         return associationServiceInjectedValue;
+    }
+
+    public InjectedValue<ExecutorService> getExecutorService() {
+        return executorService;
     }
 }
