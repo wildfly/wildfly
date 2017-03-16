@@ -30,7 +30,6 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -50,11 +49,6 @@ public class RemoteLocalCallTestCase {
     private static final Logger log = Logger.getLogger(RemoteLocalCallTestCase.class);
     public static final String ARCHIVE_NAME_CLIENT = "remotelocalcall-test-client";
     public static final String ARCHIVE_NAME_SERVER = "remotelocalcall-test-server";
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     @BeforeClass
     public static void printSysProps() {

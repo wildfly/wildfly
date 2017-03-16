@@ -42,7 +42,6 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -65,11 +64,6 @@ public class RemoteLocalCallProfileTestCase {
     private static final Logger log = Logger.getLogger(RemoteLocalCallProfileTestCase.class);
     public static final String ARCHIVE_NAME_CLIENT = "remotelocalcall-test-client";
     public static final String ARCHIVE_NAME_SERVER = "remotelocalcall-test-server";
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     static class RemoteLocalCallProfileTestCaseServerSetup implements ServerSetupTask {
 
