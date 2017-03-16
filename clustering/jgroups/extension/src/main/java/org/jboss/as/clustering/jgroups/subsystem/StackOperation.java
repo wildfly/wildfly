@@ -32,7 +32,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jgroups.Channel;
+import org.jgroups.JChannel;
 import org.jgroups.stack.Protocol;
 import org.jgroups.stack.ProtocolStack;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
@@ -46,7 +46,7 @@ public enum StackOperation implements Operation<ChannelFactory> {
         @Override
         public ModelNode execute(ChannelFactory factory) throws OperationFailedException {
             // Create a temporary channel, but don't connect it
-            try (Channel channel = factory.createChannel(UUID.randomUUID().toString())) {
+            try (JChannel channel = factory.createChannel(UUID.randomUUID().toString())) {
                 // ProtocolStack.printProtocolSpecAsXML() is very hacky and only works on an uninitialized stack
                 List<Protocol> protocols = channel.getProtocolStack().getProtocols();
                 Collections.reverse(protocols);

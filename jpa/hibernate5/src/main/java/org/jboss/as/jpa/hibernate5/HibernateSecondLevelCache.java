@@ -17,16 +17,16 @@
 
 package org.jboss.as.jpa.hibernate5;
 
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.COLLECTION_CACHE_RESOURCE_PROP;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.DEF_ENTITY_RESOURCE;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.DEF_QUERY_RESOURCE;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.ENTITY_CACHE_RESOURCE_PROP;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.IMMUTABLE_ENTITY_CACHE_RESOURCE_PROP;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.INFINISPAN_CONFIG_RESOURCE_PROP;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.NATURAL_ID_CACHE_RESOURCE_PROP;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.PENDING_PUTS_CACHE_RESOURCE_PROP;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.QUERY_CACHE_RESOURCE_PROP;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.TIMESTAMPS_CACHE_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.InfinispanRegionFactory.COLLECTION_CACHE_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.InfinispanRegionFactory.DEF_ENTITY_RESOURCE;
+import static org.infinispan.hibernate.cache.InfinispanRegionFactory.DEF_QUERY_RESOURCE;
+import static org.infinispan.hibernate.cache.InfinispanRegionFactory.ENTITY_CACHE_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.InfinispanRegionFactory.IMMUTABLE_ENTITY_CACHE_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.InfinispanRegionFactory.INFINISPAN_CONFIG_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.InfinispanRegionFactory.NATURAL_ID_CACHE_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.InfinispanRegionFactory.PENDING_PUTS_CACHE_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.InfinispanRegionFactory.QUERY_CACHE_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.InfinispanRegionFactory.TIMESTAMPS_CACHE_RESOURCE_PROP;
 import static org.jboss.as.jpa.hibernate5.infinispan.InfinispanRegionFactory.CACHE_CONTAINER;
 import static org.jboss.as.jpa.hibernate5.infinispan.InfinispanRegionFactory.DEFAULT_CACHE_CONTAINER;
 

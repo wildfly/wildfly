@@ -39,5 +39,5 @@ public interface CustomProtocol {
      * Sets the id of the protocol.  Exposes {@link Protocol#setId(short)}.
      * @return same protocol instance with the id set.
      */
-    Protocol setId(short id);
+    <P extends Protocol> P setId(short id);
 }

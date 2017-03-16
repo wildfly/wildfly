@@ -114,7 +114,6 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
         ManagementResourceRegistration registration = parentRegistration.registerSubsystemModel(this);
 
         new DefaultSubsystemDescribeHandler().register(registration);
-//        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)

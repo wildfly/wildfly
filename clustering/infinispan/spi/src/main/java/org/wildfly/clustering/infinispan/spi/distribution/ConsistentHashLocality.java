@@ -21,8 +21,12 @@
  */
 package org.wildfly.clustering.infinispan.spi.distribution;
 
+import java.util.Collections;
+
+import org.infinispan.Cache;
+import org.infinispan.distribution.LocalizedCacheTopology;
 import org.infinispan.distribution.ch.ConsistentHash;
-import org.infinispan.remoting.transport.Address;
+import org.infinispan.topology.CacheTopology;
 
 /**
  * {@link Locality} implementation based on a {@link ConsistentHash}.
@@ -30,16 +34,18 @@ import org.infinispan.remoting.transport.Address;
  */
 public class ConsistentHashLocality implements Locality {
 
-    private final Address localAddress;
-    private final ConsistentHash hash;
+    private final LocalizedCacheTopology topology;
 
-    public ConsistentHashLocality(Address localAddress, ConsistentHash hash) {
-        this.localAddress = localAddress;
-        this.hash = hash;
+    public ConsistentHashLocality(Cache<?, ?> cache, ConsistentHash hash) {
+        this.topology = new LocalizedCacheTopology(cache.getCacheConfiguration().clustering().cacheMode(), new CacheTopology(0, 0, hash, null, CacheTopology.Phase.NO_REBALANCE, Collections.emptyList(), Collections.emptyList()), cache.getCacheConfiguration().clustering().hash().keyPartitioner(), cache.getCacheManager().getAddress());
+    }
+
+    public ConsistentHashLocality(LocalizedCacheTopology topology) {
+        this.topology = topology;
     }
 
     @Override
     public boolean isLocal(Object key) {
-        return this.localAddress.equals(this.hash.locatePrimaryOwner(key));
+        return this.topology.getDistribution(key).isPrimary();
     }
 }

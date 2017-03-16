@@ -63,7 +63,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     DEFAULT("default", "Incoming", 2, 30, 0, 60000L),
     OOB("oob", "OOB", 20, 200, 0, 60000L),
     INTERNAL("internal", "INT", 5, 20, 500, 60000L),
-    TIMER("timer", "Timer", 2, 4, 500, 5000L, (definition, address) -> new TimerFactoryBuilder(definition, address)),
+    TIMER("timer", "Timer", 2, 4, 500, 5000L, TimerFactoryBuilder::new),
     ;
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
@@ -81,7 +81,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     private final BiFunction<ThreadPoolDefinition, PathAddress, ResourceServiceBuilder<? extends Object>> factory;
 
     ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime) {
-        this(name, prefix, defaultMinThreads, defaultMaxThreads, defaultQueueLength, defaultKeepAliveTime, (definition, address) -> new ThreadPoolFactoryBuilder(definition, address));
+        this(name, prefix, defaultMinThreads, defaultMaxThreads, defaultQueueLength, defaultKeepAliveTime, ThreadPoolFactoryBuilder::new);
     }
 
     ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime, BiFunction<ThreadPoolDefinition, PathAddress, ResourceServiceBuilder<? extends Object>> factory) {

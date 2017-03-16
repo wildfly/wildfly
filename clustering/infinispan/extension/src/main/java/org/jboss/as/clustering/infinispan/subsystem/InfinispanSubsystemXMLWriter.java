@@ -179,14 +179,27 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             }
         }
 
-        if (cache.hasDefined(EvictionResourceDefinition.PATH.getKeyValuePair())) {
-            ModelNode eviction = cache.get(EvictionResourceDefinition.PATH.getKeyValuePair());
-            Set<EvictionResourceDefinition.Attribute> attributes = EnumSet.allOf(EvictionResourceDefinition.Attribute.class);
-            if (hasDefined(eviction, attributes)) {
-                writer.writeStartElement(XMLElement.EVICTION.getLocalName());
-                writeAttributes(writer, eviction, attributes);
+        if (cache.hasDefined(ObjectMemoryResourceDefinition.PATH.getKeyValuePair())) {
+            ModelNode memory = cache.get(ObjectMemoryResourceDefinition.PATH.getKeyValuePair());
+            Set<ObjectMemoryResourceDefinition.Attribute> attributes = EnumSet.allOf(MemoryResourceDefinition.Attribute.class);
+            if (hasDefined(memory, attributes)) {
+                writer.writeStartElement(XMLElement.OBJECT_MEMORY.getLocalName());
+                writeAttributes(writer, memory, attributes);
                 writer.writeEndElement();
             }
+        } else if (cache.hasDefined(BinaryMemoryResourceDefinition.PATH.getKeyValuePair())) {
+            ModelNode memory = cache.get(BinaryMemoryResourceDefinition.PATH.getKeyValuePair());
+            writer.writeStartElement(XMLElement.BINARY_MEMORY.getLocalName());
+            writeAttributes(writer, memory, MemoryResourceDefinition.Attribute.class);
+            writeAttributes(writer, memory, BinaryMemoryResourceDefinition.Attribute.class);
+            writer.writeEndElement();
+        } else if (cache.hasDefined(OffHeapMemoryResourceDefinition.PATH.getKeyValuePair())) {
+            ModelNode memory = cache.get(OffHeapMemoryResourceDefinition.PATH.getKeyValuePair());
+            writer.writeStartElement(XMLElement.OFF_HEAP_MEMORY.getLocalName());
+            writeAttributes(writer, memory, MemoryResourceDefinition.Attribute.class);
+            writeAttributes(writer, memory, BinaryMemoryResourceDefinition.Attribute.class);
+            writeAttributes(writer, memory, OffHeapMemoryResourceDefinition.Attribute.class);
+            writer.writeEndElement();
         }
 
         if (cache.hasDefined(ExpirationResourceDefinition.PATH.getKeyValuePair())) {
@@ -232,11 +245,11 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
         if (cache.hasDefined(StringKeyedJDBCStoreResourceDefinition.PATH.getKeyValuePair())) {
             ModelNode store = cache.get(StringKeyedJDBCStoreResourceDefinition.PATH.getKeyValuePair());
-            writer.writeStartElement(XMLElement.STRING_KEYED_JDBC_STORE.getLocalName());
+            writer.writeStartElement(XMLElement.JDBC_STORE.getLocalName());
             writeAttributes(writer, store, JDBCStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, storeAttributes);
             writeStoreElements(writer, store);
-            writeJDBCStoreTable(writer, XMLElement.STRING_KEYED_TABLE, store, StringTableResourceDefinition.PATH, StringTableResourceDefinition.Attribute.PREFIX);
+            writeJDBCStoreTable(writer, XMLElement.TABLE, store, StringTableResourceDefinition.PATH, StringTableResourceDefinition.Attribute.PREFIX);
             writer.writeEndElement();
         }
 

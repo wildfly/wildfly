@@ -225,8 +225,7 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
     @DataRehashed
     public void dataRehashed(DataRehashedEvent<SessionCreationMetaDataKey, ?> event) {
         Cache<SessionCreationMetaDataKey, ?> cache = event.getCache();
-        Address localAddress = cache.getCacheManager().getAddress();
-        Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
+        Locality newLocality = new ConsistentHashLocality(cache, event.getConsistentHashAtEnd());
         if (event.isPre()) {
             Future<?> future = this.rehashFuture.getAndSet(null);
             if (future != null) {
@@ -238,7 +237,7 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
                 // Executor was shutdown
             }
         } else {
-            Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
+            Locality oldLocality = new ConsistentHashLocality(cache, event.getConsistentHashAtStart());
             try {
                 this.rehashFuture.set(this.executor.submit(() -> this.schedule(oldLocality, newLocality)));
             } catch (RejectedExecutionException e) {

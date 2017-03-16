@@ -42,7 +42,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Value;
-import org.jgroups.Channel;
+import org.jgroups.JChannel;
 import org.jgroups.protocols.FORK;
 import org.jgroups.stack.Protocol;
 import org.jgroups.stack.ProtocolStack;
@@ -63,7 +63,7 @@ public class ForkChannelFactoryBuilder extends CapabilityServiceNameProvider imp
     private final PathAddress address;
     @SuppressWarnings("rawtypes")
     private volatile List<ValueDependency<ProtocolConfiguration>> protocols;
-    private volatile ValueDependency<Channel> parentChannel;
+    private volatile ValueDependency<JChannel> parentChannel;
     private volatile ValueDependency<ChannelFactory> parentFactory;
 
     public ForkChannelFactoryBuilder(Capability capability, PathAddress address) {
@@ -90,7 +90,7 @@ public class ForkChannelFactoryBuilder extends CapabilityServiceNameProvider imp
         Resource resource = context.getCurrentAddress().equals(this.address) ? context.readResourceFromRoot(this.address, false) : PlaceholderResource.INSTANCE;
         this.protocols = resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).stream().map(entry -> new InjectedValueDependency<>(new ProtocolServiceNameProvider(this.address, entry.getPathElement()), ProtocolConfiguration.class)).collect(Collectors.toList());
         String channelName = this.address.getParent().getLastElement().getValue();
-        this.parentChannel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(context, channelName), Channel.class);
+        this.parentChannel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(context, channelName), JChannel.class);
         this.parentFactory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, channelName), ChannelFactory.class);
         return this;
     }

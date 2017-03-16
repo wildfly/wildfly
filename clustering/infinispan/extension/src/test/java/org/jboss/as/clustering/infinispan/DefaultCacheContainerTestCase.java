@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -56,12 +55,9 @@ import org.wildfly.clustering.infinispan.spi.CacheContainer;
  * @author Paul Ferraro
  */
 public class DefaultCacheContainerTestCase {
-    private static final String NAME = "name";
-    private static final String DEFAULT_CACHE = "default-cache";
-
     private final BatcherFactory batcherFactory = mock(BatcherFactory.class);
     private final EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
-    private final CacheContainer subject = new DefaultCacheContainer("name", this.manager, DEFAULT_CACHE, this.batcherFactory);
+    private final CacheContainer subject = new DefaultCacheContainer(this.manager, this.batcherFactory);
 
     @After
     public void cleanup() {
@@ -70,19 +66,29 @@ public class DefaultCacheContainerTestCase {
 
     @Test
     public void getName() {
-        assertSame(NAME, this.subject.getName());
+        String name = "foo";
+        GlobalConfiguration global = new GlobalConfigurationBuilder().globalJmxStatistics().cacheManagerName(name).build();
+
+        when(this.manager.getCacheManagerConfiguration()).thenReturn(global);
+
+        assertSame(name, this.subject.getName());
     }
 
     @Test
     public void getDefaultCacheName() {
-        assertSame(DEFAULT_CACHE, this.subject.getDefaultCacheName());
+        String defaultCache = "default";
+        GlobalConfiguration global = new GlobalConfigurationBuilder().defaultCacheName(defaultCache).build();
+
+        when(this.manager.getCacheManagerConfiguration()).thenReturn(global);
+
+        assertSame(defaultCache, this.subject.getDefaultCacheName());
     }
 
     @Test
     public void getDefaultCache() {
         AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
 
-        when(this.manager.<Object, Object>getCache(DEFAULT_CACHE, DEFAULT_CACHE)).thenReturn(cache);
+        when(this.manager.getCache()).thenReturn(cache);
         when(cache.getAdvancedCache()).thenReturn(cache);
 
         Cache<Object, Object> result = this.subject.getCache();
@@ -94,48 +100,31 @@ public class DefaultCacheContainerTestCase {
 
     @Test
     public void getCache() {
-        AdvancedCache<Object, Object> defaultCache = mock(AdvancedCache.class);
-        AdvancedCache<Object, Object> otherCache = mock(AdvancedCache.class);
+        AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
 
-        when(this.manager.<Object, Object>getCache(DEFAULT_CACHE, DEFAULT_CACHE)).thenReturn(defaultCache);
-        when(this.manager.<Object, Object>getCache("other", "other")).thenReturn(otherCache);
-        when(defaultCache.getAdvancedCache()).thenReturn(defaultCache);
-        when(otherCache.getAdvancedCache()).thenReturn(otherCache);
+        when(this.manager.getCache("other")).thenReturn(cache);
+        when(cache.getAdvancedCache()).thenReturn(cache);
 
         Cache<Object, Object> result = this.subject.getCache("other");
 
-        assertNotSame(otherCache, result);
-        assertEquals(result, otherCache);
-        assertSame(this.subject, result.getCacheManager());
-
-        result = this.subject.getCache(null);
-
-        assertNotSame(defaultCache, result);
-        assertEquals(result, defaultCache);
+        assertNotSame(cache, result);
+        assertEquals(result, cache);
         assertSame(this.subject, result.getCacheManager());
     }
 
+    @Deprecated
     @Test
     public void getCacheFromTemplate() {
-        AdvancedCache<Object, Object> defaultCache = mock(AdvancedCache.class);
-        AdvancedCache<Object, Object> otherCache = mock(AdvancedCache.class);
+        AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
         String templateName = "template";
 
-        when(this.manager.<Object, Object>getCache(DEFAULT_CACHE, templateName)).thenReturn(defaultCache);
-        when(this.manager.<Object, Object>getCache("other", templateName)).thenReturn(otherCache);
-        when(defaultCache.getAdvancedCache()).thenReturn(defaultCache);
-        when(otherCache.getAdvancedCache()).thenReturn(otherCache);
+        when(this.manager.getCache("other", templateName)).thenReturn(cache);
+        when(cache.getAdvancedCache()).thenReturn(cache);
 
         Cache<Object, Object> result = this.subject.getCache("other", templateName);
 
-        assertNotSame(otherCache, result);
-        assertEquals(result, otherCache);
-        assertSame(this.subject, result.getCacheManager());
-
-        result = this.subject.getCache(null, templateName);
-
-        assertNotSame(defaultCache, result);
-        assertEquals(result, defaultCache);
+        assertNotSame(cache, result);
+        assertEquals(result, cache);
         assertSame(this.subject, result.getCacheManager());
     }
 
@@ -182,19 +171,13 @@ public class DefaultCacheContainerTestCase {
     @Test
     public void defineConfiguration() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
-        Configuration defaultConfig = builder.build();
-        Configuration otherConfig = builder.build();
+        Configuration config = builder.build();
 
-        when(this.manager.defineConfiguration(DEFAULT_CACHE, defaultConfig)).thenReturn(defaultConfig);
-        when(this.manager.defineConfiguration("other", otherConfig)).thenReturn(otherConfig);
+        when(this.manager.defineConfiguration("other", config)).thenReturn(config);
 
-        Configuration result = this.subject.defineConfiguration(null, defaultConfig);
+        Configuration result = this.subject.defineConfiguration("other", config);
 
-        assertSame(defaultConfig, result);
-
-        result = this.subject.defineConfiguration("other", otherConfig);
-
-        assertSame(otherConfig, result);
+        assertSame(config, result);
     }
 
     @Test
@@ -269,7 +252,7 @@ public class DefaultCacheContainerTestCase {
     public void getDefaultCacheConfiguration() {
         Configuration config = new ConfigurationBuilder().build();
 
-        when(this.manager.getCacheConfiguration(DEFAULT_CACHE)).thenReturn(config);
+        when(this.manager.getDefaultCacheConfiguration()).thenReturn(config);
 
         Configuration result = this.subject.getDefaultCacheConfiguration();
 
@@ -300,21 +283,16 @@ public class DefaultCacheContainerTestCase {
 
     @Test
     public void isRunning() {
-        when(this.manager.isRunning("other")).thenReturn(false);
-        when(this.manager.isRunning(DEFAULT_CACHE)).thenReturn(true);
+        when(this.manager.isRunning("other")).thenReturn(true);
 
         boolean result = this.subject.isRunning("other");
-
-        assertFalse(result);
-
-        result = this.subject.isRunning(null);
 
         assertTrue(result);
     }
 
     @Test
     public void isDefaultRunning() {
-        when(this.manager.isRunning(DEFAULT_CACHE)).thenReturn(true);
+        when(this.manager.isDefaultRunning()).thenReturn(true);
 
         boolean result = this.subject.isDefaultRunning();
 
@@ -323,9 +301,9 @@ public class DefaultCacheContainerTestCase {
 
     @Test
     public void startCaches() {
-        when(this.manager.startCaches("other", DEFAULT_CACHE)).thenReturn(this.manager);
+        when(this.manager.startCaches("other")).thenReturn(this.manager);
 
-        EmbeddedCacheManager result = this.subject.startCaches("other", null);
+        EmbeddedCacheManager result = this.subject.startCaches("other");
 
         assertSame(this.subject, result);
     }

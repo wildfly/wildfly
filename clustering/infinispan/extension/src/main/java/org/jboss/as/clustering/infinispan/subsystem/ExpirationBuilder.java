@@ -43,8 +43,8 @@ public class ExpirationBuilder extends ComponentBuilder<ExpirationConfiguration>
     private volatile long lifespan;
     private volatile long maxIdle;
 
-    ExpirationBuilder(PathAddress cacheAddress) {
-        super(CacheComponent.EXPIRATION, cacheAddress);
+    ExpirationBuilder(PathAddress address) {
+        super(CacheComponent.EXPIRATION, address);
     }
 
     @Override
