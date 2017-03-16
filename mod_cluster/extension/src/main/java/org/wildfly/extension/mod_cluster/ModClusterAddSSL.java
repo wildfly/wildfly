@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.mod_cluster;
 
+import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -58,9 +60,16 @@ class ModClusterAddSSL extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        ModelNode model = resource.getModel();
         for (AttributeDefinition attr : ModClusterSSLResourceDefinition.ATTRIBUTES) {
             attr.validateAndSet(operation, model);
         }
+        context.addStep((ctx, op) -> {
+            final ModelNode conf = ctx.readResourceFromRoot(ctx.getCurrentAddress().getParent()).getModel();
+            if (conf.hasDefined(CommonAttributes.SSL_CONTEXT)) {
+                throw new OperationFailedException(ROOT_LOGGER.bothElytronAndLegacySslContextDefined());
+            }
+        }, OperationContext.Stage.MODEL);
     }
 }
