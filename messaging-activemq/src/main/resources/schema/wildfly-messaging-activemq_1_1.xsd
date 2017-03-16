@@ -779,10 +779,10 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="source-context" type="contextType" minOccurs="0" maxOccurs="1" />
-                        <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                        <xs:element name="source-credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation>
-                                    Credential to be used by the configuration.
+                                    Credential to be used by the configuration to connect to the source destination.
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:element>
@@ -797,10 +797,10 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="target-context" type="contextType" minOccurs="0" maxOccurs="1" />
-                        <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                        <xs:element name="target-credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation>
-                                    Credential to be used by the configuration.
+                                    Credential to be used by the configuration to connect to the target destination.
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:element>
