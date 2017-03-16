@@ -117,7 +117,7 @@ public class RelayConfigurationBuilder extends AbstractProtocolConfigurationBuil
             RelayConfig.BridgeConfig bridge = new RelayConfig.BridgeConfig(clusterName) {
                 @Override
                 public JChannel createChannel() throws Exception {
-                    JChannel channel = (JChannel) remoteSite.getChannelFactory().createChannel(siteName);
+                    JChannel channel = remoteSite.getChannelFactory().createChannel(siteName);
                     // Don't use FORK in bridge stack
                     channel.getProtocolStack().removeProtocol(FORK.class);
                     return channel;

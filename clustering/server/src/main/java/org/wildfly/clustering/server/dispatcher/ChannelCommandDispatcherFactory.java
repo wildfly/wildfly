@@ -28,6 +28,7 @@ import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -42,8 +43,8 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.threads.JBossThreadFactory;
 import org.jgroups.Address;
-import org.jgroups.Channel;
 import org.jgroups.Event;
+import org.jgroups.JChannel;
 import org.jgroups.MembershipListener;
 import org.jgroups.MergeView;
 import org.jgroups.Message;
@@ -51,8 +52,9 @@ import org.jgroups.View;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestCorrelator;
 import org.jgroups.blocks.RequestHandler;
+import org.jgroups.blocks.Response;
 import org.jgroups.stack.IpAddress;
-import org.jgroups.stack.Protocol;
+import org.jgroups.util.NameCache;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
@@ -87,6 +89,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     private final ConcurrentMap<Address, Node> members = new ConcurrentHashMap<>();
     // Store execution context using an Optional so we can differentiate an unknown service from a known service with a null context
     private final Map<Object, Optional<Object>> contexts = new ConcurrentHashMap<>();
+    private final ExecutorService executorService = Executors.newCachedThreadPool(createThreadFactory(this.getClass()));
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
     private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final AtomicReference<View> view = new AtomicReference<>();
@@ -94,22 +97,20 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     private final MessageDispatcher dispatcher;
     private final long timeout;
 
+    @SuppressWarnings("resource")
     public ChannelCommandDispatcherFactory(ChannelCommandDispatcherFactoryConfiguration config) {
         this.marshallingContext = config.getMarshallingContext();
         this.timeout = config.getTimeout();
-        this.dispatcher = new MessageDispatcher() {
-            @Override
-            protected RequestCorrelator createRequestCorrelator(Protocol transport, RequestHandler handler, Address localAddr) {
-                RequestCorrelator correlator = super.createRequestCorrelator(transport, handler, localAddr);
-                correlator.setMarshaller(new CommandResponseMarshaller(config));
-                return correlator;
-            }
-        };
-        Channel channel = config.getChannel();
-        this.dispatcher.setChannel(channel);
-        this.dispatcher.setRequestHandler(this);
-        this.dispatcher.setMembershipListener(this);
-        this.dispatcher.asyncDispatching(true).start();
+        JChannel channel = config.getChannel();
+        RequestCorrelator correlator = new RequestCorrelator(channel.getProtocolStack().getTransport(), this, channel.getAddress()).setMarshaller(new CommandResponseMarshaller(config));
+        this.dispatcher = new MessageDispatcher()
+                .setChannel(channel)
+                .setRequestHandler(this)
+                .setMembershipListener(this)
+                .asyncDispatching(true)
+                // Setting the request correlator starts the dispatcher
+                .correlator(correlator)
+                ;
         this.view.compareAndSet(null, channel.getView());
     }
 
@@ -124,23 +125,40 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
                 WildFlySecurityManager.doUnchecked(action);
             });
             this.listeners.clear();
+            this.executorService.shutdownNow();
         });
     }
 
     @Override
-    public Object handle(Message message) throws Exception {
+    public Object handle(Message request) throws Exception {
+        return this.read(request).call();
+    }
+
+    @Override
+    public void handle(Message request, Response response) throws Exception {
+        Callable<Object> task = this.read(request);
+        this.executorService.submit(() -> {
+            try {
+                response.send(task.call(), false);
+            } catch (Exception e) {
+                response.send(e, true);
+            }
+        });
+    }
+
+    private Callable<Object> read(Message message) throws Exception {
         try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(message.getRawBuffer(), message.getOffset(), message.getLength()))) {
             int version = IndexExternalizer.VARIABLE.readData(input);
             try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 Object clientId = unmarshaller.readObject();
                 Optional<Object> context = this.contexts.get(clientId);
-                if (context == null) return NoSuchService.INSTANCE;
+                if (context == null) return () -> NoSuchService.INSTANCE;
                 @SuppressWarnings("unchecked")
                 Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
                 // Wrap execution result in an Optional, since command execution might return null
                 ExceptionSupplier<Optional<Object>, Exception> task = () -> Optional.ofNullable(command.execute(context.orElse(null)));
-                return this.executor.execute(task).orElse(Optional.of(NoSuchService.INSTANCE)).orElse(null);
+                return () -> this.executor.execute(task).orElse(Optional.of(NoSuchService.INSTANCE)).orElse(null);
             }
         }
     }
@@ -210,14 +228,12 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     @Override
     public Node createNode(Address address) {
         return this.members.computeIfAbsent(address, key -> {
-            Channel channel = this.dispatcher.getChannel();
-            IpAddress physicalAddress = (IpAddress) channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, address));
+            IpAddress ipAddress = (IpAddress) this.dispatcher.getChannel().down(new Event(Event.GET_PHYSICAL_ADDRESS, address));
             // Physical address might be null if node is no longer a member of the cluster
-            if (physicalAddress == null) return null;
-            InetSocketAddress socketAddress = new InetSocketAddress(physicalAddress.getIpAddress(), physicalAddress.getPort());
-            String logicalName = channel.getName(address);
+            InetSocketAddress socketAddress = (ipAddress != null) ? new InetSocketAddress(ipAddress.getIpAddress(), ipAddress.getPort()) : new InetSocketAddress(0);
             // If no logical name exists, create one using physical address
-            return new AddressableNode(address, (logicalName != null) ? logicalName : String.format("%s:%s", socketAddress.getHostString(), socketAddress.getPort()), socketAddress);
+            String name = Optional.ofNullable(NameCache.get(address)).orElseGet(() -> String.format("%s:%s", socketAddress.getHostString(), socketAddress.getPort()));
+            return new AddressableNode(address, name, socketAddress);
         });
     }
 

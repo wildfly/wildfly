@@ -37,14 +37,14 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
-import org.jgroups.protocols.EncryptBase;
+import org.jgroups.protocols.Encrypt;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
  * Resource definition override for protocols that require an encryption key.
  * @author Paul Ferraro
  */
-public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptProtocol> extends ProtocolResourceDefinition<P> {
+public class EncryptProtocolResourceDefinition<P extends Encrypt & EncryptProtocol> extends ProtocolResourceDefinition<P> {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         KEY_CREDENTIAL(CredentialReference.getAttributeBuilder("key-credential-reference", null, false, new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),

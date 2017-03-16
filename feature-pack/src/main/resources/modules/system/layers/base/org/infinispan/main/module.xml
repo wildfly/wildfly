@@ -32,9 +32,10 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
+        <module name="com.github.ben-manes.caffeine"/>
         <module name="net.jcip"/>
-        <module name="org.infinispan.cachestore.jdbc" optional="true"/>
-        <module name="org.infinispan.cachestore.remote" optional="true"/>
+        <module name="org.infinispan.persistence.jdbc" optional="true"/>
+        <module name="org.infinispan.persistence.remote" optional="true"/>
         <module name="org.infinispan.client.hotrod" optional="true"/>
         <module name="org.infinispan.commons"/>
         <module name="org.jboss.jandex"/>

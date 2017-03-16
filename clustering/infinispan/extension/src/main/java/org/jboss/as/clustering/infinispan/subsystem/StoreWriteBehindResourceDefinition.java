@@ -115,7 +115,7 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
                 .addAttributes(Attribute.class)
                 .addAttributes(DeprecatedAttribute.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new StoreWriteBehindBuilder(address.getParent().getParent()));
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(StoreWriteBehindBuilder::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
     }
 }

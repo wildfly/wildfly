@@ -24,9 +24,9 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.Cache;
 import org.infinispan.eviction.ActivationManager;
 import org.infinispan.eviction.PassivationManager;
-import org.infinispan.interceptors.CacheMgmtInterceptor;
-import org.infinispan.interceptors.InvalidationInterceptor;
-import org.infinispan.interceptors.base.CommandInterceptor;
+import org.infinispan.interceptors.AsyncInterceptor;
+import org.infinispan.interceptors.impl.CacheMgmtInterceptor;
+import org.infinispan.interceptors.impl.InvalidationInterceptor;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -37,7 +37,6 @@ import org.jboss.dmr.ModelType;
  * Enumeration of management metrics for a cache.
  * @author Paul Ferraro
  */
-@SuppressWarnings("deprecation")
 public enum CacheMetric implements Metric<Cache<?, ?>> {
 
     ACTIVATIONS(MetricKeys.ACTIVATIONS, ModelType.LONG) {
@@ -163,12 +162,7 @@ public enum CacheMetric implements Metric<Cache<?, ?>> {
         return this.definition;
     }
 
-    static <T extends CommandInterceptor> T findInterceptor(Cache<?, ?> cache, Class<T> interceptorClass) {
-        for (CommandInterceptor interceptor: cache.getAdvancedCache().getInterceptorChain()) {
-            if (interceptorClass.isAssignableFrom(interceptor.getClass())) {
-                return interceptorClass.cast(interceptor);
-            }
-        }
-        return null;
+    static <T extends AsyncInterceptor> T findInterceptor(Cache<?, ?> cache, Class<T> interceptorClass) {
+        return cache.getAdvancedCache().getAsyncInterceptorChain().findInterceptorExtending(interceptorClass);
     }
 }

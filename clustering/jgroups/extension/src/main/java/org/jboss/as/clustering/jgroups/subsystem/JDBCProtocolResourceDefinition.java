@@ -74,6 +74,6 @@ public class JDBCProtocolResourceDefinition<P extends Protocol & JDBCProtocol> e
                 .addAttributes(Attribute.class)
                 .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
                 .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
-                ), address -> new JDBCProtocolConfigurationBuilder<>(address), parentBuilderFactory);
+                ), JDBCProtocolConfigurationBuilder::new, parentBuilderFactory);
     }
 }

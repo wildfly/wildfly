@@ -22,13 +22,11 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
-import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -53,12 +51,12 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        BATCH_SIZE("batch-size", ModelType.INT, new ModelNode(100)),
-        FETCH_SIZE("fetch-size", ModelType.INT, new ModelNode(100)),
+        FETCH_SIZE("fetch-size", ModelType.INT, new ModelNode(100), UnaryOperator.identity()),
+        BATCH_SIZE("batch-size", ModelType.INT, new ModelNode(100), builder -> builder.setDeprecated(InfinispanModel.VERSION_6_0_0.getVersion())),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue) {
+        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
@@ -117,15 +115,15 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
 
     private final Registration<ManagementResourceRegistration> registrar;
 
-    TableResourceDefinition(PathElement path, Consumer<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<TableManipulationConfiguration> builderFactory) {
+    TableResourceDefinition(PathElement path, org.jboss.as.clustering.controller.Attribute prefixAttribute) {
         super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(prefixAttribute)
                 .addAttributes(Attribute.class)
                 .addAttributes(ColumnAttribute.class)
                 ;
-        configurator.accept(descriptor);
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(builderFactory);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new TableBuilder(prefixAttribute, address));
         this.registrar = new SimpleResourceRegistration(descriptor, handler);
     }
 

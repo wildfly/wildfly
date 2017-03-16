@@ -22,12 +22,13 @@
 
 package org.wildfly.clustering.server.group;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.Transport;
+import org.infinispan.topology.CacheTopology;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.spi.NodeFactory;
@@ -40,6 +41,10 @@ public class CacheMembership implements Membership {
     private final Address localAddress;
     private final List<Address> addresses;
     private final NodeFactory<Address> factory;
+
+    public CacheMembership(Address localAddress, CacheTopology topology, NodeFactory<Address> factory) {
+        this(localAddress, topology.getActualMembers(), factory);
+    }
 
     public CacheMembership(Address localAddress, ConsistentHash hash, NodeFactory<Address> factory) {
         this(localAddress, hash.getMembers(), factory);
@@ -71,8 +76,10 @@ public class CacheMembership implements Membership {
 
     @Override
     public List<Node> getMembers() {
-        return this.addresses.stream()
-                .map(address -> this.factory.createNode(address))
-                .collect(Collectors.toList());
+        List<Node> members = new ArrayList<>(this.addresses.size());
+        for (Address address : this.addresses) {
+            members.add(this.factory.createNode(address));
+        }
+        return members;
     }
 }

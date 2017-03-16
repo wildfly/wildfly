@@ -58,7 +58,7 @@ public class BackupsResourceDefinition extends ComponentResourceDefinition {
         BackupResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final ResourceServiceBuilderFactory<SitesConfiguration> builderFactory = address -> new BackupsBuilder(address.getParent());
+    private final ResourceServiceBuilderFactory<SitesConfiguration> builderFactory = BackupsBuilder::new;
 
     public BackupsResourceDefinition() {
         super(PATH);
