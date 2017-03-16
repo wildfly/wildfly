@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session.fine;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.infinispan.IndexedSessionKeyExternalizer;
+package org.wildfly.clustering.infinispan.spi.persistence;
 
 /**
- * Externalizer for a {@link SessionAttributeKey}.
+ * Formats a cache key to a string representation and back again.
  * @author Paul Ferraro
  */
-@MetaInfServices({ Externalizer.class, KeyFormat.class })
-public class SessionAttributeKeyExternalizer extends IndexedSessionKeyExternalizer<SessionAttributeKey> {
+public interface KeyFormat<K> {
+    /**
+     * The implementation class of the target key of this format.
+     * @return an implementation class
+     */
+    Class<K> getTargetClass();
 
-    public SessionAttributeKeyExternalizer() {
-        super(SessionAttributeKey.class, SessionAttributeKey::getAttributeId, (sessionId, attributeId) -> new SessionAttributeKey(sessionId, attributeId));
-    }
+    /**
+     * Parses the key from the specified string.
+     * @param value a string representation of the key
+     * @return the parsed key
+     */
+    K parse(String value);
+
+    /**
+     * Formats the specified key to a string representation.
+     * @param key a key to format
+     * @return a string representation of the specified key.
+     */
+    String format(K key);
 }

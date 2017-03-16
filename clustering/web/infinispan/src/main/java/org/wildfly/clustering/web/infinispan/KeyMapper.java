@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session.fine;
 
+package org.wildfly.clustering.web.infinispan;
+
+import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.infinispan.IndexedSessionKeyExternalizer;
+import org.wildfly.clustering.infinispan.spi.persistence.DynamicKeyFormatMapper;
 
 /**
- * Externalizer for a {@link SessionAttributeKey}.
  * @author Paul Ferraro
  */
-@MetaInfServices({ Externalizer.class, KeyFormat.class })
-public class SessionAttributeKeyExternalizer extends IndexedSessionKeyExternalizer<SessionAttributeKey> {
+@MetaInfServices(TwoWayKey2StringMapper.class)
+public class KeyMapper extends DynamicKeyFormatMapper {
 
-    public SessionAttributeKeyExternalizer() {
-        super(SessionAttributeKey.class, SessionAttributeKey::getAttributeId, (sessionId, attributeId) -> new SessionAttributeKey(sessionId, attributeId));
+    public KeyMapper() {
+        super(KeyMapper.class.getClassLoader());
     }
 }

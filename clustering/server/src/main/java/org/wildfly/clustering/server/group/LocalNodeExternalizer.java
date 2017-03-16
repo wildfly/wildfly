@@ -27,14 +27,20 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.infinispan.spi.persistence.DelimitedKeyFormat;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * Marshalling externalizer for a {@link LocalNode}.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class LocalNodeExternalizer implements Externalizer<LocalNode> {
+@MetaInfServices({ Externalizer.class, KeyFormat.class })
+public class LocalNodeExternalizer extends DelimitedKeyFormat<LocalNode> implements Externalizer<LocalNode> {
+
+    public LocalNodeExternalizer() {
+        super(LocalNode.class, "|", parts -> new LocalNode(parts[0], parts[1]), node -> new String[] { node.getCluster(), node.getName() });
+    }
 
     @Override
     public void writeObject(ObjectOutput output, LocalNode node) throws IOException {
@@ -45,10 +51,5 @@ public class LocalNodeExternalizer implements Externalizer<LocalNode> {
     @Override
     public LocalNode readObject(ObjectInput input) throws IOException {
         return new LocalNode(input.readUTF(), input.readUTF());
-    }
-
-    @Override
-    public Class<LocalNode> getTargetClass() {
-        return LocalNode.class;
     }
 }

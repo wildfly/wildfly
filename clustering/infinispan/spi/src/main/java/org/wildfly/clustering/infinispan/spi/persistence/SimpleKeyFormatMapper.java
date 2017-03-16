@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session.fine;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.infinispan.IndexedSessionKeyExternalizer;
+package org.wildfly.clustering.infinispan.spi.persistence;
+
+import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 
 /**
- * Externalizer for a {@link SessionAttributeKey}.
+ * Simple {@link TwoWayKey2StringMapper} based on a single {@link KeyFormat}.
  * @author Paul Ferraro
  */
-@MetaInfServices({ Externalizer.class, KeyFormat.class })
-public class SessionAttributeKeyExternalizer extends IndexedSessionKeyExternalizer<SessionAttributeKey> {
+public class SimpleKeyFormatMapper implements TwoWayKey2StringMapper {
 
-    public SessionAttributeKeyExternalizer() {
-        super(SessionAttributeKey.class, SessionAttributeKey::getAttributeId, (sessionId, attributeId) -> new SessionAttributeKey(sessionId, attributeId));
+    private final KeyFormat<Object> format;
+
+    @SuppressWarnings("unchecked")
+    public SimpleKeyFormatMapper(KeyFormat<?> format) {
+        this.format = (KeyFormat<Object>) format;
+    }
+
+    @Override
+    public boolean isSupportedType(Class<?> keyType) {
+        return this.format.getTargetClass().equals(keyType);
+    }
+
+    @Override
+    public String getStringMapping(Object key) {
+        return this.format.format(key);
+    }
+
+    @Override
+    public Object getKeyMapping(String value) {
+        return this.format.parse(value);
     }
 }

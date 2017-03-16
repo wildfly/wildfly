@@ -23,6 +23,7 @@
 package org.wildfly.clustering.web.infinispan.sso;
 
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
 
@@ -30,7 +31,7 @@ import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
  * Externalizer for {@link AuthenticationKey}
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
+@MetaInfServices({ Externalizer.class, KeyFormat.class })
 public class AuthenticationKeyExternalizer extends SessionKeyExternalizer<AuthenticationKey> {
 
     public AuthenticationKeyExternalizer() {

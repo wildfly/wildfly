@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.session.fine;
 
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
 
@@ -29,7 +30,7 @@ import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
  * Externalizer for {@link SessionAttributeNamesKey}.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
+@MetaInfServices({ Externalizer.class, KeyFormat.class })
 public class SessionAttributeNamesKeyExternalizer extends SessionKeyExternalizer<SessionAttributeNamesKey> {
 
     public SessionAttributeNamesKeyExternalizer() {

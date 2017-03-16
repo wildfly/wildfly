@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session.fine;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.infinispan.IndexedSessionKeyExternalizer;
+package org.wildfly.clustering.infinispan.spi.persistence;
+
+import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
- * Externalizer for a {@link SessionAttributeKey}.
+ * {@link KeyFormat} for keys with multiple string fields.
  * @author Paul Ferraro
  */
-@MetaInfServices({ Externalizer.class, KeyFormat.class })
-public class SessionAttributeKeyExternalizer extends IndexedSessionKeyExternalizer<SessionAttributeKey> {
+public class DelimitedKeyFormat<K> extends SimpleKeyFormat<K> {
 
-    public SessionAttributeKeyExternalizer() {
-        super(SessionAttributeKey.class, SessionAttributeKey::getAttributeId, (sessionId, attributeId) -> new SessionAttributeKey(sessionId, attributeId));
+    public DelimitedKeyFormat(Class<K> targetClass, String delimiter, Function<String[], K> parser, Function<K, String[]> formatter) {
+        super(targetClass, value -> parser.apply(value.split(Pattern.quote(delimiter))), key -> String.join(delimiter, formatter.apply(key)));
     }
 }

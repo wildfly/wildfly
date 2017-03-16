@@ -27,14 +27,20 @@ import java.io.ObjectOutput;
 
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
+import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * {@link Externalizer} for a {@link ServiceName}.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class ServiceNameExternalizer implements Externalizer<ServiceName> {
+@MetaInfServices({ Externalizer.class, KeyFormat.class })
+public class ServiceNameExternalizer extends SimpleKeyFormat<ServiceName> implements Externalizer<ServiceName> {
+
+    public ServiceNameExternalizer() {
+        super(ServiceName.class, ServiceName::parse, ServiceName::getCanonicalName);
+    }
 
     @Override
     public void writeObject(ObjectOutput output, ServiceName name) throws IOException {
@@ -44,10 +50,5 @@ public class ServiceNameExternalizer implements Externalizer<ServiceName> {
     @Override
     public ServiceName readObject(ObjectInput input) throws IOException {
         return ServiceName.parse(input.readUTF());
-    }
-
-    @Override
-    public Class<ServiceName> getTargetClass() {
-        return ServiceName.class;
     }
 }

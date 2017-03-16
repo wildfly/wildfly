@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session.fine;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.infinispan.IndexedSessionKeyExternalizer;
+package org.wildfly.clustering.infinispan.spi.persistence;
+
+import static org.mockito.Mockito.*;
+
+import java.util.function.Function;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * Externalizer for a {@link SessionAttributeKey}.
  * @author Paul Ferraro
  */
-@MetaInfServices({ Externalizer.class, KeyFormat.class })
-public class SessionAttributeKeyExternalizer extends IndexedSessionKeyExternalizer<SessionAttributeKey> {
+public class SimpleKeyFormatTestCase {
+    @Test
+    public void test() {
+        Function<String, Object> parser = mock(Function.class);
+        Function<Object, String> formatter = mock(Function.class);
+        KeyFormat<Object> keyFormat = new SimpleKeyFormat<>(Object.class, parser, formatter);
 
-    public SessionAttributeKeyExternalizer() {
-        super(SessionAttributeKey.class, SessionAttributeKey::getAttributeId, (sessionId, attributeId) -> new SessionAttributeKey(sessionId, attributeId));
+        Object object = new Object();
+        String result = "foo";
+
+        when(formatter.apply(object)).thenReturn(result);
+        when(parser.apply(result)).thenReturn(object);
+
+        Assert.assertSame(result, keyFormat.format(object));
+        Assert.assertSame(object, keyFormat.parse(result));
     }
 }

@@ -28,29 +28,30 @@ import java.io.ObjectOutput;
 import org.jboss.ejb.client.SessionID;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ejb.infinispan.SessionIDExternalizer;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
+import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class InfinispanBeanKeyExternalizer implements Externalizer<InfinispanBeanKey<SessionID>> {
+@MetaInfServices({ Externalizer.class, KeyFormat.class })
+public class InfinispanBeanKeyExternalizer extends SimpleKeyFormat<InfinispanBeanKey<SessionID>> implements Externalizer<InfinispanBeanKey<SessionID>> {
 
-    private final Externalizer<SessionID> externalizer = new SessionIDExternalizer<>(SessionID.class);
+    private static final SessionIDExternalizer<SessionID> EXTERNALIZER = new SessionIDExternalizer<>(SessionID.class);
+
+    @SuppressWarnings("unchecked")
+    public InfinispanBeanKeyExternalizer() {
+        super((Class<InfinispanBeanKey<SessionID>>) (Class<?>) InfinispanBeanKey.class, value -> new InfinispanBeanKey<>(EXTERNALIZER.parse(value)), key -> EXTERNALIZER.format(key.getId()));
+    }
 
     @Override
     public void writeObject(ObjectOutput output, InfinispanBeanKey<SessionID> key) throws IOException {
-        this.externalizer.writeObject(output, key.getId());
+        EXTERNALIZER.writeObject(output, key.getId());
     }
 
     @Override
     public InfinispanBeanKey<SessionID> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new InfinispanBeanKey<>(this.externalizer.readObject(input));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Class<InfinispanBeanKey<SessionID>> getTargetClass() {
-        return (Class<InfinispanBeanKey<SessionID>>) (Class<?>) InfinispanBeanKey.class;
+        return new InfinispanBeanKey<>(EXTERNALIZER.readObject(input));
     }
 }

@@ -24,24 +24,25 @@ package org.wildfly.clustering.ejb.infinispan;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Base64;
 
 import org.jboss.ejb.client.BasicSessionID;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.UUIDSessionID;
 import org.jboss.ejb.client.UnknownSessionID;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class SessionIDExternalizer<T extends SessionID> implements Externalizer<T> {
+public class SessionIDExternalizer<T extends SessionID> extends SimpleKeyFormat<T> implements Externalizer<T> {
 
-    private final Class<T> targetClass;
-
+    @SuppressWarnings("unchecked")
     public SessionIDExternalizer(Class<T> targetClass) {
-        this.targetClass = targetClass;
+        super(targetClass, value -> (T) SessionID.createSessionID(Base64.getDecoder().decode(value)), id -> Base64.getEncoder().encodeToString(id.getEncodedForm()));
     }
 
     @Override
@@ -57,11 +58,6 @@ public class SessionIDExternalizer<T extends SessionID> implements Externalizer<
         byte[] encoded = new byte[IndexExternalizer.UNSIGNED_BYTE.readData(input)];
         input.readFully(encoded);
         return (T) SessionID.createSessionID(encoded);
-    }
-
-    @Override
-    public Class<T> getTargetClass() {
-        return this.targetClass;
     }
 
     @MetaInfServices(Externalizer.class)

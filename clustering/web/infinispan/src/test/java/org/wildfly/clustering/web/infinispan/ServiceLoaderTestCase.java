@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.infinispan;
 
 import java.util.ServiceLoader;
 
+import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.jboss.logging.Logger;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -56,5 +57,6 @@ public class ServiceLoaderTestCase {
         load(DistributedCacheBuilderProvider.class);
         load(LocalCacheBuilderProvider.class);
         load(CacheAliasBuilderProvider.class);
+        load(TwoWayKey2StringMapper.class);
     }
 }

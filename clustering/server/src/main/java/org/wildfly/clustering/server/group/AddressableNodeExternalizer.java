@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.server.group;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -29,17 +31,22 @@ import java.net.InetSocketAddress;
 
 import org.jgroups.Address;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.infinispan.spi.persistence.BinaryKeyFormat;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * Marshalling externalizer for an {@link AddressableNode}.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class AddressableNodeExternalizer implements Externalizer<AddressableNode> {
+@MetaInfServices({ Externalizer.class, KeyFormat.class })
+public class AddressableNodeExternalizer extends BinaryKeyFormat<AddressableNode> implements Externalizer<AddressableNode> {
 
-    @Override
-    public AddressableNode readObject(ObjectInput input) throws IOException {
+    public AddressableNodeExternalizer() {
+        super(AddressableNode.class, AddressableNodeExternalizer::read, AddressableNodeExternalizer::write);
+    }
+
+    private static AddressableNode read(DataInput input) throws IOException {
         try {
             Address jgroupsAddress = org.jgroups.util.Util.readAddress(input);
             String name = input.readUTF();
@@ -54,8 +61,7 @@ public class AddressableNodeExternalizer implements Externalizer<AddressableNode
         }
     }
 
-    @Override
-    public void writeObject(ObjectOutput output, AddressableNode node) throws IOException {
+    private static void write(DataOutput output, AddressableNode node) throws IOException {
         try {
             org.jgroups.util.Util.writeAddress(node.getAddress(), output);
             output.writeUTF(node.getName());
@@ -63,7 +69,7 @@ public class AddressableNodeExternalizer implements Externalizer<AddressableNode
             byte[] address = socketAddress.getAddress().getAddress();
             output.writeInt(address.length);
             output.write(address);
-            output.writeInt(node.getSocketAddress().getPort());
+            output.writeInt(socketAddress.getPort());
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
@@ -72,7 +78,12 @@ public class AddressableNodeExternalizer implements Externalizer<AddressableNode
     }
 
     @Override
-    public Class<AddressableNode> getTargetClass() {
-        return AddressableNode.class;
+    public AddressableNode readObject(ObjectInput input) throws IOException {
+        return read(input);
+    }
+
+    @Override
+    public void writeObject(ObjectOutput output, AddressableNode node) throws IOException {
+        write(output, node);
     }
 }
