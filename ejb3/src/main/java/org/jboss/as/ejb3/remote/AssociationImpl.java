@@ -70,6 +70,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -81,10 +82,12 @@ final class AssociationImpl implements Association {
 
     private final DeploymentRepository deploymentRepository;
     private final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector;
+    private volatile Executor executor;
 
     AssociationImpl(final DeploymentRepository deploymentRepository, final RegistryCollector<String, List<ClientMapping>> registryCollector) {
         this.deploymentRepository = deploymentRepository;
         clientMappingRegistryCollector = registryCollector;
+        this.executor = executor;
     }
 
     @Override
@@ -218,7 +221,11 @@ final class AssociationImpl implements Association {
         if (request.getProtocol().equals("local") && ! isAsync) {
             task.run();
         } else {
-            request.getRequestExecutor().execute(task);
+            if(executor != null) {
+                executor.execute(task);
+            } else {
+                request.getRequestExecutor().execute(task);
+            }
         }
     }
 
@@ -474,5 +481,13 @@ final class AssociationImpl implements Association {
     private static Affinity getWeakAffinity(final StatefulSessionComponent statefulSessionComponent, final StatefulEJBLocator<?> statefulEJBLocator) {
         final SessionID sessionID = statefulEJBLocator.getSessionId();
         return statefulSessionComponent.getCache().getWeakAffinity(sessionID);
+    }
+
+    Executor getExecutor() {
+        return executor;
+    }
+
+    void setExecutor(Executor executor) {
+        this.executor = executor;
     }
 }

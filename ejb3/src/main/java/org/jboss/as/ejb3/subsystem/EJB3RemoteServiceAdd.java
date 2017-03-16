@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.subsystem;
 
 import java.util.ServiceLoader;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -79,6 +80,8 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
         final String clientMappingsClusterName = EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.resolveModelAttribute(context, model).asString();
         final String connectorName = EJB3RemoteResourceDefinition.CONNECTOR_REF.resolveModelAttribute(context, model).asString();
         final ServiceName remotingServerInfoServiceName = RemotingConnectorBindingInfoService.serviceName(connectorName);
+        final String threadPoolName = EJB3RemoteResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
+        final boolean executeInWorker = EJB3RemoteResourceDefinition.EXECUTE_IN_WORKER.resolveModelAttribute(context, model).asBoolean();
 
         final ServiceTarget target = context.getServiceTarget();
         // Install the client-mapping service for the remoting connector
@@ -120,6 +123,9 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
                 .addDependency(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, RemotingTransactionService.class, ejbRemoteConnectorService.getRemotingTransactionServiceInjector())
                 .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, ejbRemoteConnectorService.getControlledProcessStateServiceInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
+        if(!executeInWorker) {
+            builder.addDependency(EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName), ExecutorService.class, ejbRemoteConnectorService.getExecutorService());
+        }
         builder.install();
     }
 
