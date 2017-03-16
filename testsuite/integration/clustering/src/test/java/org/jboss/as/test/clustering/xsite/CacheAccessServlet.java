@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.infinispan.Cache;
+import org.infinispan.marshall.core.ExternallyMarshallable;
 
 /**
  * Servlet providing get/put access to Infinispan cache instance.
@@ -87,6 +88,11 @@ public class CacheAccessServlet extends HttpServlet {
 
     @Resource(name="TheTargetCache")
     private Cache<String, Custom> cache;
+
+    @Override
+    public void init() throws ServletException {
+        ExternallyMarshallable.addToWhiteList(Custom.class.getName());
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

@@ -22,16 +22,16 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.ALIASES;
-import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONTAINER;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.infinispan.commons.api.BasicCacheContainer;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -72,8 +72,6 @@ public class CacheContainerBuilder extends CapabilityServiceNameProvider impleme
     private final ValueDependency<GlobalConfiguration> configuration;
     private final BatcherFactory batcherFactory = new InfinispanBatcherFactory();
 
-    private volatile String defaultCache;
-
     public CacheContainerBuilder(PathAddress address) {
         super(CONTAINER, address);
         this.name = address.getLastElement().getValue();
@@ -86,16 +84,19 @@ public class CacheContainerBuilder extends CapabilityServiceNameProvider impleme
         ModelNodes.optionalList(ALIASES.resolveModelAttribute(context, model)).ifPresent(aliases -> {
             aliases.stream().map(ModelNode::asString).forEach(alias -> this.aliases.add(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), alias)));
         });
-        this.defaultCache = ModelNodes.optionalString(DEFAULT_CACHE.resolveModelAttribute(context, model)).orElse(BasicCacheContainer.DEFAULT_CACHE_NAME);
         return this;
     }
 
     @Override
     public ServiceBuilder<CacheContainer> build(ServiceTarget target) {
-        Function<EmbeddedCacheManager, CacheContainer> mapper = manager -> new DefaultCacheContainer(this.name, manager, this.defaultCache, this.batcherFactory);
+        Function<EmbeddedCacheManager, CacheContainer> mapper = manager -> new DefaultCacheContainer(manager, this.batcherFactory);
         Supplier<EmbeddedCacheManager> supplier = () -> {
             GlobalConfiguration config = this.configuration.getValue();
-            EmbeddedCacheManager manager = new DefaultCacheManager(config, null, false);
+            Optional<String> defaultCacheName = config.defaultCacheName();
+            // We need to create a dummy default configuration
+            EmbeddedCacheManager manager = new DefaultCacheManager(config, defaultCacheName.map(name -> new ConfigurationBuilder().build()).orElse(null), false);
+            // Undefine the default cache, if we defined one
+            defaultCacheName.ifPresent(name -> manager.undefineConfiguration(name));
             manager.addListener(this);
 
             manager.start();
@@ -112,10 +113,6 @@ public class CacheContainerBuilder extends CapabilityServiceNameProvider impleme
                 .addAliases(this.aliases.stream().toArray(ServiceName[]::new))
                 ;
         return this.configuration.register(builder);
-    }
-
-    String getDefaultCache() {
-        return this.defaultCache;
     }
 
     @CacheStarted

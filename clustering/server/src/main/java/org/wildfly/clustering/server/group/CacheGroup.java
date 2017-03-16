@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -38,7 +39,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.Cache;
-import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.notifications.cachemanagerlistener.annotation.Merged;
@@ -109,8 +109,7 @@ public class CacheGroup implements Group, AutoCloseable {
     }
 
     private Address getCoordinator() {
-        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        return (dist != null) ? dist.getConsistentHash().getMembers().get(0) : this.cache.getCacheManager().getCoordinator();
+        return Optional.ofNullable(this.cache.getAdvancedCache().getDistributionManager()).map(dist -> dist.getCacheTopology().getActualMembers().get(0)).orElse(this.cache.getCacheManager().getCoordinator());
     }
 
     @Override
@@ -135,9 +134,9 @@ public class CacheGroup implements Group, AutoCloseable {
     public void topologyChanged(TopologyChangedEvent<?, ?> event) {
         if (event.isPre()) return;
 
-        List<Address> oldAddresses = event.getConsistentHashAtStart().getMembers();
+        List<Address> oldAddresses = event.getWriteConsistentHashAtStart().getMembers();
         List<Node> oldNodes = this.getNodes(oldAddresses);
-        List<Address> newAddresses = event.getConsistentHashAtEnd().getMembers();
+        List<Address> newAddresses = event.getWriteConsistentHashAtEnd().getMembers();
         List<Node> newNodes = this.getNodes(newAddresses);
 
         Set<Address> obsolete = new HashSet<>(oldAddresses);
@@ -192,8 +191,7 @@ public class CacheGroup implements Group, AutoCloseable {
     }
 
     private List<Address> getAddresses() {
-        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        return (dist != null) ? dist.getConsistentHash().getMembers() : this.cache.getCacheManager().getMembers();
+        return Optional.ofNullable(this.cache.getAdvancedCache().getDistributionManager()).map(dist -> dist.getCacheTopology().getActualMembers()).orElse(this.cache.getCacheManager().getMembers());
     }
 
     @Override

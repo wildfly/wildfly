@@ -41,6 +41,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.BlockingExecutor;
+import org.jgroups.Channel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
@@ -84,7 +85,7 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
         ChannelFactory factory = this.jGroupsChannelFactory.getValue();
         JGroupsTransport transport = new JGroupsTransport();
         try {
-            transport.setChannel(factory.createChannel(this.value.getName()));
+            transport.setChannel(new Channel(factory.createChannel(this.value.getName())));
             transport.setClusterName(this.value.getName());
             this.value.setTransport(transport);
         } catch (Exception e) {

@@ -25,6 +25,7 @@ import java.security.PrivilegedAction;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -40,7 +41,6 @@ import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.commons.CacheException;
 import org.infinispan.context.Flag;
-import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
@@ -248,9 +248,10 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     }
 
     Node locatePrimaryOwner(I id) {
-        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        Address address = (dist != null) ? dist.getPrimaryLocation(id) : null;
-        return (address != null) ? this.nodeFactory.createNode(address) : this.registry.getGroup().getLocalNode();
+        return Optional.ofNullable(this.cache.getAdvancedCache().getDistributionManager())
+                .map(dist -> dist.getCacheTopology().getDistribution(id).primary())
+                .map(address -> this.nodeFactory.createNode(address))
+                .orElse(this.registry.getGroup().getLocalNode());
     }
 
     @Override
@@ -332,8 +333,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
 
     @DataRehashed
     public void dataRehashed(DataRehashedEvent<BeanKey<I>, BeanEntry<I>> event) {
-        Address localAddress = this.cache.getCacheManager().getAddress();
-        Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
+        Locality newLocality = new ConsistentHashLocality(event.getCache(), event.getConsistentHashAtEnd());
         if (event.isPre()) {
             Future<?> future = this.rehashFuture.getAndSet(null);
             if (future != null) {
@@ -348,7 +348,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
                 // Executor was shutdown
             }
         } else {
-            Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
+            Locality oldLocality = new ConsistentHashLocality(event.getCache(), event.getConsistentHashAtStart());
             try {
                 this.rehashFuture.set(this.executor.submit(() -> this.schedule(oldLocality, newLocality)));
             } catch (RejectedExecutionException e) {

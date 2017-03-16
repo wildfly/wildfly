@@ -36,9 +36,9 @@ import org.jboss.msc.service.ServiceName;
 public enum CacheComponent implements ResourceServiceNameFactory {
 
     MODULE("module"),
-    EVICTION(EvictionResourceDefinition.PATH),
     EXPIRATION(ExpirationResourceDefinition.PATH),
     LOCKING(LockingResourceDefinition.PATH),
+    MEMORY(MemoryResourceDefinition.WILDCARD_PATH),
     PERSISTENCE() {
         @Override
         public ServiceName getServiceName(PathAddress cacheAddress) {

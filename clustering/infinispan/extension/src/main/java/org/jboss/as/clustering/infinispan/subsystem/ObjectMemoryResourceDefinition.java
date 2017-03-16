@@ -25,15 +25,12 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.MetricHandler;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
+import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -41,37 +38,33 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource and its alias:
- *
- * /subsystem=infinispan/cache-container=X/cache=Y/component=eviction
- * /subsystem=infinispan/cache-container=X/cache=Y/eviction=EVICTION
- *
- * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * Definition for the /memory=object resource.
+ * @author Paul Ferraro
  */
-public class EvictionResourceDefinition extends ComponentResourceDefinition {
+public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
 
-    static final PathElement PATH = pathElement("eviction");
-    static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "EVICTION");
+    static final PathElement PATH = pathElement("object");
+    static final PathElement EVICTION_PATH = ComponentResourceDefinition.pathElement("eviction");
+    static final PathElement LEGACY_PATH = PathElement.pathElement(EVICTION_PATH.getValue(), "EVICTION");
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
         STRATEGY("strategy", ModelType.STRING, new ModelNode(EvictionStrategy.NONE.name()), builder -> builder.setValidator(new EnumValidator<>(EvictionStrategy.class, EnumSet.complementOf(EnumSet.of(EvictionStrategy.MANUAL))))),
         MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L), UnaryOperator.identity()),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
             this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setDeprecated(InfinispanModel.VERSION_6_0_0.getVersion())
                     ).build();
         }
 
@@ -82,35 +75,43 @@ public class EvictionResourceDefinition extends ComponentResourceDefinition {
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH, RequiredChildResourceDiscardPolicy.NEVER) : parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH, RequiredChildResourceDiscardPolicy.NEVER) : InfinispanModel.VERSION_6_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, EVICTION_PATH, RequiredChildResourceDiscardPolicy.NEVER) : parent.addChildResource(PATH);
+
+        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                .addRename(Attribute.SIZE.getDefinition(), DeprecatedAttribute.MAX_ENTRIES.getName())
+                .setValueConverter(new SimpleAttributeConverter((address, name, value, model, context) -> {
+                    // Set legacy eviction strategy to NONE is size is negative, otherwise set to LRU
+                    if (model.hasDefined(Attribute.SIZE.getName()) && (model.get(Attribute.SIZE.getName()).asLong() < 0)) {
+                        value.set(EvictionStrategy.NONE.name());
+                    } else {
+                        value.set(EvictionStrategy.LRU.name());
+                    }
+                }), DeprecatedAttribute.STRATEGY.getDefinition())
+                .end();
+        }
 
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
-                @Override
-                protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                    if (attributeValue.isDefined()) {
-                        attributeValue.set(attributeValue.asInt());
-                    }
+            builder.getAttributeBuilder().setValueConverter(new SimpleAttributeConverter((address, name, value, model, context) -> {
+                if (value.isDefined()) {
+                    value.set(value.asInt());
                 }
-            }, Attribute.MAX_ENTRIES.getDefinition());
+            }), Attribute.SIZE.getDefinition(), DeprecatedAttribute.MAX_ENTRIES.getDefinition());
         }
     }
 
-    EvictionResourceDefinition() {
-        super(PATH);
+    ObjectMemoryResourceDefinition() {
+        super(PATH, descriptor -> descriptor
+                .addAttributes(EnumSet.complementOf(EnumSet.of(DeprecatedAttribute.MAX_ENTRIES)))
+                .addAlias(DeprecatedAttribute.MAX_ENTRIES, Attribute.SIZE)
+            , address -> new MemoryBuilder(StorageType.OBJECT, address.getParent()));
     }
 
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+        super.register(parentRegistration);
+        org.jboss.as.controller.registry.ManagementResourceRegistration registration = parentRegistration.getSubModel(PathAddress.pathAddress(PATH));
+        parentRegistration.registerAlias(EVICTION_PATH, new SimpleAliasEntry(registration));
         parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new EvictionBuilder(address.getParent()));
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
-
-        if (registration.isRuntimeOnlyRegistrationValid()) {
-            new MetricHandler<>(new EvictionMetricExecutor(), EvictionMetric.class).register(registration);
-        }
     }
 }

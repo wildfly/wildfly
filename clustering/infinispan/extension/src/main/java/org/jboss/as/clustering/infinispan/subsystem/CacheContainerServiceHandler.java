@@ -85,7 +85,9 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         ServiceTarget target = context.getServiceTarget();
 
         new ModuleBuilder(CacheContainerComponent.MODULE.getServiceName(address), MODULE).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
-        new GlobalConfigurationBuilder(address).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+
+        GlobalConfigurationBuilder configBuilder = new GlobalConfigurationBuilder(address);
+        configBuilder.configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         CacheContainerBuilder containerBuilder = new CacheContainerBuilder(address).configure(context, model);
         containerBuilder.build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
@@ -96,8 +98,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         ModelNodes.optionalString(JNDI_NAME.resolveModelAttribute(context, model)).map(jndiName -> ContextNames.bindInfoFor(JndiNameFactory.parse(jndiName).getAbsoluteName())).ifPresent(aliasBinding -> bindingBuilder.alias(aliasBinding));
         bindingBuilder.build(target).install();
 
-        String defaultCache = containerBuilder.getDefaultCache();
-        if (defaultCache != null) {
+        configBuilder.getDefaultCache().ifPresent(defaultCache -> {
             DEFAULT_CAPABILITIES.entrySet().forEach(entry -> new AliasServiceBuilder<>(entry.getValue().getServiceName(address), entry.getKey().getServiceName(context, name, defaultCache), entry.getKey().getType()).build(target).install());
 
             if (!defaultCache.equals(JndiNameFactory.DEFAULT_LOCAL_NAME)) {
@@ -110,7 +111,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
                     builder.configure(context).build(target).install();
                 }
             }
-        }
+        });
     }
 
     @Override

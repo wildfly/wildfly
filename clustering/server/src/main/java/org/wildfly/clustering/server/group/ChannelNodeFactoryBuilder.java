@@ -32,7 +32,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jgroups.Channel;
+import org.jgroups.JChannel;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.Builder;
@@ -49,7 +49,7 @@ public class ChannelNodeFactoryBuilder implements CapabilityServiceBuilder<Chann
     private final ServiceName name;
     private final String group;
 
-    private volatile ValueDependency<Channel> channel;
+    private volatile ValueDependency<JChannel> channel;
 
     public ChannelNodeFactoryBuilder(ServiceName name, String group) {
         this.name = name;
@@ -63,7 +63,7 @@ public class ChannelNodeFactoryBuilder implements CapabilityServiceBuilder<Chann
 
     @Override
     public Builder<ChannelNodeFactory> configure(CapabilityServiceSupport support) {
-        this.channel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(support, this.group), Channel.class);
+        this.channel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(support, this.group), JChannel.class);
         return this;
     }
 

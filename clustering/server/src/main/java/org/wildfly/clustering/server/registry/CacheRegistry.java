@@ -59,6 +59,8 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality;
+import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
@@ -165,9 +167,9 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     public void topologyChanged(TopologyChangedEvent<Node, Map.Entry<K, V>> event) {
         if (event.isPre()) return;
 
-        ConsistentHash previousHash = event.getConsistentHashAtStart();
+        ConsistentHash previousHash = event.getWriteConsistentHashAtStart();
         List<Address> previousMembers = previousHash.getMembers();
-        ConsistentHash hash = event.getConsistentHashAtEnd();
+        ConsistentHash hash = event.getWriteConsistentHashAtEnd();
         List<Address> members = hash.getMembers();
         Address localAddress = event.getCache().getCacheManager().getAddress();
 
@@ -178,8 +180,9 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
         try {
             this.topologyChangeExecutor.submit(() -> {
                 if (!addresses.isEmpty()) {
+                    Locality locality = new ConsistentHashLocality(event.getCache(), hash);
                     // We're only interested in the entries for which we are the primary owner
-                    List<Node> nodes = addresses.stream().filter(address -> hash.locatePrimaryOwner(address).equals(localAddress)).map(address -> this.factory.createNode(address)).collect(Collectors.toList());
+                    List<Node> nodes = addresses.stream().filter(address -> locality.isLocal(address)).map(address -> this.factory.createNode(address)).collect(Collectors.toList());
 
                     if (!nodes.isEmpty()) {
                         Cache<Node, Map.Entry<K, V>> cache = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);

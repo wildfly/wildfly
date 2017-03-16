@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.ejb.infinispan.bean;
 
+import java.util.Optional;
+
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
@@ -95,7 +97,8 @@ public class InfinispanBeanFactory<I, T> implements BeanFactory<I, T> {
 
     @Override
     public BeanEntry<I> createValue(I id, I groupId) {
-        return this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfAbsent(this.createKey(id), key -> new InfinispanBeanEntry<>(this.beanName, groupId));
+        BeanEntry<I> entry = new InfinispanBeanEntry<>(this.beanName, groupId);
+        return Optional.ofNullable(this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(this.createKey(id), entry)).orElse(entry);
     }
 
     @Override

@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,7 +49,6 @@ import javax.servlet.http.HttpSessionEvent;
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
 import org.infinispan.context.Flag;
-import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
@@ -219,9 +219,10 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     }
 
     private Node locatePrimaryOwner(String sessionId) {
-        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        Address address = (dist != null) ? dist.getPrimaryLocation(new Key<>(sessionId)) : null;
-        return (address != null) ? this.nodeFactory.createNode(address) : this.dispatcherFactory.getGroup().getLocalNode();
+        return Optional.ofNullable(this.cache.getAdvancedCache().getDistributionManager())
+                .map(dist -> dist.getCacheTopology().getDistribution(new Key<>(sessionId)).primary())
+                .map(address -> this.nodeFactory.createNode(address))
+                .orElse(this.dispatcherFactory.getGroup().getLocalNode());
     }
 
     @Override
@@ -367,9 +368,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
 
     @DataRehashed
     public void dataRehashed(DataRehashedEvent<SessionCreationMetaDataKey, ?> event) {
-        Cache<SessionCreationMetaDataKey, ?> cache = event.getCache();
-        Address localAddress = cache.getCacheManager().getAddress();
-        Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
+        Locality newLocality = new ConsistentHashLocality(event.getCache(), event.getConsistentHashAtEnd());
         if (event.isPre()) {
             Future<?> future = this.rehashFuture.getAndSet(null);
             if (future != null) {
@@ -381,7 +380,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
                 // Executor was shutdown
             }
         } else {
-            Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
+            Locality oldLocality = new ConsistentHashLocality(event.getCache(), event.getConsistentHashAtStart());
             try {
                 this.rehashFuture.set(this.executor.submit(() -> this.schedule(oldLocality, newLocality)));
             } catch (RejectedExecutionException e) {

@@ -22,27 +22,30 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.*;
-import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.*;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONFIGURATION;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.management.MBeanServer;
 
+import org.infinispan.commons.marshall.Ids;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.SiteConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
-import org.infinispan.marshall.core.Ids;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.controller.OperationContext;
@@ -79,6 +82,7 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
     private final String name;
 
     private volatile ValueDependency<MBeanServer> server;
+    private volatile Optional<String> defaultCache;
     private volatile boolean statisticsEnabled;
 
     GlobalConfigurationBuilder(PathAddress address) {
@@ -94,6 +98,7 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
     @Override
     public Builder<GlobalConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), null, null) ? new InjectedValueDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context), MBeanServer.class) : null;
+        this.defaultCache = ModelNodes.optionalString(DEFAULT_CACHE.resolveModelAttribute(context, model));
         this.statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
         return this;
     }
@@ -101,6 +106,7 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
     @Override
     public GlobalConfiguration getValue() {
         org.infinispan.configuration.global.GlobalConfigurationBuilder builder = new org.infinispan.configuration.global.GlobalConfigurationBuilder();
+        this.defaultCache.ifPresent(name -> builder.defaultCacheName(name));
         TransportConfiguration transport = this.transport.getValue();
         // This fails due to ISPN-4755 !!
         // this.builder.transport().read(this.transport.getValue());
@@ -157,5 +163,9 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
         this.schedulers.values().forEach(dependency -> dependency.register(builder));
         Stream.of(this.module, this.transport, this.site, this.server).filter(Objects::nonNull).forEach(dependency -> dependency.register(builder));
         return builder;
+    }
+
+    Optional<String> getDefaultCache() {
+        return this.defaultCache;
     }
 }
