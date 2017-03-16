@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.ejb.mdb.cdi;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -37,11 +38,15 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
 import org.jboss.as.test.integration.jca.ear.RarInsideEarReDeploymentTestCase;
 import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
+import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -109,6 +114,13 @@ public class MDBRAScopeCdiIntegrationTestCase extends ContainerResourceMgmtTestB
     public void setup() throws Exception {
         setupStandaloneRA();
         setupSubdeployedRA();
+    }
+
+    @Override
+    protected void remove(ModelNode address) throws IOException, MgmtOperationException {
+        ModelNode operation = Util.createRemoveOperation(PathAddress.pathAddress(address));
+        operation.get(ModelDescriptionConstants.OPERATION_HEADERS, ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        ManagementOperations.executeOperation(getModelControllerClient(), operation);
     }
 
     /**

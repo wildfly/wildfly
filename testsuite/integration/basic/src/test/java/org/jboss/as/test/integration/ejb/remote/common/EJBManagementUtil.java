@@ -369,6 +369,7 @@ public class EJBManagementUtil {
             final PathAddress strictMaxPoolAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
                     PathElement.pathElement(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL, poolName));
             removeStrictMaxPool.get(OP_ADDR).set(strictMaxPoolAddress.toModelNode());
+            removeStrictMaxPool.get(ModelDescriptionConstants.OPERATION_HEADERS, ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART).set(true);
 
             // execute the remove operation
             execute(controllerClient, removeStrictMaxPool);
