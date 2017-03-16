@@ -103,6 +103,11 @@ public class SecurityDomainModelv30UnitTestCase extends AbstractSubsystemBaseTes
         super.testSchemaOfSubsystemTemplates();
     }
 
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.withCapabilities("org.wildfly.clustering.infinispan.default-cache-configuration.security");
+    }
+
     @Test
     public void testTransformersEAP64() throws Exception {
         testTransformers(ModelTestControllerVersion.EAP_6_4_0);
@@ -115,7 +120,7 @@ public class SecurityDomainModelv30UnitTestCase extends AbstractSubsystemBaseTes
 
     private void testTransformers(ModelTestControllerVersion controllerVersion) throws Exception {
 
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
         ModelVersion version = ModelVersion.create(1, 3, 0);
 
         final String mavenGavVersion = controllerVersion.getMavenGavVersion();
