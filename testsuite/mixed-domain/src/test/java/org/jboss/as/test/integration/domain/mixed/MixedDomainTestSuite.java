@@ -62,6 +62,15 @@ public class MixedDomainTestSuite {
         }
     }
 
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass, String masterConfig, String slaveConfig) {
+        if (support == null) {
+            final String copiedDomainXml = MixedDomainTestSupport.copyDomainFile();
+            return getSupport(testClass, copiedDomainXml, masterConfig, slaveConfig, true, false);
+        } else {
+            return support;
+        }
+    }
+
     /**
      * Call this from a @BeforeClass method
      *
@@ -79,12 +88,20 @@ public class MixedDomainTestSuite {
     }
 
     static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, boolean adjustDomain, boolean legacyConfig) {
+        return getSupport(testClass, domainConfig, null, null, adjustDomain, legacyConfig);
+    }
+
+    static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, String masterConfig, String slaveConfig, boolean adjustDomain, boolean legacyConfig) {
         if (support == null) {
             final Version.AsVersion version = getVersion(testClass);
             final MixedDomainTestSupport testSupport;
             try {
                 if (domainConfig != null) {
-                    testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, adjustDomain, legacyConfig);
+                    if(masterConfig != null && slaveConfig != null) {
+                        testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, masterConfig, slaveConfig, adjustDomain, legacyConfig);
+                    } else {
+                        testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, adjustDomain, legacyConfig);
+                    }
                 } else {
                     testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version);
                 }
