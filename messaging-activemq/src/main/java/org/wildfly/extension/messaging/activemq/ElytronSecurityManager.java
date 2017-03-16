@@ -86,12 +86,17 @@ public class ElytronSecurityManager implements ActiveMQSecurityManager {
         ServerAuthenticationContext context = this.securityDomain.createNewAuthenticationContext();
         PasswordGuessEvidence evidence = null;
         try {
-            // check for anonymous connection
-            if (username == null || password == null) {
-                if (context.authorizeAnonymous()) {
-                    context.succeed();
-                    return context.getAuthorizedIdentity();
+            if (password == null) {
+                if (username == null) {
+                    if (context.authorizeAnonymous()) {
+                        context.succeed();
+                        return context.getAuthorizedIdentity();
+                    } else {
+                        context.fail();
+                        return null;
+                    }
                 } else {
+                    // treat a non-null user name with a null password as a auth failure
                     context.fail();
                     return null;
                 }
