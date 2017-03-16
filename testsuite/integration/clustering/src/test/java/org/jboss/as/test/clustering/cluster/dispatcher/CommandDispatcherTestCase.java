@@ -6,7 +6,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopology;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetriever;
@@ -15,6 +14,7 @@ import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
+import org.jboss.ejb.client.legacy.JBossEJBProperties;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -54,55 +54,53 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
 
     @Test
     public void test() throws Exception {
+        JBossEJBProperties properites = JBossEJBProperties.fromClassPath(CommandDispatcherTestCase.class.getClassLoader(), CLIENT_PROPERTIES);
+        properites.runCallable(() -> {
+            try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
+                ClusterTopologyRetriever bean = directory.lookupStateless(ClusterTopologyRetrieverBean.class, ClusterTopologyRetriever.class);
+                ClusterTopology topology = bean.getClusterTopology();
+                assertEquals(2, topology.getNodes().size());
+                assertTrue(topology.getNodes().toString(), topology.getNodes().contains(NODE_1));
+                assertTrue(topology.getNodes().toString(), topology.getNodes().contains(NODE_2));
+                assertFalse(topology.getRemoteNodes().toString() + " should not contain " + topology.getLocalNode(), topology.getRemoteNodes().contains(topology.getLocalNode()));
 
-        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
-        // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset
-        // to its original state at the end of the test
-        EJBClientContextSelector.setup(CLIENT_PROPERTIES);
+                undeploy(DEPLOYMENT_2);
 
-        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
-            ClusterTopologyRetriever bean = directory.lookupStateless(ClusterTopologyRetrieverBean.class, ClusterTopologyRetriever.class);
-            ClusterTopology topology = bean.getClusterTopology();
-            assertEquals(2, topology.getNodes().size());
-            assertTrue(topology.getNodes().toString(), topology.getNodes().contains(NODE_1));
-            assertTrue(topology.getNodes().toString(), topology.getNodes().contains(NODE_2));
-            assertFalse(topology.getRemoteNodes().toString() + " should not contain " + topology.getLocalNode(), topology.getRemoteNodes().contains(topology.getLocalNode()));
+                topology = bean.getClusterTopology();
+                assertEquals(1, topology.getNodes().size());
+                assertTrue(topology.getNodes().contains(NODE_1));
+                assertEquals(NODE_1, topology.getLocalNode());
+                assertTrue(topology.getRemoteNodes().toString(), topology.getRemoteNodes().isEmpty());
 
-            undeploy(DEPLOYMENT_2);
+                deploy(DEPLOYMENT_2);
 
-            topology = bean.getClusterTopology();
-            assertEquals(1, topology.getNodes().size());
-            assertTrue(topology.getNodes().contains(NODE_1));
-            assertEquals(NODE_1, topology.getLocalNode());
-            assertTrue(topology.getRemoteNodes().toString(), topology.getRemoteNodes().isEmpty());
+                Thread.sleep(VIEW_CHANGE_WAIT);
 
-            deploy(DEPLOYMENT_2);
+                topology = bean.getClusterTopology();
+                assertEquals(2, topology.getNodes().size());
+                assertTrue(topology.getNodes().contains(NODE_1));
+                assertTrue(topology.getNodes().contains(NODE_2));
+                assertFalse(topology.getRemoteNodes().toString() + " should not contain " + topology.getLocalNode(), topology.getRemoteNodes().contains(topology.getLocalNode()));
 
-            Thread.sleep(VIEW_CHANGE_WAIT);
+                stop(CONTAINER_1);
 
-            topology = bean.getClusterTopology();
-            assertEquals(2, topology.getNodes().size());
-            assertTrue(topology.getNodes().contains(NODE_1));
-            assertTrue(topology.getNodes().contains(NODE_2));
-            assertFalse(topology.getRemoteNodes().toString() + " should not contain " + topology.getLocalNode(), topology.getRemoteNodes().contains(topology.getLocalNode()));
+                topology = bean.getClusterTopology();
+                assertEquals(1, topology.getNodes().size());
+                assertTrue(topology.getNodes().contains(NODE_2));
+                assertEquals(NODE_2, topology.getLocalNode());
+                assertTrue(topology.getRemoteNodes().toString(), topology.getRemoteNodes().isEmpty());
 
-            stop(CONTAINER_1);
+                start(CONTAINER_1);
 
-            topology = bean.getClusterTopology();
-            assertEquals(1, topology.getNodes().size());
-            assertTrue(topology.getNodes().contains(NODE_2));
-            assertEquals(NODE_2, topology.getLocalNode());
-            assertTrue(topology.getRemoteNodes().toString(), topology.getRemoteNodes().isEmpty());
+                Thread.sleep(VIEW_CHANGE_WAIT);
 
-            start(CONTAINER_1);
-
-            Thread.sleep(VIEW_CHANGE_WAIT);
-
-            topology = bean.getClusterTopology();
-            assertEquals(topology.getNodes().toString(), 2, topology.getNodes().size());
-            assertTrue(topology.getNodes().toString() + " should contain " + NODE_1, topology.getNodes().contains(NODE_1));
-            assertTrue(topology.getNodes().toString() + " should contain " + NODE_2, topology.getNodes().contains(NODE_2));
-            assertFalse(topology.getRemoteNodes().toString() + " should not contain " + topology.getLocalNode(), topology.getRemoteNodes().contains(topology.getLocalNode()));
-        }
+                topology = bean.getClusterTopology();
+                assertEquals(topology.getNodes().toString(), 2, topology.getNodes().size());
+                assertTrue(topology.getNodes().toString() + " should contain " + NODE_1, topology.getNodes().contains(NODE_1));
+                assertTrue(topology.getNodes().toString() + " should contain " + NODE_2, topology.getNodes().contains(NODE_2));
+                assertFalse(topology.getRemoteNodes().toString() + " should not contain " + topology.getLocalNode(), topology.getRemoteNodes().contains(topology.getLocalNode()));
+            }
+            return null;
+        });
     }
 }

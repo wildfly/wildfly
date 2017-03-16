@@ -36,7 +36,6 @@ import javax.ejb.NoSuchEJBException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatefulEJBLocator;
@@ -49,7 +48,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,11 +66,6 @@ public class EJBClientAPIUsageTestCase {
     private static final String APP_NAME = "ejb-remote-client-api-test";
 
     private static final String MODULE_NAME = "ejb";
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     /**
      * Creates an EJB deployment

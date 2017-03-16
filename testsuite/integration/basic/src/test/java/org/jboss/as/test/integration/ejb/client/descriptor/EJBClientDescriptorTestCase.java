@@ -38,12 +38,10 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.api.Authentication;
@@ -72,11 +70,6 @@ public class EJBClientDescriptorTestCase {
 
     private static final String outboundSocketName = "ejb-client-descriptor-test-outbound-socket";
     private static final String outboundConnectionName = "ejb-client-descriptor-test-remote-outbound-connection";
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     static class EJBClientDescriptorTestCaseSetup implements ServerSetupTask {
 

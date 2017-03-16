@@ -39,12 +39,13 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class OverlayExistingResourceTestCase extends JarOverlayTestBase {
+
     private static final String OVERLAY = "HAL9000";
     private static final String DEPLOYMENT_OVERLAYED = "overlayed";
     private static final String DEPLOYMENT_OVERLAYED_ARCHIVE = DEPLOYMENT_OVERLAYED + ".jar";
 
     @Deployment(name = DEPLOYMENT_OVERLAYED)
-    public static Archive createDeployment() throws Exception {
+    public static Archive<?> createDeployment() throws Exception {
         return createOverlayedArchive(true, DEPLOYMENT_OVERLAYED_ARCHIVE);
     }
 
@@ -52,19 +53,25 @@ public class OverlayExistingResourceTestCase extends JarOverlayTestBase {
     public void testOverlay() throws Exception {
         final InitialContext ctx = getInitialContext();
         try{
-        OverlayableInterface iface = (OverlayableInterface) ctx.lookup(getEjbBinding("", DEPLOYMENT_OVERLAYED, "",
-                OverlayEJB.class, OverlayableInterface.class));
-        Assert.assertEquals("Overlayed resource does not match pre-overlay expectations!", OverlayableInterface.ORIGINAL, iface.fetchResource());
-        Assert.assertEquals("Static resource does not match pre-overlay expectations!", OverlayableInterface.STATIC, iface.fetchResourceStatic());
-        OverlayUtils.setupOverlay(managementClient, DEPLOYMENT_OVERLAYED_ARCHIVE, OVERLAY, OverlayableInterface.RESOURCE, OverlayableInterface.OVERLAYED);
-        Assert.assertEquals("Overlayed resource does not match post-overlay expectations!", OverlayableInterface.OVERLAYED, iface.fetchResource());
-        Assert.assertEquals("Static resource does not match post-overlay expectations!", OverlayableInterface.STATIC, iface.fetchResourceStatic());
+            OverlayableInterface iface = (OverlayableInterface) ctx.lookup(getEjbBinding("", DEPLOYMENT_OVERLAYED, "",
+                    OverlayEJB.class, OverlayableInterface.class));
+            Assert.assertEquals("Overlayed resource does not match pre-overlay expectations!", OverlayableInterface.ORIGINAL, iface.fetchResource());
+            Assert.assertEquals("Static resource does not match pre-overlay expectations!", OverlayableInterface.STATIC, iface.fetchResourceStatic());
+            setupOverlay(DEPLOYMENT_OVERLAYED_ARCHIVE, OVERLAY, OverlayableInterface.RESOURCE, OverlayableInterface.OVERLAYED);
+            Assert.assertEquals("Overlayed resource does not match post-overlay expectations!", OverlayableInterface.OVERLAYED, iface.fetchResource());
+            Assert.assertEquals("Static resource does not match post-overlay expectations!", OverlayableInterface.STATIC, iface.fetchResourceStatic());
         } finally {
-            try{
+            try {
                 ctx.close();
-            }catch(Exception e){
+            } catch (Exception e) {
+                LOGGER.error("Closing context failed", e);
             }
-            OverlayUtils.removeOverlay(managementClient, DEPLOYMENT_OVERLAYED_ARCHIVE, OVERLAY, OverlayableInterface.RESOURCE);
+            try {
+                removeOverlay(DEPLOYMENT_OVERLAYED_ARCHIVE, OVERLAY,
+                        OverlayableInterface.RESOURCE);
+            } catch (Exception e) {
+                LOGGER.error("Removing overlay failed", e);
+            }
         }
     }
 }

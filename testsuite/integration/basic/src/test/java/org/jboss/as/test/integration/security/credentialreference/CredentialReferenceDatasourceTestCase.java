@@ -185,7 +185,7 @@ public class CredentialReferenceDatasourceTestCase {
         addOperation.get("jndi-name").set(scenario.getDatasourceJndiName());
         addOperation.get("driver-name").set("h2");
         addOperation.get("user-name").set("sa");
-        addOperation.get("connection-url").set("jdbc:h2:tcp://" + Utils.getSecondaryTestAddress(client) + "/mem:test");
+        addOperation.get("connection-url").set("jdbc:h2:tcp://" + Utils.getSecondaryTestAddress(client) + "/mem:" + CredentialReferenceDatasourceTestCase.class.getName());
         addOperation.get(ModelDescriptionConstants.OPERATION_HEADERS).get("allow-resource-service-restart").set(true);
 
         ModelNode credentialReference = null;
@@ -245,7 +245,7 @@ public class CredentialReferenceDatasourceTestCase {
 
         final PathAddress urlXADatasourcePropertyAddress = scenario.getXADatasourceAddress().append("xa-datasource-properties", "URL");
         final ModelNode addURLDatasourcePropertyOperation = Operations.createAddOperation(urlXADatasourcePropertyAddress.toModelNode());
-        addURLDatasourcePropertyOperation.get("value").set("jdbc:h2:tcp://" + Utils.getSecondaryTestAddress(client) + "/mem:test");
+        addURLDatasourcePropertyOperation.get("value").set("jdbc:h2:tcp://" + Utils.getSecondaryTestAddress(client) + "/mem:" + CredentialReferenceDatasourceTestCase.class.getName());
 
         ModelNode compositeOperation = Operations.createCompositeOperation();
         compositeOperation.get(ModelDescriptionConstants.STEPS).add(addOperation);
@@ -281,7 +281,7 @@ public class CredentialReferenceDatasourceTestCase {
         public void setup(ManagementClient managementClient, String s) throws Exception {
             h2Server = Server.createTcpServer("-tcpAllowOthers").start();
             // open connection to database, because that's only (easy) way to set password for user sa
-            connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", "sa", DATABASE_PASSWORD);
+            connection = DriverManager.getConnection("jdbc:h2:mem:" + CredentialReferenceDatasourceTestCase.class.getName() + ";DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", "sa", DATABASE_PASSWORD);
         }
 
         @Override
