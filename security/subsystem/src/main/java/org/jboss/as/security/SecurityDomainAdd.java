@@ -118,7 +118,6 @@ import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
  * @author Jason T. Greene
  */
 class SecurityDomainAdd extends AbstractAddStepHandler {
-    private static final String CACHE_CONTAINER_NAME = "security";
 
     private static final String DEFAULT_MODULE = "org.picketbox";
 
@@ -128,11 +127,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
      * Private to ensure a singleton.
      */
     private SecurityDomainAdd() {
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        SecurityDomainResourceDefinition.CACHE_TYPE.validateAndSet(operation, model);
+        super(SecurityDomainResourceDefinition.CACHE_TYPE);
     }
 
     @Override
@@ -153,10 +148,11 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) {
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.recordCapabilitiesAndRequirements(context, operation, resource);
         String cacheType = getAuthenticationCacheType(resource.getModel());
         if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {
-            context.registerAdditionalCapabilityRequirement(InfinispanDefaultCacheRequirement.CONFIGURATION.resolve(CACHE_CONTAINER_NAME), SecurityDomainResourceDefinition.INFINISPAN.getDynamicName(context.getCurrentAddressValue()), SecurityDomainResourceDefinition.CACHE_TYPE.getName());
+            context.registerAdditionalCapabilityRequirement(InfinispanDefaultCacheRequirement.CONFIGURATION.resolve(SecurityDomainResourceDefinition.CACHE_CONTAINER_NAME), SecurityDomainResourceDefinition.CACHE_CONTAINER.getDynamicName(context.getCurrentAddressValue()), SecurityDomainResourceDefinition.CACHE_TYPE.getName());
         }
     }
 
@@ -176,9 +172,9 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                         securityDomainService.getConfigurationInjector());
 
         if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {
-            builder.addDependency(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), CACHE_CONTAINER_NAME),
+            builder.addDependency(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), SecurityDomainResourceDefinition.CACHE_CONTAINER_NAME),
                     Object.class, securityDomainService.getCacheManagerInjector());
-            builder.addDependency(InfinispanDefaultCacheRequirement.CONFIGURATION.getServiceName(context, CACHE_CONTAINER_NAME));
+            builder.addDependency(InfinispanDefaultCacheRequirement.CONFIGURATION.getServiceName(context, SecurityDomainResourceDefinition.CACHE_CONTAINER_NAME));
         }
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
