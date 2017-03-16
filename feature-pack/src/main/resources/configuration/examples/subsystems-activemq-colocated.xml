@@ -5,6 +5,7 @@
         <subsystem>logging.xml</subsystem>
         <subsystem>batch-jberet.xml</subsystem>
         <subsystem>bean-validation.xml</subsystem>
+        <subsystem>core-management.xml</subsystem>
         <subsystem>datasources.xml</subsystem>
         <subsystem>deployment-scanner.xml</subsystem>
         <subsystem supplement="full">ee.xml</subsystem>
