@@ -22,14 +22,15 @@
 
 package org.wildfly.test.integration.elytron.application;
 
-import java.util.Locale;
+import org.hamcrest.CoreMatchers;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.integration.management.util.CLIWrapper;
-import org.junit.Ignore;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.extension.elytron._private.ElytronSubsystemMessages;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.CredentialReference;
@@ -57,7 +58,6 @@ public class CredentialStoreI18NTestCase extends AbstractCredentialStoreTestCase
 
     private static final String NAME = CredentialStoreI18NTestCase.class.getSimpleName();
 
-    private static final String UPPER = "UPPER";
     private static final String LOWER = "lower";
 
     private static final String STR_SYMBOLS = "@!#?$%^&*()%+-{}";
@@ -89,13 +89,11 @@ public class CredentialStoreI18NTestCase extends AbstractCredentialStoreTestCase
      * Tests for CS aliases case-sensitiveness
      */
     @Test
-    @Ignore("WFLY-8131")
-    public void testAliasesCaseInsensitive() throws Exception {
+    public void testAliasesCaseSensitive() throws Exception {
+        assertCredentialValue(NAME, LOWER, LOWER);
         try (CLIWrapper cli = new CLIWrapper(true)) {
-            assertCredentialValue(NAME, UPPER, UPPER);
-            assertCredentialValue(NAME, LOWER, LOWER);
-            assertCredentialValue(NAME, UPPER.toLowerCase(Locale.ROOT), UPPER);
-            assertCredentialValue(NAME, LOWER.toUpperCase(Locale.ROOT), LOWER);
+            Assert.assertFalse(cli.sendLine("/subsystem=elytron/credential-store=CredentialStoreI18NTestCase/alias=UPPER:add(secret-value=password)", true));
+            Assert.assertThat(cli.readOutput(), CoreMatchers.containsString(ElytronSubsystemMessages.ROOT_LOGGER.invalidAliasName("UPPER", "CredentialStoreI18NTestCase").getMessage()));
         }
     }
 
@@ -113,7 +111,7 @@ public class CredentialStoreI18NTestCase extends AbstractCredentialStoreTestCase
 
             return new ConfigurableElement[] { SimpleCredentialStore.builder().withName(NAME).withKeyStorePath(jceksPath)
                     .withKeyStoreType("JCEKS").withCreate(false).withModifiable(true).withCredential(credRefPwd)
-                    // .withAlias(UPPER, UPPER).withAlias(LOWER, LOWER)
+                    .withAlias(LOWER, LOWER)
                     .build() };
         }
     }
