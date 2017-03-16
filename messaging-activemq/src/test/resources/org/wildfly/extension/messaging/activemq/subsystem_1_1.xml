@@ -494,4 +494,24 @@
             </target-context>
         </target>
     </jms-bridge>
+
+    <jms-bridge name="bridge-with-credential-reference"
+                module="com.foo.bar"
+                quality-of-service="${quality.of.service:AT_MOST_ONCE}"
+                failure-retry-interval="${failure.retry.interval:45678}"
+                max-retries="${max.retries:7890}"
+                max-batch-size="${max.batch.size:12345}"
+                max-batch-time="${max.batch.time:10000}">
+        <source connection-factory="/cf/sourceCF"
+                destination="/topic/anotherSourceTopic"
+                user="myUser">
+            <source-credential-reference clear-text="passwordOut!"/>
+        </source>
+
+        <target connection-factory="/cf/targetCF"
+                destination="anotherMQ/jms/queue/anotherTargetQueue"
+                user="myUser">
+            <target-credential-reference alias="bob" store="jms-bridge-store" />
+        </target>
+    </jms-bridge>
 </subsystem>
