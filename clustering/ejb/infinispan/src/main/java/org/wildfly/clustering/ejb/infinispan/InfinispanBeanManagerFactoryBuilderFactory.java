@@ -31,9 +31,8 @@ import java.util.function.Consumer;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.EvictionConfiguration;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
-import org.infinispan.eviction.EvictionStrategy;
+import org.infinispan.configuration.cache.MemoryConfiguration;
 import org.jboss.as.clustering.controller.BuilderAdapter;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -109,9 +108,9 @@ public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManage
                 InfinispanEjbLogger.ROOT_LOGGER.expirationDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, templateCacheName));
             }
             // Ensure eviction is not enabled on cache
-            EvictionConfiguration eviction = builder.eviction().create();
-            if (eviction.strategy().isEnabled()) {
-                builder.eviction().size(-1L).strategy(EvictionStrategy.MANUAL);
+            MemoryConfiguration memory = builder.memory().create();
+            if (memory.size() >= 0) {
+                builder.memory().size(-1);
                 InfinispanEjbLogger.ROOT_LOGGER.evictionDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, templateCacheName));
             }
         };

@@ -119,9 +119,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-infinispan</artifactId>
-            <version>${version.org.hibernate}</version>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-hibernate-cache</artifactId>
             <scope>provided</scope>
         </dependency>
 

@@ -41,8 +41,8 @@ public class StateTransferBuilder extends ComponentBuilder<StateTransferConfigur
     private volatile int chunkSize;
     private volatile long timeout;
 
-    StateTransferBuilder(PathAddress cacheAddress) {
-        super(CacheComponent.STATE_TRANSFER, cacheAddress);
+    StateTransferBuilder(PathAddress address) {
+        super(CacheComponent.STATE_TRANSFER, address);
     }
 
     @Override

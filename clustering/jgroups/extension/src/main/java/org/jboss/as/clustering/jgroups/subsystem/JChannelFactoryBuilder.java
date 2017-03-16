@@ -135,8 +135,8 @@ public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implem
     }
 
     @Override
-    public RelayConfiguration getRelay() {
-        return (this.relay != null) ? this.relay.getValue() : null;
+    public Optional<RelayConfiguration> getRelay() {
+        return (this.relay != null) ? Optional.of(this.relay.getValue()) : Optional.empty();
     }
 
     @Override

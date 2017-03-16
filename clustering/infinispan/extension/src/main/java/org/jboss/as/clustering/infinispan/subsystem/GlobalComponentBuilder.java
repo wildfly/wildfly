@@ -33,8 +33,8 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public abstract class GlobalComponentBuilder<C> extends ComponentBuilder<C> {
 
-    GlobalComponentBuilder(ResourceServiceNameFactory factory, PathAddress containerAddress) {
-        super(factory, containerAddress);
+    GlobalComponentBuilder(ResourceServiceNameFactory factory, PathAddress address) {
+        super(factory, address);
     }
 
     @Override

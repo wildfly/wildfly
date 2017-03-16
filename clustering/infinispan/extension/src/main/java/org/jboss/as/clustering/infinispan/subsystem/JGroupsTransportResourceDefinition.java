@@ -49,7 +49,7 @@ import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jgroups.Channel;
+import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 
@@ -66,7 +66,7 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
     static final PathElement PATH = pathElement("jgroups");
 
     enum Requirement implements UnaryRequirement {
-        CHANNEL("org.wildfly.clustering.infinispan.transport.channel", Channel.class),
+        CHANNEL("org.wildfly.clustering.infinispan.transport.channel", JChannel.class),
         ;
         private final String name;
         private final Class<?> type;

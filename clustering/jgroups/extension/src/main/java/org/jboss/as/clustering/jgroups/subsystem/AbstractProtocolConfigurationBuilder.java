@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
@@ -68,8 +67,8 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
     private final String name;
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
     private final InjectedValue<ProtocolDefaults> defaults = new InjectedValue<>();
+    private final Map<String, String> properties = new HashMap<>();
 
-    private volatile Map<String, String> properties;
     private volatile String moduleName;
     private volatile Boolean statisticsEnabled;
 
@@ -88,7 +87,10 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
     @Override
     public Builder<C> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.moduleName = MODULE.resolveModelAttribute(context, model).asString();
-        this.properties = ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).orElse(Collections.emptyList()).stream().collect(Collectors.toMap(Property::getName, property -> property.getValue().asString()));
+        this.properties.clear();
+        for (Property property : ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).orElse(Collections.emptyList())) {
+            this.properties.put(property.getName(), property.getValue().asString());
+        }
         this.statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBooleanOrNull();
         return this;
     }

@@ -48,8 +48,8 @@ public class SiteBuilder extends GlobalComponentBuilder<SiteConfiguration> {
 
     private volatile ValueDependency<ChannelFactory> factory;
 
-    public SiteBuilder(PathAddress containerAddress) {
-        super(CacheContainerComponent.SITE, containerAddress);
+    public SiteBuilder(PathAddress address) {
+        super(CacheContainerComponent.SITE, address);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class SiteBuilder extends GlobalComponentBuilder<SiteConfiguration> {
     public SiteConfiguration getValue() {
         SiteConfigurationBuilder builder = new GlobalConfigurationBuilder().site();
         if (this.factory != null) {
-            RelayConfiguration relay = this.factory.getValue().getProtocolStackConfiguration().getRelay();
+            RelayConfiguration relay = this.factory.getValue().getProtocolStackConfiguration().getRelay().orElse(null);
             if (relay != null) {
                 builder.localSite(relay.getSiteName());
             }

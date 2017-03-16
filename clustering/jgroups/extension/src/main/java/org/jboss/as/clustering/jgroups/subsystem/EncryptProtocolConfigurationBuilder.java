@@ -39,7 +39,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jgroups.protocols.EncryptBase;
+import org.jgroups.protocols.Encrypt;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
@@ -51,7 +51,7 @@ import org.wildfly.security.password.interfaces.ClearPassword;
 /**
  * @author Paul Ferraro
  */
-public class EncryptProtocolConfigurationBuilder<P extends EncryptBase & EncryptProtocol> extends ProtocolConfigurationBuilder<P> {
+public class EncryptProtocolConfigurationBuilder<P extends Encrypt & EncryptProtocol> extends ProtocolConfigurationBuilder<P> {
 
     private volatile ValueDependency<KeyStore> keyStore;
     private volatile ValueDependency<CredentialSource> credentialSource;

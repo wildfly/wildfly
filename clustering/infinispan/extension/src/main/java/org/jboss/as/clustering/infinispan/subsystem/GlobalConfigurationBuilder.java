@@ -22,27 +22,29 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.*;
-import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.*;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONFIGURATION;
 
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.Optional;
 
 import javax.management.MBeanServer;
 
+import org.infinispan.commons.marshall.Ids;
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.SerializationConfigurationBuilder;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.SiteConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
-import org.infinispan.marshall.core.Ids;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.controller.OperationContext;
@@ -62,6 +64,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.infinispan.AdvancedExternalizerAdapter;
 import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
@@ -79,6 +82,7 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
     private final String name;
 
     private volatile ValueDependency<MBeanServer> server;
+    private volatile Optional<String> defaultCache;
     private volatile boolean statisticsEnabled;
 
     GlobalConfigurationBuilder(PathAddress address) {
@@ -87,13 +91,18 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
         this.module = new InjectedValueDependency<>(CacheContainerComponent.MODULE.getServiceName(address), Module.class);
         this.transport = new InjectedValueDependency<>(CacheContainerComponent.TRANSPORT.getServiceName(address), TransportConfiguration.class);
         this.site = new InjectedValueDependency<>(CacheContainerComponent.SITE.getServiceName(address), SiteConfiguration.class);
-        EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> this.pools.put(pool, new InjectedValueDependency<>(pool.getServiceName(address), ThreadPoolConfiguration.class)));
-        EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).forEach(pool -> this.schedulers.put(pool, new InjectedValueDependency<>(pool.getServiceName(address), ThreadPoolConfiguration.class)));
+        for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
+            this.pools.put(pool, new InjectedValueDependency<>(pool.getServiceName(address), ThreadPoolConfiguration.class));
+        }
+        for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
+            this.schedulers.put(pool, new InjectedValueDependency<>(pool.getServiceName(address), ThreadPoolConfiguration.class));
+        }
     }
 
     @Override
     public Builder<GlobalConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), null, null) ? new InjectedValueDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context), MBeanServer.class) : null;
+        this.defaultCache = ModelNodes.optionalString(DEFAULT_CACHE.resolveModelAttribute(context, model));
         this.statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
         return this;
     }
@@ -101,6 +110,10 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
     @Override
     public GlobalConfiguration getValue() {
         org.infinispan.configuration.global.GlobalConfigurationBuilder builder = new org.infinispan.configuration.global.GlobalConfigurationBuilder();
+        String defaultCache = this.defaultCache.orElse(null);
+        if (defaultCache != null) {
+            builder.defaultCacheName(defaultCache);
+        }
         TransportConfiguration transport = this.transport.getValue();
         // This fails due to ISPN-4755 !!
         // this.builder.transport().read(this.transport.getValue());
@@ -117,13 +130,13 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
         builder.serialization().classResolver(ModularClassResolver.getInstance(this.loader.getValue()));
         builder.classLoader(module.getClassLoader());
         int id = Ids.MAX_ID;
-        Stream<? extends Externalizer<?>> commonExternalizers = EnumSet.allOf(DefaultExternalizer.class).stream();
-        @SuppressWarnings("unchecked")
-        Stream<Externalizer<?>> moduleExternalizers = (Stream<Externalizer<?>>) (Stream<?>) StreamSupport.stream(module.loadService(Externalizer.class).spliterator(), false);
-        Iterable<Externalizer<?>> externalizers = Stream.concat(commonExternalizers, moduleExternalizers)::iterator;
-        for (Externalizer<?> externalizer : externalizers) {
+        SerializationConfigurationBuilder serialization = builder.serialization();
+        for (Externalizer<?> externalizer : EnumSet.allOf(DefaultExternalizer.class)) {
+            serialization.addAdvancedExternalizer(new AdvancedExternalizerAdapter<>(id++, externalizer));
+        }
+        for (Externalizer<?> externalizer : module.loadService(Externalizer.class)) {
             InfinispanLogger.ROOT_LOGGER.debugf("Cache container %s will use an externalizer for %s", this.name, externalizer.getTargetClass().getName());
-            builder.serialization().addAdvancedExternalizer(id++, new AdvancedExternalizerAdapter<>(externalizer));
+            serialization.addAdvancedExternalizer(new AdvancedExternalizerAdapter<>(id++, externalizer));
         }
 
         builder.transport().transportThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.TRANSPORT).getValue());
@@ -153,9 +166,21 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
         ServiceBuilder<GlobalConfiguration> builder = target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 ;
-        this.pools.values().forEach(dependency -> dependency.register(builder));
-        this.schedulers.values().forEach(dependency -> dependency.register(builder));
-        Stream.of(this.module, this.transport, this.site, this.server).filter(Objects::nonNull).forEach(dependency -> dependency.register(builder));
+        for (Dependency dependency: this.pools.values()) {
+            dependency.register(builder);
+        }
+        for (Dependency dependency : this.schedulers.values()) {
+            dependency.register(builder);
+        }
+        for (Dependency dependency : Arrays.asList(this.module, this.transport, this.site, this.server)) {
+            if (dependency != null) {
+                dependency.register(builder);
+            }
+        }
         return builder;
+    }
+
+    Optional<String> getDefaultCache() {
+        return this.defaultCache;
     }
 }

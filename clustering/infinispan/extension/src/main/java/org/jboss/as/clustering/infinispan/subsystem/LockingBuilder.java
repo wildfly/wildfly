@@ -47,8 +47,8 @@ public class LockingBuilder extends ComponentBuilder<LockingConfiguration> {
     private volatile IsolationLevel isolation;
     private volatile boolean striping;
 
-    LockingBuilder(PathAddress cacheAddress) {
-        super(CacheComponent.LOCKING, cacheAddress);
+    LockingBuilder(PathAddress address) {
+        super(CacheComponent.LOCKING, address);
     }
 
     @Override

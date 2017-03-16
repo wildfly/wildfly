@@ -137,30 +137,30 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
         new GenericProtocolResourceDefinition<>(this.descriptorConfigurator, address -> ProtocolType.MULTICAST.contains(address.getLastElement().getValue()) ? new MulticastProtocolConfigurationBuilder<>(address) : new ProtocolConfigurationBuilder<>(address), this.parentBuilderFactory).register(registration);
 
         // Override definitions for protocol types
-        ProtocolType.MULTICAST_SOCKET.forEach(protocol -> new SocketBindingProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, address -> new MulticastSocketProtocolConfigurationBuilder<>(address), this.parentBuilderFactory).register(registration));
+        ProtocolType.MULTICAST_SOCKET.forEach(protocol -> new SocketBindingProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, MulticastSocketProtocolConfigurationBuilder::new, this.parentBuilderFactory).register(registration));
 
         ProtocolType.JDBC.forEach(protocol -> {
             new JDBCProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition<>(protocol, JGroupsModel.VERSION_5_0_0, address -> new ProtocolConfigurationBuilder<>(address), this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+            new GenericProtocolResourceDefinition<>(protocol, JGroupsModel.VERSION_5_0_0, ProtocolConfigurationBuilder::new, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
         });
 
         ProtocolType.ENCRYPT.forEach(protocol -> {
             new EncryptProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition<>(protocol, JGroupsModel.VERSION_5_0_0, address -> new ProtocolConfigurationBuilder<>(address), this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+            new GenericProtocolResourceDefinition<>(protocol, JGroupsModel.VERSION_5_0_0, ProtocolConfigurationBuilder::new, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
         });
 
         ProtocolType.SOCKET_DISCOVERY.forEach(protocol -> {
             new SocketDiscoveryProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition<>(protocol, JGroupsModel.VERSION_5_0_0, address -> new ProtocolConfigurationBuilder<>(address), this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+            new GenericProtocolResourceDefinition<>(protocol, JGroupsModel.VERSION_5_0_0, ProtocolConfigurationBuilder::new, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
         });
 
         ProtocolType.AUTH.forEach(protocol -> {
             new AuthProtocolResourceDefinition(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition<>(protocol, JGroupsModel.VERSION_5_0_0, address -> new ProtocolConfigurationBuilder<>(address), this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+            new GenericProtocolResourceDefinition<>(protocol, JGroupsModel.VERSION_5_0_0, ProtocolConfigurationBuilder::new, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
         });
     }
 }
