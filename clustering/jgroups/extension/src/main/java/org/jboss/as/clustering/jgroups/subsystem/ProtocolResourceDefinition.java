@@ -90,6 +90,7 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
             // Translate /subsystem=jgroups/stack=*/protocol=*:add() -> /subsystem=jgroups/stack=*:add-protocol()
             OperationTransformer addTransformer = new OperationTransformer() {
+                @SuppressWarnings("deprecation")
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress address = Operations.getPathAddress(operation);
@@ -98,7 +99,7 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
                     addProtocolOp.get(ModelDescriptionConstants.OP_ADDR).set(stackAddress.toModelNode());
                     addProtocolOp.get(ModelDescriptionConstants.OP).set("add-protocol");
 
-                    addProtocolOp = new LegacyPropertyAddOperationTransformer().transformOperation(addProtocolOp);
+                    addProtocolOp = new LegacyPropertyAddOperationTransformer(op -> Operations.getPathAddress(op).append(pathElement(op.get(AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.getName()).asString()))).transformOperation(addProtocolOp);
 
                     return addProtocolOp;
                 }
