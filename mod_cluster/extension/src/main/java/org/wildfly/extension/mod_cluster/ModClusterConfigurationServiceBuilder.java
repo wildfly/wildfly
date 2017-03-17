@@ -42,7 +42,6 @@ import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefiniti
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SMAX;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SOCKET_TIMEOUT;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SSL_CONTEXT;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SSL_CONTEXT_CAPABILITY_NAME;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION_FORCE;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION_REMOVE;
@@ -76,6 +75,7 @@ import java.util.stream.Stream;
 
 import javax.net.ssl.SSLContext;
 
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -103,9 +103,6 @@ import org.wildfly.clustering.service.ValueDependency;
  */
 public class ModClusterConfigurationServiceBuilder implements ResourceServiceBuilder<ModClusterConfiguration>, Value<ModClusterConfiguration> {
 
-    private static final String SOCKET_BINDING_CAPABILITY_NAME = "org.wildfly.network.socket-binding";
-    private static final String OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME = "org.wildfly.network.outbound-socket-binding";
-
     private final ModClusterConfigurationBuilder builder = new ModClusterConfigurationBuilder();
 
     private ValueDependency<SocketBinding> advertiseSocketDependency = null;
@@ -122,7 +119,7 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
 
         // Advertise
         optionalString(ADVERTISE_SOCKET.resolveModelAttribute(context, model))
-                .ifPresent(advertiseSocketRef -> this.advertiseSocketDependency = new InjectedValueDependency<>(context.getCapabilityServiceName(SOCKET_BINDING_CAPABILITY_NAME, advertiseSocketRef, SocketBinding.class), SocketBinding.class));
+                .ifPresent(advertiseSocketRef -> this.advertiseSocketDependency = new InjectedValueDependency<>(context.getCapabilityServiceName(CommonUnaryRequirement.SOCKET_BINDING.getName(), advertiseSocketRef, SocketBinding.class), SocketBinding.class));
         optionalString(ADVERTISE_SECURITY_KEY.resolveModelAttribute(context, model))
                 .ifPresent(securityKey -> builder.advertise().setAdvertiseSecurityKey(securityKey));
 
@@ -203,7 +200,7 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
         optionalList(PROXIES.resolveModelAttribute(context, model)).ifPresent(
                 refs -> refs.stream()
                         .map(ModelNode::asString)
-                        .forEach(ref -> outboundSocketBindings.add(new InjectedValueDependency<>(context.getCapabilityServiceName(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME, ref, OutboundSocketBinding.class), OutboundSocketBinding.class)))
+                        .forEach(ref -> this.outboundSocketBindings.add(new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, ref), OutboundSocketBinding.class)))
         );
 
         if (model.hasDefined(CommonAttributes.PROXY_LIST)) {
@@ -215,7 +212,7 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
 
         Optional<String> sslContextRef = optionalString(SSL_CONTEXT.resolveModelAttribute(context, model));
         sslContextRef.ifPresent(
-                sslContext -> this.sslContextDependency = new InjectedValueDependency<>(context.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY_NAME, sslContext, SSLContext.class), SSLContext.class)
+                ref -> this.sslContextDependency = new InjectedValueDependency<>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, ref), SSLContext.class)
         );
 
         // Legacy security support
