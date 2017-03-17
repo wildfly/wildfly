@@ -115,5 +115,6 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
                 new BinaryTableResourceDefinition().register(registration);
                 new StringTableResourceDefinition().register(registration);
             });
+        this.setDeprecated(InfinispanModel.VERSION_4_2_0.getVersion());
     }
 }

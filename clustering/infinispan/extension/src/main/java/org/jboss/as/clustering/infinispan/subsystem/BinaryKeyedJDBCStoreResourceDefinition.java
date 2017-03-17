@@ -126,6 +126,7 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
 
                 new BinaryTableResourceDefinition().register(registration);
             });
+        this.setDeprecated(InfinispanModel.VERSION_4_2_0.getVersion());
     }
 
     static final OperationStepHandler LEGACY_READ_TABLE_HANDLER = new OperationStepHandler() {
