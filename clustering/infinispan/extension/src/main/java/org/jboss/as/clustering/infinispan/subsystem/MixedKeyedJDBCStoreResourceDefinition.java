@@ -22,17 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
-import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
@@ -73,10 +68,7 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
-        BinaryTableResourceDefinition.buildTransformation(version, builder);
-        StringTableResourceDefinition.buildTransformation(version, builder);
-
-        JDBCStoreResourceDefinition.buildTransformation(version, builder);
+        JDBCStoreResourceDefinition.buildTransformation(version, builder, PATH);
 
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.setCustomResourceTransformer(new ResourceTransformer() {
@@ -104,18 +96,12 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
             });
         }
 
-        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(new LegacyPropertyMapGetOperationTransformer()));
-            for (String opName : Operations.getAllWriteAttributeOperationNames()) {
-                builder.addOperationTransformationOverride(opName)
-                        .inheritResourceAttributeDefinitions()
-                        .setCustomOperationTransformer(new LegacyPropertyWriteOperationTransformer());
-            }
-        }
+        BinaryTableResourceDefinition.buildTransformation(version, builder);
+        StringTableResourceDefinition.buildTransformation(version, builder);
     }
 
     MixedKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, pathElement("jdbc"), WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, JDBCStoreResourceDefinition.PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addRequiredChildren(BinaryTableResourceDefinition.PATH, StringTableResourceDefinition.PATH)
                 // Translate deprecated BINARY_TABLE attribute into separate add table operation

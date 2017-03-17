@@ -91,6 +91,8 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
+        JDBCStoreResourceDefinition.buildTransformation(version, builder, PATH);
+
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.setCustomResourceTransformer(new ResourceTransformer() {
                 @Override
@@ -112,12 +114,10 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
         }
 
         StringTableResourceDefinition.buildTransformation(version, builder);
-
-        JDBCStoreResourceDefinition.buildTransformation(version, builder);
     }
 
     StringKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, pathElement("jdbc"), WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, JDBCStoreResourceDefinition.PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addRequiredChildren(StringTableResourceDefinition.PATH)
                 // Translate deprecated TABLE attribute into separate add table operation

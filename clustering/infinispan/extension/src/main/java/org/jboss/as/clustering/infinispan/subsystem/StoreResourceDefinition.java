@@ -35,7 +35,9 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
+import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
@@ -43,6 +45,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -100,7 +103,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition {
         }
     }
 
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder, PathElement path) {
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.discardChildResource(StoreWriteThroughResourceDefinition.PATH);
         } else {
@@ -108,11 +111,19 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition {
         }
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD)
+                    .setCustomOperationTransformer(new SimpleOperationTransformer(new LegacyPropertyAddOperationTransformer()))
+                    .inheritResourceAttributeDefinitions()
+                    .end();
+
+            builder.setCustomResourceTransformer(new LegacyPropertyResourceTransformer());
+
             builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(new LegacyPropertyMapGetOperationTransformer()));
-            for (String opName : Operations.getAllWriteAttributeOperationNames()) {
-                builder.addOperationTransformationOverride(opName)
+            for (String name : Operations.getAllWriteAttributeOperationNames()) {
+                builder.addOperationTransformationOverride(name)
                         .inheritResourceAttributeDefinitions()
-                        .setCustomOperationTransformer(new LegacyPropertyWriteOperationTransformer());
+                        .setCustomOperationTransformer(new LegacyPropertyWriteOperationTransformer(address -> address.getParent().append(path)))
+                        .end();
             }
         }
 
