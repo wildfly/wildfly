@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.ejb.timerservice.schedule.descriptor;
 
 import java.util.Date;
+import java.util.TimeZone;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -58,7 +59,8 @@ public class DescriptorScheduleTestCase {
         DescriptorScheduleBean bean = (DescriptorScheduleBean) ctx.lookup("java:module/" + DescriptorScheduleBean.class.getSimpleName());
         Assert.assertTrue(DescriptorScheduleBean.awaitTimer());
         Assert.assertEquals("INFO", DescriptorScheduleBean.getTimerInfo());
-        Assert.assertEquals(new Date(90, 0, 1, 0, 0, 0), DescriptorScheduleBean.getStart());
+        TimeZone.setDefault(TimeZone.getTimeZone("CET"));
+        Assert.assertEquals((new Date(90, 0, 1, 0, 0, 0)), DescriptorScheduleBean.getStart());
     }
 
 }

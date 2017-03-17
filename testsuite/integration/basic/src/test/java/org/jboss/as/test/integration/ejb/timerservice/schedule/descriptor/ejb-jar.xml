@@ -19,8 +19,8 @@
                     <month>*</month>
                     <day-of-week>*</day-of-week>
                 </schedule>
-                <start>1990-01-01T00:00:00</start>
-                <end>9000-12-31T00:00:00</end>
+                <start>1990-01-01T00:00:00[CET]</start>
+                <end>9000-12-31T00:00:00[CET]</end>
                 <timeout-method>
                     <method-name>descriptorScheduledMethod</method-name>
                 </timeout-method>
