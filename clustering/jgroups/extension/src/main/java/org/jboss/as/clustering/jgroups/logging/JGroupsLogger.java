@@ -22,18 +22,14 @@
 
 package org.jboss.as.clustering.jgroups.logging;
 
-import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.TRACE;
-import static org.jboss.logging.Logger.Level.WARN;
 
 import java.net.URL;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
@@ -57,25 +53,25 @@ public interface JGroupsLogger extends BasicLogger {
     @Message(id = 1, value = "Activating JGroups subsystem. JGroups version %s")
     void activatingSubsystem(String version);
 
-    @LogMessage(level = TRACE)
-    @Message(id = 2, value = "Setting %s.%s=%d")
-    void setProtocolPropertyValue(String protocol, String property, Object value);
+//    @LogMessage(level = TRACE)
+//    @Message(id = 2, value = "Setting %s.%s=%d")
+//    void setProtocolPropertyValue(String protocol, String property, Object value);
 
-    @LogMessage(level = TRACE)
-    @Message(id = 3, value = "Failed to set non-existent %s.%s=%d")
-    void nonExistentProtocolPropertyValue(@Cause Throwable cause, String protocolName, String propertyName, Object propertyValue);
+//    @LogMessage(level = TRACE)
+//    @Message(id = 3, value = "Failed to set non-existent %s.%s=%d")
+//    void nonExistentProtocolPropertyValue(@Cause Throwable cause, String protocolName, String propertyName, Object propertyValue);
 
-    @LogMessage(level = TRACE)
-    @Message(id = 4, value = "Could not set %s.%s and %s.%s, %s socket binding does not specify a multicast socket")
-    void couldNotSetAddressAndPortNoMulticastSocket(@Cause Throwable cause, String protocolName, String addressProperty, String protocolNameAgain, String portProperty, String bindingName);
+//    @LogMessage(level = TRACE)
+//    @Message(id = 4, value = "Could not set %s.%s and %s.%s, %s socket binding does not specify a multicast socket")
+//    void couldNotSetAddressAndPortNoMulticastSocket(@Cause Throwable cause, String protocolName, String addressProperty, String protocolNameAgain, String portProperty, String bindingName);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 5, value = "Error accessing original value for property %s of protocol %s")
-    void unableToAccessProtocolPropertyValue(@Cause Throwable cause, String propertyName, String protocolName);
+//    @LogMessage(level = ERROR)
+//    @Message(id = 5, value = "Error accessing original value for property %s of protocol %s")
+//    void unableToAccessProtocolPropertyValue(@Cause Throwable cause, String propertyName, String protocolName);
 
-    @LogMessage(level = WARN)
-    @Message(id = 6, value = "property %s for protocol %s attempting to override socket binding value %s : property value %s will be ignored")
-    void unableToOverrideSocketBindingValue(String propertyName, String protocolName, String bindingName, Object propertyValue);
+//    @LogMessage(level = WARN)
+//    @Message(id = 6, value = "property %s for protocol %s attempting to override socket binding value %s : property value %s will be ignored")
+//    void unableToOverrideSocketBindingValue(String propertyName, String protocolName, String bindingName, Object propertyValue);
 
 
     /**
@@ -96,23 +92,23 @@ public interface JGroupsLogger extends BasicLogger {
     @Message(id = 8, value = "Failed to locate %s")
     String notFound(String resource);
 
-    @Message(id = 9, value = "A node named %s already exists in this cluster. Perhaps there is already a server running on this host? If so, restart this server with a unique node name, via -Djboss.node.name=<node-name>")
-    IllegalStateException duplicateNodeName(String name);
+//    @Message(id = 9, value = "A node named %s already exists in this cluster. Perhaps there is already a server running on this host? If so, restart this server with a unique node name, via -Djboss.node.name=<node-name>")
+//    IllegalStateException duplicateNodeName(String name);
 
     @Message(id = 10, value = "Transport for stack %s is not defined. Please specify both a transport and protocol list, either as optional parameters to add() or via batching.")
     OperationFailedException transportNotDefined(String stackName);
 
-    @Message(id = 11, value = "Protocol list for stack %s is not defined. Please specify both a transport and protocol list, either as optional parameters to add() or via batching.")
-    OperationFailedException protocolListNotDefined(String stackName);
+//    @Message(id = 11, value = "Protocol list for stack %s is not defined. Please specify both a transport and protocol list, either as optional parameters to add() or via batching.")
+//    OperationFailedException protocolListNotDefined(String stackName);
 
-    @Message(id = 12, value = "Protocol with relative path %s is already defined.")
-    OperationFailedException protocolAlreadyDefined(String relativePath);
+//    @Message(id = 12, value = "Protocol with relative path %s is already defined.")
+//    OperationFailedException protocolAlreadyDefined(String relativePath);
 
-    @Message(id = 13, value = "Protocol with relative path %s is not defined.")
-    OperationFailedException protocolNotDefined(String relativePath);
+//    @Message(id = 13, value = "Protocol with relative path %s is not defined.")
+//    OperationFailedException protocolNotDefined(String relativePath);
 
-    @Message(id = 14, value = "Property %s for protocol with relative path %s is not defined.")
-    OperationFailedException propertyNotDefined(String propertyName, String protocolRelativePath);
+//    @Message(id = 14, value = "Property %s for protocol with relative path %s is not defined.")
+//    OperationFailedException propertyNotDefined(String propertyName, String protocolRelativePath);
 
     @Message(id = 15, value = "Unknown metric %s")
     String unknownMetric(String metricName);
@@ -123,11 +119,11 @@ public interface JGroupsLogger extends BasicLogger {
     @Message(id = 17, value = "Privileged access exception on attribute/method %s")
     String privilegedAccessExceptionForAttribute(String attrName);
 
-    @Message(id = 18, value = "Instantiation exception on converter for attribute/method %s")
-    String instantiationExceptionOnConverterForAttribute(String attrName);
+//    @Message(id = 18, value = "Instantiation exception on converter for attribute/method %s")
+//    String instantiationExceptionOnConverterForAttribute(String attrName);
 
-    @Message(id = 20, value = "Unable to load protocol class %s")
-    String unableToLoadProtocol(String protocolName);
+//    @Message(id = 20, value = "Unable to load protocol class %s")
+//    String unableToLoadProtocol(String protocolName);
 
     @Message(id = 21, value = "Attributes referencing threads subsystem can only be used to support older slaves in the domain.")
     String threadsAttributesUsedInRuntime();

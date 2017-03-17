@@ -76,6 +76,8 @@ public class ForkServiceHandler extends ParentResourceServiceHandler<ChannelFact
                 builder.configure(context).build(target).install();
             }
         }
+
+        new ForkStackStatisticsEnabledServiceBuilder(name).configure(context, model).build(target).install();
     }
 
     @Override
@@ -84,6 +86,8 @@ public class ForkServiceHandler extends ParentResourceServiceHandler<ChannelFact
         PathAddress address = context.getCurrentAddress();
         String name = context.getCurrentAddressValue();
         String channel = address.getParent().getLastElement().getValue();
+
+        context.removeService(new ForkStackStatisticsEnabledServiceBuilder(name).getServiceName());
 
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
             for (Builder<?> builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name, channel)) {

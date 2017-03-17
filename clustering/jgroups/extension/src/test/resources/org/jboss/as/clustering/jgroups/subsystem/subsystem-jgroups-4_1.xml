@@ -24,7 +24,7 @@
     <channels default="ee">
         <channel name="ee" stack="maximal" cluster="${test.expr:mycluster}">
             <fork name="web">
-                <protocol type="CENTRAL_LOCK">
+                <protocol type="CENTRAL_LOCK" statistics-enabled="true">
                     <property name="num_backups">1</property>
                 </protocol>
             </fork>
@@ -32,8 +32,8 @@
         <channel name="bridge" stack="minimal"/>
     </channels>
     <stacks>
-        <stack name="minimal">
-            <transport type="UDP" socket-binding="some-binding"/>
+        <stack name="minimal" statistics-enabled="true">
+            <transport type="UDP" socket-binding="some-binding" statistics-enabled="false"/>
         </stack>
         <stack name="maximal">
             <transport type="TCP"

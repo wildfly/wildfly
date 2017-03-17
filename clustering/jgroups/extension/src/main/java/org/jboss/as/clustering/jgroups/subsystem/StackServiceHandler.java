@@ -50,13 +50,16 @@ public class StackServiceHandler extends SimpleResourceServiceHandler<ChannelFac
         ServiceTarget target = context.getServiceTarget();
 
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
+
+        new StackStatisticsEnabledServiceBuilder(name).configure(context, model).build(target).install();
     }
 
     @Override
     public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
         String name = context.getCurrentAddressValue();
 
-        // remove the ChannelFactoryServiceService
+        context.removeService(new StackStatisticsEnabledServiceBuilder(name).getServiceName());
+
         context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());
 
         super.removeServices(context, model);
