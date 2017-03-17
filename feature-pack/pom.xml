@@ -1141,8 +1141,19 @@
             <artifactId>resteasy-json-p-provider</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.glassfish</groupId>
-                    <artifactId>javax.json</artifactId>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
