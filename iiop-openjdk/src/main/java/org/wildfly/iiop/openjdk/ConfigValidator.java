@@ -40,25 +40,40 @@ public class ConfigValidator {
         final boolean serverRequiresSsl = IIOPRootDefinition.SERVER_REQUIRES_SSL.resolveModelAttribute(context, resourceModel).asBoolean();
         final boolean clientRequiresSsl = IIOPRootDefinition.CLIENT_REQUIRES_SSL.resolveModelAttribute(context, resourceModel).asBoolean();
 
-        validateSSLConfig(context, resourceModel, supportSSL, serverRequiresSsl, clientRequiresSsl);
+        final boolean sslConfigured = isSSLConfigured(context, resourceModel);
+
+        validateSSLConfig(supportSSL, sslConfigured, serverRequiresSsl, clientRequiresSsl);
+        validateSSLSocketBinding(context, resourceModel, sslConfigured);
         validateIORTransportConfig(context, resourceModel, supportSSL, serverRequiresSsl);
         validateORBInitializerConfig(context, resourceModel);
     }
 
-    private static void validateSSLConfig(final OperationContext context, final ModelNode model, final boolean supportSSL,
+    private static boolean isSSLConfigured(final OperationContext context, final ModelNode resourceModel) throws OperationFailedException {
+        final ModelNode securityDomainNode = IIOPRootDefinition.SECURITY_DOMAIN.resolveModelAttribute(context, resourceModel);
+        final ModelNode serverSSLContextNode = IIOPRootDefinition.SERVER_SSL_CONTEXT.resolveModelAttribute(context, resourceModel);
+        final ModelNode clientSSLContextNode = IIOPRootDefinition.CLIENT_SSL_CONTEXT.resolveModelAttribute(context, resourceModel);
+        if (!securityDomainNode.isDefined() && (!serverSSLContextNode.isDefined() || !clientSSLContextNode.isDefined())){
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private static void validateSSLConfig(final boolean supportSSL, final boolean sslConfigured,
                                           final boolean serverRequiresSsl, final boolean clientRequiresSsl) throws OperationFailedException {
 
-        if (supportSSL) {
-            // if SSL is to be used, then either a JSSE domain or a pair of client/server SSL contexts must be defined.
-            final ModelNode securityDomainNode = IIOPRootDefinition.SECURITY_DOMAIN.resolveModelAttribute(context, model);
-            final ModelNode serverSSLContextNode = IIOPRootDefinition.SERVER_SSL_CONTEXT.resolveModelAttribute(context, model);
-            final ModelNode clientSSLContextNode = IIOPRootDefinition.CLIENT_SSL_CONTEXT.resolveModelAttribute(context, model);
-            if (!securityDomainNode.isDefined() && (!serverSSLContextNode.isDefined() || !clientSSLContextNode.isDefined())) {
-                throw IIOPLogger.ROOT_LOGGER.noSecurityDomainOrSSLContextsSpecified();
-            }
-        } else if(serverRequiresSsl || clientRequiresSsl) {
+        if (supportSSL && !sslConfigured) {
+            throw IIOPLogger.ROOT_LOGGER.noSecurityDomainOrSSLContextsSpecified();
+        } else if (serverRequiresSsl || clientRequiresSsl) {
             // if either the server or the client requires SSL, then SSL support must have been enabled.
             throw IIOPLogger.ROOT_LOGGER.sslNotConfigured();
+        }
+    }
+
+    private static void validateSSLSocketBinding(final OperationContext context, final ModelNode resourceModel, final boolean sslConfigured) throws OperationFailedException{
+        ModelNode sslSocketBinding = IIOPRootDefinition.SSL_SOCKET_BINDING.resolveModelAttribute(context, resourceModel);
+        if(sslSocketBinding.isDefined() && !sslConfigured){
+            IIOPLogger.ROOT_LOGGER.sslPortWithoutSslConfiguration();
         }
     }
 
