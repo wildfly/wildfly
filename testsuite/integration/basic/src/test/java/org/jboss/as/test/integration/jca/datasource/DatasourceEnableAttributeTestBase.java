@@ -91,8 +91,7 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
                 // expecting that datasource won't be available 'online'
             }
 
-            writeAttribute(getDataSourceAddress(ds), "enabled", "true");
-            reload();
+            enableDatasource(ds);
             testConnection(ds);
 
         } finally {
@@ -159,13 +158,13 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
             createDataSource(ds);
             testConnection(ds);
         } finally {
+            removeDataSourceSilently(ds);
             removeSystemPropertySilently(url);
             removeSystemPropertySilently(username);
             removeSystemPropertySilently(password);
             removeSystemPropertySilently(jndiName);
             removeSystemPropertySilently(driverName);
             removeSystemPropertySilently(DS_ENABLED_SYSTEM_PROPERTY_NAME);
-            removeDataSourceSilently(ds);
         }
     }
 
@@ -193,6 +192,13 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
         operation.get("user-name").set(datasource.getUserName());
         operation.get("password").set(datasource.getPassword());
         return operation;
+    }
+
+    protected void enableDatasource(Datasource ds) throws Exception {
+        ModelNode address = getDataSourceAddress(ds);
+        writeAttribute(address, "enabled", "true");
+        // enabling datasource requires reload
+        reload();
     }
 
     protected ModelNode writeAttribute(ModelNode address, String attribute, String value) throws Exception {
