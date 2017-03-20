@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Hashtable;
 
+import javax.ejb.NoSuchEJBException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -141,7 +142,7 @@ public class InterDeploymentDependenciesEarTestCase {
         try {
             helloApp2.getLog();
             fail("Calling EJB from dependent application should fail");
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException | NoSuchEJBException e) {
             //OK
         }
         // cleanUp will undeploy DEP_APP2
@@ -176,7 +177,7 @@ public class InterDeploymentDependenciesEarTestCase {
         try {
             helloApp2.getLog();
             fail("Calling EJB from dependent application should fail");
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException | NoSuchEJBException e) {
             //OK
         }
         // cleanUp will undeploy DEP_APP2
