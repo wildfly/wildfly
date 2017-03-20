@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
@@ -61,7 +63,9 @@ public class ThreadPoolBuilder extends ComponentBuilder<ThreadPoolConfiguration>
         ) {
             @Override
             public ExecutorService createExecutor(ThreadFactory factory) {
-                return super.createExecutor(new ClassLoaderThreadFactory(factory, ClassLoaderThreadFactory.class.getClassLoader()));
+                return super.createExecutor(new ClassLoaderThreadFactory(factory, AccessController.doPrivileged(
+                        (PrivilegedAction<ClassLoader>) () -> ClassLoaderThreadFactory.class.getClassLoader()))
+                );
             }
         };
         this.builder.threadPoolFactory(factory);

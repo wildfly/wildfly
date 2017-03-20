@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.server.registry;
 
+import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.AbstractMap;
 import java.util.Collections;
@@ -74,7 +75,8 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
 
     private static ThreadFactory createThreadFactory(Class<?> targetClass) {
         PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
-        return new ClassLoaderThreadFactory(WildFlySecurityManager.doUnchecked(action), targetClass.getClassLoader());
+        return new ClassLoaderThreadFactory(WildFlySecurityManager.doUnchecked(action),
+                AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> targetClass.getClassLoader()));
     }
 
     private final ExecutorService topologyChangeExecutor = Executors.newSingleThreadExecutor(createThreadFactory(this.getClass()));
