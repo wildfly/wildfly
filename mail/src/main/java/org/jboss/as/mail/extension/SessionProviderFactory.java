@@ -200,7 +200,7 @@ class SessionProviderFactory {
                 }
             }
 
-            if (c != null) {
+            if (c != null && c.getPassword() != null) {
                 return new javax.mail.PasswordAuthentication(c.getUsername(), c.getPassword());
             }
             return null;
