@@ -30,12 +30,10 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.ejb.home.remotehome.SimpleHome;
 import org.jboss.as.test.integration.ejb.home.remotehome.SimpleInterface;
 import org.jboss.as.test.integration.ejb.home.remotehome.SimpleStatefulHome;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,11 +45,6 @@ import org.junit.runner.RunWith;
 public class SimpleHomeTestCase {
 
     private static final String ARCHIVE_NAME = "SimpleHomeTest.war";
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     @ArquillianResource
     private InitialContext iniCtx;

@@ -171,6 +171,9 @@
                             Reference to the SSLContext that should be used by this listener.
 
                             If neither ssl-context or security-realm are set the JVM wide default SSLContext will be used instead.
+                            
+                            If this attribute is defined, the attributes 'verify-client', 'enabled-cipher-suites', 'enabled-protocols',
+                            'ssl-session-cache-size', and 'ssl-session-timeout' must not be set.
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>

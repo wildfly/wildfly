@@ -37,7 +37,6 @@ import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
 import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.resteasy.plugins.server.embedded.SimplePrincipal;
 import org.jboss.security.ClientLoginModule;
@@ -45,7 +44,6 @@ import org.jboss.security.SecurityContextAssociation;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
@@ -81,12 +79,6 @@ public class SwitchIdentityTestCase {
 
     private static final String EJB_OUTBOUND_REALM = "ejb-outbound-realm";
     private static final String SECURITY_DOMAIN_NAME = "switch-identity-test";
-
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     @ArquillianResource
     private ManagementClient mgmtClient;

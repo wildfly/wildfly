@@ -42,13 +42,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test for RA with security domain JBQA-5953
+ * Test for RA with security domain JBQA-5953, RA is activated using bundled ironjacamar.xml
  *
  * @author <a href="mailto:vrastsel@redhat.com"> Vladimir Rastseluev</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(RaWithSecurityDomainTestCase.RaWithSecurityDomainTestCaseSetup.class)
-public class RaWithSecurityDomainTestCase {
+@ServerSetup(IronJacamarActivationRaWithSecurityDomainTestCase.RaWithSecurityDomainTestCaseSetup.class)
+public class IronJacamarActivationRaWithSecurityDomainTestCase {
 
     static class RaWithSecurityDomainTestCaseSetup extends AbstractLoginModuleSecurityDomainTestCaseSetup {
 
@@ -80,12 +80,12 @@ public class RaWithSecurityDomainTestCase {
     @Deployment
     public static Archive<?> deploymentSingleton() {
 
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar").addClass(RaWithSecurityDomainTestCase.class)
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar").addClass(IronJacamarActivationRaWithSecurityDomainTestCase.class)
                 .addPackage(MultipleConnectionFactory1.class.getPackage());
         jar.addClasses(AbstractLoginModuleSecurityDomainTestCaseSetup.class, AbstractSecurityDomainSetup.class);
         final ResourceAdapterArchive rar = ShrinkWrap.create(ResourceAdapterArchive.class, "test.rar").addAsLibrary(jar)
-                .addAsManifestResource(RaWithSecurityDomainTestCase.class.getPackage(), "ra.xml", "ra.xml")
-                .addAsManifestResource(RaWithSecurityDomainTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml");
+                .addAsManifestResource(IronJacamarActivationRaWithSecurityDomainTestCase.class.getPackage(), "ra.xml", "ra.xml")
+                .addAsManifestResource(IronJacamarActivationRaWithSecurityDomainTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml");
 
         return rar;
     }

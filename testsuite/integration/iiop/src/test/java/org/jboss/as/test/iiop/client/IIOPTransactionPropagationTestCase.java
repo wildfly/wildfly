@@ -44,7 +44,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ServerReload;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -93,7 +92,6 @@ public class IIOPTransactionPropagationTestCase {
 
     @BeforeClass
     public static void beforeClass() throws InvalidName, SystemException, NamingException {
-        DisableInvocationTestUtil.disable();
         // // Orb presseting has to be done before the ORB is started to be used
         Util.presetOrb();
         context = Util.getContext();
