@@ -22,13 +22,13 @@
 
 package org.jboss.as.clustering.controller.transform;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.PathAddress;
@@ -39,34 +39,39 @@ import org.jboss.dmr.Property;
 
 /**
  * @author Radoslav Husar
- * @version October 2015
+ * @author Paul Ferraro
  */
 public class LegacyPropertyAddOperationTransformer implements OperationTransformer {
+
+    private final Function<ModelNode, PathAddress> addressResolver;
+
+    public LegacyPropertyAddOperationTransformer() {
+        this(operation -> Operations.getPathAddress(operation));
+    }
+
+    public LegacyPropertyAddOperationTransformer(Function<ModelNode, PathAddress> addressResolver) {
+        this.addressResolver = addressResolver;
+    }
 
     @Override
     public ModelNode transformOperation(ModelNode operation) {
         if (operation.hasDefined(PROPERTIES)) {
-            final ModelNode addOp = operation.clone();
-            final ModelNode properties = addOp.remove(PROPERTIES);
+            final ModelNode addOperation = operation.clone();
+            List<Property> properties = addOperation.remove(PROPERTIES).asPropertyList();
 
-            final ModelNode composite = new ModelNode();
-            composite.get(OP).set(COMPOSITE);
-            composite.get(OP_ADDR).setEmptyList();
-            composite.get(STEPS).add(addOp);
+            List<ModelNode> operations = new ArrayList<>(properties.size() + 1);
+            operations.add(addOperation);
 
-            // Handle odd jgroups-specific legacy case, where :add operation for the protocol is :add-protocol on the parent
-            PathAddress propertyAddress = Operations.getName(addOp).equals("add-protocol")
-                    ? Operations.getPathAddress(addOp).append("protocol", addOp.get("type").asString())
-                    : Operations.getPathAddress(addOp);
+            PathAddress address = this.addressResolver.apply(addOperation);
 
-            for (final Property property : properties.asPropertyList()) {
+            for (final Property property : properties) {
                 String key = property.getName();
                 ModelNode value = property.getValue();
-                ModelNode propAddOp = Util.createAddOperation(propertyAddress.append(PathElement.pathElement(PROPERTY, key)));
-                propAddOp.get(VALUE).set(value);
-                composite.get(STEPS).add(propAddOp);
+                ModelNode propertyAddOperation = Util.createAddOperation(address.append(PathElement.pathElement(PROPERTY, key)));
+                propertyAddOperation.get(VALUE).set(value);
+                operations.add(propertyAddOperation);
             }
-            return composite;
+            return Operations.createCompositeOperation(operations);
         }
         return operation;
     }

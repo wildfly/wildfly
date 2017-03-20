@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -39,6 +40,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
@@ -56,7 +58,8 @@ import org.jboss.dmr.ModelNode;
 public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefinition {
 
     static final PathElement LEGACY_PATH = PathElement.pathElement("string-keyed-jdbc-store", "STRING_KEYED_JDBC_STORE");
-    static final PathElement PATH = pathElement("string-jdbc");
+    static final PathElement STRING_JDBC_PATH = pathElement("string-jdbc");
+    static final PathElement PATH = JDBCStoreResourceDefinition.PATH;
 
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
@@ -89,7 +92,9 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : InfinispanModel.VERSION_4_2_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, STRING_JDBC_PATH) : parent.addChildResource(PATH);
+
+        JDBCStoreResourceDefinition.buildTransformation(version, builder, PATH);
 
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.setCustomResourceTransformer(new ResourceTransformer() {
@@ -112,12 +117,10 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
         }
 
         StringTableResourceDefinition.buildTransformation(version, builder);
-
-        JDBCStoreResourceDefinition.buildTransformation(version, builder);
     }
 
     StringKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, pathElement("jdbc"), WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addRequiredChildren(StringTableResourceDefinition.PATH)
                 // Translate deprecated TABLE attribute into separate add table operation
@@ -127,6 +130,13 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
 
                 new StringTableResourceDefinition().register(registration);
             });
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration parentRegistration) {
+        super.register(parentRegistration);
+        ManagementResourceRegistration registration = parentRegistration.getSubModel(PathAddress.pathAddress(PATH));
+        parentRegistration.registerAlias(STRING_JDBC_PATH, new SimpleAliasEntry(registration));
     }
 
     static final OperationStepHandler LEGACY_READ_TABLE_HANDLER = new OperationStepHandler() {
