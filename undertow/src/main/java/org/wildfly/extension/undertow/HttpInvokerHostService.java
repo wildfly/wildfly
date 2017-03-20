@@ -22,13 +22,10 @@
 
 package org.wildfly.extension.undertow;
 
-import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import io.undertow.server.HttpServerExchange;
-import io.undertow.util.AttachmentKey;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -36,6 +33,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.elytron.web.undertow.server.ElytronContextAssociationHandler;
 import org.wildfly.elytron.web.undertow.server.ElytronHttpExchange;
+import org.wildfly.httpclient.common.ElytronIdentityHandler;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.http.HttpServerAuthenticationMechanism;
@@ -125,25 +123,4 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
         return remoteHttpInvokerServiceInjectedValue;
     }
 
-
-    private static class ElytronIdentityHandler implements HttpHandler {
-        public static final AttachmentKey<SecurityIdentity> IDENTITY_KEY = AttachmentKey.create(SecurityIdentity.class);
-        private final HttpHandler wrapped;
-
-        public ElytronIdentityHandler(HttpHandler toWrap) {
-            this.wrapped = toWrap;
-        }
-
-        public void handleRequest(HttpServerExchange exchange) throws Exception {
-            SecurityIdentity securityIdentity = exchange.getAttachment(IDENTITY_KEY);
-            if(securityIdentity != null) {
-                securityIdentity.runAs((PrivilegedExceptionAction<Object>) () -> {
-                    this.wrapped.handleRequest(exchange);
-                    return null;
-                });
-            } else {
-                this.wrapped.handleRequest(exchange);
-            }
-        }
-    }
 }
