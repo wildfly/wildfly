@@ -118,6 +118,7 @@ public class ResourceAdapterPoolAttributesTestCase extends JcaMgmtBase {
                 "org.jboss.ironjacamar.impl, org.jboss.ironjacamar.jdbcadapters\n"), "MANIFEST.MF");
 
         rar.addAsLibrary(jar);
+
         return rar;
     }
 
@@ -140,7 +141,7 @@ public class ResourceAdapterPoolAttributesTestCase extends JcaMgmtBase {
         Assert.assertNotNull(poolConfiguration);
         Assert.assertEquals(2, poolConfiguration.getMinSize());
         Assert.assertEquals(5, poolConfiguration.getMaxSize());
-        Assert.assertEquals(2, poolConfiguration.getInitialSize());
+        Assert.assertEquals(0, poolConfiguration.getInitialSize());
         Assert.assertEquals(30000, poolConfiguration.getBlockingTimeout());
         Assert.assertEquals(true, poolConfiguration.isFair());
         Assert.assertEquals(false, poolConfiguration.isStrictMin());
