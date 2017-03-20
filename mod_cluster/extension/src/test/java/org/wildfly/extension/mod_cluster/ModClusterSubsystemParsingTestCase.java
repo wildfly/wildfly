@@ -70,7 +70,7 @@ public class ModClusterSubsystemParsingTestCase extends ClusteringSubsystemTest 
                 { ModClusterSchema.MODCLUSTER_1_1, 13 },
                 { ModClusterSchema.MODCLUSTER_1_2, 15 },
                 { ModClusterSchema.MODCLUSTER_2_0, 15 },
-                { ModClusterSchema.MODCLUSTER_3_0, 15 },
+                { ModClusterSchema.MODCLUSTER_3_0, 14 },
         };
         return Arrays.asList(data);
     }
