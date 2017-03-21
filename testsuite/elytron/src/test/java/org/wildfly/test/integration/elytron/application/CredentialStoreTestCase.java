@@ -197,9 +197,9 @@ public class CredentialStoreTestCase extends AbstractCredentialStoreTestCase {
      * Tests creating credential with empty secret.
      */
     @Test
-    @Ignore("WFLY-8143")
     public void testEmptySecret() throws Exception {
         assertAliasAndSecretSupported(CS_NAME_MODIFIABLE, "emptysecret", "");
+        assertAliasAndSecretSupported(CS_NAME_MODIFIABLE, "nullsecret", null);
     }
 
     /**
