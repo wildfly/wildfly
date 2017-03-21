@@ -21,6 +21,18 @@
  */
 package org.jboss.as.test.integration.ejb.container.interceptor.security.api;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.ejb.EJBAccessException;
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.Configuration;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -37,6 +49,7 @@ import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
 import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.resteasy.plugins.server.embedded.SimplePrincipal;
 import org.jboss.security.ClientLoginModule;
@@ -44,6 +57,7 @@ import org.jboss.security.SecurityContextAssociation;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
@@ -53,17 +67,6 @@ import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Property;
 import org.xnio.Sequence;
-
-import javax.ejb.EJBAccessException;
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.Configuration;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * Testcase based on ejb-security-interceptors quickstart application. It tests security context propagation for EJBs.
@@ -103,6 +106,11 @@ public class SwitchIdentityTestCase {
     };
 
     // Public methods --------------------------------------------------------
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
+    }
 
     /**
      * Creates a deployment application for this test.

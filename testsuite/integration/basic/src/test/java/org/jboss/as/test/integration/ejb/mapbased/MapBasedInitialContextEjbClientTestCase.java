@@ -23,12 +23,14 @@
 package org.jboss.as.test.integration.ejb.mapbased;
 
 import java.util.Properties;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -62,6 +64,7 @@ public class MapBasedInitialContextEjbClientTestCase {
      */
     @Test
     public void testScopedEJBClientContexts() throws Exception {
+        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
         InitialContext ctx = new InitialContext(getEjbClientProperties(System.getProperty("node0", "127.0.0.1"), 8080));
         try {
             String lookupName = "ejb:/" + ARCHIVE_NAME + "/" + StatelessBean.class.getSimpleName() + "!" + StatelessIface.class.getCanonicalName();
