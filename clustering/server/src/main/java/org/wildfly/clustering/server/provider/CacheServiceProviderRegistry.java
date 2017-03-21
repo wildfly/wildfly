@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.server.provider;
 
+import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -68,7 +69,8 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
 
     private static ThreadFactory createThreadFactory(Class<?> targetClass) {
         PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
-        return new ClassLoaderThreadFactory(WildFlySecurityManager.doUnchecked(action), targetClass.getClassLoader());
+        return new ClassLoaderThreadFactory(WildFlySecurityManager.doUnchecked(action),
+                AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> targetClass.getClassLoader()));
     }
 
     private final ConcurrentMap<T, Map.Entry<Listener, ExecutorService>> listeners = new ConcurrentHashMap<>();
