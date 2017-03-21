@@ -88,6 +88,14 @@ public class MixedDomainTestSupport extends DomainTestSupport {
                 "slave-config/host-slave.xml", dir.getAbsolutePath(), adjustDomain, legacyConfig);
     }
 
+    public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig,
+                                                String masterConfig, String slaveConfig, boolean adjustDomain,
+                                                boolean legacyConfig) throws Exception {
+        final File dir = OldVersionCopier.expandOldVersion(version);
+        return new MixedDomainTestSupport(version, testClass, domainConfig, masterConfig,
+                slaveConfig, dir.getAbsolutePath(), adjustDomain, legacyConfig);
+    }
+
     public void start() {
         if (adjustDomain) {
             startAndAdjust();
