@@ -143,6 +143,8 @@ final class AssociationImpl implements Association {
         if (oneWay) {
             // send immediate response
             requestContent.writeInvocationResult(null);
+        } else if(isAsync) {
+            invocationRequest.writeProceedAsync();
         }
 
         final CancellationFlag cancellationFlag = new CancellationFlag();
