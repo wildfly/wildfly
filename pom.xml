@@ -217,7 +217,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.build-tools>1.1.3.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.4.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>2.2.1.CR1</version.org.wildfly.core>
+        <version.org.wildfly.core>2.2.1.Final</version.org.wildfly.core>
         <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
         <version.org.yaml.snakeyaml>1.15</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.11.jbossorg-1</version.sun.jaxb>
