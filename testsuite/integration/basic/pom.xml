@@ -282,10 +282,7 @@
                             </execution>
 
                         </executions>
-
                     </plugin>
-
-
                 </plugins>
             </build>
         </profile>

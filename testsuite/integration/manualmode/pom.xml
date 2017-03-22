@@ -84,9 +84,8 @@
                                 <include>org/jboss/as/test/manualmode/**/*TestCase.java</include>
                             </includes>
                             <runOrder>alphabetical</runOrder>
-
                             <environmentVariables>
-                                <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
+                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
                             </environmentVariables>
 
                             <!-- Parameters to test cases. -->
@@ -105,7 +104,6 @@
                                 <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
                             </systemPropertyVariables>
                         </configuration>
-
                     </plugin>
                 </plugins>
             </build>
