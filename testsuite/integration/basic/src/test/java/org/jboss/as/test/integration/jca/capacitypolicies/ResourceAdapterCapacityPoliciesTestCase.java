@@ -25,8 +25,13 @@
 package org.jboss.as.test.integration.jca.capacitypolicies;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.Assert.fail;
 
+import java.lang.reflect.ReflectPermission;
 import java.util.List;
+import java.util.PropertyPermission;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -55,8 +60,10 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.FileUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.connectionmanager.pool.mcp.ManagedConnectionPool;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -75,12 +82,17 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup(ResourceAdapterCapacityPoliciesTestCase.ResourceAdapterCapacityPoliciesServerSetupTask.class)
 public class ResourceAdapterCapacityPoliciesTestCase extends JcaMgmtBase {
-    protected static final String RA_NAME = "capacity-policies-test.rar";
-    protected static final ModelNode RA_ADDRESS = new ModelNode().add(SUBSYSTEM, "resource-adapters")
+    private static final String RA_NAME = "capacity-policies-test.rar";
+    private static final ModelNode RA_ADDRESS = new ModelNode().add(SUBSYSTEM, "resource-adapters")
             .add("resource-adapter", RA_NAME);
+    // /subsystem=resource-adapters/resource-adapter=capacity-policies-test.rar ...
+    // .../connection-definitions=Lazy/statistics=pool:read-resource(include-runtime=true
+    private static final ModelNode STATISTICS_ADDRESS = RA_ADDRESS.clone().add("connection-definitions", "Lazy")
+            .add("statistics", "pool");
 
     static {
         RA_ADDRESS.protect();
+        STATISTICS_ADDRESS.protect();
     }
 
     @Deployment
@@ -108,11 +120,19 @@ public class ResourceAdapterCapacityPoliciesTestCase extends JcaMgmtBase {
                 ContainerResourceMgmtTestBase.class,
                 MgmtOperationException.class,
                 ManagementOperations.class,
-                JcaTestsUtil.class);
+                JcaTestsUtil.class,
+                TimeoutUtil.class);
 
         rar.addAsManifestResource(new StringAsset("Dependencies: javax.inject.api,org.jboss.as.connector," +
                 "org.jboss.as.controller,org.jboss.dmr,org.jboss.as.cli,org.jboss.staxmapper," +
-                "org.jboss.ironjacamar.impl, org.jboss.ironjacamar.jdbcadapters\n"), "MANIFEST.MF");
+                "org.jboss.ironjacamar.impl, org.jboss.ironjacamar.jdbcadapters,org.jboss.remoting\n"), "MANIFEST.MF");
+        rar.addAsManifestResource(createPermissionsXmlAsset(
+                new RemotingPermission("createEndpoint"),
+                new RemotingPermission("connect"),
+                new PropertyPermission("ts.timeout.factor", "read"),
+                new RuntimePermission("accessDeclaredMembers"),
+                new ReflectPermission("suppressAccessChecks")
+        ), "permissions.xml");
 
         rar.addAsLibrary(jar);
         return rar;
@@ -143,9 +163,8 @@ public class ResourceAdapterCapacityPoliciesTestCase extends JcaMgmtBase {
         LazyConnection[] connections = new LazyConnection[4];
         connections[0] = lcf.getConnection();
 
-        // sometimes InUseCount is 2 and AvailableCount is 3 when statistics are checked right after
-        // ds.getConnection, hence this sleep. I guess it's caused by CapacityFiller
-        Thread.sleep(50);
+        // wait until IJ PoolFiller and CapacityFiller fill pool with expected number of connections
+        waitForPool(2000);
 
         checkStatistics(4, 1, 5, 0);
 
@@ -171,22 +190,38 @@ public class ResourceAdapterCapacityPoliciesTestCase extends JcaMgmtBase {
 
     private void checkStatistics(int expectedAvailableCount, int expectedInUseCount,
                                  int expectedActiveCount, int expectedDestroyedCount) throws Exception {
-        // /subsystem=resource-adapters/resource-adapter=capacity-policies-test.rar ...
-        // .../connection-definitions=Lazy/statistics=pool:read-resource(include-runtime=true
-        ModelNode statsAddress = RA_ADDRESS.clone();
-        statsAddress.add("connection-definitions", "Lazy")
-                .add("statistics", "pool");
-        statsAddress.protect();
-
-        int availableCount = readAttribute(statsAddress, "AvailableCount").asInt();
-        int inUseCount = readAttribute(statsAddress, "InUseCount").asInt();
-        int activeCount = readAttribute(statsAddress, "ActiveCount").asInt();
-        int destroyedCount = readAttribute(statsAddress, "DestroyedCount").asInt();
+        int availableCount = readStatisticsAttribute("AvailableCount");
+        int inUseCount = readStatisticsAttribute("InUseCount");
+        int activeCount = readStatisticsAttribute("ActiveCount");
+        int destroyedCount = readStatisticsAttribute("DestroyedCount");
 
         Assert.assertEquals("Unexpected AvailableCount", expectedAvailableCount, availableCount);
         Assert.assertEquals("Unexpected InUseCount", expectedInUseCount, inUseCount);
         Assert.assertEquals("Unexpected ActiveCount", expectedActiveCount, activeCount);
         Assert.assertEquals("Unexpected DestroyedCount", expectedDestroyedCount, destroyedCount);
+    }
+
+    private int readStatisticsAttribute(final String attributeName) throws Exception {
+        return readAttribute(STATISTICS_ADDRESS, attributeName).asInt();
+    }
+
+    private void waitForPool(final int timeout) throws Exception {
+        long waitTimeout = TimeoutUtil.adjust(timeout);
+        long sleep = 50L;
+        while (true) {
+            int availableCount = readStatisticsAttribute("AvailableCount");
+            int inUseCount = readStatisticsAttribute("InUseCount");
+            int activeCount = readStatisticsAttribute("ActiveCount");
+
+            if (availableCount == 4 && inUseCount == 1 && activeCount == 5)
+                return;
+            TimeUnit.MILLISECONDS.sleep(sleep);
+
+            waitTimeout -= sleep;
+            if (waitTimeout <= 0) {
+                fail("Pool hasn't been filled with expected connections within specified timeout");
+            }
+        }
     }
 
     static class ResourceAdapterCapacityPoliciesServerSetupTask extends AbstractMgmtServerSetupTask {
