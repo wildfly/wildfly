@@ -198,10 +198,78 @@
                             <validity>365</validity>
                         </configuration>
                     </plugin>
-
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>ci-cleanup</id>
+            <activation>
+                <property>
+                    <name>ci-cleanup</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Clean the server configuration(s) -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>clean-test-servers</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>target/jbossas</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-iiop-client</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-iiop-server</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-iiop-ssl-client</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-iiop-ssl-legacy-server</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-iiop-ssl-server</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <profile>
             <id>jdk9</id>
             <activation>

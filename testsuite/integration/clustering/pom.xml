@@ -687,6 +687,105 @@
             </build>
         </profile>
 
+
+        <profile>
+            <id>ci-cleanup</id>
+            <activation>
+                <property>
+                    <name>ci-cleanup</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Clean the server configuration(s) -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>clean-test-servers</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>target/jbossas</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-SYNC-tcp-0</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-SYNC-tcp-1</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-clustered-messaging-0</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-clustered-messaging-1</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-udp-jdbc-store</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-xsite-LON-0</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-xsite-LON-1</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-xsite-NYC-0</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-xsite-SFO-0</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-xsite-SFO-0-backupFor</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- Enable using -Dts.noClustering. -->
         <profile>
             <id>ts.clustering.do-nothing.profile</id>

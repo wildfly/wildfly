@@ -84,9 +84,8 @@
                                 <include>org/jboss/as/test/manualmode/**/*TestCase.java</include>
                             </includes>
                             <runOrder>alphabetical</runOrder>
-
                             <environmentVariables>
-                                <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
+                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
                             </environmentVariables>
 
                             <!-- Parameters to test cases. -->
@@ -105,11 +104,89 @@
                                 <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
                             </systemPropertyVariables>
                         </configuration>
-
                     </plugin>
                 </plugins>
             </build>
         </profile>
 
+        <profile>
+            <id>ci-cleanup</id>
+            <activation>
+                <property>
+                    <name>ci-cleanup</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Clean the server configuration(s) -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>clean-test-servers</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>target/jbossas</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-layered</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-admin-only</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-messaging-ha-server1</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-messaging-ha-server2</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-parse-marshal</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-with-remote-outbound-connection</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-with-remote-outbound-connection-tmp</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>

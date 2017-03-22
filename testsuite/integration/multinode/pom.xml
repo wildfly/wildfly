@@ -89,7 +89,62 @@
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
+                </plugins>
+            </build>
+        </profile>
 
+        <profile>
+            <id>ci-cleanup</id>
+            <activation>
+                <property>
+                    <name>ci-cleanup</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Clean the server configuration(s) -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>clean-test-servers</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                     <filesets>
+                                        <fileset>
+                                            <directory>target/jbossas</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-multinode-client</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-multinode-client-tmp</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-multinode-server</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
