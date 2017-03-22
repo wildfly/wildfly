@@ -34,5 +34,7 @@
         <module name="org.jboss.remoting"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.jboss.ejb-client" services="import" optional="true"/>
+        <module name="org.wildfly.transaction.client" services="import" optional="true"/>
     </dependencies>
 </module>
