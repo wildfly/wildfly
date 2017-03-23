@@ -84,12 +84,12 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
                     ProtocolStackConfiguration configuration = factory.getProtocolStackConfiguration();
                     ProtocolConfiguration<? extends TP> transport = configuration.getTransport();
                     if (transport.getName().equals(protocolName)) {
-                        Class<? extends Protocol> protocolClass = transport.createProtocol().getClass();
+                        Class<? extends Protocol> protocolClass = transport.createProtocol(configuration).getClass();
                         return channel.getProtocolStack().findProtocol(protocolClass);
                     }
                     for (ProtocolConfiguration<? extends Protocol> protocol : configuration.getProtocols()) {
                         if (protocol.getName().equals(protocolName)) {
-                            Class<? extends Protocol> protocolClass = protocol.createProtocol().getClass();
+                            Class<? extends Protocol> protocolClass = protocol.createProtocol(configuration).getClass();
                             return channel.getProtocolStack().findProtocol(protocolClass);
                         }
                     }

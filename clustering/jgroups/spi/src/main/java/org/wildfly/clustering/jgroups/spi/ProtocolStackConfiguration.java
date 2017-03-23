@@ -34,6 +34,8 @@ public interface ProtocolStackConfiguration {
 
     String getName();
 
+    boolean isStatisticsEnabled();
+
     TransportConfiguration<? extends TP> getTransport();
 
     List<ProtocolConfiguration<? extends Protocol>> getProtocols();

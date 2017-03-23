@@ -29,7 +29,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jgroups.protocols.TP;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
@@ -63,7 +62,7 @@ public class MulticastProtocolConfigurationBuilder<P extends Protocol & Multicas
 
     @Override
     public void accept(P protocol) {
-        TransportConfiguration<? extends TP> transport = this.transport.getValue();
-        protocol.setMulticast(transport.createProtocol().isMulticastCapable());
+        TransportConfiguration transport = this.transport.getValue();
+        protocol.setMulticast(transport.getSocketBinding().getMulticastAddress() != null);
     }
 }

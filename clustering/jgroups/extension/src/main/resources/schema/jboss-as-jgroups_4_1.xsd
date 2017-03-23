@@ -176,6 +176,11 @@
                 <xs:documentation>Uniquely identifies this stack.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="statistics-enabled" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>Indicates whether or not all protocols in the stack will collect statistics by default.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="generic-protocol">
@@ -194,6 +199,11 @@
         <xs:attribute name="module" type="xs:string" default="org.jgroups">
             <xs:annotation>
                 <xs:documentation>Indicates the module from which to load this protocol.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="statistics-enabled" type="xs:boolean">
+            <xs:annotation>
+                <xs:documentation>Indicates whether or not this protocol will collect statistics overriding stack configuration.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

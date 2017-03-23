@@ -25,19 +25,19 @@ package org.jboss.as.clustering.jgroups.protocol;
 import org.jgroups.stack.Protocol;
 
 /**
- * A marker interface for custom protocol overrides.
+ * An interface for custom protocol overrides.
  * @author Paul Ferraro
  */
 public interface CustomProtocol {
     /**
      * The name of the protocol.  Exposes {@link Protocol#getName()}.
-     * @return
+     * @return name of the protocol.
      */
     String getName();
 
     /**
      * Sets the id of the protocol.  Exposes {@link Protocol#setId(short)}.
-     * @return
+     * @return same protocol instance with the id set.
      */
     Protocol setId(short id);
 }
