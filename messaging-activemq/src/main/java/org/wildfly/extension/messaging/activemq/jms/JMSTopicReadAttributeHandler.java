@@ -32,9 +32,11 @@ import static org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition.NO
 import static org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition.SUBSCRIPTION_COUNT;
 import static org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition.TOPIC_ADDRESS;
 
+import org.apache.activemq.artemis.api.core.management.AddressControl;
+import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.api.jms.management.TopicControl;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
+import org.apache.activemq.artemis.core.server.management.ManagementService;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
@@ -50,9 +52,13 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Implements the {@code read-attribute} operation for runtime attributes exposed by a ActiveMQ
- * {@link TopicControl}.
+ * Topic.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -82,7 +88,8 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
 
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
         ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-        TopicControl control = TopicControl.class.cast(server.getManagementService().getResource(ResourceNames.JMS_TOPIC + topicName));
+        ManagementService managementService = server.getManagementService();
+        AddressControl control = AddressControl.class.cast(managementService.getResource(ResourceNames.ADDRESS + topicName));
 
         if (control == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
@@ -98,25 +105,104 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
                 throw new RuntimeException(e);
             }
         } else if (CommonAttributes.DELIVERING_COUNT.getName().equals(attributeName)) {
-            context.getResult().set(control.getDeliveringCount());
+            context.getResult().set(getDeliveringCount(control, managementService));
         } else if (CommonAttributes.MESSAGES_ADDED.getName().equals(attributeName)) {
-            context.getResult().set(control.getMessagesAdded());
+            context.getResult().set(getMessagesAdded(control, managementService));
         } else if (DURABLE_MESSAGE_COUNT.getName().equals(attributeName)) {
-            context.getResult().set(control.getDurableMessageCount());
+            context.getResult().set(getDurableMessageCount(control, managementService));
         } else if (NON_DURABLE_MESSAGE_COUNT.getName().equals(attributeName)) {
-            context.getResult().set(control.getNonDurableMessageCount());
+            context.getResult().set(getNonDurableMessageCount(control, managementService));
         } else if (SUBSCRIPTION_COUNT.getName().equals(attributeName)) {
-            context.getResult().set(control.getSubscriptionCount());
+            context.getResult().set(getSubscriptionCount(control, managementService));
         } else if (DURABLE_SUBSCRIPTION_COUNT.getName().equals(attributeName)) {
-            context.getResult().set(control.getDurableSubscriptionCount());
+            context.getResult().set(getDurableSubscriptionCount(control, managementService));
         } else if (NON_DURABLE_SUBSCRIPTION_COUNT.getName().equals(attributeName)) {
-            context.getResult().set(control.getNonDurableSubscriptionCount());
+            context.getResult().set(getNonDurableSubscriptionCount(control, managementService));
         } else if (TOPIC_ADDRESS.getName().equals(attributeName)) {
             context.getResult().set(control.getAddress());
         } else if (CommonAttributes.TEMPORARY.getName().equals(attributeName)) {
-            context.getResult().set(control.isTemporary());
+            // This attribute does not make sense. JMS topics created by the management API are always
+            // managed and not temporary. Only topics created by the Clients can be temporary.
+            context.getResult().set(false);
         } else {
             throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(attributeName);
         }
     }
+
+    private int getDeliveringCount(AddressControl addressControl, ManagementService managementService) {
+        List<QueueControl> queues = getQueues(DurabilityType.ALL, addressControl, managementService);
+        int count = 0;
+        for (QueueControl queue : queues) {
+            count += queue.getDeliveringCount();
+        }
+        return count;
+    }
+
+    private long getMessagesAdded(AddressControl addressControl, ManagementService managementService) {
+        List<QueueControl> queues = getQueues(DurabilityType.ALL, addressControl, managementService);
+        int count = 0;
+        for (QueueControl queue : queues) {
+            count += queue.getMessagesAdded();
+        }
+        return count;
+    }
+
+
+    private int getDurableMessageCount(AddressControl addressControl, ManagementService managementService) {
+        return getMessageCount(DurabilityType.DURABLE, addressControl, managementService);
+    }
+
+
+    private int getNonDurableMessageCount(AddressControl addressControl, ManagementService managementService) {
+        return getMessageCount(DurabilityType.NON_DURABLE, addressControl, managementService);
+    }
+
+
+    private int getMessageCount(final DurabilityType durability, AddressControl addressControl, ManagementService managementService) {
+        List<QueueControl> queues = getQueues(durability, addressControl, managementService);
+        int count = 0;
+        for (QueueControl queue : queues) {
+            count += queue.getMessageCount();
+        }
+        return count;
+    }
+
+    public int getSubscriptionCount(AddressControl addressControl, ManagementService managementService) {
+        return getQueues(DurabilityType.ALL, addressControl, managementService).size();
+    }
+
+    public int getDurableSubscriptionCount(AddressControl addressControl, ManagementService managementService) {
+        return getQueues(DurabilityType.DURABLE, addressControl, managementService).size();
+    }
+
+    public int getNonDurableSubscriptionCount(AddressControl addressControl, ManagementService managementService) {
+        return getQueues(DurabilityType.NON_DURABLE, addressControl, managementService).size();
+    }
+
+
+    public static List<QueueControl> getQueues(final DurabilityType durability, AddressControl addressControl, ManagementService managementService) {
+        try {
+            List<QueueControl> matchingQueues = new ArrayList<>();
+            String[] queues = addressControl.getQueueNames();
+            for (String queue : queues) {
+                QueueControl coreQueueControl = (QueueControl) managementService.getResource(ResourceNames.QUEUE + queue);
+
+                // Ignore the "special" subscription
+                if (coreQueueControl != null && !coreQueueControl.getName().equals(addressControl.getAddress())) {
+                    if (durability == DurabilityType.ALL || durability == DurabilityType.DURABLE && coreQueueControl.isDurable() ||
+                          durability == DurabilityType.NON_DURABLE && !coreQueueControl.isDurable()) {
+                        matchingQueues.add(coreQueueControl);
+                    }
+                }
+            }
+            return matchingQueues;
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
+
+    public enum DurabilityType {
+        ALL, DURABLE, NON_DURABLE
+    }
+
 }

@@ -156,7 +156,8 @@ public class SecurityTestCase {
             fail("Must not create a durable queue without the CREATE_DURABLE_QUEUE permission");
         } catch (ActiveMQException e) {
             assertEquals(ActiveMQExceptionType.SECURITY_EXCEPTION, e.getType());
-            assertTrue(e.getMessage().startsWith("AMQ119032"));
+            // Code of exception has changed in Artemis 2.x
+            assertTrue(e.getMessage().startsWith("AMQ119213"));
             assertTrue(e.getMessage().contains(CheckType.CREATE_DURABLE_QUEUE.toString()));
         } finally {
             if (session != null) {

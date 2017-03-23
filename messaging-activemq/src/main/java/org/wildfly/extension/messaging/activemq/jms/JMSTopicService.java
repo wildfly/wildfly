@@ -52,13 +52,10 @@ public class JMSTopicService implements Service<Topic> {
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
 
     private final String name;
-    private final String[] jndi;
-
     private Topic topic;
 
-    public JMSTopicService(String name, String[] jndi) {
+    public JMSTopicService(String name) {
         this.name = name;
-        this.jndi = jndi;
     }
 
     @Override
@@ -68,7 +65,7 @@ public class JMSTopicService implements Service<Topic> {
             @Override
             public void run() {
                 try {
-                    jmsManager.createTopic(false, name, jndi);
+                    jmsManager.createTopic(false, name);
                     topic = new ActiveMQTopic(name);
                     context.complete();
                 } catch (Throwable e) {
@@ -87,27 +84,6 @@ public class JMSTopicService implements Service<Topic> {
 
     @Override
     public synchronized void stop(final StopContext context) {
-        final JMSServerManager jmsManager = jmsServer.getValue();
-        final Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    jmsManager.removeTopicFromBindingRegistry(name);
-                    topic = null;
-                } catch (Throwable e) {
-                    MessagingLogger.ROOT_LOGGER.failedToDestroy(e, "jms topic", name);
-                }
-                context.complete();
-            }
-        };
-        // JMS Server Manager uses locking which waits on service completion, use async to prevent starvation
-        try {
-            executorInjector.getValue().execute(task);
-        } catch (RejectedExecutionException e) {
-            task.run();
-        } finally {
-            context.asynchronous();
-        }
     }
 
     @Override
@@ -115,8 +91,8 @@ public class JMSTopicService implements Service<Topic> {
         return topic;
     }
 
-    public static JMSTopicService installService(final String name, final ServiceName serverServiceName, final ServiceTarget serviceTarget, final String[] jndiBindings) {
-        final JMSTopicService service = new JMSTopicService(name, jndiBindings);
+    public static JMSTopicService installService(final String name, final ServiceName serverServiceName, final ServiceTarget serviceTarget) {
+        final JMSTopicService service = new JMSTopicService(name);
         final ServiceName serviceName = JMSServices.getJmsTopicBaseServiceName(serverServiceName).append(name);
 
         final ServiceBuilder<Topic> serviceBuilder = serviceTarget.addService(serviceName, service)

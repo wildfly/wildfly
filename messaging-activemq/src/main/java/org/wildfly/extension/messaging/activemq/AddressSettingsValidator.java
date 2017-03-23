@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.apache.activemq.artemis.jms.client.ActiveMQDestination.JMS_QUEUE_ADDRESS_PREFIX;
-import static org.apache.activemq.artemis.jms.client.ActiveMQDestination.JMS_TOPIC_ADDRESS_PREFIX;
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DEAD_LETTER_ADDRESS;
@@ -45,6 +43,8 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  */
 class AddressSettingsValidator {
 
+    private static final String JMS_QUEUE_ADDRESS_PREFIX = "jms.queue.";
+    private static final String JMS_TOPIC_ADDRESS_PREFIX = "jms.topic.";
     /**
      * Validates that an address-setting:add operation does not define expiry-address or dead-letter address
      * without corresponding resources for them.
