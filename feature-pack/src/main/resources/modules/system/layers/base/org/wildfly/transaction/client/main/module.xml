@@ -36,6 +36,7 @@
         <module name="javax.resource.api"/>
         <module name="javax.transaction.api"/>
 
+        <module name="org.jboss.ejb-client" services="import"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.jts"/>
         <module name="org.jboss.jts.integration"/>

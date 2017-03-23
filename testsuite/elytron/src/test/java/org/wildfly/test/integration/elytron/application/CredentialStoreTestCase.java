@@ -26,6 +26,7 @@ import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -36,9 +37,13 @@ import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.dmr.ModelNode;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -164,7 +169,6 @@ public class CredentialStoreTestCase extends AbstractCredentialStoreTestCase {
      * Tests add-remove-add opertations sequence on an alias in credential store.
      */
     @Test
-    @Ignore("WFLY-8144")
     public void testAddRemoveAddAlias() throws Exception {
         final String alias = "addremoveadd";
         try (CLIWrapper cli = new CLIWrapper(true)) {
@@ -177,6 +181,11 @@ public class CredentialStoreTestCase extends AbstractCredentialStoreTestCase {
                 cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add(secret-value=\"%s\"",
                         CS_NAME_MODIFIABLE, alias, alias + alias));
                 assertCredentialValue(CS_NAME_MODIFIABLE, alias, alias + alias);
+                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add(secret-value=\"%s\"",
+                        CS_NAME_MODIFIABLE, alias, alias), true);
+                ModelNode result = ModelNode.fromString(cli.readOutput());
+                assertEquals("result " + result, result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).asString(), ControllerLogger.ROOT_LOGGER.duplicateResourceAddress(PathAddress.parseCLIStyleAddress(String.format("/subsystem=elytron/credential-store=%s/alias=%s",
+                        CS_NAME_MODIFIABLE, alias))).getMessage());
             } finally {
                 cli.sendLine(
                         String.format("/subsystem=elytron/credential-store=%s/alias=%s:remove()", CS_NAME_MODIFIABLE, alias));
@@ -197,9 +206,9 @@ public class CredentialStoreTestCase extends AbstractCredentialStoreTestCase {
      * Tests creating credential with empty secret.
      */
     @Test
-    @Ignore("WFLY-8143")
     public void testEmptySecret() throws Exception {
         assertAliasAndSecretSupported(CS_NAME_MODIFIABLE, "emptysecret", "");
+        assertAliasAndSecretSupported(CS_NAME_MODIFIABLE, "nullsecret", null);
     }
 
     /**

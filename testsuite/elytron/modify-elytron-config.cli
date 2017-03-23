@@ -31,8 +31,8 @@ embed-server --jboss-home=${jboss.home.dir} --admin-only=true
 
 # add test users (copies the test configuration from property files)
 
-/subsystem=elytron/filesystem-realm=ManagementFsRealm/identity=testSuite:add()
-/subsystem=elytron/filesystem-realm=ManagementFsRealm/identity=testSuite:set-password(clear={password="testSuitePassword"})
+/subsystem=elytron/filesystem-realm=ManagementFsRealm/identity=testsuite:add()
+/subsystem=elytron/filesystem-realm=ManagementFsRealm/identity=testsuite:set-password(clear={password="testSuitePassword"})
 
 /subsystem=elytron/filesystem-realm=ApplicationFsRealm/identity=user1:add()
 /subsystem=elytron/filesystem-realm=ApplicationFsRealm/identity=user1:set-password(clear={password="password1"})
