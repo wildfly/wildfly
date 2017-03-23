@@ -38,6 +38,7 @@ import org.jgroups.fork.UnknownForkHandler;
 import org.jgroups.protocols.FORK;
 import org.jgroups.stack.ProtocolStack;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 
@@ -69,7 +70,8 @@ public class JChannelFactory implements ChannelFactory {
                 Stream.of(this.configuration.getTransport()),
                 this.configuration.getProtocols().stream(),
                 Stream.of(this.configuration.getRelay())
-        ).flatMap(Function.identity()).filter(Objects::nonNull).map(pc -> pc.createProtocol(this.configuration)).collect(Collectors.toList()));
+        ).flatMap(Function.identity()).filter(Objects::nonNull).map(pc -> ((ProtocolConfiguration) pc).createProtocol(this.configuration)).collect(Collectors.toList()));
+        // unnecessary casting in above line workarounds JDK 9-ea+161 issue ^^^^^^^^^^^^^^^^^^^^^
 
         // Add implicit FORK to the top of the stack
         FORK fork = new FORK();
