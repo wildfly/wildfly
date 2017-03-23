@@ -20,12 +20,13 @@ TIP: The configuration schemas can found in `$JBOSS_HOME/docs/schema`.
 
 :leveloffset: +1
 
-
 include::subsystem-configuration/EE.adoc[]
 
 include::subsystem-configuration/Naming.adoc[]
 
 include::subsystem-configuration/DataSource.adoc[]
+
+include::subsystem-configuration/Datasources_Agroal.adoc[]
 
 include::subsystem-configuration/Logging.adoc[]
 

@@ -1,0 +1,33 @@
+<subsystem xmlns="urn:jboss:domain:datasources-agroal:1.0">
+    <datasource name="sample" jndi-name="java:jboss/datasources/ExampleDS" jta="false" connectable="true" statistics-enabled="true">
+        <connection-factory driver="h2" url="jdbc:h2:tcp://localhost:1701" transaction-isolation="SERIALIZABLE" new-connection-sql="SELECT 1" username="sa" password="sa">
+            <connection-properties>
+                <property name="someProperty" value="someValue"/>
+                <property name="sneakySecond" value="veryFunny"/>
+            </connection-properties>
+        </connection-factory>
+        <connection-pool max-size="30" min-size="10" initial-size="20" blocking-timeout="1000" background-validation="6000" leak-detection="5000" idle-removal="5"/>
+    </datasource>
+    <datasource name="minimal" jndi-name="java:jboss/datasources/MinimalDS">
+        <connection-factory driver="h2" url="jdbc:h2:tcp://localhost:1701"/>
+        <connection-pool max-size="30"/>
+    </datasource>
+    <datasource name="elytron" jndi-name="java:jboss/datasources/ElytronDS">
+        <connection-factory driver="h2" url="jdbc:h2:tcp://localhost:1701" authentication-context="secure-context">
+            <credential-reference store="test-store" alias="another" type="org.wildfly.security.credential.PasswordCredential" />
+        </connection-factory>
+        <connection-pool max-size="30"/>
+    </datasource>
+    <xa-datasource name="sample-xa" jndi-name="java:jboss/datasources/ExampleXADS" statistics-enabled="true">
+        <connection-factory driver="h2-xa" url="jdbc:h2:tcp://localhost:1702" transaction-isolation="REPEATABLE_READ" new-connection-sql="SELECT 1" username="sa" password="sa">
+            <connection-properties>
+                <property name="anotherProperty" value="anotherValue"/>
+            </connection-properties>
+        </connection-factory>
+        <connection-pool initial-size="5" min-size="1" max-size="10" blocking-timeout="2000" background-validation="8000" leak-detection="7000" idle-removal="7"/>
+    </xa-datasource>
+    <drivers>
+        <driver name="h2" module="com.h2database.h2" class="org.h2.Driver"/>
+        <driver name="h2-xa" module="com.h2database.h2" class="org.h2.jdbcx.JdbcDataSource"/>
+    </drivers>
+</subsystem>

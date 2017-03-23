@@ -60,6 +60,7 @@
         <module>clustering</module>
         <module>component-matrix-builder</module>
         <module>connector</module>
+        <module>datasources-agroal</module>
         <module>dist</module>
         <module>dist-legacy</module>
         <module>ee</module>
@@ -229,6 +230,7 @@
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.groovy-all>2.4.7</version.groovy-all>
         <version.httpunit>1.7.2</version.httpunit>
+        <version.io.agroal>1.1</version.io.agroal>
         <version.io.jaegertracing>0.30.4</version.io.jaegertracing>
         <version.io.netty>4.1.25.Final</version.io.netty>
         <version.io.opentracing>0.31.0</version.io.opentracing>
@@ -697,6 +699,12 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-connector</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-datasources-agroal</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1375,6 +1383,24 @@
                 <groupId>gnu.getopt</groupId>
                 <artifactId>java-getopt</artifactId>
                 <version>${version.gnu.getopt}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.agroal</groupId>
+                <artifactId>agroal-api</artifactId>
+                <version>${version.io.agroal}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.agroal</groupId>
+                <artifactId>agroal-narayana</artifactId>
+                <version>${version.io.agroal}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.agroal</groupId>
+                <artifactId>agroal-pool</artifactId>
+                <version>${version.io.agroal}</version>
             </dependency>
 
             <dependency>
