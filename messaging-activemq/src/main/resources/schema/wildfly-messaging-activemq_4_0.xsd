@@ -275,9 +275,24 @@
                         </xs:simpleType>
                     </xs:attribute>
                     <xs:attribute name="slow-consumer-threshold" type="xs:long" use="optional" />
-                    <xs:attribute name="auto-create-jms-queues" type="xs:boolean" use="optional" />
-                    <xs:attribute name="auto-delete-jms-queues" type="xs:boolean" use="optional" />
-                </xs:complexType>
+                    <xs:attribute name="auto-create-jms-queues" type="xs:boolean">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Deprecated. Use auto-create-queues and auto-create-addresses instead.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="auto-delete-jms-queues" type="xs:boolean">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Deprecated. Use auto-delete-queues and auto-delete-addresses instead.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="auto-create-queues" type="xs:boolean" />
+                    <xs:attribute name="auto-delete-queues" type="xs:boolean" />
+                    <xs:attribute name="auto-create-addresses" type="xs:boolean" />
+                    <xs:attribute name="auto-delete-addresses" type="xs:boolean" />                </xs:complexType>
             </xs:element>
 
             <xs:element name="http-connector" minOccurs="0" maxOccurs="unbounded">
@@ -632,7 +647,6 @@
                     <xs:attribute name="max-pool-size" type="xs:int" use="optional" />
                     <xs:attribute name="managed-connection-pool" type="xs:string" use="optional" />
                     <xs:attribute name="enlistment-trace" type="xs:boolean" use="optional" />
-                    <xs:attribute name="initial-message-packet-size" type="xs:int" use="optional" />
                     <xs:attribute name="initial-connect-attempts" type="xs:int" use="optional" />
                     <xs:attribute name="statistics-enabled" type="xs:boolean" use="optional" />
                 </xs:complexType>
@@ -779,6 +793,7 @@
         <xs:attribute name="group-id" type="xs:string" use="optional" />
         <xs:attribute name="deserialization-white-list" type="stringList" use="optional" />
         <xs:attribute name="deserialization-black-list" type="stringList" use="optional" />
+        <xs:attribute name="initial-message-packet-size" type="xs:int" use="optional" />
     </xs:attributeGroup>
 
     <xs:simpleType name="connectionFactoryType">

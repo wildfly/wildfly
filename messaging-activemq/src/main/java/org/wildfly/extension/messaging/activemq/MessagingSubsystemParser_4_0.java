@@ -293,7 +293,11 @@ public class MessagingSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         AddressSettingDefinition.SLOW_CONSUMER_POLICY,
                                                         AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD,
                                                         AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES,
-                                                        AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES))
+                                                        AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES,
+                                                        AddressSettingDefinition.AUTO_CREATE_QUEUES,
+                                                        AddressSettingDefinition.AUTO_DELETE_QUEUES,
+                                                        AddressSettingDefinition.AUTO_CREATE_ADDRESSES,
+                                                        AddressSettingDefinition.AUTO_DELETE_ADDRESSES))
                                 .addChild(
                                         builder(MessagingExtension.HTTP_CONNECTOR_PATH)
                                                 .addAttributes(
@@ -482,6 +486,7 @@ public class MessagingSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Common.GROUP_ID,
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                                                        ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE,
                                                         // regular
                                                         ConnectionFactoryAttributes.Regular.FACTORY_TYPE))
                                 .addChild(
@@ -565,6 +570,7 @@ public class MessagingSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Common.GROUP_ID,
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                                                        ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE,
                                                         // pooled
                                                         // inbound config
                                                         ConnectionFactoryAttributes.Pooled.USE_JNDI,
@@ -585,7 +591,6 @@ public class MessagingSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE,
                                                         ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL,
                                                         ConnectionFactoryAttributes.Pooled.ENLISTMENT_TRACE,
-                                                        ConnectionFactoryAttributes.Pooled.INITIAL_MESSAGE_PACKET_SIZE,
                                                         ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS,
                                                         ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED)))
                 .addChild(

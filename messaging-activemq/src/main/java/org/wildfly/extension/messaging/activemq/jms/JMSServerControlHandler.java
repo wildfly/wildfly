@@ -24,16 +24,22 @@ package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.dmr.ModelType.LIST;
+import static org.jboss.dmr.ModelType.STRING;
 import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService.rollbackOperationIfServerNotActive;
 import static org.wildfly.extension.messaging.activemq.ManagementUtil.reportListOfStrings;
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.createNonEmptyStringAttribute;
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.runtimeReadOnlyOperation;
-import static org.jboss.dmr.ModelType.LIST;
-import static org.jboss.dmr.ModelType.STRING;
 
-import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.api.jms.management.JMSServerControl;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
+import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
+import org.apache.activemq.artemis.core.server.ServerSession;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -43,14 +49,14 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.wildfly.extension.messaging.activemq.MessagingServices;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
- * Handles operations and attribute reads supported by a ActiveMQ {@link JMSServerControl}.
+ * Handles operations and attribute reads supported by a ActiveMQ {@link ActiveMQServerControl}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -83,11 +89,12 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
         }
 
         final String operationName = operation.require(OP).asString();
-        final JMSServerControl serverControl = getServerControl(context, operation);
-        if (serverControl == null) {
+        final ActiveMQServer server = getServer(context, operation);
+        if (server == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
         }
+        final ActiveMQServerControl serverControl = server.getActiveMQServerControl();
 
         try {
             if (LIST_CONNECTIONS_AS_JSON.equals(operationName)) {
@@ -102,17 +109,26 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
                 context.getResult().set(json);
             } else if (LIST_TARGET_DESTINATIONS.equals(operationName)) {
                 String sessionID = SESSION_ID.resolveModelAttribute(context, operation).asString();
-                String[] list = serverControl.listTargetDestinations(sessionID);
+                // Artemis no longer defines the method. Its implementation from Artemis 1.5 has been inlined:
+                String[] list = listTargetDestinations(server, sessionID);
                 reportListOfStrings(context, list);
             } else if (GET_LAST_SENT_MESSAGE_ID.equals(operationName)) {
                 String sessionID = SESSION_ID.resolveModelAttribute(context, operation).asString();
                 String addressName = ADDRESS_NAME.resolveModelAttribute(context, operation).asString();
-                String msgId = serverControl.getLastSentMessageID(sessionID, addressName);
-                context.getResult().set(msgId);
+                // Artemis no longer defines the method. Its implementation from Artemis 1.5 has been inlined:
+                ServerSession session = server.getSessionByID(sessionID);
+                if (session != null) {
+                    String messageID = session.getLastSentMessageID(addressName);
+                    context.getResult().set(messageID);
+                }
             } else if (GET_SESSION_CREATION_TIME.equals(operationName)) {
                 String sessionID = SESSION_ID.resolveModelAttribute(context, operation).asString();
-                String time = serverControl.getSessionCreationTime(sessionID);
-               context.getResult().set(time);
+                // Artemis no longer defines the method. Its implementation from Artemis 1.5 has been inlined:
+                ServerSession session = server.getSessionByID(sessionID);
+                if (session != null) {
+                    String time = String.valueOf(session.getCreationTime());
+                    context.getResult().set(time);
+                }
             } else if (LIST_SESSIONS_AS_JSON.equals(operationName)) {
                 String connectionID = CONNECTION_ID.resolveModelAttribute(context, operation).asString();
                 String json = serverControl.listSessionsAsJSON(connectionID);
@@ -176,10 +192,34 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
                 this);
     }
 
-    private JMSServerControl getServerControl(final OperationContext context, final ModelNode operation) {
+    private ActiveMQServer getServer(final OperationContext context, final ModelNode operation) {
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
         ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-        return JMSServerControl.class.cast(server.getManagementService().getResource(ResourceNames.JMS_SERVER));
+        return server;
+    }
+
+    public String[] listTargetDestinations(ActiveMQServer server, String sessionID) throws Exception {
+        ServerSession session = server.getSessionByID(sessionID);
+        if (session == null) {
+            return new String[0];
+        }
+        String[] addresses = session.getTargetAddresses();
+        Map<String, QueueControl> allDests = new HashMap<>();
+
+        Object[] queueControls = server.getManagementService().getResources(QueueControl.class);
+        for (Object queue : queueControls) {
+            QueueControl queueControl = (QueueControl)queue;
+            allDests.put(queueControl.getAddress(), queueControl);
+        }
+
+        List<String> destinations = new ArrayList<>();
+        for (String addresse : addresses) {
+            QueueControl control = allDests.get(addresse);
+            if (control != null) {
+                destinations.add(control.getAddress());
+            }
+        }
+        return destinations.toArray(new String[destinations.size()]);
     }
 }

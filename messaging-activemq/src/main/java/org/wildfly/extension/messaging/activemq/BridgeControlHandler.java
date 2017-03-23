@@ -39,7 +39,7 @@ public class BridgeControlHandler extends AbstractActiveMQComponentControlHandle
     @Override
     protected BridgeControl getActiveMQComponentControl(ActiveMQServer activeMQServer, PathAddress address) {
         final String resourceName = address.getLastElement().getValue();
-        return BridgeControl.class.cast(activeMQServer.getManagementService().getResource(ResourceNames.CORE_BRIDGE + resourceName));
+        return BridgeControl.class.cast(activeMQServer.getManagementService().getResource(ResourceNames.BRIDGE + resourceName));
     }
 
     @Override

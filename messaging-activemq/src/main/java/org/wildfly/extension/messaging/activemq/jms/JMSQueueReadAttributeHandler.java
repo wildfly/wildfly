@@ -24,30 +24,30 @@ package org.wildfly.extension.messaging.activemq.jms;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.NAME;
 import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService.ignoreOperationIfServerNotActive;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.NAME;
 
+import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.api.jms.management.JMSQueueControl;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
-import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.wildfly.extension.messaging.activemq.CommonAttributes;
-import org.wildfly.extension.messaging.activemq.MessagingServices;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.messaging.activemq.CommonAttributes;
+import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
  * Implements the {@code read-attribute} operation for runtime attributes exposed by a ActiveMQ
- * {@link JMSQueueControl}.
+ * {@link QueueControl}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -71,7 +71,7 @@ public class JMSQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         validator.validate(operation);
         final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
 
-        JMSQueueControl control = getControl(context, operation);
+        QueueControl control = getControl(context, operation);
         if (control == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
@@ -124,13 +124,13 @@ public class JMSQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         }
     }
 
-    private JMSQueueControl getControl(OperationContext context, ModelNode operation) {
+    private QueueControl getControl(OperationContext context, ModelNode operation) {
         String queueName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
         ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-        JMSQueueControl control = JMSQueueControl.class.cast(server.getManagementService().getResource(ResourceNames.JMS_QUEUE + queueName));
+        QueueControl control = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + queueName));
         return control;
     }
 }

@@ -1,6 +1,6 @@
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:4.0">
     <global-client thread-pool-max-size="${global.client.thread-pool-max-size:32}"
-           scheduled-thread-pool-max-size="${global.client.scheduled.thread-pool-max-size:54}" />
+                   scheduled-thread-pool-max-size="${global.client.scheduled.thread-pool-max-size:54}" />
     <server name="default"
             persistence-enabled="${persistence.enabled:false}"
             persist-id-cache="${persist.id.cache:false}"
@@ -132,7 +132,11 @@
                          slow-consumer-policy="${slow.consumer.policy:KILL}"
                          slow-consumer-threshold="${slow.consumer.threshold:456}"
                          auto-create-jms-queues="${auto.create.jms.queue:true}"
-                         auto-delete-jms-queues="${auto.delete.jms.queue:true}"/>
+                         auto-delete-jms-queues="${auto.delete.jms.queue:true}"
+                         auto-create-queues="${auto.create.queues:true}"
+                         auto-delete-queues="${auto.delete.queues:true}"
+                         auto-create-addresses="${auto.create.addresses:true}"
+                         auto-delete-addresses="${auto.delete.addresses:true}" />
 
         <http-connector name="http"
                         socket-binding="http"
@@ -331,7 +335,8 @@
                             thread-pool-max-size="${thread.pool.max.size:48}"
                             group-id="${group.id:myGroup}"
                             deserialization-black-list="org.foo.Bar org.foo.Baz"
-                            deserialization-white-list="org.bar.Bar org.baz.Baz" />
+                            deserialization-white-list="org.bar.Bar org.baz.Baz"
+                            initial-message-packet-size="${initial.message.packet.size:456}" />
         <legacy-connection-factory name="legacyConnectionFactory-discovery"
                                    entries="legacy/RemoteConnectionFactory java:/global/jms/legacy/RemoteConnectionFactory"
                                    discovery-group="groupT"

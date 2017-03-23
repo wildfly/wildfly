@@ -69,7 +69,7 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
 
         // Do not pass the JNDI bindings to ActiveMQ but install them directly instead so that the
         // dependencies from the BinderServices to the JMSQueueService are not broken
-        Service<Queue> queueService = JMSQueueService.installService(name, serviceTarget, serviceName, selector, durable, new String[0]);
+        Service<Queue> queueService = JMSQueueService.installService(name, serviceTarget, serviceName, selector, durable);
 
         final ServiceName jmsQueueServiceName = JMSServices.getJmsQueueBaseServiceName(serviceName).append(name);
         for (String entry : CommonAttributes.DESTINATION_ENTRIES.unwrap(context, model)) {

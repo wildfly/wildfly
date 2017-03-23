@@ -82,7 +82,14 @@ import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
  * Domain extension that integrates Apache ActiveMQ 6.
  *
  * <dl>
- *   <dt><strong>Current</strong> - WildFly 11</dt>
+ *   <dt><strong>Current</strong> - WildFly 12</dt>
+ *   <dd>
+ *     <ul>
+ *       <li>XML namespace: urn:jboss:domain:messaging-activemq:3.0
+ *       <li>Management model: 3.0.0
+ *     </ul>
+ *   </dd>
+ *   <dt>WildFly 11</dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging-activemq:2.0
@@ -212,6 +219,8 @@ public class MessagingExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
+        // use method references for legacay versions that may never be instantiated
+        // and use an instance for the current version that will be use if the extension is loaded.
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_0.NAMESPACE, MessagingSubsystemParser_1_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_2_0.NAMESPACE, MessagingSubsystemParser_2_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_3_0.NAMESPACE, MessagingSubsystemParser_3_0::new);
