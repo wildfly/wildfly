@@ -46,6 +46,15 @@ public class MessagingDependencies {
                 "org.apache.activemq:artemis-jms-client:1.1.0.SP16-redhat-1",
                 "org.apache.activemq:artemis-ra:1.1.0.SP16-redhat-1",
         });
+        map.put(ModelTestControllerVersion.WF_11_0_0_CR1, new String[]{
+                "org.apache.activemq:artemis-commons:1.5.5.jbossorg-008",
+                "org.apache.activemq:artemis-journal:1.5.5.jbossorg-008",
+                "org.apache.activemq:artemis-server:1.5.5.jbossorg-008",
+                "org.apache.activemq:artemis-jms-server:1.5.5.jbossorg-008",
+                "org.apache.activemq:artemis-core-client:1.5.5.jbossorg-008",
+                "org.apache.activemq:artemis-jms-client:1.5.5.jbossorg-008",
+                "org.apache.activemq:artemis-ra:1.5.5.jbossorg-008",
+        });
 
         ACTIVEMQ_DEPENDENCIES = Collections.unmodifiableMap(map);
     }
@@ -55,6 +64,12 @@ public class MessagingDependencies {
     }
 
     static String getMessagingActiveMQGAV(ModelTestControllerVersion version) {
-        return "org.jboss.eap:wildfly-messaging-activemq:" + version.getMavenGavVersion();
+        switch (version) {
+            case EAP_7_0_0:
+                return "org.jboss.eap:wildfly-messaging-activemq:" + version.getMavenGavVersion();
+            case WF_11_0_0_CR1:
+            default:
+                return "org.wildfly:wildfly-messaging-activemq:" + version.getMavenGavVersion();
+        }
     }
 }

@@ -1626,8 +1626,13 @@
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-cli</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-commons</artifactId>
@@ -1773,6 +1778,17 @@
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-stomp-protocol</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-tools</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

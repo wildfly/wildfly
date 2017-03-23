@@ -37,7 +37,7 @@ import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
-import org.apache.activemq.artemis.cli.commands.tools.XmlDataImporter;
+import org.apache.activemq.artemis.cli.commands.tools.xml.XmlDataImporter;
 import org.apache.activemq.artemis.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;

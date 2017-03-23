@@ -56,9 +56,9 @@ import org.wildfly.extension.messaging.activemq.jms.legacy.LegacyConnectionFacto
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
-public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
+public class MessagingSubsystemParser_3_0 extends PersistentResourceXMLParser {
 
-    static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:2.0";
+    static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:3.0";
 
     public PersistentResourceXMLDescription getParserDescription(){
         return builder(MessagingExtension.SUBSYSTEM_PATH, NAMESPACE)
@@ -479,6 +479,7 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Common.GROUP_ID,
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                                                        ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE,
                                                         // regular
                                                         ConnectionFactoryAttributes.Regular.FACTORY_TYPE))
                                 .addChild(
@@ -562,6 +563,7 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Common.GROUP_ID,
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                                                        ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE,
                                                         // pooled
                                                         // inbound config
                                                         ConnectionFactoryAttributes.Pooled.USE_JNDI,
@@ -582,7 +584,6 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE,
                                                         ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL,
                                                         ConnectionFactoryAttributes.Pooled.ENLISTMENT_TRACE,
-                                                        ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE,
                                                         ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS,
                                                         ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED)))
                 .addChild(

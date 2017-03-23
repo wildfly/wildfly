@@ -40,6 +40,7 @@ import java.util.List;
 import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
 import org.apache.activemq.artemis.core.config.BridgeConfiguration;
 import org.apache.activemq.artemis.core.config.Configuration;
+import org.apache.activemq.artemis.core.config.TransformerConfiguration;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -117,8 +118,6 @@ public class BridgeAdd extends AbstractAddStepHandler {
         final String forwardingAddress = forwardingNode.isDefined() ? forwardingNode.asString() : null;
         final ModelNode filterNode = CommonAttributes.FILTER.resolveModelAttribute(context, model);
         final String filterString = filterNode.isDefined() ? filterNode.asString() : null;
-        final ModelNode transformerNode = CommonAttributes.TRANSFORMER_CLASS_NAME.resolveModelAttribute(context, model);
-        final String transformerClassName = transformerNode.isDefined() ? transformerNode.asString() : null;
         final int minLargeMessageSize = CommonAttributes.MIN_LARGE_MESSAGE_SIZE.resolveModelAttribute(context, model).asInt();
         final long retryInterval = CommonAttributes.RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
         final double retryIntervalMultiplier = CommonAttributes.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble();
@@ -143,7 +142,6 @@ public class BridgeAdd extends AbstractAddStepHandler {
                 .setQueueName(queueName)
                 .setForwardingAddress(forwardingAddress)
                 .setFilterString(filterString)
-                .setTransformerClassName(transformerClassName)
                 .setMinLargeMessageSize(minLargeMessageSize)
                 .setClientFailureCheckPeriod(clientFailureCheckPeriod)
                 .setConnectionTTL(connectionTTL)
@@ -165,6 +163,11 @@ public class BridgeAdd extends AbstractAddStepHandler {
         } else {
             config.setStaticConnectors(staticConnectors);
         }
+        final ModelNode transformerClassName = CommonAttributes.TRANSFORMER_CLASS_NAME.resolveModelAttribute(context, model);
+        if (transformerClassName.isDefined()) {
+            config.setTransformerConfiguration(new TransformerConfiguration(transformerClassName.asString()));
+        }
+
         return config;
     }
 
@@ -178,9 +181,10 @@ public class BridgeAdd extends AbstractAddStepHandler {
 
     static void createBridge(String name, BridgeConfiguration bridgeConfig, ActiveMQServerControl serverControl) {
         try {
+            String transformerClassName = bridgeConfig.getTransformerConfiguration() != null ? bridgeConfig.getTransformerConfiguration().getClassName() : null;
             if (bridgeConfig.getDiscoveryGroupName() != null) {
                 serverControl.createBridge(name, bridgeConfig.getQueueName(), bridgeConfig.getForwardingAddress(),
-                        bridgeConfig.getFilterString(), bridgeConfig.getTransformerClassName(), bridgeConfig.getRetryInterval(),
+                        bridgeConfig.getFilterString(), transformerClassName, bridgeConfig.getRetryInterval(),
                         bridgeConfig.getRetryIntervalMultiplier(), bridgeConfig.getInitialConnectAttempts(),
                         bridgeConfig.getReconnectAttempts(), bridgeConfig.isUseDuplicateDetection(),
                         bridgeConfig.getConfirmationWindowSize(), bridgeConfig.getClientFailureCheckPeriod(),
@@ -198,7 +202,7 @@ public class BridgeAdd extends AbstractAddStepHandler {
                     connectors += connector;
                 }
                 serverControl.createBridge(name, bridgeConfig.getQueueName(), bridgeConfig.getForwardingAddress(),
-                        bridgeConfig.getFilterString(), bridgeConfig.getTransformerClassName(), bridgeConfig.getRetryInterval(),
+                        bridgeConfig.getFilterString(), transformerClassName, bridgeConfig.getRetryInterval(),
                         bridgeConfig.getRetryIntervalMultiplier(), bridgeConfig.getInitialConnectAttempts(),
                         bridgeConfig.getReconnectAttempts(), bridgeConfig.isUseDuplicateDetection(),
                         bridgeConfig.getConfirmationWindowSize(), bridgeConfig.getClientFailureCheckPeriod(),

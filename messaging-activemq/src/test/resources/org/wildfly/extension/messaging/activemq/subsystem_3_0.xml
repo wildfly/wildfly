@@ -1,4 +1,6 @@
-<subsystem xmlns="urn:jboss:domain:messaging-activemq:2.0">
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:3.0">
+    <global-client thread-pool-max-size="${global.client.thread-pool-max-size:32}"
+           scheduled-thread-pool-max-size="${global.client.scheduled.thread-pool-max-size:54}" />
     <server name="default"
             persistence-enabled="${persistence.enabled:false}"
             persist-id-cache="${persist.id.cache:false}"
@@ -11,15 +13,25 @@
             connection-ttl-override="${connection.ttl.override:5432}"
             async-connection-execution-enabled="${async.connection.execution.enabled:false}">
 
+        <incoming-interceptors>
+            <class name="org.foo.incoming.myInterceptor" module="org.foo" />
+            <class name="org.bar.incoming.myOtherInterceptor" module="org.bar" />
+        </incoming-interceptors>
+
+        <outgoing-interceptors>
+            <class name="org.foo.outgoing.myInterceptor" module="org.foo" />
+            <class name="org.bar.outgoing.myOtherInterceptor" module="org.bar" />
+        </outgoing-interceptors>
+
         <security
                 enabled="${security.enabled:false}"
-                domain="someDomain"
+                elytron-domain="elytronDomain"
                 invalidation-interval="${security.invalidation.interval:1234}"
                 override-in-vm-security="${override.in-vm.security:false}"/>
 
         <cluster
-                user="${messaging.cluster.user.name:myClusterUser}"
-                password="${messaging.cluster.user.password:myClusterPassword}"/>
+                user="${messaging.cluster.user.name}"
+                password="${messaging.cluster.user.password}"/>
 
         <management
                 address="${management.address:my.management.address}"
@@ -41,7 +53,15 @@
                 compact-min-files="${journal.compact.min.files:2}"
                 max-io="${journal.max.io:50}"
                 create-bindings-dir="${create.bindings.dir:false}"
-                create-journal-dir="${create.journal.dir:true}"/>
+                create-journal-dir="${create.journal.dir:true}"
+                datasource="fooDS"
+                database="mysql"
+                jdbc-network-timeout="${journal.jdbc.network.timeout:4567}"
+                messages-table="${journal.message.table:MESSAGES}"
+                bindings-table="${journal.bindings.table:BINDINGS}"
+                jms-bindings-table="${journal.jms.bindings.table:JMS_BINDINGS}"
+                large-messages-table="${journal.large-messages.table:LARGE_MESSAGES}"
+                page-store-table="${journal.page-store.table:PAGE_STORE}"/>
 
         <statistics
                 enabled="${statistics.enabled:true}"
@@ -116,7 +136,8 @@
 
         <http-connector name="http"
                         socket-binding="http"
-                        endpoint="http">
+                        endpoint="http"
+                        server-name="=foo">
             <param name="batch-delay" value="${batch.delay:50}"/>
         </http-connector>
         <remote-connector name="netty"
@@ -159,6 +180,11 @@
                          jgroups-channel="activemq-cluster"
                          broadcast-period="${broadcast.group.period:1234}"
                          connectors="http netty"/>
+        <broadcast-group name="groupS"
+                         socket-binding="group-s-binding"/>
+
+        <discovery-group name="groupT"
+                         socket-binding="group-t-binding"/>
         <discovery-group name="groupU"
                          jgroups-stack="udp"
                          jgroups-channel="activemq-cluster"
@@ -181,7 +207,7 @@
                             message-load-balancing-type="${message.load.balancing.type:STRICT}"
                             max-hops="${max.hops:7}"
                             confirmation-window-size="${confirmation.windows.size:459}"
-                            producer-window-size="-1"
+                            producer-window-size="${producer.windows.size:5678}"
                             notification-attempts="${notification.attempts:2}"
                             notification-interval="${notification.interval:1}"
                             static-connectors="in-vm netty" />
@@ -233,13 +259,23 @@
                 reconnect-attempts-on-same-node="${reconnect-attempts-on-same-node:5}"
                 use-duplicate-detection="${use.duplicate.detection:true}"
                 confirmation-window-size="${confirmation.window.size:350}"
-                producer-window-size="-1"
+                producer-window-size="${producer.windows.size:5678}"
                 user="${user:Brian}"
                 password="${password:secret}"
                 static-connectors="in-vm netty" />
         <bridge name="bridge2"
                 queue-name="coreQueueB"
                 discovery-group="groupC" />
+
+        <connector-service name="b"
+                           factory-class="bar.foo">
+            <param name="foo"
+                   value="${connector.value:bar}"/>
+            <param name="bar"
+                   value="2"/>
+        </connector-service>
+
+
         <jms-queue name="testQueue"
                    entries="${jms-queue.entry:queue/test}"
                    selector="${selector:color='red'}"
@@ -293,7 +329,10 @@
                             use-global-pools="${use.global.pools:true}"
                             scheduled-thread-pool-max-size="${scheduled.thread.pool.max.size:24}"
                             thread-pool-max-size="${thread.pool.max.size:48}"
-                            group-id="${group.id:myGroup}" />
+                            group-id="${group.id:myGroup}"
+                            deserialization-black-list="org.foo.Bar org.foo.Baz"
+                            deserialization-white-list="org.bar.Bar org.baz.Baz"
+                            initial-message-packet-size="${initial.message.packet.size:456}" />
         <legacy-connection-factory name="legacyConnectionFactory-discovery"
                                    entries="legacy/RemoteConnectionFactory java:/global/jms/legacy/RemoteConnectionFactory"
                                    discovery-group="groupT"
@@ -391,16 +430,103 @@
                                    scheduled-thread-pool-max-size="${scheduled.thread.pool.max.size:24}"
                                    thread-pool-max-size="${thread.pool.max.size:48}"
                                    group-id="${group.id:myGroup}"
-                                   statistics-enabled="false">
+                                   deserialization-black-list="org.foo.Bar org.foo.Baz"
+                                   deserialization-white-list="org.bar.Bar org.baz.Baz"
+                                   statistics-enabled="${pcf.statistics-enabled:true}">
             <inbound-config
                     use-jndi="${use.jndi:false}"
                     jndi-params="${jndi.params:whatever}"
-                    rebalance-connections="false"
+                    rebalance-connections="${inbound.rebalance-connections:true}"
                     use-local-tx="${use.local.tx:true}"
                     setup-attempts="${setup-attempts:123}"
                     setup-interval="${setup-interval:456}" />
             <outbound-config
-                    allow-local-transactions="false" />
+                    allow-local-transactions="${allow.local.transactions:true}" />
+        </pooled-connection-factory>
+        <pooled-connection-factory name="pcf-with-credential-reference"
+                                   entries="java:/JmsLocal2"
+                                   connectors="in-vm"
+                                   user="foo">
+            <credential-reference clear-text="passwordOut!"/>
         </pooled-connection-factory>
     </server>
+
+    <server name="empty"/>
+
+    <jms-bridge name="default"
+                module="com.foo.bar"
+                quality-of-service="${quality.of.service:AT_MOST_ONCE}"
+                failure-retry-interval="${failure.retry.interval:45678}"
+                max-retries="${max.retries:7890}"
+                max-batch-size="${max.batch.size:12345}"
+                max-batch-time="${max.batch.time:10000}">
+        <source connection-factory="/cf/sourceCF"
+                destination="/topic/anotherSourceTopic"
+                user="myUser"
+                password="myPassword"/>
+
+        <target connection-factory="/cf/targetCF"
+                destination="anotherMQ/jms/queue/anotherTargetQueue"
+                user="myUser"
+                password="myPassword"/>
+    </jms-bridge>
+
+    <jms-bridge name="another-bridge"
+                module="org.another.mq.broker"
+                quality-of-service="ONCE_AND_ONLY_ONCE"
+                failure-retry-interval="-1"
+                max-retries="-1"
+                max-batch-size="1"
+                max-batch-time="-1"
+                selector="${selector:color='red'}"
+                subscription-name="${subscription.name:mySubscription}"
+                client-id="${client.id:myClientID}"
+                add-messageID-in-header="${add.messageID.in.header:true}">
+        <source connection-factory="/cf/sourceCF"
+                destination="/topic/sourceTopic"
+                user="myUser"
+                password="myPassword">
+            <source-context>
+                <property name="java.naming.factory.initial"
+                          value="${java.naming.factory.initial:org.jnp.interfaces.NamingContextFactory}" />
+                <property name="java.naming.provider.url"
+                          value="${java.naming.provider.url:jnp://localhost:1099}" />
+                <property name="java.naming.factory.url.pkgs"
+                          value="${java.naming.factory.url.pkgs:org.jboss.naming:org.jnp.interfaces}"/>
+            </source-context>
+        </source>
+        <target connection-factory="anotherAS7/jms/cf/targetCF"
+                destination="anotherAS7/jms/queue/targetQueue"
+                user="${userInExpression:user}"
+                password="${passwordInExpression:password}">
+            <target-context>
+                <property name="java.naming.factory.initial"
+                          value="${java.naming.factory.initial:org.jnp.interfaces.NamingContextFactory}" />
+                <property name="java.naming.provider.url"
+                          value="${java.naming.provider.url:jnp://localhost:1099}" />
+                <property name="java.naming.factory.url.pkgs"
+                          value="${java.naming.factory.url.pkgs:org.jboss.naming:org.jnp.interfaces}"/>
+            </target-context>
+        </target>
+    </jms-bridge>
+
+    <jms-bridge name="bridge-with-credential-reference"
+                module="com.foo.bar"
+                quality-of-service="${quality.of.service:AT_MOST_ONCE}"
+                failure-retry-interval="${failure.retry.interval:45678}"
+                max-retries="${max.retries:7890}"
+                max-batch-size="${max.batch.size:12345}"
+                max-batch-time="${max.batch.time:10000}">
+        <source connection-factory="/cf/sourceCF"
+                destination="/topic/anotherSourceTopic"
+                user="myUser">
+            <source-credential-reference clear-text="passwordOut!"/>
+        </source>
+
+        <target connection-factory="/cf/targetCF"
+                destination="anotherMQ/jms/queue/anotherTargetQueue"
+                user="myUser">
+            <target-credential-reference alias="bob" store="jms-bridge-store" />
+        </target>
+    </jms-bridge>
 </subsystem>

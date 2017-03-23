@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService.ignoreOperationIfServerNotActive;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONSUMER_COUNT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DELIVERING_COUNT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DURABLE;
@@ -31,7 +32,6 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.MESSAGE_
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.PAUSED;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SCHEDULED_COUNT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.TEMPORARY;
-import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService.ignoreOperationIfServerNotActive;
 import static org.wildfly.extension.messaging.activemq.QueueDefinition.ADDRESS;
 import static org.wildfly.extension.messaging.activemq.QueueDefinition.DEAD_LETTER_ADDRESS;
 import static org.wildfly.extension.messaging.activemq.QueueDefinition.EXPIRY_ADDRESS;
@@ -103,7 +103,7 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(address);
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
         ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-        QueueControl control = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.CORE_QUEUE + queueName));
+        QueueControl control = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + queueName));
 
         if (control == null) {
             throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);

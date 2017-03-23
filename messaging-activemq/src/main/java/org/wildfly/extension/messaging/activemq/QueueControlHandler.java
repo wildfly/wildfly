@@ -135,7 +135,7 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
 
     @Override
     protected DelegatingQueueControl<QueueControl> getQueueControl(ActiveMQServer server, String queueName) {
-        final QueueControl control = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.CORE_QUEUE + queueName));
+        final QueueControl control = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + queueName));
         if (control == null) {
             return null;
         }

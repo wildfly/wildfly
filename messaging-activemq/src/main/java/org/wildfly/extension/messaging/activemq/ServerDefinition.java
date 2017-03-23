@@ -32,6 +32,7 @@ import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.VERSION_3_0_0;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -218,13 +219,14 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    @Deprecated
     public static final SimpleAttributeDefinition JOURNAL_JMS_BINDINGS_TABLE  = create("journal-jms-bindings-table", STRING)
             .setAttributeGroup("journal")
             .setXmlName("jms-bindings-table")
             .setRequired(false)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJMSBindingsTableName()))
+            .setDefaultValue(new ModelNode("JMS_BINDINGS"))
             .setAllowExpression(true)
-            .setRestartAllServices()
+            .setDeprecated(VERSION_3_0_0)
             .build();
 
     public static final SimpleAttributeDefinition JOURNAL_LARGE_MESSAGES_TABLE  = create("journal-large-messages-table", STRING)
@@ -406,21 +408,30 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setValidator(new IntRangeValidator(Thread.MIN_PRIORITY, Thread.MAX_PRIORITY, true, true))
             .setRestartAllServices()
             .build();
+
+    // Property no longer exists since Artemis 2
+    @Deprecated
     public static final SimpleAttributeDefinition PERF_BLAST_PAGES = create("perf-blast-pages", INT)
             .setAttributeGroup("debug")
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJournalPerfBlastPages()))
+            .setDefaultValue(new ModelNode(-1))
             .setRequired(false)
             .setAllowExpression(true)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
+            .setDeprecated(VERSION_3_0_0)
             .build();
+
+    // Property no longer exists since Artemis 2
+    @Deprecated
     public static final SimpleAttributeDefinition RUN_SYNC_SPEED_TEST = create("run-sync-speed-test", BOOLEAN)
             .setAttributeGroup("debug")
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultRunSyncSpeedTest()))
+            .setDefaultValue(new ModelNode(false))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setDeprecated(VERSION_3_0_0)
             .build();
+
     public static final SimpleAttributeDefinition SERVER_DUMP_INTERVAL = create("server-dump-interval", LONG)
             .setAttributeGroup("debug")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultServerDumpInterval()))

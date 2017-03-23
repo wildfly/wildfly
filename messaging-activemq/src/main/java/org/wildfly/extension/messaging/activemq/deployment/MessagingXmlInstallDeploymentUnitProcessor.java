@@ -31,13 +31,24 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.SERVER;
 import java.util.List;
 import java.util.Set;
 
+import javax.jms.Queue;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentModelUtils;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentResourceSupport;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.messaging.activemq.BinderServiceUtil;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
@@ -46,13 +57,6 @@ import org.wildfly.extension.messaging.activemq.jms.JMSQueueService;
 import org.wildfly.extension.messaging.activemq.jms.JMSServices;
 import org.wildfly.extension.messaging.activemq.jms.JMSTopicConfigurationRuntimeHandler;
 import org.wildfly.extension.messaging.activemq.jms.JMSTopicService;
-import org.jboss.as.server.deployment.DeploymentModelUtils;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * Processor that handles the installation of the messaging subsystems deployable XML
@@ -76,7 +80,11 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
                     final ModelNode entries = topic.getDestination().resolve().get(CommonAttributes.DESTINATION_ENTRIES.getName());
                     jndiBindings = JMSServices.getJndiBindings(entries);
                 }
-                JMSTopicService.installService(topic.getName(), serverServiceName, phaseContext.getServiceTarget(), jndiBindings);
+                JMSTopicService topicService = JMSTopicService.installService(topic.getName(), serverServiceName, phaseContext.getServiceTarget());
+                final ServiceName topicServiceName = JMSServices.getJmsTopicBaseServiceName(serverServiceName).append(topic.getName());
+                for (String binding : jndiBindings) {
+                    BinderServiceUtil.installBinderService(phaseContext.getServiceTarget(), binding, topicService, topicServiceName);
+                }
 
                 //create the management registration
                 final PathElement serverElement = PathElement.pathElement(SERVER, topic.getServer());
@@ -100,8 +108,12 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
                 final String selector = destination.hasDefined(SELECTOR.getName()) ? destination.get(SELECTOR.getName()).resolve().asString() : null;
                 final boolean durable = destination.hasDefined(DURABLE.getName()) ? destination.get(DURABLE.getName()).resolve().asBoolean() : false;
 
-                JMSQueueService.installService(queue.getName(), phaseContext.getServiceTarget(), serverServiceName, selector, durable, jndiBindings);
+                Service<Queue> queueService = JMSQueueService.installService(queue.getName(), phaseContext.getServiceTarget(), serverServiceName, selector, durable);
+                final ServiceName queueServiceName = JMSServices.getJmsQueueBaseServiceName(serverServiceName).append(queue.getName());
+                for (String binding : jndiBindings) {
+                    BinderServiceUtil.installBinderService(phaseContext.getServiceTarget(), binding, queueService, queueServiceName);
 
+                }
                 //create the management registration
                 final PathElement serverElement = PathElement.pathElement(SERVER, queue.getServer());
                 final PathElement dest = PathElement.pathElement(JMS_QUEUE, queue.getName());
