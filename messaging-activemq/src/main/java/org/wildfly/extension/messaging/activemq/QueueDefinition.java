@@ -154,7 +154,7 @@ public class QueueDefinition extends PersistentResourceDefinition {
      * @return true if the operation is forwarded to the corresponding runtime-queue resource, false else.
      */
     static boolean forwardToRuntimeQueue(OperationContext context, ModelNode operation, OperationStepHandler handler) {
-        PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+        PathAddress address = context.getCurrentAddress();
 
         // do not forward if the current operation is for a runtime-queue already:
         if (RUNTIME_QUEUE.equals(address.getLastElement().getKey())) {

@@ -180,7 +180,7 @@ public class CoreAddressResource implements Resource {
         if (managementService == null) {
             return null;
         }
-        Object obj = managementService.getResource(ResourceNames.CORE_ADDRESS + name);
+        Object obj = managementService.getResource(ResourceNames.ADDRESS + name);
         return AddressControl.class.cast(obj);
     }
 

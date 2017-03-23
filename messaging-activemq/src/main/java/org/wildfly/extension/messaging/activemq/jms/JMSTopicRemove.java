@@ -22,9 +22,7 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.api.jms.management.JMSServerControl;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
+import org.apache.activemq.artemis.jms.server.JMSServerManager;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -53,17 +51,16 @@ public class JMSTopicRemove extends AbstractRemoveStepHandler {
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        final ServiceName jmsServiceName = JMSServices.getJmsManagerBaseServiceName(serviceName);
         final String name = context.getCurrentAddress().getLastElement().getValue();
 
-        ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
-        ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-        JMSServerControl control = JMSServerControl.class.cast(server.getManagementService().getResource(ResourceNames.JMS_SERVER));
-        if (control != null) {
-            try {
-                control.destroyTopic(name, true);
-            } catch (Exception e) {
-                throw new OperationFailedException(e);
-            }
+        ServiceController<?> service = context.getServiceRegistry(true).getService(jmsServiceName);
+        JMSServerManager server = JMSServerManager.class.cast(service.getValue());
+
+        try {
+            server.destroyTopic(name, true);
+        } catch (Exception e) {
+            throw new OperationFailedException(e);
         }
 
         context.removeService(JMSServices.getJmsTopicBaseServiceName(serviceName).append(name));

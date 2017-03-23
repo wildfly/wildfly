@@ -155,6 +155,8 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         }
         JMSFactoryType jmsFactoryType = ConnectionFactoryType.valueOf(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.resolveModelAttribute(context, model).asString()).getType();
         config.setFactoryType(jmsFactoryType);
+
+        config.setInitialMessagePacketSize(ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE.resolveModelAttribute(context, model).asInt());
         return config;
     }
 }

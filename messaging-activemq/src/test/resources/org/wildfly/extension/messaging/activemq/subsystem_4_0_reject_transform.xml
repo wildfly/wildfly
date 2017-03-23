@@ -20,6 +20,12 @@
             <master />
         </replication-colocated>
 
+        <address-setting name="#"
+                         auto-create-queues="true"
+                         auto-delete-queues="true"
+                         auto-create-addresses="false"
+                         auto-delete-addresses="false" />
+
         <http-connector name="http"
                         socket-binding="http"
                         endpoint="http"
@@ -54,7 +60,8 @@
                             discovery-group="groupC"
                             entries="otherConnectionFactory"
                             deserialization-black-list="org.foo.Bar org.foo.Baz"
-                            deserialization-white-list="org.bar.Bar org.baz.Baz" />
+                            deserialization-white-list="org.bar.Bar org.baz.Baz"
+                            initial-message-packet-size="${initial.message.packet.size:12345}"/>
 
         <pooled-connection-factory name="hornetq-ra-local"
                                    transaction="local"

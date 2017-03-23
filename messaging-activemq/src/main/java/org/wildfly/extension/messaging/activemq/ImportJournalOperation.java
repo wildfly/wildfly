@@ -37,7 +37,7 @@ import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
-import org.apache.activemq.artemis.cli.commands.tools.XmlDataImporter;
+import org.apache.activemq.artemis.cli.commands.tools.xml.XmlDataImporter;
 import org.apache.activemq.artemis.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -70,6 +70,14 @@ public class ImportJournalOperation extends AbstractRuntimeOnlyHandler {
             .setAllowExpression(false)
             .setRequired(true)
             .build();
+
+    private static AttributeDefinition LEGACY_PREFIXES = SimpleAttributeDefinitionBuilder.create("legacy-prefixes", ModelType.BOOLEAN)
+            // import with legacy prefix by default for backwards compatibility
+            .setDefaultValue(new ModelNode(true))
+            .setAllowExpression(false)
+            .setRequired(false)
+            .build();
+
     private static final String OPERATION_NAME = "import-journal";
 
     static final ImportJournalOperation INSTANCE = new ImportJournalOperation();
@@ -81,6 +89,7 @@ public class ImportJournalOperation extends AbstractRuntimeOnlyHandler {
     static void registerOperation(final ManagementResourceRegistration registry, final ResourceDescriptionResolver resourceDescriptionResolver) {
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(OPERATION_NAME, resourceDescriptionResolver)
                         .addParameter(FILE)
+                        .addParameter(LEGACY_PREFIXES)
                         .setRuntimeOnly()
                         .setReplyValueType(ModelType.BOOLEAN)
                         .build(),
@@ -95,8 +104,10 @@ public class ImportJournalOperation extends AbstractRuntimeOnlyHandler {
         checkAllowedOnJournal(context, OPERATION_NAME);
 
         String file = FILE.resolveModelAttribute(context, operation).asString();
+        boolean legacyPrefixes = LEGACY_PREFIXES.resolveModelAttribute(context, operation).asBoolean();
 
         final XmlDataImporter importer = new XmlDataImporter();
+        importer.legacyPrefixes = legacyPrefixes;
 
         TransportConfiguration transportConfiguration = createInVMTransportConfiguration(context);
         try (
