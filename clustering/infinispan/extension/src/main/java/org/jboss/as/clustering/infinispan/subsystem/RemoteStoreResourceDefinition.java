@@ -28,9 +28,6 @@ import org.infinispan.commons.api.BasicCacheContainer;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
-import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -40,7 +37,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
@@ -138,14 +134,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
                     }, Attribute.SOCKET_BINDINGS.getDefinition());
         }
 
-        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
-            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD)
-                    .setCustomOperationTransformer(new SimpleOperationTransformer(new LegacyPropertyAddOperationTransformer())).inheritResourceAttributeDefinitions();
-
-            builder.setCustomResourceTransformer(new LegacyPropertyResourceTransformer());
-        }
-
-        StoreResourceDefinition.buildTransformation(version, builder);
+        StoreResourceDefinition.buildTransformation(version, builder, PATH);
     }
 
     RemoteStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {

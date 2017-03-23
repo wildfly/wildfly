@@ -129,17 +129,22 @@ public abstract class AbstractCredentialStoreTestCase {
 
     /**
      * Creates alias in given credential store (must exist) with provided secret value. Then uses
-     * {@link #assertCredentialValue(String, String, String)} method to check if it's correctly stored in the credential store.
-     * It removes the alias as the final step.
+     * {@link #assertCredentialValue(String, String, String)} method to check if it's correctly stored in the credential
+     * store. It removes the alias as the final step.
      */
     protected void assertAliasAndSecretSupported(String storeName, String alias, String secret) throws Exception {
         try (CLIWrapper cli = new CLIWrapper(true)) {
             try {
-                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add(secret-value=\"%s\"", storeName,
-                        alias, secret));
-                assertCredentialValue(storeName, alias, secret);
+                if (secret != null) {
+                    cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add(secret-value=\"%s\")", storeName,
+                            alias, secret));
+                    assertCredentialValue(storeName, alias, secret);
+                } else {
+                    cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add()", storeName, alias));
+                    assertCredentialValue(storeName, alias, "");
+                }
             } finally {
-                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:remove()", storeName, alias));
+                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:remove()", storeName, alias), true);
             }
         }
     }

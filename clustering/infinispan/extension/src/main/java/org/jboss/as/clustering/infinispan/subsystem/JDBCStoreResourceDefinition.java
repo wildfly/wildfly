@@ -32,10 +32,8 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter.Converter;
-import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
@@ -68,6 +66,8 @@ import org.jboss.dmr.Property;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinition {
+
+    static final PathElement PATH = pathElement("jdbc");
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
         DATA_SOURCE("org.wildfly.clustering.infinispan.cache-container.cache.store.jdbc.data-source"),
@@ -134,7 +134,7 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         ;
     }
 
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder, PathElement path) {
 
         if (InfinispanModel.VERSION_4_2_0.requiresTransformation(version) && !InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             // DATASOURCE attribute was only supported as an add operation parameter
@@ -170,10 +170,7 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
             ;
         }
 
-        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
-            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD)
-                    .setCustomOperationTransformer(new SimpleOperationTransformer(new LegacyPropertyAddOperationTransformer())).inheritResourceAttributeDefinitions();
-        }
+        StoreResourceDefinition.buildTransformation(version, builder, path);
 
         if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
@@ -181,8 +178,6 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.DIALECT.getDefinition())
                     .end();
         }
-
-        StoreResourceDefinition.buildTransformation(version, builder);
     }
 
     static class TableAttributeTranslator implements OperationStepHandler {

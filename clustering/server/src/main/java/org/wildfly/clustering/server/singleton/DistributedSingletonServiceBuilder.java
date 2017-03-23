@@ -71,7 +71,7 @@ public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBu
     @Override
     public ServiceBuilder<T> build(ServiceTarget target) {
         SingletonService<T> service = new DistributedSingletonService<>(this);
-        ServiceBuilder<T> installer = new AsynchronousSingletonServiceBuilder<>(this.serviceName, service).build(target);
+        ServiceBuilder<T> installer = target.addService(this.serviceName, service);
         Stream.of(this.registry, this.dispatcherFactory).forEach(dependency -> dependency.register(installer));
         return installer;
     }

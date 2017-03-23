@@ -107,6 +107,7 @@ public class BinaryTableResourceDefinition extends TableResourceDefinition {
 
     BinaryTableResourceDefinition() {
         super(PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH));
+        this.setDeprecated(InfinispanModel.VERSION_4_2_0.getVersion());
     }
 
     @Override

@@ -26,6 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.Test;
@@ -56,7 +58,6 @@ public class DatasourceEnableAttributeTestCase extends DatasourceEnableAttribute
         }
         executeOperation(operation);
 
-        reload();
         return address;
     }
 
@@ -68,8 +69,9 @@ public class DatasourceEnableAttributeTestCase extends DatasourceEnableAttribute
 
         ModelNode address = getDataSourceAddress(datasource);
         try {
-            remove(address);
-            reload();
+            ModelNode removeOperation = Operations.createRemoveOperation(address);
+            removeOperation.get(ModelDescriptionConstants.OPERATION_HEADERS).get("allow-resource-service-restart").set(true);
+            executeOperation(removeOperation);
         } catch (Exception e) {
             log.debugf(e, "Can't remove datasource at address '%s'", address);
         }
@@ -102,7 +104,6 @@ public class DatasourceEnableAttributeTestCase extends DatasourceEnableAttribute
             createDataSource(ds);
             addDataSourceConnectionProps(ds);
             enableDatasource(ds);
-            reload();
             testConnection(ds);
         } finally {
             removeDataSourceSilently(ds);
@@ -122,15 +123,4 @@ public class DatasourceEnableAttributeTestCase extends DatasourceEnableAttribute
         operation.get(VALUE).set(URLValue);
         executeOperation(operation);
     }
-
-    private void enableDatasource(Datasource ds) throws Exception {
-        ModelNode address = new ModelNode()
-            .add(SUBSYSTEM, "datasources")
-            .add("data-source", ds.getName());
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set(ENABLE);
-        operation.get(OP_ADDR).set(address);
-        executeOperation(operation);
-    }
-
 }

@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow.filters;
 
 import io.undertow.UndertowOptions;
 import io.undertow.predicate.Predicate;
+import io.undertow.protocols.ajp.AjpClientRequestClientStreamSinkChannel;
 import io.undertow.protocols.http2.Http2Channel;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.proxy.ProxyHandler;
@@ -224,6 +225,10 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
     public static final SimpleAttributeDefinition MAX_AJP_PACKET_SIZE = new SimpleAttributeDefinitionBuilder(Constants.MAX_AJP_PACKET_SIZE, ModelType.INT)
             .setRequired(false)
             .setRestartAllServices()
+            .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(AjpClientRequestClientStreamSinkChannel.DEFAULT_MAX_DATA_SIZE))
+            .setValidator(new IntRangeValidator(1))
             .build();
 
 

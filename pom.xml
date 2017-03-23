@@ -157,7 +157,7 @@
         <version.org.jboss.activemq.artemis.integration>1.0.2</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.common.jboss-common-beans>2.0.0.Final</version.org.jboss.common.jboss-common-beans>
         <version.org.jboss.hal.release-stream>2.9.4.Final</version.org.jboss.hal.release-stream>
-        <version.org.jboss.ejb-client>4.0.0.Beta21</version.org.jboss.ejb-client>
+        <version.org.jboss.ejb-client>4.0.0.Beta22</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>2.0.0.Alpha2</version.org.jboss.genericjms>
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
@@ -170,7 +170,7 @@
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.2.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jboss.resteasy>3.0.21.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
-        <version.org.jboss.security.jboss-negotiation>3.0.3.Final</version.org.jboss.security.jboss-negotiation>
+        <version.org.jboss.security.jboss-negotiation>3.0.4.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->

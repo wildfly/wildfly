@@ -58,7 +58,7 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
     private final Value<CommandDispatcherFactory> dispatcherFactory;
     private final ServiceName serviceName;
     private final Service<T> primaryService;
-    private final Optional<Service<T>> backupService;
+    private final Service<T> backupService;
     private final SingletonElectionPolicy electionPolicy;
     private final int quorum;
 
@@ -75,7 +75,7 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
         this.dispatcherFactory = context.getCommandDispatcherFactory();
         this.serviceName = context.getServiceName();
         this.primaryService = context.getPrimaryService();
-        this.backupService = context.getBackupService();
+        this.backupService = context.getBackupService().orElse(new PrimaryProxyService<>(this));
         this.electionPolicy = context.getElectionPolicy();
         this.quorum = context.getQuorum();
     }
@@ -84,7 +84,7 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
     public void start(StartContext context) throws StartException {
         ServiceTarget target = context.getChildTarget();
         this.primaryController = target.addService(this.serviceName.append("primary"), this.primaryService).setInitialMode(ServiceController.Mode.NEVER).install();
-        this.backupController = target.addService(this.serviceName.append("backup"), this.backupService.orElse(new PrimaryProxyService<>(this))).setInitialMode(ServiceController.Mode.ACTIVE).install();
+        this.backupController = target.addService(this.serviceName.append("backup"), this.backupService).setInitialMode(ServiceController.Mode.ACTIVE).install();
         this.dispatcher = this.dispatcherFactory.getValue().<SingletonContext<T>>createCommandDispatcher(this.serviceName, this);
         this.registration = this.registry.getValue().register(this.serviceName, this);
         this.started = true;

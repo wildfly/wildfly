@@ -30,6 +30,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -371,11 +372,14 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        OperationStepHandler defaultHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
             if (attr.equals(PROXY_LIST) || attr.equals(PROXIES)) {
                 resourceRegistration.registerReadWriteAttribute(attr, null, new ProxyConfigurationWriteAttributeHandler(attr));
+            } else if (attr.equals(SSL_CONTEXT)) {
+                resourceRegistration.registerReadWriteAttribute(attr, null, new SSLContextWriteAttributeHandler(attr));
             } else {
-                resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
+                resourceRegistration.registerReadWriteAttribute(attr, null, defaultHandler);
             }
         }
         resourceRegistration.registerReadWriteAttribute(SIMPLE_LOAD_PROVIDER, null, new ReloadRequiredWriteAttributeHandler(SIMPLE_LOAD_PROVIDER));

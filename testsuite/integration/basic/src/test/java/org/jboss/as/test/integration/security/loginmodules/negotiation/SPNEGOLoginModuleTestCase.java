@@ -362,7 +362,7 @@ public class SPNEGOLoginModuleTestCase {
         final URI uri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
         final String[] mechTypes = new String[]{OID_KERBEROS_V5_LEGACY, OID_KERBEROS_V5};
         final byte[] kerberosToken = createNewKerberosTicketForHttp(uri);
-        assertSpnegoWorkflow(uri, mechTypes, kerberosToken, kerberosToken, true, true);
+        assertSpnegoWorkflow(uri, mechTypes, kerberosToken, kerberosToken, false, true);
     }
 
     /**
