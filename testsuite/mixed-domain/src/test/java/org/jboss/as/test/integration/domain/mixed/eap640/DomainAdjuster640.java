@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap640;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
@@ -288,45 +290,44 @@ public class DomainAdjuster640 extends DomainAdjuster700 {
     private Collection<? extends ModelNode> replaceUndertowWithWeb(final PathAddress subsystem) {
         final List<ModelNode> list = new ArrayList<>();
 
-        // mod_cluster depends on the listener capability so we need to remove the subsystem before we can remove undertow
-        list.add(createRemoveOperation(subsystem.getParent().append(SUBSYSTEM, "modcluster")));
+        //Add JBoss Web extension first so we can replace subsystems with one composite op
+        //FIXME extension add needs to be outside of the batch due to https://issues.jboss.org/browse/WFCORE-323
+        list.add(createAddOperation(PathAddress.pathAddress(EXTENSION, "org.jboss.as.web")));
+
+        //Replace Undertow with Web in a single composite op preserving the fake capability satisfied
+        ModelNode compositeOp = Util.getEmptyOperation(COMPOSITE, new ModelNode());
+        final ModelNode steps = compositeOp.get(STEPS);
 
         //Undertow does not exist, remove it and the extension
-        list.add(createRemoveOperation(subsystem));
-        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.undertow")));
+        steps.add(createRemoveOperation(subsystem));
 
-        //Add JBoss Web extension and subsystem
-        list.add(createAddOperation(PathAddress.pathAddress(EXTENSION, "org.jboss.as.web")));
+        //Add JBoss Web and subsystem
         final PathAddress web = subsystem.getParent().append(SUBSYSTEM, "web");
         final ModelNode addWeb = Util.createAddOperation(web);
         addWeb.get("default-virtual-server").set("default-host");
         addWeb.get("native").set("false");
-        list.add(addWeb);
-        list.add(createAddOperation(web.append("configuration", "container")));
-        list.add(createAddOperation(web.append("configuration", "static-resources")));
-        list.add(createAddOperation(web.append("configuration", "jsp-configuration")));
+        steps.add(addWeb);
+        steps.add(createAddOperation(web.append("configuration", "container")));
+        steps.add(createAddOperation(web.append("configuration", "static-resources")));
+        steps.add(createAddOperation(web.append("configuration", "jsp-configuration")));
         ModelNode addHttp = Util.createAddOperation(web.append("connector", "http"));
         addHttp.get("protocol").set("HTTP/1.1");
         addHttp.get("scheme").set("http");
         addHttp.get("socket-binding").set("http");
-        list.add(addHttp);
+        steps.add(addHttp);
         ModelNode addAjp = Util.createAddOperation(web.append("connector", "ajp"));
         addAjp.get("protocol").set("AJP/1.3");
         addAjp.get("scheme").set("http");
         addAjp.get("socket-binding").set("ajp");
-        list.add(addAjp);
+        steps.add(addAjp);
         ModelNode addVirtualServer = Util.createAddOperation(web.append("virtual-server", "default-host"));
         addVirtualServer.get("enable-welcome-root").set(true);
         addVirtualServer.get("alias").add("localhost").add("example.com");
-        list.add(addVirtualServer);
+        steps.add(addVirtualServer);
 
-        // mod_cluster can now be added back  and reference fake capabilities provided by jboss-web stubs
-        PathAddress modcluster = subsystem.getParent().append(SUBSYSTEM, "modcluster");
-        list.add(Util.createAddOperation(modcluster));
-        ModelNode addModClusterConfig = Util.createAddOperation(modcluster.append("mod-cluster-config", "configuration"));
-        addModClusterConfig.get("connector").set("ajp");
-        addModClusterConfig.get("advertise-socket").set("modcluster");
-        list.add(addModClusterConfig);
+        list.add(compositeOp);
+        //FIXME extension remove needs to be outside of the batch due to NPE; see https://issues.jboss.org/browse/WFCORE-323
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.undertow")));
 
         return list;
     }
