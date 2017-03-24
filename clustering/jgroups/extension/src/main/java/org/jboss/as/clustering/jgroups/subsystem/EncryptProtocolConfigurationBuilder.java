@@ -39,7 +39,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
 import org.jgroups.protocols.EncryptBase;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.service.Builder;
@@ -73,7 +72,7 @@ public class EncryptProtocolConfigurationBuilder<P extends EncryptBase & Encrypt
 
     @Override
     public ServiceBuilder<ProtocolConfiguration<P>> build(ServiceTarget target) {
-        ServiceBuilder<ProtocolConfiguration<P>> builder = target.addService(this.getServiceName(), new ValueService<>(this));
+        ServiceBuilder<ProtocolConfiguration<P>> builder = super.build(target);
         Stream.of(this.keyStore, this.credentialSource).forEach(dependency -> dependency.register(builder));
         return builder;
     }
