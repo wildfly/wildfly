@@ -14,7 +14,7 @@
                 <?UDP-DISCOVERY?>
                 <protocol type="MERGE3"/>
                 <protocol type="FD_SOCK"/>
-                <?UDP-FD?>
+                <protocol type="FD_ALL"/>
                 <protocol type="VERIFY_SUSPECT"/>
                 <protocol type="pbcast.NAKACK2">
                     <?NAKACK-PROPERTIES?>
@@ -31,7 +31,7 @@
                 <?TCP-DISCOVERY?>
                 <protocol type="MERGE3"/>
                 <protocol type="FD_SOCK"/>
-                <protocol type="FD"/>
+                <protocol type="FD_ALL"/>
                 <protocol type="VERIFY_SUSPECT"/>
                 <protocol type="pbcast.NAKACK2"/>
                 <protocol type="UNICAST3"/>
@@ -49,9 +49,6 @@
         <replacement placeholder="UDP-DISCOVERY">
             <protocol type="PING"/>
         </replacement>
-        <replacement placeholder="UDP-FD">
-            <protocol type="FD_ALL"/>
-        </replacement>
         <replacement placeholder="UDP-MULTICAST-FLOW-CONTROL">
             <protocol type="MFC"/>
         </replacement>
@@ -62,9 +59,6 @@
     <supplement name="no-multicast">
         <replacement placeholder="UDP-PROPERTIES">
             <property name="ip_mcast">false</property>
-        </replacement>
-        <replacement placeholder="UDP-FD">
-            <protocol type="FD"/>
         </replacement>
         <replacement placeholder="NAKACK-PROPERTIES">
             <property name="use_mcast_xmit">false</property>
