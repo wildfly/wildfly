@@ -22,8 +22,7 @@
 package org.jboss.as.clustering.jgroups;
 
 import java.nio.ByteBuffer;
-import java.util.Objects;
-import java.util.function.Function;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,9 +35,11 @@ import org.jgroups.blocks.RequestCorrelator.Header;
 import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.fork.UnknownForkHandler;
 import org.jgroups.protocols.FORK;
-import org.jgroups.stack.ProtocolStack;
+import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
+import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 
 /**
@@ -62,16 +63,6 @@ public class JChannelFactory implements ChannelFactory {
 
     @Override
     public Channel createChannel(String id) throws Exception {
-        JChannel channel = new JChannel(false);
-        ProtocolStack stack = new ProtocolStack();
-        channel.setProtocolStack(stack);
-        stack.addProtocols(Stream.of(
-                Stream.of(this.configuration.getTransport()),
-                this.configuration.getProtocols().stream(),
-                Stream.of(this.configuration.getRelay())
-        ).flatMap(Function.identity()).filter(Objects::nonNull).map(pc -> pc.createProtocol(this.configuration)).collect(Collectors.toList()));
-
-        // Add implicit FORK to the top of the stack
         FORK fork = new FORK();
         fork.enableStats(this.configuration.isStatisticsEnabled());
         fork.setUnknownForkHandler(new UnknownForkHandler() {
@@ -97,13 +88,20 @@ public class JChannelFactory implements ChannelFactory {
                     response.putHeader(this.id, new Header(Header.RSP, header.req_id, header.corrId));
                     response.setBuffer(UNKNOWN_FORK_RESPONSE.array());
 
-                    channel.down(new Event(Event.MSG, response));
+                    fork.getProtocolStack().getChannel().down(new Event(Event.MSG, response));
                 }
                 return null;
             }
         });
-        stack.addProtocol(fork);
-        stack.init();
+
+        // Transport always resides at the bottom of the stack
+        Stream<ProtocolConfiguration<?>> protocolConfigs = Stream.concat(Stream.of(this.configuration.getTransport()), this.configuration.getProtocols().stream());
+        Stream<RelayConfiguration> relayConfig = Optional.ofNullable(this.configuration.getRelay()).map(Stream::of).orElse(Stream.empty());
+        // Add RELAY2 to the top of the stack, if defined
+        Stream<Protocol> protocols = Stream.concat(protocolConfigs, relayConfig).map(config -> config.createProtocol(this.configuration));
+
+        // Add implicit FORK to the top of the stack
+        JChannel channel = new JChannel(Stream.concat(protocols, Stream.of(fork)).collect(Collectors.toList()));
 
         channel.setName(this.configuration.getNodeName());
 
