@@ -62,7 +62,7 @@ public class MulticastProtocolConfigurationBuilder<P extends Protocol & Multicas
 
     @Override
     public void accept(P protocol) {
-        TransportConfiguration transport = this.transport.getValue();
+        TransportConfiguration<?> transport = this.transport.getValue();
         protocol.setMulticast(transport.getSocketBinding().getMulticastAddress() != null);
     }
 }
