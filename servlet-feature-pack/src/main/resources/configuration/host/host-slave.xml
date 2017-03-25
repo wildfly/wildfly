@@ -63,7 +63,7 @@
     </management>
 
     <domain-controller>
-        <remote security-realm="ManagementRealm">
+        <remote username="$local" security-realm="ManagementRealm">
             <discovery-options>
                 <static-discovery name="primary" protocol="${jboss.domain.master.protocol:remote}" host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9999}"/>
             </discovery-options>
