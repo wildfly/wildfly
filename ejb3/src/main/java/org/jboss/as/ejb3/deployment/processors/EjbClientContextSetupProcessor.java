@@ -78,7 +78,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
 
         RegistrationService registrationService = new RegistrationService(module);
         ServiceName registrationServiceName = deploymentUnit.getServiceName().append("ejb3","client-context","registration-service");
-        final ServiceName profileServiceName = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME);
+        final ServiceName profileServiceName = getProfileServiceName(phaseContext);
         final ServiceBuilder<Void> builder = phaseContext.getServiceTarget().addService(registrationServiceName, registrationService)
             .addDependency(getEJBClientContextServiceName(phaseContext), EJBClientContextService.class, registrationService.ejbClientContextInjectedValue)
             .addDependency(getDiscoveryServiceName(phaseContext), Discovery.class, registrationService.discoveryInjector);
@@ -126,6 +126,16 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
             return DiscoveryService.BASE_NAME.append(parentDeploymentUnit.getName());
         } else {
             return DiscoveryService.BASE_NAME.append(deploymentUnit.getName());
+        }
+    }
+
+    private ServiceName getProfileServiceName(final DeploymentPhaseContext phaseContext) {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final DeploymentUnit parentDeploymentUnit = deploymentUnit.getParent();
+        if (parentDeploymentUnit != null) {
+            return parentDeploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME);
+        } else {
+            return deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME);
         }
     }
 
@@ -216,6 +226,10 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
             final String path = destinationUri.getPath();
             if (path != null && ! path.isEmpty()) {
                 rule = rule.matchPath(path);
+            }
+            final String userInfo = destinationUri.getUserInfo();
+            if (userInfo != null) {
+                rule = rule.matchUser(userInfo);
             }
             final OptionMap connectOptions = connectionSpec.getConnectOptions();
             authenticationConfiguration = RemotingOptions.mergeOptionsIntoAuthenticationConfiguration(connectOptions, authenticationConfiguration);
