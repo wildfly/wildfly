@@ -78,8 +78,8 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
             originalSlaveStack.protect();
             Assert.assertEquals(originalMasterStack, originalSlaveStack);
 
-            //FD is normally in the middle somewhere
-            final String protocolName = "FD";
+            //FD_ALL is normally in the middle somewhere
+            final String protocolName = "FD_ALL";
             int index = -1;
             ModelNode value = null;
             Iterator<Property> it = originalMasterStack.get(PROTOCOL).asPropertyList().iterator();
