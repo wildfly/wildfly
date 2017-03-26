@@ -33,6 +33,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -203,7 +204,7 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
                 WebExtension.getResourceDescriptionResolver(Constants.CONNECTOR),
                 new AddressToNameAddAdaptor(CONNECTOR_ATTRIBUTES),
                 CONNECTOR_ATTRIBUTES);
-                setDeprecated(WebExtension.DEPRECATED_SINCE);
+        this.setDeprecated(WebExtension.DEPRECATED_SINCE);
     }
 
     @Override
@@ -215,5 +216,18 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
         return ACCESS_CONSTRAINTS;
+    }
+
+    /**
+     * The following is a slight hack specifically for supporting mod_cluster with current DC and legacy EAP 6.x slaves.
+     * With introduction of capability support for mod_cluster connector attribute, a fake capability corresponding to
+     * Undertow listener is registered for JBoss Web connectors so that the requirement can be satisfied for legacy profiles.
+     */
+    private final String UNDERTOW_LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
+    private final RuntimeCapability<Void> FAKE_UNDERTOW_LISTENER_CAPABILITY = RuntimeCapability.Builder.of(UNDERTOW_LISTENER_CAPABILITY_NAME, true).build();
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(FAKE_UNDERTOW_LISTENER_CAPABILITY);
     }
 }

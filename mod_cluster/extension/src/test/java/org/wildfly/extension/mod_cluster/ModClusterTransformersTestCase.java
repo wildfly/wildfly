@@ -24,6 +24,10 @@ package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -43,10 +47,6 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
     public ModClusterTransformersTestCase() {
         super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension());
-    }
-
-    private static String formatSubsystemArtifact(ModelTestControllerVersion version) {
-        return formatArtifact("org.wildfly:wildfly-mod_cluster-extension:%s", version);
     }
 
     private static String formatEAP6SubsystemArtifact(ModelTestControllerVersion version) {
@@ -272,6 +272,12 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
     protected AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization.ManagementAdditionalInitialization() {
+
+            @Override
+            protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
+                registerCapabilities(capabilityRegistry, "org.wildfly.undertow.listener.ajp");
+            }
+
             @Override
             protected void setupController(ControllerInitializer controllerInitializer) {
                 super.setupController(controllerInitializer);

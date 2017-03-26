@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ModelVersion;
@@ -66,10 +67,10 @@ import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
  */
 class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
 
-    private static final String MOD_CLUSTER_SSL_CONTEXT_CAPABILITY_NAME = "org.wildfly.mod_cluster.ssl-context";
-    private static final RuntimeCapability<Void> MOD_CLUSTER_CAPABILITY = RuntimeCapability.Builder.of(MOD_CLUSTER_SSL_CONTEXT_CAPABILITY_NAME, false).build();
+    static final String UNDERTOW_LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
 
-    static final String SSL_CONTEXT_CAPABILITY_NAME = "org.wildfly.security.ssl-context";
+    private static final String MOD_CLUSTER_CAPABILITY_NAME = "org.wildfly.mod_cluster";
+    private static final RuntimeCapability<Void> MOD_CLUSTER_CAPABILITY = RuntimeCapability.Builder.of(MOD_CLUSTER_CAPABILITY_NAME, false).build();
 
     static final PathElement PATH = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
 
@@ -79,6 +80,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition CONNECTOR = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CONNECTOR, ModelType.STRING, false)
+            .setCapabilityReference(UNDERTOW_LISTENER_CAPABILITY_NAME, MOD_CLUSTER_CAPABILITY_NAME, false)
             .setRestartAllServices()
             .build();
 
@@ -167,7 +169,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(CommonAttributes.SSL_CONTEXT, ModelType.STRING, true)
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY_NAME, MOD_CLUSTER_SSL_CONTEXT_CAPABILITY_NAME, false)
+            .setCapabilityReference(CommonUnaryRequirement.SSL_CONTEXT.getName(), MOD_CLUSTER_CAPABILITY_NAME, false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)

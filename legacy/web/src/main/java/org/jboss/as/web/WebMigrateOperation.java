@@ -226,11 +226,10 @@ public class WebMigrateOperation implements OperationStepHandler {
 
                 fixAddressesForDomainMode(pathAddress(operation.get(ADDRESS)), sortedMigrationOperations);
 
-                // put the /subsystem=web:remove operation
-                //we need the removes to be last, so we create a new linked hash map and add our sorted ops to it
-                LinkedHashMap<PathAddress, ModelNode> orderedMigrationOperations = new LinkedHashMap<>(sortedMigrationOperations);
-
+                // put the /subsystem=web:remove operation as first
+                LinkedHashMap<PathAddress, ModelNode> orderedMigrationOperations = new LinkedHashMap<>();
                 removeWebSubsystem(orderedMigrationOperations, context.getProcessType() == ProcessType.STANDALONE_SERVER, pathAddress(operation.get(ADDRESS)));
+                orderedMigrationOperations.putAll(sortedMigrationOperations);
 
                 if (describe) {
                     // :describe-migration operation

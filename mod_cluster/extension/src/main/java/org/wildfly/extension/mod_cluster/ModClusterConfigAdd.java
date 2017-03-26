@@ -35,6 +35,8 @@ public class ModClusterConfigAdd extends AbstractAddStepHandler {
     static final ModClusterConfigAdd INSTANCE = new ModClusterConfigAdd();
 
     private ModClusterConfigAdd() {
+        // Needed by AbstractAddStepHandler#recordCapabilitiesAndRequirements()
+        super(ModClusterConfigResourceDefinition.ATTRIBUTES);
     }
 
     /**

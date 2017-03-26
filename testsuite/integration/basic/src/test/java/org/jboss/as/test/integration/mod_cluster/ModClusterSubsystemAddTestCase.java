@@ -22,9 +22,10 @@
 package org.jboss.as.test.integration.mod_cluster;
 
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.cli.CommandContext;
@@ -36,12 +37,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-
 /**
  * Tests that adding mod_cluster subsystem works.
  *
  * @author Radoslav Husar
- * @version March 2013
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -51,8 +50,7 @@ public class ModClusterSubsystemAddTestCase {
     private ManagementClient managementClient;
 
     @Test
-    @InSequence(1)
-    public void testModClusterAdd() throws Exception {
+    public void testModClusterAddAndRemoveSequence() throws Exception {
         final CommandContext ctx = CLITestUtil.getCommandContext();
         final ModelControllerClient controllerClient = managementClient.getControllerClient();
 
@@ -63,52 +61,39 @@ public class ModClusterSubsystemAddTestCase {
             ModelNode request = ctx.buildRequest("/extension=org.jboss.as.modcluster:add");
             ModelNode response = controllerClient.execute(request);
             String outcome = response.get("outcome").asString();
-            Assert.assertEquals("Adding mod_cluster extension failed! " + request.toJSONString(false), "success", outcome);
+            Assert.assertEquals("Adding mod_cluster extension failed! " + request.toJSONString(false), SUCCESS, outcome);
 
             // Now lets execute subsystem add operation but we need to specify a connector
             ctx.getBatchManager().activateNewBatch();
             Batch b = ctx.getBatchManager().getActiveBatch();
             b.add(ctx.toBatchedCommand("/socket-binding-group=standard-sockets/socket-binding=modcluster:add(multicast-port=23364, multicast-address=224.0.1.105)"));
             b.add(ctx.toBatchedCommand("/subsystem=modcluster:add"));
-            b.add(ctx.toBatchedCommand("/subsystem=modcluster/mod-cluster-config=configuration:add(connector=http,advertise-socket=modcluster)"));
+            b.add(ctx.toBatchedCommand("/subsystem=modcluster/mod-cluster-config=configuration:add(connector=default, advertise-socket=modcluster)"));
             request = b.toRequest();
             b.clear();
             ctx.getBatchManager().discardActiveBatch();
 
             response = controllerClient.execute(request);
             outcome = response.get("outcome").asString();
-            Assert.assertEquals("Adding mod_cluster subsystem failed! " + request.toJSONString(false), "success", outcome);
-        } finally {
-            ctx.terminateSession();
-        }
-    }
-
-    @Test
-    @InSequence(2)
-    public void testModClusterRemove() throws Exception {
-        final CommandContext ctx = CLITestUtil.getCommandContext();
-        final ModelControllerClient controllerClient = managementClient.getControllerClient();
-
-        try {
-            ctx.connectController();
+            Assert.assertEquals("Adding mod_cluster subsystem failed! " + request.toJSONString(false), SUCCESS, outcome);
 
             // Test subsystem remove
-            ModelNode request = ctx.buildRequest("/subsystem=modcluster:remove");
-            ModelNode response = controllerClient.execute(request);
-            String outcome = response.get("outcome").asString();
-            Assert.assertEquals("Removing mod_cluster subsystem failed! " + request.toJSONString(false), "success", outcome);
-
-            // Cleanup socket binding
-            request = ctx.buildRequest("/socket-binding-group=standard-sockets/socket-binding=modcluster:remove");
+            request = ctx.buildRequest("/subsystem=modcluster:remove");
             response = controllerClient.execute(request);
             outcome = response.get("outcome").asString();
-            Assert.assertEquals("Removing socket binding failed! " + request.toJSONString(false), "success", outcome);
+            Assert.assertEquals("Removing mod_cluster subsystem failed! " + request.toJSONString(false), SUCCESS, outcome);
 
             // Cleanup and remove the extension
             request = ctx.buildRequest("/extension=org.jboss.as.modcluster:remove");
             response = controllerClient.execute(request);
             outcome = response.get("outcome").asString();
-            Assert.assertEquals("Removing mod_cluster extension failed! " + request.toJSONString(false), "success", outcome);
+            Assert.assertEquals("Removing mod_cluster extension failed! " + request.toJSONString(false), SUCCESS, outcome);
+
+            // Cleanup socket binding
+            request = ctx.buildRequest("/socket-binding-group=standard-sockets/socket-binding=modcluster:remove");
+            response = controllerClient.execute(request);
+            outcome = response.get("outcome").asString();
+            Assert.assertEquals("Removing socket binding failed! " + request.toJSONString(false), SUCCESS, outcome);
         } finally {
             ctx.terminateSession();
         }

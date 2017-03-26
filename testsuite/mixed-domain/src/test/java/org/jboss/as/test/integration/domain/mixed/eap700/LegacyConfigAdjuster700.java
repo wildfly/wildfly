@@ -24,7 +24,7 @@ import org.jboss.as.test.integration.domain.mixed.LegacyConfigAdjuster;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Adjusts a config produced from the EAP 6.4 or earlier domain.xml.
+ * Adjusts a config produced from the EAP 7.0 or earlier domain.xml.
  *
  * @author Brian Stansberry
  */
