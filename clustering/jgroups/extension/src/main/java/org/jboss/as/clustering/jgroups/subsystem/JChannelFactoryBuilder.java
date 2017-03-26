@@ -147,6 +147,6 @@ public class JChannelFactoryBuilder implements ResourceServiceBuilder<ChannelFac
 
     @Override
     public boolean isStatisticsEnabled() {
-        return statisticsEnabled;
+        return this.statisticsEnabled;
     }
 }
