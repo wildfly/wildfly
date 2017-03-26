@@ -94,21 +94,13 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             return;
 
         deploymentUnit.getDeploymentSubsystemModel(JaxrsExtension.SUBSYSTEM_NAME);
-        //remove the resteasy.scan parameter
-        //because it is not needed
         final List<ParamValueMetaData> params = webdata.getContextParams();
         boolean entityExpandEnabled = false;
         if (params != null) {
             Iterator<ParamValueMetaData> it = params.iterator();
             while (it.hasNext()) {
                 final ParamValueMetaData param = it.next();
-                if (param.getParamName().equals(RESTEASY_SCAN)) {
-                    it.remove();
-                } else if (param.getParamName().equals(RESTEASY_SCAN_RESOURCES)) {
-                    it.remove();
-                } else if (param.getParamName().equals(RESTEASY_SCAN_PROVIDERS)) {
-                    it.remove();
-                } else if(param.getParamName().equals(ResteasyContextParameters.RESTEASY_EXPAND_ENTITY_REFERENCES)) {
+                if(param.getParamName().equals(ResteasyContextParameters.RESTEASY_EXPAND_ENTITY_REFERENCES)) {
                     entityExpandEnabled = true;
                 }
             }
@@ -118,7 +110,6 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if(!entityExpandEnabled) {
             setContextParameter(webdata, ResteasyContextParameters.RESTEASY_EXPAND_ENTITY_REFERENCES, "false");
         }
-
 
         final Map<ModuleIdentifier, ResteasyDeploymentData> attachmentMap = parent.getAttachment(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA);
         final List<ResteasyDeploymentData> additionalData = new ArrayList<ResteasyDeploymentData>();
