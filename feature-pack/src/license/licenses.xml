@@ -555,16 +555,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.activemq</groupId>
-      <artifactId>artemis-jdbc-store</artifactId>
-      <licenses>
-        <license>
-          <name>Apache Software License, Version 2.0</name>
-          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.activemq</groupId>
       <artifactId>artemis-hornetq-protocol</artifactId>
       <licenses>
         <license>
@@ -576,6 +566,16 @@
     <dependency>
       <groupId>org.apache.activemq</groupId>
       <artifactId>artemis-hqclient-protocol</artifactId>
+      <licenses>
+        <license>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>artemis-jdbc-store</artifactId>
       <licenses>
         <license>
           <name>Apache Software License, Version 2.0</name>
@@ -1220,6 +1220,39 @@
     <dependency>
       <groupId>org.apache.santuario</groupId>
       <artifactId>xmlsec</artifactId>
+      <licenses>
+        <license>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.taglibs</groupId>
+      <artifactId>taglibs-standard-compat</artifactId>
+      <licenses>
+        <license>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.taglibs</groupId>
+      <artifactId>taglibs-standard-impl</artifactId>
+      <licenses>
+        <license>
+          <name>Apache Software License, Version 2.0</name>
+          <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.taglibs</groupId>
+      <artifactId>taglibs-standard-spec</artifactId>
       <licenses>
         <license>
           <name>Apache Software License, Version 2.0</name>
@@ -3222,39 +3255,6 @@
       </licenses>
     </dependency>
     <dependency>
-        <groupId>org.apache.taglibs</groupId>
-        <artifactId>taglibs-standard-spec</artifactId>
-        <licenses>
-            <license>
-                <name>Apache Software License, Version 2.0</name>
-                <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-                <distribution>repo</distribution>
-            </license>
-        </licenses>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.taglibs</groupId>
-        <artifactId>taglibs-standard-impl</artifactId>
-        <licenses>
-            <license>
-                <name>Apache Software License, Version 2.0</name>
-                <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-                <distribution>repo</distribution>
-            </license>
-        </licenses>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.taglibs</groupId>
-        <artifactId>taglibs-standard-compat</artifactId>
-        <licenses>
-            <license>
-                <name>Apache Software License, Version 2.0</name>
-                <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-                <distribution>repo</distribution>
-            </license>
-        </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.spec.javax.transaction</groupId>
       <artifactId>jboss-transaction-api_1.2_spec</artifactId>
       <licenses>
@@ -3793,17 +3793,6 @@
         <license>
           <name>Apache Software License, Version 2.0</name>
           <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <licenses>
-        <license>
-          <name>The MIT License</name>
-          <url>http://repository.jboss.org/licenses/mit.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
