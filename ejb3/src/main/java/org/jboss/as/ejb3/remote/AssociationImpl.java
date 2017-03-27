@@ -66,11 +66,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executor;
@@ -82,10 +79,6 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 final class AssociationImpl implements Association {
-
-    private static final Set<String> CONTEXTDATA_EXCLUDED_TYPES = Collections.unmodifiableSet(new HashSet<String>() {{
-        add("org.jboss.weld.serialization.spi.helpers.SerializableContextualInstance");
-    }});
 
     private final DeploymentRepository deploymentRepository;
     private final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector;
@@ -166,13 +159,7 @@ final class AssociationImpl implements Association {
             SecurityActions.remotingContextSetConnection(invocationRequest.getProviderInterface(Connection.class));
 
             try {
-                final ResultAndContextData wrappedResult = invokeMethod(componentView, invokedMethod, invocationRequest, requestContent, cancellationFlag);
-                result = wrappedResult.result;
-                for (Map.Entry<String, Object> entry : wrappedResult.contextData.entrySet()) {
-                    if (!intersect(typesOf(entry.getValue()), CONTEXTDATA_EXCLUDED_TYPES)) {
-                        attachments.put(entry.getKey(), entry.getValue());
-                    }
-                }
+                result = invokeMethod(componentView, invokedMethod, invocationRequest, requestContent, cancellationFlag);
             } catch (EJBComponentUnavailableException ex) {
                 // if the EJB is shutting down when the invocation was done, then it's as good as the EJB not being available. The client has to know about this as
                 // a "no such EJB" failure so that it can retry the invocation on a different node if possible.
@@ -228,34 +215,6 @@ final class AssociationImpl implements Association {
         // invoke the method and write out the response, possibly on a separate thread
         execute(invocationRequest, runnable, isAsync);
         return cancellationFlag::cancel;
-    }
-
-    private static <A> boolean intersect(final Set<A> fst, final Set<A> snd) {
-        fst.retainAll(snd);
-        return !fst.isEmpty();
-    }
-
-    private static Set<String> typesOf(final Object o) {
-        final Queue<Class<?>> q = new LinkedList<Class<?>>() {{
-            add(o.getClass());
-        }};
-        final Set<String> result = new HashSet<String>() {{
-            add(o.getClass().getCanonicalName());
-        }};
-        Class<?> cursor;
-        while (!q.isEmpty()) {
-            cursor = q.poll();
-            for (Class<?> iface : cursor.getInterfaces()) {
-                q.add(iface);
-                result.add(iface.getCanonicalName());
-            }
-            cursor = cursor.getSuperclass();
-            if (cursor != null) {
-                q.add(cursor);
-                result.add(cursor.getCanonicalName());
-            }
-        }
-        return result;
     }
 
     private void execute(Request request, Runnable task, final boolean isAsync) {
@@ -434,7 +393,7 @@ final class AssociationImpl implements Association {
         }
     }
 
-    static ResultAndContextData invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag) throws Exception {
+    static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag) throws Exception {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(content.getParameters());
         interceptorContext.setMethod(method);
@@ -486,9 +445,9 @@ final class AssociationImpl implements Association {
                 interceptorContext.putPrivateData(CancellationFlag.class, cancellationFlag);
             }
             final Object result = invokeWithIdentity(componentView, interceptorContext, securityIdentity);
-            return new ResultAndContextData(result == null ? null : ((Future<?>)result).get(), interceptorContext.getContextData());
+            return result == null ? null : ((Future<?>) result).get();
         } else {
-            return new ResultAndContextData(invokeWithIdentity(componentView, interceptorContext, securityIdentity), interceptorContext.getContextData());
+            return invokeWithIdentity(componentView, interceptorContext, securityIdentity);
         }
     }
 
@@ -530,16 +489,5 @@ final class AssociationImpl implements Association {
 
     void setExecutor(Executor executor) {
         this.executor = executor;
-    }
-
-    private static final class ResultAndContextData {
-        public final Object result;
-        public final Map<String, Object> contextData;
-
-
-        private ResultAndContextData(final Object result, final Map<String, Object> contextData) {
-            this.result = result;
-            this.contextData = contextData;
-        }
     }
 }
