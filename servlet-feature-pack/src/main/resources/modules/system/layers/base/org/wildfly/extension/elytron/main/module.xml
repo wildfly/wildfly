@@ -31,7 +31,7 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly.core:wildfly-elytron}"/>
+        <artifact name="${org.wildfly.core:wildfly-elytron-integration}"/>
     </resources>
 
     <dependencies>
