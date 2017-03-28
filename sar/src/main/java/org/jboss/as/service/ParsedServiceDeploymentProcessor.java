@@ -35,6 +35,7 @@ import java.util.Map;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -280,6 +281,9 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
                 }
             }
             final Constructor<?> constructor = mBeanClassHierarchy.get(0).getConstructor(types);
+            if(constructor == null){
+                throw EeLogger.ROOT_LOGGER.defaultConstructorNotFound(mBeanClassHierarchy.get(0).getIndexedClass());
+            }
             final Object mBeanInstance = ReflectionUtils.newInstance(constructor, params);
 
             return mBeanInstance;
