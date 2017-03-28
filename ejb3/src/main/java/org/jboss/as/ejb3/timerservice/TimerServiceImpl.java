@@ -401,7 +401,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         // get all active timers for this timerservice
         synchronized (this.timers) {
             for (final TimerImpl timer : this.timers.values()) {
-                if (timer.isActive()) {
+                // Less disruptive way to get WFLY-8457 fixed.
+                if (timer.isActive() || (!timer.isActive() && timer.getState() == TimerState.ACTIVE)) {
                     if (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk)) {
                         activeTimers.add(timer);
                     }
