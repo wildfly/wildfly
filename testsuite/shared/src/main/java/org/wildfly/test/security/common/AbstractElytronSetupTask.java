@@ -72,7 +72,7 @@ public abstract class AbstractElytronSetupTask
             for (final ConfigurableElement configurableElement : configurableElements) {
                 LOGGER.infov("Adding element {0} ({1})", configurableElement.getName(),
                         configurableElement.getClass().getSimpleName());
-                configurableElement.create(cli);
+                configurableElement.create(modelControllerClient, cli);
             }
         }
         ServerReload.reloadIfRequired(modelControllerClient);
@@ -95,7 +95,7 @@ public abstract class AbstractElytronSetupTask
                 final ConfigurableElement configurableElement = reverseConfigIt.previous();
                 LOGGER.infov("Removing element {0} ({1})", configurableElement.getName(),
                         configurableElement.getClass().getSimpleName());
-                configurableElement.remove(cli);
+                configurableElement.remove(modelControllerClient, cli);
             }
         }
         this.configurableElements = null;

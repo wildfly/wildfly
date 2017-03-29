@@ -19,25 +19,50 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.test.security.common.elytron;
 
-import java.util.List;
-
 /**
- * This interface represent Elytron Security Domain with predefined list of users and their roles. It provides ability to tests
- * to come up with own user population for the tested scenario.
- * <p>
- * <b>Implementation notes:</b> If the Elytron security realm can be preconfigured with user list (e.g. domain implementation is
- * creating a property file with users), then the domain created around such a realm should implement this interface.
- * </p>
+ * Elytron constant-principal-transformer configuration implementation.
  *
  * @author Josef Cacek
  */
-public interface UsersRolesSecurityDomain extends SecurityDomain {
+public class ConstantPrincipalTransformer extends AbstractConstantHelper {
+
+    private ConstantPrincipalTransformer(Builder builder) {
+        super(builder);
+    }
+
+
+    @Override
+    protected String getConstantElytronType() {
+        return "constant-principal-transformer";
+    }
 
     /**
-     * Returns predefined (not {@code null}) list of users and their attributes to be created in the domain (realm in fact).
+     * Creates builder.
+     *
+     * @return created builder
      */
-    List<UserWithRoles> getUsersWithRoles();
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Builder pattern for the class.
+     */
+    public static final class Builder extends AbstractConstantHelper.Builder<Builder> {
+
+        private Builder() {
+        }
+
+        public ConstantPrincipalTransformer build() {
+            return new ConstantPrincipalTransformer(this);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
+    }
+
 }
