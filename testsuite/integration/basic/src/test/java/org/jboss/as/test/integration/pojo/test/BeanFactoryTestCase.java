@@ -31,10 +31,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.lang.reflect.ReflectPermission;
-
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
@@ -45,12 +41,6 @@ public class BeanFactoryTestCase {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bean-factory.jar");
         archive.addPackage(TFactory.class.getPackage());
         archive.addAsManifestResource(BeanFactoryTestCase.class.getPackage(), "bf-jboss-beans.xml", "bf-jboss-beans.xml");
-        // implementation of org.jboss.as.test.integration.pojo.support.D#create() method needs the following permissions
-        archive.addAsManifestResource(createPermissionsXmlAsset(
-                new RuntimePermission("getClassLoader"),
-                new RuntimePermission("accessDeclaredMembers"),
-                new ReflectPermission("suppressAccessChecks")),
-                "jboss-permissions.xml");
         return archive;
     }
 

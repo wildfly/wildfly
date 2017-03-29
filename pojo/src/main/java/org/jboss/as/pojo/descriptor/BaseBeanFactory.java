@@ -29,6 +29,9 @@ import org.jboss.as.pojo.service.DefaultBeanInfo;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 /**
  * Base bean factory.
  *
@@ -41,8 +44,20 @@ public class BaseBeanFactory implements BeanFactory {
     @SuppressWarnings("unchecked")
     public Object create() throws Throwable {
         Module module = bmd.getModule().getInjectedModule().getValue();
-        Class<?> beanClass = module.getClassLoader().loadClass(bmd.getBeanClass());
-        DeploymentReflectionIndex index = DeploymentReflectionIndex.create();
+        final SecurityManager sm = System.getSecurityManager();
+        ClassLoader moduleClassLoader;
+        if (sm == null) {
+            moduleClassLoader = module.getClassLoader();
+        } else {
+            moduleClassLoader = AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> module.getClassLoader());
+        }
+        Class<?> beanClass = moduleClassLoader.loadClass(bmd.getBeanClass());
+        DeploymentReflectionIndex index;
+        if (sm == null) {
+            index = DeploymentReflectionIndex.create();
+        } else {
+            index = AccessController.doPrivileged((PrivilegedAction<DeploymentReflectionIndex>) () -> DeploymentReflectionIndex.create());
+        }
         BeanInfo beanInfo = new DefaultBeanInfo(index, beanClass);
         Object result = BeanUtils.instantiateBean(bmd, beanInfo, index, module);
         BeanUtils.configure(bmd, beanInfo, module, result, false);
