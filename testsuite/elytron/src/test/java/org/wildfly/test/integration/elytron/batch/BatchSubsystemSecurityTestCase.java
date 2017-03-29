@@ -22,12 +22,18 @@
 
 package org.wildfly.test.integration.elytron.batch;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.ADDRESS;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
+import static org.jboss.as.controller.client.helpers.ClientConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.client.helpers.ClientConstants.WRITE_ATTRIBUTE_OPERATION;
+
 import java.security.AllPermission;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.JobSecurityException;
 import javax.batch.runtime.BatchRuntime;
@@ -60,13 +66,9 @@ import org.wildfly.security.evidence.PasswordGuessEvidence;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.EJBApplicationSecurityDomainMapping;
+import org.wildfly.test.security.common.elytron.PermissionRef;
 import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
 import org.wildfly.test.security.common.elytron.SimplePermissionMapper;
-
-import static org.jboss.as.controller.client.helpers.ClientConstants.ADDRESS;
-import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
-import static org.jboss.as.controller.client.helpers.ClientConstants.UNDEFINE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.WRITE_ATTRIBUTE_OPERATION;
 
 /**
  * This is for testing the BatchPermission from batch-jberet subsystem.
@@ -311,36 +313,36 @@ public class BatchSubsystemSecurityTestCase {
                                     SimplePermissionMapper.PermissionMapping.builder()
                                             .withPrincipals("user1", "anonymous")
                                             .withPermissions(
-                                                    SimplePermissionMapper.Permission.builder()
+                                                    PermissionRef.builder()
                                                             .targetName("*")
                                                             .className(BatchPermission.class.getName())
                                                             .module("org.wildfly.extension.batch.jberet")
                                                             .build(),
-                                                    SimplePermissionMapper.Permission.builder()
+                                                    PermissionRef.builder()
                                                             .className(LoginPermission.class.getName())
                                                             .build())
                                             .build(),
                                     SimplePermissionMapper.PermissionMapping.builder()
                                             .withPrincipals("user2")
                                             .withPermissions(
-                                                    SimplePermissionMapper.Permission.builder()
+                                                    PermissionRef.builder()
                                                             .targetName("stop")
                                                             .className(BatchPermission.class.getName())
                                                             .module("org.wildfly.extension.batch.jberet")
                                                             .build(),
-                                                    SimplePermissionMapper.Permission.builder()
+                                                    PermissionRef.builder()
                                                             .className(LoginPermission.class.getName())
                                                             .build())
                                             .build(),
                                     SimplePermissionMapper.PermissionMapping.builder()
                                             .withPrincipals("user3")
                                             .withPermissions(
-                                                    SimplePermissionMapper.Permission.builder()
+                                                    PermissionRef.builder()
                                                             .targetName("read")
                                                             .className(BatchPermission.class.getName())
                                                             .module("org.wildfly.extension.batch.jberet")
                                                             .build(),
-                                                    SimplePermissionMapper.Permission.builder()
+                                                    PermissionRef.builder()
                                                             .className(LoginPermission.class.getName())
                                                             .build())
                                             .build()
