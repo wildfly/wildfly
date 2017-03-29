@@ -194,4 +194,15 @@ public interface SarLogger extends BasicLogger {
      */
     @Message(id = 13, value = "Malformed dependency name %s")
     DeploymentUnitProcessingException malformedDependencyName(@Cause Throwable cause,  String dependencyName);
+
+    /**
+     * Creates an exception indicating the default constructor for the class, represented by the {@code clazz} parameter, could
+     * not be found.
+     *
+     * @param clazz the class.
+     *
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 14, value = "Could not find default constructor for %s")
+    DeploymentUnitProcessingException defaultConstructorNotFound(Class<?> clazz);
 }
