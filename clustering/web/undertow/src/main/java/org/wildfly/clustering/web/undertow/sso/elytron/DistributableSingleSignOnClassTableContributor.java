@@ -22,27 +22,20 @@
 
 package org.wildfly.clustering.web.undertow.sso.elytron;
 
-import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
+
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
 
 /**
  * @author Paul Ferraro
  */
-public class ElytronAuthentication implements Serializable {
-    private static final long serialVersionUID = -8708162054415948335L;
+@MetaInfServices(ClassTableContributor.class)
+public class DistributableSingleSignOnClassTableContributor implements ClassTableContributor {
 
-    private final String mechanism;
-    private final String name;
-
-    public ElytronAuthentication(String mechanism, String name) {
-        this.mechanism = mechanism;
-        this.name = name;
-    }
-
-    public String getMechanism() {
-        return this.mechanism;
-    }
-
-    public String getName() {
-        return this.name;
+    @Override
+    public Collection<Class<?>> getKnownClasses() {
+        return Collections.singleton(ElytronAuthentication.class);
     }
 }
