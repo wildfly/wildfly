@@ -66,6 +66,6 @@ public class SimpleResourceDescriptionResolver extends StandardResourceDescripti
     }
 
     public void addDescription(String key, String description) {
-        this.descriptions.put(this.getKeyPrefix() + "." + key, description);
+        this.descriptions.put(String.join(".", this.getKeyPrefix(), key), description);
     }
 }
