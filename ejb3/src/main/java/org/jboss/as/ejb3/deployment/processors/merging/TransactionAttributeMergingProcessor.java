@@ -73,7 +73,10 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
         processTransactionAttributeAnnotation(applicationClasses, deploymentReflectionIndex, componentClass, null, componentConfiguration);
         processTransactionTimeoutAnnotation(applicationClasses, deploymentReflectionIndex, componentClass, null, componentConfiguration);
         for (ViewDescription view : componentConfiguration.getViews()) {
-
+            if(view.getViewClassName().equals(componentClass.getName())) {
+                //we don't process no interface views using this logic, it is handled above already by the standard component level annotations
+                continue;
+            }
             try {
                 final Class<?> viewClass = module.getClassLoader().loadClass(view.getViewClassName());
                 EJBViewDescription ejbView = (EJBViewDescription) view;
