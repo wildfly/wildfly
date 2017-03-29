@@ -24,6 +24,7 @@ package org.jboss.as.clustering.controller;
 
 import javax.management.MBeanServer;
 
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.service.NamingService;
 import org.wildfly.clustering.service.Requirement;
@@ -35,6 +36,7 @@ import org.wildfly.clustering.service.Requirement;
 public enum CommonRequirement implements Requirement, ServiceNameFactoryProvider {
     MBEAN_SERVER("org.wildfly.management.jmx", MBeanServer.class),
     NAMING_STORE(NamingService.CAPABILITY_NAME, NamingStore.class),
+    PATH_MANAGER("org.wildfly.management.path-manager", PathManager.class),
     ;
     private final String name;
     private final Class<?> type;
