@@ -37,5 +37,5 @@ public interface Constants {
     String JNDI_NAME_GLOBAL = "java:global/" + TESTED_DU_NAME + "/ResourceEJBImpl";
     String JNDI_NAME_BAD = "java:jboss:/" + TESTED_DU_NAME + "/ResourceEJBImpl";
 
-    String ERROR_MESSAGE = "A valid JNDI name must be provided: java:jboss:/BadTest/ResourceEJBImpl";
+    String ERROR_MESSAGE = "WFLYNAM0033";
 }

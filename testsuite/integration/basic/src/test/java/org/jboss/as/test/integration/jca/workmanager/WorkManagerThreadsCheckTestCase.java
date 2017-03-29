@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jca.workmanager;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.core.AllOf.allOf;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -83,7 +85,12 @@ public class WorkManagerThreadsCheckTestCase extends JcaMgmtBase {
             Assert.fail("NOT HERE!");
         } catch (MgmtOperationException e) {
             String reason = e.getResult().get("failure-description").asString();
-            Assert.assertEquals("WFLYJCA0101: Thread pool: Long(type: long-running-threads) can not be added for workmanager: default, only one thread pool is allowed for each type.", reason);
+            Assert.assertThat("Wrong error message", reason, allOf(
+                    containsString("WFLYJCA0101"),
+                    containsString("Long"),
+                    containsString("long-running-threads"),
+                    containsString("default")
+            ));
         }
     }
 
@@ -104,7 +111,12 @@ public class WorkManagerThreadsCheckTestCase extends JcaMgmtBase {
             Assert.fail("NOT HERE!");
         } catch (MgmtOperationException e) {
             String reason = e.getResult().get("failure-description").asString();
-            Assert.assertEquals("WFLYJCA0101: Thread pool: Short(type: short-running-threads) can not be added for workmanager: default, only one thread pool is allowed for each type.", reason);
+            Assert.assertThat("Wrong error message", reason, allOf(
+                    containsString("WFLYJCA0101"),
+                    containsString("Short"),
+                    containsString("short-running-threads"),
+                    containsString("default")
+            ));
         }
     }
 }
