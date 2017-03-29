@@ -75,7 +75,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
         public RuntimeCapability<Void> resolve(PathAddress address) {
             PathAddress cacheAddress = address.getParent();
             PathAddress containerAddress = cacheAddress.getParent();
-            return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue() + "." + cacheAddress.getLastElement().getValue());
+            return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue(), cacheAddress.getLastElement().getValue());
         }
     }
 

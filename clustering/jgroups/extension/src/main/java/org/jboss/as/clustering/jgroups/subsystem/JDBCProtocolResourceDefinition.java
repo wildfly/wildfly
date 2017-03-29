@@ -63,7 +63,7 @@ public class JDBCProtocolResourceDefinition<P extends Protocol & JDBCProtocol> e
 
         @Override
         public RuntimeCapability<Void> resolve(PathAddress address) {
-            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue() + "." + address.getLastElement().getValue());
+            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue(), address.getLastElement().getValue());
         }
     }
 

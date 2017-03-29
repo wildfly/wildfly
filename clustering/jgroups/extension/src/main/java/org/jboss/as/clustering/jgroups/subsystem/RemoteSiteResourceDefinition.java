@@ -75,7 +75,7 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
 
         @Override
         public RuntimeCapability<Void> resolve(PathAddress address) {
-            return this.definition.fromBaseCapability(address.getParent().getParent().getLastElement().getValue() + "." + address.getLastElement().getValue());
+            return this.definition.fromBaseCapability(address.getParent().getParent().getLastElement().getValue(), address.getLastElement().getValue());
         }
     }
 
