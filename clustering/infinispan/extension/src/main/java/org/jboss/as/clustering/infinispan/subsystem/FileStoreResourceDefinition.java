@@ -27,7 +27,6 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.server.ServerEnvironment;
@@ -71,15 +70,14 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
         StoreResourceDefinition.buildTransformation(version, builder, PATH);
     }
 
-    FileStoreResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor.addAttributes(Attribute.class), address -> new FileStoreBuilder(address.getParent()), registration -> {
-                if (pathManager != null) {
+    FileStoreResourceDefinition() {
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), descriptor -> descriptor.addAttributes(Attribute.class), address -> new FileStoreBuilder(address.getParent()), registration ->
+                registration.getPathManager().ifPresent(pathManager -> {
                     ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(pathManager)
                             .setPathAttribute(Attribute.RELATIVE_PATH.getDefinition())
                             .setRelativeToAttribute(Attribute.RELATIVE_TO.getDefinition())
                             .build();
                     registration.registerOperationHandler(pathHandler.getOperationDefinition(), pathHandler);
-                }
-            });
+                }));
     }
 }

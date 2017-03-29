@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.infinispan.transaction.LockingMode;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -52,7 +53,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
@@ -106,8 +106,6 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
             return this.definition;
         }
     }
-
-    private final boolean allowRuntimeOnlyRegistration;
 
     @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
@@ -232,9 +230,8 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         return transactionAddress.subAddress(0, transactionAddress.size() - 1);
     }
 
-    TransactionResourceDefinition(boolean allowRuntimeOnlyRegistration) {
+    TransactionResourceDefinition() {
         super(PATH);
-        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
@@ -246,7 +243,7 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new TransactionBuilder(address.getParent()));
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-        if (this.allowRuntimeOnlyRegistration) {
+        if (registration.isRuntimeOnlyRegistrationValid()) {
             new MetricHandler<>(new TransactionMetricExecutor(), TransactionMetric.class).register(registration);
         }
     }

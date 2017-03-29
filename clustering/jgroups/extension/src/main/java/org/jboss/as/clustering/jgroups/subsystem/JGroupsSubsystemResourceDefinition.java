@@ -28,9 +28,11 @@ import java.util.Map;
 import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.DefaultSubsystemDescribeHandler;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SubsystemRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
@@ -38,10 +40,7 @@ import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -55,9 +54,9 @@ import org.wildfly.clustering.spi.ClusteringRequirement;
  *
  * @author Richard Achmatowicz (c) 2012 Red Hat Inc.
  */
-public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinition {
+public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
 
-    public static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME);
+    public static final PathElement PATH = pathElement(JGroupsExtension.SUBSYSTEM_NAME);
 
     static final Map<JGroupsRequirement, Capability> CAPABILITIES = new EnumMap<>(JGroupsRequirement.class);
     static {
@@ -98,8 +97,6 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
         }
     }
 
-    private final boolean allowRuntimeOnlyRegistration;
-
     static TransformationDescription buildTransformers(ModelVersion version) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
@@ -116,9 +113,8 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
         return builder.build();
     }
 
-    JGroupsSubsystemResourceDefinition(boolean allowRuntimeOnlyRegistration) {
+    JGroupsSubsystemResourceDefinition() {
         super(PATH, new JGroupsResourceDescriptionResolver());
-        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
@@ -136,7 +132,7 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
         ResourceServiceHandler handler = new JGroupsSubsystemServiceHandler();
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-        new ChannelResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
-        new StackResourceDefinition(this.allowRuntimeOnlyRegistration).register(registration);
+        new ChannelResourceDefinition().register(registration);
+        new StackResourceDefinition().register(registration);
     }
 }

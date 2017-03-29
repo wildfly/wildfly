@@ -23,6 +23,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.EnumSet;
 
+import org.jboss.as.clustering.controller.ContextualSubsystemRegistration;
 import org.jboss.as.clustering.jgroups.LogFactory;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -51,7 +52,7 @@ public class JGroupsExtension implements Extension {
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, JGroupsModel.CURRENT.getVersion());
 
-        new JGroupsSubsystemResourceDefinition(context.isRuntimeOnlyRegistrationValid()).register(registration);
+        new JGroupsSubsystemResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
     }
 
