@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
@@ -37,8 +38,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -127,14 +126,14 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         CacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    ClusteredCacheResourceDefinition(PathElement path, PathManager pathManager, boolean allowRuntimeOnlyRegistration, Consumer<ResourceDescriptor> descriptorConfigurator, ClusteredCacheServiceHandler handler, Consumer<ManagementResourceRegistration> registrationConfigurator) {
-        super(path, pathManager, allowRuntimeOnlyRegistration, descriptorConfigurator.andThen(descriptor -> descriptor
+    ClusteredCacheResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, ClusteredCacheServiceHandler handler, Consumer<ManagementResourceRegistration> registrationConfigurator) {
+        super(path, descriptorConfigurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
                 .addAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 .addResourceCapabilityReference(new CapabilityReference(Capability.TRANSPORT, JGroupsTransportResourceDefinition.Requirement.CHANNEL_FACTORY), address -> address.getParent().getLastElement().getValue())
             ), handler, registrationConfigurator.andThen(registration -> {
-                if (allowRuntimeOnlyRegistration) {
+                if (registration.isRuntimeOnlyRegistrationValid()) {
                     new MetricHandler<>(new ClusteredCacheMetricExecutor(), ClusteredCacheMetric.class).register(registration);
                 }
             }));

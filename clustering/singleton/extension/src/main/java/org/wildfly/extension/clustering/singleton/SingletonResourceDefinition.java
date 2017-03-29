@@ -35,7 +35,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -58,9 +57,9 @@ import org.wildfly.extension.clustering.singleton.deployment.SingletonDeployment
  * Definition of the singleton deployer resource.
  * @author Paul Ferraro
  */
-public class SingletonResourceDefinition extends SubsystemResourceDefinition {
+public class SingletonResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
 
-    static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SingletonExtension.SUBSYSTEM_NAME);
+    static final PathElement PATH = pathElement(SingletonExtension.SUBSYSTEM_NAME);
 
     enum Capability implements CapabilityProvider {
         DEFAULT_POLICY(SingletonDefaultRequirement.SINGLETON_POLICY),

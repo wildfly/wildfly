@@ -53,7 +53,7 @@ import org.wildfly.clustering.spi.ClusteringDefaultCacheRequirement;
  * Definition of a singleton policy resource.
  * @author Paul Ferraro
  */
-public class SingletonPolicyResourceDefinition extends ChildResourceDefinition {
+public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 

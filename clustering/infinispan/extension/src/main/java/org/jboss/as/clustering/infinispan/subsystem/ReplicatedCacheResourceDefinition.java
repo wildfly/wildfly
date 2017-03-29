@@ -25,7 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
@@ -46,7 +45,7 @@ public class ReplicatedCacheResourceDefinition extends SharedStateCacheResourceD
         SharedStateCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    ReplicatedCacheResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(WILDCARD_PATH, pathManager, allowRuntimeOnlyRegistration, Consumers.empty(), new ReplicatedCacheServiceHandler());
+    ReplicatedCacheResourceDefinition() {
+        super(WILDCARD_PATH, Consumers.empty(), new ReplicatedCacheServiceHandler());
     }
 }

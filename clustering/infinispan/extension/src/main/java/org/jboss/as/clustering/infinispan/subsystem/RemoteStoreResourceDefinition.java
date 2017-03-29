@@ -137,8 +137,8 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
         StoreResourceDefinition.buildTransformation(version, builder, PATH);
     }
 
-    RemoteStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor
+    RemoteStoreResourceDefinition() {
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), descriptor -> descriptor
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
             , address -> new RemoteStoreBuilder(address.getParent()), Consumers.empty());

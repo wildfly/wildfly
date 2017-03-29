@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -33,7 +34,6 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -70,11 +70,8 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
         // Nothing to transform yet
     }
 
-    private final boolean allowRuntimeOnlyRegistration;
-
-    PartitionHandlingResourceDefinition(boolean allowRuntimeOnlyRegistration) {
+    PartitionHandlingResourceDefinition() {
         super(PATH);
-        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
@@ -85,11 +82,9 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new PartitionHandlingBuilder(address.getParent()));
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-        if (this.allowRuntimeOnlyRegistration) {
+        if (registration.isRuntimeOnlyRegistrationValid()) {
             new OperationHandler<>(new PartitionHandlingOperationExecutor(), PartitionHandlingOperation.class).register(registration);
-        }
 
-        if (this.allowRuntimeOnlyRegistration) {
             new MetricHandler<>(new PartitionHandlingMetricExecutor(), PartitionHandlingMetric.class).register(registration);
         }
     }

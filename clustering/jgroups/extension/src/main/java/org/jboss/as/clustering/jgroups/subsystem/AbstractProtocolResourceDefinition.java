@@ -65,7 +65,7 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public class AbstractProtocolResourceDefinition<P extends Protocol, C extends ProtocolConfiguration<P>> extends ChildResourceDefinition {
+public class AbstractProtocolResourceDefinition<P extends Protocol, C extends ProtocolConfiguration<P>> extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING, new ModelNode("org.jgroups"), new ModuleIdentifierValidatorBuilder()),

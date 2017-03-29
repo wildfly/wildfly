@@ -51,7 +51,7 @@ import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
  *
  * @author Paul Ferraro
  */
-public class RemoteSiteResourceDefinition extends ChildResourceDefinition {
+public class RemoteSiteResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
