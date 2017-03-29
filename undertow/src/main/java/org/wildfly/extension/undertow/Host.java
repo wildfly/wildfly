@@ -73,7 +73,6 @@ public class Host implements Service<Host>, FilterLocation {
     private final Map<String, AuthenticationMechanism> additionalAuthenticationMechanisms = new ConcurrentHashMap<>();
     private final HostRootHandler hostRootHandler = new HostRootHandler();
     private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceInjectedValue = new InjectedValue<>();
-    private final Set<String>  modClusterPaths = new CopyOnWriteArraySet<>();
     private volatile GateHandlerWrapper gateHandlerWrapper;
 
     private final DefaultResponseCodeHandler defaultHandler;
@@ -223,9 +222,7 @@ public class Host implements Service<Host>, FilterLocation {
     }
 
     public void registerModClusterPath(String path) {
-        String realPath = path.startsWith("/") ? path : "/" + path;
-        modClusterPaths.add(realPath);
-        undertowService.getValue().fireEvent(listener -> listener.onDeploymentStart(realPath, Host.this));
+        undertowService.getValue().fireEvent(listener -> listener.onDeploymentStart(path, Host.this));
     }
 
     public void unregisterDeployment(final Deployment deployment) {
@@ -238,9 +235,7 @@ public class Host implements Service<Host>, FilterLocation {
     }
 
     public void unregisterModClusterPath(String path) {
-        String realPath = path.startsWith("/") ? path : "/" + path;
-        modClusterPaths.remove(realPath);
-        undertowService.getValue().fireEvent(listener -> listener.onDeploymentStop(realPath, Host.this));
+        undertowService.getValue().fireEvent(listener -> listener.onDeploymentStop(path, Host.this));
     }
 
     public void registerHandler(String path, HttpHandler handler) {
@@ -268,10 +263,6 @@ public class Host implements Service<Host>, FilterLocation {
     void unregisterLocation(LocationService location) {
         locations.remove(location.getLocationPath());
         unregisterHandler(location.getLocationPath());
-    }
-
-    public Set<String> getModClusterPaths() {
-        return Collections.unmodifiableSet(modClusterPaths);
     }
 
     /**

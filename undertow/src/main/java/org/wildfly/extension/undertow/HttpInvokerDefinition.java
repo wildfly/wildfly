@@ -36,9 +36,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
@@ -53,7 +51,6 @@ import io.undertow.server.handlers.PathHandler;
 public class HttpInvokerDefinition extends PersistentResourceDefinition {
 
     private static final String HTTP_AUTHENTICATION_FACTORY_CAPABILITY = "org.wildfly.security.http-authentication-factory";
-    private static final ServiceName MOD_CLUSTER_SERVICE_NAME = ServiceName.JBOSS.append("modcluster").append("undertow");
 
     protected static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENITCATION_FACTORY, ModelType.STRING, true)
             .setValidator(new StringLengthValidator(1, true))
@@ -72,12 +69,9 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             HTTP_AUTHENTICATION_FACTORY
     );
     static final HttpInvokerDefinition INSTANCE = new HttpInvokerDefinition();
-    public static final String CAPABILITY_NAME = "org.wildfly.undertow.http-invoker.host";
 
     private HttpInvokerDefinition() {
-        super(new PersistentResourceDefinition.Parameters(UndertowExtension.PATH_HTTP_INVOKER, UndertowExtension.getResolver(Constants.HTTP_INVOKER))
-                .setAddHandler(new HttpInvokerAdd())
-                .setRemoveHandler(new HttpInvokerRemove()));
+        super(UndertowExtension.PATH_HTTP_INVOKER, UndertowExtension.getResolver(Constants.HTTP_INVOKER), new HttpInvokerAdd(), new HttpInvokerRemove());
     }
 
     @Override
@@ -86,19 +80,11 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
         return (Collection) ATTRIBUTES;
     }
 
+
     private static final class HttpInvokerAdd extends AbstractAddStepHandler {
 
         public HttpInvokerAdd() {
             super(ATTRIBUTES);
-        }
-
-        @Override
-        protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-            super.recordCapabilitiesAndRequirements(context, operation, resource);
-            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-            final PathAddress hostAddress = address.subAddress(0, address.size() - 1);
-            final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
-            context.registerCapability(RuntimeCapability.Builder.of(CAPABILITY_NAME + "." + serverAddress.getLastElement().getValue() + "." + hostAddress.getLastElement().getValue(), false).build());
         }
 
         @Override
@@ -128,9 +114,6 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
                 builder.addDependency(context.getCapabilityServiceName(
                         buildDynamicCapabilityName(HTTP_AUTHENTICATION_FACTORY_CAPABILITY, httpAuthenticationFactory),
                         HttpAuthenticationFactory.class), HttpAuthenticationFactory.class, service.getHttpAuthenticationFactoryInjectedValue());
-            }
-            if(context.hasOptionalCapability("org.wildfly.modcluster", CAPABILITY_NAME + "." + serverName + "." + hostName, null)) {
-                builder.addDependency(MOD_CLUSTER_SERVICE_NAME);
             }
 
             builder.setInitialMode(ServiceController.Mode.ACTIVE)
