@@ -168,7 +168,7 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
     static Class<? extends Protocol> findProtocolClass(OperationContext context, String protocolName, String moduleName) throws OperationFailedException {
         String className = protocolName;
         if (moduleName.equals(AbstractProtocolResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue().asString()) && !protocolName.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix)) {
-            className = org.jgroups.conf.ProtocolConfiguration.protocol_prefix + "." + protocolName;
+            className = String.join(".", org.jgroups.conf.ProtocolConfiguration.protocol_prefix, protocolName);
         }
 
         try {

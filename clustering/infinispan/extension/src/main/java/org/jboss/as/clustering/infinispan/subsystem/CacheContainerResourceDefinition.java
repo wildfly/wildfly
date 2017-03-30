@@ -29,6 +29,7 @@ import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -56,8 +57,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.ListOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -74,7 +73,7 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public class CacheContainerResourceDefinition extends ChildResourceDefinition {
+public class CacheContainerResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -276,13 +275,8 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition {
         LocalCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final PathManager pathManager;
-    private final boolean allowRuntimeOnlyRegistration;
-
-    CacheContainerResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
+    CacheContainerResourceDefinition() {
         super(WILDCARD_PATH, new InfinispanResourceDescriptionResolver(WILDCARD_PATH));
-        this.pathManager = pathManager;
-        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
@@ -325,7 +319,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition {
         };
         registration.registerOperationHandler(ALIAS_REMOVE, removeAliasHandler);
 
-        if (this.allowRuntimeOnlyRegistration) {
+        if (registration.isRuntimeOnlyRegistrationValid()) {
             new MetricHandler<>(new CacheContainerMetricExecutor(), CacheContainerMetric.class).register(registration);
         }
 
@@ -335,9 +329,9 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition {
         EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(p -> p.register(registration));
         EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).forEach(p -> p.register(registration));
 
-        new LocalCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
-        new InvalidationCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
-        new ReplicatedCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
-        new DistributedCacheResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
+        new LocalCacheResourceDefinition().register(registration);
+        new InvalidationCacheResourceDefinition().register(registration);
+        new ReplicatedCacheResourceDefinition().register(registration);
+        new DistributedCacheResourceDefinition().register(registration);
     }
 }

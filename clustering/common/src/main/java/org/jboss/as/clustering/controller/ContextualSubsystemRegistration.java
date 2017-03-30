@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,43 +22,34 @@
 
 package org.jboss.as.clustering.controller;
 
-import javax.management.MBeanServer;
+import java.util.Optional;
 
+import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.service.NamingService;
-import org.wildfly.clustering.service.Requirement;
 
 /**
- * Enumerates common requirements for clustering resources.
  * @author Paul Ferraro
  */
-public enum CommonRequirement implements Requirement, ServiceNameFactoryProvider {
-    MBEAN_SERVER("org.wildfly.management.jmx", MBeanServer.class),
-    NAMING_STORE(NamingService.CAPABILITY_NAME, NamingStore.class),
-    PATH_MANAGER("org.wildfly.management.path-manager", PathManager.class),
-    ;
-    private final String name;
-    private final Class<?> type;
-    private final ServiceNameFactory factory = new RequirementServiceNameFactory(this);
+public class ContextualSubsystemRegistration extends DecoratingSubsystemRegistration<ManagementResourceRegistration> implements SubsystemRegistration {
 
-    CommonRequirement(String name, Class<?> type) {
-        this.name = name;
-        this.type = type;
+    private final RegistrationContext context;
+
+    public ContextualSubsystemRegistration(org.jboss.as.controller.SubsystemRegistration registration, ExtensionContext context) {
+        this(registration, new ExtensionRegistrationContext(context));
+    }
+
+    public ContextualSubsystemRegistration(org.jboss.as.controller.SubsystemRegistration registration, RegistrationContext context) {
+        super(registration, r -> new ContextualResourceRegistration(r, context));
+        this.context = context;
     }
 
     @Override
-    public String getName() {
-        return this.name;
+    public boolean isRuntimeOnlyRegistrationValid() {
+        return this.context.isRuntimeOnlyRegistrationValid();
     }
 
     @Override
-    public Class<?> getType() {
-        return this.type;
-    }
-
-    @Override
-    public ServiceNameFactory getServiceNameFactory() {
-        return this.factory;
+    public Optional<PathManager> getPathManager() {
+        return this.context.getPathManager();
     }
 }

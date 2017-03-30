@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,22 +22,29 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import java.util.Optional;
+
+import org.jboss.as.controller.services.path.PathManager;
 
 /**
- * Resource definition for subsystem resources that performs all registration via {@link #register(SubsystemRegistration)}.
  * @author Paul Ferraro
  */
-public abstract class SubsystemResourceDefinition<R extends SubsystemRegistration> extends AbstractResourceDefinition<R> {
+public class ContextualResourceRegistration extends DecoratingResourceRegistration<ManagementResourceRegistration> implements ManagementResourceRegistration {
 
-    protected static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
+    private final RegistrationContext context;
+
+    public ContextualResourceRegistration(org.jboss.as.controller.registry.ManagementResourceRegistration registration, RegistrationContext context) {
+        super(registration, r -> new ContextualResourceRegistration(r, context));
+        this.context = context;
     }
 
-    protected SubsystemResourceDefinition(PathElement path, ResourceDescriptionResolver resolver) {
-        super(path, resolver);
+    @Override
+    public boolean isRuntimeOnlyRegistrationValid() {
+        return this.context.isRuntimeOnlyRegistrationValid();
+    }
+
+    @Override
+    public Optional<PathManager> getPathManager() {
+        return this.context.getPathManager();
     }
 }

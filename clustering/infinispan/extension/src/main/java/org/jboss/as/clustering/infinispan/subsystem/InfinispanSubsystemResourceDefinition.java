@@ -26,6 +26,8 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
+import org.jboss.as.clustering.controller.SubsystemRegistration;
 import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistration;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -36,12 +38,8 @@ import org.jboss.as.clustering.infinispan.deployment.ClusteringDependencyProcess
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
@@ -54,9 +52,9 @@ import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefinition {
+public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
 
-    static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME);
+    static final PathElement PATH = pathElement(InfinispanExtension.SUBSYSTEM_NAME);
 
     static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> LOCAL_CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
     static {
@@ -81,13 +79,8 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
         return builder.build();
     }
 
-    private final PathManager pathManager;
-    private final boolean allowRuntimeOnlyRegistration;
-
-    InfinispanSubsystemResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
+    InfinispanSubsystemResourceDefinition() {
         super(PATH, new InfinispanResourceDescriptionResolver());
-        this.pathManager = pathManager;
-        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
@@ -103,6 +96,6 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
         ResourceServiceHandler handler = new InfinispanSubsystemServiceHandler();
         new DeploymentChainContributingResourceRegistration(descriptor, handler, target -> target.addDeploymentProcessor(InfinispanExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLUSTERING, new ClusteringDependencyProcessor())).register(registration);
 
-        new CacheContainerResourceDefinition(this.pathManager, this.allowRuntimeOnlyRegistration).register(registration);
+        new CacheContainerResourceDefinition().register(registration);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,22 +22,17 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.ResourceDefinition;
 
 /**
- * Resource definition for subsystem resources that performs all registration via {@link #register(SubsystemRegistration)}.
+ * Enhanced {@link org.jboss.as.controller.SubsystemRegistration} that also exposes the registration context.
  * @author Paul Ferraro
  */
-public abstract class SubsystemResourceDefinition<R extends SubsystemRegistration> extends AbstractResourceDefinition<R> {
+public interface SubsystemRegistration extends org.jboss.as.controller.SubsystemRegistration, RegistrationContext {
 
-    protected static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
-    }
+    @Override
+    ManagementResourceRegistration registerSubsystemModel(ResourceDefinition definition);
 
-    protected SubsystemResourceDefinition(PathElement path, ResourceDescriptionResolver resolver) {
-        super(path, resolver);
-    }
+    @Override
+    ManagementResourceRegistration registerDeploymentModel(ResourceDefinition definition);
 }

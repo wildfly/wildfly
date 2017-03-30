@@ -28,7 +28,6 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
@@ -62,13 +61,13 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
         ClusteredCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    SharedStateCacheResourceDefinition(PathElement path, PathManager pathManager, boolean allowRuntimeOnlyRegistration, Consumer<ResourceDescriptor> descriptorConfigurator, ClusteredCacheServiceHandler handler) {
-        super(path, pathManager, allowRuntimeOnlyRegistration, descriptorConfigurator.andThen(descriptor -> descriptor
+    SharedStateCacheResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, ClusteredCacheServiceHandler handler) {
+        super(path, descriptorConfigurator.andThen(descriptor -> descriptor
                 .addRequiredChildren(PartitionHandlingResourceDefinition.PATH, StateTransferResourceDefinition.PATH, BackupForResourceDefinition.PATH, BackupsResourceDefinition.PATH)
             ), handler, registration -> {
-                new PartitionHandlingResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+                new PartitionHandlingResourceDefinition().register(registration);
                 new StateTransferResourceDefinition().register(registration);
-                new BackupsResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+                new BackupsResourceDefinition().register(registration);
                 new BackupForResourceDefinition().register(registration);
             });
     }

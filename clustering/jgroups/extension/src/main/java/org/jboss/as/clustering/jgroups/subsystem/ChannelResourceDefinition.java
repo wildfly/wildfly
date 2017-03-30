@@ -28,6 +28,7 @@ import java.util.Map;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -46,7 +47,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -66,7 +66,7 @@ import org.wildfly.clustering.spi.ClusteringRequirement;
  *
  * @author Paul Ferraro
  */
-public class ChannelResourceDefinition extends ChildResourceDefinition {
+public class ChannelResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     public static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -228,11 +228,8 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
         }
     }
 
-    private final boolean allowRuntimeOnlyRegistration;
-
-    ChannelResourceDefinition(boolean allowRuntimeOnlyRegistration) {
+    ChannelResourceDefinition() {
         super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH));
-        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
@@ -263,7 +260,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition {
         ResourceServiceHandler handler = new ChannelServiceHandler();
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-        if (this.allowRuntimeOnlyRegistration) {
+        if (registration.isRuntimeOnlyRegistrationValid()) {
             new MetricHandler<>(new ChannelMetricExecutor(), ChannelMetric.class).register(registration);
         }
 

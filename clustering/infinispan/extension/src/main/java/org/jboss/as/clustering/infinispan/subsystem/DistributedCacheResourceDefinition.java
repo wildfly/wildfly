@@ -33,7 +33,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -112,7 +111,7 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
         SharedStateCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    DistributedCacheResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(WILDCARD_PATH, pathManager, allowRuntimeOnlyRegistration, descriptor -> descriptor.addAttributes(Attribute.class), new DistributedCacheServiceHandler());
+    DistributedCacheResourceDefinition() {
+        super(WILDCARD_PATH, descriptor -> descriptor.addAttributes(Attribute.class), new DistributedCacheServiceHandler());
     }
 }
