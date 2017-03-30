@@ -30,10 +30,12 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.SecurityManagerFailure;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,6 +51,11 @@ public class BootstrapBeanDeploymentArchiveTestCase {
     public static Archive<?> createTestArchive() {
         return ShrinkWrap.create(WebArchive.class).addPackage(BootstrapBeanDeploymentArchiveTestCase.class.getPackage())
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml").addAsServiceProvider(Extension.class, TestExtension.class);
+    }
+
+    @BeforeClass
+    public static void beforeClass() {
+        SecurityManagerFailure.thisTestIsFailingUnderSM("WFLY-8378");
     }
 
     @Test
