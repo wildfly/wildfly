@@ -237,6 +237,7 @@
         <version.jacoco.plugin>0.6.3.201306030806</version.jacoco.plugin> <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
         <version.properties.plugin>2.0.1</version.properties.plugin>
         <version.xml.plugin>1.0.1</version.xml.plugin>
+        <version.verifier.plugin>1.1</version.verifier.plugin>
 
         <!-- Modularized JDK support (various workarounds) - activated via profile -->
         <modular.jdk.args/>
@@ -820,6 +821,23 @@
                     <groupId>org.wildfly.build</groupId>
                     <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
                     <version>${version.org.wildfly.build-tools}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-verifier-plugin</artifactId>
+                    <version>${version.verifier.plugin}</version>
+                    <configuration>
+                        <verificationFile>target/verifier/verifications.xml</verificationFile>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>main</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

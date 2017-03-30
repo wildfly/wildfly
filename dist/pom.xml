@@ -58,7 +58,11 @@
 
     <properties>
         <product.release.name>WildFly Full</product.release.name>
+        <verifier.slot.name>wildfly-full</verifier.slot.name>
+        <verifier.product.release.name>WildFly Full</verifier.product.release.name>
+        <verifier.product.release.version>11.0</verifier.product.release.version>
     </properties>
+
     <build>
         <finalName>${server.output.dir.prefix}-${project.version}</finalName>
         <plugins>
@@ -99,7 +103,28 @@
                             </resources>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>verifications-configuration</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${basedir}/target/verifier</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/verifier</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-verifier-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
