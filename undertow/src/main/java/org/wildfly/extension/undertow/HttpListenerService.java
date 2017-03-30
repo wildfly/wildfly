@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import io.undertow.UndertowOptions;
-import io.undertow.server.HandlerWrapper;
-import io.undertow.server.HttpHandler;
 import io.undertow.server.ListenerRegistry;
 import io.undertow.server.OpenListener;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
@@ -67,42 +65,24 @@ public class HttpListenerService extends ListenerService {
     public HttpListenerService(String name, final String serverName, OptionMap listenerOptions, OptionMap socketOptions, boolean certificateForwarding, boolean proxyAddressForwarding) {
         super(name, listenerOptions, socketOptions);
         this.serverName = serverName;
-        addWrapperHandler(new HandlerWrapper() {
-            @Override
-            public HttpHandler wrap(final HttpHandler handler) {
-                httpUpgradeHandler.setNonUpgradeHandler(handler);
-                return httpUpgradeHandler;
-            }
+        addWrapperHandler(handler -> {
+            httpUpgradeHandler.setNonUpgradeHandler(handler);
+            return httpUpgradeHandler;
         });
         if(listenerOptions.get(UndertowOptions.ENABLE_HTTP2, false)) {
-            addWrapperHandler(new HandlerWrapper() {
-                @Override
-                public HttpHandler wrap(HttpHandler handler) {
-                    return new Http2UpgradeHandler(handler);
-                }
-            });
+            addWrapperHandler(Http2UpgradeHandler::new);
         }
         if (certificateForwarding) {
-            addWrapperHandler(new HandlerWrapper() {
-                @Override
-                public HttpHandler wrap(HttpHandler handler) {
-                    return new SSLHeaderHandler(handler);
-                }
-            });
+            addWrapperHandler(SSLHeaderHandler::new);
         }
         if (proxyAddressForwarding) {
-            addWrapperHandler(new HandlerWrapper() {
-                @Override
-                public HttpHandler wrap(HttpHandler handler) {
-                    return new ProxyPeerAddressHandler(handler);
-                }
-            });
+            addWrapperHandler(ProxyPeerAddressHandler::new);
         }
     }
 
     @Override
     protected OpenListener createOpenListener() {
-        return new HttpOpenListener(getBufferPool().getValue(), OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).set(UndertowOptions.ENABLE_CONNECTOR_STATISTICS, getUndertowService().isStatisticsEnabled()).getMap());
+        return new HttpOpenListener(getBufferPool().getValue(), OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).set(UndertowOptions.ENABLE_STATISTICS, getUndertowService().isStatisticsEnabled()).getMap());
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -49,7 +49,7 @@ public class DefaultResponseCodeHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        exchange.setResponseCode(this.responseCode);
+        exchange.setStatusCode(this.responseCode);
         if (traceEnabled) {
             log.tracef("Setting response code %s for exchange %s", responseCode, exchange);
         }

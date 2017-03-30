@@ -51,9 +51,9 @@ public class DomainAdjuster700 extends DomainAdjuster {
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
 
-        list.addAll(removeElytron(profileAddress.append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)));
         list.addAll(removeCoreManagement(profileAddress.append(SUBSYSTEM, CoreManagementExtension.SUBSYSTEM_NAME)));
         adjustUndertow(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), list);
+        list.addAll(removeElytron(profileAddress.append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)));
         return list;
     }
 

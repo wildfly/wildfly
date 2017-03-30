@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -42,7 +42,7 @@ class HostRemove extends AbstractRemoveStepHandler {
         final PathAddress parent = address.getParent();
         final String name = address.getLastElement().getValue();
         final String serverName = parent.getLastElement().getValue();
-        final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
+        final ServiceName virtualHostServiceName = HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(serverName, name);
         context.removeService(virtualHostServiceName);
         final ServiceName consoleRedirectName = UndertowService.consoleRedirectServiceName(serverName, name);
         context.removeService(consoleRedirectName);

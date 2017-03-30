@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -37,6 +37,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
@@ -46,9 +47,8 @@ import org.wildfly.extension.undertow.UndertowService;
  */
 abstract class Handler extends PersistentResourceDefinition {
 
-    public static final String REQUEST_CONTROLLER = "org.wildfly.request-controller";
-    static final RuntimeCapability CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.undertow.handler", true)
-            .addOptionalRequirements(REQUEST_CONTROLLER).build();
+    static final RuntimeCapability CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HANDLER, true, HttpHandler.class)
+            .addOptionalRequirements(Capabilities.REF_REQUEST_CONTROLLER).build();
 
     private static final List<AccessConstraintDefinition> CONSTRAINTS = new SensitiveTargetAccessConstraintDefinition(
             new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "undertow-handler", false, false, false)

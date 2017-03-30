@@ -109,7 +109,6 @@ public class ModClusterSubsystemResourceDefinition extends SimpleResourceDefinit
 
     }
 
-
     public void registerRuntimeOperations(ManagementResourceRegistration registration) {
 
         final ResourceDescriptionResolver rootResolver = getResourceDescriptionResolver();

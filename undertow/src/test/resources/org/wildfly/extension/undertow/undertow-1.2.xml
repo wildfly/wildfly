@@ -1,25 +1,23 @@
 <!--
-  ~ /*
-  ~ * JBoss, Home of Professional Open Source.
-  ~ * Copyright 2014, Red Hat, Inc., and individual contributors
-  ~ * as indicated by the @author tags. See the copyright.txt file in the
-  ~ * distribution for a full listing of individual contributors.
-  ~ *
-  ~ * This is free software; you can redistribute it and/or modify it
-  ~ * under the terms of the GNU Lesser General Public License as
-  ~ * published by the Free Software Foundation; either version 2.1 of
-  ~ * the License, or (at your option) any later version.
-  ~ *
-  ~ * This software is distributed in the hope that it will be useful,
-  ~ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  ~ * Lesser General Public License for more details.
-  ~ *
-  ~ * You should have received a copy of the GNU Lesser General Public
-  ~ * License along with this software; if not, write to the Free
-  ~ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  ~ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-  ~ */
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2017, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
 <subsystem xmlns="urn:jboss:domain:undertow:1.2" default-virtual-host="default-virtual-host" default-servlet-container="myContainer"
@@ -35,7 +33,7 @@
         <https-listener name="https" socket-binding="https-non-default" security-realm="UndertowRealm" verify-client="REQUESTED" record-request-start-time="true" max-buffered-request-size="50000" resolve-peer-address="true"/>
         <https-listener name="https-2" socket-binding="https-2" security-realm="UndertowRealm" enabled-cipher-suites="ALL:!MD5:!DHA" enabled-protocols="SSLv3, TLSv1.2" read-timeout="-1" write-timeout="-1"/>
 
-        <host name="default-host" alias="localhost, some.host" default-web-module="something-else.war">
+        <host name="default-virtual-host" alias="localhost, some.host" default-web-module="something-else.war">
             <location name="/" handler="welcome-content">
                 <!--<filter-ref name="security-other"/>-->
                 <filter-ref name="limit-connections"/>

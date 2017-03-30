@@ -1,24 +1,46 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2017, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.wildfly.extension.undertow.filters;
 
-import static org.wildfly.extension.undertow.filters.ModClusterDefinition.SSL_CONTEXT_CAPABILITY_NAME;
+import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
 import io.undertow.Handlers;
 import io.undertow.UndertowOptions;
 import io.undertow.client.UndertowClient;
 import io.undertow.predicate.PredicateParser;
 import io.undertow.protocols.ssl.UndertowXnioSsl;
+import org.jboss.as.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.io.IOServices;
+import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.OptionMap;
@@ -119,7 +141,6 @@ public class ModClusterService extends FilterService {
         }
 
         //TODO: SSL support for the client
-        //TODO: wire up idle timeout when new version of undertow arrives
         final ModCluster.Builder modClusterBuilder;
         final XnioWorker worker = workerInjectedValue.getValue();
         if(sslContext == null) {
@@ -221,7 +242,7 @@ public class ModClusterService extends FilterService {
         }
     }
 
-    static ServiceController<FilterService> install(String name, ServiceTarget serviceTarget, ModelNode model, OperationContext operationContext) throws OperationFailedException {
+    static void install(String name, CapabilityServiceTarget serviceTarget, ModelNode model, OperationContext operationContext) throws OperationFailedException {
         String securityKey = null;
         ModelNode securityKeyNode = ModClusterDefinition.SECURITY_KEY.resolveModelAttribute(operationContext, model);
         if(securityKeyNode.isDefined()) {
@@ -269,22 +290,25 @@ public class ModClusterService extends FilterService {
                 ModClusterDefinition.MAX_RETRIES.resolveModelAttribute(operationContext, model).asInt(),
                 Enum.valueOf(FailoverStrategy.class, ModClusterDefinition.FAILOVER_STRATEGY.resolveModelAttribute(operationContext, model).asString()),
                 builder.getMap());
-        ServiceBuilder<FilterService> serviceBuilder = serviceTarget.addService(UndertowService.FILTER.append(name), service);
-        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.managementSocketBinding);
-        final ModelNode advertiseSocketBinding = ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model);
-        if (advertiseSocketBinding.isDefined()) {
-            serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(advertiseSocketBinding.asString()), SocketBinding.class, service.advertiseSocketBinding);
+
+        final String mgmtSocketBindingRef = ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString();
+        final ModelNode advertiseSocketBindingRef = ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model);
+        final String workerRef = ModClusterDefinition.WORKER.resolveModelAttribute(operationContext, model).asString();
+        CapabilityServiceBuilder serviceBuilder = serviceTarget.addCapability(ModClusterDefinition.MOD_CLUSTER_FILTER_CAPABILITY, service);
+        serviceBuilder.addCapabilityRequirement(Capabilities.REF_SOCKET_BINDING, SocketBinding.class, service.managementSocketBinding, mgmtSocketBindingRef);
+        if (advertiseSocketBindingRef.isDefined()) {
+            serviceBuilder.addCapabilityRequirement(Capabilities.REF_SOCKET_BINDING, SocketBinding.class, service.advertiseSocketBinding, advertiseSocketBindingRef.asString());
         }
-        serviceBuilder.addDependency(IOServices.WORKER.append(ModClusterDefinition.WORKER.resolveModelAttribute(operationContext, model).asString()), XnioWorker.class, service.workerInjectedValue);
+        serviceBuilder.addCapabilityRequirement(IOServices.IO_WORKER_CAPABILITY_NAME,XnioWorker.class, service.workerInjectedValue, workerRef);
 
         if (sslContext.isDefined()) {
-            serviceBuilder.addDependency(operationContext.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY_NAME, sslContext.asString(), SSLContext.class), SSLContext.class, service.sslContext);
+            serviceBuilder.addCapabilityRequirement(REF_SSL_CONTEXT, SSLContext.class, service.sslContext, sslContext.asString());
         }
         if(securityRealm.isDefined()) {
             SecurityRealm.ServiceUtil.addDependency(serviceBuilder, service.securityRealm, securityRealm.asString(), false);
         }
-
-        return serviceBuilder.install();
+        serviceBuilder.addAliases(UndertowService.FILTER.append(name));
+        serviceBuilder.install();
     }
 
     public ModCluster getModCluster() {

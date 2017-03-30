@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,6 +24,9 @@ package org.wildfly.extension.undertow;
 
 import static io.undertow.util.StatusCodes.OK;
 import static java.security.AccessController.doPrivileged;
+import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN;
+import static org.wildfly.extension.undertow.Capabilities.REF_HTTP_AUTHENTICATION_FACTORY;
+import static org.wildfly.extension.undertow.Capabilities.REF_JACC_POLICY;
 import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 import static org.wildfly.security.http.HttpConstants.CONFIG_CONTEXT_PATH;
 import static org.wildfly.security.http.HttpConstants.CONFIG_ERROR_PAGE;
@@ -71,6 +74,8 @@ import javax.servlet.http.HttpSession;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -93,13 +98,11 @@ import org.jboss.dmr.ModelType;
 import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -162,24 +165,19 @@ import io.undertow.servlet.util.SavedRequest;
  */
 public class ApplicationSecurityDomainDefinition extends PersistentResourceDefinition {
 
-    public static final String APPLICATION_SECURITY_DOMAIN_CAPABILITY = "org.wildfly.extension.undertow.application-security-domain";
-
 
     private static final String ANONYMOUS_PRINCIPAL = "anonymous";
     private static final String SERVLET = "servlet";
     private static final String EJB = "ejb";
 
     static final RuntimeCapability<Void> APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY = RuntimeCapability
-            .Builder.of(APPLICATION_SECURITY_DOMAIN_CAPABILITY, true, BiFunction.class)
+            .Builder.of(CAPABILITY_APPLICATION_SECURITY_DOMAIN, true, BiFunction.class)
             .build();
-
-    private static final String HTTP_AUTHENITCATION_FACTORY_CAPABILITY = "org.wildfly.security.http-authentication-factory";
-    private static final String JACC_POLICY_CAPABILITY = "org.wildfly.security.jacc-policy";
 
     static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENITCATION_FACTORY, ModelType.STRING, false)
             .setMinSize(1)
             .setRestartAllServices()
-            .setCapabilityReference(HTTP_AUTHENITCATION_FACTORY_CAPABILITY, APPLICATION_SECURITY_DOMAIN_CAPABILITY, true)
+            .setCapabilityReference(REF_HTTP_AUTHENTICATION_FACTORY)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_FACTORY_REF)
             .build();
 
@@ -234,7 +232,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             RuntimeCapability<Void> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
-            ServiceName applicationSecurityDomainName = runtimeCapability.getCapabilityServiceName(Function.class);
+            ServiceName applicationSecurityDomainName = runtimeCapability.getCapabilityServiceName(BiFunction.class);
 
             ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
             ServiceController<?> controller = serviceRegistry.getRequiredService(applicationSecurityDomainName);
@@ -272,26 +270,25 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
             ModelNode model = resource.getModel();
-            ServiceTarget target = context.getServiceTarget();
+            CapabilityServiceTarget target = context.getCapabilityServiceTarget();
 
             String httpServerMechanismFactory = HTTP_AUTHENTICATION_FACTORY.resolveModelAttribute(context, model).asString();
             boolean overrideDeploymentConfig = OVERRIDE_DEPLOYMENT_CONFIG.resolveModelAttribute(context, model).asBoolean();
             boolean enableJacc = ENABLE_JACC.resolveModelAttribute(context, model).asBoolean();
 
             String securityDomainName = context.getCurrentAddressValue();
-            RuntimeCapability<?> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(securityDomainName);
-            ServiceName serviceName = runtimeCapability.getCapabilityServiceName(BiFunction.class);
 
             ApplicationSecurityDomainService applicationSecurityDomainService = new ApplicationSecurityDomainService(overrideDeploymentConfig, enableJacc);
 
-            ServiceBuilder<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> serviceBuilder = target.addService(serviceName, applicationSecurityDomainService)
+            CapabilityServiceBuilder<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> serviceBuilder = target
+                    .addCapability(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY, applicationSecurityDomainService)
                     .setInitialMode(Mode.LAZY);
 
-            serviceBuilder.addDependency(context.getCapabilityServiceName(HTTP_AUTHENITCATION_FACTORY_CAPABILITY,
-                    httpServerMechanismFactory, HttpAuthenticationFactory.class), HttpAuthenticationFactory.class, applicationSecurityDomainService.getHttpAuthenticationFactoryInjector());
+            serviceBuilder.addCapabilityRequirement(REF_HTTP_AUTHENTICATION_FACTORY, HttpAuthenticationFactory.class,
+                    applicationSecurityDomainService.getHttpAuthenticationFactoryInjector(), httpServerMechanismFactory);
 
             if (enableJacc) {
-                serviceBuilder.addDependency(ServiceBuilder.DependencyType.REQUIRED, context.getCapabilityServiceName(JACC_POLICY_CAPABILITY, Policy.class));
+                serviceBuilder.addCapabilityRequirement(REF_JACC_POLICY, Policy.class);
             }
 
             if (resource.hasChild(UndertowExtension.PATH_SSO)) {
@@ -311,7 +308,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                     DistributableApplicationSecurityDomainSingleSignOnManagerBuilder builder = DistributableApplicationSecurityDomainSingleSignOnManagerBuilder.INSTANCE.get();
                     builder.build(target, managerServiceName, context.getCapabilityServiceSupport(), securityDomainName, generator).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
                 } else {
-                    SingleSignOnManager manager = new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), () -> generator.createSessionId());
+                    SingleSignOnManager manager = new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), generator::createSessionId);
                     new SimpleBuilder<>(managerServiceName, manager).build(target).install();
                 }
 

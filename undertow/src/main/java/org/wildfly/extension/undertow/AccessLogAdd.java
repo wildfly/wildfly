@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,16 +25,14 @@ package org.wildfly.extension.undertow;
 import io.undertow.predicate.Predicate;
 import io.undertow.predicate.Predicates;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.io.IOServices;
 import org.xnio.XnioWorker;
 
 /**
@@ -42,7 +40,7 @@ import org.xnio.XnioWorker;
  */
 class AccessLogAdd extends AbstractAddStepHandler {
 
-    AccessLogAdd() {
+    private AccessLogAdd() {
         super(AccessLogDefinition.ATTRIBUTES);
     }
 
@@ -81,11 +79,12 @@ class AccessLogAdd extends AbstractAddStepHandler {
         final String serverName = serverAddress.getLastElement().getValue();
         final String hostName = hostAddress.getLastElement().getValue();
 
-        final ServiceName serviceName = UndertowService.accessLogServiceName(serverName, hostName);
-        final ServiceBuilder<AccessLogService> builder = context.getServiceTarget().addService(serviceName, service)
-                .addDependency(IOServices.WORKER.append(worker), XnioWorker.class, service.getWorker())
+        final CapabilityServiceBuilder<AccessLogService> builder = context.getCapabilityServiceTarget().addCapability(AccessLogDefinition.ACCESS_LOG_CAPABILITY, service)
+                .addCapabilityRequirement(Capabilities.REF_IO_WORKER, XnioWorker.class, service.getWorker(), worker)
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManager())
-                .addDependency(UndertowService.virtualHostName(serverName, hostName), Host.class, service.getHost());
+                .addCapabilityRequirement(Capabilities.CAPABILITY_HOST, Host.class, service.getHost(), serverName, hostName);
+        //only for backward compatibility
+        builder.addAliases(UndertowService.accessLogServiceName(serverName, hostName));
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();

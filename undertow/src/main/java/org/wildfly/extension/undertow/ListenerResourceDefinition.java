@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,9 +23,13 @@
 package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.wildfly.extension.undertow.Capabilities.REF_BUFFER_POOL;
+import static org.wildfly.extension.undertow.Capabilities.REF_IO_WORKER;
+import static org.wildfly.extension.undertow.Capabilities.REF_SOCKET_BINDING;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -64,42 +68,37 @@ import org.wildfly.extension.io.OptionAttributeDefinition;
 import org.xnio.Options;
 
 /**
- * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
+ * @author Tomaz Cerar
  * @author Stuart Douglas
  */
 abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
-    static final String IO_WORKER_CAPABILITY = "org.wildfly.io.worker";
-    static final String IO_BUFFER_POOL_CAPABILITY = "org.wildfly.io.buffer-pool";
-    static final String SOCKET_CAPABILITY = "org.wildfly.network.socket-binding";
-
-    static final String LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
-    static final RuntimeCapability<Void> LISTENER_CAPABILITY = RuntimeCapability.Builder.of(LISTENER_CAPABILITY_NAME, true, UndertowListener.class)
+    static final RuntimeCapability<Void> LISTENER_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_LISTENER, true, UndertowListener.class)
+            .addDynamicRequirements(Capabilities.CAPABILITY_SERVER)
             .build();
-
     protected static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.SOCKET_BINDING, ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .setCapabilityReference(SOCKET_CAPABILITY, LISTENER_CAPABILITY)
+            .setCapabilityReference(REF_SOCKET_BINDING, LISTENER_CAPABILITY)
             .build();
     protected static final SimpleAttributeDefinition WORKER = new SimpleAttributeDefinitionBuilder(Constants.WORKER, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setDefaultValue(new ModelNode("default"))
-            .setCapabilityReference(IO_WORKER_CAPABILITY, LISTENER_CAPABILITY)
+            .setCapabilityReference(REF_IO_WORKER, LISTENER_CAPABILITY)
             .build();
     protected static final SimpleAttributeDefinition BUFFER_POOL = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_POOL, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setDefaultValue(new ModelNode("default"))
-            .setCapabilityReference(IO_BUFFER_POOL_CAPABILITY, LISTENER_CAPABILITY)
+            .setCapabilityReference(REF_BUFFER_POOL, LISTENER_CAPABILITY)
             .build();
     protected static final SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(Constants.ENABLED, ModelType.BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDeprecated(ModelVersion.create(3, 2))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode(true))
@@ -107,15 +106,15 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .build();
 
     protected static final SimpleAttributeDefinition REDIRECT_SOCKET = new SimpleAttributeDefinitionBuilder(Constants.REDIRECT_SOCKET, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setAllowExpression(false)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .setCapabilityReference(SOCKET_CAPABILITY, LISTENER_CAPABILITY)
+            .setCapabilityReference(REF_SOCKET_BINDING, LISTENER_CAPABILITY)
             .build();
 
     protected static final SimpleAttributeDefinition RESOLVE_PEER_ADDRESS = new SimpleAttributeDefinitionBuilder(Constants.RESOLVE_PEER_ADDRESS, ModelType.BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
@@ -123,7 +122,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     protected static final StringListAttributeDefinition DISALLOWED_METHODS = new StringListAttributeDefinition.Builder(Constants.DISALLOWED_METHODS)
             .setDefaultValue(new ModelNode().add("TRACE"))
-            .setAllowNull(true)
+            .setRequired(false)
             .setValidator(new StringLengthValidator(0))
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setAllowExpression(true)
@@ -131,7 +130,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     protected static final SimpleAttributeDefinition SECURE = new SimpleAttributeDefinitionBuilder(Constants.SECURE, ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setAllowExpression(true)
             .build();
@@ -158,8 +157,8 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     public static final OptionAttributeDefinition MAX_BUFFERED_REQUEST_SIZE = OptionAttributeDefinition.builder(Constants.MAX_BUFFERED_REQUEST_SIZE, UndertowOptions.MAX_BUFFERED_REQUEST_SIZE).setDefaultValue(new ModelNode(16384)).setValidator(new IntRangeValidator(1)).setMeasurementUnit(MeasurementUnit.BYTES).setAllowExpression(true).build();
     public static final OptionAttributeDefinition RECORD_REQUEST_START_TIME = OptionAttributeDefinition.builder("record-request-start-time", UndertowOptions.RECORD_REQUEST_START_TIME).setDefaultValue(new ModelNode(false)).setAllowExpression(true).build();
     public static final OptionAttributeDefinition ALLOW_EQUALS_IN_COOKIE_VALUE = OptionAttributeDefinition.builder("allow-equals-in-cookie-value", UndertowOptions.ALLOW_EQUALS_IN_COOKIE_VALUE).setDefaultValue(new ModelNode(false)).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition NO_REQUEST_TIMEOUT = OptionAttributeDefinition.builder("no-request-timeout", UndertowOptions.NO_REQUEST_TIMEOUT).setDefaultValue(new ModelNode(60000)).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setAllowNull(true).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition REQUEST_PARSE_TIMEOUT = OptionAttributeDefinition.builder("request-parse-timeout", UndertowOptions.REQUEST_PARSE_TIMEOUT).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setAllowNull(true).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition NO_REQUEST_TIMEOUT = OptionAttributeDefinition.builder("no-request-timeout", UndertowOptions.NO_REQUEST_TIMEOUT).setDefaultValue(new ModelNode(60000)).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setRequired(false).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition REQUEST_PARSE_TIMEOUT = OptionAttributeDefinition.builder("request-parse-timeout", UndertowOptions.REQUEST_PARSE_TIMEOUT).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setRequired(false).setAllowExpression(true).build();
 
     public enum ConnectorStat {
         REQUEST_COUNT(new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG)
@@ -203,18 +202,18 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         }
     }
 
-    protected static final Collection ATTRIBUTES;
-    protected static final List<AccessConstraintDefinition> CONSTRAINTS = Arrays.asList(UndertowExtension.LISTENER_CONSTRAINT);
+    protected static final Collection<AttributeDefinition> ATTRIBUTES;
+    private static final List<AccessConstraintDefinition> CONSTRAINTS = Collections.singletonList(UndertowExtension.LISTENER_CONSTRAINT);
 
-    public static final List<OptionAttributeDefinition> LISTENER_OPTIONS = Arrays.asList(MAX_HEADER_SIZE, MAX_ENTITY_SIZE,
+    static final List<OptionAttributeDefinition> LISTENER_OPTIONS = Arrays.asList(MAX_HEADER_SIZE, MAX_ENTITY_SIZE,
             BUFFER_PIPELINED_DATA, MAX_PARAMETERS, MAX_HEADERS, MAX_COOKIES, ALLOW_ENCODED_SLASH, DECODE_URL,
             URL_CHARSET, ALWAYS_SET_KEEP_ALIVE, MAX_BUFFERED_REQUEST_SIZE, RECORD_REQUEST_START_TIME,
             ALLOW_EQUALS_IN_COOKIE_VALUE, NO_REQUEST_TIMEOUT, REQUEST_PARSE_TIMEOUT);
 
-    public static final List<OptionAttributeDefinition> SOCKET_OPTIONS = Arrays.asList(BACKLOG, RECEIVE_BUFFER, SEND_BUFFER, KEEP_ALIVE, READ_TIMEOUT, WRITE_TIMEOUT, MAX_CONNECTIONS);
+    static final List<OptionAttributeDefinition> SOCKET_OPTIONS = Arrays.asList(BACKLOG, RECEIVE_BUFFER, SEND_BUFFER, KEEP_ALIVE, READ_TIMEOUT, WRITE_TIMEOUT, MAX_CONNECTIONS);
 
     static {
-        ATTRIBUTES = new LinkedHashSet<AttributeDefinition>(Arrays.asList(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED, RESOLVE_PEER_ADDRESS, DISALLOWED_METHODS, SECURE));
+        ATTRIBUTES = new LinkedHashSet<>(Arrays.asList(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED, RESOLVE_PEER_ADDRESS, DISALLOWED_METHODS, SECURE));
         ATTRIBUTES.addAll(LISTENER_OPTIONS);
         ATTRIBUTES.addAll(SOCKET_OPTIONS);
     }
@@ -225,7 +224,6 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     }
 
     public Collection<AttributeDefinition> getAttributes() {
-        //noinspection unchecked
         return ATTRIBUTES;
     }
 
@@ -271,14 +269,12 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         }
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final String name = context.getCurrentAddressValue();
-            ServiceController<ListenerService> listenerSC = (ServiceController<ListenerService>) context.getServiceRegistry(false).getService(UndertowService.listenerName(name));
-            if (listenerSC ==null || listenerSC.getState() != ServiceController.State.UP){
+            ListenerService service =  getListenerService(context);
+            if (service == null) {
                 context.getResult().set(0L);
                 return;
             }
             String op = operation.get(NAME).asString();
-            ListenerService service = listenerSC.getValue();
             ConnectorStatistics stats = service.getOpenListener().getConnectorStatistics();
             if(stats != null) {
                 ConnectorStat element = ConnectorStat.getStat(op);
@@ -309,6 +305,16 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         }
     }
 
+    static ListenerService getListenerService(OperationContext context) {
+        final String name = context.getCurrentAddressValue();
+        ServiceName serviceName = LISTENER_CAPABILITY.getCapabilityServiceName(name);
+        ServiceController<ListenerService> listenerSC = (ServiceController<ListenerService>) context.getServiceRegistry(false).getService(serviceName);
+        if (listenerSC == null || listenerSC.getState() != ServiceController.State.UP) {
+            return null;
+        }
+        return listenerSC.getValue();
+    }
+
     @Override
     public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerCapability(LISTENER_CAPABILITY);
@@ -318,28 +324,26 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         @Override
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {
 
-            final ServiceName listenerServiceName = UndertowService.listenerName(context.getCurrentAddressValue());
-
             boolean enabled = resolvedValue.asBoolean();
             // We don't try and analyze currentValue to see if we were already enabled, as the resolution result
             // may be different now than it was before (different system props, or vault contents)
             // Instead we consider the previous setting to be enabled if the service Mode != Mode.NEVER
-            final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(listenerServiceName);
-            ListenerService listenerService = (ListenerService) controller.getService();
-            boolean currentEnabled = listenerService.isEnabled();
-            handbackHolder.setHandback(currentEnabled);
-            listenerService.setEnabled(enabled);
+            ListenerService listenerService = getListenerService(context);
+            if (listenerService != null) {
+                boolean currentEnabled = listenerService.isEnabled();
+                handbackHolder.setHandback(currentEnabled);
+                listenerService.setEnabled(enabled);
+            }
             return false;
         }
 
         @Override
         protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Boolean handback) throws OperationFailedException {
             if (handback != null) {
-
-                final ServiceName listenerServiceName = UndertowService.listenerName(context.getCurrentAddressValue());
-                final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(listenerServiceName);
-                ListenerService listenerService = (ListenerService) controller.getService();
-                listenerService.setEnabled(handback);
+                ListenerService listenerService = getListenerService(context);
+                if (listenerService != null) {
+                    listenerService.setEnabled(handback);
+                }
             }
         }
     }

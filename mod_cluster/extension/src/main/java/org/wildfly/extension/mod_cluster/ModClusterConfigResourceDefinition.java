@@ -70,7 +70,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     static final String UNDERTOW_LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
 
     private static final String MOD_CLUSTER_CAPABILITY_NAME = "org.wildfly.mod_cluster";
-    private static final RuntimeCapability<Void> MOD_CLUSTER_CAPABILITY = RuntimeCapability.Builder.of(MOD_CLUSTER_CAPABILITY_NAME, false).build();
+    private static final RuntimeCapability<Void> MOD_CLUSTER_CAPABILITY = RuntimeCapability.Builder.of(MOD_CLUSTER_CAPABILITY_NAME, false, Void.class).build();
 
     static final PathElement PATH = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
 
@@ -80,7 +80,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition CONNECTOR = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CONNECTOR, ModelType.STRING, false)
-            .setCapabilityReference(UNDERTOW_LISTENER_CAPABILITY_NAME, MOD_CLUSTER_CAPABILITY_NAME, false)
+            .setCapabilityReference(UNDERTOW_LISTENER_CAPABILITY_NAME)
             .setRestartAllServices()
             .build();
 
@@ -169,7 +169,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(CommonAttributes.SSL_CONTEXT, ModelType.STRING, true)
-            .setCapabilityReference(CommonUnaryRequirement.SSL_CONTEXT.getName(), MOD_CLUSTER_CAPABILITY_NAME, false)
+            .setCapabilityReference(CommonUnaryRequirement.SSL_CONTEXT.getName())
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)

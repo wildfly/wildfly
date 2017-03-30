@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -43,7 +43,7 @@ public class BasicAuthHandler extends Filter {
     public static final BasicAuthHandler INSTANCE = new BasicAuthHandler();
 
     public static final AttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder("security-domain", ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .setRestartAllServices()
             .build();
 

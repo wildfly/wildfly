@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.wildfly.extension.undertow.UndertowRootDefinition.HTTP_INVOKER_RUNTIME_CAPABILITY;
+
 import java.util.function.Predicate;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -35,7 +37,6 @@ import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringPr
 import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.deployment.DefaultDeploymentMappingProvider;
 import org.wildfly.extension.undertow.deployment.DeploymentRootExplodedMountProcessor;
 import org.wildfly.extension.undertow.deployment.EarContextRootProcessor;
@@ -100,12 +101,13 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final ModelNode instanceIdModel = UndertowRootDefinition.INSTANCE_ID.resolveModelAttribute(context, model);
         final String instanceId = instanceIdModel.isDefined() ? instanceIdModel.asString() : null;
-        ServiceTarget target = context.getServiceTarget();
+
 
         DefaultDeploymentMappingProvider.instance().clear();//we clear provider on system boot, as on reload it could cause issues.
 
-        target.addService(UndertowService.UNDERTOW, new UndertowService(defaultContainer, defaultServer, defaultVirtualHost, instanceId, stats))
+        context.getCapabilityServiceTarget().addCapability(UndertowRootDefinition.UNDERTOW_CAPABILITY, new UndertowService(defaultContainer, defaultServer, defaultVirtualHost, instanceId, stats))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
+                .addAliases(UndertowService.UNDERTOW)
                 .install();
 
         context.addStep(new AbstractDeploymentChainStep() {
@@ -146,17 +148,18 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         DistributableSessionIdentifierCodecBuilder builder = new DistributableSessionIdentifierCodecBuilderValue().getValue();
         if (builder != null) {
-            builder.buildServerDependency(target)
+            builder.buildServerDependency(context.getServiceTarget())
                     .setInitialMode(ServiceController.Mode.ON_DEMAND)
                     .install();
         }
 
-        RouteValueService.build(target)
+        RouteValueService.build(context.getServiceTarget())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
 
-        target.addService(UndertowRootDefinition.HTTP_INVOKER_RUNTIME_CAPABILITY.getCapabilityServiceName(), new RemoteHttpInvokerService()).install();
-
+        context.getCapabilityServiceTarget()
+                .addCapability(HTTP_INVOKER_RUNTIME_CAPABILITY, new RemoteHttpInvokerService())
+                .install();
 
     }
 

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 2110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
 package org.wildfly.extension.undertow;
@@ -25,16 +25,10 @@ package org.wildfly.extension.undertow;
 import java.io.IOException;
 import java.util.Properties;
 
-import io.undertow.predicate.Predicates;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.extension.undertow.filters.FilterService;
 
 /**
  * This is the barebone test example that tests subsystem
@@ -80,15 +74,6 @@ public class UndertowSubsystem20TestCase extends AbstractUndertowSubsystemTestCa
         testRuntimeOther(mainServices);
     }
 
-    private void testCustomFilters(KernelServices mainServices) {
-        ServiceController<FilterService> customFilter = (ServiceController<FilterService>) mainServices.getContainer()
-                .getService(UndertowService.FILTER.append("custom-filter"));
-        customFilter.setMode(ServiceController.Mode.ACTIVE);
-        FilterService connectionLimiterService = customFilter.getService().getValue();
-        HttpHandler result = connectionLimiterService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
-        Assert.assertNotNull("handler should have been created", result);
-
-    }
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {

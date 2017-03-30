@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,17 +21,15 @@
  */
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.extension.undertow.HttpsListenerResourceDefinition.SSL_CONTEXT_CAPABILITY;
+import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
 
 import javax.net.ssl.SSLContext;
 
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.OptionMap;
@@ -72,7 +70,7 @@ public class HttpsListenerAdd extends ListenerAdd {
     }
 
     @Override
-    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends UndertowListener> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
+    void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder<? extends UndertowListener> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
         serviceBuilder.addDependency(HttpListenerAdd.REGISTRY_SERVICE_NAME, ListenerRegistry.class, ((HttpListenerService) service).getHttpListenerRegistry());
 
         ModelNode sslContextModel = HttpsListenerResourceDefinition.SSL_CONTEXT.resolveModelAttribute(context, model);
@@ -89,10 +87,7 @@ public class HttpsListenerAdd extends ListenerAdd {
         }
 
         if (sslContextRef != null) {
-            String runtimeCapability = RuntimeCapability.buildDynamicCapabilityName(SSL_CONTEXT_CAPABILITY, sslContextRef);
-            ServiceName sslContextServiceName = context.getCapabilityServiceName(runtimeCapability, SSLContext.class);
-
-            serviceBuilder.addDependency(sslContextServiceName, SSLContext.class, sslContextInjector);
+            serviceBuilder.addCapabilityRequirement(REF_SSL_CONTEXT, SSLContext.class, sslContextInjector, sslContextRef);
         }
 
         ((HttpsListenerService)service).setSSLContextSupplier(()-> {

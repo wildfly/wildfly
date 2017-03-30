@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,21 +22,21 @@
 
 package org.wildfly.extension.undertow.security;
 
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+
 import io.undertow.security.api.NotificationReceiver;
 import io.undertow.security.api.SecurityNotification;
 import io.undertow.security.api.SecurityNotification.EventType;
 import io.undertow.security.idm.Account;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import io.undertow.servlet.handlers.ServletRequestContext;
 import org.jboss.security.audit.AuditEvent;
 import org.jboss.security.audit.AuditLevel;
 import org.jboss.security.audit.AuditManager;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * A {@link NotificationReceiver} implementation responsible for recording audit events for authentication attempts.
@@ -67,7 +67,7 @@ public class AuditNotificationReceiver implements NotificationReceiver {
             if(src != null) {
                 ServletRequest hsr = src.getServletRequest();
                 if (hsr instanceof HttpServletRequest) {
-                    ctxMap.put("request", WebUtil.deriveUsefulInfo((HttpServletRequest) hsr));
+                    ctxMap.put("request", deriveUsefulInfo((HttpServletRequest) hsr));
                 }
             }
             ctxMap.put("Source", getClass().getCanonicalName());
@@ -77,4 +77,44 @@ public class AuditNotificationReceiver implements NotificationReceiver {
         }
     }
 
+    /**
+     * Obtain debug information from the servlet request object
+     *
+     * @param httpRequest
+     * @return
+     */
+    private static String deriveUsefulInfo(HttpServletRequest httpRequest) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[").append(httpRequest.getContextPath());
+        sb.append(":cookies=").append(Arrays.toString(httpRequest.getCookies())).append(":headers=");
+        // Append Header information
+        Enumeration<?> en = httpRequest.getHeaderNames();
+        while (en.hasMoreElements()) {
+            String headerName = (String) en.nextElement();
+            sb.append(headerName).append("=");
+            // Ensure HTTP Basic Password is not logged
+            if (!headerName.contains("authorization")) { sb.append(httpRequest.getHeader(headerName)).append(","); }
+        }
+        sb.append("]");
+        // Append Request parameter information
+        sb.append("[parameters=");
+        Enumeration<?> enparam = httpRequest.getParameterNames();
+        while (enparam.hasMoreElements()) {
+            String paramName = (String) enparam.nextElement();
+            String[] paramValues = httpRequest.getParameterValues(paramName);
+            int len = paramValues != null ? paramValues.length : 0;
+            for (int i = 0; i < len; i++) { sb.append(paramValues[i]).append("::"); }
+            sb.append(",");
+        }
+        sb.append("][attributes=");
+        // Append Request attribute information
+        Enumeration<?> enu = httpRequest.getAttributeNames();
+        while (enu.hasMoreElements()) {
+            String attrName = (String) enu.nextElement();
+            sb.append(attrName).append("=");
+            sb.append(httpRequest.getAttribute(attrName)).append(",");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
 }

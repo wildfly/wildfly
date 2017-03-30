@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -49,6 +49,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.io.OptionAttributeDefinition;
 import org.wildfly.extension.undertow.AbstractHandlerDefinition;
+import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.PredicateValidator;
 import org.wildfly.extension.undertow.UndertowExtension;
@@ -59,7 +60,9 @@ import java.util.Collection;
 import java.util.Collections;
 
 import static org.jboss.as.controller.PathElement.pathElement;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_MOD_CLUSTER_FILTER;
+import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
+
 
 /**
  * mod_cluster front end handler. This acts like a filter, but does not re-use a lot of the filter code as it
@@ -69,10 +72,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  */
 public class ModClusterDefinition extends AbstractHandlerDefinition {
 
-    private static final String MOD_CLUSTER_FILTER_CAPABILITY_NAME = "org.wildfly.undertow.mod_cluster_filter";
-    public static final RuntimeCapability<Void> MOD_CLUSTER_FILTER_CAPABILITY = RuntimeCapability.Builder.of(MOD_CLUSTER_FILTER_CAPABILITY_NAME, true, Void.class).build();
 
-    static final String SSL_CONTEXT_CAPABILITY_NAME = "org.wildfly.security.ssl-context";
+    static final RuntimeCapability<Void> MOD_CLUSTER_FILTER_CAPABILITY = RuntimeCapability
+            .Builder.of(CAPABILITY_MOD_CLUSTER_FILTER, true, FilterService.class)
+            .addDynamicOptionalRequirements(REF_SSL_CONTEXT)
+            .build();
 
     public static final AttributeDefinition MANAGEMENT_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.MANAGEMENT_SOCKET_BINDING, ModelType.STRING)
             .setAllowExpression(true)
@@ -85,6 +89,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setAllowExpression(true)
             .setRequired(false)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .setCapabilityReference(Capabilities.REF_SOCKET_BINDING)
             .setRestartAllServices()
             .build();
 
@@ -143,6 +148,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setAllowExpression(true)
             .setRequired(false)
             .setDefaultValue(new ModelNode("default"))
+            .setCapabilityReference(Capabilities.REF_IO_WORKER)
             .setRestartAllServices()
             .build();
 
@@ -194,7 +200,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
 
     public static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, true)
             .setAlternatives(Constants.SECURITY_REALM)
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY_NAME, MOD_CLUSTER_FILTER_CAPABILITY_NAME, true)
+            .setCapabilityReference(REF_SSL_CONTEXT)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
@@ -324,19 +330,14 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
     }
 
     static class ModClusterAdd extends AbstractAddStepHandler {
-
-        @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            for (AttributeDefinition def : ATTRIBUTES) {
-                def.validateAndSet(operation, model);
-            }
+        ModClusterAdd() {
+            super(ATTRIBUTES);
         }
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-            final String name = address.getLastElement().getValue();
-            ModClusterService.install(name, context.getServiceTarget(), model, context);
+            final String name = context.getCurrentAddressValue();
+            ModClusterService.install(name, context.getCapabilityServiceTarget(), model, context);
         }
 
         @Override

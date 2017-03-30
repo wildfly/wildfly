@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -48,8 +49,6 @@ import org.wildfly.extension.undertow.deployment.DefaultDeploymentMappingProvide
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class HostAdd extends AbstractAddStepHandler {
-
-    private static final String REQUEST_CONTROLLER_CAPABILITY = "org.wildfly.request-controller";
 
     static final HostAdd INSTANCE = new HostAdd();
 
@@ -76,21 +75,23 @@ class HostAdd extends AbstractAddStepHandler {
         final boolean enableConsoleRedirect = !HostDefinition.DISABLE_CONSOLE_REDIRECT.resolveModelAttribute(context, model).asBoolean();
         DefaultDeploymentMappingProvider.instance().addMapping(defaultWebModule, serverName, name);
 
-        final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
+        final ServiceName virtualHostServiceName = HostDefinition.HOST_CAPABILITY.fromBaseCapability(address).getCapabilityServiceName();
 
         final Host service = new Host(name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode);
-        final ServiceBuilder<Host> builder = context.getServiceTarget().addService(virtualHostServiceName, service)
-                .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerInjection())
-                .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService())
+
+        final ServiceBuilder<Host> builder = context.getCapabilityServiceTarget().addCapability(HostDefinition.HOST_CAPABILITY, service)
+                .addCapabilityRequirement(Capabilities.CAPABILITY_SERVER, Server.class, service.getServerInjection(), serverName)
+                .addCapabilityRequirement(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class, service.getUndertowService())
                 .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getControlledProcessStateServiceInjectedValue());
 
         builder.setInitialMode(Mode.ON_DEMAND);
 
         if (isDefaultHost) {
-            addCommonHost(context, name, aliases, serverName, virtualHostServiceName);
+            addCommonHost(context, aliases, serverName, virtualHostServiceName);
             builder.addAliases(UndertowService.DEFAULT_HOST);//add alias for default host of default server service
         }
-
+        //this is workaround for a bit so old service names still work!
+        builder.addAliases(UndertowService.virtualHostName(serverName, name));
         builder.install();
 
         if (enableConsoleRedirect) {
@@ -116,18 +117,20 @@ class HostAdd extends AbstractAddStepHandler {
         }
     }
 
-    private ServiceController<WebHost> addCommonHost(OperationContext context, String hostName, List<String> aliases,
+    private ServiceController<WebHost> addCommonHost(OperationContext context, List<String> aliases,
                                                      String serverName, ServiceName virtualHostServiceName) {
         WebHostService service = new WebHostService();
-        final ServiceBuilder<WebHost> builder = context.getServiceTarget().addService(WebHost.SERVICE_NAME.append(hostName), service)
-                .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServer())
-                .addDependency(CommonWebServer.SERVICE_NAME)
+        final CapabilityServiceBuilder<WebHost> builder = context.getCapabilityServiceTarget()
+                .addCapability(WebHost.CAPABILITY, service)
+                .addCapabilityRequirement(Capabilities.CAPABILITY_SERVER, Server.class, service.getServer(), serverName)
+                .addCapabilityRequirement(CommonWebServer.CAPABILITY_NAME, CommonWebServer.class)
                 .addDependency(virtualHostServiceName, Host.class, service.getHost());
 
-        if(context.hasOptionalCapability(REQUEST_CONTROLLER_CAPABILITY, null, null)) {
-            builder.addDependency(context.getCapabilityServiceName(REQUEST_CONTROLLER_CAPABILITY, RequestController.class), RequestController.class, service.getRequestControllerInjectedValue());
+        if(context.hasOptionalCapability(Capabilities.REF_REQUEST_CONTROLLER, null, null)) {
+            builder.addCapabilityRequirement(Capabilities.REF_REQUEST_CONTROLLER, RequestController.class, service.getRequestControllerInjectedValue());
         }
 
+        builder.addAliases(WebHost.SERVICE_NAME.append(context.getCurrentAddressValue()));
         if (aliases != null) {
             for (String alias : aliases) {
                 builder.addAliases(WebHost.SERVICE_NAME.append(alias));
