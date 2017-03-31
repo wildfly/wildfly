@@ -65,7 +65,7 @@ public class ApplicationSecurityDomainSingleSignOnDefinition extends SingleSignO
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CREDENTIAL(CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, false).setCapabilityReference(new CapabilityReference(Capability.SSO_CREDENTIAL_STORE, CommonUnaryRequirement.CREDENTIAL_STORE)).setAccessConstraints(SensitiveTargetAccessConstraintDefinition.CREDENTIAL).build()),
+        CREDENTIAL(CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, false, new CapabilityReference(Capability.SSO_CREDENTIAL_STORE, CommonUnaryRequirement.CREDENTIAL_STORE)).setAccessConstraints(SensitiveTargetAccessConstraintDefinition.CREDENTIAL).build()),
         KEY_ALIAS("key-alias", ModelType.STRING, builder -> builder.setAllowExpression(true).addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SSL_REF)),
         KEY_STORE("key-store", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.SSO_KEY_STORE, CommonUnaryRequirement.KEY_STORE)).addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SSL_REF)),
         SSL_CONTEXT("client-ssl-context", ModelType.STRING, builder -> builder.setRequired(false).setCapabilityReference(new CapabilityReference(Capability.SSO_SSL_CONTEXT, CommonUnaryRequirement.SSL_CONTEXT)).setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)),

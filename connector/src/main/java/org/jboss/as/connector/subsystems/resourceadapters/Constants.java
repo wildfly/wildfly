@@ -601,7 +601,6 @@ public class Constants {
 
     static ObjectTypeAttributeDefinition RECOVERY_CREDENTIAL_REFERENCE =
             CredentialReference.getAttributeBuilder(RECOVERY_CREDENTIAL_REFERENCE_NAME, CredentialReference.CREDENTIAL_REFERENCE, true)
-                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
                     .setMeasurementUnit(MeasurementUnit.NONE)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)

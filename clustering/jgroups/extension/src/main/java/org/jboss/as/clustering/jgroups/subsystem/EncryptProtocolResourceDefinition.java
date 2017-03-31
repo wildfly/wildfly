@@ -100,7 +100,7 @@ public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptPr
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CREDENTIAL(CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, false).setCapabilityReference(new CapabilityReference(Capability.ENCRYPT_CREDENTIAL_STORE, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
+        CREDENTIAL(CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, false, new CapabilityReference(Capability.ENCRYPT_CREDENTIAL_STORE, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
         KEY_ALIAS("key-alias", ModelType.STRING, builder -> builder.setAllowExpression(true)),
         KEY_STORE("key-store", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.ENCRYPT_KEY_STORE, CommonUnaryRequirement.KEY_STORE))),
         ;

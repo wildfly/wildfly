@@ -430,8 +430,7 @@ public class Constants {
             .build();
 
     static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
-            CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, true)
-                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
+            CredentialReference.getAttributeBuilder(true, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(DS_SECURITY_DEF)
@@ -768,8 +767,7 @@ public class Constants {
             .build();
 
     static final ObjectTypeAttributeDefinition RECOVERY_CREDENTIAL_REFERENCE =
-            CredentialReference.getAttributeBuilder("recovery-credential-reference", CredentialReference.CREDENTIAL_REFERENCE, true)
-                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
+            CredentialReference.getAttributeBuilder("recovery-credential-reference", CredentialReference.CREDENTIAL_REFERENCE, true, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(DS_SECURITY_DEF)

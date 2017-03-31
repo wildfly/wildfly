@@ -36,6 +36,7 @@ import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -105,7 +106,8 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         // capabilities used by the various configs used in this test class
         return AdditionalInitialization.withCapabilities(
                 Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY + ".DsAuthCtxt",
-                Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY + ".CredentialAuthCtxt"
+                Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY + ".CredentialAuthCtxt",
+                CredentialReference.CREDENTIAL_STORE_CAPABILITY + ".test-store"
         );
     }
 

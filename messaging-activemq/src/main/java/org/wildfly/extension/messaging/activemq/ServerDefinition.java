@@ -86,9 +86,8 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
-            CredentialReference.getAttributeBuilder("cluster-" + CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, true)
+            CredentialReference.getAttributeBuilder("cluster-" + CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, true, true)
                     .setAttributeGroup("cluster")
-                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
                     .setRestartAllServices()
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
