@@ -30,10 +30,12 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
+import org.jboss.as.test.shared.SecurityManagerFailure;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,6 +63,11 @@ public class JaxrsJacksonProviderTestCase {
 
     @ArquillianResource
     private URL url;
+
+    @BeforeClass
+    public static void beforeClass() {
+        SecurityManagerFailure.thisTestIsFailingUnderSM("https://github.com/FasterXML/jackson-databind/pull/1585");
+    }
 
     private String performCall(String urlPattern) throws Exception {
         return HttpRequest.get(url + urlPattern, 10, TimeUnit.SECONDS);
