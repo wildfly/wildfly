@@ -1161,10 +1161,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             interceptorFactories.put(InterceptorOrder.View.RUN_AS_PRINCIPAL, new ImmediateInterceptorFactory(new RunAsPrincipalInterceptor(runAsPrincipal)));
 
             // Next interceptor: extra principal roles
-            final Set<String> extraRoles = securityRoles.getSecurityRoleNamesByPrincipal(runAsPrincipal);
-            if (! extraRoles.isEmpty()) {
-                interceptorFactories.put(InterceptorOrder.View.EXTRA_PRINCIPAL_ROLES, new ImmediateInterceptorFactory(new RoleAddingInterceptor("ejb", RoleMapper.constant(Roles.fromSet(extraRoles)))));
-                roles.addAll(extraRoles);
+            if (securityRoles != null) {
+                final Set<String> extraRoles = securityRoles.getSecurityRoleNamesByPrincipal(runAsPrincipal);
+                if (! extraRoles.isEmpty()) {
+                    interceptorFactories.put(InterceptorOrder.View.EXTRA_PRINCIPAL_ROLES, new ImmediateInterceptorFactory(new RoleAddingInterceptor("ejb", RoleMapper.constant(Roles.fromSet(extraRoles)))));
+                    roles.addAll(extraRoles);
+                }
             }
         }
 
