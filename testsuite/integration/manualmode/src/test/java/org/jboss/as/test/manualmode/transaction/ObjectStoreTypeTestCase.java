@@ -28,6 +28,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -59,7 +60,7 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
     @Before
     public void before() throws Exception {
         container.start(CONTAINER);
-        initCLI();
+        initCLI(TimeoutUtil.adjust(20 * 1000));
     }
 
     @After
