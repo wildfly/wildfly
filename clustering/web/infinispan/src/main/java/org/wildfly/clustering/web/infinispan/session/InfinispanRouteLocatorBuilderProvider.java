@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import org.jboss.msc.value.Value;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.web.session.RouteLocator;
 import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
@@ -30,6 +31,7 @@ import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
  * Builds a {@link RouteLocator} service.
  * @author Paul Ferraro
  */
+@MetaInfServices(RouteLocatorBuilderProvider.class)
 public class InfinispanRouteLocatorBuilderProvider implements RouteLocatorBuilderProvider {
 
     @Override
