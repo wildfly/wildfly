@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,29 +22,30 @@
 
 package org.wildfly.extension.undertow;
 
-import io.undertow.server.HandlerWrapper;
-import io.undertow.server.HttpHandler;
+import static org.wildfly.extension.undertow.Capabilities.REF_BUFFER_POOL;
+import static org.wildfly.extension.undertow.Capabilities.REF_IO_WORKER;
+import static org.wildfly.extension.undertow.Capabilities.REF_SOCKET_BINDING;
+
 import io.undertow.server.handlers.DisallowedMethodsHandler;
 import io.undertow.server.handlers.PeerNameResolvingHandler;
 import io.undertow.servlet.handlers.MarkSecureHandler;
 import io.undertow.util.HttpString;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.io.OptionList;
 import org.xnio.OptionMap;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -70,15 +71,9 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
         OptionMap listenerOptions = OptionList.resolveOptions(context, model, ListenerResourceDefinition.LISTENER_OPTIONS);
         OptionMap socketOptions = OptionList.resolveOptions(context, model, ListenerResourceDefinition.SOCKET_OPTIONS);
         String serverName = parent.getLastElement().getValue();
-        final ServiceName listenerServiceName = UndertowService.listenerName(name);
         final ListenerService service = createService(name, serverName, context, model, listenerOptions,socketOptions);
         if (peerHostLookup) {
-            service.addWrapperHandler(new HandlerWrapper() {
-                @Override
-                public HttpHandler wrap(HttpHandler handler) {
-                    return new PeerNameResolvingHandler(handler);
-                }
-            });
+            service.addWrapperHandler(PeerNameResolvingHandler::new);
         }
         service.setEnabled(enabled);
         if(secure) {
@@ -86,28 +81,17 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
         }
         List<String> disallowedMethods = ListenerResourceDefinition.DISALLOWED_METHODS.unwrap(context, model);
         if(!disallowedMethods.isEmpty()) {
-            final Set<HttpString> methodSet = new HashSet<>();
-            for(String i : disallowedMethods) {
-                methodSet.add(new HttpString(i.trim()));
-            }
-            service.addWrapperHandler(new HandlerWrapper() {
-                @Override
-                public HttpHandler wrap(HttpHandler handler) {
-                    return new DisallowedMethodsHandler(handler, methodSet);
-                }
-            });
+            final Set<HttpString> methodSet = disallowedMethods.stream().map(i -> new HttpString(i.trim())).collect(Collectors.toSet());
+            service.addWrapperHandler(handler -> new DisallowedMethodsHandler(handler, methodSet));
         }
 
-        final ServiceName socketBindingServiceName = context.getCapabilityServiceName(ListenerResourceDefinition.SOCKET_CAPABILITY, bindingRef, SocketBinding.class);
-        final ServiceName workerServiceName = context.getCapabilityServiceName(ListenerResourceDefinition.IO_WORKER_CAPABILITY, workerName, XnioWorker.class);
-        final ServiceName bufferPoolServiceName = context.getCapabilityServiceName(ListenerResourceDefinition.IO_BUFFER_POOL_CAPABILITY, bufferPoolName, Pool.class);
-        final ServiceBuilder<? extends UndertowListener> serviceBuilder = context.getServiceTarget().addService(listenerServiceName, service);
-        serviceBuilder.addDependency(workerServiceName, XnioWorker.class, service.getWorker())
-                .addDependency(socketBindingServiceName, SocketBinding.class, service.getBinding())
-                .addDependency(bufferPoolServiceName, (Injector) service.getBufferPool())
-                .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerService())
-                // Include the capability-declared service name as an alias  TODO get rid of the old style name
-                .addAliases(ListenerResourceDefinition.LISTENER_CAPABILITY.getCapabilityServiceName(name));
+        final CapabilityServiceBuilder<? extends UndertowListener> serviceBuilder = context.getCapabilityServiceTarget().addCapability(ListenerResourceDefinition.LISTENER_CAPABILITY, service);
+        serviceBuilder.addCapabilityRequirement(REF_IO_WORKER, XnioWorker.class, service.getWorker(), workerName)
+                .addCapabilityRequirement(REF_SOCKET_BINDING, SocketBinding.class, service.getBinding(), bindingRef)
+                .addCapabilityRequirement(REF_BUFFER_POOL, Pool.class, (Injector) service.getBufferPool(), bufferPoolName)
+                .addCapabilityRequirement(Capabilities.CAPABILITY_SERVER, Server.class, service.getServerService(), serverName)
+                .addAliases(UndertowService.listenerName(name))
+                ;
 
         configureAdditionalDependencies(context, serviceBuilder, model, service);
         serviceBuilder.install();
@@ -116,6 +100,6 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
 
     abstract ListenerService createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException;
 
-    abstract void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends UndertowListener> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException;
+    abstract void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder<? extends UndertowListener> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException;
 
 }

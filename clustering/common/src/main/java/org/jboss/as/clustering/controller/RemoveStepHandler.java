@@ -73,11 +73,18 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         // Determine whether super impl will actually remove the resource
-        boolean remove = !resource.getChildTypes().stream().anyMatch(type -> resource.getChildren(type).stream().filter(entry -> !entry.isRuntime()).map(entry -> entry.getPathElement()).anyMatch(path -> resource.hasChild(path)));
+        boolean remove = !resource.getChildTypes().stream()
+                .anyMatch(type -> resource.getChildren(type).stream()
+                        .filter(entry -> !entry.isRuntime())
+                        .map(entry -> entry.getPathElement())
+                        .anyMatch(path -> resource.hasChild(path)));
         if (remove) {
             // We need to remove capabilities *before* removing the resource, since the capability reference resolution might involve reading the resource
             PathAddress address = context.getCurrentAddress();
-            this.descriptor.getCapabilities().entrySet().stream().filter(entry -> entry.getValue().test(model)).map(Map.Entry::getKey).forEach(capability -> context.deregisterCapability(capability.resolve(address).getName()));
+            this.descriptor.getCapabilities().entrySet().stream()
+                    .filter(entry -> entry.getValue().test(model))
+                    .map(Map.Entry::getKey)
+                    .forEach(capability -> context.deregisterCapability(capability.resolve(address).getName()));
 
             ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
             registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
@@ -85,9 +92,9 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
                     .map(AttributeAccess::getAttributeDefinition)
                         .filter(Objects::nonNull)
                         .filter(AttributeDefinition::hasCapabilityRequirements)
-                        .forEach(attribute -> attribute.removeCapabilityRequirements(context, model.get(attribute.getName())));
+                        .forEach(attribute -> attribute.removeCapabilityRequirements(context, resource, model.get(attribute.getName())));
 
-            this.descriptor.getResourceCapabilityReferences().forEach((reference, resolver) -> reference.removeCapabilityRequirements(context, (String)null, resolver.apply(address)));
+            this.descriptor.getResourceCapabilityReferences().forEach((reference, resolver) -> reference.removeCapabilityRequirements(context, resource, null, resolver.apply(address)));
 
             // Remove any runtime child resources
             removeRuntimeChildren(context, PathAddress.EMPTY_ADDRESS);

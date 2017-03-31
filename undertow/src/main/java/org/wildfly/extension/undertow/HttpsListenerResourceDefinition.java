@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
 import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
 
 import java.util.Collection;
@@ -51,13 +52,11 @@ import org.xnio.SslClientAuthMode;
  */
 public class HttpsListenerResourceDefinition extends ListenerResourceDefinition {
 
-    static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
-
     protected static final HttpsListenerResourceDefinition INSTANCE = new HttpsListenerResourceDefinition();
 
     protected static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, true)
             .setAlternatives(Constants.SECURITY_REALM, Constants.VERIFY_CLIENT, Constants.ENABLED_CIPHER_SUITES, Constants.ENABLED_PROTOCOLS, Constants.SSL_SESSION_CACHE_SIZE, Constants.SSL_SESSION_TIMEOUT)
-            .setCapabilityReference(SSL_CONTEXT_CAPABILITY, LISTENER_CAPABILITY_NAME, true)
+            .setCapabilityReference(REF_SSL_CONTEXT)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
@@ -72,7 +71,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .build();
 
     protected static final OptionAttributeDefinition VERIFY_CLIENT = OptionAttributeDefinition.builder(Constants.VERIFY_CLIENT, SSL_CLIENT_AUTH_MODE)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setValidator(new EnumValidator<>(SslClientAuthMode.class, true, true))
@@ -82,7 +81,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .build();
 
     protected static final OptionAttributeDefinition ENABLED_CIPHER_SUITES = OptionAttributeDefinition.builder(Constants.ENABLED_CIPHER_SUITES, Options.SSL_ENABLED_CIPHER_SUITES)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setDeprecated(ModelVersion.create(4, 0, 0))
@@ -90,7 +89,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .build();
 
     protected static final OptionAttributeDefinition ENABLED_PROTOCOLS = OptionAttributeDefinition.builder(Constants.ENABLED_PROTOCOLS, Options.SSL_ENABLED_PROTOCOLS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setDeprecated(ModelVersion.create(4, 0, 0))
@@ -98,14 +97,14 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .build();
 
     protected static final OptionAttributeDefinition ENABLE_HTTP2 = OptionAttributeDefinition.builder(Constants.ENABLE_HTTP2, UndertowOptions.ENABLE_HTTP2)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
             .build();
 
     protected static final OptionAttributeDefinition ENABLE_SPDY = OptionAttributeDefinition.builder(Constants.ENABLE_SPDY, UndertowOptions.ENABLE_SPDY)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDeprecated(ModelVersion.create(3, 2))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
@@ -113,10 +112,10 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .build();
 
     public static final OptionAttributeDefinition SSL_SESSION_CACHE_SIZE = OptionAttributeDefinition.builder(Constants.SSL_SESSION_CACHE_SIZE, Options.SSL_SERVER_SESSION_CACHE_SIZE)
-            .setDeprecated(ModelVersion.create(4, 0, 0)).setAllowNull(true).setAllowExpression(true).setAlternatives(Constants.SSL_CONTEXT).build();
-
+            .setDeprecated(ModelVersion.create(4, 0, 0)).setRequired(false).setAllowExpression(true)
+            .setAlternatives(Constants.SSL_CONTEXT).build();
     public static final OptionAttributeDefinition SSL_SESSION_TIMEOUT = OptionAttributeDefinition.builder(Constants.SSL_SESSION_TIMEOUT, Options.SSL_SERVER_SESSION_TIMEOUT)
-            .setDeprecated(ModelVersion.create(4, 0, 0)).setMeasurementUnit(MeasurementUnit.SECONDS).setAllowNull(true).setAllowExpression(true).setAlternatives(Constants.SSL_CONTEXT).build();
+            .setDeprecated(ModelVersion.create(4, 0, 0)).setMeasurementUnit(MeasurementUnit.SECONDS).setRequired(false).setAllowExpression(true).setAlternatives(Constants.SSL_CONTEXT).build();
 
     private HttpsListenerResourceDefinition() {
         super(UndertowExtension.HTTPS_LISTENER_PATH);

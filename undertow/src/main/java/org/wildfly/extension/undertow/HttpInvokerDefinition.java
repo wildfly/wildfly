@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -17,18 +17,21 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 2110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.undertow.Capabilities.REF_MOD_CLUSTER;
+import static org.wildfly.extension.undertow.UndertowRootDefinition.HTTP_INVOKER_RUNTIME_CAPABILITY;
+import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_HTTP_INVOKER_HOST;
 
 import java.util.Arrays;
 import java.util.Collection;
 
+import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -36,25 +39,33 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
-import io.undertow.server.handlers.PathHandler;
 
 /**
  * @author Stuart Douglas
  */
 public class HttpInvokerDefinition extends PersistentResourceDefinition {
 
-    private static final String HTTP_AUTHENTICATION_FACTORY_CAPABILITY = "org.wildfly.security.http-authentication-factory";
+    static final RuntimeCapability<Void> HTTP_INVOKER_HOST_CAPABILITY =
+                RuntimeCapability.Builder.of(CAPABILITY_HTTP_INVOKER_HOST, true, PathHandler.class)
+                        .setDynamicNameMapper(address -> new String[]{
+                                address.getParent().getLastElement().getValue(),
+                                address.getLastElement().getValue()})
+                        .addDynamicRequirements(Capabilities.CAPABILITY_HOST)
+                        .addRequirements(Capabilities.CAPABILITY_HTTP_INVOKER)
+                        .addOptionalRequirements(REF_MOD_CLUSTER)
+                        .build();
 
     protected static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENITCATION_FACTORY, ModelType.STRING, true)
             .setValidator(new StringLengthValidator(1, true))
             .setRestartAllServices()
+            .setCapabilityReference(Capabilities.REF_HTTP_AUTHENTICATION_FACTORY)
             .build();
 
     protected static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING, true)
@@ -63,7 +74,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    static final Collection<SimpleAttributeDefinition> ATTRIBUTES = Arrays.asList(
+    static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
             PATH,
             HTTP_AUTHENTICATION_FACTORY
@@ -71,27 +82,29 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
     static final HttpInvokerDefinition INSTANCE = new HttpInvokerDefinition();
 
     private HttpInvokerDefinition() {
-        super(UndertowExtension.PATH_HTTP_INVOKER, UndertowExtension.getResolver(Constants.HTTP_INVOKER), new HttpInvokerAdd(), new HttpInvokerRemove());
+        super(new Parameters(UndertowExtension.PATH_HTTP_INVOKER, UndertowExtension.getResolver(Constants.HTTP_INVOKER))
+                .setAddHandler(new HttpInvokerAdd())
+                .setRemoveHandler(new HttpInvokerRemove())
+                .setCapabilities(HTTP_INVOKER_HOST_CAPABILITY)
+        );
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        //noinspection unchecked
-        return (Collection) ATTRIBUTES;
+        return ATTRIBUTES;
     }
-
 
     private static final class HttpInvokerAdd extends AbstractAddStepHandler {
 
-        public HttpInvokerAdd() {
+        HttpInvokerAdd() {
             super(ATTRIBUTES);
         }
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-            final PathAddress hostAddress = address.subAddress(0, address.size() - 1);
-            final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
+            final PathAddress address = context.getCurrentAddress();
+            final PathAddress hostAddress = address.getParent();
+            final PathAddress serverAddress = hostAddress.getParent();
             String path = PATH.resolveModelAttribute(context, model).asString();
             String httpAuthenticationFactory = null;
             final ModelNode authFactory = HTTP_AUTHENTICATION_FACTORY.resolveModelAttribute(context, model);
@@ -102,18 +115,18 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             final HttpInvokerHostService service = new HttpInvokerHostService(path);
             final String serverName = serverAddress.getLastElement().getValue();
             final String hostName = hostAddress.getLastElement().getValue();
-            final ServiceName hostServiceName = UndertowService.virtualHostName(serverName, hostName);
-            final ServiceName serviceName = UndertowService.virtualHostName(serverName, hostName).append(Constants.HTTP_INVOKER);
 
-
-            final ServiceBuilder<HttpInvokerHostService> builder = context.getServiceTarget().addService(serviceName, service)
-                    .addDependency(hostServiceName, Host.class, service.getHost())
-                    .addDependency(UndertowRootDefinition.HTTP_INVOKER_RUNTIME_CAPABILITY.getCapabilityServiceName(), PathHandler.class, service.getRemoteHttpInvokerServiceInjectedValue());
+            final CapabilityServiceBuilder<HttpInvokerHostService> builder = context.getCapabilityServiceTarget()
+                    .addCapability(HTTP_INVOKER_HOST_CAPABILITY, service)
+                    .addCapabilityRequirement(HTTP_INVOKER_RUNTIME_CAPABILITY.getName(), PathHandler.class, service.getRemoteHttpInvokerServiceInjectedValue())
+                    .addCapabilityRequirement(Capabilities.CAPABILITY_HOST, Host.class, service.getHost(), serverName, hostName)
+                    ;
 
             if (httpAuthenticationFactory != null) {
-                builder.addDependency(context.getCapabilityServiceName(
-                        buildDynamicCapabilityName(HTTP_AUTHENTICATION_FACTORY_CAPABILITY, httpAuthenticationFactory),
-                        HttpAuthenticationFactory.class), HttpAuthenticationFactory.class, service.getHttpAuthenticationFactoryInjectedValue());
+                builder.addCapabilityRequirement(Capabilities.REF_HTTP_AUTHENTICATION_FACTORY, HttpAuthenticationFactory.class, service.getHttpAuthenticationFactoryInjectedValue(), httpAuthenticationFactory);
+            }
+            if (context.hasOptionalCapability(REF_MOD_CLUSTER, HTTP_INVOKER_HOST_CAPABILITY.getDynamicName(address), null )){
+                builder.addCapabilityRequirement(REF_MOD_CLUSTER, Void.class);
             }
 
             builder.setInitialMode(ServiceController.Mode.ACTIVE)
@@ -123,18 +136,14 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
 
     private static final class HttpInvokerRemove extends ServiceRemoveStepHandler {
 
-        protected HttpInvokerRemove() {
+        HttpInvokerRemove() {
             super(new HttpInvokerAdd());
         }
 
 
         @Override
         protected ServiceName serviceName(String name, PathAddress address) {
-            final PathAddress hostAddress = address.subAddress(0, address.size() - 1);
-            final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
-            final String serverName = serverAddress.getLastElement().getValue();
-            final String hostName = hostAddress.getLastElement().getValue();
-            return UndertowService.virtualHostName(serverName, hostName).append(Constants.HTTP_INVOKER);
+            return HTTP_INVOKER_HOST_CAPABILITY.getCapabilityServiceName(address);
         }
     }
 }

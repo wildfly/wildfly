@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -32,6 +32,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -40,7 +41,13 @@ import org.jboss.dmr.ValueExpression;
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
-public class AccessLogDefinition extends PersistentResourceDefinition {
+class AccessLogDefinition extends PersistentResourceDefinition {
+    static final RuntimeCapability<Void> ACCESS_LOG_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_ACCESS_LOG, true, AccessLogService.class)
+              .setDynamicNameMapper(path -> new String[]{
+                      path.getParent().getParent().getLastElement().getValue(),
+                      path.getParent().getLastElement().getValue(),
+                      path.getLastElement().getValue()})
+              .build();
 
 
     protected static final SimpleAttributeDefinition PATTERN = new SimpleAttributeDefinitionBuilder(Constants.PATTERN, ModelType.STRING, true)
@@ -49,10 +56,11 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
     protected static final SimpleAttributeDefinition WORKER = new SimpleAttributeDefinitionBuilder(Constants.WORKER, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .setDefaultValue(new ModelNode("default"))
+            .setCapabilityReference(Capabilities.REF_IO_WORKER)
             .build();
     protected static final SimpleAttributeDefinition PREFIX = new SimpleAttributeDefinitionBuilder(Constants.PREFIX, ModelType.STRING, true)
             .setDefaultValue(new ModelNode("access_log."))
@@ -71,7 +79,7 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
     protected static final SimpleAttributeDefinition DIRECTORY = new SimpleAttributeDefinitionBuilder(Constants.DIRECTORY, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setValidator(new StringLengthValidator(1, true))
             .setDefaultValue(new ModelNode(new ValueExpression("${jboss.server.log.dir}")))
             .setAllowExpression(true)
@@ -79,14 +87,14 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             .build();
 
     protected static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(Constants.RELATIVE_TO, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setValidator(new StringLengthValidator(1, true))
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     protected static final SimpleAttributeDefinition USE_SERVER_LOG = new SimpleAttributeDefinitionBuilder(Constants.USE_SERVER_LOG, ModelType.BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -122,7 +130,11 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
 
 
     private AccessLogDefinition() {
-        super(UndertowExtension.PATH_ACCESS_LOG, UndertowExtension.getResolver(Constants.ACCESS_LOG), AccessLogAdd.INSTANCE, AccessLogRemove.INSTANCE);
+        super(new Parameters(UndertowExtension.PATH_ACCESS_LOG, UndertowExtension.getResolver(Constants.ACCESS_LOG))
+                .setAddHandler(AccessLogAdd.INSTANCE)
+                .setRemoveHandler(AccessLogRemove.INSTANCE)
+                .setCapabilities(ACCESS_LOG_CAPABILITY)
+        );
         SensitivityClassification sc = new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "web-access-log", false, false, false);
         this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
     }

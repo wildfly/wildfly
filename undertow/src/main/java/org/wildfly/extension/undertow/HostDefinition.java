@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -34,9 +34,12 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
@@ -45,8 +48,18 @@ import org.wildfly.extension.undertow.filters.FilterRefDefinition;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class HostDefinition extends PersistentResourceDefinition {
+
+    static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HOST, true, Host.class)
+            .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
+            .addDynamicRequirements(Capabilities.CAPABILITY_SERVER)
+            .setDynamicNameMapper(pathElements -> new String[]{
+                    pathElements.getParent().getLastElement().getValue(),
+                    pathElements.getLastElement().getValue()})
+            .build();
+
+
     static final StringListAttributeDefinition ALIAS = new StringListAttributeDefinition.Builder(Constants.ALIAS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setElementValidator(new StringLengthValidator(1))
             .setAllowExpression(true)
@@ -72,7 +85,7 @@ class HostDefinition extends PersistentResourceDefinition {
             .build();
 
     static final HostDefinition INSTANCE = new HostDefinition();
-    private static final Collection ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS, DEFAULT_WEB_MODULE, DEFAULT_RESPONSE_CODE, DISABLE_CONSOLE_REDIRECT));
+    private static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS, DEFAULT_WEB_MODULE, DEFAULT_RESPONSE_CODE, DISABLE_CONSOLE_REDIRECT));
     private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(
             LocationDefinition.INSTANCE,
             AccessLogDefinition.INSTANCE,
@@ -89,7 +102,6 @@ class HostDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        //noinspection unchecked
         return ATTRIBUTES;
     }
 
@@ -98,4 +110,9 @@ class HostDefinition extends PersistentResourceDefinition {
         return CHILDREN;
     }
 
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(HOST_CAPABILITY);
+        resourceRegistration.registerCapability(WebHost.CAPABILITY);
+    }
 }

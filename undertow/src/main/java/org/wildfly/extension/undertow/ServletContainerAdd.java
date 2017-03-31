@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,18 +29,16 @@ import io.undertow.servlet.api.ServletStackTraces;
 import io.undertow.servlet.api.SessionPersistenceManager;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.negotiation.NegotiationMechanismFactory;
-import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.undertow.security.digest.DigestAuthenticationMechanismFactory;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
@@ -136,8 +134,9 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 mimeMappings,
                 welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms, maxSessions, crawlerSessionManagerConfig, disableFileWatchService);
 
-        final ServiceTarget target = context.getServiceTarget();
-        final ServiceBuilder<ServletContainerService> builder = target.addService(UndertowService.SERVLET_CONTAINER.append(name), container);
+
+        final CapabilityServiceBuilder<ServletContainerService> builder = context.getCapabilityServiceTarget()
+                .addCapability(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY, container);
         if(bufferCache != null) {
             builder.addDependency(BufferCacheService.SERVICE_NAME.append(bufferCache), DirectBufferCache.class, container.getBufferCacheInjectedValue());
         }
@@ -145,11 +144,12 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
             builder.addDependency(AbstractPersistentSessionManager.SERVICE_NAME, SessionPersistenceManager.class, container.getSessionPersistenceManagerInjectedValue());
         }
         if(webSocketInfo != null) {
-            builder.addDependency(IOServices.WORKER.append(webSocketInfo.getWorker()), XnioWorker.class, container.getWebsocketsWorker());
-            builder.addDependency(IOServices.BUFFER_POOL.append(webSocketInfo.getBufferPool()), Pool.class, (InjectedValue) container.getWebsocketsBufferPool());
+            builder.addCapabilityRequirement(Capabilities.REF_IO_WORKER, XnioWorker.class, container.getWebsocketsWorker(), webSocketInfo.getWorker());
+            builder.addCapabilityRequirement(Capabilities.REF_BUFFER_POOL, Pool.class, (InjectedValue) container.getWebsocketsBufferPool(), webSocketInfo.getBufferPool());
         }
 
         builder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+               .addAliases(UndertowService.SERVLET_CONTAINER.append(name))
                 .install();
     }
 }

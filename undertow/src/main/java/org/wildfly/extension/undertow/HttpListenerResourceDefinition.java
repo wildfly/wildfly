@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -47,35 +47,35 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
 
 
     protected static final SimpleAttributeDefinition CERTIFICATE_FORWARDING = new SimpleAttributeDefinitionBuilder(Constants.CERTIFICATE_FORWARDING, ModelType.BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
             .build();
 
     protected static final SimpleAttributeDefinition PROXY_ADDRESS_FORWARDING = new SimpleAttributeDefinitionBuilder("proxy-address-forwarding", ModelType.BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
             .build();
 
     protected static final OptionAttributeDefinition ENABLE_HTTP2 = OptionAttributeDefinition.builder("enable-http2", UndertowOptions.ENABLE_HTTP2)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
             .build();
 
     protected static final OptionAttributeDefinition HTTP2_ENABLE_PUSH = OptionAttributeDefinition.builder("http2-enable-push", UndertowOptions.HTTP2_SETTINGS_ENABLE_PUSH)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(true))
             .build();
 
     protected static final OptionAttributeDefinition HTTP2_HEADER_TABLE_SIZE = OptionAttributeDefinition.builder("http2-header-table-size", UndertowOptions.HTTP2_SETTINGS_HEADER_TABLE_SIZE)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
@@ -84,7 +84,7 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .build();
 
     protected static final OptionAttributeDefinition HTTP2_INITIAL_WINDOW_SIZE = OptionAttributeDefinition.builder("http2-initial-window-size", UndertowOptions.HTTP2_SETTINGS_INITIAL_WINDOW_SIZE)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
@@ -93,14 +93,14 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .build();
 
     protected static final OptionAttributeDefinition HTTP2_MAX_CONCURRENT_STREAMS = OptionAttributeDefinition.builder("http2-max-concurrent-streams", UndertowOptions.HTTP2_SETTINGS_MAX_CONCURRENT_STREAMS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setValidator(new IntRangeValidator(1))
             .build();
 
     protected static final OptionAttributeDefinition HTTP2_MAX_FRAME_SIZE = OptionAttributeDefinition.builder("http2-max-frame-size", UndertowOptions.HTTP2_SETTINGS_MAX_FRAME_SIZE)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
@@ -109,7 +109,7 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .build();
 
     protected static final OptionAttributeDefinition HTTP2_MAX_HEADER_LIST_SIZE = OptionAttributeDefinition.builder("http2-max-header-list-size", UndertowOptions.HTTP2_SETTINGS_MAX_HEADER_LIST_SIZE)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.BYTES)
@@ -117,7 +117,7 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .build();
 
     protected static final OptionAttributeDefinition REQUIRE_HOST_HTTP11 = OptionAttributeDefinition.builder("require-host-http11", UndertowOptions.REQUIRE_HOST_HTTP11)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))

@@ -22,6 +22,7 @@
 
 package org.wildfly.mod_cluster.undertow;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.msc.service.ServiceBuilder;
@@ -31,6 +32,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.extension.mod_cluster.ContainerEventHandlerAdapterBuilder;
 import org.wildfly.extension.mod_cluster.ContainerEventHandlerService;
+import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.extension.undertow.UndertowService;
 
@@ -38,16 +40,17 @@ public class UndertowEventHandlerAdapterBuilder implements ContainerEventHandler
     public static final ServiceName SERVICE_NAME = ContainerEventHandlerService.SERVICE_NAME.append("undertow");
 
     @Override
-    public ServiceBuilder<?> build(ServiceTarget target, String connector, int statusInterval) {
+    public ServiceBuilder<?> build(ServiceTarget target, CapabilityServiceSupport serviceSupport, String connector, int statusInterval) {
         InjectedValue<ContainerEventHandler> eventHandler = new InjectedValue<>();
         InjectedValue<UndertowService> undertowService = new InjectedValue<>();
         InjectedValue<SuspendController> suspendController = new InjectedValue<>();
         @SuppressWarnings("rawtypes")
         InjectedValue<UndertowListener> listener = new InjectedValue<>();
+        //todo use capability builder
         return new AsynchronousServiceBuilder<>(SERVICE_NAME, new UndertowEventHandlerAdapter(eventHandler, undertowService, listener, suspendController, statusInterval)).build(target)
                 .addDependency(ContainerEventHandlerService.SERVICE_NAME, ContainerEventHandler.class, eventHandler)
-                .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowService)
-                .addDependency(UndertowService.listenerName(connector), UndertowListener.class, listener)
+                .addDependency(serviceSupport.getCapabilityServiceName(Capabilities.CAPABILITY_UNDERTOW), UndertowService.class, undertowService)
+                .addDependency(serviceSupport.getCapabilityServiceName(Capabilities.CAPABILITY_LISTENER, connector), UndertowListener.class, listener)
                 .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, suspendController)
         ;
     }

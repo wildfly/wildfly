@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,9 +23,7 @@
 package org.wildfly.extension.undertow.handlers;
 
 import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.ResponseCodeHandler;
-import io.undertow.server.handlers.proxy.ExclusivityChecker;
 import io.undertow.server.handlers.proxy.LoadBalancingProxyClient;
 import io.undertow.server.handlers.proxy.ProxyHandler;
 import io.undertow.util.Headers;
@@ -52,27 +50,27 @@ public class ReverseProxyHandler extends Handler {
 
 
     public static final AttributeDefinition PROBLEM_SERVER_RETRY = new SimpleAttributeDefinitionBuilder(Constants.PROBLEM_SERVER_RETRY, ModelType.INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(30))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final AttributeDefinition SESSION_COOKIE_NAMES = new SimpleAttributeDefinitionBuilder(Constants.SESSION_COOKIE_NAMES, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("JSESSIONID"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
     public static final AttributeDefinition CONNECTIONS_PER_THREAD = new SimpleAttributeDefinitionBuilder(Constants.CONNECTIONS_PER_THREAD, ModelType.INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(40))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final AttributeDefinition MAX_REQUEST_TIME = new SimpleAttributeDefinitionBuilder(Constants.MAX_REQUEST_TIME, ModelType.INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(-1))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
@@ -80,7 +78,7 @@ public class ReverseProxyHandler extends Handler {
             .build();
 
     public static final AttributeDefinition REQUEST_QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(Constants.REQUEST_QUEUE_SIZE, ModelType.INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(10))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -88,14 +86,14 @@ public class ReverseProxyHandler extends Handler {
 
 
     public static final AttributeDefinition CACHED_CONNECTIONS_PER_THREAD = new SimpleAttributeDefinitionBuilder(Constants.CACHED_CONNECTIONS_PER_THREAD, ModelType.INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(5))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final AttributeDefinition CONNECTION_IDLE_TIMEOUT = new SimpleAttributeDefinitionBuilder(Constants.CONNECTION_IDLE_TIMEOUT, ModelType.INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(60L))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
@@ -103,7 +101,7 @@ public class ReverseProxyHandler extends Handler {
             .build();
 
     public static final AttributeDefinition MAX_RETRIES = new SimpleAttributeDefinitionBuilder(Constants.MAX_RETRIES, ModelType.INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(1L))
@@ -141,12 +139,9 @@ public class ReverseProxyHandler extends Handler {
         int maxRetries = MAX_RETRIES.resolveModelAttribute(context, model).asInt();
 
 
-        final LoadBalancingProxyClient lb = new LoadBalancingProxyClient(new ExclusivityChecker() {
-            @Override
-            public boolean isExclusivityRequired(HttpServerExchange exchange) {
-                //we always create a new connection for upgrade requests
-                return exchange.getRequestHeaders().contains(Headers.UPGRADE);
-            }
+        final LoadBalancingProxyClient lb = new LoadBalancingProxyClient(exchange -> {
+            //we always create a new connection for upgrade requests
+            return exchange.getRequestHeaders().contains(Headers.UPGRADE);
         })
                 .setConnectionsPerThread(connectionsPerThread)
                 .setMaxQueueSize(requestQueueSize)

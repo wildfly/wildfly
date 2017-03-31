@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 2110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
 package org.wildfly.extension.undertow.filters;
@@ -32,7 +32,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -44,28 +43,29 @@ import org.wildfly.extension.undertow.UndertowExtension;
  *
  * @author Stuart Douglas
  */
-public class ModClusterContextDefinition extends SimpleResourceDefinition {
+class ModClusterContextDefinition extends SimpleResourceDefinition {
 
     public static ModClusterContextDefinition INSTANCE = new ModClusterContextDefinition();
 
 
-    public static final AttributeDefinition STATUS = new SimpleAttributeDefinitionBuilder(Constants.STATUS, ModelType.STRING)
+    private static final AttributeDefinition STATUS = new SimpleAttributeDefinitionBuilder(Constants.STATUS, ModelType.STRING)
             .setRequired(false)
             .setStorageRuntime()
             .build();
 
-    public static final AttributeDefinition REQUESTS = new SimpleAttributeDefinitionBuilder(Constants.REQUESTS, ModelType.INT)
+    private static final AttributeDefinition REQUESTS = new SimpleAttributeDefinitionBuilder(Constants.REQUESTS, ModelType.INT)
             .setRequired(false)
             .setStorageRuntime()
             .build();
 
 
-    public final OperationDefinition ENABLE = new SimpleOperationDefinition(Constants.ENABLE, getResourceDescriptionResolver());
-    public final OperationDefinition DISABLE = new SimpleOperationDefinition(Constants.DISABLE, getResourceDescriptionResolver());
-    public final OperationDefinition STOP = new SimpleOperationDefinition(Constants.STOP, getResourceDescriptionResolver());
+    private final OperationDefinition ENABLE = new SimpleOperationDefinition(Constants.ENABLE, getResourceDescriptionResolver());
+    private final OperationDefinition DISABLE = new SimpleOperationDefinition(Constants.DISABLE, getResourceDescriptionResolver());
+    private final OperationDefinition STOP = new SimpleOperationDefinition(Constants.STOP, getResourceDescriptionResolver());
 
-    ModClusterContextDefinition() {
-        super(UndertowExtension.CONTEXT, UndertowExtension.getResolver("handler", "mod-cluster", "balancer", "node", "context"), null, null, true);
+    private ModClusterContextDefinition() {
+        super(new Parameters(UndertowExtension.CONTEXT, UndertowExtension.getResolver("handler", "mod-cluster", "balancer", "node", "context"))
+        .setRuntime());
     }
 
     @Override
@@ -116,7 +116,7 @@ public class ModClusterContextDefinition extends SimpleResourceDefinition {
 
         @Override
         public final void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
+            PathAddress address = context.getCurrentAddress();
             int current = address.size() - 1;
             String contextName = address.getElement(current--).getValue();
             String nodeName = address.getElement(current--).getValue();

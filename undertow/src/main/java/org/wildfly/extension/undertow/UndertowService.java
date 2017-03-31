@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -47,10 +47,14 @@ import org.wildfly.extension.undertow.security.jacc.HttpServletRequestPolicyCont
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  * @author Stuart Douglas
  */
+@SuppressWarnings("ALL")
 public class UndertowService implements Service<UndertowService> {
 
+    @Deprecated
     public static final ServiceName UNDERTOW = ServiceName.JBOSS.append("undertow");
+    @Deprecated
     public static final ServiceName SERVLET_CONTAINER = UNDERTOW.append(Constants.SERVLET_CONTAINER);
+    @Deprecated
     public static final ServiceName SERVER = UNDERTOW.append(Constants.SERVER);
     /**
      * service name under which default server is bound.
@@ -66,6 +70,8 @@ public class UndertowService implements Service<UndertowService> {
      */
     public static final ServiceName HANDLER = UNDERTOW.append(Constants.HANDLER);
     public static final ServiceName FILTER = UNDERTOW.append(Constants.FILTER);
+
+
     /**
      * The base name for web deployments.
      */
@@ -75,7 +81,7 @@ public class UndertowService implements Service<UndertowService> {
     private final String defaultVirtualHost;
     private final Set<Server> registeredServers = new CopyOnWriteArraySet<>();
     private final List<UndertowEventListener> listeners = Collections.synchronizedList(new LinkedList<UndertowEventListener>());
-    private volatile String instanceId;//todo this should be final and no setter should be exposed, currently mod cluster "wants it", this needs to change
+    private volatile String instanceId;
     private volatile boolean statisticsEnabled;
     private final Set<Consumer<Boolean>> statisticsChangeListenters = new HashSet<>();
 
@@ -91,6 +97,7 @@ public class UndertowService implements Service<UndertowService> {
         return WEB_DEPLOYMENT_BASE.append(serverName).append(virtualHost).append("".equals(contextPath) ? "/" : contextPath);
     }
 
+    @Deprecated
     public static ServiceName virtualHostName(final String server, final String virtualHost) {
         return SERVER.append(server).append(virtualHost);
     }
@@ -148,6 +155,7 @@ public class UndertowService implements Service<UndertowService> {
         return serviceName;
     }
 
+    @Deprecated
     public static ServiceName listenerName(String listenerName) {
         return UNDERTOW.append(Constants.LISTENER).append(listenerName);
     }

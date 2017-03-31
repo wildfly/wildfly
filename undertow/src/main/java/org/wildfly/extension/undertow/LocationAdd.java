@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,10 +22,6 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.List;
-
 import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -35,7 +31,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -47,30 +42,23 @@ class LocationAdd extends AbstractAddStepHandler {
         super(LocationDefinition.HANDLER);
     }
 
-    static <T> void addDep(ServiceBuilder<?> b, ServiceName name, Class<T> type, List<InjectedValue<T>> list) {
-        InjectedValue<T> v = new InjectedValue<>();
-        b.addDependency(name, type, v);
-        list.add(v);
-    }
-
     @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final PathAddress hostAddress = address.subAddress(0, address.size() - 1);
-        final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
-        final String name = address.getLastElement().getValue();
+        final PathAddress hostAddress = context.getCurrentAddress().getParent();
+        final PathAddress serverAddress = hostAddress.getParent();
+        final String name = context.getCurrentAddressValue();
         final String handler = LocationDefinition.HANDLER.resolveModelAttribute(context, model).asString();
 
         final LocationService service = new LocationService(name);
         final String serverName = serverAddress.getLastElement().getValue();
         final String hostName = hostAddress.getLastElement().getValue();
-        final ServiceName hostServiceName = UndertowService.virtualHostName(serverName, hostName);
         final ServiceName serviceName = UndertowService.locationServiceName(serverName, hostName, name);
-        final ServiceBuilder<LocationService> builder = context.getServiceTarget().addService(serviceName, service)
-                .addDependency(hostServiceName, Host.class, service.getHost())
-                .addDependency(UndertowService.HANDLER.append(handler), HttpHandler.class, service.getHttpHandler());
+        final ServiceBuilder<LocationService> builder = context.getCapabilityServiceTarget().addCapability(LocationDefinition.LOCATION_CAPABILITY, service)
+                .addCapabilityRequirement(Capabilities.CAPABILITY_HANDLER, HttpHandler.class, service.getHttpHandler(),handler)
+                .addCapabilityRequirement(Capabilities.CAPABILITY_HOST, Host.class, service.getHost(), serverName, hostName);
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE)
+                .addAliases(serviceName)
                 .install();
     }
 }

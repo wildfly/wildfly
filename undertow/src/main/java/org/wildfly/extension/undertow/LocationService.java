@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -33,7 +33,6 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -91,12 +90,7 @@ public class LocationService implements Service<LocationService>, FilterLocation
     }
 
     protected static HttpHandler configureHandlerChain(HttpHandler rootHandler, List<UndertowFilter> filters) {
-        Collections.sort(filters, new Comparator<UndertowFilter>() {
-            @Override
-            public int compare(UndertowFilter o1, UndertowFilter o2) {
-                return o1.getPriority() >= o2.getPriority() ? 1 : -1;
-            }
-        });
+        filters.sort((o1, o2) -> o1.getPriority() >= o2.getPriority() ? 1 : -1);
         Collections.reverse(filters); //handler chain goes last first
         HttpHandler handler = rootHandler;
         for (UndertowFilter filter : filters) {

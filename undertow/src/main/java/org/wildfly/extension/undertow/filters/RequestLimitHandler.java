@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -43,7 +43,7 @@ public class RequestLimitHandler extends Filter {
     public static final AttributeDefinition MAX_CONCURRENT_REQUESTS = new SimpleAttributeDefinitionBuilder("max-concurrent-requests", ModelType.INT)
             .setValidator(new IntRangeValidator(1, false, true))
             .setAllowExpression(true)
-            .setAllowNull(false)
+            .setRequired(true)
             .setRestartAllServices()
             .build();
 
@@ -51,7 +51,7 @@ public class RequestLimitHandler extends Filter {
     public static final AttributeDefinition QUEUE_SIZE = new SimpleAttributeDefinitionBuilder("queue-size", ModelType.INT)
             .setValidator(new IntRangeValidator(0, true, true))
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(0))
             .setRestartAllServices()
             .build();

@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2017, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.wildfly.extension.undertow.filters;
 
 import java.util.Arrays;
@@ -5,14 +27,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import io.undertow.Handlers;
 import io.undertow.predicate.Predicate;
 import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -31,51 +50,22 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 public class CustomFilterDefinition extends Filter {
 
     public static final AttributeDefinition CLASS_NAME = new SimpleAttributeDefinitionBuilder("class-name", ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
     public static final AttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder("module", ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final PropertiesAttributeDefinition PARAMETERS = new PropertiesAttributeDefinition.Builder("parameters", true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setWrapXmlElement(false)
             .setXmlName("param")
             .setAllowExpression(true)
             .setRestartAllServices()
-            .setAttributeMarshaller(new AttributeMarshaller() { //todo not needed once https://github.com/wildfly/wildfly-core/pull/86 is merged
-                @Override
-                public boolean isMarshallable(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault) {
-                    return resourceModel.isDefined() && resourceModel.hasDefined(attribute.getName());
-                }
-
-                @Override
-                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-                    if (!resourceModel.hasDefined(attribute.getName())) {
-                        return;
-                    }
-                    resourceModel = resourceModel.get(attribute.getName());
-                    for (ModelNode property : resourceModel.asList()) {
-                        writer.writeEmptyElement(attribute.getXmlName());
-                        writer.writeAttribute(org.jboss.as.controller.parsing.Attribute.NAME.getLocalName(), property.asProperty().getName());
-                        writer.writeAttribute(org.jboss.as.controller.parsing.Attribute.VALUE.getLocalName(), property.asProperty().getValue().asString());
-                    }
-                }
-
-                @Override
-                public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-                    marshallAsElement(attribute, resourceModel, marshallDefault, writer);
-                }
-
-                @Override
-                public boolean isMarshallableAsElement() {
-                    return true;
-                }
-            })
             .build();
 
     public static final CustomFilterDefinition INSTANCE = new CustomFilterDefinition();
