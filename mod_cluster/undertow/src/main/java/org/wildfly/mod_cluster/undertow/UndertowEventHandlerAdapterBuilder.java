@@ -29,6 +29,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.extension.mod_cluster.ContainerEventHandlerAdapterBuilder;
 import org.wildfly.extension.mod_cluster.ContainerEventHandlerService;
@@ -36,6 +37,7 @@ import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.extension.undertow.UndertowService;
 
+@MetaInfServices(ContainerEventHandlerAdapterBuilder.class)
 public class UndertowEventHandlerAdapterBuilder implements ContainerEventHandlerAdapterBuilder {
     public static final ServiceName SERVICE_NAME = ContainerEventHandlerService.SERVICE_NAME.append("undertow");
 
