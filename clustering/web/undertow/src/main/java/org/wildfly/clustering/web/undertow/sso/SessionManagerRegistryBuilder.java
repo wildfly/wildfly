@@ -23,7 +23,10 @@ package org.wildfly.clustering.web.undertow.sso;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Stream;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -32,8 +35,11 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.web.undertow.UndertowBinaryRequirement;
+import org.wildfly.clustering.web.undertow.UndertowRequirement;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowEventListener;
 import org.wildfly.extension.undertow.UndertowService;
@@ -46,32 +52,42 @@ import io.undertow.servlet.api.Deployment;
  * Service providing a {@link SessionManagerRegistry} for a host.
  * @author Paul Ferraro
  */
-public class SessionManagerRegistryBuilder implements Builder<SessionManagerRegistry>, Service<SessionManagerRegistry>, SessionManagerRegistry, UndertowEventListener {
+public class SessionManagerRegistryBuilder implements CapabilityServiceBuilder<SessionManagerRegistry>, Service<SessionManagerRegistry>, SessionManagerRegistry, UndertowEventListener {
 
-    private final ServiceName hostServiceName;
-    private final InjectedValue<UndertowService> service = new InjectedValue<>();
-    private final InjectedValue<Host> host = new InjectedValue<>();
-    private final InjectedValue<SessionListener> listener = new InjectedValue<>();
+    private final ServiceName name;
+    private final String serverName;
+    private final String hostName;
+    private final ValueDependency<SessionListener> listener;
+
     private final ConcurrentMap<String, SessionManager> managers = new ConcurrentHashMap<>();
-    private final ServiceName listenerServiceName;
 
-    public SessionManagerRegistryBuilder(ServiceName hostServiceName, ServiceName listenerServiceName) {
-        this.hostServiceName = hostServiceName;
-        this.listenerServiceName = listenerServiceName;
+    private volatile ValueDependency<UndertowService> service;
+    private volatile ValueDependency<Host> host;
+
+    public SessionManagerRegistryBuilder(ServiceName name, String serverName, String hostName, ValueDependency<SessionListener> listener) {
+        this.name = name;
+        this.serverName = serverName;
+        this.hostName = hostName;
+        this.listener = listener;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return this.hostServiceName.append("managers");
+        return this.name;
+    }
+
+    @Override
+    public Builder<SessionManagerRegistry> configure(CapabilityServiceSupport support) {
+        this.service = new InjectedValueDependency<>(UndertowRequirement.UNDERTOW.getServiceName(support), UndertowService.class);
+        this.host = new InjectedValueDependency<>(UndertowBinaryRequirement.HOST.getServiceName(support, this.serverName, this.hostName), Host.class);
+        return this;
     }
 
     @Override
     public ServiceBuilder<SessionManagerRegistry> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), this)
-                .addDependency(UndertowService.UNDERTOW, UndertowService.class, this.service)
-                .addDependency(this.hostServiceName, Host.class, this.host)
-                .addDependency(this.listenerServiceName, SessionListener.class, this.listener)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+        ServiceBuilder<SessionManagerRegistry> builder = target.addService(this.name, this).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        Stream.of(this.listener, this.service, this.host).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 
     @Override

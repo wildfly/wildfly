@@ -25,7 +25,9 @@ package org.wildfly.clustering.web.undertow.sso;
 import java.io.Externalizable;
 import java.io.Serializable;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
@@ -37,7 +39,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
@@ -47,7 +48,7 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.sso.SSOManager;
@@ -60,7 +61,7 @@ import io.undertow.server.session.SessionIdGenerator;
 /**
  * @author Paul Ferraro
  */
-public class SSOManagerBuilder<A, D, S, L> implements Builder<SSOManager<A, D, S, L, Batch>>, Service<SSOManager<A, D, S, L, Batch>>, SSOManagerConfiguration<L, MarshallingContext> {
+public class SSOManagerBuilder<A, D, S, L> implements CapabilityServiceBuilder<SSOManager<A, D, S, L, Batch>>, Service<SSOManager<A, D, S, L, Batch>>, SSOManagerConfiguration<L, MarshallingContext> {
 
     enum MarshallingVersion implements Function<Module, MarshallingConfiguration> {
         VERSION_1() {
@@ -88,33 +89,32 @@ public class SSOManagerBuilder<A, D, S, L> implements Builder<SSOManager<A, D, S
         static final MarshallingVersion CURRENT = VERSION_2;
     }
 
-    private final InjectedValue<SessionIdGenerator> generator = new InjectedValue<>();
+    private final ServiceName name;
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<SSOManagerFactory> factory = new InjectedValue<>();
-    private final ServiceName factoryServiceName;
-    private final ServiceName generatorServiceName;
+    private final ValueDependency<SSOManagerFactory> factory;
+    private final ValueDependency<SessionIdGenerator> generator;
     private final LocalContextFactory<L> localContextFactory;
 
     private volatile SSOManager<A, D, S, L, Batch> manager;
     private volatile MarshallingContext context;
 
-    public SSOManagerBuilder(ServiceName factoryServiceName, ServiceName generatorServiceName, LocalContextFactory<L> localContextFactory) {
-        this.factoryServiceName = factoryServiceName;
-        this.generatorServiceName = generatorServiceName;
+    public SSOManagerBuilder(ServiceName name, @SuppressWarnings("rawtypes") ValueDependency<SSOManagerFactory> factory, ValueDependency<SessionIdGenerator> generator, LocalContextFactory<L> localContextFactory) {
+        this.name = name;
+        this.factory = factory;
+        this.generator = generator;
         this.localContextFactory = localContextFactory;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return this.factoryServiceName.append("manager");
+        return this.name;
     }
 
     @Override
     public ServiceBuilder<SSOManager<A, D, S, L, Batch>> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), this)
-                .addDependency(this.factoryServiceName, SSOManagerFactory.class, this.factory)
-                .addDependency(this.generatorServiceName, SessionIdGenerator.class, this.generator)
-                ;
+        ServiceBuilder<SSOManager<A, D, S, L, Batch>> builder = target.addService(this.getServiceName(), this);
+        Stream.of(this.factory, this.generator).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 
     @Override

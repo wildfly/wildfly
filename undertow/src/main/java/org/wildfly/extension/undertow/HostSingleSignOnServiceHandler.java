@@ -39,7 +39,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
-import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerBuilder;
+import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerBuilderProvider;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2014 Red Hat Inc.
@@ -67,9 +67,9 @@ class HostSingleSignOnServiceHandler implements ResourceServiceHandler {
         ServiceTarget target = context.getServiceTarget();
 
         ServiceName managerServiceName = serviceName.append("manager");
-        if (DistributableHostSingleSignOnManagerBuilder.INSTANCE.isPresent()) {
-            DistributableHostSingleSignOnManagerBuilder builder = DistributableHostSingleSignOnManagerBuilder.INSTANCE.get();
-            builder.build(target, managerServiceName, context.getCapabilityServiceSupport(), serverName, hostName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        if (DistributableHostSingleSignOnManagerBuilderProvider.INSTANCE.isPresent()) {
+            DistributableHostSingleSignOnManagerBuilderProvider provider = DistributableHostSingleSignOnManagerBuilderProvider.INSTANCE.get();
+            provider.getBuilder(managerServiceName, serverName, hostName).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         } else {
             target.addService(managerServiceName, new ValueService<>(new ImmediateValue<>(new InMemorySingleSignOnManager()))).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         }

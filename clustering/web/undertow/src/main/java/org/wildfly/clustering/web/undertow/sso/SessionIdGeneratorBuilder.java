@@ -22,14 +22,20 @@
 
 package org.wildfly.clustering.web.undertow.sso;
 
+import java.util.function.Function;
+
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.extension.undertow.Host;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.MappedValueService;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.web.undertow.UndertowUnaryRequirement;
+import org.wildfly.extension.undertow.Server;
 
 import io.undertow.server.session.SecureRandomSessionIdGenerator;
 import io.undertow.server.session.SessionIdGenerator;
@@ -37,31 +43,37 @@ import io.undertow.server.session.SessionIdGenerator;
 /**
  * @author Paul Ferraro
  */
-public class SessionIdGeneratorBuilder implements Builder<SessionIdGenerator>, Value<SessionIdGenerator> {
+public class SessionIdGeneratorBuilder implements CapabilityServiceBuilder<SessionIdGenerator> {
 
-    private final InjectedValue<Host> host = new InjectedValue<>();
-    private final ServiceName hostServiceName;
+    private final ServiceName name;
+    private final String serverName;
 
-    public SessionIdGeneratorBuilder(ServiceName hostServiceName) {
-        this.hostServiceName = hostServiceName;
+    private volatile ValueDependency<Server> server;
+
+    public SessionIdGeneratorBuilder(ServiceName name, String serverName) {
+        this.name = name;
+        this.serverName = serverName;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return this.hostServiceName.append("generator");
+        return this.name;
+    }
+
+    @Override
+    public Builder<SessionIdGenerator> configure(CapabilityServiceSupport support) {
+        this.server = new InjectedValueDependency<>(UndertowUnaryRequirement.SERVER.getServiceName(support, this.serverName), Server.class);
+        return this;
     }
 
     @Override
     public ServiceBuilder<SessionIdGenerator> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(this.hostServiceName, Host.class, this.host)
-                ;
-    }
-
-    @Override
-    public SessionIdGenerator getValue() {
-        SecureRandomSessionIdGenerator generator = new SecureRandomSessionIdGenerator();
-        generator.setLength(this.host.getValue().getServer().getServletContainer().getSessionIdLength());
-        return generator;
+        Function<Server, SessionIdGenerator> mapper = server -> {
+            SecureRandomSessionIdGenerator generator = new SecureRandomSessionIdGenerator();
+            generator.setLength(server.getServletContainer().getSessionIdLength());
+            return generator;
+        };
+        Service<SessionIdGenerator> service = new MappedValueService<>(mapper, this.server);
+        return this.server.register(target.addService(this.getServiceName(), service));
     }
 }
