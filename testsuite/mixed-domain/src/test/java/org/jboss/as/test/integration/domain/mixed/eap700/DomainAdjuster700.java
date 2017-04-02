@@ -66,13 +66,6 @@ public class DomainAdjuster700 extends DomainAdjuster {
                 .append("server", "default-server")
                 .append("https-listener", "https");
         ops.add(Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, httpsListener.toModelNode()));
-
-        //This enables jndi, ejb and tx over http and did not exist in EAP 7.0
-        PathAddress httpInvoker = undertow
-                .append("server", "default-server")
-                .append("host", "default-host")
-                .append("setting", "http-invoker");
-        ops.add(Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, httpInvoker.toModelNode()));
     }
 
     private Collection<? extends ModelNode> removeElytron(final PathAddress subsystem) {

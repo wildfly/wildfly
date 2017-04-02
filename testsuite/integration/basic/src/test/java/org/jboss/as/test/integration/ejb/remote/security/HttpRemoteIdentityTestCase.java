@@ -36,6 +36,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.http.HttpInvokerServerSetupTask;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -59,7 +60,7 @@ import org.wildfly.test.security.common.elytron.EJBApplicationSecurityDomainMapp
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(HttpRemoteIdentityTestCase.SecurityDomainsSetup.class)
+@ServerSetup({HttpRemoteIdentityTestCase.SecurityDomainsSetup.class, HttpInvokerServerSetupTask.class})
 public class HttpRemoteIdentityTestCase {
 
     @ContainerResource
