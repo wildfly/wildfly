@@ -112,8 +112,7 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
-            CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, true)
-                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
+            CredentialReference.getAttributeBuilder(true, false)
                     .setRestartAllServices()
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)

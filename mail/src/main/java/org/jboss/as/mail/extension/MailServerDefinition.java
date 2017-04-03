@@ -99,8 +99,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
                     .build();
 
     static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
-            CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, true)
-                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
+            CredentialReference.getAttributeBuilder(true, false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
