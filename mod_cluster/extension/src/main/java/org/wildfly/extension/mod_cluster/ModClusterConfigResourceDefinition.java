@@ -70,7 +70,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     static final String UNDERTOW_LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
 
     private static final String MOD_CLUSTER_CAPABILITY_NAME = "org.wildfly.mod_cluster";
-    private static final RuntimeCapability<Void> MOD_CLUSTER_CAPABILITY = RuntimeCapability.Builder.of(MOD_CLUSTER_CAPABILITY_NAME, false, Void.class).build();
+    static final RuntimeCapability<Void> MOD_CLUSTER_CAPABILITY = RuntimeCapability.Builder.of(MOD_CLUSTER_CAPABILITY_NAME, false, Void.class).build();
 
     static final PathElement PATH = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
 
