@@ -72,7 +72,7 @@ public class JMSService implements Service<JMSServerManager> {
         ServiceBuilder<JMSServerManager> builder = target.addService(JMSServices.getJmsManagerBaseServiceName(serverServiceName), service)
                 .addDependency(serverServiceName, ActiveMQServer.class, service.activeMQServer)
                 .setInitialMode(Mode.ACTIVE);
-        addServerExecutorDependency(builder, service.serverExecutor, false);
+        addServerExecutorDependency(builder, service.serverExecutor);
         return builder.install();
     }
 

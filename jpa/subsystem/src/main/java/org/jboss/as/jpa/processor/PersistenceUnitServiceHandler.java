@@ -436,7 +436,7 @@ public class PersistenceUnitServiceHandler {
                 .addInjection(service.getPropertiesInjector(), properties);
 
             // get async executor from Services.addServerExecutorDependency
-            addServerExecutorDependency(builder, service.getExecutorInjector(), false);
+            addServerExecutorDependency(builder, service.getExecutorInjector());
 
             builder.install();
 
@@ -549,7 +549,7 @@ public class PersistenceUnitServiceHandler {
                 .addInjection(service.getPropertiesInjector(), properties);
 
             // get async executor from Services.addServerExecutorDependency
-            addServerExecutorDependency(builder, service.getExecutorInjector(), false);
+            addServerExecutorDependency(builder, service.getExecutorInjector());
 
             builder.install();
 
@@ -684,7 +684,7 @@ public class PersistenceUnitServiceHandler {
                 .addInjection(service.getPropertiesInjector(), properties);
 
             // get async executor from Services.addServerExecutorDependency
-            addServerExecutorDependency(builder, service.getExecutorInjector(), false);
+            addServerExecutorDependency(builder, service.getExecutorInjector());
 
             builder.install();
 

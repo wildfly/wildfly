@@ -123,7 +123,7 @@ public class JMSTopicService implements Service<Topic> {
                 .addDependency(ActiveMQActivationService.getServiceName(serverServiceName))
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(serverServiceName), JMSServerManager.class, service.jmsServer)
                 .setInitialMode(ServiceController.Mode.PASSIVE);
-        org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.executorInjector, false);
+        org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.executorInjector);
         serviceBuilder.install();
 
         return service;

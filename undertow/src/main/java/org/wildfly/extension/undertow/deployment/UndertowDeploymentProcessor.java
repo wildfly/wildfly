@@ -396,7 +396,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(deploymentInfoServiceName, DeploymentInfo.class, service.getDeploymentInfoInjectedValue());
         // inject the server executor which can be used by the WebDeploymentService for blocking tasks in start/stop
         // of that service
-        Services.addServerExecutorDependency(builder, service.getServerExecutorInjector(), false);
+        Services.addServerExecutorDependency(builder, service.getServerExecutorInjector());
 
         deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, deploymentServiceName);
 
