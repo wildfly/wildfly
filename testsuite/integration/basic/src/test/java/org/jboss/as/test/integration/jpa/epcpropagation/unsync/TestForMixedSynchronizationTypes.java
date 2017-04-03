@@ -74,18 +74,20 @@ public class TestForMixedSynchronizationTypes {
 
     @Test
     public void testShouldGetEjbExceptionBecauseEPCIsAddedToTxAfterPc() throws Exception {
+        final String errorCode = "WFLYJPA0064";
         BMTEPCStatefulBean stateful = lookup("BMTEPCStatefulBean", BMTEPCStatefulBean.class);
         try {
             stateful.willThrowError();
         } catch (Throwable expected) {
             Throwable cause = expected.getCause();
             while(cause != null) {
-                if( cause instanceof IllegalStateException && cause.getMessage().contains("JTA transaction already has a 'SynchronizationType.UNSYNCHRONIZED'")) {
+                if( cause instanceof IllegalStateException && cause.getMessage().contains(errorCode)) {
                     break;  // success
                 }
                 cause = cause.getCause();
+
                 if (cause == null) {
-                    fail("didn't throw IllegalStateException that contains 'JTA transaction already has a 'SynchronizationType.UNSYNCHRONIZED'', instead got message chain: " + messages(expected));
+                    fail(String.format("didn't throw IllegalStateException that contains '%s', instead got message chain: %s", errorCode, messages(expected)));
                 }
             }
         }

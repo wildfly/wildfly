@@ -41,6 +41,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.hamcrest.CoreMatchers.containsString;
+
 /**
  * @author baranowb
  */
@@ -98,9 +100,12 @@ public class BadResourceTestCase {
         // just to blow up
         Assert.assertTrue("Failed to deploy: " + result, !Operations.isSuccessfulOutcome(result));
 
-        Assert.assertTrue("" + result, result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).toString()
-                .contains(Constants.ERROR_MESSAGE));
-
+        // asserts
+        String failureDescription = result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).toString();
+        Assert.assertThat(String.format("Results doesn't contain correct error code (%s): %s", Constants.ERROR_MESSAGE, result.toString()),
+                failureDescription, containsString(Constants.ERROR_MESSAGE));
+        Assert.assertThat(String.format("Results doesn't contain correct JNDI in error message (%s): %s", Constants.JNDI_NAME_BAD, result.toString()),
+                failureDescription, containsString(Constants.JNDI_NAME_BAD));
     }
 
 }

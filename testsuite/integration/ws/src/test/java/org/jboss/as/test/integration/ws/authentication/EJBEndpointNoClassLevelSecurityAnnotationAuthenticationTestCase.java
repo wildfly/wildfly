@@ -42,6 +42,8 @@ import org.junit.runner.RunWith;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.containsString;
+
 /**
  * Tests for authentication against EJB endpoint with no class level security annotation on the endpoint
  * https://issues.jboss.org/browse/WFLY-3988
@@ -90,7 +92,7 @@ public class EJBEndpointNoClassLevelSecurityAnnotationAuthenticationTestCase {
             Assert.fail("Test should fail, user shouldn't be allowed to invoke hello method");
         } catch (WebServiceException e) {
             // failure is expected
-            Assert.assertTrue("Invocation on hello method should not be allowed", e.getCause().getMessage().contains("not allowed"));
+            Assert.assertThat("Invocation on hello method should not be allowed", e.getCause().getMessage(), containsString("WFLYEJB0364"));
         }
     }
 
