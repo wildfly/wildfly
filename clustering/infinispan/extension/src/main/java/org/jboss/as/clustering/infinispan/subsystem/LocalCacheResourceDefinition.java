@@ -25,7 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
@@ -46,7 +45,7 @@ public class LocalCacheResourceDefinition extends CacheResourceDefinition {
         CacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    LocalCacheResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(WILDCARD_PATH, pathManager, allowRuntimeOnlyRegistration, Consumers.empty(), new LocalCacheServiceHandler(), Consumers.empty());
+    LocalCacheResourceDefinition() {
+        super(WILDCARD_PATH, Consumers.empty(), new LocalCacheServiceHandler(), Consumers.empty());
     }
 }

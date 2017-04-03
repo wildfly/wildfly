@@ -26,6 +26,7 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
@@ -47,7 +48,6 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
@@ -67,7 +67,7 @@ import org.wildfly.clustering.service.UnaryRequirement;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public class StackResourceDefinition extends ChildResourceDefinition {
+public class StackResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     public static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -165,12 +165,10 @@ public class StackResourceDefinition extends ChildResourceDefinition {
     }
 
     private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = address -> new JChannelFactoryBuilder(address);
-    private final boolean allowRuntimeOnlyRegistration;
 
     // registration
-    public StackResourceDefinition(boolean allowRuntimeOnlyRegistration) {
+    public StackResourceDefinition() {
         super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH));
-        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @SuppressWarnings("deprecation")
@@ -274,7 +272,7 @@ public class StackResourceDefinition extends ChildResourceDefinition {
         };
         registration.registerOperationHandler(legacyRemoveProtocolOperation, legacyRemoveProtocolHandler);
 
-        if (this.allowRuntimeOnlyRegistration) {
+        if (registration.isRuntimeOnlyRegistrationValid()) {
             new OperationHandler<>(new StackOperationExecutor(), StackOperation.class).register(registration);
         }
 

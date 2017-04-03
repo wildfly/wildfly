@@ -34,6 +34,7 @@ import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.BinaryRequirementCapability;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -50,9 +51,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -69,7 +68,7 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class CacheResourceDefinition extends ChildResourceDefinition {
+public class CacheResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     enum Capability implements CapabilityProvider {
         CACHE(InfinispanCacheRequirement.CACHE),
@@ -218,7 +217,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition {
     private final ResourceServiceHandler handler;
     private final Consumer<ManagementResourceRegistration> registrationConfigurator;
 
-    public CacheResourceDefinition(PathElement path, PathManager pathManager, boolean allowRuntimeOnlyRegistration, Consumer<ResourceDescriptor> descriptorConfigurator, CacheServiceHandler handler, Consumer<ManagementResourceRegistration> registrationConfigurator) {
+    public CacheResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, CacheServiceHandler handler, Consumer<ManagementResourceRegistration> registrationConfigurator) {
         super(path, new InfinispanResourceDescriptionResolver(path, PathElement.pathElement("cache")));
         this.descriptorConfigurator = descriptorConfigurator.andThen(descriptor -> descriptor
             .addAttributes(Attribute.class)
@@ -230,22 +229,22 @@ public class CacheResourceDefinition extends ChildResourceDefinition {
         );
         this.handler = handler;
         this.registrationConfigurator = registrationConfigurator.andThen(registration -> {
-            if (allowRuntimeOnlyRegistration) {
+            if (registration.isRuntimeOnlyRegistrationValid()) {
                 new MetricHandler<>(new CacheMetricExecutor(), CacheMetric.class).register(registration);
             }
 
-            new EvictionResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+            new EvictionResourceDefinition().register(registration);
             new ExpirationResourceDefinition().register(registration);
-            new LockingResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
-            new TransactionResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+            new LockingResourceDefinition().register(registration);
+            new TransactionResourceDefinition().register(registration);
 
             new NoStoreResourceDefinition().register(registration);
-            new CustomStoreResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
-            new FileStoreResourceDefinition(pathManager, allowRuntimeOnlyRegistration).register(registration);
-            new BinaryKeyedJDBCStoreResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
-            new MixedKeyedJDBCStoreResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
-            new StringKeyedJDBCStoreResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
-            new RemoteStoreResourceDefinition(allowRuntimeOnlyRegistration).register(registration);
+            new CustomStoreResourceDefinition().register(registration);
+            new FileStoreResourceDefinition().register(registration);
+            new BinaryKeyedJDBCStoreResourceDefinition().register(registration);
+            new MixedKeyedJDBCStoreResourceDefinition().register(registration);
+            new StringKeyedJDBCStoreResourceDefinition().register(registration);
+            new RemoteStoreResourceDefinition().register(registration);
         });
     }
 

@@ -27,6 +27,7 @@ import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -49,7 +50,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -60,7 +60,7 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public abstract class StoreResourceDefinition extends ChildResourceDefinition {
+public abstract class StoreResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -136,7 +136,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition {
     private final Consumer<ManagementResourceRegistration> registrationConfigurator;
 
     @SuppressWarnings("deprecation")
-    StoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, boolean allowRuntimeOnlyRegistration, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory, Consumer<ManagementResourceRegistration> registrationConfigurator) {
+    StoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory, Consumer<ManagementResourceRegistration> registrationConfigurator) {
         super(path, resolver);
         this.legacyPath = legacyPath;
         this.descriptorConfigurator = descriptorConfigurator.andThen(descriptor -> descriptor
@@ -145,7 +145,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition {
         );
         this.handler = new SimpleResourceServiceHandler<>(builderFactory);
         this.registrationConfigurator = registrationConfigurator.andThen(registration -> {
-            if (allowRuntimeOnlyRegistration) {
+            if (registration.isRuntimeOnlyRegistrationValid()) {
                 new MetricHandler<>(new StoreMetricExecutor(), StoreMetric.class).register(registration);
             }
 

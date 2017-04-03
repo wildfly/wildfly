@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,22 +22,31 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import java.util.Optional;
+
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.services.path.PathManager;
 
 /**
- * Resource definition for subsystem resources that performs all registration via {@link #register(SubsystemRegistration)}.
  * @author Paul Ferraro
  */
-public abstract class SubsystemResourceDefinition<R extends SubsystemRegistration> extends AbstractResourceDefinition<R> {
+public class ExtensionRegistrationContext implements RegistrationContext {
 
-    protected static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
+    private final boolean runtimeOnlyRegistrationValid;
+    private final Optional<PathManager> pathManager;
+
+    public ExtensionRegistrationContext(ExtensionContext context) {
+        this.runtimeOnlyRegistrationValid = context.isRuntimeOnlyRegistrationValid();
+        this.pathManager = context.getProcessType().isServer() ? Optional.of(context.getPathManager()) : Optional.empty();
     }
 
-    protected SubsystemResourceDefinition(PathElement path, ResourceDescriptionResolver resolver) {
-        super(path, resolver);
+    @Override
+    public boolean isRuntimeOnlyRegistrationValid() {
+        return this.runtimeOnlyRegistrationValid;
+    }
+
+    @Override
+    public Optional<PathManager> getPathManager() {
+        return this.pathManager;
     }
 }

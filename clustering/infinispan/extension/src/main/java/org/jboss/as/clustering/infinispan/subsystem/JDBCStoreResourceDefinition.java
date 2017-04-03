@@ -30,6 +30,7 @@ import org.infinispan.persistence.jdbc.DatabaseType;
 import org.jboss.as.clustering.controller.AttributeValueTranslator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
@@ -50,7 +51,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -87,7 +87,7 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         public RuntimeCapability<Void> resolve(PathAddress address) {
             PathAddress cacheAddress = address.getParent();
             PathAddress containerAddress = cacheAddress.getParent();
-            return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue() + "." + cacheAddress.getLastElement().getValue());
+            return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue(), cacheAddress.getLastElement().getValue());
         }
     }
 
@@ -243,8 +243,8 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         }
     };
 
-    JDBCStoreResourceDefinition(PathElement path, PathElement legacyPath, InfinispanResourceDescriptionResolver resolver, boolean allowRuntimeOnlyRegistration, Consumer<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory, Consumer<ManagementResourceRegistration> registrationConfigurator) {
-        super(path, legacyPath, resolver, allowRuntimeOnlyRegistration, configurator.andThen(descriptor -> descriptor
+    JDBCStoreResourceDefinition(PathElement path, PathElement legacyPath, InfinispanResourceDescriptionResolver resolver, Consumer<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory, Consumer<ManagementResourceRegistration> registrationConfigurator) {
+        super(path, legacyPath, resolver, configurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
                 // Translate deprecated DATASOURCE attribute to DATA_SOURCE attribute

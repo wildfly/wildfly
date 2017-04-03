@@ -31,26 +31,27 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.SingleFileStoreConfiguration;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
+import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * @author Paul Ferraro
  */
 public class FileStoreBuilder extends StoreBuilder<SingleFileStoreConfiguration, SingleFileStoreConfigurationBuilder> {
 
-    private final InjectedValue<PathManager> pathManager = new InjectedValue<>();
     private final String containerName;
 
+    private volatile ValueDependency<PathManager> pathManager;
     private volatile String relativePath;
     private volatile String relativeTo;
 
@@ -61,11 +62,12 @@ public class FileStoreBuilder extends StoreBuilder<SingleFileStoreConfiguration,
 
     @Override
     public ServiceBuilder<PersistenceConfiguration> build(ServiceTarget target) {
-        return super.build(target).addDependency(PathManagerService.SERVICE_NAME, PathManager.class, this.pathManager);
+        return this.pathManager.register(super.build(target));
     }
 
     @Override
     public Builder<PersistenceConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.pathManager = new InjectedValueDependency<>(CommonRequirement.PATH_MANAGER.getServiceName(context), PathManager.class);
         this.relativePath = ModelNodes.optionalString(RELATIVE_PATH.resolveModelAttribute(context, model)).orElse(InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + this.containerName);
         this.relativeTo = RELATIVE_TO.resolveModelAttribute(context, model).asString();
         return super.configure(context, model);

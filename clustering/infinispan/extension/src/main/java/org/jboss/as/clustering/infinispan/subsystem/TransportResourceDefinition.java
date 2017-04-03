@@ -27,6 +27,7 @@ import java.util.EnumSet;
 import java.util.Map;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -36,7 +37,7 @@ import org.wildfly.clustering.spi.ClusteringRequirement;
 /**
  * @author Paul Ferraro
  */
-public abstract class TransportResourceDefinition extends ChildResourceDefinition {
+public abstract class TransportResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
     static PathElement pathElement(String value) {

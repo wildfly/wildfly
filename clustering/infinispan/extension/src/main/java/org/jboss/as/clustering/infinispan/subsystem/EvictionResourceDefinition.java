@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.EnumSet;
 
 import org.infinispan.eviction.EvictionStrategy;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -40,7 +41,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -90,8 +90,6 @@ public class EvictionResourceDefinition extends ComponentResourceDefinition {
         }
     }
 
-    private final boolean allowRuntimeOnlyRegistration;
-
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH, RequiredChildResourceDiscardPolicy.NEVER) : parent.addChildResource(PATH);
 
@@ -107,9 +105,8 @@ public class EvictionResourceDefinition extends ComponentResourceDefinition {
         }
     }
 
-    EvictionResourceDefinition(boolean allowRuntimeOnlyRegistration) {
+    EvictionResourceDefinition() {
         super(PATH);
-        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
@@ -121,7 +118,7 @@ public class EvictionResourceDefinition extends ComponentResourceDefinition {
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new EvictionBuilder(address.getParent()));
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-        if (this.allowRuntimeOnlyRegistration) {
+        if (registration.isRuntimeOnlyRegistrationValid()) {
             new MetricHandler<>(new EvictionMetricExecutor(), EvictionMetric.class).register(registration);
         }
     }

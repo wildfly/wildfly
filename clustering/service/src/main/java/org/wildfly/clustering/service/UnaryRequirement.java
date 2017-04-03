@@ -30,6 +30,6 @@ package org.wildfly.clustering.service;
 public interface UnaryRequirement extends Requirement {
 
     default String resolve(String name) {
-        return this.getName() + "." + name;
+        return String.join(".", this.getName(), name);
     }
 }

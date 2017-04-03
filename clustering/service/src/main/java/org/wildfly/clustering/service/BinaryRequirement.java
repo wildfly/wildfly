@@ -31,6 +31,6 @@ package org.wildfly.clustering.service;
 public interface BinaryRequirement extends Requirement {
 
     default String resolve(String parent, String child) {
-        return this.getName() + "." + parent + "." + child;
+        return String.join(".", this.getName(), parent, child);
     }
 }

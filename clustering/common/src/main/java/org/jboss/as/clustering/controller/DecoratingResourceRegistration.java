@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,21 +22,32 @@
 
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import java.util.function.Function;
+
+import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
- * Resource definition for child resources that performs all registration via {@link Registration#register(Object)}.
+ * Generic {@link ManagementResourceRegistration} decorator.
  * @author Paul Ferraro
  */
-public abstract class ChildResourceDefinition<R extends ManagementResourceRegistration> extends AbstractResourceDefinition<R> {
+public class DecoratingResourceRegistration<R extends ManagementResourceRegistration> extends org.jboss.as.controller.registry.DelegatingManagementResourceRegistration {
 
-    protected ChildResourceDefinition(PathElement path, ResourceDescriptionResolver resolver) {
-        super(new Parameters(path, resolver));
+    private final Function<ManagementResourceRegistration, R> decorator;
+
+    public DecoratingResourceRegistration(ManagementResourceRegistration delegate, Function<ManagementResourceRegistration, R> decorator) {
+        super(delegate);
+        this.decorator = decorator;
     }
 
-    protected ChildResourceDefinition(Parameters parameters) {
-        super(parameters);
+    @Override
+    public R registerSubModel(ResourceDefinition definition) {
+        return this.decorator.apply(super.registerSubModel(definition));
+    }
+
+    @Override
+    public R registerOverrideModel(String name, OverrideDescriptionProvider descriptionProvider) {
+        return this.decorator.apply(super.registerOverrideModel(name, descriptionProvider));
     }
 }

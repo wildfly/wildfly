@@ -100,8 +100,8 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
         StringTableResourceDefinition.buildTransformation(version, builder);
     }
 
-    MixedKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, JDBCStoreResourceDefinition.PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor
+    MixedKeyedJDBCStoreResourceDefinition() {
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, JDBCStoreResourceDefinition.PATH, WILDCARD_PATH), descriptor -> descriptor
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addRequiredChildren(BinaryTableResourceDefinition.PATH, StringTableResourceDefinition.PATH)
                 // Translate deprecated BINARY_TABLE attribute into separate add table operation

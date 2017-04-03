@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
@@ -40,7 +41,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
@@ -119,8 +119,8 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
         StringTableResourceDefinition.buildTransformation(version, builder);
     }
 
-    StringKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor
+    StringKeyedJDBCStoreResourceDefinition() {
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), descriptor -> descriptor
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addRequiredChildren(StringTableResourceDefinition.PATH)
                 // Translate deprecated TABLE attribute into separate add table operation
@@ -135,7 +135,7 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {
         super.register(parentRegistration);
-        ManagementResourceRegistration registration = parentRegistration.getSubModel(PathAddress.pathAddress(PATH));
+        org.jboss.as.controller.registry.ManagementResourceRegistration registration = parentRegistration.getSubModel(PathAddress.pathAddress(PATH));
         parentRegistration.registerAlias(STRING_JDBC_PATH, new SimpleAliasEntry(registration));
     }
 

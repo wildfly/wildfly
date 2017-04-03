@@ -23,6 +23,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.EnumSet;
 
+import org.jboss.as.clustering.controller.ContextualSubsystemRegistration;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -44,7 +45,7 @@ public class InfinispanExtension implements Extension {
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, InfinispanModel.CURRENT.getVersion());
 
-        new InfinispanSubsystemResourceDefinition(context.getProcessType().isServer() ? context.getPathManager() : null, context.isRuntimeOnlyRegistrationValid()).register(registration);
+        new InfinispanSubsystemResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));
         registration.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
     }
 
