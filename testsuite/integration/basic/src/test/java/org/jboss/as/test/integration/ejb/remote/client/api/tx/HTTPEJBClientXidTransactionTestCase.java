@@ -33,6 +33,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.http.HttpInvokerServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.Affinity;
@@ -69,7 +70,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(GracefulTxnShutdownSetup.class)
+@ServerSetup({GracefulTxnShutdownSetup.class, HttpInvokerServerSetupTask.class})
 public class HTTPEJBClientXidTransactionTestCase {
 
     private static final Logger logger = Logger.getLogger(HTTPEJBClientXidTransactionTestCase.class);
