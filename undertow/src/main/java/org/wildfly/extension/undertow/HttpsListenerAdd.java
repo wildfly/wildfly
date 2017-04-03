@@ -50,13 +50,20 @@ public class HttpsListenerAdd extends ListenerAdd {
     @Override
     ListenerService createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
         OptionMap.Builder builder = OptionMap.builder().addAll(socketOptions);
-        HttpsListenerResourceDefinition.VERIFY_CLIENT.resolveOption(context, model, builder);
-        ModelNode value = HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.resolveModelAttribute(context, model);
-        String cipherSuites = value.isDefined() ? value.asString() : null;
 
-        HttpsListenerResourceDefinition.ENABLED_PROTOCOLS.resolveOption(context, model, builder);
-        HttpsListenerResourceDefinition.SSL_SESSION_CACHE_SIZE.resolveOption(context, model, builder);
-        HttpsListenerResourceDefinition.SSL_SESSION_TIMEOUT.resolveOption(context, model, builder);
+        ModelNode securityRealmModel = HttpsListenerResourceDefinition.SECURITY_REALM.resolveModelAttribute(context, model);
+        String cipherSuites = null;
+        if(securityRealmModel.isDefined()) {
+            //we only support setting these options for security realms
+            HttpsListenerResourceDefinition.VERIFY_CLIENT.resolveOption(context, model, builder);
+
+            ModelNode value = HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.resolveModelAttribute(context, model);
+            cipherSuites = value.isDefined() ? value.asString() : null;
+
+            HttpsListenerResourceDefinition.ENABLED_PROTOCOLS.resolveOption(context, model, builder);
+            HttpsListenerResourceDefinition.SSL_SESSION_CACHE_SIZE.resolveOption(context, model, builder);
+            HttpsListenerResourceDefinition.SSL_SESSION_TIMEOUT.resolveOption(context, model, builder);
+        }
 
         OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);
         HttpsListenerResourceDefinition.ENABLE_HTTP2.resolveOption(context, model, listenerBuilder);
