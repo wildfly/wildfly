@@ -52,6 +52,9 @@ import org.wildfly.security.auth.server.HttpAuthenticationFactory;
  */
 public class HttpInvokerDefinition extends PersistentResourceDefinition {
 
+    //FIXME define a proper contract or remove if this is a workaround
+    private static final ServiceName MOD_CLUSTER_UNDERTOW_ADAPTER_SERVICE_NAME = ServiceName.JBOSS.append("modcluster").append("undertow");
+
     static final RuntimeCapability<Void> HTTP_INVOKER_HOST_CAPABILITY =
                 RuntimeCapability.Builder.of(CAPABILITY_HTTP_INVOKER_HOST, true, PathHandler.class)
                         .setDynamicNameMapper(address -> new String[]{
@@ -126,7 +129,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
                 builder.addCapabilityRequirement(Capabilities.REF_HTTP_AUTHENTICATION_FACTORY, HttpAuthenticationFactory.class, service.getHttpAuthenticationFactoryInjectedValue(), httpAuthenticationFactory);
             }
             if (context.hasOptionalCapability(REF_MOD_CLUSTER, HTTP_INVOKER_HOST_CAPABILITY.getDynamicName(address), null )){
-                builder.addCapabilityRequirement(REF_MOD_CLUSTER, Void.class);
+                builder.addDependency(MOD_CLUSTER_UNDERTOW_ADAPTER_SERVICE_NAME);
             }
 
             builder.setInitialMode(ServiceController.Mode.ACTIVE)
