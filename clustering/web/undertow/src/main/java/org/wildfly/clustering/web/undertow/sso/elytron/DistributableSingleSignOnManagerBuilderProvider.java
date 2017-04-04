@@ -20,16 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.undertow.security.sso;
+package org.wildfly.clustering.web.undertow.sso.elytron;
 
-import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.stream.StreamSupport;
-
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.extension.undertow.security.sso.DistributableSecurityDomainSingleSignOnManagerBuilderProvider;
 import org.wildfly.security.http.util.sso.SingleSignOnManager;
 
 import io.undertow.server.session.SessionIdGenerator;
@@ -37,16 +33,11 @@ import io.undertow.server.session.SessionIdGenerator;
 /**
  * @author Paul Ferraro
  */
-public interface DistributableApplicationSecurityDomainSingleSignOnManagerBuilder {
+@MetaInfServices(DistributableSecurityDomainSingleSignOnManagerBuilderProvider.class)
+public class DistributableSingleSignOnManagerBuilderProvider implements DistributableSecurityDomainSingleSignOnManagerBuilderProvider {
 
-    Optional<DistributableApplicationSecurityDomainSingleSignOnManagerBuilder> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableApplicationSecurityDomainSingleSignOnManagerBuilder.class, DistributableApplicationSecurityDomainSingleSignOnManagerBuilder.class.getClassLoader()).spliterator(), false).findFirst();
-
-    /**
-     * Builds a SingleSignOnManagerFactory service for a host.
-     * @param target the service target
-     * @param name the service name
-     * @param hostServiceName the service name of the host
-     * @return a service builder
-     */
-    ServiceBuilder<SingleSignOnManager> build(ServiceTarget target, ServiceName name, CapabilityServiceSupport support, String securityDomainName, SessionIdGenerator generator);
+    @Override
+    public CapabilityServiceBuilder<SingleSignOnManager> getBuilder(ServiceName name, String securityDomainName, SessionIdGenerator generator) {
+        return new DistributableSingleSignOnManagerBuilder(name, securityDomainName, generator);
+    }
 }

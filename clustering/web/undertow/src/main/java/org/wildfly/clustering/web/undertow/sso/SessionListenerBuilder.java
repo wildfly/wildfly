@@ -22,14 +22,14 @@
 
 package org.wildfly.clustering.web.undertow.sso;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.Sessions;
 
@@ -41,19 +41,20 @@ import io.undertow.server.session.SessionListener;
 /**
  * @author Paul Ferraro
  */
-public class SessionListenerBuilder implements Builder<SessionListener>, Value<SessionListener>, SessionListener {
+public class SessionListenerBuilder implements CapabilityServiceBuilder<SessionListener>, Value<SessionListener>, SessionListener {
 
+    private final ServiceName name;
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<SSOManager> manager = new InjectedValue<>();
-    private final ServiceName managerServiceName;
+    private final ValueDependency<SSOManager> manager;
 
-    public SessionListenerBuilder(ServiceName managerServiceName) {
-        this.managerServiceName = managerServiceName;
+    public SessionListenerBuilder(ServiceName name, @SuppressWarnings("rawtypes") ValueDependency<SSOManager> manager) {
+        this.name = name;
+        this.manager = manager;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return this.managerServiceName.append("listener");
+        return this.name;
     }
 
     @Override
@@ -63,9 +64,7 @@ public class SessionListenerBuilder implements Builder<SessionListener>, Value<S
 
     @Override
     public ServiceBuilder<SessionListener> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(this.managerServiceName, SSOManager.class, this.manager)
-                ;
+        return this.manager.register(target.addService(this.getServiceName(), new ValueService<>(this)));
     }
 
     @Override

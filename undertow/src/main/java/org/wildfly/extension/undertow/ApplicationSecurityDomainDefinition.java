@@ -115,7 +115,7 @@ import org.wildfly.elytron.web.undertow.server.ElytronRunAsHandler;
 import org.wildfly.elytron.web.undertow.server.ScopeSessionListener;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
-import org.wildfly.extension.undertow.security.sso.DistributableApplicationSecurityDomainSingleSignOnManagerBuilder;
+import org.wildfly.extension.undertow.security.sso.DistributableSecurityDomainSingleSignOnManagerBuilderProvider;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
@@ -304,9 +304,9 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                 ServiceName managerServiceName = new SingleSignOnManagerServiceNameProvider(securityDomainName).getServiceName();
                 SessionIdGenerator generator = new SecureRandomSessionIdGenerator();
 
-                if (DistributableApplicationSecurityDomainSingleSignOnManagerBuilder.INSTANCE.isPresent()) {
-                    DistributableApplicationSecurityDomainSingleSignOnManagerBuilder builder = DistributableApplicationSecurityDomainSingleSignOnManagerBuilder.INSTANCE.get();
-                    builder.build(target, managerServiceName, context.getCapabilityServiceSupport(), securityDomainName, generator).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+                if (DistributableSecurityDomainSingleSignOnManagerBuilderProvider.INSTANCE.isPresent()) {
+                    DistributableSecurityDomainSingleSignOnManagerBuilderProvider provider = DistributableSecurityDomainSingleSignOnManagerBuilderProvider.INSTANCE.get();
+                    provider.getBuilder(managerServiceName, securityDomainName, generator).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
                 } else {
                     SingleSignOnManager manager = new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), generator::createSessionId);
                     new SimpleBuilder<>(managerServiceName, manager).build(target).install();

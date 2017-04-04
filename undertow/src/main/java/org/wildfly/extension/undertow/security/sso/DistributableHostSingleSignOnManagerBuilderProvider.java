@@ -26,10 +26,8 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.stream.StreamSupport;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 
 import io.undertow.security.impl.SingleSignOnManager;
 
@@ -37,16 +35,16 @@ import io.undertow.security.impl.SingleSignOnManager;
  * Builds a distrubutable {@link SingleSignOnManagerFactory} service.
  * @author Paul Ferraro
  */
-public interface DistributableHostSingleSignOnManagerBuilder {
+public interface DistributableHostSingleSignOnManagerBuilderProvider {
 
-    Optional<DistributableHostSingleSignOnManagerBuilder> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableHostSingleSignOnManagerBuilder.class, DistributableHostSingleSignOnManagerBuilder.class.getClassLoader()).spliterator(), false).findFirst();
+    Optional<DistributableHostSingleSignOnManagerBuilderProvider> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableHostSingleSignOnManagerBuilderProvider.class, DistributableHostSingleSignOnManagerBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst();
 
     /**
-     * Builds a SingleSignOnManagerFactory service for a host.
-     * @param target the service target
+     * Returns a builder of a SingleSignOnManagerFactory service for a host.
      * @param name the service name
-     * @param hostServiceName the service name of the host
-     * @return a service builder
+     * @param serverName the name of the target server
+     * @param hostName the name of the target host
+     * @return builder for a service providing a {@link SingleSignOnManager}
      */
-    ServiceBuilder<SingleSignOnManager> build(ServiceTarget target, ServiceName name, CapabilityServiceSupport support, String serverName, String hostName);
+    CapabilityServiceBuilder<SingleSignOnManager> getBuilder(ServiceName name, String serverName, String hostName);
 }
