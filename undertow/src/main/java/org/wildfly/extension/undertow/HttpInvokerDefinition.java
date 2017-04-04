@@ -45,6 +45,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.undertow.session.RouteValue;
+import org.wildfly.extension.undertow.session.RouteValueService;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 
 /**
@@ -120,6 +122,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
                     .addCapability(HTTP_INVOKER_HOST_CAPABILITY, service)
                     .addCapabilityRequirement(HTTP_INVOKER_RUNTIME_CAPABILITY.getName(), PathHandler.class, service.getRemoteHttpInvokerServiceInjectedValue())
                     .addCapabilityRequirement(Capabilities.CAPABILITY_HOST, Host.class, service.getHost(), serverName, hostName)
+                    .addDependency(RouteValueService.SERVICE_NAME, RouteValue.class, service.getRoute())
                     ;
 
             if (httpAuthenticationFactory != null) {
