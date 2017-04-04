@@ -53,6 +53,7 @@ import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.metric.LoadMetric;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
@@ -95,6 +96,8 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
         new AsynchronousServiceBuilder<>(ContainerEventHandlerService.SERVICE_NAME, service).build(target)
                 .addDependency(configurationBuilder.getServiceName(), ModClusterConfiguration.class, modClusterConfiguration)
                 .setInitialMode(Mode.ACTIVE)
+                //temporary in case anyone is using old service name
+                .addAliases(ServiceName.JBOSS.append(ModClusterExtension.SUBSYSTEM_NAME))
                 .install();
 
         // Install services for web container integration

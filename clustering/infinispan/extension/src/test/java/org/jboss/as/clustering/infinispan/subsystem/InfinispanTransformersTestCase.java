@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
@@ -47,6 +48,7 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -148,6 +150,8 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     @Override
     AdditionalInitialization createAdditionalInitialization() {
         return new InfinispanSubsystemInitialization()
+                .require(CommonRequirement.PATH_MANAGER)
+                .require(CommonUnaryRequirement.PATH, ServerEnvironment.SERVER_TEMP_DIR)
                 .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
                 .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
                 .require(JGroupsRequirement.CHANNEL_FACTORY, "maximal-channel")

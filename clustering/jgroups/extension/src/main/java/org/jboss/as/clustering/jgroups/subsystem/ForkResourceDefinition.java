@@ -44,7 +44,7 @@ import org.wildfly.clustering.spi.ClusteringRequirement;
  * Definition of a fork resource.
  * @author Paul Ferraro
  */
-public class ForkResourceDefinition extends ChildResourceDefinition {
+public class ForkResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     public static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 

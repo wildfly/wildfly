@@ -64,10 +64,10 @@ public class PropertySQLProviderFactory implements SQLProvider.Factory {
     }
 
     @Override
-    public SQLProvider create(String tableName) {
+    public SQLProvider create(String tableName, SQLProvider.DatabaseStoreType storeType) {
         // WFLY-8307 - Oracle driver does not support lower case for table names
         String name = ORACLE.equals(database) ? tableName.toUpperCase() : tableName;
-        return new PropertySQLProvider(name);
+        return new PropertySQLProvider(name, storeType);
     }
 
     /**
@@ -139,7 +139,12 @@ public class PropertySQLProviderFactory implements SQLProvider.Factory {
 
         private final String tableName;
 
-        public PropertySQLProvider(String tableName) {
+        public PropertySQLProvider(String tableName, DatabaseStoreType storeType) {
+            if (ORACLE.equals(database)
+                    && tableName.length() > 10
+                    && storeType == DatabaseStoreType.PAGE) {
+                throw MessagingLogger.ROOT_LOGGER.tableNameIsTooLong();
+            }
             this.tableName = tableName;
         }
 

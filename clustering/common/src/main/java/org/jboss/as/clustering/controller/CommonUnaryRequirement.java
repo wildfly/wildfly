@@ -41,6 +41,7 @@ public enum CommonUnaryRequirement implements UnaryRequirement, UnaryServiceName
     DATA_SOURCE("org.wildfly.data-source", DataSource.class),
     KEY_STORE("org.wildfly.security.key-store", KeyStore.class),
     OUTBOUND_SOCKET_BINDING("org.wildfly.network.outbound-socket-binding", OutboundSocketBinding.class),
+    PATH("org.wildfly.management.path", String.class),
     SOCKET_BINDING("org.wildfly.network.socket-binding", SocketBinding.class),
     SSL_CONTEXT("org.wildfly.security.ssl-context", SSLContext.class),
     ;

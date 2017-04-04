@@ -22,17 +22,26 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
+
+import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.CommonRequirement;
+import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.service.Requirement;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/store=STORE
@@ -44,19 +53,40 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement("file-store", "FILE_STORE");
     static final PathElement PATH = pathElement("file");
 
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        RELATIVE_PATH("org.wildfly.clustering.infinispan.cache.store.file.relative-path", CommonRequirement.PATH_MANAGER),
+        ;
+        private final RuntimeCapability<Void> definition;
+
+        Capability(String name, Requirement... requirements) {
+            this.definition = RuntimeCapability.Builder.of(name, true).addRequirements(Stream.of(requirements).map(Requirement::getName).toArray(String[]::new)).build();
+        }
+
+        @Override
+        public RuntimeCapability<?> getDefinition() {
+            return this.definition;
+        }
+
+        @Override
+        public RuntimeCapability<?> resolve(PathAddress address) {
+            PathAddress cacheAddress = address.getParent();
+            PathAddress containerAddress = cacheAddress.getParent();
+            return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue(), cacheAddress.getLastElement().getValue());
+        }
+    }
+
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        RELATIVE_PATH("path", ModelType.STRING, null),
-        RELATIVE_TO("relative-to", ModelType.STRING, new ModelNode(ServerEnvironment.SERVER_DATA_DIR)),
+        RELATIVE_PATH("path", ModelType.STRING, builder -> builder.setAllowExpression(true)),
+        RELATIVE_TO("relative-to", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode(ServerEnvironment.SERVER_DATA_DIR)).setCapabilityReference(new CapabilityReference(Capability.RELATIVE_PATH, CommonUnaryRequirement.PATH))),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setDefaultValue(defaultValue)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .build();
+        Attribute(String name, ModelType type) {
+            this(name, type, UnaryOperator.identity());
+        }
+
+        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type).setRequired(false).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)).build();
         }
 
         @Override
@@ -68,18 +98,22 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
+        if (InfinispanModel.VERSION_4_2_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.RELATIVE_TO.getName());
+        }
+
         StoreResourceDefinition.buildTransformation(version, builder, PATH);
     }
 
-    FileStoreResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), allowRuntimeOnlyRegistration, descriptor -> descriptor.addAttributes(Attribute.class), address -> new FileStoreBuilder(address.getParent()), registration -> {
-                if (pathManager != null) {
+    FileStoreResourceDefinition() {
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH),
+                descriptor -> descriptor.addAttributes(Attribute.class).addCapabilities(Capability.class),
+                address -> new FileStoreBuilder(address.getParent()), registration -> registration.getPathManager().ifPresent(pathManager -> {
                     ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(pathManager)
                             .setPathAttribute(Attribute.RELATIVE_PATH.getDefinition())
                             .setRelativeToAttribute(Attribute.RELATIVE_TO.getDefinition())
                             .build();
                     registration.registerOperationHandler(pathHandler.getOperationDefinition(), pathHandler);
-                }
-            });
+                }));
     }
 }

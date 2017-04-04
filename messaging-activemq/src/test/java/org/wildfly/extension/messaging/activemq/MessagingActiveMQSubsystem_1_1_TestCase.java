@@ -44,6 +44,7 @@ import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -191,7 +192,8 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.withCapabilities(JGroupsRequirement.CHANNEL_FACTORY.resolve("udp"),
                 Capabilities.ELYTRON_DOMAIN_CAPABILITY,
-                Capabilities.ELYTRON_DOMAIN_CAPABILITY + ".elytronDomain");
+                Capabilities.ELYTRON_DOMAIN_CAPABILITY + ".elytronDomain",
+                CredentialReference.CREDENTIAL_STORE_CAPABILITY + ".cs1");
     }
 
     private static class ChangeToTrueConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<ChangeToTrueConfig> {

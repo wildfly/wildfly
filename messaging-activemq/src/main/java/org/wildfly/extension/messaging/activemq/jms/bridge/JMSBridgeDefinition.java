@@ -104,7 +104,6 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
     public static final ObjectTypeAttributeDefinition SOURCE_CREDENTIAL_REFERENCE =
             CredentialReference.getAttributeBuilder(SOURCE_CREDENTIAL_REFERENCE_NAME, SOURCE_CREDENTIAL_REFERENCE_NAME, true)
                     .setAttributeGroup(SOURCE)
-                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
                     .setAlternatives(SOURCE_PASSWORD.getName())
@@ -148,7 +147,6 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
     public static final ObjectTypeAttributeDefinition TARGET_CREDENTIAL_REFERENCE =
             CredentialReference.getAttributeBuilder(TARGET_CREDENTIAL_REFERENCE_NAME, TARGET_CREDENTIAL_REFERENCE_NAME, true)
                     .setAttributeGroup(TARGET)
-                    .setCapabilityReference(CredentialReference.CREDENTIAL_STORE_CAPABILITY)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
                     .setAlternatives(TARGET_PASSWORD.getName())

@@ -126,7 +126,13 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
                 builder.addCapabilityRequirement(Capabilities.REF_HTTP_AUTHENTICATION_FACTORY, HttpAuthenticationFactory.class, service.getHttpAuthenticationFactoryInjectedValue(), httpAuthenticationFactory);
             }
             if (context.hasOptionalCapability(REF_MOD_CLUSTER, HTTP_INVOKER_HOST_CAPABILITY.getDynamicName(address), null )){
-                builder.addCapabilityRequirement(REF_MOD_CLUSTER, Void.class);
+                // Our mod_cluster integration installs its service using the mod_cluster capability's service
+                // name with "undertow" appended.
+                // TODO formalize this. Is UndertowEventHandlerAdapterBuilder a capability itself? If so, how can we register it?
+                // Or is UndertowEventHandlerAdapterBuilder and its module part of undertow, not mod_cluster,
+                // and these names are just internal details?
+                ServiceName svcName = context.getCapabilityServiceName(REF_MOD_CLUSTER, Void.class).append("undertow");
+                builder.addDependency(svcName);
             }
 
             builder.setInitialMode(ServiceController.Mode.ACTIVE)

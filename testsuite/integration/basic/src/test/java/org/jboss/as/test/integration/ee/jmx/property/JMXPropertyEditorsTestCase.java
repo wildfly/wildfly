@@ -94,7 +94,11 @@ public class JMXPropertyEditorsTestCase {
     static {
         String osName = System.getProperty("os.name");
         if ( osName.contains( "Windows" ) ) {
-            USER_SYS_PROP = "USERNAME";
+            if (System.getenv().containsKey("USERNAME")) {
+                USER_SYS_PROP = "USERNAME";
+            } else {
+                USER_SYS_PROP = "USER";
+            }
         } else if ( osName.contains( "SunOS" ) ) {
             USER_SYS_PROP = "LOGNAME";
         } else {

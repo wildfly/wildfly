@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.jpa.epcpropagation.slsbxpc;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -35,6 +36,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -73,17 +75,18 @@ public class FailBecauseOfXPCNotInSFSBTestCase {
 
     @Test
     public void testSerialization() throws Exception {
+        final String errorCode = "WFLYJPA0070";
         StatelessBeanWithXPC bean = lookup("StatelessBeanWithXPC", StatelessBeanWithXPC.class);
         try {
             bean.test();
         } catch (EJBException expected) {
             //expected.printStackTrace();
             Throwable cause = expected.getCause();
-            while (cause != null && !(cause.getMessage().contains("container-managed extended persistence context can only be"))) {
+            while (cause != null && !(cause.getMessage().contains(errorCode))) {
                 cause = cause.getCause();
             }
             assertTrue("expected IllegalStateException was not thrown", cause instanceof IllegalStateException);
-            assertTrue("expected 'container-managed extended persistence context can only be' in error exception message", cause.getMessage().contains("container-managed extended persistence context can only be"));
+            Assert.assertThat("Wrong error message", cause.getMessage(), containsString(errorCode));
         } catch (Throwable unexpected) {
             fail("unexcepted exception " + unexpected.toString());
         }

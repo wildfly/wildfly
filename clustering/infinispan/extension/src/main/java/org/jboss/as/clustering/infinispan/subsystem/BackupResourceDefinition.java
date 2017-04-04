@@ -26,6 +26,7 @@ import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.configuration.cache.SitesConfiguration;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
@@ -38,7 +39,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -48,7 +48,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Paul Ferraro
  */
-public class BackupResourceDefinition extends ChildResourceDefinition {
+public class BackupResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -109,13 +109,11 @@ public class BackupResourceDefinition extends ChildResourceDefinition {
         // Nothing to transform
     }
 
-    private final boolean runtimeRegistration;
     private final ResourceServiceBuilderFactory<SitesConfiguration> parentBuilderFactory;
 
-    BackupResourceDefinition(ResourceServiceBuilderFactory<SitesConfiguration> parentBuilderFactory, boolean runtimeRegistration) {
+    BackupResourceDefinition(ResourceServiceBuilderFactory<SitesConfiguration> parentBuilderFactory) {
         super(WILDCARD_PATH, new InfinispanResourceDescriptionResolver(WILDCARD_PATH));
         this.parentBuilderFactory = parentBuilderFactory;
-        this.runtimeRegistration = runtimeRegistration;
     }
 
     @Override
@@ -128,7 +126,7 @@ public class BackupResourceDefinition extends ChildResourceDefinition {
                 ;
         new RestartParentResourceRegistration<>(this.parentBuilderFactory, descriptor).register(registration);
 
-        if (this.runtimeRegistration) {
+        if (registration.isRuntimeOnlyRegistrationValid()) {
             new OperationHandler<>(new BackupOperationExecutor(), BackupOperation.class).register(registration);
         }
     }

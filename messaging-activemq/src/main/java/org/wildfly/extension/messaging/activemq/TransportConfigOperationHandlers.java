@@ -86,6 +86,7 @@ public class TransportConfigOperationHandlers {
     static {
         CONNECTORS_KEYS_MAP.put(InVMTransportDefinition.SERVER_ID.getName(),
                 org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME);
+        CONNECTORS_KEYS_MAP.put("buffer-pooling", org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants.BUFFER_POOLING);
         CONNECTORS_KEYS_MAP.put(SSL_ENABLED,
                 TransportConstants.SSL_ENABLED_PROP_NAME);
         CONNECTORS_KEYS_MAP.put("http-enabled",
@@ -149,6 +150,7 @@ public class TransportConfigOperationHandlers {
                 org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME);
         ACCEPTOR_KEYS_MAP.put(BATCH_DELAY,
                 TransportConstants.BATCH_DELAY);
+        ACCEPTOR_KEYS_MAP.put("buffer-pooling", org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants.BUFFER_POOLING);
         ACCEPTOR_KEYS_MAP.put("cluster-connection",
                 TransportConstants.CLUSTER_CONNECTION);
         ACCEPTOR_KEYS_MAP.put("connection-ttl",

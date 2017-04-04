@@ -24,13 +24,18 @@ package org.jboss.as.clustering.controller;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 
 /**
  * Resource definition for subsystem resources that performs all registration via {@link #register(SubsystemRegistration)}.
  * @author Paul Ferraro
  */
-public abstract class SubsystemResourceDefinition extends AbstractResourceDefinition<SubsystemRegistration> {
+public abstract class SubsystemResourceDefinition<R extends SubsystemRegistration> extends AbstractResourceDefinition<R> {
+
+    protected static PathElement pathElement(String name) {
+        return PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
+    }
 
     protected SubsystemResourceDefinition(PathElement path, ResourceDescriptionResolver resolver) {
         super(path, resolver);
