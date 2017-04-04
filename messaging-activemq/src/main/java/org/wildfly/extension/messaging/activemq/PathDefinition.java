@@ -160,6 +160,7 @@ public class PathDefinition extends PersistentResourceDefinition {
             final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
                     .setPathAttribute(PATHS.get(registry.getPathAddress().getLastElement().getValue()))
                     .setRelativeToAttribute(PathDefinition.RELATIVE_TO)
+                    .setCheckAbsolutePath(true)
                     .build();
             registry.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
         }
