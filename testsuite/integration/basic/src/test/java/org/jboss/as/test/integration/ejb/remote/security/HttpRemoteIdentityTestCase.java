@@ -38,6 +38,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.http.HttpInvokerServerSetupTask;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
+import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -132,7 +133,14 @@ public class HttpRemoteIdentityTestCase {
 
         @Override
         protected ConfigurableElement[] getConfigurableElements() {
-            return new ConfigurableElement[]{new EJBApplicationSecurityDomainMapping("other", "ApplicationDomain")};
+            boolean domainMappingExists = false;
+            try (CLIWrapper cli = new CLIWrapper(true)) {
+                domainMappingExists = cli.sendLine("/subsystem=ejb3/application-security-domain=other:read-resource()", true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return domainMappingExists ? null
+                    : new ConfigurableElement[] { new EJBApplicationSecurityDomainMapping("other", "ApplicationDomain") };
         }
     }
 }
