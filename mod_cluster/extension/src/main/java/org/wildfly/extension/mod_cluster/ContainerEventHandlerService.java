@@ -40,7 +40,7 @@ import org.jboss.msc.value.Value;
  */
 public class ContainerEventHandlerService implements Service<ModClusterService> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(ModClusterExtension.SUBSYSTEM_NAME);
+    public static final ServiceName SERVICE_NAME = ModClusterConfigResourceDefinition.MOD_CLUSTER_CAPABILITY.getCapabilityServiceName();
     public static final ServiceName CONFIG_SERVICE_NAME = SERVICE_NAME.append("config");
 
     private LoadBalanceFactorProvider load;
