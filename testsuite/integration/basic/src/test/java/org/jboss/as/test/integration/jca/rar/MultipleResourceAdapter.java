@@ -29,6 +29,7 @@ import javax.resource.spi.BootstrapContext;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterInternalException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
 
 /**
@@ -37,6 +38,7 @@ import javax.transaction.xa.XAResource;
  * @version $Revision: $
  */
 public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
+    private transient WorkManager workManager;
 
     /**
      *
@@ -78,6 +80,10 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
         return name;
     }
 
+    public WorkManager getWorkManager() {
+        return workManager;
+    }
+
     /**
      * This is called during the activation of a message endpoint.
      *
@@ -110,6 +116,7 @@ public class MultipleResourceAdapter implements ResourceAdapter, Serializable {
     public void start(BootstrapContext ctx)
             throws ResourceAdapterInternalException {
         log.trace("start()");
+        workManager = ctx.getWorkManager();
     }
 
     /**
