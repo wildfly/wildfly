@@ -25,6 +25,7 @@ package org.wildfly.extension.undertow;
 import static org.wildfly.extension.undertow.SingleSignOnDefinition.Attribute.*;
 
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleCapabilityServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 
 import io.undertow.security.impl.InMemorySingleSignOnManager;
@@ -37,8 +38,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerBuilderProvider;
 
 /**
@@ -67,12 +66,9 @@ class HostSingleSignOnServiceHandler implements ResourceServiceHandler {
         ServiceTarget target = context.getServiceTarget();
 
         ServiceName managerServiceName = serviceName.append("manager");
-        if (DistributableHostSingleSignOnManagerBuilderProvider.INSTANCE.isPresent()) {
-            DistributableHostSingleSignOnManagerBuilderProvider provider = DistributableHostSingleSignOnManagerBuilderProvider.INSTANCE.get();
-            provider.getBuilder(managerServiceName, serverName, hostName).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        } else {
-            target.addService(managerServiceName, new ValueService<>(new ImmediateValue<>(new InMemorySingleSignOnManager()))).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        }
+        DistributableHostSingleSignOnManagerBuilderProvider.INSTANCE.map(provider -> provider.getBuilder(managerServiceName, serverName, hostName))
+                .orElse(new SimpleCapabilityServiceBuilder<>(managerServiceName, new InMemorySingleSignOnManager()))
+                .configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         SingleSignOnService service = new SingleSignOnService(domain, path, httpOnly, secure, cookieName);
         target.addService(serviceName, service)

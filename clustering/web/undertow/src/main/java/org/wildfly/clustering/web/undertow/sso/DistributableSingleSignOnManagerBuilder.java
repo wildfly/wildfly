@@ -29,9 +29,7 @@ import io.undertow.server.session.SessionListener;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.ServiceLoader;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -56,8 +54,6 @@ import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
  */
 public class DistributableSingleSignOnManagerBuilder implements CapabilityServiceBuilder<SingleSignOnManager> {
 
-    private static final SSOManagerFactoryBuilderProvider<Batch> PROVIDER = StreamSupport.stream(ServiceLoader.load(SSOManagerFactoryBuilderProvider.class, SSOManagerFactoryBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst().get();
-
     private final ServiceName name;
 
     @SuppressWarnings("rawtypes")
@@ -66,10 +62,10 @@ public class DistributableSingleSignOnManagerBuilder implements CapabilityServic
 
     private final Collection<CapabilityServiceBuilder<?>> builders;
 
-    public DistributableSingleSignOnManagerBuilder(ServiceName name, String serverName, String hostName) {
+    public DistributableSingleSignOnManagerBuilder(ServiceName name, String serverName, String hostName, SSOManagerFactoryBuilderProvider<Batch> provider) {
         this.name = name;
 
-        CapabilityServiceBuilder<SSOManagerFactory<AuthenticatedSession, String, String, Batch>> factoryBuilder = PROVIDER.<AuthenticatedSession, String, String>getBuilder(hostName);
+        CapabilityServiceBuilder<SSOManagerFactory<AuthenticatedSession, String, String, Batch>> factoryBuilder = provider.<AuthenticatedSession, String, String>getBuilder(hostName);
         ServiceName generatorServiceName = this.name.append("generator");
         CapabilityServiceBuilder<SessionIdGenerator> generatorBuilder = new SessionIdGeneratorBuilder(generatorServiceName, serverName);
 
