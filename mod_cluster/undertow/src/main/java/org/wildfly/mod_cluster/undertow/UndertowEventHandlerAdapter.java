@@ -163,31 +163,6 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
     }
 
     @Override
-    public void onShutdown() {
-        // Do nothing
-    }
-
-    @Override
-    public void onHostStart(Host host) {
-        // Do nothing
-    }
-
-    @Override
-    public void onHostStop(Host host) {
-        // Do nothing
-    }
-
-    @Override
-    public void onServerStart(org.wildfly.extension.undertow.Server server) {
-        // Do nothing
-    }
-
-    @Override
-    public void onServerStop(org.wildfly.extension.undertow.Server server) {
-        // Do nothing
-    }
-
-    @Override
     public void run() {
         try {
             for (Engine engine : this.server.getEngines()) {
