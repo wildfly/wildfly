@@ -26,6 +26,7 @@
                         <th>Local Licenses</th>
                     </tr>
                     <xsl:for-each select="licenseSummary/dependencies/dependency">
+                        <xsl:sort select="concat(groupId, '.', artifactId)"/>
                         <tr>
                             <td><xsl:value-of select="groupId"/></td>
                             <td><xsl:value-of select="artifactId"/></td>
