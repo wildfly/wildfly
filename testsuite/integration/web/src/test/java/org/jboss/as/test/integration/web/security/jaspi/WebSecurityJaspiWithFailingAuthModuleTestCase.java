@@ -44,6 +44,7 @@ import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.basic.WebSecurityBASICTestCase;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -51,7 +52,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests that JASPI authentication reports error if the authentication process fails.
- *
+ * <p>
  * The AuthModule always throws Exception, but doesn't set the http error code.
  *
  * @author <a href="mailto:bspyrkos@redhat.com">Bartosz Spyrko-Smietanko</a>
@@ -62,17 +63,19 @@ import org.junit.runner.RunWith;
 @Category(CommonCriteria.class)
 public class WebSecurityJaspiWithFailingAuthModuleTestCase {
 
+    private static final String JBOSS_WEB_CONTENT = "<?xml version=\"1.0\"?>\n" +
+            "<jboss-web>\n" +
+            "    <security-domain>" + WebJaspiTestsSecurityDomainSetup.WEB_SECURITY_DOMAIN + "</security-domain>\n" +
+            "</jboss-web>";
+
     @Deployment
     public static WebArchive deployment() throws Exception {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure-jaspi.war");
         war.addClass(SecuredServlet.class);
         war.addClass(FailingAuthModule.class);
 
-        war.addAsWebInfResource(WebSecurityBASICTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
+        war.addAsWebInfResource(new StringAsset(JBOSS_WEB_CONTENT), "jboss-web.xml");
         war.addAsWebInfResource(WebSecurityBASICTestCase.class.getPackage(), "web.xml", "web.xml");
-
-        war.addAsResource(WebSecurityBASICTestCase.class.getPackage(), "users.properties", "users.properties");
-        war.addAsResource(WebSecurityBASICTestCase.class.getPackage(), "roles.properties", "roles.properties");
 
         return war;
     }
