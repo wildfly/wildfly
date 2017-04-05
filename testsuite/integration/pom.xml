@@ -54,6 +54,7 @@
             <activation><property><name>allTests</name></property></activation>
             <modules>
                 <module>ws</module>
+                <module>jaxrs</module>
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
@@ -75,6 +76,7 @@
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
                 <module>ws</module>
+                <module>jaxrs</module>
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>

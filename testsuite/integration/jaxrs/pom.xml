@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Set these VM properties in your IDE debugger
+
+  -Djava.util.logging.manager=org.jboss.logmanager.LogManager
+  -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-8.0.0.Alpha4-SNAPSHOT
+  -DallowConnectingToRunningServer=true
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-ts-integ</artifactId>
+        <version>11.0.0.Alpha1-SNAPSHOT</version>
+    </parent>
+
+    <!-- ********************************************************************************** -->
+    <!-- ******************************** Jaxrs Integration ********************************** -->
+    <!-- ********************************************************************************** -->
+    <artifactId>wildfly-ts-integ-jaxrs</artifactId>
+
+    <name>WildFly Test Suite: Integration - Jaxrs</name>
+
+    <properties>
+        <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+    </properties>
+
+    <profiles>
+
+        <profile>
+            <id>jaxrs.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>!no.jaxrs.integration.tests</name>
+                </property>
+            </activation>
+
+            <!--
+                Server configuration executions.
+            -->
+            <build>
+                <plugins>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <runOrder>alphabetical</runOrder>
+                        </configuration>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+
+                            <execution>
+                                <id>jaxrs-integration-default.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
+                                    </environmentVariables>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables combine.children="append">
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
+                                        <!-- EJB client library hack, see WFLY-4973-->
+                                        <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                    </systemPropertyVariables>
+
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
+                                    </additionalClasspathElements>
+                                </configuration>
+                            </execution>
+                        </executions>
+
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+
+</project>
