@@ -26,73 +26,42 @@ package org.jboss.as.mail.extension;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.as.controller.PersistentResourceXMLParser;
 
 /**
- * @author Tomaz Cerar (c) 2013 Red Hat Inc.
+ * @author Tomaz Cerar (c) 2017 Red Hat Inc.
  */
-public class MailSubsystemParser2_1 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-    protected static final MailSubsystemParser2_1 INSTANCE = new MailSubsystemParser2_1();
-    private static final PersistentResourceXMLDescription xmlDescription;
+class MailSubsystemParser3_0 extends PersistentResourceXMLParser {
 
-    static {
-        xmlDescription = builder(MailSubsystemResource.INSTANCE)
+    @Override
+    public PersistentResourceXMLDescription getParserDescription() {
+        return builder(MailSubsystemResource.INSTANCE.getPathElement(), Namespace.MAIL_3_0.getUriString())
                 .addChild(
-                        builder(MailSessionDefinition.INSTANCE)
+                        builder(MailSessionDefinition.INSTANCE.getPathElement())
                                 .addAttributes(MailSessionDefinition.DEBUG, MailSessionDefinition.JNDI_NAME, MailSessionDefinition.FROM)
                                 .addChild(
-                                        builder(MailServerDefinition.INSTANCE_SMTP)
+                                        builder(MailServerDefinition.INSTANCE_SMTP.getPathElement())
                                                 .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE)
                                                 .setXmlElementName(MailSubsystemModel.SMTP_SERVER)
 
                                 )
                                 .addChild(
-                                        builder(MailServerDefinition.INSTANCE_POP3)
+                                        builder(MailServerDefinition.INSTANCE_POP3.getPathElement())
                                                 .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE)
                                                 .setXmlElementName(MailSubsystemModel.POP3_SERVER)
                                 )
                                 .addChild(
-                                        builder(MailServerDefinition.INSTANCE_IMAP)
+                                        builder(MailServerDefinition.INSTANCE_IMAP.getPathElement())
                                                 .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE)
                                                 .setXmlElementName(MailSubsystemModel.IMAP_SERVER)
                                 )
                                 .addChild(
-                                        builder(MailServerDefinition.INSTANCE_CUSTOM)
+                                        builder(MailServerDefinition.INSTANCE_CUSTOM.getPathElement())
                                                 .addAttributes(MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF_OPTIONAL, MailServerDefinition.SSL, MailServerDefinition.TLS, MailServerDefinition.USERNAME, MailServerDefinition.PASSWORD, MailServerDefinition.CREDENTIAL_REFERENCE, MailServerDefinition.PROPERTIES)
                                                 .setXmlElementName(MailSubsystemModel.CUSTOM_SERVER)
                                 )
                 )
                 .build();
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        ModelNode model = new ModelNode();
-        model.get(MailSubsystemResource.INSTANCE.getPathElement().getKeyValuePair()).set(context.getModelNode());//this is bit of workaround for SPRD to work properly
-        xmlDescription.persist(writer, model, Namespace.CURRENT.getUriString());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-        xmlDescription.parse(reader, PathAddress.EMPTY_ADDRESS, list);
     }
 }

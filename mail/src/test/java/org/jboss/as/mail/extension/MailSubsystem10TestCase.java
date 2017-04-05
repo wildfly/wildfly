@@ -48,8 +48,8 @@ public class MailSubsystem10TestCase extends AbstractSubsystemBaseTest {
         List<ModelNode> operations = super.parse(getSubsystemXml());
 
         ///Check that we have the expected number of operations
-        log.info("operations: " + operations);
-        log.info("operations.size: " + operations.size());
+        //log.info("operations: " + operations);
+        //log.info("operations.size: " + operations.size());
         Assert.assertEquals(7, operations.size());
 
         //Check that each operation has the correct content

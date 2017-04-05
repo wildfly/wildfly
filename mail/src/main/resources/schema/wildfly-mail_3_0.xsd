@@ -25,8 +25,8 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:domain:mail:2.1"
-           targetNamespace="urn:jboss:domain:mail:2.1"
+           xmlns="urn:jboss:domain:mail:3.0"
+           targetNamespace="urn:jboss:domain:mail:3.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0">

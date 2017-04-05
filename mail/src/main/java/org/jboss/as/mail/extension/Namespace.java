@@ -36,12 +36,12 @@ enum Namespace {
     MAIL_1_1("urn:jboss:domain:mail:1.1"),
     MAIL_1_2("urn:jboss:domain:mail:1.2"),
     MAIL_2_0("urn:jboss:domain:mail:2.0"),
-    MAIL_2_1("urn:jboss:domain:mail:2.1");
+    MAIL_3_0("urn:jboss:domain:mail:3.0");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = MAIL_2_1;
+    public static final Namespace CURRENT = MAIL_3_0;
 
     private final String name;
 

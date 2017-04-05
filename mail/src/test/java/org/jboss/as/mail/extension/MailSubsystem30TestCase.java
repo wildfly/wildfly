@@ -53,19 +53,19 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class MailSubsystem21TestCase extends AbstractSubsystemBaseTest {
-    public MailSubsystem21TestCase() {
+public class MailSubsystem30TestCase extends AbstractSubsystemBaseTest {
+    public MailSubsystem30TestCase() {
         super(MailExtension.SUBSYSTEM_NAME, new MailExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_2_1.xml");
+        return readResource("subsystem_3_0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-mail_2_1.xsd";
+        return "schema/wildfly-mail_3_0.xsd";
     }
 
     @Override
