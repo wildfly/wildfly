@@ -44,7 +44,6 @@ public class UndertowEventHandlerAdapterBuilder implements ContainerEventHandler
         InjectedValue<ContainerEventHandler> eventHandler = new InjectedValue<>();
         InjectedValue<UndertowService> undertowService = new InjectedValue<>();
         InjectedValue<SuspendController> suspendController = new InjectedValue<>();
-        @SuppressWarnings("rawtypes")
         InjectedValue<UndertowListener> listener = new InjectedValue<>();
         //todo use capability builder
         return new AsynchronousServiceBuilder<>(SERVICE_NAME, new UndertowEventHandlerAdapter(eventHandler, undertowService, listener, suspendController, statusInterval)).build(target)
