@@ -18,7 +18,11 @@ package org.jboss.as.test.integration.domain.mixed;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLONE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORE_UNUSED_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
@@ -39,7 +43,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.jboss.as.controller.ExpressionResolverImpl;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -47,9 +53,11 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
+import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.weld.exceptions.IllegalStateException;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -64,7 +72,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class DomainHostExcludesTest {
 
-    private static final String[] EXCLUDED_EXTENSIONS = {
+    private static final String[] EXCLUDED_EXTENSIONS_6X = {
             "org.wildfly.extension.batch.jberet",
             "org.wildfly.extension.bean-validation",
             "org.wildfly.extension.clustering.singleton",
@@ -77,7 +85,14 @@ public abstract class DomainHostExcludesTest {
             "org.wildfly.iiop-openjdk"
     };
 
-    public static final Set<String> EXTENSIONS_SET = new HashSet<>(Arrays.asList(EXCLUDED_EXTENSIONS));
+    private static final String[] EXCLUDED_EXTENSIONS_7X = {
+            "org.jboss.as.web",
+            "org.jboss.as.messaging",
+            "org.jboss.as.threads"
+    };
+
+    public static final Set<String> EXTENSIONS_SET_6X = new HashSet<>(Arrays.asList(EXCLUDED_EXTENSIONS_6X));
+    public static final Set<String> EXTENSIONS_SET_7X = new HashSet<>(Arrays.asList(EXCLUDED_EXTENSIONS_7X));
 
     private static final PathElement HOST = PathElement.pathElement("host", "slave");
     private static final PathAddress HOST_EXCLUDE = PathAddress.pathAddress("host-exclude", "test");
@@ -86,12 +101,39 @@ public abstract class DomainHostExcludesTest {
 
     private static DomainTestSupport testSupport;
 
+    private static Version.AsVersion version;
+
     /** Subclasses call from a @BeforeClass method */
     protected static void setup(Class<?> clazz, String hostRelease, ModelVersion slaveApiVersion) throws IOException, MgmtOperationException, TimeoutException, InterruptedException {
+        version = clazz.getAnnotation(Version.class).value();
 
         testSupport = MixedDomainTestSuite.getSupport(clazz);
 
+        if (version.getMajor() == 7) {
+            // note that some of these 7+ specific changes may warrant creating a newer version of testing-host.xml for the newer slaves
+            // at some point (the currently used host.xml is quite an old version). If these exceptions become more complicated than this, we should
+            // probably do that.
+
+            //Unset the ignore-unused-configuration flag
+            ModelNode dc = DomainTestUtils.executeForResult(
+                    Util.getReadAttributeOperation(PathAddress.pathAddress(HOST), DOMAIN_CONTROLLER),
+                    testSupport.getDomainSlaveLifecycleUtil().getDomainClient());
+
+            dc = dc.get("remote");
+
+            dc.get(IGNORE_UNUSED_CONFIG).set(false);
+            dc.get(OP).set("write-remote-domain-controller");
+            dc.get(OP_ADDR).set(PathAddress.pathAddress(HOST).toModelNode());
+
+            DomainTestUtils.executeForResult(dc, testSupport.getDomainSlaveLifecycleUtil().getDomainClient());
+        }
+
         stopSlave();
+
+        // restarting the slave will recopy the testing-host.xml file over the top, clobbering the ignore-unused-configuration above,
+        // so use setRewriteConfigFiles(false) to prevent this.
+        WildFlyManagedConfiguration slaveCfg = testSupport.getDomainSlaveConfiguration();
+        slaveCfg.setRewriteConfigFiles(false);
 
         ModelControllerClient client = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
         setupExclude(client, hostRelease, slaveApiVersion);
@@ -142,7 +184,7 @@ public abstract class DomainHostExcludesTest {
         asbgs.add("full-ha-sockets");
 
         ModelNode extensions = addOp.get("excluded-extensions");
-        for (String ext : EXCLUDED_EXTENSIONS) {
+        for (String ext : getExcludedExtensions()) {
             extensions.add(ext);
         }
 
@@ -150,9 +192,9 @@ public abstract class DomainHostExcludesTest {
     }
 
     private static void addExtensions(boolean evens, ModelControllerClient client) throws IOException, MgmtOperationException {
-        for (int i = 0; i < EXCLUDED_EXTENSIONS.length; i++) {
+        for (int i = 0; i < getExcludedExtensions().length; i++) {
             if ((i % 2 == 0) == evens) {
-                executeForResult(Util.createAddOperation(PathAddress.pathAddress(EXTENSION, EXCLUDED_EXTENSIONS[i])), client);
+                executeForResult(Util.createAddOperation(PathAddress.pathAddress(EXTENSION, getExcludedExtensions()[i])), client);
             }
         }
     }
@@ -190,7 +232,7 @@ public abstract class DomainHostExcludesTest {
     }
 
     @Test
-    public void test002ServerBoot() throws IOException, MgmtOperationException, InterruptedException {
+    public void test002ServerBoot() throws IOException, MgmtOperationException, InterruptedException, OperationFailedException {
 
         ModelControllerClient masterClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
 
@@ -252,7 +294,7 @@ public abstract class DomainHostExcludesTest {
         Assert.assertTrue(result.isDefined());
         Assert.assertTrue(result.asInt() > 0);
         for (ModelNode ext : result.asList()) {
-            Assert.assertFalse(ext.asString(), EXTENSIONS_SET.contains(ext.asString()));
+            Assert.assertFalse(ext.asString(), getExtensionsSet().contains(ext.asString()));
         }
     }
 
@@ -274,7 +316,7 @@ public abstract class DomainHostExcludesTest {
         Assert.assertTrue(result.toString(), expected.isEmpty());
     }
 
-    private void checkSockets(ModelControllerClient client, PathAddress baseAddress) throws IOException, MgmtOperationException {
+    private void checkSockets(ModelControllerClient client, PathAddress baseAddress) throws IOException, MgmtOperationException, OperationFailedException {
         ModelNode result = readChildrenNames(client, baseAddress, SOCKET_BINDING);
         Assert.assertTrue(result.isDefined());
         Assert.assertTrue(result.toString(), result.asInt() > 1);
@@ -282,6 +324,9 @@ public abstract class DomainHostExcludesTest {
         ModelNode op = Util.getReadAttributeOperation(baseAddress.append(SOCKET), PORT);
         result = executeForResult(op, client);
         Assert.assertTrue(result.isDefined());
+
+        result = new TestExpressionResolver().resolveExpressions(result);
+
         Assert.assertEquals(result.toString(), 8080, result.asInt());
     }
 
@@ -329,6 +374,29 @@ public abstract class DomainHostExcludesTest {
         DomainLifecycleUtil slaveUtil = testSupport.getDomainSlaveLifecycleUtil();
         if (!slaveUtil.isHostControllerStarted()) {
             startSlave();
+        }
+    }
+
+    private Set<String> getExtensionsSet() {
+        if (version.getMajor() == 6) {
+            return EXTENSIONS_SET_6X;
+        } else if (version.getMajor() == 7) {
+            return EXTENSIONS_SET_7X;
+        }
+        throw new IllegalStateException("Unknown version " + version);
+    }
+
+    private static String[] getExcludedExtensions() {
+        if (version.getMajor() == 6) {
+            return EXCLUDED_EXTENSIONS_6X;
+        } else if (version.getMajor() == 7) {
+            return EXCLUDED_EXTENSIONS_7X;
+        }
+        throw new IllegalStateException("Unknown version " + version);
+    }
+
+    private static class TestExpressionResolver extends ExpressionResolverImpl {
+        public TestExpressionResolver() {
         }
     }
 }

@@ -16,24 +16,26 @@ limitations under the License.
 
 package org.jboss.as.test.integration.domain.mixed.eap700;
 
-import org.jboss.as.test.integration.domain.mixed.MixedDomainTestSuite;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.test.integration.domain.mixed.DomainHostExcludesTest;
 import org.jboss.as.test.integration.domain.mixed.Version;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
 
 /**
- * Tests of using EAP 7.0 domain.xml with a current DC and a 6.4 slave.
+ * Tests of the ability of a DC to exclude resources from visibility to an EAP 7.0.0 slave.
  *
  * @author Brian Stansberry
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses(value= {LegacyConfig700TestCase.class, DomainHostExcludes700TestCase.class})
 @Version(Version.AsVersion.EAP_7_0_0)
-public class LegacyConfig700TestSuite extends MixedDomainTestSuite {
+public class DomainHostExcludes700TestCase extends DomainHostExcludesTest {
 
     @BeforeClass
-    public static void initializeDomain() {
-        MixedDomainTestSuite.getSupportForLegacyConfig(LegacyConfig700TestSuite.class, Version.AsVersion.EAP_7_0_0);
+    public static void beforeClass() throws InterruptedException, TimeoutException, MgmtOperationException, IOException {
+        LegacyConfig700TestSuite.initializeDomain();
+        setup(DomainHostExcludes700TestCase.class,null, ModelVersion.create(4, 1));
     }
 }
