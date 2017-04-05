@@ -33,7 +33,7 @@ public enum SingletonSchema implements Schema<SingletonSchema> {
 
     VERSION_1_0(1, 0),
     ;
-    public static final SingletonSchema CURRENT = VERSION_1_0;
+    public static final SingletonSchema CURRENT = VERSION_2_0;
 
     private final int major;
     private final int minor;
