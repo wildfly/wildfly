@@ -27,7 +27,6 @@ import static java.security.AccessController.doPrivileged;
 import io.undertow.servlet.api.Deployment;
 
 import java.security.PrivilegedAction;
-import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -37,7 +36,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
-import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.ContainerEventHandler;
@@ -47,11 +45,9 @@ import org.jboss.modcluster.container.Server;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowEventListener;
-import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.extension.undertow.UndertowService;
 
 /**
@@ -63,22 +59,14 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
     // No logger interface for this module and no reason to create one for this class only
     private static final Logger log = Logger.getLogger("org.jboss.mod_cluster.undertow");
 
-    private final Value<UndertowListener> listener;
-    private final Value<UndertowService> service;
-    private final Value<ContainerEventHandler> eventHandler;
-    private final Value<SuspendController> suspendController;
+    private final UndertowEventHandlerAdapterConfiguration configuration;
     private final Set<Context> contexts = new HashSet<>();
     private volatile ScheduledExecutorService executor;
     private volatile Server server;
     private volatile Connector connector;
-    private final Duration statusInterval;
 
-    public UndertowEventHandlerAdapter(Value<ContainerEventHandler> eventHandler, Value<UndertowService> service, @SuppressWarnings("rawtypes") Value<UndertowListener> listener, Value<SuspendController> suspendController, Duration statusInterval) {
-        this.eventHandler = eventHandler;
-        this.service = service;
-        this.listener = listener;
-        this.suspendController = suspendController;
-        this.statusInterval = statusInterval;
+    public UndertowEventHandlerAdapter(UndertowEventHandlerAdapterConfiguration configuration) {
+        this.configuration = configuration;
     }
 
     @Override
@@ -88,10 +76,10 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
 
     @Override
     public void start(StartContext context) {
-        UndertowService service = this.service.getValue();
-        ContainerEventHandler eventHandler = this.eventHandler.getValue();
-        this.connector = new UndertowConnector(this.listener.getValue());
-        this.server = new UndertowServer(service, connector);
+        UndertowService service = this.configuration.getUndertowService();
+        ContainerEventHandler eventHandler = this.configuration.getContainerEventHandler();
+        this.connector = new UndertowConnector(this.configuration.getListener());
+        this.server = new UndertowServer(service, this.connector);
 
         // Register ourselves as a listener to the container events
         service.registerListener(this);
@@ -103,77 +91,77 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
         // Start the periodic STATUS thread
         ThreadGroup group = new ThreadGroup(UndertowEventHandlerAdapter.class.getSimpleName());
         ThreadFactory factory = doPrivileged(new PrivilegedAction<ThreadFactory>() {
+            @Override
             public ThreadFactory run() {
                 return new JBossThreadFactory(group, Boolean.FALSE, null, "%G - %t", null, null);
             }
         });
         this.executor = Executors.newScheduledThreadPool(1, factory);
-        this.executor.scheduleWithFixedDelay(this, 0, this.statusInterval.toMillis(), TimeUnit.MILLISECONDS);
-        suspendController.getValue().registerActivity(this);
+        this.executor.scheduleWithFixedDelay(this, 0, this.configuration.getStatusInterval().toMillis(), TimeUnit.MILLISECONDS);
+        this.configuration.getSuspendController().registerActivity(this);
     }
 
     @Override
     public void stop(StopContext context) {
-        suspendController.getValue().unRegisterActivity(this);
-        this.service.getValue().unregisterListener(this);
+        this.configuration.getSuspendController().unRegisterActivity(this);
+        this.configuration.getUndertowService().unregisterListener(this);
 
         this.executor.shutdownNow();
         try {
-            this.executor.awaitTermination(this.statusInterval.toMillis(), TimeUnit.MILLISECONDS);
+            this.executor.awaitTermination(this.configuration.getStatusInterval().toMillis(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException ignore) {
             // Move on.
         }
 
-        ContainerEventHandler eventHandler = this.eventHandler.getValue();
-        eventHandler.stop(this.server);
+        this.configuration.getContainerEventHandler().stop(this.server);
     }
 
     private Context createContext(Deployment deployment, Host host) {
-        return new UndertowContext(deployment, new UndertowHost(host, new UndertowEngine(host.getServer().getValue(), this.service.getValue(), this.connector)));
+        return new UndertowContext(deployment, new UndertowHost(host, new UndertowEngine(host.getServer().getValue(), this.configuration.getUndertowService(), this.connector)));
     }
+
     private Context createContext(String deployment, Host host) {
-        return new SimpleContext(deployment, new UndertowHost(host, new UndertowEngine(host.getServer().getValue(), this.service.getValue(), this.connector)));
+        return new SimpleContext(deployment, new UndertowHost(host, new UndertowEngine(host.getServer().getValue(), this.configuration.getUndertowService(), this.connector)));
     }
 
-    @Override
-    public synchronized void onDeploymentStart(Deployment deployment, Host host) {
-        Context context = this.createContext(deployment, host);
-        this.eventHandler.getValue().add(context);
+    private synchronized void onStart(Context context) {
+        ContainerEventHandler handler = this.configuration.getContainerEventHandler();
+        handler.add(context);
 
         // TODO break into onDeploymentAdd once implemented in Undertow
-        this.eventHandler.getValue().start(context);
-        contexts.add(context);
+        handler.start(context);
+        this.contexts.add(context);
     }
 
-    @Override
-    public synchronized void onDeploymentStop(Deployment deployment, Host host) {
-        Context context = this.createContext(deployment, host);
-        this.eventHandler.getValue().stop(context);
+    private synchronized void onStop(Context context) {
+        ContainerEventHandler handler = this.configuration.getContainerEventHandler();
+        handler.stop(context);
 
         // TODO break into onDeploymentRemove once implemented in Undertow
-        this.eventHandler.getValue().remove(context);
-        contexts.remove(context);
+        handler.remove(context);
+        this.contexts.remove(context);
     }
 
     @Override
-    public synchronized void onDeploymentStart(String deployment, Host host) {
-        Context context = this.createContext(deployment, host);
-        this.eventHandler.getValue().add(context);
-
-        // TODO break into onDeploymentAdd once implemented in Undertow
-        this.eventHandler.getValue().start(context);
-        contexts.add(context);
+    public void onDeploymentStart(Deployment deployment, Host host) {
+        this.onStart(this.createContext(deployment, host));
     }
 
     @Override
-    public synchronized void onDeploymentStop(String deployment, Host host) {
-        Context context = this.createContext(deployment, host);
-        this.eventHandler.getValue().stop(context);
-
-        // TODO break into onDeploymentRemove once implemented in Undertow
-        this.eventHandler.getValue().remove(context);
-        contexts.remove(context);
+    public void onDeploymentStop(Deployment deployment, Host host) {
+        this.onStop(this.createContext(deployment, host));
     }
+
+    @Override
+    public void onDeploymentStart(String deployment, Host host) {
+        this.onStart(this.createContext(deployment, host));
+    }
+
+    @Override
+    public void onDeploymentStop(String deployment, Host host) {
+        this.onStop(this.createContext(deployment, host));
+    }
+
     @Override
     public void onShutdown() {
         // Do nothing
@@ -203,7 +191,7 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
     public void run() {
         try {
             for (Engine engine : this.server.getEngines()) {
-                this.eventHandler.getValue().status(engine);
+                this.configuration.getContainerEventHandler().status(engine);
             }
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
@@ -213,8 +201,8 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
     @Override
     public synchronized void preSuspend(ServerActivityCallback listener) {
         try {
-            for (Context context : contexts) {
-                this.eventHandler.getValue().stop(context);
+            for (Context context : this.contexts) {
+                this.configuration.getContainerEventHandler().stop(context);
             }
         } finally {
             listener.done();
@@ -228,8 +216,8 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
 
     @Override
     public void resume() {
-        for (Context context : contexts) {
-            this.eventHandler.getValue().start(context);
+        for (Context context : this.contexts) {
+            this.configuration.getContainerEventHandler().start(context);
         }
     }
 }

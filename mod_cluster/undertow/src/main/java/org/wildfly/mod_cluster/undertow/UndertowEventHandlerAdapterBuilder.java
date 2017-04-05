@@ -42,7 +42,7 @@ import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.extension.undertow.UndertowService;
 
-public class UndertowEventHandlerAdapterBuilder implements CapabilityServiceBuilder<Void> {
+public class UndertowEventHandlerAdapterBuilder implements CapabilityServiceBuilder<Void>, UndertowEventHandlerAdapterConfiguration {
     static final ServiceName SERVICE_NAME = ContainerEventHandlerService.SERVICE_NAME.append("undertow");
 
     private final String listenerName;
@@ -73,11 +73,36 @@ public class UndertowEventHandlerAdapterBuilder implements CapabilityServiceBuil
 
     @Override
     public ServiceBuilder<Void> build(ServiceTarget target) {
-        ServiceBuilder<Void> builder = new AsynchronousServiceBuilder<>(SERVICE_NAME, new UndertowEventHandlerAdapter(this.eventHandler, this.service, this.listener, this.suspendController, this.statusInterval)).build(target)
+        ServiceBuilder<Void> builder = new AsynchronousServiceBuilder<>(SERVICE_NAME, new UndertowEventHandlerAdapter(this)).build(target)
                 .addDependency(ContainerEventHandlerService.SERVICE_NAME, ContainerEventHandler.class, this.eventHandler)
                 .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, this.suspendController)
                 ;
         Stream.of(this.service, this.listener).forEach(dependency -> dependency.register(builder));
         return builder;
+    }
+
+    @Override
+    public Duration getStatusInterval() {
+        return this.statusInterval;
+    }
+
+    @Override
+    public UndertowService getUndertowService() {
+        return this.service.getValue();
+    }
+
+    @Override
+    public ContainerEventHandler getContainerEventHandler() {
+        return this.eventHandler.getValue();
+    }
+
+    @Override
+    public SuspendController getSuspendController() {
+        return this.suspendController.getValue();
+    }
+
+    @Override
+    public UndertowListener getListener() {
+        return this.listener.getValue();
     }
 }
