@@ -27,6 +27,7 @@ import static java.security.AccessController.doPrivileged;
 import io.undertow.servlet.api.Deployment;
 
 import java.security.PrivilegedAction;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -62,7 +63,6 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
     // No logger interface for this module and no reason to create one for this class only
     private static final Logger log = Logger.getLogger("org.jboss.mod_cluster.undertow");
 
-    @SuppressWarnings("rawtypes")
     private final Value<UndertowListener> listener;
     private final Value<UndertowService> service;
     private final Value<ContainerEventHandler> eventHandler;
@@ -71,9 +71,9 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
     private volatile ScheduledExecutorService executor;
     private volatile Server server;
     private volatile Connector connector;
-    private int statusInterval;
+    private final Duration statusInterval;
 
-    public UndertowEventHandlerAdapter(Value<ContainerEventHandler> eventHandler, Value<UndertowService> service, @SuppressWarnings("rawtypes") Value<UndertowListener> listener, Value<SuspendController> suspendController, int statusInterval) {
+    public UndertowEventHandlerAdapter(Value<ContainerEventHandler> eventHandler, Value<UndertowService> service, @SuppressWarnings("rawtypes") Value<UndertowListener> listener, Value<SuspendController> suspendController, Duration statusInterval) {
         this.eventHandler = eventHandler;
         this.service = service;
         this.listener = listener;
@@ -108,7 +108,7 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
             }
         });
         this.executor = Executors.newScheduledThreadPool(1, factory);
-        this.executor.scheduleWithFixedDelay(this, 0, statusInterval, TimeUnit.SECONDS);
+        this.executor.scheduleWithFixedDelay(this, 0, this.statusInterval.toMillis(), TimeUnit.MILLISECONDS);
         suspendController.getValue().registerActivity(this);
     }
 
@@ -119,7 +119,7 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
 
         this.executor.shutdownNow();
         try {
-            this.executor.awaitTermination(statusInterval, TimeUnit.SECONDS);
+            this.executor.awaitTermination(this.statusInterval.toMillis(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException ignore) {
             // Move on.
         }

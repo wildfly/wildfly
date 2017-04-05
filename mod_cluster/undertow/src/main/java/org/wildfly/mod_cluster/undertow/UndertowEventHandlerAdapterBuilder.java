@@ -22,6 +22,8 @@
 
 package org.wildfly.mod_cluster.undertow;
 
+import java.time.Duration;
+
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.modcluster.container.ContainerEventHandler;
@@ -42,7 +44,7 @@ public class UndertowEventHandlerAdapterBuilder implements ContainerEventHandler
     public static final ServiceName SERVICE_NAME = ContainerEventHandlerService.SERVICE_NAME.append("undertow");
 
     @Override
-    public ServiceBuilder<?> build(ServiceTarget target, CapabilityServiceSupport serviceSupport, String connector, int statusInterval) {
+    public ServiceBuilder<?> build(ServiceTarget target, CapabilityServiceSupport serviceSupport, String connector, Duration statusInterval) {
         InjectedValue<ContainerEventHandler> eventHandler = new InjectedValue<>();
         InjectedValue<UndertowService> undertowService = new InjectedValue<>();
         InjectedValue<SuspendController> suspendController = new InjectedValue<>();
