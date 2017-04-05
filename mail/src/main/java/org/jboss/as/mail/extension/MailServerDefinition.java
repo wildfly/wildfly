@@ -61,15 +61,15 @@ class MailServerDefinition extends PersistentResourceDefinition {
 
     static final SensitiveTargetAccessConstraintDefinition MAIL_SERVER_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(MAIL_SERVER_SECURITY);
 
-    protected static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF =
+    static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF, ModelType.STRING, false)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
                     .build();
 
-    protected static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF_OPTIONAL = SimpleAttributeDefinitionBuilder.create(OUTBOUND_SOCKET_BINDING_REF)
-            .setAllowNull(true)
+    static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF_OPTIONAL = SimpleAttributeDefinitionBuilder.create(OUTBOUND_SOCKET_BINDING_REF)
+            .setRequired(false)
             .build();
 
     protected static final SimpleAttributeDefinition SSL =
@@ -115,7 +115,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
                     .setAlternatives(CredentialReference.CREDENTIAL_REFERENCE)
                     .build();
 
-    protected static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.PROPERTIES, true)
+    static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.PROPERTIES, true)
             .setAttributeMarshaller(AttributeMarshaller.PROPERTIES_MARSHALLER_UNWRAPPED)
             .setAttributeParser(AttributeParser.PROPERTIES_PARSER_UNWRAPPED)
             .setAllowExpression(true)
@@ -126,10 +126,10 @@ class MailServerDefinition extends PersistentResourceDefinition {
     static final AttributeDefinition[] ATTRIBUTES_CUSTOM = {OUTBOUND_SOCKET_BINDING_REF_OPTIONAL, SSL, TLS, USERNAME, PASSWORD, CREDENTIAL_REFERENCE, PROPERTIES};
 
 
-    public static final MailServerDefinition INSTANCE_SMTP = new MailServerDefinition(MailSubsystemModel.SMTP_SERVER_PATH, ATTRIBUTES);
-    public static final MailServerDefinition INSTANCE_IMAP = new MailServerDefinition(MailSubsystemModel.IMAP_SERVER_PATH, ATTRIBUTES);
-    public static final MailServerDefinition INSTANCE_POP3 = new MailServerDefinition(MailSubsystemModel.POP3_SERVER_PATH, ATTRIBUTES);
-    public static final MailServerDefinition INSTANCE_CUSTOM = new MailServerDefinition(MailSubsystemModel.CUSTOM_SERVER_PATH, ATTRIBUTES_CUSTOM);
+    static final MailServerDefinition INSTANCE_SMTP = new MailServerDefinition(MailSubsystemModel.SMTP_SERVER_PATH, ATTRIBUTES);
+    static final MailServerDefinition INSTANCE_IMAP = new MailServerDefinition(MailSubsystemModel.IMAP_SERVER_PATH, ATTRIBUTES);
+    static final MailServerDefinition INSTANCE_POP3 = new MailServerDefinition(MailSubsystemModel.POP3_SERVER_PATH, ATTRIBUTES);
+    static final MailServerDefinition INSTANCE_CUSTOM = new MailServerDefinition(MailSubsystemModel.CUSTOM_SERVER_PATH, ATTRIBUTES_CUSTOM);
 
     private final List<AttributeDefinition> attributes;
 

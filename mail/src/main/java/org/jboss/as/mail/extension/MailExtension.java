@@ -22,10 +22,6 @@
 
 package org.jboss.as.mail.extension;
 
-import static org.jboss.as.mail.extension.MailSubsystemModel.CUSTOM_SERVER_PATH;
-import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
-import static org.jboss.as.mail.extension.MailSubsystemModel.TLS;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -36,15 +32,11 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 
 /**
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
- * @since 7.1.0
+ * @since Jboss AS 7.1.0
  */
 public class MailExtension implements Extension {
 
@@ -70,7 +62,7 @@ public class MailExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_3_0.getUriString(), MailSubsystemParser3_0::new);
     }
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
 
 
     @Override
@@ -80,39 +72,7 @@ public class MailExtension implements Extension {
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(MailSubsystemResource.INSTANCE);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
-        if (context.isRegisterTransformers()) {
-            registerTransformers(subsystem);
-        }
         subsystem.registerXMLElementWriter(new MailSubsystemParser3_0());
-    }
-
-    private void registerTransformers(SubsystemRegistration subsystem) {
-        ChainedTransformationDescriptionBuilder chained = ResourceTransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
-        ModelVersion MODEL_VERSION_EAP64 = ModelVersion.create(1, 4, 0);
-        ModelVersion MODEL_VERSION_EAP70 = ModelVersion.create(2, 0, 0);
-
-        ResourceTransformationDescriptionBuilder builder70 = chained.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP70);
-        builder70.addChildResource(MAIL_SESSION_PATH).addChildResource(PathElement.pathElement(SERVER_TYPE))
-                .getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, MailServerDefinition.CREDENTIAL_REFERENCE.getName())
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, MailServerDefinition.CREDENTIAL_REFERENCE.getName())
-                .end()
-                .addChildResource(CUSTOM_SERVER_PATH)
-                    .getAttributeBuilder()
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, MailServerDefinition.CREDENTIAL_REFERENCE.getName())
-                        .setDiscard(DiscardAttributeChecker.UNDEFINED, MailServerDefinition.CREDENTIAL_REFERENCE.getName());
-
-        ResourceTransformationDescriptionBuilder builder64 = chained.createBuilder(MODEL_VERSION_EAP70, MODEL_VERSION_EAP64);
-        ResourceTransformationDescriptionBuilder sessionBuilder = builder64.addChildResource(MAIL_SESSION_PATH)
-            .addChildResource(PathElement.pathElement(SERVER_TYPE))
-                .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, TLS)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, TLS)
-                .end();
-        sessionBuilder.discardChildResource(CUSTOM_SERVER_PATH);
-
-        chained.buildAndRegister(subsystem, new ModelVersion[] {MODEL_VERSION_EAP70,
-                MODEL_VERSION_EAP64});
     }
 
 }

@@ -24,28 +24,14 @@
 
 package org.jboss.as.mail.extension;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Properties;
-
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.junit.Assert;
 import org.junit.Test;
@@ -53,7 +39,7 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class MailSubsystem30TestCase extends AbstractSubsystemBaseTest {
+public class MailSubsystem30TestCase extends MailSubsystemTestBase {
     public MailSubsystem30TestCase() {
         super(MailExtension.SUBSYSTEM_NAME, new MailExtension());
     }
@@ -70,7 +56,7 @@ public class MailSubsystem30TestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
+        return new String[]{
                 "/subsystem-templates/mail.xml"
         };
     }
@@ -79,21 +65,6 @@ public class MailSubsystem30TestCase extends AbstractSubsystemBaseTest {
     @Override
     public void testSchemaOfSubsystemTemplates() throws Exception {
         super.testSchemaOfSubsystemTemplates();
-    }
-
-    @Test
-    public void testExpressions() throws Exception {
-        standardSubsystemTest("subsystem_1_1_expressions.xml", false);
-    }
-
-    @Test
-    public void test11() throws Exception {
-        standardSubsystemTest("subsystem_1_1.xml", false);
-    }
-
-    @Test
-    public void test12() throws Exception {
-        standardSubsystemTest("subsystem_1_2.xml", false);
     }
 
     @Test
@@ -140,78 +111,4 @@ public class MailSubsystem30TestCase extends AbstractSubsystemBaseTest {
 
     }
 
-
-    @Test
-    public void testOperations() throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(new MailSubsystem10TestCase.Initializer())
-                .setSubsystemXml(getSubsystemXml());
-        KernelServices mainServices = builder.build();
-        if (!mainServices.isSuccessfulBoot()) {
-            Assert.fail(mainServices.getBootError().toString());
-        }
-
-        PathAddress sessionAddress = PathAddress.pathAddress(MailExtension.SUBSYSTEM_PATH, PathElement.pathElement(MailExtension.MAIL_SESSION_PATH.getKey(), "defaultMail"));
-        ModelNode result;
-
-        ModelNode removeServerOp = Util.createRemoveOperation(sessionAddress.append("server", "imap"));
-        removeServerOp.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        result = mainServices.executeOperation(removeServerOp);
-        checkResult(result);
-
-        ModelNode addServerOp = Util.createAddOperation(sessionAddress.append("server", "imap"));
-        addServerOp.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        addServerOp.get("outbound-socket-binding-ref").set("mail-imap");
-        addServerOp.get("username").set("user");
-        addServerOp.get("password").set("pswd");
-
-        result = mainServices.executeOperation(addServerOp);
-        checkResult(result);
-
-        checkResult(mainServices.executeOperation(removeServerOp)); //to make sure noting is left behind
-        checkResult(mainServices.executeOperation(addServerOp));
-
-        ModelNode writeOp = Util.createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, sessionAddress);
-        writeOp.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        writeOp.get("name").set("debug");
-        writeOp.get("value").set(false);
-        result = mainServices.executeOperation(writeOp);
-        checkResult(result);
-
-
-        ServiceController<?> javaMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("defaultMail"));
-        javaMailService.setMode(ServiceController.Mode.ACTIVE);
-        Session session = (Session) javaMailService.getValue();
-        Assert.assertNotNull("session should not be null", session);
-        Properties properties = session.getProperties();
-        Assert.assertNotNull("smtp host should be set", properties.getProperty("mail.smtp.host"));
-        Assert.assertNotNull("imap host should be set", properties.getProperty("mail.imap.host"));
-
-
-        PathAddress nonExisting = PathAddress.pathAddress(MailExtension.SUBSYSTEM_PATH, PathElement.pathElement(MailExtension.MAIL_SESSION_PATH.getKey(), "non-existing-session"));
-        ModelNode addSession = Util.createAddOperation(nonExisting);
-        addSession.get("jndi-name").set("java:/bah");
-        checkResult(mainServices.executeOperation(addSession));
-        removeServerOp = Util.createRemoveOperation(nonExisting.append("server", "imap"));
-        //removeServerOp.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        result = mainServices.executeOperation(removeServerOp);
-        checkForFailure(result);
-
-
-
-    }
-
-    private ModelNode checkForFailure(ModelNode rsp) throws OperationFailedException {
-        if (!FAILED.equals(rsp.get(OUTCOME).asString())) {
-            Assert.fail("Should have failed!");
-        }
-        return rsp;
-    }
-
-    private void checkResult(ModelNode result) {
-        Assert.assertEquals(result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).asString(), "success", result.get(ModelDescriptionConstants.OUTCOME).asString());
-        if (result.hasDefined(ModelDescriptionConstants.RESPONSE_HEADERS)) {
-            boolean reload = result.get(ModelDescriptionConstants.RESPONSE_HEADERS, ModelDescriptionConstants.OPERATION_REQUIRES_RELOAD).asBoolean(false);
-            Assert.assertFalse("Operation should not return requires reload", reload);
-        }
-    }
 }

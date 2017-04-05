@@ -66,7 +66,7 @@ class MailSessionDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.FROM, ModelType.STRING, true)
                     .setRestartAllServices()
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .build();
     protected static final SimpleAttributeDefinition DEBUG =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.DEBUG, ModelType.BOOLEAN, true)
