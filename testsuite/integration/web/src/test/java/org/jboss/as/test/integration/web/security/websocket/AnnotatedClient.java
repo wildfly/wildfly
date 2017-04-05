@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
  */
 @ClientEndpoint(configurator = AnnotatedClient.AuthConfigurator.class)
 public class AnnotatedClient {
+    private static String user;
+    private static String password;
 
     private final BlockingDeque<String> queue = new LinkedBlockingDeque<>();
 
@@ -37,10 +39,17 @@ public class AnnotatedClient {
         return queue.poll(5, TimeUnit.SECONDS);
     }
 
+    public void setCredentials(String user, String password) {
+        this.user = user;
+        this.password = password;
+    }
+
     public static class AuthConfigurator extends ClientEndpointConfig.Configurator {
         @Override
         public void beforeRequest(Map<String, List<String>> headers) {
-            headers.put("AUTHORIZATION", Collections.singletonList("Basic " + FlexBase64.encodeString("anil:anil".getBytes(), false)));
+            String credentials = user + ":" + password;
+            headers.put("AUTHORIZATION", Collections.singletonList("Basic " + FlexBase64.encodeString(credentials
+                    .getBytes(), false)));
         }
     }
 }
