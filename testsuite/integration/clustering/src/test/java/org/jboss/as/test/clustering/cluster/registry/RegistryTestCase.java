@@ -52,7 +52,8 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(RegistryRetriever.class.getPackage());
         jar.addAsManifestResource(createPermissionsXmlAsset(
-                new PropertyPermission(NODE_NAME_PROPERTY, "read")
+                new PropertyPermission(NODE_NAME_PROPERTY, "read"),
+                new RuntimePermission("getClassLoader")
         ), "permissions.xml");
         return jar;
     }

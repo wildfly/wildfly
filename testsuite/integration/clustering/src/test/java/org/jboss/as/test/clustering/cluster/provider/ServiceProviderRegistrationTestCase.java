@@ -1,5 +1,6 @@
 package org.jboss.as.test.clustering.cluster.provider;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -49,6 +50,9 @@ public class ServiceProviderRegistrationTestCase extends ClusterAbstractTestCase
     private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(ServiceProviderRetriever.class.getPackage());
+        ejbJar.addAsManifestResource(createPermissionsXmlAsset(
+                new RuntimePermission("getClassLoader")
+        ), "permissions.xml");
         return ejbJar;
     }
 
