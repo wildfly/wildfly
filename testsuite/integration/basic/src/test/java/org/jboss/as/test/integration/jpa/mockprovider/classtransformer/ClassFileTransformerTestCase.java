@@ -81,6 +81,7 @@ public class ClassFileTransformerTestCase {
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "lib.jar");
         lib.addClasses(Employee.class, ClassFileTransformerTestCase.class);
         ear.addAsLibraries(lib, persistenceProvider);
+        ear.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.jpa.spi\n"), "MANIFEST.MF");
         return ear;
 
     }
