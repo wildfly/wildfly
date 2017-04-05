@@ -51,7 +51,7 @@ import org.wildfly.extension.undertow.UndertowEventListener;
 import org.wildfly.extension.undertow.UndertowService;
 
 /**
- * Service exposing an Undertow subsystem adapter to mod_cluster's ContainerEventHandler.
+ * Builds a service exposing an Undertow subsystem adapter to mod_cluster's ContainerEventHandler.
  *
  * @author Paul Ferraro
  */

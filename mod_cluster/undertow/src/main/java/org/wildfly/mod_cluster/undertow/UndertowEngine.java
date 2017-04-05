@@ -41,8 +41,8 @@ import org.wildfly.extension.undertow.UndertowService;
  */
 public class UndertowEngine implements Engine {
 
-    private final org.wildfly.extension.undertow.Server server;
     private final UndertowService service;
+    private final org.wildfly.extension.undertow.Server server;
     private final Connector connector;
 
     public UndertowEngine(org.wildfly.extension.undertow.Server server, UndertowService service, Connector connector) {
@@ -129,12 +129,12 @@ public class UndertowEngine implements Engine {
 
     @Override
     public String getJvmRoute() {
-        return this.service.getInstanceId();
+        return this.server.getRoute();
     }
 
     @Override
     public void setJvmRoute(String jvmRoute) {
-        this.service.setInstanceId(jvmRoute);
+        // Ignore
     }
 
     @Override

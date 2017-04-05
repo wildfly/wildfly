@@ -77,7 +77,7 @@ public class Host implements Service<Host>, FilterLocation {
     private volatile GateHandlerWrapper gateHandlerWrapper;
 
     private final DefaultResponseCodeHandler defaultHandler;
-    protected Host(final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode ) {
+    public Host(final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode ) {
         this.name = name;
         this.defaultWebModule = defaultWebModule;
         Set<String> hosts = new HashSet<>(aliases.size() + 1);
@@ -88,7 +88,7 @@ public class Host implements Service<Host>, FilterLocation {
         this.setupDefaultResponseCodeHandler();
     }
 
-    protected Host(final String name, final List<String> aliases, final String defaultWebModule ) {
+    public Host(final String name, final List<String> aliases, final String defaultWebModule ) {
         this.name = name;
         this.defaultWebModule = defaultWebModule;
         Set<String> hosts = new HashSet<>(aliases.size() + 1);

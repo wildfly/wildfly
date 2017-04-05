@@ -21,26 +21,58 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.jboss.msc.value.Value;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.function.Supplier;
+
+import org.infinispan.configuration.cache.CacheMode;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
+import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.spi.CacheBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 import org.wildfly.clustering.web.session.RouteLocator;
 import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
 
 /**
- * Builds a {@link RouteLocator} service.
+ * Provides a builder for a {@link RouteLocator} service.
  * @author Paul Ferraro
  */
 @MetaInfServices(RouteLocatorBuilderProvider.class)
 public class InfinispanRouteLocatorBuilderProvider implements RouteLocatorBuilderProvider {
 
     @Override
-    public Builder<RouteLocator> getRouteLocatorBuilder(String deploymentName) {
-        return new InfinispanRouteLocatorBuilder(deploymentName);
+    public CapabilityServiceBuilder<RouteLocator> getRouteLocatorBuilder(String serverName, String deploymentName) {
+        return new InfinispanRouteLocatorBuilder(serverName, deploymentName);
     }
 
     @Override
-    public Builder<?> getRouteLocatorConfigurationBuilder(Value<? extends Value<String>> route) {
-        return new RouteRegistryEntryProviderBuilder(route);
+    public Collection<CapabilityServiceBuilder<?>> getRouteLocatorConfigurationBuilders(String serverName, Supplier<ValueDependency<String>> routeDependencyProvider) {
+        String containerName = InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER;
+
+        List<CapabilityServiceBuilder<?>> builders = new LinkedList<>();
+
+        builders.add(new RouteRegistryEntryProviderBuilder(serverName, routeDependencyProvider.get()));
+        builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, serverName)), containerName, serverName, null, builder -> {
+            CacheMode mode = builder.clustering().cacheMode();
+            builder.clustering().cacheMode(mode.isClustered() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
+            builder.clustering().l1().disable();
+            builder.persistence().clearStores();
+        }));
+        builders.add(new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, serverName)), containerName, serverName));
+        ServiceNameRegistry<ClusteringCacheRequirement> registry = requirement -> ServiceName.parse(requirement.resolve(containerName, serverName));
+        for (CacheBuilderProvider provider : ServiceLoader.load(DistributedCacheBuilderProvider.class, DistributedCacheBuilderProvider.class.getClassLoader())) {
+            builders.addAll(provider.getBuilders(registry, containerName, serverName));
+        }
+
+        return builders;
     }
 }

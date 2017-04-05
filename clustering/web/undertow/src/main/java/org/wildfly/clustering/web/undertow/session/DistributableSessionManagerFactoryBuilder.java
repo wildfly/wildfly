@@ -25,21 +25,23 @@ import java.io.Externalizable;
 import java.io.Serializable;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.function.Function;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
+
+import io.undertow.servlet.api.SessionManagerFactory;
+
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
@@ -49,29 +51,21 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRe
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.MappedValueService;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerConfiguration;
-
-import io.undertow.servlet.api.SessionManagerFactory;
 
 /**
  * Distributable {@link SessionManagerFactory} builder for Undertow.
  * @author Paul Ferraro
  */
-public class DistributableSessionManagerFactoryBuilder implements org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder, Value<SessionManagerFactory> {
+public class DistributableSessionManagerFactoryBuilder implements CapabilityServiceBuilder<SessionManagerFactory> {
 
     static final Map<ReplicationGranularity, SessionManagerFactoryConfiguration.SessionAttributePersistenceStrategy> strategies = new EnumMap<>(ReplicationGranularity.class);
     static {
         strategies.put(ReplicationGranularity.SESSION, SessionManagerFactoryConfiguration.SessionAttributePersistenceStrategy.COARSE);
         strategies.put(ReplicationGranularity.ATTRIBUTE, SessionManagerFactoryConfiguration.SessionAttributePersistenceStrategy.FINE);
-    }
-
-    private static SessionManagerFactoryBuilderProvider<Batch> load() {
-        for (SessionManagerFactoryBuilderProvider<Batch> provider: ServiceLoader.load(SessionManagerFactoryBuilderProvider.class, SessionManagerFactoryBuilderProvider.class.getClassLoader())) {
-            return provider;
-        }
-        return null;
     }
 
     enum MarshallingVersion implements Function<Module, MarshallingConfiguration> {
@@ -98,20 +92,12 @@ public class DistributableSessionManagerFactoryBuilder implements org.wildfly.ex
         static final MarshallingVersion CURRENT = VERSION_2;
     }
 
-    private final SessionManagerFactoryBuilderProvider<Batch> provider;
-    @SuppressWarnings("rawtypes")
-    private final InjectedValue<org.wildfly.clustering.web.session.SessionManagerFactory> factory = new InjectedValue<>();
+    private final ServiceName name;
+    private final CapabilityServiceBuilder<org.wildfly.clustering.web.session.SessionManagerFactory<Batch>> factoryBuilder;
 
-    public DistributableSessionManagerFactoryBuilder() {
-        this(load());
-    }
+    public DistributableSessionManagerFactoryBuilder(ServiceName name, DistributableSessionManagerConfiguration config, SessionManagerFactoryBuilderProvider<Batch> provider) {
+        this.name = name;
 
-    public DistributableSessionManagerFactoryBuilder(SessionManagerFactoryBuilderProvider<Batch> provider) {
-        this.provider = provider;
-    }
-
-    @Override
-    public ServiceBuilder<SessionManagerFactory> build(CapabilityServiceSupport support, ServiceTarget target, ServiceName name, DistributableSessionManagerConfiguration config) {
         Module module = config.getModule();
         MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
@@ -124,6 +110,11 @@ public class DistributableSessionManagerFactoryBuilder implements org.wildfly.ex
             @Override
             public SessionAttributePersistenceStrategy getAttributePersistenceStrategy() {
                 return strategies.get(config.getGranularity());
+            }
+
+            @Override
+            public String getServerName() {
+                return config.getServerName();
             }
 
             @Override
@@ -146,15 +137,29 @@ public class DistributableSessionManagerFactoryBuilder implements org.wildfly.ex
                 return context;
             }
         };
-        Builder<org.wildfly.clustering.web.session.SessionManagerFactory<Batch>> builder = this.provider.getBuilder(configuration).configure(support);
-        builder.build(target).install();
-        return target.addService(name, new ValueService<>(this))
-                .addDependency(builder.getServiceName(), org.wildfly.clustering.web.session.SessionManagerFactory.class, this.factory)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+        this.factoryBuilder = provider.getBuilder(configuration);
     }
 
     @Override
-    public SessionManagerFactory getValue() {
-        return new DistributableSessionManagerFactory(this.factory.getValue());
+    public ServiceName getServiceName() {
+        return this.name;
+    }
+
+    @Override
+    public Builder<SessionManagerFactory> configure(CapabilityServiceSupport support) {
+        this.factoryBuilder.configure(support);
+        return this;
+    }
+
+    @Override
+    public ServiceBuilder<SessionManagerFactory> build(ServiceTarget target) {
+        this.factoryBuilder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        @SuppressWarnings("rawtypes")
+        InjectedValue<org.wildfly.clustering.web.session.SessionManagerFactory> sessionManagerFactoryValue = new InjectedValue<>();
+        @SuppressWarnings("unchecked")
+        Service<SessionManagerFactory> service = new MappedValueService<>(sessionManagerFactory -> new DistributableSessionManagerFactory(sessionManagerFactory), sessionManagerFactoryValue);
+        return target.addService(this.name, service)
+                .addDependency(this.factoryBuilder.getServiceName(), org.wildfly.clustering.web.session.SessionManagerFactory.class, sessionManagerFactoryValue)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

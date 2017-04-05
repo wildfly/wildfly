@@ -19,38 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.undertow.session;
 
-import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.ServiceBuilder;
+package org.jboss.as.clustering.controller;
+
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-import org.wildfly.extension.undertow.UndertowService;
+import org.jboss.msc.value.Value;
+import org.wildfly.clustering.service.SimpleBuilder;
 
 /**
- * Service that exposes instance id of the server as the route.
  * @author Paul Ferraro
  */
-public class RouteValueService extends AbstractService<RouteValue> {
+public class SimpleCapabilityServiceBuilder<T> extends SimpleBuilder<T> implements CapabilityServiceBuilder<T> {
 
-    public static final ServiceName SERVICE_NAME = UndertowService.SERVER.append("route");
-
-    public static ServiceBuilder<RouteValue> build(ServiceTarget target) {
-        RouteValueService service = new RouteValueService();
-        return target.addService(SERVICE_NAME, service)
-                .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.service)
-        ;
+    public SimpleCapabilityServiceBuilder(ServiceName name, T value) {
+        super(name, value);
     }
 
-    private final InjectedValue<UndertowService> service = new InjectedValue<>();
-
-    private RouteValueService() {
-        // Hide
+    public SimpleCapabilityServiceBuilder(ServiceName name, Value<T> value) {
+        super(name, value);
     }
 
-    @Override
-    public RouteValue getValue() {
-        return new RouteValue(this.service.getValue());
+    public SimpleCapabilityServiceBuilder(ServiceName name, Service<T> service) {
+        super(name, service);
     }
 }

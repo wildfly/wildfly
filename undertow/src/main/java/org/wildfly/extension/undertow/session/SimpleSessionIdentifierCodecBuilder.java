@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,38 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.undertow.session;
+
+package org.wildfly.extension.undertow.session;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.web.session.RoutingSupport;
 import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.as.web.session.SimpleRoutingSupport;
+import org.jboss.as.web.session.SimpleSessionIdentifierCodec;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.MappedValueService;
-import org.wildfly.clustering.web.session.RouteLocator;
-import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.extension.undertow.Capabilities;
+import org.wildfly.extension.undertow.Server;
 
 /**
- * Builds a distributable {@link SessionIdentifierCodec} service.
+ * Service providing a non-distributable {@link SessionIdentifierCodec} implementation.
  * @author Paul Ferraro
  */
-public class DistributableSessionIdentifierCodecBuilder implements CapabilityServiceBuilder<SessionIdentifierCodec> {
+public class SimpleSessionIdentifierCodecBuilder implements CapabilityServiceBuilder<SessionIdentifierCodec> {
 
     private final ServiceName name;
-    private final CapabilityServiceBuilder<RouteLocator> locatorBuilder;
+    private final String serverName;
     private final RoutingSupport routing = new SimpleRoutingSupport();
 
-    public DistributableSessionIdentifierCodecBuilder(ServiceName name, String serverName, String deploymentName, RouteLocatorBuilderProvider provider) {
-        this.name = name;
+    private volatile ValueDependency<Server> server;
 
-        this.locatorBuilder = provider.getRouteLocatorBuilder(serverName, deploymentName);
+    public SimpleSessionIdentifierCodecBuilder(ServiceName name, String serverName) {
+        this.name = name;
+        this.serverName = serverName;
     }
 
     @Override
@@ -60,18 +64,13 @@ public class DistributableSessionIdentifierCodecBuilder implements CapabilitySer
 
     @Override
     public Builder<SessionIdentifierCodec> configure(CapabilityServiceSupport support) {
-        this.locatorBuilder.configure(support);
+        this.server = new InjectedValueDependency<>(support.getCapabilityServiceName(Capabilities.CAPABILITY_SERVER, this.serverName), Server.class);
         return this;
     }
 
     @Override
     public ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target) {
-        this.locatorBuilder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        InjectedValue<RouteLocator> locatorValue = new InjectedValue<>();
-        Service<SessionIdentifierCodec> service = new MappedValueService<>(locator -> new DistributableSessionIdentifierCodec(locator, this.routing), locatorValue);
-        return target.addService(this.name, service)
-                .addDependency(this.locatorBuilder.getServiceName(), RouteLocator.class, locatorValue)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                ;
+        Service<SessionIdentifierCodec> service = new MappedValueService<>(server -> new SimpleSessionIdentifierCodec(this.routing, server.getRoute()), this.server);
+        return this.server.register(target.addService(this.name, service)).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

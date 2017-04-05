@@ -21,26 +21,23 @@
  */
 package org.jboss.as.web.session;
 
-import org.jboss.msc.value.Value;
-
 /**
  * Simple codec implementation that uses a static route source.
  * @author Paul Ferraro
  */
 public class SimpleSessionIdentifierCodec implements SessionIdentifierCodec {
 
-    private final Value<String> route;
     private final RoutingSupport routing;
+    private final String route;
 
-    public SimpleSessionIdentifierCodec(RoutingSupport routing, Value<String> route) {
+    public SimpleSessionIdentifierCodec(RoutingSupport routing, String route) {
         this.routing = routing;
         this.route = route;
     }
 
     @Override
     public String encode(String sessionId) {
-        String route = this.route.getValue();
-        return (route != null) ? this.routing.format(sessionId, route) : sessionId;
+        return (this.route != null) ? this.routing.format(sessionId, this.route) : sessionId;
     }
 
     @Override

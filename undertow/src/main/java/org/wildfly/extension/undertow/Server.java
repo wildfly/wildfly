@@ -143,7 +143,7 @@ public class Server implements Service<Server> {
         return root;
     }
 
-    Injector<UndertowService> getUndertowServiceInjector() {
+    protected Injector<UndertowService> getUndertowServiceInjector() {
         return undertowService;
     }
 
@@ -167,6 +167,11 @@ public class Server implements Service<Server> {
         return (List)listeners;
     }
 
+    public String getRoute() {
+        UndertowService service = this.undertowService.getValue();
+        String defaultServerRoute = service.getInstanceId();
+        return this.name.equals(service.getDefaultServer()) ? defaultServerRoute : String.join("-", defaultServerRoute, this.name);
+    }
 
     private final class DefaultHostHandler implements HttpHandler {
 
