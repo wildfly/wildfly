@@ -72,8 +72,9 @@ public abstract class AbstractTraceLoggingServerSetupTask implements ServerSetup
             op.get("level").set("TRACE");
             updates.add(op);
         }
-        ModelNode op = Util.createEmptyOperation("write-attribute", PATH_LOGGING.append("console-handler", "CONSOLE"));
+        ModelNode op = Util.createEmptyOperation("undefine-attribute", PATH_LOGGING.append("console-handler", "CONSOLE"));
         op.get("name").set("level");
+        updates.add(op);
         CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
     }
 
@@ -100,6 +101,7 @@ public abstract class AbstractTraceLoggingServerSetupTask implements ServerSetup
         ModelNode op = Util.createEmptyOperation("write-attribute", PATH_LOGGING.append("console-handler", "CONSOLE"));
         op.get("name").set("level");
         op.get("value").set("INFO");
+        updates.add(op);
         CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
     }
 

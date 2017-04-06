@@ -19,50 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.test.security.common.elytron;
 
+import java.util.List;
+
 /**
- * Elytron constant-principal-decoder configuration implementation.
+ * This interface represent configuration element with predefined list of users and their roles. It provides ability to tests
+ * to come up with own user population for the tested scenario.
  *
- * @author Ondrej Kotek
+ * @author Josef Cacek
  */
-public class ConstantPrincipalDecoder extends AbstractConstantHelper {
-
-    private ConstantPrincipalDecoder(Builder builder) {
-        super(builder);
-    }
-
-
-    @Override
-    protected String getConstantElytronType() {
-        return "constant-principal-decoder";
-    }
+public interface UsersRolesCapableElement extends ConfigurableElement {
 
     /**
-     * Creates builder.
-     *
-     * @return created builder
+     * Returns predefined (not {@code null}) list of users and their attributes to be created.
      */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    /**
-     * Builder pattern for the class.
-     */
-    public static final class Builder extends AbstractConstantHelper.Builder<Builder> {
-
-        private Builder() {
-        }
-
-        public ConstantPrincipalDecoder build() {
-            return new ConstantPrincipalDecoder(this);
-        }
-
-        @Override
-        protected Builder self() {
-            return this;
-        }
-    }
-
+    List<UserWithRoles> getUsersWithRoles();
 }
