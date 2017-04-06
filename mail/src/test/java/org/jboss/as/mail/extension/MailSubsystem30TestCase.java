@@ -69,13 +69,13 @@ public class MailSubsystem30TestCase extends MailSubsystemTestBase {
 
     @Test
     public void testRuntime() throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(new MailSubsystem10TestCase.Initializer())
+        KernelServicesBuilder builder = createKernelServicesBuilder(new DefaultInitializer())
                 .setSubsystemXml(getSubsystemXml());
         KernelServices mainServices = builder.build();
         if (!mainServices.isSuccessfulBoot()) {
             Assert.fail(mainServices.getBootError().toString());
         }
-        ServiceController<?> javaMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("defaultMail"));
+        ServiceController<?> javaMailService = mainServices.getContainer().getService(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("defaultMail"));
         javaMailService.setMode(ServiceController.Mode.ACTIVE);
         Session session = (Session) javaMailService.getValue();
         Assert.assertNotNull("session should not be null", session);
@@ -87,12 +87,12 @@ public class MailSubsystem30TestCase extends MailSubsystemTestBase {
         Assert.assertEquals("nobody", auth.getUserName());
         Assert.assertEquals("pass", auth.getPassword());
 
-        ServiceController<?> defaultMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("default2"));
+        ServiceController<?> defaultMailService = mainServices.getContainer().getService(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("default2"));
         session = (Session) defaultMailService.getValue();
         Assert.assertEquals("Debug should be true", true, session.getDebug());
 
 
-        ServiceController<?> customMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("custom"));
+        ServiceController<?> customMailService = mainServices.getContainer().getService(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("custom"));
         session = (Session) customMailService.getValue();
         properties = session.getProperties();
         String host = properties.getProperty("mail.smtp.host");

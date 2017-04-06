@@ -54,7 +54,7 @@ class MailServerWriteAttributeHandler extends RestartParentWriteAttributeHandler
 
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append(parentAddress.getLastElement().getValue());
+        return MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName(parentAddress.getLastElement().getValue());
     }
 
     @Override

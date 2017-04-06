@@ -115,7 +115,8 @@ public class MailTransformersTestCase extends AbstractSubsystemBaseTest {
     private void testRejectingTransformers(ModelTestControllerVersion controllerVersion, ModelVersion targetVersion) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, targetVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, targetVersion)
+                .configureReverseControllerCheck(createAdditionalInitialization(), null)
                 .addMavenResourceURL(getMailGav(controllerVersion))
                 .dontPersistXml();
 
@@ -138,4 +139,13 @@ public class MailTransformersTestCase extends AbstractSubsystemBaseTest {
                 );
     }
 
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return new MailSubsystemTestBase.TransformersInitializer();
+    }
+
+    @Override
+    public void testSchema() throws Exception {
+        //
+    }
 }
