@@ -305,9 +305,10 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("journal")
             .setXmlName("type")
             .setDefaultValue(new ModelNode(ConfigurationImpl.DEFAULT_JOURNAL_TYPE.toString()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<JournalType>(JournalType.class, true, true))
+            // list allowed values explicitly to exclude MAPPED
+            .setValidator(new EnumValidator<>(JournalType.class, true, true, JournalType.ASYNCIO, JournalType.NIO))
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition LOG_JOURNAL_WRITE_RATE = create("log-journal-write-rate", BOOLEAN)
