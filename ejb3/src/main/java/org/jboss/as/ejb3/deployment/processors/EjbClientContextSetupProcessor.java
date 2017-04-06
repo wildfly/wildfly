@@ -176,7 +176,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
                         }
                     }
                     if (ejbClientClustersAuthenticationContext != null) {
-                        authenticationContext = authenticationContext.with(0, ejbClientClustersAuthenticationContext);
+                        authenticationContext =  ejbClientClustersAuthenticationContext.with(authenticationContext);
                     }
                     // and set the result
                     authenticationContextManager.setClassLoaderDefault(classLoader, authenticationContext);
