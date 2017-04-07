@@ -30,6 +30,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -69,6 +70,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
 
 /**
  * Test case to hold the authentication scenarios, these range from calling a servlet which calls a bean to calling a bean which
@@ -78,7 +80,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup({EjbElytronDomainSetup.class})
+@ServerSetup({AuthenticationTestCase.EjbSecurityDomainSetup.class})
 @Category(CommonCriteria.class)
 public class AuthenticationTestCase {
 
@@ -509,4 +511,12 @@ public class AuthenticationTestCase {
     // 17.6.7 - Principal Mapping
     // 17.6.9 - Runtime Security Enforcement
     // 17.6.10 - Audit Trail
+
+    static class EjbSecurityDomainSetup extends EjbElytronDomainSetup {
+        public EjbSecurityDomainSetup() {
+            super(new File(AuthenticationTestCase.class.getResource("users.properties").getFile()).getAbsolutePath(),
+                    new File(AuthenticationTestCase.class.getResource("roles.properties").getFile()).getAbsolutePath());
+        }
+    }
+
 }
