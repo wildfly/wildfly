@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 
 import javax.annotation.Resource;
-import javax.annotation.security.RolesAllowed;
 import javax.ejb.Remote;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
@@ -38,97 +37,81 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
-import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 
-// Security related imports
-
 /**
- * Bean passes message to HelloMDB bean and checks the reply queue. The HellpMDB bean calls this one for getting hello greeting
- * for JBossAdmin role.
+ * Bean passes message to HelloMDB bean and checks the reply queue.
  *
  * @author Ondrej Chaloupka
  */
 @Stateless(name = "Hello")
-@RolesAllowed({})
 @Remote(Hello.class)
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class HelloBean implements Hello {
     private static final Logger log = Logger.getLogger(HelloBean.class);
 
+    public static final String SAYING = "Hello";
+    public static final String QUEUE_NAME = "queue/TestQueue";
+    public static final String QUEUE_NAME_JNDI = "java:jboss/exported/" + QUEUE_NAME;
+
     @Resource
     private SessionContext context;
 
-    @RolesAllowed("JBossAdmin")
     public String sayHello() throws Exception {
-        log.debug("session context: " + context);
-        log.debug("caller name: " + context.getCallerPrincipal().getName());
+        InitialContext initialContext = new InitialContext();
 
-        if (context.isCallerInRole("JBossAdmin")) {
-            throw new IllegalArgumentException("User is in role!!");
+        try {
+            ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("java:/ConnectionFactory");
+            String replyMessage = HelloBean.sendMessage(cf);
+            return String.format("%s %s, %s", SAYING, getName(), replyMessage);
+        } finally {
+            initialContext.close();
         }
-
-        log.trace("HelloBean - sending message");
-        String msg = this.sendMessage();
-
-        String name = getName();
-        return "Hello " + name + "! " + msg;
     }
 
-    private String getName() {
-        return "Fred";
-    }
-
-    public String sendMessage() throws Exception {
-        String destinationName = "java:jboss/exported/queue/TestQueue";
-        Context ic = null;
-        ConnectionFactory cf = null;
+    /**
+     * Helper method to send message to {@link #QUEUE_NAME}.
+     */
+    public static String sendMessage(ConnectionFactory cf) throws Exception {
         Connection connection = null;
 
         try {
-            ic = getInitialContext();
-            cf = (ConnectionFactory) ic.lookup("java:/ConnectionFactory");
-            Queue queue = (Queue) ic.lookup(destinationName);
+            Queue queue = cf.createContext("guest", "guest").createQueue(QUEUE_NAME);
             connection = cf.createConnection("guest", "guest");
             connection.start(); // we need to start connection for consumer
+
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             MessageProducer sender = session.createProducer(queue);
             TextMessage message = session.createTextMessage("hello goodbye");
             TemporaryQueue replyQueue = session.createTemporaryQueue();
             message.setJMSReplyTo(replyQueue);
             sender.send(message);
+            log.tracef("Message '%s' sent", message);
 
+            // consume message processed by MDB
             MessageConsumer consumer = session.createConsumer(replyQueue);
-            TextMessage replyMsg = (TextMessage) consumer.receive(5000);
-            log.trace("Message received:" + replyMsg);
-            return replyMsg.getText();
+            TextMessage replyMessage = (TextMessage) consumer.receive(TimeoutUtil.adjust(5000));
+            log.tracef("Message '%s' received", replyMessage);
+
+            if(replyMessage == null) {
+                return "ReplyMessage is 'null'. No response received from HelloMDB."
+                    + " Consult server log for details.";
+            }
+            return replyMessage.getText();
         } finally {
-            if (ic != null) {
-                try {
-                    ic.close();
-                } catch (Exception ignore) {
-                }
+            try {
+                if (connection != null) connection.close();
+            } catch (JMSException jmse) {
+                log.trace("connection close failed", jmse);
             }
-            closeConnection(connection);
         }
 
     }
 
-    public static InitialContext getInitialContext() throws NamingException {
-        return new InitialContext();
+    private String getName() {
+        return context.getCallerPrincipal().getName();
     }
-
-    private void closeConnection(Connection conn) {
-        try {
-            if (conn != null) {
-                conn.close();
-            }
-        } catch (JMSException jmse) {
-            log.trace("connection close failed: " + jmse);
-        }
-    }
-
 }
