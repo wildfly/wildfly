@@ -29,6 +29,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.common.function.ExceptionConsumer;
 
 /**
  * Generic {@link Service} that provides no value.
@@ -37,7 +38,7 @@ import org.jboss.msc.service.StopContext;
 public class FunctionalVoidService implements Service<Void> {
     private static final Logger LOGGER = Logger.getLogger(FunctionalVoidService.class);
 
-    private final Consumer<StartContext> starter;
+    private final ExceptionConsumer<StartContext, StartException> starter;
     private final Consumer<StopContext> stopper;
 
     /**
@@ -45,7 +46,7 @@ public class FunctionalVoidService implements Service<Void> {
      * @param starter
      * @param stopper
      */
-    public FunctionalVoidService(Consumer<StartContext> starter, Consumer<StopContext> stopper) {
+    public FunctionalVoidService(ExceptionConsumer<StartContext, StartException> starter, Consumer<StopContext> stopper) {
         this.starter = starter;
         this.stopper = stopper;
     }
@@ -55,7 +56,7 @@ public class FunctionalVoidService implements Service<Void> {
         if (this.starter != null) {
             try {
                 this.starter.accept(context);
-            } catch (Throwable e) {
+            } catch (RuntimeException | Error e) {
                 throw new StartException(e);
             }
         }
@@ -66,7 +67,7 @@ public class FunctionalVoidService implements Service<Void> {
         if (this.stopper != null) {
             try {
                 this.stopper.accept(context);
-            } catch (Throwable e) {
+            } catch (RuntimeException | Error e) {
                 LOGGER.warn(e.getLocalizedMessage(), e);
             }
         }

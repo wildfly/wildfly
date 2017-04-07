@@ -30,6 +30,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
  * Generic {@link Service} whose value is created and destroyed by contextual functions.
@@ -39,7 +40,7 @@ public class FunctionalValueService<T, V> implements Service<V> {
     private static final Logger LOGGER = Logger.getLogger(FunctionalValueService.class);
 
     private final Function<T, V> mapper;
-    private final Function<StartContext, T> factory;
+    private final ExceptionFunction<StartContext, T, StartException> factory;
     private final BiConsumer<StopContext, T> destroyer;
 
     private volatile T value;
@@ -50,7 +51,7 @@ public class FunctionalValueService<T, V> implements Service<V> {
      * @param factory a function that creates a value
      * @param destroyer a consumer that destroys the value created by the factory function
      */
-    public FunctionalValueService(Function<T, V> mapper, Function<StartContext, T> factory, BiConsumer<StopContext, T> destroyer) {
+    public FunctionalValueService(Function<T, V> mapper, ExceptionFunction<StartContext, T, StartException> factory, BiConsumer<StopContext, T> destroyer) {
         this.mapper = mapper;
         this.factory = factory;
         this.destroyer = destroyer;
@@ -65,7 +66,7 @@ public class FunctionalValueService<T, V> implements Service<V> {
     public void start(StartContext context) throws StartException {
         try {
             this.value = this.factory.apply(context);
-        } catch (Throwable e) {
+        } catch (RuntimeException | Error e) {
             throw new StartException(e);
         }
     }
@@ -75,7 +76,7 @@ public class FunctionalValueService<T, V> implements Service<V> {
         if (this.destroyer != null) {
             try {
                 this.destroyer.accept(context, this.value);
-            } catch (Throwable e) {
+            } catch (RuntimeException | Error e) {
                 LOGGER.warn(e.getLocalizedMessage(), e);
             } finally {
                 this.value = null;
