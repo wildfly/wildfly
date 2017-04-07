@@ -166,7 +166,30 @@ public class CredentialStoreTestCase extends AbstractCredentialStoreTestCase {
     }
 
     /**
-     * Tests add-remove-add opertations sequence on an alias in credential store.
+     * Tests change password operation on credential store instance.
+     */
+    @Test
+    public void testUpdatePasswordCredentialStore() throws Exception {
+        final String alias = "cs-update-test";
+        final String password = "password";
+        final String updatedPassword = "passw0rd!";
+        try (CLIWrapper cli = new CLIWrapper(true)) {
+            try {
+                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add(secret-value=\"%s\"",
+                        CS_NAME_MODIFIABLE, alias, alias));
+                assertCredentialValue(CS_NAME_MODIFIABLE, alias, alias);
+                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:write-attribute(name=secret-value, value=\"%s\")",
+                        CS_NAME_MODIFIABLE, alias, updatedPassword));
+                assertCredentialValue(CS_NAME_MODIFIABLE, alias, updatedPassword);
+            } finally {
+                cli.sendLine(
+                        String.format("/subsystem=elytron/credential-store=%s/alias=%s:remove()", CS_NAME_MODIFIABLE, alias), true);
+            }
+        }
+    }
+
+    /**
+     * Tests add-remove-add operations sequence on an alias in credential store.
      */
     @Test
     public void testAddRemoveAddAlias() throws Exception {
