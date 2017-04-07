@@ -80,10 +80,10 @@ public final class WorkManagerService implements Service<NamedWorkManager> {
         BlockingExecutor longRunning = (BlockingExecutor) executorLong.getOptionalValue();
         if (longRunning != null) {
             this.value.setLongRunningThreadPool(longRunning);
-            this.value.setShortRunningThreadPool((BlockingExecutor) executorShort.getValue());
+            this.value.setShortRunningThreadPool(new StatisticsExecutorImpl((BlockingExecutor) executorShort.getValue()));
         } else {
-            this.value.setLongRunningThreadPool((BlockingExecutor) executorShort.getValue());
-            this.value.setShortRunningThreadPool((BlockingExecutor) executorShort.getValue());
+            this.value.setLongRunningThreadPool(new StatisticsExecutorImpl((BlockingExecutor) executorShort.getValue()));
+            this.value.setShortRunningThreadPool(new StatisticsExecutorImpl((BlockingExecutor) executorShort.getValue()));
 
         }
 

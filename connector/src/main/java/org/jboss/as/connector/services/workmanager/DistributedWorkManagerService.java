@@ -31,6 +31,7 @@ import org.jboss.as.connector.services.workmanager.transport.ForkChannelTranspor
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.txn.integration.JBossContextXATerminator;
 import org.jboss.jca.core.security.picketbox.PicketBoxSecurityIntegration;
+import org.jboss.jca.core.spi.workmanager.Address;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
 import org.jboss.jca.core.workmanager.WorkManagerCoordinator;
 import org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport;
@@ -86,7 +87,6 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
         try {
             transport.setChannel(factory.createChannel(this.value.getName()));
             transport.setClusterName(this.value.getName());
-
             this.value.setTransport(transport);
         } catch (Exception e) {
             ROOT_LOGGER.trace("failed to start JGroups channel", e);
@@ -96,16 +96,22 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
         BlockingExecutor longRunning = (BlockingExecutor) executorLong.getOptionalValue();
         if (longRunning != null) {
             this.value.setLongRunningThreadPool(longRunning);
-            this.value.setShortRunningThreadPool((BlockingExecutor) executorShort.getValue());
+            this.value.setShortRunningThreadPool(new StatisticsExecutorImpl((BlockingExecutor) executorShort.getValue()));
         } else {
-            this.value.setLongRunningThreadPool((BlockingExecutor) executorShort.getValue());
-            this.value.setShortRunningThreadPool((BlockingExecutor) executorShort.getValue());
+            this.value.setLongRunningThreadPool(new StatisticsExecutorImpl((BlockingExecutor) executorShort.getValue()));
+            this.value.setShortRunningThreadPool(new StatisticsExecutorImpl((BlockingExecutor) executorShort.getValue()));
 
         }
 
         this.value.setXATerminator(new XATerminatorImpl(xaTerminator.getValue()));
 
-        WorkManagerCoordinator.getInstance().registerWorkManager(value);
+
+        if (this.value.isElytronEnabled()) {
+            this.value.setSecurityIntegration(new ElytronSecurityIntegration());
+        } else {
+            this.value.setSecurityIntegration(new PicketBoxSecurityIntegration());
+        }
+        transport.setId(String.valueOf(transport.getChannel().hashCode()));
 
         try {
             transport.startup();
@@ -113,12 +119,11 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
             ROOT_LOGGER.trace("failed to start DWM transport:", throwable);
             throw ROOT_LOGGER.failedToStartDWMTransport(this.value.getName());
         }
+        transport.register(new Address(value.getId(), value.getName(), value.getTransport().getId()));
 
-        if (this.value.isElytronEnabled()) {
-            this.value.setSecurityIntegration(new ElytronSecurityIntegration());
-        } else {
-            this.value.setSecurityIntegration(new PicketBoxSecurityIntegration());
-        }
+        WorkManagerCoordinator.getInstance().registerWorkManager(value);
+
+
         ROOT_LOGGER.debugf("Started JCA DistributedWorkManager: ", value.getName());
     }
 
