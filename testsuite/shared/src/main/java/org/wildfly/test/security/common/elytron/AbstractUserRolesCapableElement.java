@@ -28,21 +28,18 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Abstract parent for {@link UsersRolesSecurityDomain} implementations. It extends {@link AbstractConfigurableElement} and holds
- * user list to be created in domain and provides parent for domain builder objects.
+ * Abstract parent for {@link ConfigurableElement} implementations which are able to configure (and provide) users and roles.
+ * It extends {@link AbstractConfigurableElement} and holds user list to be created.
  *
  * @author Josef Cacek
  */
-public abstract class AbstractUserRolesSecurityDomain extends AbstractConfigurableElement implements UsersRolesSecurityDomain {
+public abstract class AbstractUserRolesCapableElement extends AbstractConfigurableElement implements UsersRolesCapableElement {
 
     private final List<UserWithRoles> usersWithRoles;
 
-    protected final String permissionMapper;
-
-    protected AbstractUserRolesSecurityDomain(Builder<?> builder) {
+    protected AbstractUserRolesCapableElement(Builder<?> builder) {
         super(builder);
         this.usersWithRoles = Collections.unmodifiableList(new ArrayList<>(builder.usersWithRoles));
-        this.permissionMapper = builder.permMapper;
     }
 
     @Override
@@ -51,11 +48,10 @@ public abstract class AbstractUserRolesSecurityDomain extends AbstractConfigurab
     }
 
     /**
-     * Builder to build {@link AbstractUserRolesSecurityDomain}.
+     * Builder to build {@link AbstractUserRolesCapableElement}.
      */
     public abstract static class Builder<T extends Builder<T>> extends AbstractConfigurableElement.Builder<T> {
         private List<UserWithRoles> usersWithRoles = new ArrayList<>();
-        private String permMapper;
 
         protected Builder() {
         }
@@ -81,12 +77,6 @@ public abstract class AbstractUserRolesSecurityDomain extends AbstractConfigurab
             this.usersWithRoles.add(UserWithRoles.builder().withName(username).withPassword(password).withRoles(roles).build());
             return self();
         }
-
-        public final T permissionMapper(String name) {
-            permMapper = name;
-            return self();
-        }
-
     }
 
 }

@@ -45,6 +45,8 @@
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <!-- This value is overridden in submodules with the correct relative path. -->
         <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
+
+        <ts.elytron.cli>../shared/enable-elytron.cli</ts.elytron.cli>
     </properties>
 
     <!--
@@ -111,4 +113,48 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>elytron.profile</id>
+            <activation>
+                <property>
+                    <name>elytron</name>
+                </property>
+                <file>
+                    <exists>${ts.elytron.cli}</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>enable-elytron-cli</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${java.home}/bin/java</executable>
+                                    <arguments>
+                                        <argument>-jar</argument>
+                                        <argument>${project.build.directory}/jbossas/jboss-modules.jar</argument>
+                                        <argument>-mp</argument>
+                                        <argument>${jboss.dist}/modules</argument>
+                                        <argument>org.jboss.as.cli</argument>
+                                        <argument>--file=${ts.elytron.cli}</argument>
+                                    </arguments>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/jbossas</JBOSS_HOME>
+                                    </environmentVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

@@ -50,7 +50,7 @@ import org.wildfly.security.auth.permission.LoginPermission;
  *
  * @author Ondrej Kotek
  */
-public class PropertyFileAuthzBasedDomain extends AbstractUserRolesSecurityDomain {
+public class PropertyFileAuthzBasedDomain extends AbstractUserRolesCapableElement implements SecurityDomain {
 
     private static final Logger LOGGER = Logger.getLogger(PropertyFileAuthzBasedDomain.class);
 
@@ -132,7 +132,7 @@ public class PropertyFileAuthzBasedDomain extends AbstractUserRolesSecurityDomai
         return new Builder();
     }
 
-    public static final class Builder extends AbstractUserRolesSecurityDomain.Builder<Builder> {
+    public static final class Builder extends AbstractUserRolesCapableElement.Builder<Builder> {
         private String authnRealm;
         private String principalDecoder;
 
