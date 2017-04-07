@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.remote.security;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -39,6 +40,8 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.security.auth.AuthPermission;
 
 /**
  * A test case to test an unsecured EJB setting the username and password before the call reaches a secured EJB.
@@ -67,6 +70,10 @@ public class RemoteIdentityTestCase {
     public static JavaArchive createDeployment() throws IOException {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, EJBUtil.APPLICATION_NAME + ".jar");
         jar.addClasses(SecurityInformation.class, IntermediateAccess.class, EntryBean.class, SecuredBean.class, Util.class);
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                // testSwitched(), i.e. org.jboss.as.test.shared.integration.ejb.security.Util#getCLMLoginContext(username, password), needs the following
+                new AuthPermission("modifyPrincipals")
+        ), "permissions.xml");
         return jar;
     }
 
