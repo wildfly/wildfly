@@ -26,10 +26,13 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitPhaseBuilder;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.wildfly.clustering.singleton.SingletonPolicy;
+import org.wildfly.extension.clustering.singleton.SingletonLogger;
 
 /**
  * DUP that attaches the singleton DeploymentUnitPhaseBuilder if a deployment policy is attached.
@@ -41,11 +44,27 @@ public class SingletonDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
-        SingletonPolicy policy = context.getAttachment(POLICY_KEY);
-        if (policy != null) {
-            DeploymentUnit parent = context.getDeploymentUnit().getParent();
-            DeploymentUnitPhaseBuilder builder = (parent == null) ? new SingletonDeploymentUnitPhaseBuilder(policy) : new SingletonSubDeploymentUnitPhaseBuilder(parent, context.getPhase().next());
-            context.putAttachment(Attachments.DEPLOYMENT_UNIT_PHASE_BUILDER, builder);
+        DeploymentUnit unit = context.getDeploymentUnit();
+        if (unit.getParent() == null) {
+            SingletonPolicy policy = context.getAttachment(POLICY_KEY);
+            if (policy != null) {
+                // Ideally, we would just install the next phase using the singleton policy, however deployment unit phases do not currently support restarts
+                // Restart the deployment using the attached phase builder, but only if a builder was not already attached
+                if (unit.putAttachment(Attachments.DEPLOYMENT_UNIT_PHASE_BUILDER, new SingletonDeploymentUnitPhaseBuilder(policy)) == null) {
+                    SingletonLogger.ROOT_LOGGER.singletonDeploymentDetected(policy);
+                    ServiceController<?> controller = context.getServiceRegistry().getRequiredService(unit.getServiceName());
+                    controller.addListener(new AbstractServiceListener<Object>() {
+                        @Override
+                        public void transition(final ServiceController<?> controller, final ServiceController.Transition transition) {
+                            if(transition.getAfter().equals(ServiceController.Substate.DOWN)) {
+                                controller.setMode(Mode.ACTIVE);
+                                controller.removeListener(this);
+                            }
+                        }
+                    });
+                    controller.setMode(Mode.NEVER);
+                }
+            }
         }
     }
 
