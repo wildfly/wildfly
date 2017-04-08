@@ -37,7 +37,7 @@ public class ReloadRequiredAddStepHandler extends AddStepHandler {
 
     @Override
     protected boolean requiresRuntime(OperationContext context) {
-        return !context.isBooting() && super.requiresRuntime(context);
+        return !context.isBooting() && context.isDefaultRequiresRuntime();
     }
 
     @Override
