@@ -82,7 +82,7 @@ public class InterceptorAnnotationProcessor implements DeploymentUnitProcessor {
         final Class<?> componentClass;
         try {
             componentClass = ClassLoadingUtils.loadClass(description.getComponentClassName(), deploymentUnit);
-        } catch (ClassNotFoundException e) {
+        } catch (Throwable e) {
             //just ignore the class for now.
             //if it is an optional component this is ok, if it is not an optional component
             //it will fail at configure time anyway
