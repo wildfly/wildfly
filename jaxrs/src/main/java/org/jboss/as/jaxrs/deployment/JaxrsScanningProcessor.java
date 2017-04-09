@@ -107,6 +107,14 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
             } else {
                 scanWebDeployment(deploymentUnit, warMetaData.getMergedJBossWebMetaData(), module.getClassLoader(), resteasyDeploymentData);
                 scan(deploymentUnit, module.getClassLoader(), resteasyDeploymentData);
+
+                // When BootStrap classes are present and no Application subclass declared
+                // must check context param for Application subclass declaration
+                if (resteasyDeploymentData.getScannedResourceClasses().isEmpty() &&
+                    !resteasyDeploymentData.isDispatcherCreated() &&
+                    hasBootClasses(warMetaData.getMergedJBossWebMetaData())) {
+                    checkOtherParams(deploymentUnit, warMetaData.getMergedJBossWebMetaData(), module.getClassLoader(), resteasyDeploymentData);
+                }
             }
             deploymentUnit.putAttachment(JaxrsAttachments.RESTEASY_DEPLOYMENT_DATA, resteasyDeploymentData);
             List<String> rootRestClasses = new ArrayList<>(resteasyDeploymentData.getScannedResourceClasses());
@@ -125,6 +133,104 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
             deploymentResourceSupport.getDeploymentSubModel(JaxrsExtension.SUBSYSTEM_NAME, PathElement.pathElement(DeploymentRestResourcesDefintion.REST_RESOURCE_NAME, componentClass));
         } catch (Exception e) {
             JaxrsLogger.JAXRS_LOGGER.failedToRegisterManagementViewForRESTResources(componentClass, e);
+        }
+    }
+
+    private void checkOtherParams(final DeploymentUnit du,
+                                  final JBossWebMetaData webdata,
+                                  final ClassLoader classLoader,
+                                  final ResteasyDeploymentData resteasyDeploymentData)
+        throws DeploymentUnitProcessingException{
+
+        HashSet<String> appClazzList = new HashSet<>();
+        List<ParamValueMetaData> contextParamList = webdata.getContextParams();
+        if (contextParamList !=null) {
+            for(ParamValueMetaData param: contextParamList) {
+                if ("javax.ws.rs.core.Application".equals(param.getParamName())) {
+                    appClazzList.add(param.getParamValue());
+                }
+            }
+        }
+
+        if (webdata.getServlets() != null) {
+            for (ServletMetaData servlet : webdata.getServlets()) {
+                List<ParamValueMetaData> initParamList = servlet.getInitParam();
+                if (initParamList != null) {
+                    for(ParamValueMetaData param: initParamList) {
+                        if ("javax.ws.rs.core.Application".equals(param.getParamName())) {
+                            appClazzList.add(param.getParamValue());
+                        }
+                    }
+                }
+            }
+        }
+
+        processDeclaredApplicationClasses(du, appClazzList, webdata, classLoader, resteasyDeploymentData);
+    }
+
+    private void processDeclaredApplicationClasses(final DeploymentUnit du,
+                                                   final Set<String> appClazzList,
+                                                 final JBossWebMetaData webdata,
+                                                 final ClassLoader classLoader,
+                                                 final ResteasyDeploymentData resteasyDeploymentData)
+        throws DeploymentUnitProcessingException {
+
+        final CompositeIndex index = du.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        List<AnnotationInstance> resources = index.getAnnotations(JaxrsAnnotations.PATH.getDotName());
+        Map<String, ClassInfo> resourceMap = new HashMap<>(resources.size());
+        if (resources != null) {
+           for (AnnotationInstance a: resources) {
+               if (a.target() instanceof ClassInfo) {
+                   resourceMap.put(((ClassInfo)a.target()).name().toString(),
+                       (ClassInfo)a.target());
+               }
+           }
+        }
+
+        for (String clazzName: appClazzList) {
+            Class<?> clazz = null;
+            try {
+                clazz = classLoader.loadClass(clazzName);
+            } catch (ClassNotFoundException e) {
+                throw new DeploymentUnitProcessingException(e);
+            }
+
+            if (Application.class.isAssignableFrom(clazz)) {
+                try {
+                    Application appClazz = (Application) clazz.newInstance();
+                    Set<Class<?>> declClazzs = appClazz.getClasses();
+                    Set<Object> declSingletons = appClazz.getSingletons();
+                    HashSet<Class<?>> clazzSet = new HashSet<>();
+                    if (declClazzs != null) {
+                        clazzSet.addAll(declClazzs);
+                    }
+                    if (declSingletons != null) {
+                        for (Object obj : declSingletons) {
+                            clazzSet.add((Class) obj);
+                        }
+                    }
+
+                    Set<String> scannedResourceClasses = resteasyDeploymentData.getScannedResourceClasses();
+                    for (Class<?> cClazz : clazzSet) {
+                        if (cClazz.isAnnotationPresent(javax.ws.rs.Path.class)) {
+                            final ClassInfo info = resourceMap.get(cClazz.getName());
+                            if (info != null) {
+                                if (info.annotations().containsKey(DECORATOR)) {
+                                    //we do not add decorators as resources
+                                    //we can't pick up on programatically added decorators, but that is such an edge case it should not really matter
+                                    continue;
+                                }
+                                if (!Modifier.isInterface(info.flags())) {
+                                    scannedResourceClasses.add(info.name().toString());
+                                }
+                            }
+                        }
+                    }
+
+                } catch (Exception e) {
+                    JAXRS_LOGGER.cannotLoadApplicationClass(e);
+                }
+            }
         }
     }
 
