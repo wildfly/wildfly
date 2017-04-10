@@ -209,7 +209,8 @@ concat_lines() {
 # Workaround for JBEAP-8937 - Don't change lines below
 # as it may breaks build on Solaris 10 (Sparc)
 if [ -z "${MAVEN_PROJECTBASEDIR}" ]; then
-  export MAVEN_PROJECTBASEDIR=`find_maven_basedir`
+  MAVEN_PROJECTBASEDIR=`find_maven_basedir`
+  export MAVEN_PROJECTBASEDIR
 fi
 # End of workaround for JBEAP-8937
 
