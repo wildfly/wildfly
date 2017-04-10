@@ -480,6 +480,8 @@ public class PersistenceUnitServiceHandler {
             // if the persistence unit is contained in a deployment that is a CDI bean archive (has beans.xml).
             if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
                 proxyBeanManager = new ProxyBeanManager();
+                registerJPAEntityListenerRegister(deploymentUnit); // register CDI extension before WeldDeploymentProcessor, which is important for
+                                                                   // EAR deployments that contain a WAR that has persistence units defined.
             }
 
             final PhaseOnePersistenceUnitServiceImpl service = new PhaseOnePersistenceUnitServiceImpl(classLoader, pu, adaptor, deploymentUnit.getServiceName(), proxyBeanManager);
