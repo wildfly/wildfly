@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EntitiesDescriptor Name="urn:mace:shibboleth:testshib:two"
+	xmlns:shibmd="urn:mace:shibboleth:metadata:1.0" xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
+	xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<EntityDescriptor entityID="http://${node0.escaped}:8080/idp-metadata/">
+		<IDPSSODescriptor
+			protocolSupportEnumeration="urn:oasis:names:tc:SAML:1.1:protocol urn:oasis:names:tc:SAML:2.0:protocol">
+			<NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient
+			</NameIDFormat>
+			<SingleSignOnService Binding="urn:mace:shibboleth:1.0:profiles:AuthnRequest"
+				Location="http://${node0.escaped}:8080/idp-metadata/" />
+			<SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+				Location="http://${node0.escaped}:8080/idp-metadata/" />
+			<SingleSignOnService
+				Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+				Location="http://${node0.escaped}:8080/idp-metadata/" />
+			<SingleLogoutService
+				Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+				Location="http://${node0.escaped}:8080/idp-metadata/?GLO=true" />
+			<SingleLogoutService
+				Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+				Location="http://${node0.escaped}:8080/idp-metadata/SLO" />
+		</IDPSSODescriptor>
+		<Organization>
+			<OrganizationName xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
+				xml:lang="en">JBoss</OrganizationName>
+			<OrganizationDisplayName xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
+				xml:lang="en">JBoss by Red Hat</OrganizationDisplayName>
+			<OrganizationURL xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
+				xml:lang="en">http://www.jboss.org</OrganizationURL>
+		</Organization>
+		<ContactPerson contactType="technical">
+			<GivenName>The</GivenName>
+			<SurName>Admin</SurName>
+			<EmailAddress>admin@mycompany.com</EmailAddress>
+		</ContactPerson>
+	</EntityDescriptor>
+	<EntityDescriptor entityID="http://${node0.escaped}:8080/sp-metadata2/">
+		<SPSSODescriptor
+			protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol urn:oasis:names:tc:SAML:1.1:protocol http://schemas.xmlsoap.org/ws/2003/07/secext">
+			<NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient
+			</NameIDFormat>
+			<AssertionConsumerService
+				Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="http://${node0.escaped}:8080/sp-metadata2/"
+				index="1" isDefault="true" />
+		</SPSSODescriptor>
+		<Organization>
+			<OrganizationName xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
+				xml:lang="en">JBoss</OrganizationName>
+			<OrganizationDisplayName xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
+				xml:lang="en">JBoss by Red Hat</OrganizationDisplayName>
+			<OrganizationURL xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
+				xml:lang="en">http://${node0.escaped}:8080/sp-metadata2/</OrganizationURL>
+		</Organization>
+		<ContactPerson contactType="technical">
+			<GivenName>The</GivenName>
+			<SurName>Admin</SurName>
+			<EmailAddress>admin@mycompany.com</EmailAddress>
+		</ContactPerson>
+	</EntityDescriptor>
+</EntitiesDescriptor>

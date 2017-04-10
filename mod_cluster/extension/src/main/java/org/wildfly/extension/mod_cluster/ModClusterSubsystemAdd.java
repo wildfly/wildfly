@@ -30,6 +30,7 @@ import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefiniti
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STATUS_INTERVAL;
 import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
 
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
@@ -101,8 +102,8 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .install();
 
         // Install services for web container integration
-        for (ContainerEventHandlerAdapterBuilder adapterBuilder : ServiceLoader.load(ContainerEventHandlerAdapterBuilder.class, ContainerEventHandlerAdapterBuilder.class.getClassLoader())) {
-            adapterBuilder.build(target, context.getCapabilityServiceSupport(), connector, statusInterval).setInitialMode(Mode.PASSIVE).install();
+        for (ContainerEventHandlerAdapterBuilderProvider provider : ServiceLoader.load(ContainerEventHandlerAdapterBuilderProvider.class, ContainerEventHandlerAdapterBuilderProvider.class.getClassLoader())) {
+            provider.getBuilder(connector, Duration.ofSeconds(statusInterval)).configure(context).build(target).setInitialMode(Mode.PASSIVE).install();
         }
     }
 

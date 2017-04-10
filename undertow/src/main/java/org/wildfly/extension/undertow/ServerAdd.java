@@ -35,6 +35,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderProvider;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -81,6 +83,9 @@ class ServerAdd extends AbstractAddStepHandler {
             commonServerBuilder.install();
         }
         builder.install();
+
+        ServiceTarget target = context.getServiceTarget();
+        DistributableSessionIdentifierCodecBuilderProvider.INSTANCE.ifPresent(provider -> provider.getServerBuilders(name).forEach(b -> b.configure(context).build(target).install()));
     }
 
     @Override

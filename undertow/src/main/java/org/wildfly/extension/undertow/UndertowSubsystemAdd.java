@@ -59,9 +59,6 @@ import org.wildfly.extension.undertow.deployment.WebFragmentParsingDeploymentPro
 import org.wildfly.extension.undertow.deployment.WebJBossAllParser;
 import org.wildfly.extension.undertow.deployment.WebParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
-import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilder;
-import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderValue;
-import org.wildfly.extension.undertow.session.RouteValueService;
 import org.wildfly.extension.undertow.session.SharedSessionConfigParser_1_0;
 
 
@@ -137,7 +134,7 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_HANDLERS + 2, new UndertowServletContainerDependencyProcessor(defaultContainer)); //todo: fix priority
 
 
-                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SHARED_SESSION_MANAGER, new SharedSessionManagerDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SHARED_SESSION_MANAGER, new SharedSessionManagerDeploymentProcessor(defaultServer));
 
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
 
@@ -146,21 +143,9 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        DistributableSessionIdentifierCodecBuilder builder = new DistributableSessionIdentifierCodecBuilderValue().getValue();
-        if (builder != null) {
-            builder.buildServerDependency(context.getServiceTarget())
-                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                    .install();
-        }
-
-        RouteValueService.build(context.getServiceTarget())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install();
-
         context.getCapabilityServiceTarget()
                 .addCapability(HTTP_INVOKER_RUNTIME_CAPABILITY, new RemoteHttpInvokerService())
                 .install();
-
     }
 
 }

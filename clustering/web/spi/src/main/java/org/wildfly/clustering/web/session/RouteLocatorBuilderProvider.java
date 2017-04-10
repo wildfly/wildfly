@@ -21,8 +21,11 @@
  */
 package org.wildfly.clustering.web.session;
 
-import org.jboss.msc.value.Value;
-import org.wildfly.clustering.service.Builder;
+import java.util.Collection;
+import java.util.function.Supplier;
+
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * Builds a {@link RouteLocator} service.
@@ -34,12 +37,12 @@ public interface RouteLocatorBuilderProvider {
      * @param deploymentName the name of the web deployment
      * @return a service builder
      */
-    Builder<RouteLocator> getRouteLocatorBuilder(String deploymentName);
+    CapabilityServiceBuilder<RouteLocator> getRouteLocatorBuilder(String serverName, String deploymentName);
 
     /**
      * Builds the server dependencies to be made available to every deployment.
      * @param route the injected route source
      * @return a service builder
      */
-    Builder<?> getRouteLocatorConfigurationBuilder(Value<? extends Value<String>> route);
+    Collection<CapabilityServiceBuilder<?>> getRouteLocatorConfigurationBuilders(String serverName, Supplier<ValueDependency<String>> routeDependencyProvider);
 }

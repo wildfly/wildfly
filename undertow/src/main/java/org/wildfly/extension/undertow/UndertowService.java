@@ -81,7 +81,7 @@ public class UndertowService implements Service<UndertowService> {
     private final String defaultVirtualHost;
     private final Set<Server> registeredServers = new CopyOnWriteArraySet<>();
     private final List<UndertowEventListener> listeners = Collections.synchronizedList(new LinkedList<UndertowEventListener>());
-    private volatile String instanceId;
+    private final String instanceId;
     private volatile boolean statisticsEnabled;
     private final Set<Consumer<Boolean>> statisticsChangeListenters = new HashSet<>();
 
@@ -231,10 +231,6 @@ public class UndertowService implements Service<UndertowService> {
 
     public String getInstanceId() {
         return instanceId;
-    }
-
-    public void setInstanceId(String instanceId) {
-        this.instanceId = instanceId;
     }
 
     public boolean isStatisticsEnabled() {

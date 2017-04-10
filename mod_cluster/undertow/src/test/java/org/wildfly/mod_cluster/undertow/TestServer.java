@@ -24,14 +24,16 @@ package org.wildfly.mod_cluster.undertow;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.Server;
+import org.wildfly.extension.undertow.UndertowService;
 
 public class TestServer extends Server {
     public TestServer(String name, String defaultHost) {
         super(name, defaultHost);
     }
 
-    public TestServer(String name, String defaultHost, Host host, ListenerService listener) {
+    public TestServer(String name, String defaultHost, UndertowService service, Host host, ListenerService listener) {
         this(name, defaultHost);
+        this.getUndertowServiceInjector().inject(service);
         this.registerHost(host);
         this.registerListener(listener);
     }

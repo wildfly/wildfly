@@ -24,22 +24,15 @@ package org.jboss.as.jpa.processor;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
-import java.io.IOException;
-import java.net.JarURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.jar.JarFile;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
-import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -52,10 +45,7 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.ResourceLoaderSpec;
-import org.jboss.modules.ResourceLoaders;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
@@ -70,13 +60,6 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier JAVAX_PERSISTENCE_API_ID = ModuleIdentifier.create("javax.persistence.api");
     private static final ModuleIdentifier JBOSS_AS_JPA_ID = ModuleIdentifier.create("org.jboss.as.jpa");
     private static final ModuleIdentifier JBOSS_AS_JPA_SPI_ID = ModuleIdentifier.create("org.jboss.as.jpa.spi");
-    private static final ModuleIdentifier JAVASSIST_ID = ModuleIdentifier.create("org.javassist");
-
-    private static final ModuleIdentifier HIBERNATE_3_PROVIDER = ModuleIdentifier.create("org.jboss.as.jpa.hibernate", "3");
-    private static final String HIBERNATE3_PROVIDER_ADAPTOR = "org.jboss.as.jpa.hibernate3.HibernatePersistenceProviderAdaptor";
-    // module dependencies for hibernate3
-    private static final ModuleIdentifier JBOSS_AS_NAMING_ID = ModuleIdentifier.create("org.jboss.as.naming");
-    private static final ModuleIdentifier JBOSS_JANDEX_ID = ModuleIdentifier.create("org.jboss.jandex");
 
     /**
      * Add dependencies for modules required for JPA deployments
@@ -92,10 +75,9 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         if (!JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
             return; // Skip if there are no persistence use in the deployment
         }
-        addDependency(moduleSpecification, moduleLoader, deploymentUnit, JBOSS_AS_JPA_ID, JBOSS_AS_JPA_SPI_ID, JAVASSIST_ID);
+        addDependency(moduleSpecification, moduleLoader, deploymentUnit, JBOSS_AS_JPA_ID, JBOSS_AS_JPA_SPI_ID);
         addPersistenceProviderModuleDependencies(phaseContext, moduleSpecification, moduleLoader);
     }
-
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                DeploymentUnit deploymentUnit, ModuleIdentifier... moduleIdentifiers) {
@@ -225,33 +207,4 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         }
         return defaultProviderCount;
     }
-
-    private void addHibernate3AdaptorToDeployment(final ModuleLoader moduleLoader, final DeploymentUnit deploymentUnit) {
-        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        try {
-            final Module module = moduleLoader.loadModule(HIBERNATE_3_PROVIDER);
-            //use a trick to get to the root of the class loader
-            final URL url = module.getClassLoader().getResource(HIBERNATE3_PROVIDER_ADAPTOR.replace('.', '/') + ".class");
-
-            final URLConnection connection = url.openConnection();
-            if (!(connection instanceof JarURLConnection)) {
-                throw JpaLogger.ROOT_LOGGER.invalidUrlConnection("hibernate 3", connection);
-            }
-
-            final JarFile jarFile = ((JarURLConnection) connection).getJarFile();
-
-            moduleSpecification.addResourceLoader(ResourceLoaderSpec.createResourceLoaderSpec(ResourceLoaders.createJarResourceLoader("hibernate3integration", jarFile)));
-
-            // hack in the dependencies which are part of hibernate3integration
-            // TODO:  do this automatically (adding dependencies found in HIBERNATE_3_PROVIDER).
-            addDependency(moduleSpecification, moduleLoader, deploymentUnit, JBOSS_AS_NAMING_ID, JBOSS_JANDEX_ID);
-        } catch (ModuleLoadException e) {
-            throw JpaLogger.ROOT_LOGGER.cannotLoadModule(e, HIBERNATE_3_PROVIDER, "hibernate 3");
-        } catch (MalformedURLException e) {
-            throw JpaLogger.ROOT_LOGGER.cannotAddIntegration(e, "hibernate 3");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 }

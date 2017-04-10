@@ -32,10 +32,13 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.security.jacc.PolicyConfiguration;
 
 import org.apache.jasper.Constants;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.SimpleCapabilityServiceBuilder;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentRegistry;
@@ -76,7 +79,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SecurityUtil;
@@ -93,13 +95,12 @@ import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
-import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilder;
-import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderValue;
-import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
-import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderValue;
+import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderProvider;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerConfiguration;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderProvider;
 import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
 import org.wildfly.extension.undertow.session.SimpleDistributableSessionManagerConfiguration;
-import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecService;
+import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecBuilder;
 
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
@@ -200,6 +201,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         }
         final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
         final List<SetupAction> setupActions = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS);
+        CapabilityServiceSupport capabilitySupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
 
         ScisMetaData scisMetaData = deploymentUnit.getAttachment(ScisMetaData.ATTACHMENT_KEY);
 
@@ -371,11 +373,14 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             infoBuilder.addDependency(deploymentUnit.getParent().getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME), SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
         } else {
             CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-            ServiceName sessionManagerFactoryServiceName = installSessionManagerFactory(support, serviceTarget, deploymentServiceName, deploymentName, module, metaData, deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE));
-            infoBuilder.addDependency(sessionManagerFactoryServiceName, SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
 
-            ServiceName sessionIdentifierCodecServiceName = installSessionIdentifierCodec(serviceTarget, deploymentServiceName, deploymentName, metaData);
-            infoBuilder.addDependency(sessionIdentifierCodecServiceName, SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
+            CapabilityServiceBuilder<SessionManagerFactory> factoryBuilder = getSessionManagerFactoryBuilder(deploymentServiceName, serverInstanceName, deploymentName, module, metaData, deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE));
+            infoBuilder.addDependency(factoryBuilder.getServiceName(), SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
+
+            CapabilityServiceBuilder<SessionIdentifierCodec> codecBuilder = getSessionIdentifierCodecBuilder(deploymentServiceName, serverInstanceName, deploymentName, metaData);
+            infoBuilder.addDependency(codecBuilder.getServiceName(), SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
+
+            Stream.of(factoryBuilder, codecBuilder).forEach(builder -> builder.configure(support).build(serviceTarget).setInitialMode(Mode.ON_DEMAND).install());
         }
 
         infoBuilder.install();
@@ -434,7 +439,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         processManagement(deploymentUnit, metaData);
     }
 
-    private static ServiceName installSessionManagerFactory(CapabilityServiceSupport support, ServiceTarget target, ServiceName deploymentServiceName, String deploymentName, Module module, JBossWebMetaData metaData, ServletContainerService servletContainerService) {
+    private static CapabilityServiceBuilder<SessionManagerFactory> getSessionManagerFactoryBuilder(ServiceName deploymentServiceName, String serverName, String deploymentName, Module module, JBossWebMetaData metaData, ServletContainerService servletContainerService) {
 
         Integer maxActiveSessions = metaData.getMaxActiveSessions();
         if(maxActiveSessions == null && servletContainerService != null) {
@@ -442,34 +447,25 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         }
         ServiceName name = deploymentServiceName.append("session");
         if (metaData.getDistributable() != null) {
-            DistributableSessionManagerFactoryBuilder sessionManagerFactoryBuilder = new DistributableSessionManagerFactoryBuilderValue().getValue();
-            if (sessionManagerFactoryBuilder != null) {
-                sessionManagerFactoryBuilder.build(support, target, name, new SimpleDistributableSessionManagerConfiguration(maxActiveSessions, metaData.getReplicationConfig(), deploymentName, module))
-                        .setInitialMode(Mode.ON_DEMAND)
-                        .install()
-                ;
-                return name;
+            if (DistributableSessionManagerFactoryBuilderProvider.INSTANCE.isPresent()) {
+                DistributableSessionManagerConfiguration config = new SimpleDistributableSessionManagerConfiguration(maxActiveSessions, metaData.getReplicationConfig(), serverName, deploymentName, module);
+                return DistributableSessionManagerFactoryBuilderProvider.INSTANCE.get().getBuilder(name, config);
             }
             // Fallback to local session manager if server does not support clustering
             UndertowLogger.ROOT_LOGGER.clusteringNotSupported();
         }
-        InMemorySessionManagerFactory factory = (maxActiveSessions != null) ? new InMemorySessionManagerFactory(maxActiveSessions) : new InMemorySessionManagerFactory();
-        target.addService(name,  new ValueService<>(new ImmediateValue<>(factory))).setInitialMode(Mode.ON_DEMAND).install();
-        return name;
+        return new SimpleCapabilityServiceBuilder<>(name, (maxActiveSessions != null) ? new InMemorySessionManagerFactory(maxActiveSessions) : new InMemorySessionManagerFactory());
     }
 
-    private static ServiceName installSessionIdentifierCodec(ServiceTarget target, ServiceName deploymentServiceName, String deploymentName, JBossWebMetaData metaData) {
+    private static CapabilityServiceBuilder<SessionIdentifierCodec> getSessionIdentifierCodecBuilder(ServiceName deploymentServiceName, String serverName, String deploymentName, JBossWebMetaData metaData) {
         ServiceName name = deploymentServiceName.append("codec");
         if (metaData.getDistributable() != null) {
-            DistributableSessionIdentifierCodecBuilder sessionIdentifierCodecBuilder = new DistributableSessionIdentifierCodecBuilderValue().getValue();
-            if (sessionIdentifierCodecBuilder != null) {
-                sessionIdentifierCodecBuilder.build(target, name, deploymentName).setInitialMode(Mode.ON_DEMAND).install();
-                return name;
+            if (DistributableSessionIdentifierCodecBuilderProvider.INSTANCE.isPresent()) {
+                return DistributableSessionIdentifierCodecBuilderProvider.INSTANCE.get().getDeploymentBuilder(name, serverName, deploymentName);
             }
             // Fallback to simple codec if server does not support clustering
         }
-        SimpleSessionIdentifierCodecService.build(target, name).setInitialMode(Mode.ON_DEMAND).install();
-        return name;
+        return new SimpleSessionIdentifierCodecBuilder(name, serverName);
     }
 
     static String pathNameOfDeployment(final DeploymentUnit deploymentUnit, final JBossWebMetaData metaData) {

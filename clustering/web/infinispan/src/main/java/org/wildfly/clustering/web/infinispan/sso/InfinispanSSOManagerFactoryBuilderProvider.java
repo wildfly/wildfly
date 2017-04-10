@@ -22,10 +22,12 @@
 package org.wildfly.clustering.web.infinispan.sso;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
 
+@MetaInfServices(SSOManagerFactoryBuilderProvider.class)
 public class InfinispanSSOManagerFactoryBuilderProvider implements SSOManagerFactoryBuilderProvider<TransactionBatch> {
 
     @Override

@@ -32,10 +32,10 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.core.testrunner.ManagementClient;
+import org.wildfly.core.testrunner.Server;
 import org.wildfly.core.testrunner.ServerControl;
 import org.wildfly.core.testrunner.ServerController;
 import org.wildfly.core.testrunner.WildflyTestRunner;
@@ -61,8 +61,7 @@ public class ReadFullModelTestCase {
 
     @Test
     public void test() throws Exception {
-        Assume.assumeTrue(System.getProperties().containsKey("ipv6"));
-        container.start(SERVER_CONFIG, false);
+        container.start(SERVER_CONFIG, Server.StartMode.NORMAL);
         try {
             ManagementClient client = container.getClient();
             ModelNode rr = Util.createEmptyOperation(READ_RESOURCE_OPERATION, PathAddress.EMPTY_ADDRESS);

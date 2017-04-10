@@ -29,6 +29,8 @@ public interface DistributableSessionManagerConfiguration {
 
     ReplicationGranularity getGranularity();
 
+    String getServerName();
+
     String getDeploymentName();
 
     Module getModule();

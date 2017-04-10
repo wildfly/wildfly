@@ -35,6 +35,8 @@ public interface SessionManagerFactoryConfiguration<C extends Marshallability> {
 
     SessionAttributePersistenceStrategy getAttributePersistenceStrategy();
 
+    String getServerName();
+
     String getDeploymentName();
 
     String getCacheName();

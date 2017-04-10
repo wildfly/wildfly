@@ -26,8 +26,6 @@
             node="${node1}"
             mcast="${mcast}"
         />
-        <ts.config-as.add-port-offset name="jbossas-iiop-server" offset="100" nativePort="9999" httpPort="9990"/>
-
         <!-- Build configs for SSL tests -->
 
         <!-- SSL Client w Sec Domain -->
@@ -58,7 +56,6 @@
         <copy todir="target/jbossas-iiop-ssl-server/standalone/configuration">
             <fileset file="${keystore.file}"/>
         </copy>
-        <ts.config-as.add-port-offset name="jbossas-iiop-ssl-server" offset="100" nativePort="9999" httpPort="9990"/>
         <ts.config-as.setup-ssl-support-for-iiop name="jbossas-iiop-ssl-server"
                                                  keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
                                                  password="${keystore.password}"/>
@@ -75,7 +72,6 @@
         <copy todir="target/jbossas-iiop-ssl-legacy-server/standalone/configuration">
             <fileset file="${keystore.file}"/>
         </copy>
-        <ts.config-as.add-port-offset name="jbossas-iiop-ssl-legacy-server" offset="200" nativePort="9999" httpPort="9990"/>
         <ts.config-as.setup-legacy-ssl-support-for-iiop name="jbossas-iiop-ssl-legacy-server"
                                                         keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
                                                         password="${keystore.password}"/>

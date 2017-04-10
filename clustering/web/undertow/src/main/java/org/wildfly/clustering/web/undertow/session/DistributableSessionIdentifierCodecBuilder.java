@@ -21,68 +21,57 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import java.util.ServiceLoader;
-
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.web.session.RoutingSupport;
 import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.as.web.session.SimpleRoutingSupport;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.MappedValueService;
 import org.wildfly.clustering.web.session.RouteLocator;
 import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
-import org.wildfly.extension.undertow.session.RouteValue;
-import org.wildfly.extension.undertow.session.RouteValueService;
 
 /**
  * Builds a distributable {@link SessionIdentifierCodec} service.
  * @author Paul Ferraro
  */
-public class DistributableSessionIdentifierCodecBuilder implements org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilder, Value<SessionIdentifierCodec> {
+public class DistributableSessionIdentifierCodecBuilder implements CapabilityServiceBuilder<SessionIdentifierCodec> {
 
-    private static RouteLocatorBuilderProvider load() {
-        for (RouteLocatorBuilderProvider provider: ServiceLoader.load(RouteLocatorBuilderProvider.class, RouteLocatorBuilderProvider.class.getClassLoader())) {
-            return provider;
-        }
-        return null;
-    }
-
-    private final RouteLocatorBuilderProvider provider;
-    private final InjectedValue<RouteLocator> locator = new InjectedValue<>();
+    private final ServiceName name;
+    private final CapabilityServiceBuilder<RouteLocator> locatorBuilder;
     private final RoutingSupport routing = new SimpleRoutingSupport();
 
-    public DistributableSessionIdentifierCodecBuilder() {
-        this(load());
-    }
+    public DistributableSessionIdentifierCodecBuilder(ServiceName name, String serverName, String deploymentName, RouteLocatorBuilderProvider provider) {
+        this.name = name;
 
-    public DistributableSessionIdentifierCodecBuilder(RouteLocatorBuilderProvider provider) {
-        this.provider = provider;
-    }
-
-    @Override
-    public ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target, ServiceName name, String deploymentName) {
-        Builder<RouteLocator> locatorBuilder = this.provider.getRouteLocatorBuilder(deploymentName);
-        locatorBuilder.build(target).install();
-        return target.addService(name, new ValueService<>(this))
-                .addDependency(locatorBuilder.getServiceName(), RouteLocator.class, this.locator)
-        ;
+        this.locatorBuilder = provider.getRouteLocatorBuilder(serverName, deploymentName);
     }
 
     @Override
-    public DistributableSessionIdentifierCodec getValue() {
-        return new DistributableSessionIdentifierCodec(this.locator.getValue(), this.routing);
+    public ServiceName getServiceName() {
+        return this.name;
     }
 
     @Override
-    public ServiceBuilder<?> buildServerDependency(ServiceTarget target) {
-        final InjectedValue<RouteValue> route = new InjectedValue<>();
-        return this.provider.getRouteLocatorConfigurationBuilder(route).build(target)
-                .addDependency(RouteValueService.SERVICE_NAME, RouteValue.class, route)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+    public Builder<SessionIdentifierCodec> configure(CapabilityServiceSupport support) {
+        this.locatorBuilder.configure(support);
+        return this;
+    }
+
+    @Override
+    public ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target) {
+        this.locatorBuilder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        InjectedValue<RouteLocator> locatorValue = new InjectedValue<>();
+        Service<SessionIdentifierCodec> service = new MappedValueService<>(locator -> new DistributableSessionIdentifierCodec(locator, this.routing), locatorValue);
+        return target.addService(this.name, service)
+                .addDependency(this.locatorBuilder.getServiceName(), RouteLocator.class, locatorValue)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                ;
     }
 }

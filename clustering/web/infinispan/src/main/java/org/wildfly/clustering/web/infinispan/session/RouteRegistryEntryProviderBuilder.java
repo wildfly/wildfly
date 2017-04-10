@@ -24,36 +24,39 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.function.Function;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.Value;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.MappedValueService;
+import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * Service that provides the {@link Map.Entry} for the routing {@link org.wildfly.clustering.registry.Registry}.
  * @author Paul Ferraro
  */
-public class RouteRegistryEntryProviderBuilder implements Builder<Map.Entry<String, Void>> {
+public class RouteRegistryEntryProviderBuilder implements CapabilityServiceBuilder<Map.Entry<String, Void>> {
 
-    private final Value<? extends Value<String>> route;
+    private final String serverName;
+    private final ValueDependency<String> route;
 
-    public RouteRegistryEntryProviderBuilder(Value<? extends Value<String>> route) {
+    public RouteRegistryEntryProviderBuilder(String serverName, ValueDependency<String> route) {
+        this.serverName = serverName;
         this.route = route;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return ServiceName.parse(ClusteringCacheRequirement.REGISTRY_ENTRY.resolve(InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER, RouteCacheGroupBuilderProvider.CACHE_NAME));
+        return ServiceName.parse(ClusteringCacheRequirement.REGISTRY_ENTRY.resolve(InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER, this.serverName));
     }
 
     @Override
     public ServiceBuilder<Map.Entry<String, Void>> build(ServiceTarget target) {
-        Value<Map.Entry<String, Void>> value = () -> new AbstractMap.SimpleImmutableEntry<>(this.route.getValue().getValue(), null);
-        return target.addService(this.getServiceName(), new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        Function<String, Map.Entry<String, Void>> mapper = route -> new AbstractMap.SimpleImmutableEntry<>(route, null);
+        return this.route.register(target.addService(this.getServiceName(), new MappedValueService<>(mapper, this.route))).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }
