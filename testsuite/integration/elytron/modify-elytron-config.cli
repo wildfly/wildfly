@@ -1,4 +1,4 @@
-embed-server --jboss-home=${jboss.home.dir} --admin-only=true
+embed-server --admin-only=true
 
 /subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
 /subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)

@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * A simple IIOP over SSL invocation for one AS7 server to another
+ * A simple IIOP over SSL invocation for one server to another
  */
 @RunWith(Arquillian.class)
 public class IIOPSslInvocationTestCase {

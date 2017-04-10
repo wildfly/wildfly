@@ -122,7 +122,6 @@ public class LdapServerSetupTask implements ServerSetupTask {
                 directoryService.getAdminSession().add(new DefaultEntry(schemaManager, ldifEntry.getEntry()));
             }
         } catch (Exception e) {
-            e.printStackTrace();
             throw e;
         }
         final ManagedCreateLdapServer createLdapServer = new ManagedCreateLdapServer((CreateLdapServer) AnnotationUtils.getInstance(CreateLdapServer.class));

@@ -23,7 +23,38 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
     </properties>
 
+    <build>
+        <testResources>
+            <testResource>
+                <includes>
+                    <include>**/idp-*.xml</include>
+                    <include>**/sp-*.xml</include>
+                </includes>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+            <testResource>
+                <includes>
+                    <include>**/*.jsp</include>
+                    <include>**/web.xml</include>
+                    <include>**/*.jks</include>
+                </includes>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+            </testResource>
+            <testResource>
+                <includes>
+                    <include>**/*.xml</include>
+                    <include>**/*.jks</include>
+                </includes>
+                <directory>src/test/java</directory>
+                <filtering>false</filtering>
+            </testResource>
+        </testResources>
+    </build>
+
     <profiles>
+
 
         <profile>
             <id>picketlink.integration.tests.profile</id>
@@ -42,7 +73,7 @@
                     <scope>test</scope>
                 </dependency>
                 <dependency>
-                    <groupId>httpunit</groupId>
+                    <groupId>org.httpunit</groupId>
                     <artifactId>httpunit</artifactId>
                     <scope>test</scope>
                 </dependency>
@@ -56,26 +87,95 @@
 
             <build>
                 <plugins>
+                    <!-- TODO once PL is fixed to properly handle ipv6 trust domains, this can be used
+                    see https://issues.jboss.org/browse/WFLY-8301
+                    -->
+                    <!-- <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <offline>true</offline>
+                            <scripts>
+                                <script>modify-picketlink-config.cli</script>
+                            </scripts>
+                            <jboss-home>${project.build.directory}/jbossas</jboss-home>
+                            <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                            <system-properties>
+                                <module.path>${jboss.dist}/modules</module.path>
+                                <public.ip>\"${node0}\"</public.ip>
+                            </system-properties>
+                        </configuration>
+                    </plugin>-->
+
+                    <!-- TODO once https://issues.jboss.org/browse/WFLY-8301 is fixes remove this -->
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>xml-maven-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>build-picketlink.server</id>
+                                <id>ts.config-as.ip</id>
                                 <phase>process-test-resources</phase>
-                                <goals><goal>run</goal></goals>
+                                <goals>
+                                    <goal>transform</goal>
+                                </goals>
+                                <inherited>true</inherited>
                                 <configuration>
-                                    <target>
-                                        <property name="node0" value="${node0}"/>
-                                        <property name="node1" value="${node1}"/>
-                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/picketlink-build.xml">
-                                            <target name="build-picketlink"/>
-                                        </ant>
-                                    </target>
+                                    <transformationSets>
+                                        <!-- IPs. -->
+                                        <transformationSet>
+                                            <dir>${basedir}/target/jbossas/standalone/configuration</dir>
+                                            <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                            <stylesheet>${xslt.scripts.dir}/changeIPAddresses.xsl</stylesheet>
+                                            <includes>
+                                                <include>standalone*.xml</include>
+                                            </includes>
+                                            <parameters>
+                                                <parameter>
+                                                    <name>managementIPAddress</name>
+                                                    <value>${node0}</value>
+                                                </parameter>
+                                                <parameter>
+                                                    <name>publicIPAddress</name>
+                                                    <value>${node0}</value>
+                                                </parameter>
+                                                <parameter>
+                                                    <name>udpMcastAddress</name>
+                                                    <value>${mcast}</value>
+                                                </parameter>
+                                                <parameter>
+                                                    <name>mpingMcastAddress</name>
+                                                    <value>${mcast}</value>
+                                                </parameter>
+                                                <parameter>
+                                                    <name>modclusterMcastAddress</name>
+                                                    <value>${mcast}</value>
+                                                </parameter>
+                                            </parameters>
+                                        </transformationSet>
+                                    </transformationSets>
                                 </configuration>
                             </execution>
                         </executions>
+                        <!-- WFLY-3361 - use external xalan for XML transformations to
+                        ensure consistent behaviour on all platrforms.-->
+                        <dependencies>
+                            <dependency>
+                                <groupId>xalan</groupId>
+                                <artifactId>xalan</artifactId>
+                                <version>2.7.1</version>
+                            </dependency>
+                        </dependencies>
                     </plugin>
+
                     <!--
                        Surefire test executions
                     -->
@@ -88,8 +188,7 @@
                                 <include>org/wildfly/test/integration/security/picketlink/**/*TestCase.java</include>
                             </includes>
                             <systemPropertyVariables>
-                                <!-- EJB client library hack, see WFLY-4973-->
-                                <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.dirs} -Dnode0=${node0} -Dnode1=${node1}</server.jvm.args>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

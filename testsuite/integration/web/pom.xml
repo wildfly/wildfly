@@ -50,32 +50,6 @@
 
     <build>
         <plugins>
-            <!-- Build the target/jbossas server configuration. -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <!-- Copy in some jars. -->
-                    <execution>
-                        <id>prepare-jars-basic-integration.server</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <property name="tests.resources.dir" value="${basedir}/../src/test/resources"/>
-                                <property name="tests.output.dir" value="${project.build.directory}"/>
-                                <ant antfile="${basedir}/../src/test/scripts/basic-integration-build.xml">
-                                    <target name="build-basic-integration"/>
-                                    <!-- TODO: Unify names, then call "recursively". -->
-                                </ant>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>

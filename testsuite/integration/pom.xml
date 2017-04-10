@@ -67,6 +67,7 @@
                 <module>picketlink</module>
                 <module>secman</module>
                 <module>legacy</module>
+                <module>elytron</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
@@ -88,6 +89,7 @@
                 <module>picketlink</module>
                 <module>secman</module>
                 <module>legacy</module>
+                <module>elytron</module>
             </modules>
         </profile>
 
@@ -209,7 +211,7 @@
                 <module>legacy</module>
             </modules>
         </profile>
-
+        
         <!-- profile to configure WildFly to use Elytron instead of legacy security: -Delytron -->
         <profile>
             <id>elytron.profile</id>
@@ -224,31 +226,29 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
-                                <id>enable-elytron-cli</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-resources</phase>
                                 <goals>
-                                    <goal>exec</goal>
+                                    <goal>execute-commands</goal>
                                 </goals>
-                                <configuration>
-                                    <executable>${java.home}/bin/java</executable>
-                                    <arguments>
-                                        <argument>-jar</argument>
-                                        <argument>${project.build.directory}/jbossas/jboss-modules.jar</argument>
-                                        <argument>-mp</argument>
-                                        <argument>${jboss.dist}/modules</argument>
-                                        <argument>org.jboss.as.cli</argument>
-                                        <argument>--file=${ts.elytron.cli}</argument>
-                                    </arguments>
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${project.build.directory}/jbossas</JBOSS_HOME>
-                                    </environmentVariables>
-                                </configuration>
                             </execution>
                         </executions>
+                        <configuration>
+                            <offline>true</offline>
+                            <scripts>
+                                <script>${ts.elytron.cli}</script>
+                            </scripts>
+                            <jboss-home>${project.build.directory}/jbossas</jboss-home>
+                            <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                            <system-properties>
+                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${jboss.dist}/modules</module.path>
+                            </system-properties>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

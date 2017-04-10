@@ -29,7 +29,7 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-testsuite</artifactId>
+        <artifactId>wildfly-ts-integ</artifactId>
         <version>11.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -39,7 +39,7 @@
     <!-- ********************************************************************************** -->
     <artifactId>wildfly-ts-integ-elytron</artifactId>
 
-    <name>WildFly Test Suite: Elytron</name>
+    <name>WildFly Test Suite: Integration - Elytron</name>
 
     <properties>
         <wildfly.instance.name>wildfly</wildfly.instance.name>
@@ -217,19 +217,19 @@
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
-                                <configuration></configuration>
                             </execution>
                         </executions>
                         <configuration>
                             <offline>true</offline>
                             <scripts>
-                                <!--<script>${project.parent.basedir}/shared/change-ip.cli</script>-->
                                 <script>modify-elytron-config.cli</script>
                             </scripts>
                             <jboss-home>${wildfly.dir}</jboss-home>
+                            <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
                             <system-properties>
                                 <public.ip>${node0}</public.ip>
                                 <management.ip>${node0}</management.ip>
+                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
                             </system-properties>
                         </configuration>
                     </plugin>

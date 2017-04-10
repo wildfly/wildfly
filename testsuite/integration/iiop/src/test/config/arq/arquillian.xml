@@ -26,14 +26,14 @@
         <container qualifier="iiop-server" default="false">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-iiop-server</property>
-                <property name="javaVmArguments">${server.jvm.args}</property>
+                <property name="javaVmArguments">${server.jvm2.args}  -Djboss.socket.binding.port-offset=100</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-full.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10090</property>
 
                 <!-- AS7-4070 -->
-                <property name="waitForPorts">${as.debug.port.node1} 10090</property>
+                <property name="waitForPorts">${as.debug.port.node1:10090}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
@@ -60,12 +60,12 @@
         <container qualifier="iiop-server" default="false">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-iiop-ssl-server</property>
-                <property name="javaVmArguments">${server.jvm.args}</property>
+                <property name="javaVmArguments">${server.jvm2.args} -Djboss.socket.binding.port-offset=100</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-full.xml}</property>
                 <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10090</property>
 
-                <property name="waitForPorts">${as.debug.port.node1} 10090</property>
+                <property name="waitForPorts">${as.debug.port.node1:10090}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
@@ -74,12 +74,12 @@
         <container qualifier="iiop-legacy-server" default="false">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-iiop-ssl-legacy-server</property>
-                <property name="javaVmArguments">${server.jvm.args}</property>
+                <property name="javaVmArguments">${server.jvm2.args} -Djboss.socket.binding.port-offset=200</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-full.xml}</property>
                 <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10190</property>
 
-                <property name="waitForPorts">${as.debug.port.node1} 10190</property>
+                <property name="waitForPorts">${as.debug.port.node1:10190}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>

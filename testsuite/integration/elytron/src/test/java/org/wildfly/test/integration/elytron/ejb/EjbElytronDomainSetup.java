@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -188,7 +188,6 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         steps.add(addUndertowDomain);
 
         applyUpdate(managementClient.getControllerClient(), compositeOp, false);
-        System.out.println("...elytron setup");
     }
 
     @Override
@@ -210,7 +209,6 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        System.out.println("...tearing down");
     }
 
     private static ModelNode createRemoveIgnoring(PathAddress address) {

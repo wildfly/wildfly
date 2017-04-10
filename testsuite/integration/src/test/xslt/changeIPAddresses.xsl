@@ -42,32 +42,35 @@
     <xsl:param name="mpingMcastAddress"       select="$udpMcastAddress"/>
     <xsl:param name="modclusterMcastAddress"  select="$udpMcastAddress"/>
 
-
     <!-- Change the management and public IP addresses. -->
     <xsl:template match="//*[local-name()='interfaces' and starts-with(namespace-uri(), $jboss)]
-    				 	  /*[local-name()='interface' and @name='management']
-    				 	  /*[local-name()='inet-address']">
+                          /*[local-name()='interface' and @name='management']
+                          /*[local-name()='inet-address']">
         <xsl:copy>
-            <xsl:attribute name="value">
-                <xsl:value-of select="$managementIPAddress"/>
-            </xsl:attribute>
+            <xsl:attribute name="value"><xsl:value-of select="$managementIPAddress"/></xsl:attribute>
         </xsl:copy>
     </xsl:template>
 
     <xsl:template match="//*[local-name()='interfaces' and starts-with(namespace-uri(), $jboss)]
-    				 	  /*[local-name()='interface' and @name='public']
-    				 	  /*[local-name()='inet-address']">
-        <xsl:copy><xsl:attribute name="value">${jboss.bind.address:<xsl:value-of select="$publicIPAddress"/>}</xsl:attribute></xsl:copy>
+                          /*[local-name()='interface' and @name='public']
+                          /*[local-name()='inet-address']">
+        <xsl:copy>
+            <xsl:attribute name="value">${jboss.bind.address:<xsl:value-of select="$publicIPAddress"/>}</xsl:attribute>
+        </xsl:copy>
     </xsl:template>
     <xsl:template match="//*[local-name()='interfaces' and starts-with(namespace-uri(), $jboss)]
-    				 	  /*[local-name()='interface' and @name='private']
-    				 	  /*[local-name()='inet-address']">
-        <xsl:copy><xsl:attribute name="value">${jboss.bind.address.private:<xsl:value-of select="$publicIPAddress"/>}</xsl:attribute></xsl:copy>
+                          /*[local-name()='interface' and @name='private']
+                          /*[local-name()='inet-address']">
+        <xsl:copy>
+            <xsl:attribute name="value">${jboss.bind.address.private:<xsl:value-of select="$publicIPAddress"/>}</xsl:attribute>
+        </xsl:copy>
     </xsl:template>
     <xsl:template match="//*[local-name()='interfaces' and starts-with(namespace-uri(), $jboss)]
-    				 	  /*[local-name()='interface' and @name='unsecure']
-    				 	  /*[local-name()='inet-address']">
-        <xsl:copy><xsl:attribute name="value">${jboss.bind.address.unsecure:<xsl:value-of select="$publicIPAddress"/>}</xsl:attribute></xsl:copy>
+                          /*[local-name()='interface' and @name='unsecure']
+                          /*[local-name()='inet-address']">
+        <xsl:copy>
+            <xsl:attribute name="value">${jboss.bind.address.unsecure:<xsl:value-of select="$publicIPAddress"/>}</xsl:attribute>
+        </xsl:copy>
     </xsl:template>
 
     <!-- Change UDP multicast addresses. -->
@@ -87,25 +90,6 @@
     				 	  /*[local-name()='socket-binding' and @name='modcluster']/@multicast-address">
         <xsl:attribute name="multicast-address">
             <xsl:value-of select="$modclusterMcastAddress"/>
-        </xsl:attribute>
-    </xsl:template>
-
-    <!-- Change WSDL host. -->
-    <xsl:template match="//*[local-name()='wsdl-host' and starts-with(namespace-uri(), $webservices)]">
-        <xsl:copy>${jboss.bind.address:<xsl:value-of select="$publicIPAddress"/>}</xsl:copy>
-    </xsl:template>
-
-    <!-- Change XTS Coordinator -->
-    <xsl:template match="//*[local-name()='xts-environment' and starts-with(namespace-uri(), $xts)]/@url">
-        <xsl:attribute name="url">
-            <xsl:choose>
-                <xsl:when test="contains($publicIPAddress,':')">
-                    <xsl:value-of select="concat('http://[', $publicIPAddress, ']:8080/ws-c11/ActivationService')"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="concat('http://', $publicIPAddress, ':8080/ws-c11/ActivationService')"/>
-                </xsl:otherwise>
-            </xsl:choose>
         </xsl:attribute>
     </xsl:template>
 

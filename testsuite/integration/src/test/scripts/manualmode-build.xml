@@ -65,7 +65,6 @@
         <copy todir="target/jbossas-parse-marshal/modules">
             <fileset dir="${jboss.dist}/modules"/>
         </copy>
-
         <!-- Connects back to original host (node0) -->
         <ts.config-as.add-remote-outbound-connection name="jbossas-with-remote-outbound-connection" node="${node0}"
                                                      remotePort="8080" protocol="http-remoting" securityRealm="PasswordRealm" userName="user1"/>

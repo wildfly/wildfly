@@ -21,11 +21,17 @@
  */
 package org.wildfly.test.integration.security.picketlink.federation;
 
+import static org.junit.Assert.assertTrue;
+import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.identityProvider;
+import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.serviceProvider;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLEncoder;
+
 import com.meterware.httpunit.GetMethodWebRequest;
-import com.meterware.httpunit.HttpUnitOptions;
 import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebForm;
-import com.meterware.httpunit.WebLink;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -36,25 +42,14 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLEncoder;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.identityProvider;
-import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.serviceProvider;
 
 /**
  * @author Pedro Igor
  * @author Peter Skopek - porting to WF integration testsuite
  */
-@RunWith (Arquillian.class)
+@RunWith(Arquillian.class)
 // the standalone-picketlink.xml, the example configuration used by this test, contains all required security domains already
 //@ServerSetup({ AbstractBasicFederationTestCase.BasicSecurityDomainServerSetupTask.class })
 @RunAsClient
@@ -62,23 +57,23 @@ public class SAMLIDPInitiatedTestCase {
 
     private static Logger LOGGER = Logger.getLogger(SAMLIDPInitiatedTestCase.class);
     private static String webURI;
+
     static {
         String node0 = System.getProperty("node0", "127.0.0.1");
         String port0 = "8080";
         try {
             webURI = URLEncoder.encode("http://" + (node0.indexOf(":") > -1 ? "[" + node0 + "]" : node0) + ":" + port0, "ISO-8859-1");
-        }
-        catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException e) {
             LOGGER.error(e);
         }
     }
 
     @Deployment(name = "identity-provider")
     public static WebArchive deploymentIdP() {
-        LOGGER.debug("webURI in deployment:"+webURI);
+        LOGGER.debug("webURI in deployment:" + webURI);
         return identityProvider("idp-post.war", null,
                 "Welcome to IdP hosted<br/>"
-                + "<a id=\"service-provider-1-id\" href=\"?SAML_VERSION=2.0&TARGET=" + webURI + "/sp-post1/\">Service Provider 1 Test Link</a>");
+                        + "<a id=\"service-provider-1-id\" href=\"?SAML_VERSION=2.0&TARGET=" + webURI + "/sp-post1/\">Service Provider 1 Test Link</a>");
     }
 
     @Deployment(name = "service-provider-1")
@@ -112,40 +107,5 @@ public class SAMLIDPInitiatedTestCase {
 
         assertTrue(response.getText().contains("Back to the original requested resource."));
     }
-
-
-    @Ignore("wait for PL > 2.6.0.CR2")
-    @Test
-    @OperateOnDeployment("identity-provider")
-    public void testAuthentication(@ArquillianResource URL url) throws Exception {
-        WebConversation conversation = new WebConversation();
-        HttpUnitOptions.setLoggingHttpHeaders(true);
-        WebRequest request = new GetMethodWebRequest(url.toString());
-        WebResponse response = conversation.getResponse(request);
-
-        assertEquals(1, response.getForms().length);
-
-        WebForm webForm = response.getForms()[0];
-
-        webForm.setParameter("j_username", "tomcat");
-        webForm.setParameter("j_password", "tomcat");
-
-        webForm.getSubmitButtons()[0].click();
-
-        response = conversation.getCurrentPage();
-        LOGGER.debug("Response from IDP: "+response.getText());
-        LOGGER.debug("SP1-URL: "+serviceProviderPostURL);
-        LOGGER.debug("webURI: "+webURI);
-
-        WebLink link = response.getLinkWithID("service-provider-1-id");
-        assertNotNull("Cannot reach link with id: service-provider-1-id", link);
-
-        response = link.click();
-        assertTrue("Not properly redirected to sp-post1.war", response.getText().contains("Welcome to sp-post1.war"));
-    }
 }
-
-
-
-
 

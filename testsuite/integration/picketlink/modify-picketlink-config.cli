@@ -1,0 +1,9 @@
+embed-server --server-config=standalone-picketlink.xml
+
+/subsystem=picketlink-federation/federation=federation-simple-redirect-binding/identity-provider=idp-redirect.war/trust-domain=${public.ip}:add
+/subsystem=picketlink-federation/federation=federation-redirect-with-signatures/identity-provider=idp-redirect-sig.war/trust-domain=${public.ip}:add
+/subsystem=picketlink-federation/federation=federation-simple-post-binding/identity-provider=idp-post.war/trust-domain=${public.ip}:add
+/subsystem=picketlink-federation/federation=federation-post-with-signatures/identity-provider=idp-post-sig.war/trust-domain=${public.ip}:add
+/subsystem=picketlink-federation/federation=federation-with-metadata/identity-provider=idp-metadata.war/trust-domain=${public.ip}:add
+
+stop-embedded-server
