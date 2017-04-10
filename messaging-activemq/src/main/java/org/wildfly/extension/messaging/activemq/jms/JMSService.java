@@ -200,7 +200,7 @@ public class JMSService implements Service<JMSServerManager> {
         } catch(StartException e){
             throw e;
         } catch (Throwable t) {
-            throw MessagingLogger.ROOT_LOGGER.failedToStartService(t);
+            throw new StartException(t);
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }
