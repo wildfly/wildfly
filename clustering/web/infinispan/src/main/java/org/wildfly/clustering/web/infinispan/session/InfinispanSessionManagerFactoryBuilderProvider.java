@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
@@ -32,6 +33,7 @@ import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
  * Service building strategy the Infinispan session manager factory.
  * @author Paul Ferraro
  */
+@MetaInfServices(SessionManagerFactoryBuilderProvider.class)
 public class InfinispanSessionManagerFactoryBuilderProvider implements SessionManagerFactoryBuilderProvider<TransactionBatch> {
 
     @Override

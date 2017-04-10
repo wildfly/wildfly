@@ -19,37 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.undertow.session;
 
-import java.util.ServiceLoader;
+package org.jboss.as.clustering.controller;
 
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
+import org.wildfly.clustering.service.SimpleBuilder;
 
 /**
- * Dynamically loads the {@link DistributableSessionIdentifierCodecBuilder} provider via {@link ServiceLoader}.
  * @author Paul Ferraro
  */
-public class DistributableSessionIdentifierCodecBuilderValue implements Value<DistributableSessionIdentifierCodecBuilder> {
+public class SimpleCapabilityServiceBuilder<T> extends SimpleBuilder<T> implements CapabilityServiceBuilder<T> {
 
-    private final DistributableSessionIdentifierCodecBuilder builder;
-
-    public DistributableSessionIdentifierCodecBuilderValue() {
-        this(load());
+    public SimpleCapabilityServiceBuilder(ServiceName name, T value) {
+        super(name, value);
     }
 
-    public DistributableSessionIdentifierCodecBuilderValue(DistributableSessionIdentifierCodecBuilder builder) {
-        this.builder = builder;
+    public SimpleCapabilityServiceBuilder(ServiceName name, Value<T> value) {
+        super(name, value);
     }
 
-    private static DistributableSessionIdentifierCodecBuilder load() {
-        for (DistributableSessionIdentifierCodecBuilder builder: ServiceLoader.load(DistributableSessionIdentifierCodecBuilder.class, DistributableSessionIdentifierCodecBuilder.class.getClassLoader())) {
-            return builder;
-        }
-        return null;
-    }
-
-    @Override
-    public DistributableSessionIdentifierCodecBuilder getValue() {
-        return this.builder;
+    public SimpleCapabilityServiceBuilder(ServiceName name, Service<T> service) {
+        super(name, service);
     }
 }

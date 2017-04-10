@@ -34,20 +34,22 @@ public class SimpleDistributableSessionManagerConfiguration implements Distribut
 
     private final Integer maxActiveSessions;
     private final ReplicationConfig replicationConfig;
+    private final String serverName;
     private final String deploymentName;
     private final Module module;
 
-    public SimpleDistributableSessionManagerConfiguration(JBossWebMetaData metaData, String deploymentName, Module module) {
-        this(metaData.getMaxActiveSessions(), metaData.getReplicationConfig(), deploymentName, module);
+    public SimpleDistributableSessionManagerConfiguration(JBossWebMetaData metaData, String serverName, String deploymentName, Module module) {
+        this(metaData.getMaxActiveSessions(), metaData.getReplicationConfig(), serverName, deploymentName, module);
     }
 
-    public SimpleDistributableSessionManagerConfiguration(SharedSessionManagerConfig config, String deploymentName, Module module) {
-        this(config.getMaxActiveSessions(), config.getReplicationConfig(), deploymentName, module);
+    public SimpleDistributableSessionManagerConfiguration(SharedSessionManagerConfig config, String serverName, String deploymentName, Module module) {
+        this(config.getMaxActiveSessions(), config.getReplicationConfig(), serverName, deploymentName, module);
     }
 
-    public SimpleDistributableSessionManagerConfiguration(Integer maxActiveSessions, ReplicationConfig replicationConfig, String deploymentName, Module module) {
+    public SimpleDistributableSessionManagerConfiguration(Integer maxActiveSessions, ReplicationConfig replicationConfig, String serverName, String deploymentName, Module module) {
         this.maxActiveSessions = maxActiveSessions;
         this.replicationConfig = replicationConfig;
+        this.serverName = serverName;
         this.deploymentName = deploymentName;
         this.module = module;
     }
@@ -60,6 +62,11 @@ public class SimpleDistributableSessionManagerConfiguration implements Distribut
     @Override
     public ReplicationGranularity getGranularity() {
         return ((this.replicationConfig != null) && (this.replicationConfig.getReplicationGranularity() != null)) ? this.replicationConfig.getReplicationGranularity() : ReplicationGranularity.SESSION;
+    }
+
+    @Override
+    public String getServerName() {
+        return this.serverName;
     }
 
     @Override

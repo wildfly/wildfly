@@ -21,29 +21,31 @@
  */
 package org.wildfly.extension.undertow.session;
 
-import org.jboss.as.web.session.SessionIdentifierCodec;
-import org.jboss.msc.service.ServiceBuilder;
+import io.undertow.servlet.api.SessionManagerFactory;
+
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.stream.StreamSupport;
+
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
- * Builds a {@link SessionIdentifierCodec} service.
+ * SPI for building a factory for creating a distributable session manager.
  * @author Paul Ferraro
  */
-public interface DistributableSessionIdentifierCodecBuilder {
-    /**
-     * Builds a {@link SessionIdentifierCodec} service.
-     * @param target a service target
-     * @param name a service name
-     * @param deploymentServiceName the service name of the deployment
-     * @return a service builder
-     */
-    ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target, ServiceName name, String deploymentName);
+public interface DistributableSessionManagerFactoryBuilderProvider {
+
+    Optional<DistributableSessionManagerFactoryBuilderProvider> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableSessionManagerFactoryBuilderProvider.class, DistributableSessionManagerFactoryBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst();
 
     /**
-     * Builds cross-deployment dependencies needed for route handling
+     * Builds a {@link SessionManagerFactory} service.
      * @param target the service target
-     * @return a service builder
+     * @param name the service name of the {@link SessionManagerFactory} service
+     * @param deploymentServiceName service name of the web application
+     * @param module the deployment module
+     * @param metaData the web application meta data
+     * @return a session manager factory service builder
      */
-    ServiceBuilder<?> buildServerDependency(ServiceTarget target);
+    CapabilityServiceBuilder<SessionManagerFactory> getBuilder(ServiceName name, DistributableSessionManagerConfiguration configuration);
 }

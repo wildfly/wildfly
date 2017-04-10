@@ -19,38 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.undertow.session;
 
-import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+package org.wildfly.mod_cluster.undertow;
+
+import java.time.Duration;
+
+import org.jboss.as.server.suspend.SuspendController;
+import org.jboss.modcluster.container.ContainerEventHandler;
+import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.extension.undertow.UndertowService;
 
 /**
- * Service that exposes instance id of the server as the route.
+ * Encapsulates the configuration of an {@link UndertowEventHandlerAdapter}.
  * @author Paul Ferraro
  */
-public class RouteValueService extends AbstractService<RouteValue> {
-
-    public static final ServiceName SERVICE_NAME = UndertowService.SERVER.append("route");
-
-    public static ServiceBuilder<RouteValue> build(ServiceTarget target) {
-        RouteValueService service = new RouteValueService();
-        return target.addService(SERVICE_NAME, service)
-                .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.service)
-        ;
-    }
-
-    private final InjectedValue<UndertowService> service = new InjectedValue<>();
-
-    private RouteValueService() {
-        // Hide
-    }
-
-    @Override
-    public RouteValue getValue() {
-        return new RouteValue(this.service.getValue());
-    }
+public interface UndertowEventHandlerAdapterConfiguration {
+    Duration getStatusInterval();
+    UndertowService getUndertowService();
+    ContainerEventHandler getContainerEventHandler();
+    SuspendController getSuspendController();
+    UndertowListener getListener();
 }

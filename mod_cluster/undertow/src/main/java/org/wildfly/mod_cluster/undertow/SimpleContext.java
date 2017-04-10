@@ -27,14 +27,11 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Host;
-import io.undertow.servlet.api.Deployment;
 
 /**
- * Adapts {@link Deployment} to an {@link Context}.
+ * A simulated context, for use by EJB/HTTP.
  *
- * @author Radoslav Husar
- * @author Paul Ferraro
- * @since 8.0
+ * @author Stuart Douglas
  */
 public class SimpleContext implements Context {
 

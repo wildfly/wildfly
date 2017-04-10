@@ -26,8 +26,6 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.stream.StreamSupport;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -55,18 +53,16 @@ import io.undertow.server.session.SessionIdGenerator;
  */
 public class DistributableSingleSignOnManagerBuilder implements CapabilityServiceBuilder<SingleSignOnManager> {
 
-    private static final SSOManagerFactoryBuilderProvider<Batch> PROVIDER = StreamSupport.stream(ServiceLoader.load(SSOManagerFactoryBuilderProvider.class, SSOManagerFactoryBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst().get();
-
     private final ServiceName name;
     @SuppressWarnings("rawtypes")
     private final ValueDependency<SSOManager> manager;
 
     private final Collection<CapabilityServiceBuilder<?>> builders;
 
-    public DistributableSingleSignOnManagerBuilder(ServiceName name, String securityDomainName, SessionIdGenerator generator) {
+    public DistributableSingleSignOnManagerBuilder(ServiceName name, String securityDomainName, SessionIdGenerator generator, SSOManagerFactoryBuilderProvider<Batch> provider) {
         this.name = name;
 
-        CapabilityServiceBuilder<SSOManagerFactory<ElytronAuthentication, String, Map.Entry<String, URI>, Batch>> factoryBuilder = PROVIDER.<ElytronAuthentication, String, Map.Entry<String, URI>>getBuilder(securityDomainName);
+        CapabilityServiceBuilder<SSOManagerFactory<ElytronAuthentication, String, Map.Entry<String, URI>, Batch>> factoryBuilder = provider.<ElytronAuthentication, String, Map.Entry<String, URI>>getBuilder(securityDomainName);
         @SuppressWarnings("rawtypes")
         ValueDependency<SSOManagerFactory> factoryDependency = new InjectedValueDependency<>(factoryBuilder, SSOManagerFactory.class);
         ValueDependency<SessionIdGenerator> generatorDependency = new ImmediateValueDependency<>(generator);

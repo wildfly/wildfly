@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,43 +20,50 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session;
-
-import java.util.AbstractMap;
-import java.util.Map;
-import java.util.function.Function;
+package org.wildfly.clustering.web.undertow.session;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.MappedValueService;
 import org.wildfly.clustering.service.ValueDependency;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.web.undertow.UndertowUnaryRequirement;
+import org.wildfly.extension.undertow.Server;
 
 /**
- * Service that provides the {@link Map.Entry} for the routing {@link org.wildfly.clustering.registry.Registry}.
+ * Builds a service providing the route of a server.
  * @author Paul Ferraro
  */
-public class RouteRegistryEntryProviderBuilder implements CapabilityServiceBuilder<Map.Entry<String, Void>> {
+public class RouteBuilder implements CapabilityServiceBuilder<String> {
 
     private final String serverName;
-    private final ValueDependency<String> route;
 
-    public RouteRegistryEntryProviderBuilder(String serverName, ValueDependency<String> route) {
+    private volatile ValueDependency<Server> server;
+
+    public RouteBuilder(String serverName) {
         this.serverName = serverName;
-        this.route = route;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return ServiceName.parse(ClusteringCacheRequirement.REGISTRY_ENTRY.resolve(InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER, this.serverName));
+        return ServiceName.JBOSS.append("clustering", "web", "route", this.serverName);
     }
 
     @Override
-    public ServiceBuilder<Map.Entry<String, Void>> build(ServiceTarget target) {
-        Function<String, Map.Entry<String, Void>> mapper = route -> new AbstractMap.SimpleImmutableEntry<>(route, null);
-        return this.route.register(target.addService(this.getServiceName(), new MappedValueService<>(mapper, this.route))).setInitialMode(ServiceController.Mode.ON_DEMAND);
+    public Builder<String> configure(CapabilityServiceSupport support) {
+        this.server = new InjectedValueDependency<>(UndertowUnaryRequirement.SERVER.getServiceName(support, this.serverName), Server.class);
+        return this;
+    }
+
+    @Override
+    public ServiceBuilder<String> build(ServiceTarget target) {
+        Service<String> service = new MappedValueService<>(server -> server.getRoute(), this.server);
+        return this.server.register(target.addService(this.getServiceName(), service)).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

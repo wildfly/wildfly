@@ -21,73 +21,68 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.util.stream.Stream;
+
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.web.session.RouteLocator;
 
 /**
  * Service providing an Infinispan-based {@link RouteLocator}.
  * @author Paul Ferraro
  */
-public class InfinispanRouteLocatorBuilder implements Builder<RouteLocator>, Value<RouteLocator>, InfinispanRouteLocatorConfiguration {
+public class InfinispanRouteLocatorBuilder implements CapabilityServiceBuilder<RouteLocator>, InfinispanRouteLocatorConfiguration {
 
-    private static ServiceName getServiceName(String deploymentName) {
-        return ServiceName.JBOSS.append("clustering", "web", "locator", deploymentName);
-    }
-
-    public static ServiceName getCacheServiceAlias(String deploymentName) {
-        return getServiceName(deploymentName).append("cache");
-    }
-
-    public static ServiceName getNodeFactoryServiceAlias(String deploymentName) {
-        return getServiceName(deploymentName).append("nodes");
-    }
-
-    public static ServiceName getRegistryServiceAlias(String deploymentName) {
-        return getServiceName(deploymentName).append("registry");
-    }
-
+    private final String containerName = InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER;
+    private final String serverName;
     private final String deploymentName;
 
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<NodeFactory> factory = new InjectedValue<>();
+    private volatile ValueDependency<NodeFactory> factory;
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<Registry> registry = new InjectedValue<>();
+    private volatile ValueDependency<Registry> registry;
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<Cache> cache = new InjectedValue<>();
+    private volatile ValueDependency<Cache> cache;
 
-    public InfinispanRouteLocatorBuilder(String deploymentName) {
+    public InfinispanRouteLocatorBuilder(String serverName, String deploymentName) {
+        this.serverName = serverName;
         this.deploymentName = deploymentName;
     }
 
     @Override
     public ServiceName getServiceName() {
-        return getServiceName(this.deploymentName);
+        return ServiceName.JBOSS.append("clustering", "web", "locator", this.deploymentName);
+    }
+
+    @Override
+    public Builder<RouteLocator> configure(CapabilityServiceSupport support) {
+        this.factory = new InjectedValueDependency<>(ClusteringCacheRequirement.NODE_FACTORY.getServiceName(support, this.containerName, this.serverName), NodeFactory.class);
+        this.registry = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY.getServiceName(support, this.containerName, this.serverName), Registry.class);
+        this.cache = new InjectedValueDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, this.containerName, this.deploymentName), Cache.class);
+        return this;
     }
 
     @Override
     public ServiceBuilder<RouteLocator> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(getNodeFactoryServiceAlias(this.deploymentName), NodeFactory.class, this.factory)
-                .addDependency(getRegistryServiceAlias(this.deploymentName), Registry.class, this.registry)
-                .addDependency(getCacheServiceAlias(this.deploymentName), Cache.class, this.cache)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-        ;
-    }
-
-    @Override
-    public RouteLocator getValue() {
-        return new InfinispanRouteLocator(this);
+        Value<RouteLocator> value = () -> new InfinispanRouteLocator(this);
+        ServiceBuilder<RouteLocator> builder = target.addService(this.getServiceName(), new ValueService<>(value));
+        Stream.of(this.factory, this.registry, this.cache).forEach(dependency -> dependency.register(builder));
+        return builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     @Override

@@ -72,6 +72,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import javax.servlet.http.HttpSession;
 
+import org.jboss.as.clustering.controller.SimpleCapabilityServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
@@ -108,7 +109,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.SimpleBuilder;
 import org.wildfly.elytron.web.undertow.server.ElytronContextAssociationHandler;
 import org.wildfly.elytron.web.undertow.server.ElytronHttpExchange;
 import org.wildfly.elytron.web.undertow.server.ElytronRunAsHandler;
@@ -130,7 +130,6 @@ import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
 import org.wildfly.security.http.Scope;
 import org.wildfly.security.http.util.PropertiesServerMechanismFactory;
 import org.wildfly.security.http.util.sso.DefaultSingleSignOnManager;
-import org.wildfly.security.http.util.sso.SingleSignOnManager;
 import org.wildfly.security.http.util.sso.SingleSignOnServerMechanismFactory;
 import org.wildfly.security.http.util.sso.SingleSignOnServerMechanismFactory.SingleSignOnConfiguration;
 import org.wildfly.security.http.util.sso.SingleSignOnSessionFactory;
@@ -304,13 +303,10 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                 ServiceName managerServiceName = new SingleSignOnManagerServiceNameProvider(securityDomainName).getServiceName();
                 SessionIdGenerator generator = new SecureRandomSessionIdGenerator();
 
-                if (DistributableSecurityDomainSingleSignOnManagerBuilderProvider.INSTANCE.isPresent()) {
-                    DistributableSecurityDomainSingleSignOnManagerBuilderProvider provider = DistributableSecurityDomainSingleSignOnManagerBuilderProvider.INSTANCE.get();
-                    provider.getBuilder(managerServiceName, securityDomainName, generator).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-                } else {
-                    SingleSignOnManager manager = new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), generator::createSessionId);
-                    new SimpleBuilder<>(managerServiceName, manager).build(target).install();
-                }
+                DistributableSecurityDomainSingleSignOnManagerBuilderProvider.INSTANCE
+                        .map(provider -> provider.getBuilder(managerServiceName, securityDomainName, generator))
+                        .orElse(new SimpleCapabilityServiceBuilder<>(managerServiceName, new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), generator::createSessionId)))
+                        .configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
                 Builder<SingleSignOnSessionFactory> factoryBuilder = new SingleSignOnSessionFactoryBuilder(securityDomainName).configure(context, ssoModel);
                 factoryBuilder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
