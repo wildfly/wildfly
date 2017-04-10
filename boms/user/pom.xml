@@ -28,7 +28,7 @@
 
     <groupId>org.wildfly.bom</groupId>
     <artifactId>wildfly</artifactId>
-    <version>11.0.0.Alpha2-SNAPSHOT</version>
+    <version>11.0.0.Alpha2</version>
 
     <packaging>pom</packaging>
 
@@ -62,7 +62,7 @@
     <scm>
         <connection>scm:git:https://github.com/wildfly/boms.git</connection>
         <developerConnection>scm:git:https://github.com/wildfly/boms.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>11.0.0.Beta1-SNAPSHOT</tag>
         <url>http://github.com/wildfly/boms</url>
     </scm>
     <issueManagement>
