@@ -35,7 +35,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.elytron.web.undertow.server.ElytronContextAssociationHandler;
 import org.wildfly.elytron.web.undertow.server.ElytronHttpExchange;
-import org.wildfly.extension.undertow.session.RouteValue;
 import org.wildfly.httpclient.common.ElytronIdentityHandler;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.auth.server.SecurityIdentity;
@@ -57,7 +56,6 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final InjectedValue<HttpAuthenticationFactory> httpAuthenticationFactoryInjectedValue = new InjectedValue<>();
     private final InjectedValue<PathHandler> remoteHttpInvokerServiceInjectedValue = new InjectedValue<>();
-    private final InjectedValue<RouteValue> route = new InjectedValue<>();
 
     public HttpInvokerHostService(String path) {
         this.path = path;
@@ -81,7 +79,7 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
     }
 
     private HttpHandler setupRoutes(HttpHandler handler) {
-        final SimpleSessionIdentifierCodec codec = new SimpleSessionIdentifierCodec(new SimpleRoutingSupport(), route.getValue());
+        final SimpleSessionIdentifierCodec codec = new SimpleSessionIdentifierCodec(new SimpleRoutingSupport(), this.host.getValue().getServer().getRoute());
         return exchange -> {
             exchange.addResponseCommitListener(ex -> {
                 Cookie cookie = ex.getResponseCookies().get(JSESSIONID);
@@ -142,9 +140,5 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
 
     public InjectedValue<PathHandler> getRemoteHttpInvokerServiceInjectedValue() {
         return remoteHttpInvokerServiceInjectedValue;
-    }
-
-    public InjectedValue<RouteValue> getRoute() {
-        return route;
     }
 }
