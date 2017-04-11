@@ -1117,7 +1117,12 @@ public class WebMigrateOperation implements OperationStepHandler {
     private void migrateSubsystem(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp) {
         newAddOp.get(ADDRESS).set(pathAddress(pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME)).toModelNode());
         PathAddress address = pathAddress(newAddOp.get(OP_ADDR));
-        newAddOperations.put(address, createAddOperation(address));
+        ModelNode subsystemAdd = createAddOperation(address);
+        ModelNode defaultServer = newAddOperations.get(address.append(DEFAULT_SERVER_PATH));
+        if (defaultServer.hasDefined(Constants.DEFAULT_HOST)){
+            subsystemAdd.get(Constants.DEFAULT_VIRTUAL_HOST).set(defaultServer.get(Constants.DEFAULT_HOST));
+        }
+        newAddOperations.put(address, subsystemAdd);
     }
 
     private void describeLegacyWebResources(OperationContext context, ModelNode legacyModelDescription) {
