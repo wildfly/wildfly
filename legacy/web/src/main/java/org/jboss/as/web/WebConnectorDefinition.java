@@ -224,7 +224,9 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
      * Undertow listener is registered for JBoss Web connectors so that the requirement can be satisfied for legacy profiles.
      */
     private final String UNDERTOW_LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
-    private final RuntimeCapability<Void> FAKE_UNDERTOW_LISTENER_CAPABILITY = RuntimeCapability.Builder.of(UNDERTOW_LISTENER_CAPABILITY_NAME, true).build();
+    private final RuntimeCapability<Void> FAKE_UNDERTOW_LISTENER_CAPABILITY = RuntimeCapability.Builder.of(UNDERTOW_LISTENER_CAPABILITY_NAME, true)
+            .setAllowMultipleRegistrations(true)
+            .build();
 
     @Override
     public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {

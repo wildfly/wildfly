@@ -75,6 +75,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     static final RuntimeCapability<Void> LISTENER_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_LISTENER, true, UndertowListener.class)
             .addDynamicRequirements(Capabilities.CAPABILITY_SERVER)
+            .setAllowMultipleRegistrations(true) //hack to support mod_cluster's legacy profiles
             .build();
     protected static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.SOCKET_BINDING, ModelType.STRING)
             .setRequired(true)
