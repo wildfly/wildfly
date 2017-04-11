@@ -17,6 +17,8 @@
  */
 package org.jboss.as.ee.concurrent;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -63,7 +65,13 @@ class SecurityIdentityUtils {
     }
 
     private static SecurityIdentity getSecurityIdentity() {
-        SecurityDomain securityDomain = SecurityDomain.getCurrent();
+        final SecurityManager sm = System.getSecurityManager();
+        final SecurityDomain securityDomain;
+        if (sm != null) {
+            securityDomain = AccessController.doPrivileged((PrivilegedAction<SecurityDomain>) () -> SecurityDomain.getCurrent());
+        } else {
+            securityDomain = SecurityDomain.getCurrent();
+        }
         return securityDomain != null ? securityDomain.getCurrentSecurityIdentity() : null;
     }
 
