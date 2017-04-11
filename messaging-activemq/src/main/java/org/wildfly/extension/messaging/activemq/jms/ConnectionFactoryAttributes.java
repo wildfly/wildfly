@@ -38,12 +38,14 @@ import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 
@@ -314,6 +316,14 @@ public interface ConnectionFactoryAttributes {
         String SETUP_INTERVAL_PROP_NAME = "setupInterval";
         String REBALANCE_CONNECTIONS_PROP_NAME = "rebalanceConnections";
         String RECONNECT_ATTEMPTS_PROP_NAME = "reconnectAttempts";
+        String PASSWORD_PROP_NAME = "password";
+
+        ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
+                CredentialReference.getAttributeBuilder(true, false)
+                        .setRestartAllServices()
+                        .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
+                        .setAlternatives(PASSWORD_PROP_NAME)
+                        .build();
 
         SimpleAttributeDefinition ENLISTMENT_TRACE = SimpleAttributeDefinitionBuilder.create("enlistment-trace", BOOLEAN)
                 .setAllowNull(true)
@@ -363,12 +373,13 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
-        SimpleAttributeDefinition PASSWORD = SimpleAttributeDefinitionBuilder.create("password", STRING)
-                .setAllowNull(true)
+        SimpleAttributeDefinition PASSWORD = SimpleAttributeDefinitionBuilder.create(PASSWORD_PROP_NAME, STRING)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                 .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
+                .addAlternatives(CREDENTIAL_REFERENCE.getName())
                 .build();
 
         SimpleAttributeDefinition REBALANCE_CONNECTIONS = SimpleAttributeDefinitionBuilder.create("rebalance-connections", BOOLEAN)
@@ -460,6 +471,7 @@ public interface ConnectionFactoryAttributes {
                 create(TRANSACTION, null, false),
                 create(USER, "userName", true),
                 create(PASSWORD, "password", true),
+                create(CREDENTIAL_REFERENCE, null, false),
                 create(MANAGED_CONNECTION_POOL, null, false),
                 create(ENLISTMENT_TRACE, null, false),
                 create(MIN_POOL_SIZE, null, false),

@@ -57,6 +57,12 @@
         <inbound-config
                 rebalance-connections="true" />
         </pooled-connection-factory>
+        <pooled-connection-factory name="pcf-with-credential-reference"
+                                   entries="java:/JmsLocal2"
+                                   connectors="in-vm"
+                                   user="foo">
+            <credential-reference clear-text="passwordOut!"/>
+        </pooled-connection-factory>
     </server>
     <server name="other">
         <replication-master />
