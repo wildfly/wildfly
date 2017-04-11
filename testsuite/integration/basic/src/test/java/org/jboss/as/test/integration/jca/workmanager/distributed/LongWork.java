@@ -1,13 +1,12 @@
 package org.jboss.as.test.integration.jca.workmanager.distributed;
 
-import org.jboss.logging.Logger;
-
 import javax.resource.spi.work.DistributableWork;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.logging.Logger;
+
 public class LongWork implements DistributableWork, Serializable {
-    //private static final Logger log = Logger.getLogger(LongWork.class.getCanonicalName());
 
     private boolean quit = false;
     /**
