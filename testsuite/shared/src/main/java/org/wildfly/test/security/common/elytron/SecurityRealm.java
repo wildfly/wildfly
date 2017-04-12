@@ -19,50 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.test.security.common.elytron;
 
 /**
- * Elytron constant-principal-decoder configuration implementation.
+ * Interface representing Elytron Security realm and resources related to it.
  *
- * @author Ondrej Kotek
+ * @author Josef Cacek
  */
-public class ConstantPrincipalDecoder extends AbstractConstantHelper {
-
-    private ConstantPrincipalDecoder(Builder builder) {
-        super(builder);
-    }
-
-
-    @Override
-    protected String getConstantElytronType() {
-        return "constant-principal-decoder";
-    }
-
-    /**
-     * Creates builder.
-     *
-     * @return created builder
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    /**
-     * Builder pattern for the class.
-     */
-    public static final class Builder extends AbstractConstantHelper.Builder<Builder> {
-
-        private Builder() {
-        }
-
-        public ConstantPrincipalDecoder build() {
-            return new ConstantPrincipalDecoder(this);
-        }
-
-        @Override
-        protected Builder self() {
-            return this;
-        }
-    }
+public interface SecurityRealm extends ConfigurableElement {
 
 }
