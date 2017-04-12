@@ -23,29 +23,12 @@
 package org.jboss.as.test.integration.domain;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADMIN_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_STATE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
-import java.io.IOException;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -58,7 +41,6 @@ import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfig
 import org.jboss.as.test.integration.security.common.VaultHandler;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -68,11 +50,10 @@ import org.junit.Test;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class SlaveHostControllerAuthenticationTestCase {
+public class SlaveHostControllerAuthenticationTestCase extends AbstractSlaveHCAuthenticationTestCase {
 
     private static final String VAULT_BLOCK = "ds_TestDS";
     private static final String RIGHT_PASSWORD = DomainLifecycleUtil.SLAVE_HOST_PASSWORD;
-    private static final int TIMEOUT = 60000;
 
     private static ModelControllerClient domainMasterClient;
     private static ModelControllerClient domainSlaveClient;
@@ -173,64 +154,13 @@ public class SlaveHostControllerAuthenticationTestCase {
         }
     }
 
-    private static void reloadSlave() throws Exception {
-        ModelNode op = new ModelNode();
-        op.get(OP).set("reload");
-        op.get(OP_ADDR).add(HOST, "slave");
-        op.get(ADMIN_ONLY).set(false);
-        try {
-            domainSlaveClient.execute(new OperationBuilder(op).build());
-        } catch(IOException e) {
-            final Throwable cause = e.getCause();
-            if (!(cause instanceof ExecutionException) && !(cause instanceof CancellationException)) {
-                throw e;
-            } // else ignore, this might happen if the channel gets closed before we got the response
-        }
-
-        // Wait until host is reloaded
-        readHostControllerStatus(domainSlaveClient, TIMEOUT);
+    @Override
+    protected ModelControllerClient getDomainMasterClient() {
+        return domainMasterClient;
     }
 
-    private static void readHostControllerStatus(ModelControllerClient client, long timeout) throws Exception {
-        final long time = System.currentTimeMillis() + timeout;
-        do {
-            Thread.sleep(250);
-            if (lookupHostInModel(client)) {
-                return;
-            }
-        } while (System.currentTimeMillis() < time);
-
-        Assert.fail("Cannot validate host 'slave' is running");
-    }
-
-    private static boolean lookupHostInModel(ModelControllerClient client) throws Exception {
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        operation.get(OP_ADDR).add(HOST, "slave");
-        operation.get(NAME).set(HOST_STATE);
-
-        try {
-            final ModelNode result = client.execute(operation);
-            if (result.get(OUTCOME).asString().equals(SUCCESS)){
-                final ModelNode model = result.require(RESULT);
-                if (model.asString().equalsIgnoreCase("running")) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            //
-        }
-        return false;
-    }
-
-    private static void setSlaveSecret(String value) throws IOException {
-
-        ModelNode op = new ModelNode();
-        op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        op.get(OP_ADDR).add(HOST, "slave").add(CORE_SERVICE, MANAGEMENT).add(SECURITY_REALM, "ManagementRealm").add(SERVER_IDENTITY, SECRET);
-        op.get(NAME).set(VALUE);
-        op.get(VALUE).set(value);
-        domainSlaveClient.execute(new OperationBuilder(op).build());
-
+    @Override
+    protected ModelControllerClient getDomainSlaveClient() {
+        return domainSlaveClient;
     }
 }

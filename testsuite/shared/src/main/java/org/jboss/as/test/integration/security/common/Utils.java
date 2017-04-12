@@ -60,6 +60,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.directory.server.annotations.CreateTransport;
+import org.apache.http.Consts;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequest;
@@ -80,9 +81,10 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.impl.auth.BasicSchemeFactory;
+import org.apache.http.impl.auth.DigestSchemeFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -278,11 +280,10 @@ public class Utils extends CoreUtils {
      * @throws Exception
      */
     public static void makeCall(String URL, String user, String pass, int expectedStatusCode) throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        try {
+        try (final CloseableHttpClient httpClient = HttpClients.createDefault()){
             HttpGet httpget = new HttpGet(URL);
 
-            HttpResponse response = httpclient.execute(httpget);
+            HttpResponse response = httpClient.execute(httpget);
 
             HttpEntity entity = response.getEntity();
             if (entity != null) { EntityUtils.consume(entity); }
@@ -301,7 +302,7 @@ public class Utils extends CoreUtils {
 
             httpost.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
 
-            response = httpclient.execute(httpost);
+            response = httpClient.execute(httpost);
             entity = response.getEntity();
             if (entity != null) { EntityUtils.consume(entity); }
 
@@ -313,7 +314,7 @@ public class Utils extends CoreUtils {
             String location = locationHeader.getValue();
 
             HttpGet httpGet = new HttpGet(location);
-            response = httpclient.execute(httpGet);
+            response = httpClient.execute(httpGet);
 
             entity = response.getEntity();
             if (entity != null) { EntityUtils.consume(entity); }
@@ -321,11 +322,6 @@ public class Utils extends CoreUtils {
             // Either the authentication passed or failed based on the expected status code
             statusLine = response.getStatusLine();
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpclient.getConnectionManager().shutdown();
         }
     }
 
@@ -430,9 +426,14 @@ public class Utils extends CoreUtils {
             URISyntaxException {
         LOGGER.trace("Requesting URL " + url);
 
+        // use UTF-8 charset for credentials
+        Registry<AuthSchemeProvider> authSchemeRegistry = RegistryBuilder.<AuthSchemeProvider>create()
+                .register(AuthSchemes.BASIC, new BasicSchemeFactory(Consts.UTF_8))
+                .register(AuthSchemes.DIGEST, new DigestSchemeFactory(Consts.UTF_8))
+                .build();
         try (final CloseableHttpClient httpClient = HttpClientBuilder.create()
-
-        .build()){
+                .setDefaultAuthSchemeRegistry(authSchemeRegistry)
+                .build()){
             final HttpGet httpGet = new HttpGet(url.toURI());
             HttpResponse response = httpClient.execute(httpGet);
             int statusCode = response.getStatusLine().getStatusCode();
@@ -651,10 +652,9 @@ public class Utils extends CoreUtils {
         final String strippedContextUrl = StringUtils.stripEnd(contextUrl, "/");
         final String url = strippedContextUrl + page;
         LOGGER.trace("Requesting URL: " + url);
-        final DefaultHttpClient httpClient = new DefaultHttpClient();
-        httpClient.setRedirectStrategy(REDIRECT_STRATEGY);
+
         String unauthorizedPageBody = null;
-        try {
+        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
             final HttpGet httpGet = new HttpGet(url);
             HttpResponse response = httpClient.execute(httpGet);
             int statusCode = response.getStatusLine().getStatusCode();
@@ -686,11 +686,6 @@ public class Utils extends CoreUtils {
             statusCode = response.getStatusLine().getStatusCode();
             assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
             return EntityUtils.toString(response.getEntity());
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpClient.getConnectionManager().shutdown();
         }
     }
 

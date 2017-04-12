@@ -48,14 +48,17 @@ import org.wildfly.security.auth.permission.LoginPermission;
  *
  * @author Josef Cacek
  */
-public class PropertyFileBasedDomain extends AbstractUserRolesSecurityDomain {
+public class PropertyFileBasedDomain extends AbstractUserRolesCapableElement implements SecurityDomain {
 
     private static final Logger LOGGER = Logger.getLogger(PropertyFileBasedDomain.class);
 
     private File tempFolder;
 
+    protected final String permissionMapper;
+
     private PropertyFileBasedDomain(Builder builder) {
         super(builder);
+        this.permissionMapper = builder.permMapper;
     }
 
     @Override
@@ -115,13 +118,21 @@ public class PropertyFileBasedDomain extends AbstractUserRolesSecurityDomain {
         return new Builder();
     }
 
-    public static final class Builder extends AbstractUserRolesSecurityDomain.Builder<Builder> {
+    public static final class Builder extends AbstractUserRolesCapableElement.Builder<Builder> {
+
+        private String permMapper;
+
         private Builder() {
             // empty
         }
 
         public PropertyFileBasedDomain build() {
             return new PropertyFileBasedDomain(this);
+        }
+
+        public Builder permissionMapper(String name) {
+            permMapper = name;
+            return self();
         }
 
         @Override

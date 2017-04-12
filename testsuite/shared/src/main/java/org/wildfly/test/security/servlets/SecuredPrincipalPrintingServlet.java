@@ -19,40 +19,48 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.security.common.servlets;
+package org.wildfly.test.security.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.Principal;
 
+import javax.annotation.security.DeclareRoles;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.HttpConstraint;
+import javax.servlet.annotation.ServletSecurity;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * A servlet which reports the name of the callers principal.
+ * A secured servlet that gets request assigned principal ({@link HttpServletRequest#getUserPrincipal()}) and prints its name.
  *
- * @author JanLanik
+ * @author Josef Cacek
  */
-@WebServlet(name = "PrincipalPrintingServlet", urlPatterns = { PrincipalPrintingServlet.SERVLET_PATH })
-public class PrincipalPrintingServlet extends HttpServlet {
+@DeclareRoles({ SecuredPrincipalPrintingServlet.ALLOWED_ROLE })
+@ServletSecurity(@HttpConstraint(rolesAllowed = { SecuredPrincipalPrintingServlet.ALLOWED_ROLE }))
+@WebServlet(SecuredPrincipalPrintingServlet.SERVLET_PATH)
+public class SecuredPrincipalPrintingServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    public static final String SERVLET_PATH = "/printPrincipal";
+    public static final String SERVLET_PATH = "/principal";
+    public static final String ALLOWED_ROLE = "JBossAdmin";
 
+    /**
+     * Writes principal name.
+     */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("text/plain");
-        final PrintWriter writer = resp.getWriter();
-        final Principal principal = req.getUserPrincipal();
-        if (null == principal) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Principal name is printed only for the authenticated users.");
-        } else {
-            writer.write(principal.getName());
+        resp.setCharacterEncoding("UTF-8");
+        Principal userPrincipal = req.getUserPrincipal();
+        if (userPrincipal != null) {
+            final PrintWriter writer = resp.getWriter();
+            writer.print(userPrincipal.getName());
+            writer.close();
         }
-        writer.close();
     }
 }

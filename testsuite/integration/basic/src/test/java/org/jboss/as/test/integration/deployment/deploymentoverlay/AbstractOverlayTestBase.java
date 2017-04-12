@@ -37,10 +37,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.security.common.SecurityTraceLoggingServerSetupTask;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.junit.BeforeClass;
 
 /**
  * @author baranowb
@@ -56,11 +54,6 @@ public abstract class AbstractOverlayTestBase {
 
     @ArquillianResource
     protected Deployer deployer;
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
-    }
 
     private boolean removeOverlay = false;
 
