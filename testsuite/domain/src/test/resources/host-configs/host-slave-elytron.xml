@@ -96,7 +96,7 @@
                     <credential-reference clear-text="slave_us3r_password"/>
                 </authentication-configuration>
                 <authentication-context name="slaveHostAContext">
-                    <match-rule match-host="127.0.0.1" authentication-configuration="slaveHostAConfiguration"/>
+                    <match-rule match-host="${jboss.test.host.master.address}" authentication-configuration="slaveHostAConfiguration"/>
                 </authentication-context>
             </authentication-client>
             <providers>
