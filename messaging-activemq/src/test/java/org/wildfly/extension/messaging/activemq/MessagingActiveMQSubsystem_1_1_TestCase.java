@@ -184,7 +184,9 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS,
-                                ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED))
+                                ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED,
+                                ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE
+                        ))
         );
     }
 

@@ -434,6 +434,12 @@
                     setup-attempts="${setup-attempts:123}"
                     setup-interval="${setup-interval:456}" />
         </pooled-connection-factory>
+        <pooled-connection-factory name="pcf-with-credential-reference"
+                                   entries="java:/JmsLocal2"
+                                   connectors="in-vm"
+                                   user="foo">
+            <credential-reference clear-text="passwordOut!"/>
+        </pooled-connection-factory>
     </server>
 
     <server name="empty"/>

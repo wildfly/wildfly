@@ -203,6 +203,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
         if (password != null && !password.isEmpty()) {
             model.get(ConnectionFactoryAttributes.Pooled.PASSWORD.getName()).set(password);
         }
+
         if (clientId != null && !clientId.isEmpty()) {
             model.get(CommonAttributes.CLIENT_ID.getName()).set(clientId);
         }

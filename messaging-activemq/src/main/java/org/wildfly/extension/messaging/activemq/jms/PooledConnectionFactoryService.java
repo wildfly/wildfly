@@ -50,12 +50,16 @@ import org.jboss.as.connector.services.resourceadapters.ResourceAdapterActivator
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.service.SecurityBootstrapService;
 import org.jboss.as.server.Services;
 import org.jboss.as.txn.service.TxnServices;
+import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.FlushStrategy;
 import org.jboss.jca.common.api.metadata.common.Pool;
@@ -115,10 +119,14 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.ActiveMQActivationService;
 import org.wildfly.extension.messaging.activemq.JGroupsChannelLocator;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.security.credential.PasswordCredential;
+import org.wildfly.security.credential.source.CredentialSource;
+import org.wildfly.security.password.interfaces.ClearPassword;
 
 /**
  * A service which translates a pooled connection factory into a resource adapter driven connection pool
@@ -179,6 +187,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private final String managedConnectionPoolClassName;
     // can be null. In that case the behaviour is depending on the IronJacamar container setting.
     private final Boolean enlistmentTrace;
+    private InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier = new InjectedValue<>();
+
 
     public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, String serverName, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, List<String> jndiNames, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
         this.name = name;
@@ -229,6 +239,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
         return ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name);
     }
 
+    InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getCredentialSourceSupplierInjector() {
+        return credentialSourceSupplier;
+    }
+
     public static void installService(ServiceTarget serviceTarget,
                                       String name,
                                       String serverName,
@@ -254,7 +268,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
         installService0(serviceTarget, serverServiceName, serviceName, service);
     }
 
-    public static void installService(ServiceTarget serviceTarget,
+    public static void installService(OperationContext context,
                                       String name,
                                       String serverName,
                                       List<String> connectors,
@@ -266,7 +280,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
                                       int minPoolSize,
                                       int maxPoolSize,
                                       String managedConnectionPoolClassName,
-                                      Boolean enlistmentTrace) {
+                                      Boolean enlistmentTrace,
+                                      ModelNode model) throws OperationFailedException {
 
         ServiceName serverServiceName = MessagingServices.getActiveMQServiceName(serverName);
         ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(serverServiceName).append(name);
@@ -274,13 +289,28 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 connectors, discoveryGroupName, serverName, jgroupsChannelName, adapterParams,
                 jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
 
-        installService0(serviceTarget, serverServiceName, serviceName, service);
+        installService0(context, serverServiceName, serviceName, service, model);
     }
 
-    private static void installService0(ServiceTarget serviceTarget,
+    private static void installService0(ServiceTarget serviceTarget, ServiceName serverServiceName, ServiceName serviceName, PooledConnectionFactoryService service) {
+        ServiceBuilder serviceBuilder = createServiceBuilder(serviceTarget, serverServiceName, serviceName, service);
+        serviceBuilder.install();
+    }
+
+    private static void installService0(OperationContext context,
                                         ServiceName serverServiceName,
                                         ServiceName serviceName,
-                                        PooledConnectionFactoryService service) {
+                                        PooledConnectionFactoryService service,
+                                        ModelNode model) throws OperationFailedException {
+        ServiceBuilder serviceBuilder = createServiceBuilder(context.getServiceTarget(), serverServiceName, serviceName, service);
+        ModelNode credentialReference = ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model);
+        if (credentialReference.isDefined()) {
+            service.getCredentialSourceSupplierInjector().inject(CredentialReference.getCredentialSourceSupplier(context, ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE, model, serviceBuilder));
+        }
+        serviceBuilder.install();
+    }
+
+    private static ServiceBuilder createServiceBuilder(ServiceTarget serviceTarget, ServiceName serverServiceName, ServiceName serviceName, PooledConnectionFactoryService service) {
         ServiceBuilder serviceBuilder = serviceTarget
                 .addService(serviceName, service)
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, service.transactionManager)
@@ -291,7 +321,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 // pooled-connection-factory client during server stop
                 .addDependency(SecurityBootstrapService.SERVICE_NAME)
                 .setInitialMode(ServiceController.Mode.PASSIVE);
-        serviceBuilder.install();
+        return serviceBuilder;
     }
 
     public Void getValue() throws IllegalStateException, IllegalArgumentException {
@@ -395,6 +425,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 properties.add(simpleProperty15(reconnectName, Integer.class.getName(), DEFAULT_MAX_RECONNECTS));
             }
 
+            configureCredential(properties);
+
             WildFlyRecoveryRegistry.container = container;
 
             OutboundResourceAdapter outbound = createOutbound();
@@ -449,6 +481,28 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 is.close();
             if (isIj != null)
                 isIj.close();
+        }
+    }
+
+    /**
+     * Configure password from a credential-reference (as an alternative to the password attribute)
+     * and add it to the RA properties.
+     */
+    private void configureCredential(List<ConfigProperty> properties) {
+        // if a credential-reference has been defined, get the password property from it
+        if (credentialSourceSupplier.getOptionalValue() != null) {
+            try {
+                CredentialSource credentialSource = credentialSourceSupplier.getValue().get();
+                if (credentialSource != null) {
+                    char[] password = credentialSource.getCredential(PasswordCredential.class).getPassword(ClearPassword.class).getPassword();
+                    if (password != null) {
+                        // add the password property
+                        properties.add(simpleProperty15("password", String.class.getName(), new String(password)));
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

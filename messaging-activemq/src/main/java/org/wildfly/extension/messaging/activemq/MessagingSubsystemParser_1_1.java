@@ -563,6 +563,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Pooled.TRANSACTION,
                                                         ConnectionFactoryAttributes.Pooled.USER,
                                                         ConnectionFactoryAttributes.Pooled.PASSWORD,
+                                                        ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE,
                                                         ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE,
                                                         ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY,
                                                         ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE,
