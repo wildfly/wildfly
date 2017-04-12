@@ -184,11 +184,8 @@
         <xs:annotation>
             <xs:documentation>
                 A managed executor service (implementing javax.enterprise.concurrent.ManagedExecutorService).
-                If the "thread-factory" attribute is not defined a managed thread factory with no context service and normal thread priority will be created and used by the executor.
-                The task queue is based on the values of "core-threads" and "queue-length":
-                * If "queue-length" is 0, or "queue-length" is Integer.MAX_VALUE (2147483647) and "core-threads" is 0, direct handoff queuing strategy will be used and a SynchronousQueue will be created.
-                * If "queue-length" is Integer.MAX_VALUE but "core-threads" is not 0, an unbounded queue will be used.
-                * For any other valid value for "queue-length", a bounded queue wil be created.
+                If the "thread-factory" attribute is not defined a managed thread factory with no context service and
+                normal thread priority will be created and used by the executor.
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="name" type="nameType" use="required"/>
@@ -197,10 +194,35 @@
         <xs:attribute name="thread-factory" type="threadFactoryType"/>
         <xs:attribute name="hung-task-threshold" type="hungTaskThresholdType" default="0"/>
         <xs:attribute name="long-running-tasks" type="longRunningTasksType" default="false"/>
-        <xs:attribute name="core-threads" type="coreThreadsType"/>
-        <xs:attribute name="max-threads" type="maxThreadsType"/>
+        <xs:attribute name="core-threads" type="coreThreadsType">
+            <xs:annotation>
+                <xs:documentation>
+                    The minimum number of threads to be used by the executor. If left undefined the default core-size
+                    is calculated based on the number of processors. A value of zero is not advised and in some cases
+                    invalid. See the queue-length attribute for details on how this value is used to determine the
+                    queuing strategy.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-threads" type="maxThreadsType">
+            <xs:annotation>
+                <xs:documentation>The maximum number of threads to be used by the executor. If left undefined the value
+                    from core-size will be used. This value is ignored if an unbounded queue is used (only core-threads
+                    will be used in that case).
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="keepalive-time" type="keepAliveTimeType" default="60000"/>
-        <xs:attribute name="queue-length" type="queueLengthType"/>
+        <xs:attribute name="queue-length" type="queueLengthType">
+            <xs:annotation>
+                <xs:documentation>
+                    The executors task queue capacity. A length of 0 means direct hand-off and possible rejection will
+                    occur. An undefined length (the default), or Integer.MAX_VALUE, indicates that an unbounded queue
+                    should be used. All other values specify an exact queue size. If an unbounded queue or direct hand-off
+                    is used, a core-threads value greater than zero is required.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="reject-policy" type="rejectPolicyType" default="ABORT"/>
     </xs:complexType>
 
