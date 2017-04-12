@@ -53,6 +53,6 @@ public class KeyRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        KeyAddHandler.launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model, null, null);
+        KeyAddHandler.launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model);
     }
 }

@@ -22,21 +22,17 @@
 
 package org.wildfly.extension.picketlink.federation.model.handlers;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.picketlink.config.federation.KeyValueType;
 import org.wildfly.extension.picketlink.federation.service.EntityProviderService;
-
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -53,7 +49,7 @@ public class HandlerParameterAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         PathAddress pathAddress = PathAddress.pathAddress(operation.get(ADDRESS));
         String providerAlias = pathAddress.subAddress(0, pathAddress.size() - 2).getLastElement().getValue();
         String handlerType = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();

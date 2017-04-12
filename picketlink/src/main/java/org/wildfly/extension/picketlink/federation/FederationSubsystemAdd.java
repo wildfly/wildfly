@@ -25,16 +25,12 @@ package org.wildfly.extension.picketlink.federation;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 import org.wildfly.extension.picketlink.federation.deployment.FederationDependencyProcessor;
 import org.wildfly.extension.picketlink.federation.deployment.FederationDeploymentProcessor;
-
-import java.util.List;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -44,7 +40,7 @@ public class FederationSubsystemAdd extends AbstractBoottimeAddStepHandler {
     public static final FederationSubsystemAdd INSTANCE = new FederationSubsystemAdd();
 
     @Override
-    public void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> controllers) throws OperationFailedException {
+    public void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         PicketLinkLogger.ROOT_LOGGER.activatingSubsystem("Federation");
 
         context.addStep(new AbstractDeploymentChainStep() {

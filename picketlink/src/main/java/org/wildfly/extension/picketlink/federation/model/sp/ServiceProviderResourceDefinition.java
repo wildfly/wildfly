@@ -21,6 +21,8 @@
  */
 package org.wildfly.extension.picketlink.federation.model.sp;
 
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
@@ -28,7 +30,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentWriteAttributeHandler;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -40,8 +41,6 @@ import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.model.AbstractFederationResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.handlers.HandlerResourceDefinition;
 import org.wildfly.extension.picketlink.federation.service.ServiceProviderService;
-
-import java.util.List;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -121,12 +120,7 @@ public class ServiceProviderResourceDefinition extends AbstractFederationResourc
 
             @Override
             protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-                ServiceProviderAddHandler.launchService(context, parentAddress, parentModel, null, null);
-            }
-
-            @Override
-            protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-                ServiceProviderAddHandler.launchService(context, parentAddress, parentModel, null, null);
+                ServiceProviderAddHandler.launchService(context, parentAddress, parentModel);
             }
         };
     }

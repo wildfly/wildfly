@@ -53,6 +53,6 @@ public class IdentityProviderRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        IdentityProviderAddHandler.launchServices(context, model, null, null, PathAddress.pathAddress(operation.get(ADDRESS)), false);
+        IdentityProviderAddHandler.launchServices(context, model, PathAddress.pathAddress(operation.get(ADDRESS)), false);
     }
 }

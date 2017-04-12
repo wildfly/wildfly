@@ -51,6 +51,6 @@ public class HandlerRemoveHandler extends AbstractRemoveStepHandler {
     }
 
     @Override protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        HandlerAddHandler.INSTANCE.performRuntime(context, operation, model, null, null);
+        HandlerAddHandler.INSTANCE.performRuntime(context, operation, model);
     }
 }

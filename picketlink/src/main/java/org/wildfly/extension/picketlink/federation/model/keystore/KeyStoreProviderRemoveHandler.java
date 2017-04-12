@@ -51,6 +51,6 @@ public class KeyStoreProviderRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        KeyStoreProviderAddHandler.launchServices(context, operation, model, null, null);
+        KeyStoreProviderAddHandler.launchServices(context, operation, model);
     }
 }

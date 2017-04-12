@@ -22,24 +22,20 @@
 
 package org.wildfly.extension.picketlink.federation.model.idp;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+import static org.wildfly.extension.picketlink.federation.model.idp.TrustDomainResourceDefinition.validateModelInOperation;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
 import org.wildfly.extension.picketlink.federation.service.TrustDomainService;
-
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.wildfly.extension.picketlink.federation.model.idp.TrustDomainResourceDefinition.validateModelInOperation;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -48,28 +44,19 @@ public class TrustDomainAddHandler extends AbstractAddStepHandler {
 
     static final TrustDomainAddHandler INSTANCE = new TrustDomainAddHandler();
 
-    static void launchServices(OperationContext context, PathAddress pathAddress, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    static void launchServices(OperationContext context, PathAddress pathAddress, ModelNode model) throws OperationFailedException {
         String identityProviderName = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
         String domainName = pathAddress.getLastElement().getValue();
-        launchServices(context, identityProviderName, domainName, verificationHandler, newControllers);
+        launchServices(context, identityProviderName, domainName);
     }
 
-    static void launchServices(OperationContext context, String identityProviderName, String domainName, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    private static void launchServices(OperationContext context, String identityProviderName, String domainName) {
         TrustDomainService service = new TrustDomainService(domainName);
         ServiceName serviceName = TrustDomainService.createServiceName(identityProviderName, domainName);
-        ServiceBuilder<TrustDomainService> serviceBuilder = context.getServiceTarget().addService(serviceName, service);
-
-        serviceBuilder.addDependency(IdentityProviderService.createServiceName(identityProviderName), IdentityProviderService.class, service.getIdentityProviderService());
-
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-
-        ServiceController<TrustDomainService> controller = serviceBuilder.setInitialMode(ServiceController.Mode.PASSIVE).install();
-
-        if (newControllers != null) {
-            newControllers.add(controller);
-        }
+        context.getServiceTarget().addService(serviceName, service)
+                .addDependency(IdentityProviderService.createServiceName(identityProviderName), IdentityProviderService.class, service.getIdentityProviderService())
+                .setInitialMode(ServiceController.Mode.PASSIVE)
+                .install();
     }
 
     static void restartServices(OperationContext context, String identityProviderName, String domainName) {
@@ -77,7 +64,7 @@ public class TrustDomainAddHandler extends AbstractAddStepHandler {
 
         context.removeService(serviceName);
 
-        launchServices(context, identityProviderName, domainName, null, null);
+        launchServices(context, identityProviderName, domainName);
     }
 
     @Override
@@ -92,8 +79,7 @@ public class TrustDomainAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-                                     ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model, verificationHandler, newControllers);
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model);
     }
 }
