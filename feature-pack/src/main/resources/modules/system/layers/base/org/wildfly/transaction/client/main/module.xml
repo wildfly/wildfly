@@ -23,6 +23,10 @@
   -->
 
 <module xmlns="urn:jboss:module:1.5" name="org.wildfly.transaction.client">
+    <properties>
+        <property name="jboss.api" value="unsupported"/>
+    </properties>
+
     <exports>
         <exclude path="org/wildfly/transaction/client/_private" />
     </exports>
