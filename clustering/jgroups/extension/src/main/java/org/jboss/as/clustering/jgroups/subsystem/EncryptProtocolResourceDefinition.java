@@ -56,7 +56,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -79,31 +78,10 @@ import org.wildfly.security.x500.cert.X509CertificateBuilder;
  */
 public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptProtocol> extends ProtocolResourceDefinition<P> {
 
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        ENCRYPT_CREDENTIAL_STORE("org.wildfly.clustering.jgroups.protocol.credential-store"),
-        ENCRYPT_KEY_STORE("org.wildfly.clustering.jgroups.protocol.key-store"),
-        ;
-        private final RuntimeCapability<Void> definition;
-
-        Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(name, true).build();
-        }
-
-        @Override
-        public RuntimeCapability<Void> getDefinition() {
-            return this.definition;
-        }
-
-        @Override
-        public RuntimeCapability<?> resolve(PathAddress address) {
-            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue());
-        }
-    }
-
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CREDENTIAL(CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, false, new CapabilityReference(Capability.ENCRYPT_CREDENTIAL_STORE, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
+        CREDENTIAL(CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, false, new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
         KEY_ALIAS("key-alias", ModelType.STRING, builder -> builder.setAllowExpression(true)),
-        KEY_STORE("key-store", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.ENCRYPT_KEY_STORE, CommonUnaryRequirement.KEY_STORE))),
+        KEY_STORE("key-store", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.KEY_STORE))),
         ;
         private final AttributeDefinition definition;
 
@@ -306,8 +284,7 @@ public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptPr
     public EncryptProtocolResourceDefinition(String name, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
-                .addCapabilities(Capability.class)
                 .addOperationTranslator(ADD_OPERATION_TRANSLATOR)
-            ), address -> new EncryptProtocolConfigurationBuilder<>(address), parentBuilderFactory);
+                ), address -> new EncryptProtocolConfigurationBuilder<>(address), parentBuilderFactory);
     }
 }

@@ -61,7 +61,7 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
     }
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        RELAY_CHANNEL_SOURCE("org.wildfly.clustering.jgroups.stack.relay.site-channel-source"),
+        REMOTE_SITE("org.wildfly.clustering.jgroups.remote-site"),
         ;
         private final RuntimeCapability<Void> definition;
 
@@ -81,7 +81,7 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CHANNEL("channel", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.RELAY_CHANNEL_SOURCE, JGroupsRequirement.CHANNEL_SOURCE))),
+        CHANNEL("channel", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.REMOTE_SITE, JGroupsRequirement.CHANNEL_SOURCE))),
         ;
         private final AttributeDefinition definition;
 

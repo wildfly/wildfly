@@ -91,8 +91,7 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
     }
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        SOCKET_BINDING("org.wildfly.clustering.transport.socket-binding"),
-        DIAGNOSTICS_SOCKET_BINDING("org.wildfly.clustering.transport.diagnostics-socket-binding"),
+        TRANSPORT("org.wildfly.clustering.jgroups.transport"),
         ;
         private final RuntimeCapability<Void> definition;
 
@@ -117,10 +116,10 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
                 .setDeprecated(JGroupsModel.VERSION_4_0_0.getVersion())),
         SOCKET_BINDING("socket-binding", ModelType.STRING, builder -> builder
                 .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-                .setCapabilityReference(new CapabilityReference(Capability.SOCKET_BINDING, CommonUnaryRequirement.SOCKET_BINDING))),
+                .setCapabilityReference(new CapabilityReference(Capability.TRANSPORT, CommonUnaryRequirement.SOCKET_BINDING))),
         DIAGNOSTICS_SOCKET_BINDING("diagnostics-socket-binding", ModelType.STRING, builder -> builder
                 .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-                .setCapabilityReference(new CapabilityReference(Capability.DIAGNOSTICS_SOCKET_BINDING, CommonUnaryRequirement.SOCKET_BINDING))),
+                .setCapabilityReference(new CapabilityReference(Capability.TRANSPORT, CommonUnaryRequirement.SOCKET_BINDING))),
         SITE("site", ModelType.STRING),
         RACK("rack", ModelType.STRING),
         MACHINE("machine", ModelType.STRING),
