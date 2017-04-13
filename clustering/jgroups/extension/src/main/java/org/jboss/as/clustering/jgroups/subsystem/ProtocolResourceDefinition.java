@@ -132,9 +132,9 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
     }
 
     ProtocolResourceDefinition(Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ProtocolConfiguration<P>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(new Parameters(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH)).setOrderedChild(), descriptor -> descriptor
+        super(new Parameters(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH)).setOrderedChild(), descriptorConfigurator.andThen(descriptor -> descriptor
                 .addExtraParameters(DeprecatedAttribute.class)
-            , builderFactory, parentBuilderFactory, (parent, registration) -> {
+            ), builderFactory, parentBuilderFactory, (parent, registration) -> {
                 EnumSet.allOf(DeprecatedAttribute.class).forEach(attribute -> registration.registerReadOnlyAttribute(attribute.getDefinition(), null));
             });
     }
