@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -52,6 +53,7 @@ import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
         WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronDisabledTestCase.ElytronSetup.class,
         WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronDisabledTestCase.JcaSetup.class,
         WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronDisabledTestCase.RaSetup.class})
+@RunAsClient
 public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronDisabledTestCase {
     private static final String ADMIN_OBJ_JNDI_NAME = "java:jboss/admObj";
     private static final String WM_ELYTRON_SECURITY_DOMAIN_NAME = "RaRealmElytron";
@@ -138,11 +140,7 @@ public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronDis
     @Test
     public void testMixedSecurity() throws Throwable {
         expectedException.expectMessage(containsString("WFLYJCA0111"));
-        try {
-            deployer.deploy("wf-ra-wm-security-domain-rar");
-        } catch (Exception deployException) {
-            throw deployException.getCause();
-        }
+        deployer.deploy("wf-ra-wm-security-domain-rar");
         try {
             deployer.undeploy("wf-ra-wm-security-domain-rar");
         } catch (Exception ex) {
