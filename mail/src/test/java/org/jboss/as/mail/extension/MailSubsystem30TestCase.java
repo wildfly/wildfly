@@ -25,8 +25,9 @@
 package org.jboss.as.mail.extension;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Properties;
-
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 
 import org.jboss.as.subsystem.test.KernelServices;
@@ -38,34 +39,32 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class MailSubsystem20TestCase extends MailSubsystemTestBase {
-    public MailSubsystem20TestCase() {
+public class MailSubsystem30TestCase extends MailSubsystemTestBase {
+    public MailSubsystem30TestCase() {
         super(MailExtension.SUBSYSTEM_NAME, new MailExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_2_0.xml");
+        return readResource("subsystem_3_0.xml");
     }
 
     @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/wildfly-mail_3_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[]{
+                "/subsystem-templates/mail.xml"
+        };
     }
 
     @Test
-    public void testExpressions() throws Exception {
-        standardSubsystemTest("subsystem_1_1_expressions.xml", false);
-    }
-
-    @Test
-    public void test11() throws Exception {
-        standardSubsystemTest("subsystem_1_1.xml", false);
-    }
-
-    @Test
-    public void test12() throws Exception {
-        standardSubsystemTest("subsystem_1_2.xml", false);
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
     }
 
     @Test
@@ -84,6 +83,9 @@ public class MailSubsystem20TestCase extends MailSubsystemTestBase {
         Assert.assertNotNull("smtp host should be set", properties.getProperty("mail.smtp.host"));
         Assert.assertNotNull("pop3 host should be set", properties.getProperty("mail.pop3.host"));
         Assert.assertNotNull("imap host should be set", properties.getProperty("mail.imap.host"));
+        PasswordAuthentication auth = session.requestPasswordAuthentication(InetAddress.getLocalHost(), 25, "smtp", "", "");
+        Assert.assertEquals("nobody", auth.getUserName());
+        Assert.assertEquals("pass", auth.getPassword());
 
         ServiceController<?> defaultMailService = mainServices.getContainer().getService(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("default2"));
         session = (Session) defaultMailService.getValue();
@@ -108,7 +110,5 @@ public class MailSubsystem20TestCase extends MailSubsystemTestBase {
 
 
     }
-
-
 
 }

@@ -53,14 +53,13 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * The default subsystem parser / writer
+ * The 1.x subsystem parser / writer
  *
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  */
 class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
-    static final MailSubsystemParser INSTANCE = new MailSubsystemParser();
 
-    private MailSubsystemParser() {
+    MailSubsystemParser() {
 
     }
 
