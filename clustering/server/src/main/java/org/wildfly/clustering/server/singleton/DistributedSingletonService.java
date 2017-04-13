@@ -150,8 +150,7 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
         // If we were not already the primary node
         if (this.primary.compareAndSet(false, true)) {
             ClusteringServerLogger.ROOT_LOGGER.startSingleton(this.serviceName.getCanonicalName());
-            ServiceContainerHelper.stop(this.backupController);
-            start(this.primaryController);
+            toggle(this.backupController, this.primaryController);
         }
     }
 
@@ -160,17 +159,17 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
         // If we were the previous the primary node
         if (this.primary.compareAndSet(true, false)) {
             ClusteringServerLogger.ROOT_LOGGER.stopSingleton(this.serviceName.getCanonicalName());
-            ServiceContainerHelper.stop(this.primaryController);
-            start(this.backupController);
+            toggle(this.primaryController, this.backupController);
         }
     }
 
-    private static void start(ServiceController<?> controller) {
+    private static synchronized void toggle(ServiceController<?> controllerToStop, ServiceController<?> controllerToStart) {
+        ServiceContainerHelper.stop(controllerToStop);
         try {
-            ServiceContainerHelper.start(controller);
+            ServiceContainerHelper.start(controllerToStart);
         } catch (StartException e) {
-            ClusteringServerLogger.ROOT_LOGGER.serviceStartFailed(e, controller.getName().getCanonicalName());
-            ServiceContainerHelper.stop(controller);
+            ClusteringServerLogger.ROOT_LOGGER.serviceStartFailed(e, controllerToStart.getName().getCanonicalName());
+            ServiceContainerHelper.stop(controllerToStart);
         }
     }
 
