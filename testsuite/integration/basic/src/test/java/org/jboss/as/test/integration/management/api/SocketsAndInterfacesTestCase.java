@@ -63,7 +63,6 @@ import org.jboss.as.network.NetworkUtils;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 /**
- *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @RunWith(Arquillian.class)
@@ -74,6 +73,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
 
     @ArquillianResource
     URL url;
+
     private NetworkInterface testNic;
     private String testHost;
     private static final int TEST_PORT = 9695;
@@ -87,20 +87,27 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
 
     @Before
     public void before() throws IOException {
-        testNic = getNonDefaultNic();
-        // test the connector
-        testHost = NetworkUtils.canonize(testNic.getInetAddresses().nextElement().getHostAddress());
+        if (System.getProperties().containsKey("ipv6")) {
+            // if proxy is used, we need to use default host, because used host needs to be set in -DnonProxyHosts and -Dhttp.nonProxyHosts parameter
+            // we can't choose one host randomly
+            testHost =  System.getProperty("node0");
+            testNic = getNic(testHost);
+        } else {
+            testNic = getNonDefaultNic();
+            // test the connector
+            testHost = NetworkUtils.canonize(testNic.getInetAddresses().nextElement().getHostAddress());
+        }
     }
 
     @After
-    public void after() throws Exception{
+    public void after() throws Exception {
         // remove connector
         ModelNode op = createOpNode("subsystem=undertow/server=default-server/http-listener=test", REMOVE);
         ModelNode result = executeOperation(op);
 
         try {
             // check that the connector is down
-            Assert.assertFalse("Could not connect to created connector.",WebUtil.testHttpURL(new URL(
+            Assert.assertFalse("Could not connect to created connector.", WebUtil.testHttpURL(new URL(
                     "http", testHost, TEST_PORT, "/").toString()));
         } finally {
             // remove socket binding
@@ -141,8 +148,8 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         op.get("socket-binding").set("test123-binding");
         result = executeOperation(op);
 
-        final URL url =new URL("http", testHost, TEST_PORT, "/");
-        Assert.assertTrue("Could not connect to created connector: "+url+"<>"+InetAddress.getByName(url.getHost())+"..."+getNonDefaultNic()+".>"+result,WebUtil.testHttpURL(url.toString()));
+        final URL url = new URL("http", testHost, TEST_PORT, "/");
+        Assert.assertTrue("Could not connect to created connector: " + url + "<>" + InetAddress.getByName(url.getHost()) + "..." + testNic + ".>" + result, WebUtil.testHttpURL(url.toString()));
 
         // change socket binding port
         op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test123-binding", WRITE_ATTRIBUTE_OPERATION);
@@ -159,7 +166,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         // wait until the connector is available on the new port
         final String testUrl = new URL("http", testHost, TEST_PORT + 1, "/").toString();
         RetryTaskExecutor<Boolean> rte = new RetryTaskExecutor<Boolean>();
-        rte.retryTask(new Callable<Boolean>(){
+        rte.retryTask(new Callable<Boolean>() {
             public Boolean call() throws Exception {
                 boolean available = WebUtil.testHttpURL(testUrl);
                 if (!available) throw new Exception("Connector not available.");
@@ -170,7 +177,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         logger.trace("Server is up.");
 
         // check the connector is not listening on the old port
-        Assert.assertFalse("Could not connect to created connector.",WebUtil.testHttpURL(new URL(
+        Assert.assertFalse("Could not connect to created connector.", WebUtil.testHttpURL(new URL(
                 "http", testHost, TEST_PORT, "/").toString()));
 
         // try to remove the interface while the socket binding is still  bound to it - should fail
@@ -182,9 +189,6 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test123-binding", REMOVE);
         result = executeOperation(op, false);
         Assert.assertFalse("Removed socked binding with connector still using it.", SUCCESS.equals(result.get(OUTCOME).asString()));
-
-
-
     }
 
     private NetworkInterface getNonDefaultNic() throws SocketException, UnknownHostException {
@@ -193,12 +197,34 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
         while (interfaces.hasMoreElements()) {
             NetworkInterface nic = interfaces.nextElement();
-            if (! nic.isUp()) continue;
+            if (!nic.isUp()) {
+                continue;
+            }
             for (InterfaceAddress addr : nic.getInterfaceAddresses()) {
                 if (addr.getAddress().equals(defaultAddr)) continue;
             }
             // interface found
             return nic;
+        }
+        return null; // no interface found
+    }
+
+    private NetworkInterface getNic(String node) throws SocketException, UnknownHostException {
+        if (node == null) {
+            return null;
+        }
+        InetAddress node1Address = InetAddress.getByName(node);
+        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+        while (interfaces.hasMoreElements()) {
+            NetworkInterface nic = interfaces.nextElement();
+            if (!nic.isUp()) {
+                continue;
+            }
+            for (InterfaceAddress addr : nic.getInterfaceAddresses()) {
+                if (addr.getAddress().equals(node1Address)) {
+                    return nic;
+                }
+            }
         }
         return null; // no interface found
     }
