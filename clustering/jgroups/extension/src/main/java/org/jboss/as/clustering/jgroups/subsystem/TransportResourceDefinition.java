@@ -27,6 +27,7 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
@@ -49,7 +50,6 @@ import org.jboss.as.clustering.controller.transform.SimpleReadAttributeOperation
 import org.jboss.as.clustering.controller.transform.SimpleRemoveOperationTransformer;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -57,7 +57,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -112,8 +111,12 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        @Deprecated SHARED("shared", ModelType.BOOLEAN, new ModelNode(false), JGroupsModel.VERSION_4_0_0),
-        DIAGNOSTICS_SOCKET_BINDING("diagnostics-socket-binding", ModelType.STRING, SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF, new CapabilityReference(Capability.DIAGNOSTICS_SOCKET_BINDING, CommonUnaryRequirement.SOCKET_BINDING)),
+        @Deprecated SHARED("shared", ModelType.BOOLEAN, builder -> builder
+                .setDefaultValue(new ModelNode(false))
+                .setDeprecated(JGroupsModel.VERSION_4_0_0.getVersion())),
+        DIAGNOSTICS_SOCKET_BINDING("diagnostics-socket-binding", ModelType.STRING, builder -> builder
+                .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                .setCapabilityReference(new CapabilityReference(Capability.DIAGNOSTICS_SOCKET_BINDING, CommonUnaryRequirement.SOCKET_BINDING))),
         SITE("site", ModelType.STRING),
         RACK("rack", ModelType.STRING),
         MACHINE("machine", ModelType.STRING),
@@ -121,23 +124,15 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
-            this.definition = createBuilder(name, type).build();
+            this(name, type, UnaryOperator.identity());
         }
 
-        Attribute(String name, ModelType type, ModelNode defaultValue, JGroupsModel deprecation) {
-            this.definition = createBuilder(name, type).setDefaultValue(defaultValue).setDeprecated(deprecation.getVersion()).build();
-        }
-
-        Attribute(String name, ModelType type, AccessConstraintDefinition constraint, CapabilityReferenceRecorder reference) {
-            this.definition = createBuilder(name, type).setAccessConstraints(constraint).setCapabilityReference(reference).build();
-        }
-
-        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
-            return new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            ;
+                    ).build();
         }
 
         @Override
@@ -158,7 +153,7 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
         ThreadingAttribute(String name) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
                     .setAllowExpression(false)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();

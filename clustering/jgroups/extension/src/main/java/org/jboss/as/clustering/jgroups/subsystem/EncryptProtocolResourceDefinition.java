@@ -59,6 +59,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -107,7 +108,10 @@ public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptPr
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type).setRequired(true)).build();
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setRequired(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    ).build();
         }
 
         Attribute(AttributeDefinition definition) {

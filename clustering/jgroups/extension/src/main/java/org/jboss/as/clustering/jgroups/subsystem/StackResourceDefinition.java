@@ -85,7 +85,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
                     .setRequired(false)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            ).build();
+                    ).build();
         }
 
         @Override

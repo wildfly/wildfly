@@ -36,8 +36,10 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -64,7 +66,11 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, JGroupsModel deprecation) {
-            this.definition = createBuilder(name, type, null).setDeprecated(deprecation.getVersion()).build();
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setRequired(false)
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
         }
 
         @Override
