@@ -90,7 +90,7 @@
     </servlet-container>
 
     <handlers>
-        <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true" />
+        <file name="welcome-content" path="${jboss.home.dir}" directory-listing="true" />
         <reverse-proxy connection-idle-timeout="60"
                        connections-per-thread="30" name="reverse-proxy">
             <host name="localhost" scheme="ajp" outbound-socket-binding="ajp-remote" instance-id="myRoute" path="/test"/>

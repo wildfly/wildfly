@@ -37,7 +37,7 @@
         <jsp-config/>
     </servlet-container>
     <handlers>
-        <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
+        <file name="welcome-content" path="${jboss.home.dir}" directory-listing="true"/>
     </handlers>
     <filters>
         <response-header name="server-header" header-name="Server" header-value="Wildfly 8"/>

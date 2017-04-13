@@ -35,7 +35,7 @@
         <websockets/>
     </servlet-container>
     <handlers>
-        <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
+        <file name="welcome-content" path="${jboss.home.dir}"/>
     </handlers>
     <filters>
         <response-header name="server-header" header-name="Server" header-value="Wildfly 8"/>
