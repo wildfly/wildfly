@@ -91,6 +91,7 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
     }
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
+        SOCKET_BINDING("org.wildfly.clustering.transport.socket-binding"),
         DIAGNOSTICS_SOCKET_BINDING("org.wildfly.clustering.transport.diagnostics-socket-binding"),
         ;
         private final RuntimeCapability<Void> definition;
@@ -114,6 +115,9 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
         @Deprecated SHARED("shared", ModelType.BOOLEAN, builder -> builder
                 .setDefaultValue(new ModelNode(false))
                 .setDeprecated(JGroupsModel.VERSION_4_0_0.getVersion())),
+        SOCKET_BINDING("socket-binding", ModelType.STRING, builder -> builder
+                .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                .setCapabilityReference(new CapabilityReference(Capability.SOCKET_BINDING, CommonUnaryRequirement.SOCKET_BINDING))),
         DIAGNOSTICS_SOCKET_BINDING("diagnostics-socket-binding", ModelType.STRING, builder -> builder
                 .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
                 .setCapabilityReference(new CapabilityReference(Capability.DIAGNOSTICS_SOCKET_BINDING, CommonUnaryRequirement.SOCKET_BINDING))),
@@ -232,9 +236,7 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
     private TransportResourceDefinition(Parameters parameters, ResourceServiceBuilderFactory<TransportConfiguration<T>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(parameters, descriptor -> descriptor
                 .addAttributes(Attribute.class)
-                .addAttributes(SocketBindingProtocolResourceDefinition.Attribute.class)
                 .addCapabilities(Capability.class)
-                .addCapabilities(SocketBindingProtocolResourceDefinition.Capability.class)
                 .addExtraParameters(ThreadingAttribute.class)
                 .addRequiredChildren(ThreadPoolResourceDefinition.class)
             , builderFactory, parentBuilderFactory, (parent, registration) -> {

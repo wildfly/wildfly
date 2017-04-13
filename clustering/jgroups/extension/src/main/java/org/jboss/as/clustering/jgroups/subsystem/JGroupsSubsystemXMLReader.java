@@ -344,6 +344,10 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     readAttribute(reader, i, operation, TransportResourceDefinition.Attribute.SHARED);
                     break;
                 }
+                case SOCKET_BINDING: {
+                    readAttribute(reader, i, operation, TransportResourceDefinition.Attribute.SOCKET_BINDING);
+                    break;
+                }
                 case DIAGNOSTICS_SOCKET_BINDING: {
                     readAttribute(reader, i, operation, TransportResourceDefinition.Attribute.DIAGNOSTICS_SOCKET_BINDING);
                     break;
@@ -383,7 +387,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     }
                 }
                 default: {
-                    this.parseSocketProtocolAttribute(reader, i, operation);
+                    this.parseProtocolAttribute(reader, i, operation);
                 }
             }
         }
