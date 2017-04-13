@@ -80,8 +80,8 @@ import org.wildfly.security.x500.cert.X509CertificateBuilder;
 public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptProtocol> extends ProtocolResourceDefinition<P> {
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        ENCRYPT_CREDENTIAL_STORE("org.wildfly.extension.undertow.application-security-domain.single-sign-on.credential-store"),
-        ENCRYPT_KEY_STORE("org.wildfly.extension.undertow.application-security-domain.single-sign-on.key-store"),
+        ENCRYPT_CREDENTIAL_STORE("org.wildfly.clustering.jgroups.protocol.credential-store"),
+        ENCRYPT_KEY_STORE("org.wildfly.clustering.jgroups.protocol.key-store"),
         ;
         private final RuntimeCapability<Void> definition;
 
