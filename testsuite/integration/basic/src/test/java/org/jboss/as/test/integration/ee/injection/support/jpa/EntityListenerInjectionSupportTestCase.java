@@ -37,6 +37,7 @@ import org.jboss.as.test.integration.ee.injection.support.Bravo;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,13 +52,17 @@ public class EntityListenerInjectionSupportTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
+
         WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
         war.addPackage(EntityListenerInjectionSupportTestCase.class.getPackage());
         war.addClasses(Alpha.class, Bravo.class);
         war.addAsWebInfResource(EntityListenerInjectionSupportTestCase.class.getPackage(), "persistence.xml",
                 "classes/META-INF/persistence.xml");
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-        return war;
+
+        ear.addAsModule(war);
+        return ear;
     }
 
     @ArquillianResource
@@ -65,7 +70,7 @@ public class EntityListenerInjectionSupportTestCase {
 
     protected <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
         return interfaceType
-                .cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
+                .cast(iniCtx.lookup("java:app/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
     }
 
     @Test
