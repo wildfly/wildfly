@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 import javax.security.auth.x500.X500Principal;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
@@ -112,6 +113,9 @@ public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptPr
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             if (!operation.hasDefined(Attribute.KEY_STORE.getName()) && !operation.hasDefined(Attribute.KEY_ALIAS.getName()) && !operation.hasDefined(Attribute.CREDENTIAL.getName())) {
+                // Ensure Elytron subsystem exists
+                context.requireOptionalCapability(CommonRequirement.ELYTRON.getName(), Capability.PROTOCOL.getName(), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName());
+
                 // Locate subsystem address
                 PathAddress subsystemAddress = context.getCurrentAddress().getParent();
                 while (!subsystemAddress.getLastElement().getKey().equals(ModelDescriptionConstants.SUBSYSTEM)) {
