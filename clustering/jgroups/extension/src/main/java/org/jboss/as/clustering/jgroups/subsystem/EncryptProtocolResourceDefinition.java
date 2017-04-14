@@ -175,7 +175,10 @@ public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptPr
         private static final SYM_ENCRYPT DEFAULTS = new SYM_ENCRYPT();
         private final Map<String, ModelNode> properties;
 
-        LegacySymmetricEncryptDescriptor(Map<String, ModelNode> properties) {
+        LegacySymmetricEncryptDescriptor(Map<String, ModelNode> properties) throws OperationFailedException {
+            if (!properties.containsKey("keystore_name")) {
+                throw JGroupsLogger.ROOT_LOGGER.missingKeyStoreProperty("keystore_name");
+            }
             this.properties = properties;
         }
 
