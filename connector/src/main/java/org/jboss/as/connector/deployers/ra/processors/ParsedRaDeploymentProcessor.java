@@ -136,6 +136,8 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
             if (bootstrapCtx == null)
                 bootstrapCtx = "default";
+
+            builder.addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootstrapCtx));
             //Register an empty override model regardless of we're enabled or not - the statistics listener will add the relevant childresources
             if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnit.getName()) == null) {
                 registration.registerOverrideModel(deploymentUnit.getName(), new OverrideDescriptionProvider() {
