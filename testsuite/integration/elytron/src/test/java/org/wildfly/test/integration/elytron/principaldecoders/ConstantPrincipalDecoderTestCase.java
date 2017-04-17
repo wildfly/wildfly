@@ -45,15 +45,15 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.security.common.AbstractElytronSetupTask;
-import org.wildfly.test.security.common.elytron.ConfigurableElement;
-import org.wildfly.test.security.common.elytron.ConstantPrincipalDecoder;
-import org.wildfly.test.security.common.elytron.ConstantPrincipalTransformer;
-import org.wildfly.test.security.common.elytron.PropertiesRealm;
-import org.wildfly.test.security.common.elytron.SimpleSecurityDomain;
-import org.wildfly.test.security.common.elytron.SimpleSecurityDomain.SecurityDomainRealm;
-import org.wildfly.test.security.common.elytron.UndertowDomainMapper;
-import org.wildfly.test.security.servlets.SecuredPrincipalPrintingServlet;
+import org.jboss.as.test.security.common.AbstractElytronSetupTask;
+import org.jboss.as.test.security.common.elytron.ConfigurableElement;
+import org.jboss.as.test.security.common.elytron.ConstantPrincipalDecoder;
+import org.jboss.as.test.security.common.elytron.ConstantPrincipalTransformer;
+import org.jboss.as.test.security.common.elytron.PropertiesRealm;
+import org.jboss.as.test.security.common.elytron.SimpleSecurityDomain;
+import org.jboss.as.test.security.common.elytron.SimpleSecurityDomain.SecurityDomainRealm;
+import org.jboss.as.test.security.common.elytron.UndertowDomainMapper;
+import org.jboss.as.test.security.servlets.SecuredPrincipalPrintingServlet;
 
 /**
  * Test for "constant-principal-decoder" Elytron resource. It tests if it's correctly used for authentication and remains valid

@@ -43,7 +43,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
+import org.jboss.as.test.security.common.elytron.EjbElytronDomainSetup;
 
 /**
  * Utility methods to create/remove simple security domains

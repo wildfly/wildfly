@@ -47,9 +47,9 @@ import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
-import org.wildfly.test.security.common.elytron.UndertowDomainMapper;
-import org.wildfly.test.security.common.elytron.UserWithRoles;
+import org.jboss.as.test.security.common.elytron.PropertyFileBasedDomain;
+import org.jboss.as.test.security.common.elytron.UndertowDomainMapper;
+import org.jboss.as.test.security.common.elytron.UserWithRoles;
 
 /**
  * @author Stuart Douglas

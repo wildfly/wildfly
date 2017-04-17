@@ -31,7 +31,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.wildfly.test.integration.elytron.realmmappers.RealmMapperServerSetupTask.SECURITY_DOMAIN_REFERENCE;
-import org.wildfly.test.security.servlets.SecuredPrincipalPrintingServlet;
+import org.jboss.as.test.security.servlets.SecuredPrincipalPrintingServlet;
 
 /**
  *

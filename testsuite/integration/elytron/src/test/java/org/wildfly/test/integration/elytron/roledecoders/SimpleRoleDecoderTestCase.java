@@ -48,11 +48,11 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.security.common.AbstractElytronSetupTask;
-import org.wildfly.test.security.common.elytron.ConfigurableElement;
-import org.wildfly.test.security.common.elytron.PropertiesRealm;
-import org.wildfly.test.security.common.elytron.SimpleSecurityDomain;
-import org.wildfly.test.security.common.elytron.UndertowDomainMapper;
+import org.jboss.as.test.security.common.AbstractElytronSetupTask;
+import org.jboss.as.test.security.common.elytron.ConfigurableElement;
+import org.jboss.as.test.security.common.elytron.PropertiesRealm;
+import org.jboss.as.test.security.common.elytron.SimpleSecurityDomain;
+import org.jboss.as.test.security.common.elytron.UndertowDomainMapper;
 
 /**
  * Test case for Elytron Simple Role Decoder.

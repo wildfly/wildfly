@@ -31,11 +31,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.extension.elytron._private.ElytronSubsystemMessages;
-import org.wildfly.test.security.common.AbstractElytronSetupTask;
-import org.wildfly.test.security.common.elytron.ConfigurableElement;
-import org.wildfly.test.security.common.elytron.CredentialReference;
-import org.wildfly.test.security.common.elytron.Path;
-import org.wildfly.test.security.common.elytron.SimpleCredentialStore;
+import org.jboss.as.test.security.common.AbstractElytronSetupTask;
+import org.jboss.as.test.security.common.elytron.ConfigurableElement;
+import org.jboss.as.test.security.common.elytron.CredentialReference;
+import org.jboss.as.test.security.common.elytron.Path;
+import org.jboss.as.test.security.common.elytron.SimpleCredentialStore;
 
 /**
  * Tests credential store (CS) implementation in Elytron. This testcase uses several scenarios:

@@ -66,14 +66,14 @@ import org.wildfly.extension.batch.jberet.deployment.BatchPermission;
 import org.wildfly.security.auth.permission.LoginPermission;
 import org.wildfly.security.permission.ElytronPermission;
 import org.wildfly.security.permission.NoPermission;
-import org.wildfly.test.security.common.AbstractElytronSetupTask;
-import org.wildfly.test.security.common.elytron.ConfigurableElement;
-import org.wildfly.test.security.common.elytron.ConstantPermissionMapper;
-import org.wildfly.test.security.common.elytron.PermissionRef;
-import org.wildfly.test.security.common.elytron.SimpleSecurityDomain;
-import org.wildfly.test.security.common.elytron.SimpleSecurityDomain.SecurityDomainRealm;
-import org.wildfly.test.security.common.elytron.UndertowDomainMapper;
-import org.wildfly.test.security.servlets.CheckIdentityPermissionServlet;
+import org.jboss.as.test.security.common.AbstractElytronSetupTask;
+import org.jboss.as.test.security.common.elytron.ConfigurableElement;
+import org.jboss.as.test.security.common.elytron.ConstantPermissionMapper;
+import org.jboss.as.test.security.common.elytron.PermissionRef;
+import org.jboss.as.test.security.common.elytron.SimpleSecurityDomain;
+import org.jboss.as.test.security.common.elytron.SimpleSecurityDomain.SecurityDomainRealm;
+import org.jboss.as.test.security.common.elytron.UndertowDomainMapper;
+import org.jboss.as.test.security.servlets.CheckIdentityPermissionServlet;
 import org.wildfly.transaction.client.RemoteTransactionPermission;
 
 /**

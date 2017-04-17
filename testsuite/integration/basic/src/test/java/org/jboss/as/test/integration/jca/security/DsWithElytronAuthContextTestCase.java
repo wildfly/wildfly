@@ -38,12 +38,12 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.security.common.AbstractElytronSetupTask;
-import org.wildfly.test.security.common.elytron.ConfigurableElement;
-import org.wildfly.test.security.common.elytron.CredentialReference;
-import org.wildfly.test.security.common.elytron.MatchRules;
-import org.wildfly.test.security.common.elytron.SimpleAuthConfig;
-import org.wildfly.test.security.common.elytron.SimpleAuthContext;
+import org.jboss.as.test.security.common.AbstractElytronSetupTask;
+import org.jboss.as.test.security.common.elytron.ConfigurableElement;
+import org.jboss.as.test.security.common.elytron.CredentialReference;
+import org.jboss.as.test.security.common.elytron.MatchRules;
+import org.jboss.as.test.security.common.elytron.SimpleAuthConfig;
+import org.jboss.as.test.security.common.elytron.SimpleAuthContext;
 
 /**
  * Data source with security domain test JBQA-5952

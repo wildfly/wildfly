@@ -46,7 +46,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -67,7 +66,7 @@ public class TransactionInflowTestCase {
     private static final String ROLLBACK = TransactionInflowResourceAdapter.ACTION_ROLLBACK;
 
     @ArquillianResource
-    public Deployer deployer;
+    public static Deployer deployer;
 
     @BeforeClass
     public static void beforeClass() {
@@ -122,45 +121,46 @@ public class TransactionInflowTestCase {
         return getEjbDeployment(ROLLBACK);
     }
 
-    @After
-    public void cleanUp() {
-        deployer.undeploy(EJB_MODULE_NAME + COMMIT);
-        deployer.undeploy(EJB_MODULE_NAME + ROLLBACK);
-    }
-
     @Test
     public void inflowTransactionCommit() throws NamingException {
         deployer.deploy(EJB_MODULE_NAME + COMMIT);
 
-        TransactionCheckerSingletonRemote checker = getSingletonChecker(EJB_MODULE_NAME + COMMIT);
-
         try {
-            Assert.assertEquals("Expecting one message was passed from RAR to MDB", 1, checker.getMessages().size());
-            Assert.assertEquals("Expecting message with the content was passed from RAR to MDB",
-                    TransactionInflowResourceAdapter.MSG, checker.getMessages().iterator().next());
-            Assert.assertEquals("Two XAResources were enlisted thus expected to be prepared", 2, checker.getPrepared());
-            Assert.assertEquals("Two XAResources are expected to be committed", 2, checker.getCommitted());
-            Assert.assertEquals("Two XAResources were were committed thus not rolled-back", 0, checker.getRolledback());
+            TransactionCheckerSingletonRemote checker = getSingletonChecker(EJB_MODULE_NAME + COMMIT);
+
+            try {
+                Assert.assertEquals("Expecting one message was passed from RAR to MDB", 1, checker.getMessages().size());
+                Assert.assertEquals("Expecting message with the content was passed from RAR to MDB",
+                        TransactionInflowResourceAdapter.MSG, checker.getMessages().iterator().next());
+                Assert.assertEquals("Two XAResources were enlisted thus expected to be prepared", 2, checker.getPrepared());
+                Assert.assertEquals("Two XAResources are expected to be committed", 2, checker.getCommitted());
+                Assert.assertEquals("Two XAResources were were committed thus not rolled-back", 0, checker.getRolledback());
+            } finally {
+                checker.resetAll();
+            }
         } finally {
-            checker.resetAll();
+            deployer.undeploy(EJB_MODULE_NAME + COMMIT);
         }
     }
 
     @Test
     public void inflowTransactionRollback() throws NamingException {
         deployer.deploy(EJB_MODULE_NAME + ROLLBACK);
-
-        TransactionCheckerSingletonRemote checker = getSingletonChecker(EJB_MODULE_NAME + ROLLBACK);
-
         try {
-            Assert.assertEquals("Expecting one message was passed from RAR to MDB", 1, checker.getMessages().size());
-            Assert.assertEquals("Expecting message with the content was passed from RAR to MDB",
-                    TransactionInflowResourceAdapter.MSG, checker.getMessages().iterator().next());
-            Assert.assertEquals("Two XAResources were enlisted thus expected to be prepared", 2, checker.getPrepared());
-            Assert.assertEquals("Two XAResources are expected to be rolled-back", 2, checker.getRolledback());
-            Assert.assertEquals("Two XAResources were were rolled-bck thus not committed", 0, checker.getCommitted());
+            TransactionCheckerSingletonRemote checker = getSingletonChecker(EJB_MODULE_NAME + ROLLBACK);
+
+            try {
+                Assert.assertEquals("Expecting one message was passed from RAR to MDB", 1, checker.getMessages().size());
+                Assert.assertEquals("Expecting message with the content was passed from RAR to MDB",
+                        TransactionInflowResourceAdapter.MSG, checker.getMessages().iterator().next());
+                Assert.assertEquals("Two XAResources were enlisted thus expected to be prepared", 2, checker.getPrepared());
+                Assert.assertEquals("Two XAResources are expected to be rolled-back", 2, checker.getRolledback());
+                Assert.assertEquals("Two XAResources were were rolled-bck thus not committed", 0, checker.getCommitted());
+            } finally {
+                checker.resetAll();
+            }
         } finally {
-            checker.resetAll();
+            deployer.undeploy(EJB_MODULE_NAME + ROLLBACK);
         }
     }
 
