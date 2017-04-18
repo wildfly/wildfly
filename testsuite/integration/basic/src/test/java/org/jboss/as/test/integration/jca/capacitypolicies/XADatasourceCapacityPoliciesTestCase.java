@@ -25,8 +25,6 @@ package org.jboss.as.test.integration.jca.capacitypolicies;
 
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -51,9 +49,4 @@ public class XADatasourceCapacityPoliciesTestCase extends AbstractDatasourceCapa
         }
     }
 
-    @Test
-    @Ignore("WFLY-8427")
-    public void testNonDefaultDecrementerAndIncrementer() throws Exception {
-
-    }
 }
