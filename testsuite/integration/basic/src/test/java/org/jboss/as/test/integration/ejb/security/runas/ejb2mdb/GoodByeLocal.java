@@ -29,5 +29,5 @@ import javax.ejb.EJBLocalObject;
  * @author Ondrej Chaloupka
  */
 public interface GoodByeLocal extends EJBLocalObject {
-    String sayGoodBye(String userID) throws EJBException;
+    String sayGoodBye() throws EJBException;
 }

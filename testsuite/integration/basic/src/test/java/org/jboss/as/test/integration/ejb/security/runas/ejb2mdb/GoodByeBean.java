@@ -25,29 +25,22 @@ package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 
-import org.jboss.logging.Logger;
-
 /**
- * Simple bean which returns goodbye greeting.
+ * Bean returning goodbye greeting.
  *
  * @author Ondrej Chaloupka
  */
 public class GoodByeBean implements SessionBean {
     private static final long serialVersionUID = 1L;
-    private SessionContext sessionContext;
-    private static final Logger log = Logger.getLogger(GoodByeBean.class);
+    public static final String SAYING = "GoodBye";
+
+    public String sayGoodBye() {
+        return SAYING;
+    }
 
     public void setSessionContext(SessionContext sessionContext) {
-        this.sessionContext = sessionContext;
     }
 
-    public String sayGoodBye(String userID) {
-        String greeting = "GoodBye " + userID;
-        log.trace("Inside GoodByeBean.sayGoodBye(). Greeting: " + greeting);
-        return greeting;
-    }
-
-    // Methods typically ignored.
     public void ejbCreate() {
     }
 
