@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 import javax.security.auth.x500.X500Principal;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
@@ -56,9 +57,9 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -78,36 +79,18 @@ import org.wildfly.security.x500.cert.X509CertificateBuilder;
  */
 public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptProtocol> extends ProtocolResourceDefinition<P> {
 
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        ENCRYPT_CREDENTIAL_STORE("org.wildfly.extension.undertow.application-security-domain.single-sign-on.credential-store"),
-        ENCRYPT_KEY_STORE("org.wildfly.extension.undertow.application-security-domain.single-sign-on.key-store"),
-        ;
-        private final RuntimeCapability<Void> definition;
-
-        Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(name, true).build();
-        }
-
-        @Override
-        public RuntimeCapability<Void> getDefinition() {
-            return this.definition;
-        }
-
-        @Override
-        public RuntimeCapability<?> resolve(PathAddress address) {
-            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue());
-        }
-    }
-
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CREDENTIAL(CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, false, new CapabilityReference(Capability.ENCRYPT_CREDENTIAL_STORE, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
+        CREDENTIAL(CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, false, new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
         KEY_ALIAS("key-alias", ModelType.STRING, builder -> builder.setAllowExpression(true)),
-        KEY_STORE("key-store", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.ENCRYPT_KEY_STORE, CommonUnaryRequirement.KEY_STORE))),
+        KEY_STORE("key-store", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.KEY_STORE))),
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type).setRequired(true)).build();
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setRequired(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    ).build();
         }
 
         Attribute(AttributeDefinition definition) {
@@ -130,6 +113,9 @@ public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptPr
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             if (!operation.hasDefined(Attribute.KEY_STORE.getName()) && !operation.hasDefined(Attribute.KEY_ALIAS.getName()) && !operation.hasDefined(Attribute.CREDENTIAL.getName())) {
+                // Ensure Elytron subsystem exists
+                context.requireOptionalCapability(CommonRequirement.ELYTRON.getName(), Capability.PROTOCOL.getName(), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName());
+
                 // Locate subsystem address
                 PathAddress subsystemAddress = context.getCurrentAddress().getParent();
                 while (!subsystemAddress.getLastElement().getKey().equals(ModelDescriptionConstants.SUBSYSTEM)) {
@@ -189,7 +175,10 @@ public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptPr
         private static final SYM_ENCRYPT DEFAULTS = new SYM_ENCRYPT();
         private final Map<String, ModelNode> properties;
 
-        LegacySymmetricEncryptDescriptor(Map<String, ModelNode> properties) {
+        LegacySymmetricEncryptDescriptor(Map<String, ModelNode> properties) throws OperationFailedException {
+            if (!properties.containsKey("keystore_name")) {
+                throw JGroupsLogger.ROOT_LOGGER.missingKeyStoreProperty("keystore_name");
+            }
             this.properties = properties;
         }
 
@@ -302,8 +291,7 @@ public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptPr
     public EncryptProtocolResourceDefinition(String name, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
-                .addCapabilities(Capability.class)
                 .addOperationTranslator(ADD_OPERATION_TRANSLATOR)
-            ), address -> new EncryptProtocolConfigurationBuilder<>(address), parentBuilderFactory);
+                ), address -> new EncryptProtocolConfigurationBuilder<>(address), parentBuilderFactory);
     }
 }

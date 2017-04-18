@@ -36,8 +36,11 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -57,6 +60,26 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
         return PathElement.pathElement("protocol", name);
     }
 
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        PROTOCOL("org.wildfly.clustering.jgroups.protocol"),
+        ;
+        private final RuntimeCapability<Void> definition;
+
+        Capability(String name) {
+            this.definition = RuntimeCapability.Builder.of(name, true).setAllowMultipleRegistrations(true).build();
+        }
+
+        @Override
+        public RuntimeCapability<?> getDefinition() {
+            return this.definition;
+        }
+
+        @Override
+        public RuntimeCapability<?> resolve(PathAddress address) {
+            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue(), address.getLastElement().getValue());
+        }
+    }
+
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
         SOCKET_BINDING("socket-binding", ModelType.STRING, JGroupsModel.VERSION_4_1_0), // socket-binding is now a required attribute of SocketBindingProtocolResourceDefinition
@@ -64,7 +87,11 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, JGroupsModel deprecation) {
-            this.definition = createBuilder(name, type, null).setDeprecated(deprecation.getVersion()).build();
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setRequired(false)
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
         }
 
         @Override
@@ -126,14 +153,17 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
     }
 
     ProtocolResourceDefinition(Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ProtocolConfiguration<P>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(new Parameters(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH)).setOrderedChild(), descriptor -> descriptor
+        super(new Parameters(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH)).setOrderedChild(), descriptorConfigurator.andThen(descriptor -> descriptor
+                .addCapabilities(Capability.class)
                 .addExtraParameters(DeprecatedAttribute.class)
-            , builderFactory, parentBuilderFactory, (parent, registration) -> {
-                EnumSet.allOf(DeprecatedAttribute.class).forEach(attribute -> registration.registerReadOnlyAttribute(attribute.getDefinition(), null));
-            });
+                ), builderFactory, parentBuilderFactory, (parent, registration) -> {
+                    EnumSet.allOf(DeprecatedAttribute.class).forEach(attribute -> registration.registerReadOnlyAttribute(attribute.getDefinition(), null));
+                });
     }
 
     ProtocolResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ProtocolConfiguration<P>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(new Parameters(path, new JGroupsResourceDescriptionResolver(path, WILDCARD_PATH)).setOrderedChild(), descriptorConfigurator, builderFactory, parentBuilderFactory, (parent, registration) -> {});
+        super(new Parameters(path, new JGroupsResourceDescriptionResolver(path, WILDCARD_PATH)).setOrderedChild(), descriptorConfigurator.andThen(descriptor -> descriptor
+                .addCapabilities(Capability.class)
+                ), builderFactory, parentBuilderFactory, (parent, registration) -> {});
     }
 }

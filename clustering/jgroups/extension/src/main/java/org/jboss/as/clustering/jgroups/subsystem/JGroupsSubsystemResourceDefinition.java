@@ -24,6 +24,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.CapabilityReference;
@@ -36,7 +37,6 @@ import org.jboss.as.clustering.controller.SubsystemRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -69,26 +69,18 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
     }
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DEFAULT_CHANNEL("default-channel", ModelType.STRING, new CapabilityReference(CAPABILITIES.get(JGroupsRequirement.CHANNEL_FACTORY), JGroupsRequirement.CHANNEL_FACTORY)),
-        @Deprecated DEFAULT_STACK("default-stack", ModelType.STRING, JGroupsModel.VERSION_3_0_0),
+        DEFAULT_CHANNEL("default-channel", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(CAPABILITIES.get(JGroupsRequirement.CHANNEL_FACTORY), JGroupsRequirement.CHANNEL_FACTORY))),
+        @Deprecated DEFAULT_STACK("default-stack", ModelType.STRING, builder -> builder.setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
-            this.definition = createBuilder(name, type).setCapabilityReference(reference).build();
-        }
-
-        Attribute(String name, ModelType type, JGroupsModel deprecation) {
-            this.definition = createBuilder(name, type).setDeprecated(deprecation.getVersion()).build();
-        }
-
-        static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
-            return new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setRequired(false)
-                    .setAllowExpression(false) // These are model references
+                    .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setXmlName(XMLAttribute.DEFAULT.getLocalName())
-            ;
+                    ).build();
         }
 
         @Override

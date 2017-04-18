@@ -142,4 +142,7 @@ public interface JGroupsLogger extends BasicLogger {
 
     @Message(id = 26, value = "No %s operation registered at %s")
     OperationFailedException operationNotDefined(String operation, String address);
+
+    @Message(id = 27, value = "Failed to synthesize key-store add operation due to missing %s property")
+    OperationFailedException missingKeyStoreProperty(String propertyName);
 }

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -29,7 +31,6 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -60,7 +61,7 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
     }
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        RELAY_CHANNEL_SOURCE("org.wildfly.clustering.jgroups.stack.relay.site-channel-source"),
+        REMOTE_SITE("org.wildfly.clustering.jgroups.remote-site"),
         ;
         private final RuntimeCapability<Void> definition;
 
@@ -80,15 +81,15 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CHANNEL("channel", ModelType.STRING, new CapabilityReference(Capability.RELAY_CHANNEL_SOURCE, JGroupsRequirement.CHANNEL_SOURCE)),
+        CHANNEL("channel", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.REMOTE_SITE, JGroupsRequirement.CHANNEL_SOURCE))),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
-            this.definition = createBuilder(name, type)
+        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
                     .setRequired(true)
-                    .setCapabilityReference(reference)
-                    .build();
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    ).build();
         }
 
         @Override
@@ -104,14 +105,12 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, JGroupsModel deprecation) {
-            this.definition = createBuilder(name, type).setRequired(false).setDeprecated(deprecation.getVersion()).build();
-        }
-
-        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
-            return new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
-                .setAllowExpression(true)
-                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            ;
+            this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
+                    .setRequired(false)
+                    .setAllowExpression(true)
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
         }
 
         @Override
