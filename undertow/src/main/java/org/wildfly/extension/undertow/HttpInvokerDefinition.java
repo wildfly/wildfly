@@ -53,16 +53,16 @@ import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 public class HttpInvokerDefinition extends PersistentResourceDefinition {
 
     static final RuntimeCapability<Void> HTTP_INVOKER_HOST_CAPABILITY =
-                RuntimeCapability.Builder.of(CAPABILITY_HTTP_INVOKER_HOST, true, PathHandler.class)
+                RuntimeCapability.Builder.of(CAPABILITY_HTTP_INVOKER_HOST, true, Void.class)
                         .setDynamicNameMapper(address -> new String[]{
                                 address.getParent().getLastElement().getValue(),
                                 address.getLastElement().getValue()})
-                        .addDynamicRequirements(Capabilities.CAPABILITY_HOST)
+                        //.addDynamicRequirements(Capabilities.CAPABILITY_HOST)
                         .addRequirements(Capabilities.CAPABILITY_HTTP_INVOKER)
-                        .addOptionalRequirements(REF_MOD_CLUSTER)
+                        //.addOptionalRequirements(REF_MOD_CLUSTER)
                         .build();
 
-    protected static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENITCATION_FACTORY, ModelType.STRING, true)
+    static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENITCATION_FACTORY, ModelType.STRING, true)
             .setValidator(new StringLengthValidator(1, true))
             .setRestartAllServices()
             .setCapabilityReference(Capabilities.REF_HTTP_AUTHENTICATION_FACTORY)

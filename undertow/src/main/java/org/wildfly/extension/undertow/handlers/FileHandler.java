@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow.handlers;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -115,7 +116,12 @@ public class FileHandler extends Handler {
         final String[] paths = safePaths.toArray(new String[safePaths.size()]);
 
         UndertowLogger.ROOT_LOGGER.creatingFileHandler(path, directoryListing, followSymlink, caseSensitive, safePaths);
-        Path base = Paths.get(path).normalize();
+        Path base;
+        try {
+            base = Paths.get(path).normalize().toRealPath(); //workaround for JBEAP-10231
+        } catch (IOException e) {
+            throw new OperationFailedException(e);
+        }
         PathResourceManager resourceManager = new PathResourceManager(base, cacheBufferSize * cacheBuffers, caseSensitive, followSymlink, paths);
         ResourceHandler handler = new ResourceHandler(resourceManager);
         handler.setDirectoryListingEnabled(directoryListing);
