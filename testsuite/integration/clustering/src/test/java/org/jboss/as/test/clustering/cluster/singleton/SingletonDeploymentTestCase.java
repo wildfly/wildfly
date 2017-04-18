@@ -88,6 +88,7 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
     }
 
     @Test
+    @org.junit.Ignore("Ignoring until WFLY-8540 changes are merged")
     public void test(
             @ArquillianResource(TraceServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(TraceServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
