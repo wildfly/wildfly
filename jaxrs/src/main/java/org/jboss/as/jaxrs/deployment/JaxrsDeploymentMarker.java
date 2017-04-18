@@ -40,6 +40,9 @@ public class JaxrsDeploymentMarker {
         }
     }
 
+    //This actually tells whether the deployment unit is potentially part of a JAX-RS deployment;
+    //in practice, we might not be dealing with a JAX-RS deployment (it depends on which/where
+    //JAX-RS annotations are found in the deployment, especially if it's an EAR one)
     public static boolean isJaxrsDeployment(DeploymentUnit deploymentUnit) {
         DeploymentUnit deployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         Boolean val = deployment.getAttachment(ATTACHMENT_KEY);
