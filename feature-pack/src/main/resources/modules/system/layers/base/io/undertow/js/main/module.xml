@@ -26,6 +26,7 @@
 
     <resources>
         <artifact name="${io.undertow.js:undertow-js}"/>
+        <artifact name="${io.undertow.js:undertow-js-mustache}"/>
     </resources>
 
     <dependencies>

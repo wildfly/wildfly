@@ -1069,6 +1069,11 @@
         </dependency>
 
         <dependency>
+            <groupId>io.undertow.js</groupId>
+            <artifactId>undertow-js-mustache</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.spec.javax.ws.rs</groupId>
             <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
         </dependency>
