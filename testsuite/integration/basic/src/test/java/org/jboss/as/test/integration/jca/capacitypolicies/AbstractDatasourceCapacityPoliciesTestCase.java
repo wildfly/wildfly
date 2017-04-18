@@ -144,19 +144,22 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
         Connection[] connections = new Connection[4];
         connections[0] = ds.getConnection();
 
-        // wait until IJ PoolFiller and CapacityFiller fill pool with expected number of connections
-        waitForPool(2000);
+        // wait until IJ PoolFiller and CapacityFiller fill pool with expected number of connections,
+        // also remember initial destroyedCount, IJ fills pool with two threads (CapacityFiller and PoolFiller)
+        // and it can result in one connection created and immediately destroyed because pool has been already filled
+        // by other thread, for details see https://issues.jboss.org/browse/JBJCA-1344
+        int initialDestroyedCount = waitForPool(2000);
 
-        checkStatistics(4, 1, 5, 0);
+        checkStatistics(4, 1, 5, initialDestroyedCount);
 
         connections[1] = ds.getConnection();
-        checkStatistics(3, 2, 5, 0);
+        checkStatistics(3, 2, 5, initialDestroyedCount);
 
         connections[2] = ds.getConnection();
-        checkStatistics(2, 3, 5, 0);
+        checkStatistics(2, 3, 5, initialDestroyedCount);
 
         connections[3] = ds.getConnection();
-        checkStatistics(1, 4, 5, 0);
+        checkStatistics(1, 4, 5, initialDestroyedCount);
 
         for (int i = 0; i < 4; i++) {
             Connection c = connections[i];
@@ -167,7 +170,7 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
         ManagedConnectionPool mcp = JcaTestsUtil.extractManagedConnectionPool(wsds);
         JcaTestsUtil.callRemoveIdleConnections(mcp);
 
-        checkStatistics(5, 0, 2, 3);
+        checkStatistics(5, 0, 2, initialDestroyedCount + 3);
     }
 
     private void checkStatistics(int expectedAvailableCount, int expectedInUseCount,
@@ -188,7 +191,7 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
         return readAttribute(statisticsAddress, attributeName).asInt();
     }
 
-    private void waitForPool(final int timeout) throws Exception {
+    private int waitForPool(final int timeout) throws Exception {
         long waitTimeout = TimeoutUtil.adjust(timeout);
         long sleep = 50L;
         while (true) {
@@ -197,7 +200,7 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
             int activeCount = readStatisticsAttribute("ActiveCount");
 
             if (availableCount == 4 && inUseCount == 1 && activeCount == 5)
-                return;
+                return readStatisticsAttribute("DestroyedCount");
             TimeUnit.MILLISECONDS.sleep(sleep);
 
             waitTimeout -= sleep;
