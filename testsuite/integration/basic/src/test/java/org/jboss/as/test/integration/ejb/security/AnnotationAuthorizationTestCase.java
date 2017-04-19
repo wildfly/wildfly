@@ -25,10 +25,12 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.concurrent.Callable;
+
+import org.jboss.as.test.integration.ejb.security.authorization.RolesAllowedOverrideBeanBase;
 import org.jboss.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBAccessException;
-import javax.security.auth.login.LoginContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -67,7 +69,8 @@ public class AnnotationAuthorizationTestCase {
         final Package currentPackage = AnnotationAuthorizationTestCase.class.getPackage();
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
-                .addPackage(RolesAllowedOverrideBean.class.getPackage()).addClass(Util.class)
+                // Explicitly listing these classes to prevent EJBs that are used by other tests and that use different security domains from being added here
+                .addClasses(RolesAllowedOverrideBean.class, RolesAllowedOverrideBeanBase.class, PermitAllOverrideBean.class, DenyAllOverrideBean.class).addClass(Util.class)
                 .addClasses(AnnotationAuthorizationTestCase.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsResource(currentPackage, "users.properties", "users.properties")
@@ -112,11 +115,7 @@ public class AnnotationAuthorizationTestCase {
 
     @Test
     public void testRolesAllowedOverriden_User1() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-
-        try {
-
+        final Callable<Void> callable = () -> {
             String response = rolesAllowedOverridenBean.defaultEcho("1");
             assertEquals("1", response);
 
@@ -134,19 +133,14 @@ public class AnnotationAuthorizationTestCase {
                 fail("Expected EJBAccessException not thrown");
             } catch (EJBAccessException ignored) {
             }
-
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     public void testRolesAllowedOverridenInBaseClass_Admin() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("admin", "admin");
-        lc.login();
-
-        try {
-
+        final Callable<Void> callable = () -> {
             try {
                 rolesAllowedOverridenBean.aMethod("aMethod");
                 fail("Expected EJBAccessException not thrown");
@@ -155,18 +149,14 @@ public class AnnotationAuthorizationTestCase {
 
             String response = rolesAllowedOverridenBean.bMethod("bMethod");
             assertEquals("bMethod", response);
-
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("admin", "admin", callable);
     }
 
     @Test
     public void testRolesAllowedOverridenInBaseClass_HR() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("hr", "hr");
-        lc.login();
-        try {
-
+        final Callable<Void> callable = () -> {
             String response = rolesAllowedOverridenBean.aMethod("aMethod");
             assertEquals("aMethod", response);
 
@@ -175,18 +165,14 @@ public class AnnotationAuthorizationTestCase {
                 fail("Expected EJBAccessException not thrown");
             } catch (EJBAccessException ignored) {
             }
-
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("hr", "hr", callable);
     }
 
     @Test
     public void testRolesAllowedOverriden_User2() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user2", "password2");
-        lc.login();
-
-        try {
+        final Callable<Void> callable = () -> {
             try {
                 rolesAllowedOverridenBean.defaultEcho("1");
                 fail("Expected EJBAccessException not thrown");
@@ -204,10 +190,9 @@ public class AnnotationAuthorizationTestCase {
 
             response = rolesAllowedOverridenBean.role2Echo("4");
             assertEquals("4", response);
-
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user2", "password2", callable);
     }
 
     /*
@@ -237,10 +222,7 @@ public class AnnotationAuthorizationTestCase {
 
     @Test
     public void testPermitAllOverride_User1() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-
-        try {
+        final Callable<Void> callable = () -> {
             String response = permitAllOverrideBean.defaultEcho("1");
             assertEquals("1", response);
 
@@ -252,9 +234,9 @@ public class AnnotationAuthorizationTestCase {
 
             response = permitAllOverrideBean.role1Echo("3");
             assertEquals("3", response);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     /*
@@ -284,10 +266,7 @@ public class AnnotationAuthorizationTestCase {
 
     @Test
     public void testDenyAllOverride_User1() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-
-        try {
+        final Callable<Void> callable = () -> {
             try {
                 denyAllOverrideBean.defaultEcho("1");
                 fail("Expected EJBAccessException not thrown");
@@ -299,9 +278,9 @@ public class AnnotationAuthorizationTestCase {
 
             response = denyAllOverrideBean.role1Echo("3");
             assertEquals("3", response);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     /**
@@ -311,14 +290,12 @@ public class AnnotationAuthorizationTestCase {
      */
     @Test
     public void testPermitAllMethodWithArrayParams() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             final String[] messages = new String[] {"foo", "bar"};
             final String[] echoes = denyAllOverrideBean.permitAllEchoWithArrayParams(messages);
             assertArrayEquals("Unexpected echoes returned by bean method", messages, echoes);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 }

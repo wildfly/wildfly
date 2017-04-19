@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.ejb.security;
 
 import javax.ejb.Local;
-import javax.security.auth.login.LoginException;
 
 /**
  * Interface for the bean used as the entry point to verify EJB3 security behaviour.
@@ -54,10 +53,10 @@ public interface Entry {
      * @param password - The password to use for the second call.
      * @return An array containing the name from the local call first followed by the name from
      * the second call.
-     * @throws LoginException - If there is an unexpected failure establishing the security context for
+     * @throws Exception - If there is an unexpected failure establishing the security context for
      * the second call.
      */
-    String[] doubleWhoAmI(String username, String password) throws LoginException;
+    String[] doubleWhoAmI(String username, String password) throws Exception;
 
     /**
      * @param roleName - The role to check.
