@@ -34,6 +34,7 @@ import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 
+import java.io.File;
 import java.util.Arrays;
 
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -42,6 +43,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
 
 /**
  * Utility methods to create/remove simple security domains
@@ -51,10 +53,19 @@ import org.jboss.dmr.ModelNode;
 public class EjbSecurityDomainSetup extends AbstractSecurityDomainSetup {
 
     protected static final String DEFAULT_SECURITY_DOMAIN_NAME = "ejb3-tests";
+    private EjbElytronDomainSetup ejbElytronDomainSetup;
 
     @Override
     protected String getSecurityDomainName() {
         return DEFAULT_SECURITY_DOMAIN_NAME;
+    }
+
+    protected String getUsersFile() {
+        return new File(EjbSecurityDomainSetup.class.getResource("users.properties").getFile()).getAbsolutePath();
+    }
+
+    protected String getGroupsFile() {
+        return new File(EjbSecurityDomainSetup.class.getResource("roles.properties").getFile()).getAbsolutePath();
     }
 
     public boolean isUsersRolesRequired() {
@@ -63,37 +74,51 @@ public class EjbSecurityDomainSetup extends AbstractSecurityDomainSetup {
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+        if (System.getProperty("elytron") == null) {
+            // elytron profile is not enabled, use legacy setup
+            final ModelNode compositeOp = new ModelNode();
+            compositeOp.get(OP).set(COMPOSITE);
+            compositeOp.get(OP_ADDR).setEmptyList();
 
-        final ModelNode compositeOp = new ModelNode();
-        compositeOp.get(OP).set(COMPOSITE);
-        compositeOp.get(OP_ADDR).setEmptyList();
+            ModelNode steps = compositeOp.get(STEPS);
+            PathAddress securityDomainAddress = PathAddress.pathAddress()
+                    .append(SUBSYSTEM, "security")
+                    .append(SECURITY_DOMAIN, getSecurityDomainName());
+            steps.add(Util.createAddOperation(securityDomainAddress));
+            PathAddress authAddress = securityDomainAddress.append(AUTHENTICATION, Constants.CLASSIC);
+            steps.add(Util.createAddOperation(authAddress));
+            ModelNode op = Util.createAddOperation(authAddress.append(Constants.LOGIN_MODULE, "Remoting"));
+            op.get(CODE).set("Remoting");
+            if (isUsersRolesRequired()) {
+                op.get(FLAG).set("optional");
+            } else {
+                op.get(FLAG).set("required");
+            }
+            op.get(Constants.MODULE_OPTIONS).add("password-stacking", "useFirstPass");
+            steps.add(op);
+            if (isUsersRolesRequired()) {
 
-        ModelNode steps = compositeOp.get(STEPS);
-        PathAddress securityDomainAddress = PathAddress.pathAddress()
-                .append(SUBSYSTEM, "security")
-                .append(SECURITY_DOMAIN, getSecurityDomainName());
-        steps.add(Util.createAddOperation(securityDomainAddress));
-        PathAddress authAddress = securityDomainAddress.append(AUTHENTICATION, Constants.CLASSIC);
-        steps.add(Util.createAddOperation(authAddress));
-        ModelNode op = Util.createAddOperation(authAddress.append(Constants.LOGIN_MODULE, "Remoting"));
-        op.get(CODE).set("Remoting");
-        if (isUsersRolesRequired()) {
-            op.get(FLAG).set("optional");
+                ModelNode loginModule = Util.createAddOperation(authAddress.append(Constants.LOGIN_MODULE, "UsersRoles"));
+                loginModule.get(CODE).set("UsersRoles");
+                loginModule.get(FLAG).set("required");
+                loginModule.get(Constants.MODULE_OPTIONS).add("password-stacking", "useFirstPass");
+                loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+                steps.add(loginModule);
+            }
+
+            applyUpdates(managementClient.getControllerClient(), Arrays.asList(compositeOp));
         } else {
-            op.get(FLAG).set("required");
+            // elytron profile is enabled
+            ejbElytronDomainSetup = new EjbElytronDomainSetup(getUsersFile(), getGroupsFile(), getSecurityDomainName());
+            ejbElytronDomainSetup.setup(managementClient, containerId);
         }
-        op.get(Constants.MODULE_OPTIONS).add("password-stacking", "useFirstPass");
-        steps.add(op);
-        if (isUsersRolesRequired()) {
+    }
 
-            ModelNode loginModule = Util.createAddOperation(authAddress.append(Constants.LOGIN_MODULE, "UsersRoles"));
-            loginModule.get(CODE).set("UsersRoles");
-            loginModule.get(FLAG).set("required");
-            loginModule.get(Constants.MODULE_OPTIONS).add("password-stacking", "useFirstPass");
-            loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            steps.add(loginModule);
+    @Override
+    public void tearDown(final ManagementClient managementClient, final String containerId) {
+        super.tearDown(managementClient, containerId);
+        if (ejbElytronDomainSetup != null) {
+            ejbElytronDomainSetup.tearDown(managementClient, containerId);
         }
-
-        applyUpdates(managementClient.getControllerClient(), Arrays.asList(compositeOp));
     }
 }
