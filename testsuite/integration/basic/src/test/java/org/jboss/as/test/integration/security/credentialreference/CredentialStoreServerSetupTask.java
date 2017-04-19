@@ -18,7 +18,6 @@ package org.jboss.as.test.integration.security.credentialreference;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URI;
 import static org.jboss.as.controller.security.CredentialReference.ALIAS;
 import static org.jboss.as.controller.security.CredentialReference.CREDENTIAL_REFERENCE;
 
@@ -58,7 +57,9 @@ public class CredentialStoreServerSetupTask implements ServerSetupTask {
 
     private void createCredentialStore(final ModelControllerClient client) throws IOException {
         final ModelNode addOperation = Operations.createAddOperation(CREDENTIAL_STORE_ADDRESS.toModelNode());
-        addOperation.get(URI).set("cr-store://test/store001.jceks?create=true;keyStoreType=JCEKS;modifiable=true");
+        addOperation.get("create").set("true");
+        addOperation.get("modifiable").set("true");
+        addOperation.get("location").set("store001.jceks");
         addOperation.get(RELATIVE_TO).set("jboss.server.data.dir");
         final ModelNode credentialReference = addOperation.get(CREDENTIAL_REFERENCE).setEmptyObject();
         credentialReference.get("clear-text").set("joshua");
