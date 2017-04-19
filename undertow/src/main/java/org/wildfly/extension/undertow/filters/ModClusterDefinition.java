@@ -82,6 +82,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setAllowExpression(true)
             .setRequired(true)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .setCapabilityReference(Capabilities.REF_SOCKET_BINDING)
             .setRestartAllServices()
             .build();
 
