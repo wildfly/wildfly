@@ -211,7 +211,16 @@
                 <module>legacy</module>
             </modules>
         </profile>
-        
+
+        <!-- -Dts.elytron -->
+        <profile>
+            <id>ts.integ.group.elytron</id>
+            <activation><property><name>ts.elytron</name></property></activation>
+            <modules>
+                <module>elytron</module>
+            </modules>
+        </profile>
+
         <!-- profile to configure WildFly to use Elytron instead of legacy security: -Delytron -->
         <profile>
             <id>elytron.profile</id>
