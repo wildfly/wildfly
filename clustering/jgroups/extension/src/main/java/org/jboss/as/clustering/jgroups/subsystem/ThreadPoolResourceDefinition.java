@@ -57,9 +57,9 @@ import org.jboss.dmr.ModelType;
  */
 public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition {
 
-    DEFAULT("default", "Incoming", 20, 300, 100, 60000L),
-    OOB("oob", "OOB", 20, 300, 0, 60000L),
-    INTERNAL("internal", "INT", 2, 4, 100, 60000L),
+    DEFAULT("default", "Incoming", 2, 30, 0, 60000L),
+    OOB("oob", "OOB", 20, 200, 0, 60000L),
+    INTERNAL("internal", "INT", 5, 20, 500, 60000L),
     TIMER("timer", "Timer", 2, 4, 500, 5000L, (definition, address) -> new TimerFactoryBuilder(definition, address)),
     ;
 
