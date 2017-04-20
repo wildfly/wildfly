@@ -67,6 +67,6 @@ public class ASYM_ENCRYPT extends org.jgroups.protocols.ASYM_ENCRYPT implements 
         this.key_pair = new KeyPair(entry.getCertificate().getPublicKey(), entry.getPrivateKey());
         String provider = this.provider;
         this.asym_cipher = (provider != null) ? Cipher.getInstance(this.asym_algorithm, provider) : Cipher.getInstance(this.asym_algorithm);
-        this.asym_cipher.init(Cipher.DECRYPT_MODE, this.key_pair.getPublic());
+        this.asym_cipher.init(Cipher.DECRYPT_MODE, this.key_pair.getPrivate());
     }
 }
