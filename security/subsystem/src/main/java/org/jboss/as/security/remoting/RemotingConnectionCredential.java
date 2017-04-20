@@ -34,6 +34,7 @@ import org.jboss.as.core.security.RealmGroup;
 import org.jboss.as.core.security.RealmRole;
 import org.jboss.as.core.security.RealmUser;
 import org.jboss.remoting3.Connection;
+import org.wildfly.common.Assert;
 import org.wildfly.security.auth.server.SecurityIdentity;
 
 /**
@@ -44,25 +45,30 @@ import org.wildfly.security.auth.server.SecurityIdentity;
 public final class RemotingConnectionCredential {
 
     private final Connection connection;
+    private final SecurityIdentity securityIdentity;
     private final Subject subject;
 
-    public RemotingConnectionCredential(final Connection connection) {
+    public RemotingConnectionCredential(final Connection connection, final SecurityIdentity securityIdentity) {
+        Assert.checkNotNullParam("connection", connection);
+        Assert.checkNotNullParam("securityIdentity", securityIdentity);
         this.connection = connection;
+        this.securityIdentity = securityIdentity;
         Subject subject = new Subject();
-        SecurityIdentity localIdentity = connection.getLocalIdentity();
-        if (localIdentity != null) {
-            Set<Principal> principals = subject.getPrincipals();
-            principals.add(new RealmUser(localIdentity.getPrincipal().getName()));
-            StreamSupport.stream(localIdentity.getRoles().spliterator(), true).forEach((String role) -> {
-                principals.add(new RealmGroup(role));
-                principals.add(new RealmRole(role));
-            });
-        }
+        Set<Principal> principals = subject.getPrincipals();
+        principals.add(new RealmUser(securityIdentity.getPrincipal().getName()));
+        StreamSupport.stream(securityIdentity.getRoles().spliterator(), true).forEach((String role) -> {
+            principals.add(new RealmGroup(role));
+            principals.add(new RealmRole(role));
+        });
         this.subject = subject;
     }
 
     Connection getConnection() {
         return connection;
+    }
+
+    SecurityIdentity getSecurityIdentity() {
+        return securityIdentity;
     }
 
     public Subject getSubject() {
@@ -76,10 +82,10 @@ public final class RemotingConnectionCredential {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof RemotingConnectionCredential ? equals((RemotingConnectionCredential) obj) : false;
+        return obj instanceof RemotingConnectionCredential && equals((RemotingConnectionCredential) obj);
     }
 
     public boolean equals(RemotingConnectionCredential obj) {
-        return connection.equals(obj.connection);
+        return connection.equals(obj.connection) && securityIdentity.equals(obj.securityIdentity);
     }
 }

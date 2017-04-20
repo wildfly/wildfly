@@ -53,7 +53,7 @@ import org.jboss.marshalling.cloner.ObjectCloner;
 import org.jboss.marshalling.cloner.ObjectCloners;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
-import org.wildfly.naming.client.NamingProvider;
+import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import java.lang.reflect.Method;
@@ -64,6 +64,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+
+import javax.net.ssl.SSLContext;
 
 /**
  * {@link EJBReceiver} for local same-VM invocations. This handles all invocations on remote interfaces
@@ -330,7 +332,7 @@ public class LocalEjbReceiver extends EJBReceiver {
     }
 
     @Override
-    protected <T> StatefulEJBLocator<T> createSession(StatelessEJBLocator<T> statelessLocator, NamingProvider namingProvider) throws Exception {
+    protected <T> StatefulEJBLocator<T> createSession(final StatelessEJBLocator<T> statelessLocator, final AuthenticationConfiguration authenticationConfiguration, final SSLContext sslContext) throws Exception {
         final EjbDeploymentInformation ejbInfo = findBean(statelessLocator);
         final EJBComponent component = ejbInfo.getEjbComponent();
         if (!(component instanceof StatefulSessionComponent)) {
