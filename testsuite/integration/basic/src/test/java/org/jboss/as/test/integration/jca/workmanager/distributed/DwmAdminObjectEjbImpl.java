@@ -63,33 +63,64 @@ public class DwmAdminObjectEjbImpl implements DwmAdminObjectEjb {
 
     @Override
     public int getDoWorkAccepted() {
-        return dwm.getDistributedStatistics().getDoWorkAccepted();
+        return dwm.getStatistics().getDoWorkAccepted();
     }
 
     @Override
     public int getDoWorkRejected() {
-        return dwm.getDistributedStatistics().getDoWorkRejected();
+        return dwm.getStatistics().getDoWorkRejected();
     }
 
     @Override
     public int getStartWorkAccepted() {
-        return dwm.getDistributedStatistics().getStartWorkAccepted();
+        return dwm.getStatistics().getStartWorkAccepted();
     }
 
     @Override
     public int getStartWorkRejected() {
-        return dwm.getDistributedStatistics().getStartWorkRejected();
+        return dwm.getStatistics().getStartWorkRejected();
     }
 
     @Override
     public int getScheduleWorkAccepted() {
-        return dwm.getDistributedStatistics().getScheduleWorkAccepted();
+        return dwm.getStatistics().getScheduleWorkAccepted();
     }
 
     @Override
     public int getScheduleWorkRejected() {
+        return dwm.getStatistics().getScheduleWorkRejected();
+    }
+
+    @Override
+    public int getDistributedDoWorkAccepted() {
+        return dwm.getDistributedStatistics().getDoWorkAccepted();
+    }
+
+    @Override
+    public int getDistributedDoWorkRejected() {
+        return dwm.getDistributedStatistics().getDoWorkRejected();
+    }
+
+    @Override
+    public int getDistributedStartWorkAccepted() {
+        return dwm.getDistributedStatistics().getStartWorkAccepted();
+    }
+
+    @Override
+    public int getDistributedStartWorkRejected() {
+        return dwm.getDistributedStatistics().getStartWorkRejected();
+    }
+
+    @Override
+    public int getDistributedScheduleWorkAccepted() {
+        return dwm.getDistributedStatistics().getScheduleWorkAccepted();
+    }
+
+    @Override
+    public int getDistributedScheduleWorkRejected() {
         return dwm.getDistributedStatistics().getScheduleWorkRejected();
     }
+
 
     @Override
     public boolean isDoWorkDistributionEnabled() {

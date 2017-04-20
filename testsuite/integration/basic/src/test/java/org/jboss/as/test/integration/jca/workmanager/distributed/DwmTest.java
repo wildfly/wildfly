@@ -88,12 +88,16 @@ public class DwmTest {
     private static final ModelNode DEFAULT_DWM_ADDRESS = new ModelNode()
             .add(SUBSYSTEM, "jca")
             .add("distributed-workmanager", DEFAULT_DWM_NAME);
+    private static final ModelNode DEFAULT_DWM_STATS_ADDRESS = new ModelNode()
+            .add(SUBSYSTEM, "jca")
+            .add("distributed-workmanager", DEFAULT_DWM_NAME)
+            .add("statistics","distributed");
     private static final String DEPLOYMENT_0 =  "deployment-0";
     private static final String DEPLOYMENT_1 =  "deployment-1";
     private static final String CONTAINER_0 = "container-0";
     private static final String CONTAINER_1 = "container-1";
-    private static final int SRT_MAX_THREADS = 10;
-    private static final int SRT_QUEUE_LENGTH = 10;
+    private static final int SRT_MAX_THREADS = 1;
+    private static final int SRT_QUEUE_LENGTH = 1;
 
     private enum Policy {
         ALWAYS,
@@ -285,15 +289,14 @@ public class DwmTest {
 
     /**
      * Executes a long work instances on a single node and verifies that it took enough time and executed on the
-     * expected node.
+     * expected node (the other one since Policy.ALWAYS)
      */
     @Test
     public void testDoWork() throws IOException, NamingException, WorkException, InterruptedException {
         log.info("Running testDoWork()");
-        preparePolicyAndSelector(client1, Policy.NEVER, null);
 
         long startTime = System.currentTimeMillis();
-        int doWorkAccepted = server1Proxy.getDoWorkAccepted();
+        int doWorkAccepted = server2Proxy.getDoWorkAccepted();
 
         server1Proxy.doWork(new LongWork().setName("testDoWork-work1"));
 
@@ -302,22 +305,22 @@ public class DwmTest {
 
         logWorkStats();
 
-        Assert.assertTrue("Expected doWorkAccepted = " + (doWorkAccepted + 1) + " but was: " + server1Proxy.getDoWorkAccepted(),
-                server1Proxy.getDoWorkAccepted() == doWorkAccepted + 1);
+        Assert.assertTrue("Expected doWorkAccepted = " + (doWorkAccepted + 1) + " but was: " + server2Proxy.getDoWorkAccepted(),
+                server2Proxy.getDoWorkAccepted() == doWorkAccepted + 1);
     }
 
     /**
      * Submits a few (less than our max threads) long work instances and verifies that
      * {@link org.jboss.jca.core.api.workmanager.DistributedWorkManager#startWork(Work)} returns sooner than the time
-     * needed for the work items to actually finish.
+     * needed for the work items to actually finish. and started on the
+     * expected node (the other one since Policy.ALWAYS)
      */
     @Test
     public void testStartWork() throws IOException, NamingException, WorkException, InterruptedException {
         log.info("Running testStartWork()");
-        preparePolicyAndSelector(client1, Policy.NEVER, null);
 
         long startTime = System.currentTimeMillis();
-        int startWorkAccepted = server1Proxy.getStartWorkAccepted();
+        int startWorkAccepted = server2Proxy.getStartWorkAccepted();
 
         server1Proxy.startWork(new LongWork().setName("testStartWork-work1"));
 
@@ -327,38 +330,8 @@ public class DwmTest {
         Thread.sleep(LongWork.WORK_TIMEOUT); // wait for the started work to finish, so it doesn't mess up our statistics for other tests
         logWorkStats();
 
-        Assert.assertTrue("Expected startWorkAccepted = " + (startWorkAccepted + 1) + " but was: " + server1Proxy.getStartWorkAccepted(),
-                server1Proxy.getStartWorkAccepted() == startWorkAccepted + 1);
-    }
-
-    /**
-     * Submits more instances of long running work than we have threads in our thread pool and expects that
-     * {@link org.jboss.jca.core.api.workmanager.DistributedWorkManager#scheduleWork(Work)} returns sooner than the time
-     * needed for at least one of the work items to actually finish.
-     *
-     * This requires that all the work items have been processed and are now waiting for execution, but some may not
-     * have been started yet.
-     */
-    @Test
-    public void testScheduleWork() throws IOException, NamingException, WorkException, InterruptedException {
-        log.info("Running testScheduleWork()");
-        preparePolicyAndSelector(client1, Policy.NEVER, null);
-
-        long startTime = System.currentTimeMillis();
-        int schedulWorkAccepted = server1Proxy.getScheduleWorkAccepted();
-
-        for (int i = 0; i < SRT_MAX_THREADS + 1; i++) {
-            server1Proxy.scheduleWork(new LongWork().setName("testScheduleWork-work" + (i + 1)));
-        }
-
-        Assert.assertTrue("Expected time <" + (startTime + LongWork.WORK_TIMEOUT) + ", actual: " + System.currentTimeMillis(),
-                startTime + LongWork.WORK_TIMEOUT > System.currentTimeMillis());
-
-        Thread.sleep(LongWork.WORK_TIMEOUT * 2); // wait for the scheduled work to finish, so it doesn't mess up our statistics for other tests
-        logWorkStats();
-
-        Assert.assertTrue("Expected scheduleWorkAccepted = " + (schedulWorkAccepted + SRT_MAX_THREADS + 1) + " but was: " + server1Proxy.getScheduleWorkAccepted(),
-                server1Proxy.getScheduleWorkAccepted() == schedulWorkAccepted + SRT_MAX_THREADS + 1);
+        Assert.assertTrue("Expected startWorkAccepted = " + (startWorkAccepted + 1) + " but was: " + server2Proxy.getStartWorkAccepted(),
+                server2Proxy.getStartWorkAccepted() == startWorkAccepted + 1);
     }
 
     /**
@@ -382,36 +355,15 @@ public class DwmTest {
                 server2Proxy.getDoWorkAccepted() == doWorkAccepted + 2);
     }
 
-    /**
-     * Runs two short running work instances and verifies that both run on the same node (be it local or remote).
-     */
-    @Test
-    public void testWatermarkPolicyFirstAvailable() throws IOException, NamingException, WorkException {
-        log.info("Running testWatermarkPolicyFirstAvailable()");
-        preparePolicyAndSelector(client1, Policy.WATERMARK, Selector.FIRST_AVAILABLE);
-        preparePolicyAndSelector(client2, Policy.WATERMARK, Selector.FIRST_AVAILABLE);
 
-        int doWorkAccepted1 = server1Proxy.getDoWorkAccepted();
-        int doWorkAccepted2 = server2Proxy.getDoWorkAccepted();
-
-        server1Proxy.doWork(new ShortWork().setName("testWatermarkPolicyFirstAvailable-work1"));
-        server1Proxy.doWork(new ShortWork().setName("testWatermarkPolicyFirstAvailable-work2"));
-
-        logWorkStats();
-
-        Assert.assertTrue("Expected both work instances to be executed on the same node",
-                doWorkAccepted1 + 2 == server1Proxy.getDoWorkAccepted() ||
-                doWorkAccepted2 + 2 == server2Proxy.getDoWorkAccepted());
-    }
 
     /**
-     * Runs two long running work instances and verifies that both run on different nodes.
+     * Runs two long running work instances and verifies that both run on different nodes. Policy.ALWAYS run first one on other node
+     * Than MAxFreeThread selector select server1
      */
     @Test
     public void testWatermarkPolicyMaxFreeThreads() throws IOException, NamingException, WorkException, InterruptedException {
         log.info("Running testWatermarkPolicyMaxFreeThreads()");
-        preparePolicyAndSelector(client1, Policy.WATERMARK, Selector.MAX_FREE_THREADS);
-        preparePolicyAndSelector(client2, Policy.WATERMARK, Selector.MAX_FREE_THREADS);
 
         int startWorkAccepted1 = server1Proxy.getStartWorkAccepted();
         int startWorkAccepted2 = server2Proxy.getStartWorkAccepted();
@@ -419,7 +371,7 @@ public class DwmTest {
         server1Proxy.startWork(new LongWork().setName("testWatermarkPolicyMaxFreeThreads-work1"));
         server1Proxy.startWork(new LongWork().setName("testWatermarkPolicyMaxFreeThreads-work2"));
 
-        Thread.sleep(LongWork.WORK_TIMEOUT); // wait for the started work to finish, so it doesn't mess up our statistics for other tests
+        Thread.sleep(LongWork.WORK_TIMEOUT * 2); // wait for the started work to finish, so it doesn't mess up our statistics for other tests
         logWorkStats();
 
         Assert.assertTrue("Expected both work instances to be executed on different nodes (expected/actual): "
@@ -429,31 +381,7 @@ public class DwmTest {
                         startWorkAccepted2 + 1 == server2Proxy.getStartWorkAccepted());
     }
 
-    /**
-     * Executes two long running work instances and verifies that both run on the local node, because it has the best
-     * ping time.
-     *
-     * Not sure if we can expect server one to have the best ping time since both servers run on the same node. If this
-     * case creates problems, let's @Ignore it.
-     */
-    @Test
-    public void testWatermarkPolicyPingTime() throws IOException, NamingException, WorkException {
-        log.info("Running testWatermarkPolicyPingTime()");
-        preparePolicyAndSelector(client1, Policy.WATERMARK, Selector.PING_TIME);
-        preparePolicyAndSelector(client2, Policy.WATERMARK, Selector.PING_TIME);
 
-        int startWorkAccepted1 = server1Proxy.getStartWorkAccepted();
-        int startWorkAccepted2 = server2Proxy.getStartWorkAccepted();
-
-        server1Proxy.startWork(new LongWork().setName("testWatermarkPolicyPingTime-work1"));
-        server1Proxy.startWork(new LongWork().setName("testWatermarkPolicyPingTime-work2"));
-
-        logWorkStats();
-
-        Assert.assertTrue("Expected both work instances to be executed on the node where they're scheduled",
-                startWorkAccepted1 + 2 == server1Proxy.getStartWorkAccepted() &&
-                        startWorkAccepted2 == server2Proxy.getStartWorkAccepted());
-    }
 
     @Test
     @InSequence(1)
