@@ -6362,6 +6362,7 @@
                     --add-opens=java.naming/javax.naming=ALL-UNNAMED
                     --add-exports=jdk.unsupported/sun.reflect=ALL-UNNAMED
                     --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED
+                    --add-modules=java.xml.bind
                 </modular.jdk.args>
                 <!-- [WFCORE-1494] remove JUL workaround -->
                 <modular.jdk.props>-Dsun.util.logging.disableCallerCheck=true -Dsun.reflect.debugModuleAccessChecks=true</modular.jdk.props>
