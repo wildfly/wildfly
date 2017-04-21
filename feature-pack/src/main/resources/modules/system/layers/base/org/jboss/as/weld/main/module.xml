@@ -37,6 +37,7 @@
         <module name="org.jboss.weld.core" />
         <module name="org.jboss.weld.spi" />
         <module name="org.jboss.as.weld.spi" />
+        <module name="org.picketbox" />
         <module name="org.jboss.as.weld.common" />
         <module name="org.jboss.as.weld.ejb" optional="true" services="import" />
         <module name="org.jboss.as.weld.jpa" optional="true" services="import" />

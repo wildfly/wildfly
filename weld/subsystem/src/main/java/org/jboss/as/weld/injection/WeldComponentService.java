@@ -113,7 +113,7 @@ public class WeldComponentService implements Service<WeldComponentService> {
 
             if (bean instanceof SessionBean<?>) {
                 SessionBean<?> sessionBean = (SessionBean<?>) bean;
-                this.injectionTarget = sessionBean.getInjectionTarget();
+                this.injectionTarget = sessionBean.getProducer();
                 return;
             }
 

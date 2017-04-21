@@ -23,6 +23,7 @@ package org.jboss.as.weld.discovery;
 
 import java.lang.annotation.Annotation;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.weld.logging.WeldLogger;
@@ -30,7 +31,6 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.weld.resources.spi.ClassFileInfo;
 import org.jboss.weld.resources.spi.ClassFileServices;
-import org.jboss.weld.util.Function;
 import org.jboss.weld.util.cache.ComputingCache;
 import org.jboss.weld.util.cache.ComputingCacheBuilder;
 import org.jboss.weld.util.collections.ImmutableSet;

@@ -53,8 +53,8 @@
             <version>${version.jboss.as}</version>
         </dependency>
         <dependency>
-            <groupId>org.jboss.weld</groupId>
-            <artifactId>weld-core-jsf</artifactId>
+            <groupId>org.jboss.weld.module</groupId>
+            <artifactId>weld-jsf</artifactId>
             <version>${version.weld.core}</version>
         </dependency>
     </dependencies>
