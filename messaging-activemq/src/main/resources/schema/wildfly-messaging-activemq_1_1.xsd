@@ -126,6 +126,7 @@
                     <xs:attribute name="database" type="xs:string" />
                     <xs:attribute name="messages-table" type="xs:string" />
                     <xs:attribute name="bindings-table" type="xs:string" />
+                    <xs:attribute name="jms-bindings-table" type="xs:string" />
                     <xs:attribute name="large-messages-table" type="xs:string" />
                     <xs:attribute name="page-store-table" type="xs:string" />
                 </xs:complexType>
