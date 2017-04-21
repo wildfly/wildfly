@@ -7,7 +7,7 @@
     <tcp high-water-mark="500" number-to-reclaim="30"/>
     <initializers security="elytron" authentication-context="iiop" transactions="spec"/>
     <naming root-context="JBoss/Naming/root2" export-corbaloc="false"/>
-    <security support-ssl="true" security-domain="domain" add-component-via-interceptor="false" client-requires-ssl="false" server-requires-ssl="true"/>
+    <security support-ssl="true" security-domain="domain" add-component-via-interceptor="false" client-requires-ssl="false" server-requires-ssl="false"/>
     <transport-config integrity="required" confidentiality="required" detect-replay="supported"
                       detect-misordering="supported"
                       trust-in-client="required" trust-in-target="supported"/>
