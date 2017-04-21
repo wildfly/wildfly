@@ -61,9 +61,10 @@ public class ConfigValidator {
 
     private static void validateSSLConfig(final boolean supportSSL, final boolean sslConfigured,
                                           final boolean serverRequiresSsl, final boolean clientRequiresSsl) throws OperationFailedException {
-
-        if (supportSSL && !sslConfigured) {
-            throw IIOPLogger.ROOT_LOGGER.noSecurityDomainOrSSLContextsSpecified();
+        if (supportSSL) {
+            if (!sslConfigured) {
+                throw IIOPLogger.ROOT_LOGGER.noSecurityDomainOrSSLContextsSpecified();
+            }
         } else if (serverRequiresSsl || clientRequiresSsl) {
             // if either the server or the client requires SSL, then SSL support must have been enabled.
             throw IIOPLogger.ROOT_LOGGER.sslNotConfigured();
