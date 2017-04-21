@@ -47,6 +47,7 @@ import org.junit.BeforeClass;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
+import org.wildfly.security.auth.principal.AnonymousPrincipal;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Property;
@@ -106,7 +107,7 @@ public abstract class AnnSBTest {
      */
     public void testSingleMethodAnnotationsNoUserTemplate(final String MODULE, final Logger log, final Class SB_CLASS) throws Exception {
         final Context ctx = Util.createNamingContext();
-        final AuthenticationContext authenticationContext = setupAuthenticationContext("$local", null);
+        final AuthenticationContext authenticationContext = AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.EMPTY.useAuthorizationPrincipal(AnonymousPrincipal.getInstance()));
         authenticationContext.runCallable(() -> {
             String echoValue = getBean(MODULE, log, SB_CLASS, ctx).defaultAccess("alohomora");
             Assert.assertEquals(echoValue, "alohomora");

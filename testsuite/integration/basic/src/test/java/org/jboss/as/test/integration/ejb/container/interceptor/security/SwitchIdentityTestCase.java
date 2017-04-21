@@ -81,6 +81,16 @@ public class SwitchIdentityTestCase {
     @ArquillianResource
     private ManagementClient mgmtClient;
 
+    private final Map<String, String> passwordsToUse;
+
+    public SwitchIdentityTestCase() {
+        passwordsToUse = new HashMap<>();
+        passwordsToUse.put("guest", "b5d048a237bfd2874b6928e1f37ee15e");
+        passwordsToUse.put("user1", "23624d2f74dfcb9688651a066d90b97e");
+        passwordsToUse.put("user2", "ab3f9e12039435236d89de9023a304b7");
+        passwordsToUse.put("remoteejbuser", "d37cd830cc282510807b82c4b861256d");
+    }
+
     // Public methods --------------------------------------------------------
 
     @BeforeClass
@@ -174,6 +184,7 @@ public class SwitchIdentityTestCase {
                         AuthenticationConfiguration.EMPTY
                                 .useName(username == null ? "$local" : username)
                                 .useRealm(null)
+                                .usePassword(passwordsToUse.getOrDefault(username, ""))
                                 .allowSaslMechanisms("DIGEST-MD5")
                                 .useMechanismProperties(getSaslProperties(builder.getMap()))
                                 .useProvidersFromClassLoader(SwitchIdentityTestCase.class.getClassLoader()));

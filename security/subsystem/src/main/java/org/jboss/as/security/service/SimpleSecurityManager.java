@@ -66,6 +66,7 @@ import org.jboss.security.javaee.AbstractEJBAuthorizationHelper;
 import org.jboss.security.javaee.SecurityHelperFactory;
 import org.jboss.security.javaee.SecurityRoleRef;
 import org.wildfly.security.auth.server.IdentityCredentials;
+import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.password.interfaces.ClearPassword;
@@ -301,7 +302,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
                 Principal p = null;
                 Object credential = null;
 
-                SecurityIdentity localIdentity = connection.getLocalIdentity();
+                SecurityIdentity localIdentity = SecurityDomain.forIdentity(connection.getLocalIdentity()).getCurrentSecurityIdentity();
                 if (localIdentity != null) {
                     p = new SimplePrincipal(localIdentity.getPrincipal().getName());
                     IdentityCredentials privateCredentials = localIdentity.getPrivateCredentials();
@@ -309,7 +310,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
                     if (passwordCredential != null) {
                         credential = new String(passwordCredential.getPassword(ClearPassword.class).getPassword());
                     } else {
-                        credential = new RemotingConnectionCredential(connection);
+                        credential = new RemotingConnectionCredential(connection, localIdentity);
                     }
                 } else {
                     throw SecurityLogger.ROOT_LOGGER.noUserPrincipalFound();

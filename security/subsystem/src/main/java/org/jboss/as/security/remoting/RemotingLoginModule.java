@@ -98,49 +98,41 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
 
         Object credential = getCredential();
         if (credential instanceof RemotingConnectionCredential) {
-            Connection con = ((RemotingConnectionCredential) credential).getConnection();
-            Principal up = null;
+            final RemotingConnectionCredential remotingConnectionCredential = (RemotingConnectionCredential) credential;
+            Connection con = remotingConnectionCredential.getConnection();
+            SecurityIdentity localIdentity = remotingConnectionCredential.getSecurityIdentity();
+            identity = new RealmUser(localIdentity.getPrincipal().getName());
+            if (getUseFirstPass()) {
+                String userName = identity.getName();
+                log.debugf("Storing username '%s'", userName);
+                // Add the username to the shared state map
+                sharedState.put("javax.security.auth.login.name", identity);
 
-            SecurityIdentity localIdentity = con.getLocalIdentity();
-            if (localIdentity != null) {
-                up = new RealmUser(localIdentity.getPrincipal().getName());
-            }
-
-            // If we found a principal from the connection then authentication succeeded.
-            if (up != null) {
-                identity = up;
-                if (getUseFirstPass()) {
-                    String userName = identity.getName();
-                    log.debugf("Storing username '%s'", userName);
-                    // Add the username to the shared state map
-                    sharedState.put("javax.security.auth.login.name", identity);
-
-                    if (useNewClientCert) {
-                        SSLSession session = con.getSslSession();
-                        if (session != null) {
-                            try {
-                                credential = session.getPeerCertificates()[0];
-                                log.debug("Using new certificate as credential.");
-                            } catch (SSLPeerUnverifiedException e) {
-                                log.debugf("No peer certificate available for '%s'", userName);
-                            }
-                        }
-                    } else if (useClientCert) {
-                        SSLSession session = con.getSslSession();
-                        if (session != null) {
-                            try {
-                                credential = session.getPeerCertificateChain()[0];
-                                log.debug("Using certificate as credential.");
-                            } catch (SSLPeerUnverifiedException e) {
-                                log.debugf("No peer certificate available for '%s'", userName);
-                            }
+                if (useNewClientCert) {
+                    SSLSession session = con.getSslSession();
+                    if (session != null) {
+                        try {
+                            credential = session.getPeerCertificates()[0];
+                            log.debug("Using new certificate as credential.");
+                        } catch (SSLPeerUnverifiedException e) {
+                            log.debugf("No peer certificate available for '%s'", userName);
                         }
                     }
-                    sharedState.put("javax.security.auth.login.password", credential);
+                } else if (useClientCert) {
+                    SSLSession session = con.getSslSession();
+                    if (session != null) {
+                        try {
+                            credential = session.getPeerCertificateChain()[0];
+                            log.debug("Using certificate as credential.");
+                        } catch (SSLPeerUnverifiedException e) {
+                            log.debugf("No peer certificate available for '%s'", userName);
+                        }
+                    }
                 }
-                loginOk = true;
-                return true;
+                sharedState.put("javax.security.auth.login.password", credential);
             }
+            loginOk = true;
+            return true;
         }
 
         // We return false to allow the next module to attempt authentication, maybe a
