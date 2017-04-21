@@ -40,6 +40,8 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.operations.global.ReadAttributeHandler;
+import org.jboss.as.controller.operations.global.WriteAttributeHandler;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -114,6 +116,14 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     static final SimpleAttributeDefinition ENABLE_STATISTICS =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_STATISTICS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
+                    .setDeprecated(ModelVersion.create(5))
+                    .setFlags(AttributeAccess.Flag.ALIAS)
+                    .build();
+
+    static final SimpleAttributeDefinition STATISTICS_ENABLED =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.STATISTICS_ENABLED, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(false))
                     .build();
 
     static final SimpleAttributeDefinition DEFAULT_DISTINCT_NAME =
@@ -207,6 +217,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
             DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT,
             DEFAULT_SLSB_INSTANCE_POOL,
             DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT,
+            STATISTICS_ENABLED,
             ENABLE_STATISTICS,
             PASS_BY_VALUE,
             DEFAULT_DISTINCT_NAME,
@@ -231,7 +242,16 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         resourceRegistration.registerReadWriteAttribute(DEFAULT_RESOURCE_ADAPTER_NAME, null, DefaultResourceAdapterWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT, null, DefaultSingletonBeanAccessTimeoutWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT, null, DefaultStatefulBeanAccessTimeoutWriteHandler.INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(ENABLE_STATISTICS, null, EnableStatisticsWriteHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(ENABLE_STATISTICS, (context, operation) -> {
+            ModelNode aliasOp = operation.clone();
+            aliasOp.get("name").set(EJB3SubsystemModel.STATISTICS_ENABLED);
+            context.addStep(aliasOp, ReadAttributeHandler.INSTANCE, OperationContext.Stage.MODEL, true);
+        }, (context, operation) -> {
+            ModelNode aliasOp = operation.clone();
+            aliasOp.get("name").set(EJB3SubsystemModel.STATISTICS_ENABLED);
+            context.addStep(aliasOp, WriteAttributeHandler.INSTANCE, OperationContext.Stage.MODEL, true);
+        });
+        resourceRegistration.registerReadWriteAttribute(STATISTICS_ENABLED, null, StatisticsEnabledWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(PASS_BY_VALUE, null, EJBRemoteInvocationPassByValueWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_DISTINCT_NAME, null, EJBDefaultDistinctNameWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(LOG_EJB_EXCEPTIONS, null, ExceptionLoggingWriteHandler.INSTANCE);
