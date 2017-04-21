@@ -28,8 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
-import javax.security.auth.callback.CallbackHandler;
-
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
@@ -66,14 +64,6 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
     private Thread thread;
     private ComponentInstance instance;
-
-    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader,  final List<SetupAction> setupActions, final String hostUrl, final CallbackHandler callbackHandler) {
-        this.mainMethod = mainMethod;
-        this.parameters = parameters;
-        this.namespaceContextSelectorInjectedValue = namespaceContextSelectorInjectedValue;
-        this.classLoader = classLoader;
-        this.setupActions = setupActions;
-    }
 
     public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader,  final List<SetupAction> setupActions) {
         this.mainMethod = mainMethod;

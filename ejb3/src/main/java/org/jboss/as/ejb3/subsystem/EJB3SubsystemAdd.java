@@ -470,6 +470,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         if(appclient) {
             clientContextServiceBuilder.addDependency(EJBClientContextService.APP_CLIENT_URI_SERVICE_NAME, URI.class, clientContextService.getAppClientUri());
+            clientContextServiceBuilder.addDependency(EJBClientContextService.APP_CLIENT_EJB_PROPERTIES_SERVICE_NAME, String.class, clientContextService.getAppClientEjbProperties());
         }
         if (!appclient) {
             //the default spec compliant EJB receiver

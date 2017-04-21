@@ -21,13 +21,8 @@
  */
 package org.jboss.as.appclient.deployment;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.List;
-import java.util.Properties;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -50,7 +45,6 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.modules.Module;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Processor that starts an application client deployment
@@ -60,13 +54,9 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class ApplicationClientStartProcessor implements DeploymentUnitProcessor {
 
     private final String[] parameters;
-    private final String hostUrl;
-    private final String connectionPropertiesUrl;
 
-    public ApplicationClientStartProcessor(final String hostUrl, final String connectionPropertiesUrl, final String[] parameters) {
-        this.hostUrl = hostUrl;
+    public ApplicationClientStartProcessor(final String[] parameters) {
         this.parameters = parameters;
-        this.connectionPropertiesUrl = connectionPropertiesUrl;
     }
 
     @Override
@@ -119,44 +109,8 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
 
         final List<SetupAction> setupActions = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.OTHER_EE_SETUP_ACTIONS);
 
-        if (connectionPropertiesUrl != null) {
-            try {
-                final File file = new File(connectionPropertiesUrl);
-                final URL url;
-                if (file.exists()) {
-                    url = file.toURI().toURL();
-                } else {
-                    url = new URL(connectionPropertiesUrl);
-                }
-                Properties properties = new Properties();
-                InputStream stream = null;
-                try {
-                    stream = url.openStream();
-                    properties.load(stream);
-                } finally {
-                    if (stream != null) {
-                        try {
-                            stream.close();
-                        } catch (IOException e) {
-                            //ignore
-                        }
-                    }
-                }
-                final ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-                try {
-                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
+        startService = new ApplicationClientStartService(mainMethod, parameters, moduleDescription.getNamespaceContextSelector(), module.getClassLoader(), setupActions);
 
-                    startService = new ApplicationClientStartService(mainMethod, parameters, moduleDescription.getNamespaceContextSelector(), module.getClassLoader(), setupActions);
-                } finally {
-                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
-                }
-            } catch (Exception e) {
-                throw AppClientLogger.ROOT_LOGGER.exceptionLoadingEjbClientPropertiesURL(connectionPropertiesUrl, e);
-            }
-        } else {
-
-            startService = new ApplicationClientStartService(mainMethod, parameters, moduleDescription.getNamespaceContextSelector(), module.getClassLoader(), setupActions, hostUrl, callbackHandler);
-        }
 
         phaseContext.getServiceTarget()
                 .addService(deploymentUnit.getServiceName().append(ApplicationClientStartService.SERVICE_NAME), startService)
