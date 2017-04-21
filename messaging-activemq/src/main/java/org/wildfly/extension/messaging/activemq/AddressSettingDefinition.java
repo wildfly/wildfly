@@ -26,7 +26,7 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.DAYS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
-import static org.jboss.as.controller.client.helpers.MeasurementUnit.MINUTES;
+import static org.jboss.as.controller.client.helpers.MeasurementUnit.SECONDS;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXPIRY_ADDRESS;
 
@@ -154,7 +154,7 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
 
     public static final SimpleAttributeDefinition SLOW_CONSUMER_CHECK_PERIOD = create("slow-consumer-check-period", ModelType.LONG)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_SLOW_CONSUMER_CHECK_PERIOD))
-            .setMeasurementUnit(MINUTES)
+            .setMeasurementUnit(SECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
