@@ -126,6 +126,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         final RiverMarshallerFactory factory = new RiverMarshallerFactory();
         final MarshallingConfiguration configuration = new MarshallingConfiguration();
         configuration.setClassResolver(ModularClassResolver.getInstance(moduleLoader.getValue()));
+        configuration.setVersion(3);
 
         this.configuration = configuration;
         this.factory = factory;
