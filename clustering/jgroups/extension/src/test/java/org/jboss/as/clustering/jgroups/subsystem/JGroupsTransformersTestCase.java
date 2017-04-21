@@ -152,7 +152,7 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         Assert.assertTrue(services.getLegacyServices(version).isSuccessfulBoot());
 
         // check that both versions of the legacy model are the same and valid
-        checkSubsystemModelTransformation(services, version);
+        checkSubsystemModelTransformation(services, version, null, false);
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
             // Test properties operations

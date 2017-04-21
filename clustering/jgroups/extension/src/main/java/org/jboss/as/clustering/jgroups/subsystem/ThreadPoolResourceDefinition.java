@@ -25,8 +25,10 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.BiFunction;
+import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.clustering.controller.Definable;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
@@ -46,6 +48,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -57,9 +60,9 @@ import org.jboss.dmr.ModelType;
  */
 public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition {
 
-    DEFAULT("default", "Incoming", 20, 300, 100, 60000L),
-    OOB("oob", "OOB", 20, 300, 0, 60000L),
-    INTERNAL("internal", "INT", 2, 4, 100, 60000L),
+    DEFAULT("default", "Incoming", 2, 30, 0, 60000L),
+    OOB("oob", "OOB", 20, 200, 0, 60000L),
+    INTERNAL("internal", "INT", 5, 20, 500, 60000L),
     TIMER("timer", "Timer", 2, 4, 500, 5000L, (definition, address) -> new TimerFactoryBuilder(definition, address)),
     ;
 
@@ -77,17 +80,17 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     private final Attribute keepAliveTime;
     private final BiFunction<ThreadPoolDefinition, PathAddress, ResourceServiceBuilder<? extends Object>> factory;
 
-    ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime) {
-        this(name, prefix, defaultMinThreads, defaultMaxThreads, defaultQueueLength, defaultKeepaliveTime, (definition, address) -> new ThreadPoolFactoryBuilder(definition, address));
+    ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime) {
+        this(name, prefix, defaultMinThreads, defaultMaxThreads, defaultQueueLength, defaultKeepAliveTime, (definition, address) -> new ThreadPoolFactoryBuilder(definition, address));
     }
 
-    ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime, BiFunction<ThreadPoolDefinition, PathAddress, ResourceServiceBuilder<? extends Object>> factory) {
+    ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime, BiFunction<ThreadPoolDefinition, PathAddress, ResourceServiceBuilder<? extends Object>> factory) {
         this.definition = new SimpleResourceDefinition(pathElement(name), new JGroupsResourceDescriptionResolver(pathElement(PathElement.WILDCARD_VALUE)));
         this.prefix = prefix;
         this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.queueLength = new SimpleAttribute(createBuilder("queue-length", ModelType.INT, new ModelNode(defaultQueueLength), new IntRangeValidatorBuilder().min(0)).build());
-        this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepaliveTime), new LongRangeValidatorBuilder().min(0)).build());
+        this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepAliveTime), new LongRangeValidatorBuilder().min(0)).build());
         this.factory = factory;
     }
 
@@ -146,6 +149,12 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     }
 
     void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        // Nothing to transform yet
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(this.definition);
+
+        if (JGroupsModel.VERSION_4_1_0.requiresTransformation(version)) {
+            Stream.of(this.minThreads, this.maxThreads, this.queueLength)
+                    .map(Definable::getDefinition)
+                    .forEach(attribute -> builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(attribute), attribute));
+        }
     }
 }
