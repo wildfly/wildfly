@@ -53,6 +53,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
@@ -136,6 +137,7 @@ public class SwitchIdentityTestCase {
      * @throws Exception
      */
     @Test
+    @Ignore("WFLY-8630")
     public void testClientLoginModule() throws Exception {
         callUsingClientLoginModule("guest", false, false);
         callUsingClientLoginModule("user1", true, false);

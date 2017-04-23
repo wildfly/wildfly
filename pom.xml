@@ -215,7 +215,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.build-tools>1.1.8.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>3.0.0.Beta15</version.org.wildfly.core>
+        <version.org.wildfly.core>3.0.0.Beta16</version.org.wildfly.core>
         <version.org.wildfly.plugin>1.2.0.Alpha4</version.org.wildfly.plugin>
         <version.org.wildfly.arquillian>2.1.0.Alpha1</version.org.wildfly.arquillian>
         <version.org.wildfly.http-client>1.0.0.CR2</version.org.wildfly.http-client>

@@ -35,6 +35,7 @@ import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,6 +46,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("WFLY-8630") // This may just be a matter of an overly specific assert
 public class CLISecurityTestCase {
 
     Logger logger = Logger.getLogger(CLISecurityTestCase.class);
