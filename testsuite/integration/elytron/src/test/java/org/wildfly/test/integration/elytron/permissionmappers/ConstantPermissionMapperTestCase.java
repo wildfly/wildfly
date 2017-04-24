@@ -135,7 +135,8 @@ public class ConstantPermissionMapperTestCase {
     public void testDefaultDomainPermissions(@ArquillianResource URL url) throws Exception {
         // anonymous
         assertUserHasntPermission(url, null, null, AllPermission.class.getName(), null, null);
-        assertUserHasPermission(url, null, null, LoginPermission.class.getName(), null, null);
+        // WFCORE-2666
+        assertUserHasntPermission(url, null, null, LoginPermission.class.getName(), null, null);
         assertUserHasPermission(url, null, null, BatchPermission.class.getName(), TARGET_NAME_START, null);
         assertUserHasPermission(url, null, null, RemoteTransactionPermission.class.getName(), null, null);
         assertUserHasPermission(url, null, null, RemoteEJBPermission.class.getName(), null, null);

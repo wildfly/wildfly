@@ -15,16 +15,19 @@
  */
 package org.jboss.as.connector.security;
 
+import org.ietf.jgss.GSSName;
 import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.jca.core.spi.security.SubjectFactory;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.security.auth.callback.CredentialCallback;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.AuthenticationContextConfigurationClient;
 import org.wildfly.security.auth.principal.NamePrincipal;
+import org.wildfly.security.credential.GSSKerberosCredential;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.resource.spi.security.PasswordCredential;
@@ -33,11 +36,10 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.kerberos.KerberosPrincipal;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
-import java.io.IOException;
 import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -125,18 +127,29 @@ public class ElytronSubjectFactory implements SubjectFactory, Capabilities {
         final CallbackHandler handler = AUTH_CONFIG_CLIENT.getCallbackHandler(configuration);
         final NameCallback nameCallback = new NameCallback("Username: ");
         final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
+        final CredentialCallback credentialCallback = new CredentialCallback(GSSKerberosCredential.class);
         try {
-            handler.handle(new Callback[]{nameCallback, passwordCallback});
+            handler.handle(new Callback[]{nameCallback, passwordCallback, credentialCallback});
             Subject subject = new Subject();
+            // if a GSSKerberosCredential was found, add the enclosed GSSCredential and KerberosTicket to the private set in the Subject.
+            if (credentialCallback.getCredential() != null) {
+                GSSKerberosCredential kerberosCredential = GSSKerberosCredential.class.cast(credentialCallback.getCredential());
+                this.addPrivateCredential(subject, kerberosCredential.getKerberosTicket());
+                this.addPrivateCredential(subject, kerberosCredential.getGssCredential());
+                // use the GSSName to build a kerberos principal and set it in the Subject.
+                GSSName gssName = kerberosCredential.getGssCredential().getName();
+                subject.getPrincipals().add(new KerberosPrincipal(gssName.toString()));
+            }
+            // use the name from the callback, if available, to build a principal and set it in the Subject.
             if (nameCallback.getName() != null) {
                 subject.getPrincipals().add(new NamePrincipal(nameCallback.getName()));
             }
-            // add the password as a private credential in the Subject.
+            // use the password from the callback, if available, to build a credential and set it as a private credential in the Subject.
             if (passwordCallback.getPassword() != null) {
                 this.addPrivateCredential(subject, new PasswordCredential(nameCallback.getName(), passwordCallback.getPassword()));
             }
             return subject;
-        } catch(IOException | UnsupportedCallbackException e) {
+        } catch(Exception e) {
             throw new SecurityException(e);
         }
     }

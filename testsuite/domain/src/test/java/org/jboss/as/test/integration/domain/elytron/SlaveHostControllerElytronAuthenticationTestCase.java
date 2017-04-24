@@ -107,7 +107,8 @@ public class SlaveHostControllerElytronAuthenticationTestCase extends AbstractSl
     @Test
     public void testSlaveRegistration() throws Exception {
         slaveWithDigestM5Mechanism();
-        slaveWithPlainMechanism();
+        // TODO WFLY-8630 restore this
+        //slaveWithPlainMechanism();
         slaveWithInvalidPassword();
     }
 

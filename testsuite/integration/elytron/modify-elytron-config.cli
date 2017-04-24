@@ -47,8 +47,8 @@ embed-server --admin-only=true
 /subsystem=elytron/filesystem-realm=ApplicationFsRealm/identity=guest:add-attribute(name=groups, value=["guest"])
 
 # Create some test credential store entries (aliases) - they will be checked by CredentialStoreTestCase
-# The keystore file for the credential store is created by keytool maven plugin in pom.xml.  
-/subsystem=elytron/credential-store=cred-store-default:add(uri="cr-store://cred-store-default/cred-store.jceks?keyStoreType=JCEKS;modifiable=true", relative-to=jboss.server.config.dir, credential-reference={clear-text=password})
+# The keystore file for the credential store is created by keytool maven plugin in pom.xml.
+/subsystem=elytron/credential-store=cred-store-default:add(location=cred-store.jceks, modifiable=true, relative-to=jboss.server.config.dir, credential-reference={clear-text=password})
 /subsystem=elytron/credential-store=cred-store-default/alias=alias-password:add(secret-value=password)
 /subsystem=elytron/credential-store=cred-store-default/alias=alias-secret:add(secret-value=secret)
 /subsystem=elytron/credential-store=cred-store-default:remove()
