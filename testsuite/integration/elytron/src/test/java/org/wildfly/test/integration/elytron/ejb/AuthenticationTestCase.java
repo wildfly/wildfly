@@ -30,6 +30,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -46,9 +47,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.jboss.logging.Logger;
 import javax.ejb.EJB;
-import javax.ejb.EJBAccessException;
 import javax.security.auth.AuthPermission;
-import javax.security.auth.login.LoginContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -69,6 +68,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
 
 /**
  * Test case to hold the authentication scenarios, these range from calling a servlet which calls a bean to calling a bean which
@@ -78,7 +78,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup({EjbElytronDomainSetup.class})
+@ServerSetup({AuthenticationTestCase.EjbSecurityDomainSetup.class})
 @Category(CommonCriteria.class)
 public class AuthenticationTestCase {
 
@@ -146,71 +146,49 @@ public class AuthenticationTestCase {
     @Test
     @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             String response = entryBean.whoAmI();
             assertEquals("user1", response);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_BadPwd() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "wrong_password");
-        lc.login();
-        try {
-            entryBean.whoAmI();
-            fail("Expected EJBAccessException due to bad password not thrown. (EJB 3.1 FR 17.6.9)");
-        } catch (EJBAccessException ignored) {
-        } finally {
-            lc.logout();
-        }
+        Util.switchIdentity("user1", "wrong_password", () -> entryBean.whoAmI(), true);
     }
 
     @Test
     @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_TwoBeans() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             String[] response = entryBean.doubleWhoAmI();
             assertEquals("user1", response[0]);
             assertEquals("user1", response[1]);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_TwoBeans_ReAuth() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             String[] response = entryBean.doubleWhoAmI("user2", "password2");
             assertEquals("user1", response[0]);
             assertEquals("user2", response[1]);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     // TODO - Similar test with first bean @RunAs - does it make sense to also manually switch?
     @Test
     @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_TwoBeans_ReAuth_BadPwd() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
-            entryBean.doubleWhoAmI("user2", "wrong_password");
-            fail("Expected EJBAccessException due to bad password not thrown. (EJB 3.1 FR 17.6.9)");
-        } catch (EJBAccessException ignored) {
-        } finally {
-            lc.logout();
-        }
+        Util.switchIdentity("user1", "password1", () -> entryBean.doubleWhoAmI("user2", "wrong_password"), true);
     }
 
     @Test
@@ -297,23 +275,19 @@ public class AuthenticationTestCase {
     @Test
     @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIRSingle() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             assertTrue(entryBean.doIHaveRole("Users"));
             assertTrue(entryBean.doIHaveRole("Role1"));
             assertFalse(entryBean.doIHaveRole("Role2"));
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIR_TwoBeans() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             boolean[] response;
             response = entryBean.doubleDoIHaveRole("Users");
             assertTrue(response[0]);
@@ -326,17 +300,15 @@ public class AuthenticationTestCase {
             response = entryBean.doubleDoIHaveRole("Role2");
             assertFalse(response[0]);
             assertFalse(response[1]);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIR_TwoBeans_ReAuth() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             boolean[] response;
             response = entryBean.doubleDoIHaveRole("Users", "user2", "password2");
             assertTrue(response[0]);
@@ -349,9 +321,9 @@ public class AuthenticationTestCase {
             response = entryBean.doubleDoIHaveRole("Role2", "user2", "password2");
             assertFalse(response[0]);
             assertTrue(response[1]);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     private static String read(final InputStream in) throws IOException {
@@ -509,4 +481,12 @@ public class AuthenticationTestCase {
     // 17.6.7 - Principal Mapping
     // 17.6.9 - Runtime Security Enforcement
     // 17.6.10 - Audit Trail
+
+    static class EjbSecurityDomainSetup extends EjbElytronDomainSetup {
+        public EjbSecurityDomainSetup() {
+            super(new File(AuthenticationTestCase.class.getResource("users.properties").getFile()).getAbsolutePath(),
+                    new File(AuthenticationTestCase.class.getResource("roles.properties").getFile()).getAbsolutePath());
+        }
+    }
+
 }

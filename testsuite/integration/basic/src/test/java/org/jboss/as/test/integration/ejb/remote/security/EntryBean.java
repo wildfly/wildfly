@@ -27,8 +27,6 @@ import javax.ejb.EJB;
 import javax.ejb.EJBContext;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
 
 /**
  * An unsecured EJB used to test switching the identity before calling a secured EJB.
@@ -53,19 +51,8 @@ public class EntryBean implements IntermediateAccess {
     @Override
     public String getPrincipalName(String username, String password) {
         try {
-            LoginContext lc = null;
-            try {
-                if (username != null && password != null) {
-                    lc = Util.getCLMLoginContext(username, password);
-                    lc.login();
-                }
-                return ejb.getPrincipalName();
-            } finally {
-                if (lc != null) {
-                    lc.logout();
-                }
-            }
-        } catch (LoginException e) {
+            return Util.switchIdentity(username, password, () -> ejb.getPrincipalName());
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

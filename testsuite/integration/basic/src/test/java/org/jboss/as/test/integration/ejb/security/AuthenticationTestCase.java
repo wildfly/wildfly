@@ -46,9 +46,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBAccessException;
 import javax.security.auth.AuthPermission;
-import javax.security.auth.login.LoginContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -153,67 +151,45 @@ public class AuthenticationTestCase {
 
     @Test
     public void testAuthentication() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             String response = entryBean.whoAmI();
             assertEquals("user1", response);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     public void testAuthentication_BadPwd() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "wrong_password");
-        lc.login();
-        try {
-            entryBean.whoAmI();
-            fail("Expected EJBAccessException due to bad password not thrown. (EJB 3.1 FR 17.6.9)");
-        } catch (EJBAccessException ignored) {
-        } finally {
-            lc.logout();
-        }
+        Util.switchIdentity("user1", "wrong_password", () -> entryBean.whoAmI(), true);
     }
 
     @Test
     public void testAuthentication_TwoBeans() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             String[] response = entryBean.doubleWhoAmI();
             assertEquals("user1", response[0]);
             assertEquals("user1", response[1]);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     public void testAuthentication_TwoBeans_ReAuth() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             String[] response = entryBean.doubleWhoAmI("user2", "password2");
             assertEquals("user1", response[0]);
             assertEquals("user2", response[1]);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     // TODO - Similar test with first bean @RunAs - does it make sense to also manually switch?
     @Test
     public void testAuthentication_TwoBeans_ReAuth_BadPwd() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
-            entryBean.doubleWhoAmI("user2", "wrong_password");
-            fail("Expected EJBAccessException due to bad password not thrown. (EJB 3.1 FR 17.6.9)");
-        } catch (EJBAccessException ignored) {
-        } finally {
-            lc.logout();
-        }
+        Util.switchIdentity("user1", "password1", () -> entryBean.doubleWhoAmI("user2", "wrong_password"), true);
     }
 
     @Test
@@ -293,22 +269,18 @@ public class AuthenticationTestCase {
 
     @Test
     public void testICIRSingle() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             assertTrue(entryBean.doIHaveRole("Users"));
             assertTrue(entryBean.doIHaveRole("Role1"));
             assertFalse(entryBean.doIHaveRole("Role2"));
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     public void testICIR_TwoBeans() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             boolean[] response;
             response = entryBean.doubleDoIHaveRole("Users");
             assertTrue(response[0]);
@@ -321,16 +293,14 @@ public class AuthenticationTestCase {
             response = entryBean.doubleDoIHaveRole("Role2");
             assertFalse(response[0]);
             assertFalse(response[1]);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     public void testICIR_TwoBeans_ReAuth() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             boolean[] response;
             response = entryBean.doubleDoIHaveRole("Users", "user2", "password2");
             assertTrue(response[0]);
@@ -343,9 +313,9 @@ public class AuthenticationTestCase {
             response = entryBean.doubleDoIHaveRole("Role2", "user2", "password2");
             assertFalse(response[0]);
             assertTrue(response[1]);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     private static String read(final InputStream in) throws IOException {

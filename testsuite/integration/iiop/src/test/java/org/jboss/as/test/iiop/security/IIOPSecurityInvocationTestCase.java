@@ -22,15 +22,13 @@
 
 package org.jboss.as.test.iiop.security;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.AuthPermission;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
 
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.junit.Assert;
@@ -96,29 +94,27 @@ public class IIOPSecurityInvocationTestCase {
 
     @Test
     @OperateOnDeployment("client")
-    public void testSuccessfulInvocation() throws IOException, NamingException, LoginException {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+    public void testSuccessfulInvocation() throws Exception {
+        Callable<Void> callable = () -> {
             final ClientEjb ejb = client();
             Assert.assertEquals("role1", ejb.testSuccess());
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     @OperateOnDeployment("client")
-    public void testFailedInvocation() throws IOException, NamingException, LoginException {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+    public void testFailedInvocation() throws Exception {
+        Callable<Void> callable = () -> {
             final ClientEjb ejb = client();
             ejb.testFailure();
+            return null;
+        };
+        try {
+            Util.switchIdentity("user1", "password1", callable);
             Assert.fail("Invocation should have failed");
         } catch (RemoteException expected) {
-        } finally {
-            lc.logout();
         }
     }
 

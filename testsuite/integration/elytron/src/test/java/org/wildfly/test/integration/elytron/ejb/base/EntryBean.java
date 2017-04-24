@@ -24,11 +24,10 @@ package org.wildfly.test.integration.elytron.ejb.base;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.SessionContext;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
 
-import static org.jboss.as.test.shared.integration.ejb.security.Util.getCLMLoginContext;
+import java.util.concurrent.Callable;
 
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.wildfly.test.integration.elytron.ejb.WhoAmI;
 
 /**
@@ -57,16 +56,16 @@ public abstract class EntryBean {
         return new String[]{localWho, remoteWho};
     }
 
-    public String[] doubleWhoAmI(String username, String password) throws LoginException {
+    public String[] doubleWhoAmI(String username, String password) throws Exception {
         String localWho = context.getCallerPrincipal().getName();
 
-        LoginContext lc = getCLMLoginContext(username, password);
-        lc.login();
-        try {
+        final Callable<String[]> callable = () -> {
             String remoteWho = whoAmIBean.getCallerPrincipal().getName();
             return new String[]{localWho, remoteWho};
+        };
+        try {
+            return Util.switchIdentity(username, password, callable);
         } finally {
-            lc.logout();
             String secondLocalWho = context.getCallerPrincipal().getName();
             if (secondLocalWho.equals(localWho) == false) {
                 throw new IllegalStateException("Local getCallerPrincipal changed from '" + localWho + "' to '" + secondLocalWho);
@@ -87,13 +86,13 @@ public abstract class EntryBean {
 
     public boolean[] doubleDoIHaveRole(String roleName, String username, String password) throws Exception {
         boolean localDoI = context.isCallerInRole(roleName);
-        LoginContext lc = getCLMLoginContext(username, password);
-        lc.login();
-        try {
+        final Callable<boolean[]> callable = () -> {
             boolean remoteDoI = whoAmIBean.doIHaveRole(roleName);
             return new boolean[]{localDoI, remoteDoI};
+        };
+        try {
+            return Util.switchIdentity(username, password, callable);
         } finally {
-            lc.logout();
             boolean secondLocalDoI = context.isCallerInRole(roleName);
             if (secondLocalDoI != localDoI) {
                 throw new IllegalStateException("Local call to isCallerInRole for '" + roleName + "' changed from " + localDoI + " to " + secondLocalDoI);
