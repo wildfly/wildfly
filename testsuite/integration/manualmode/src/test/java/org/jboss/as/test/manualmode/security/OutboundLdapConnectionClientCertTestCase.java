@@ -22,7 +22,6 @@
 package org.jboss.as.test.manualmode.security;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -90,29 +89,33 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * A testcase which tests a SecurityRealm used as a SSL configuration source for LDAPs.<br/>
+ * A testcase which tests a SecurityRealm used as a SSL configuration source for LDAPs, asserts that
+ * {@code always-send-client-cert} (see <a href="https://issues.jboss.org/browse/WFCORE-2647"></a>) attribute of an outbound
+ * LDAP connection works properly.
+ * <p>
  * This test uses a simple re-implementation of ApacheDS {@link LdapsInitializer} class, which enables to set our own
- * TrustManager and ask for client authentication.<br/>
+ * TrustManager and require the client authentication.<br/>
  * Test scenario:
  * <ol>
  * <li>start container</li>
  * <li>Start LDAP server with LDAPs protocol - use {@link TrustAndStoreTrustManager} as a TrustManager for incoming connections.
  * </li>
- * <li>configure security realms and LDAP outbound connection (one security realm with SSL configuration, ldap-connection using
- * the first security realm, second security realm with LDAP authentication using the new LDAP connection)</li>
- * <li>configure security domain, which uses RealmDirect login module pointing on the new security realm with LDAP authn</li>
- * <li>deploy protected web application, which uses security domain from the last step</li>
- * <li>test access to the web-app</li>
+ * <li>configure two security realms and two separate LDAP outbound connections for each realm: one of those connections has {@code alwaysSendClientCert(true)} and the other has alwaysSendClientCert(false)</li>
+ * <li>configure two security domains which point to the two security realms respectively</li>
+ * <li>deploy two web applications, which use the two security domains respectively</li>
+ * <li>test access to the web-apps</li>
  * <li>test if the server certificate configured in the security realm was used for client authentication on LDAP server side
  * (use {@link TrustAndStoreTrustManager#isSubjectInClientCertChain(String)})</li>
  * <li>undo the changes</li>
  * </ol>
  *
  * @author Josef Cacek
+ * @author <a href="https://github.com/ppalaga">Peter Palaga</a>
+ *
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class OutboundLdapConnectionTestCase {
+public class OutboundLdapConnectionClientCertTestCase {
 
     private static final String KEYSTORE_PASSWORD = "123456";
     private static final String KEYSTORE_FILENAME_LDAPS = "ldaps.keystore";
@@ -129,13 +132,13 @@ public class OutboundLdapConnectionTestCase {
     private static final String TEST_FILE = "test.txt";
     private static final String TEST_FILE_CONTENT = "OK";
 
-    private static final String LDAPS_AUTHN_REALM = "ldaps-authn-realm";
-    private static final String LDAPS_AUTHN_SD = "ldaps-authn-sd";
+    private static final String LDAPS_AUTHN_REALM_ALWAYS = "ldaps-authn-realm-always";
+    private static final String LDAPS_AUTHN_REALM_SOMETIMES = "ldaps-authn-realm-sometimes";
+    private static final String LDAPS_AUTHN_SD_ALWAYS = "ldaps-authn-sd-always";
+    private static final String LDAPS_AUTHN_SD_SOMETIMES = "ldaps-authn-sd-sometimes";
     private static final String SSL_CONF_REALM = "ssl-conf-realm";
-    private static final String LDAPS_CONNECTION = "test-ldaps";
-
-    private static final String LDAPS_AUTHN_REALM_NO_SSL = "ldaps-authn-realm-no-ssl";
-    private static final String LDAPS_AUTHN_SD_NO_SSL = "ldaps-authn-sd-no-ssl";
+    private static final String LDAPS_CONNECTION_ALWAYS = "test-ldaps-always";
+    private static final String LDAPS_CONNECTION_SOMETIMES = "test-ldaps-sometimes";
 
     private static final String SECURITY_CREDENTIALS = "secret";
     private static final String SECURITY_PRINCIPAL = "uid=admin,ou=system";
@@ -197,14 +200,14 @@ public class OutboundLdapConnectionTestCase {
         domainsSetup.tearDown(mgmtClient, CONTAINER);
     }
 
-    @Deployment(name = LDAPS_AUTHN_SD, managed = false, testable = false)
-    public static WebArchive deployment() {
-        return createDeployment(LDAPS_AUTHN_SD);
+    @Deployment(name = LDAPS_AUTHN_SD_ALWAYS, managed = false, testable = false)
+    public static WebArchive deploymentAlways() {
+        return createDeployment(LDAPS_AUTHN_SD_ALWAYS);
     }
 
-    @Deployment(name = LDAPS_AUTHN_SD_NO_SSL, managed = false, testable = false)
-    public static WebArchive deploymentNoSsl() {
-        return createDeployment(LDAPS_AUTHN_SD_NO_SSL);
+    @Deployment(name = LDAPS_AUTHN_SD_SOMETIMES, managed = false, testable = false)
+    public static WebArchive deploymentSometimes() {
+        return createDeployment(LDAPS_AUTHN_SD_SOMETIMES);
     }
 
     @Test
@@ -215,27 +218,38 @@ public class OutboundLdapConnectionTestCase {
 
     @Test
     @InSequence(0)
-    @OperateOnDeployment(LDAPS_AUTHN_SD)
+    @OperateOnDeployment(LDAPS_AUTHN_SD_ALWAYS)
     public void test(@ArquillianResource ManagementClient mgmtClient) throws Exception {
         final TrustAndStoreTrustManager trustManager = ldapsSetup.trustAndStoreTrustManager;
         try {
-            deployer.deploy(LDAPS_AUTHN_SD);
-            deployer.deploy(LDAPS_AUTHN_SD_NO_SSL);
+            deployer.deploy(LDAPS_AUTHN_SD_ALWAYS);
+            deployer.deploy(LDAPS_AUTHN_SD_SOMETIMES);
 
-            final URL appUrlNoSsl = new URL(mgmtClient.getWebUri().toString() + "/" + LDAPS_AUTHN_SD_NO_SSL + "/" + TEST_FILE);
-            Utils.makeCallWithBasicAuthn(appUrlNoSsl, "jduke", "theduke", HttpServletResponse.SC_UNAUTHORIZED);
-            assertFalse("Certificate (client key) from SecurityRealm already known to LDAP server.",
-                    trustManager.isSubjectInClientCertChain("CN=JBAS"));
+            trustManager.clear();
+            final URL appUrlSometimes = new URL(mgmtClient.getWebUri().toString() + "/" + LDAPS_AUTHN_SD_SOMETIMES + "/" + TEST_FILE);
+            Utils.makeCallWithBasicAuthn(appUrlSometimes, "jduke", "bad_password", HttpServletResponse.SC_UNAUTHORIZED);
+            assertEquals("Number of certificates stored in TrustAndStoreTrustManager", 1, trustManager.getCertCount());
 
-            final URL appUrl = new URL(mgmtClient.getWebUri().toString() + "/" + LDAPS_AUTHN_SD + "/" + TEST_FILE);
-            final String resp = Utils.makeCallWithBasicAuthn(appUrl, "jduke", "theduke", HttpServletResponse.SC_OK);
+            trustManager.clear();
+            Utils.makeCallWithBasicAuthn(appUrlSometimes, "jduke", "theduke", HttpServletResponse.SC_UNAUTHORIZED);
+            assertEquals("Number of certificates stored in TrustAndStoreTrustManager", 1, trustManager.getCertCount());
+
+
+            trustManager.clear();
+            final URL appUrlAlways = new URL(mgmtClient.getWebUri().toString() + "/" + LDAPS_AUTHN_SD_ALWAYS + "/" + TEST_FILE);
+            Utils.makeCallWithBasicAuthn(appUrlAlways, "jduke", "bad_password", HttpServletResponse.SC_UNAUTHORIZED);
+            assertEquals("Number of certificates stored in TrustAndStoreTrustManager", 1, trustManager.getCertCount());
+
+            trustManager.clear();
+            final String resp = Utils.makeCallWithBasicAuthn(appUrlAlways, "jduke", "theduke", HttpServletResponse.SC_OK);
             assertEquals(TEST_FILE_CONTENT, resp);
             assertTrue("Certificate (client key) from SecurityRealm was not used.",
                     trustManager.isSubjectInClientCertChain("CN=JBAS"));
+            assertEquals("Number of certificates stored in TrustAndStoreTrustManager", 1, trustManager.getCertCount());
         } finally {
-            deployer.undeploy(LDAPS_AUTHN_SD);
-            deployer.undeploy(LDAPS_AUTHN_SD_NO_SSL);
             trustManager.clear();
+            deployer.undeploy(LDAPS_AUTHN_SD_SOMETIMES);
+            deployer.undeploy(LDAPS_AUTHN_SD_ALWAYS);
         }
 
     }
@@ -263,7 +277,6 @@ public class OutboundLdapConnectionTestCase {
         return war;
     }
 
-    // Embedded classes ------------------------------------------------------
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
      *
@@ -282,13 +295,13 @@ public class OutboundLdapConnectionTestCase {
             final SecurityModule mappingModule = new SecurityModule.Builder().name("SimpleRoles").putOption("jduke", "Admin")
                     .build();
 
-            final SecurityDomain sd1 = new SecurityDomain.Builder().name(LDAPS_AUTHN_SD)
-                    .loginModules(realmDirectLMBuilder.putOption("realm", LDAPS_AUTHN_REALM).build())
+            final SecurityDomain sdAlways = new SecurityDomain.Builder().name(LDAPS_AUTHN_SD_ALWAYS)
+                    .loginModules(realmDirectLMBuilder.putOption("realm", LDAPS_AUTHN_REALM_ALWAYS).build())
                     .mappingModules(mappingModule).build();
-            final SecurityDomain sd2 = new SecurityDomain.Builder().name(LDAPS_AUTHN_SD_NO_SSL)
-                    .loginModules(realmDirectLMBuilder.putOption("realm", LDAPS_AUTHN_REALM_NO_SSL).build())
+            final SecurityDomain sdSometimes = new SecurityDomain.Builder().name(LDAPS_AUTHN_SD_SOMETIMES)
+                    .loginModules(realmDirectLMBuilder.putOption("realm", LDAPS_AUTHN_REALM_SOMETIMES).build())
                     .mappingModules(mappingModule).build();
-            return new SecurityDomain[]{sd1, sd2};
+            return new SecurityDomain[]{sdAlways, sdSometimes};
         }
     }
 
@@ -307,21 +320,77 @@ public class OutboundLdapConnectionTestCase {
             final RealmKeystore.Builder keyStoreBuilder = new RealmKeystore.Builder().keystorePassword(KEYSTORE_PASSWORD);
             final String ldapsUrl = "ldaps://" + Utils.getSecondaryTestAddress(managementClient) + ":" + LDAPS_PORT;
 
-            final SecurityRealm sslConfRealm = new SecurityRealm.Builder().name(SSL_CONF_REALM).authentication(
-                    new Authentication.Builder().truststore(keyStoreBuilder.keystorePath(TRUSTSTORE_FILE_JBAS.getAbsolutePath())
-                    .build()).build()).serverIdentity(new ServerIdentity.Builder().ssl(
-                    keyStoreBuilder.keystorePath(KEYSTORE_FILE_JBAS.getAbsolutePath()).build()).build()).build();
-            final SecurityRealm ldapsAuthRealm = new SecurityRealm.Builder().name(LDAPS_AUTHN_REALM).authentication(
-                    new Authentication.Builder().ldap(new LdapAuthentication.Builder()
-                    // shared attributes
-                    .connection(LDAPS_CONNECTION)
-                    // ldap-connection
-                    .url(ldapsUrl).searchDn(SECURITY_PRINCIPAL).searchCredential(SECURITY_CREDENTIALS).securityRealm(SSL_CONF_REALM)
-                    // ldap authentication
-                    .baseDn("ou=People,dc=jboss,dc=org").recursive(Boolean.TRUE).usernameAttribute("uid").build()).build())
-                    .authorization(new Authorization.Builder().path("application-roles.properties")
-                    .relativeTo("jboss.server.config.dir").build()).build();
-            return new SecurityRealm[]{sslConfRealm, ldapsAuthRealm};
+            final SecurityRealm sslConfRealm = new SecurityRealm.Builder()
+                    .name(SSL_CONF_REALM)
+                    .authentication(
+                            new Authentication.Builder()
+                            .truststore(keyStoreBuilder.keystorePath(TRUSTSTORE_FILE_JBAS.getAbsolutePath()).build())
+                            .build()
+                    )
+                    .serverIdentity(
+                            new ServerIdentity.Builder()
+                            .ssl(keyStoreBuilder.keystorePath(KEYSTORE_FILE_JBAS.getAbsolutePath()).build())
+                            .build()
+                    )
+                    .build();
+            final SecurityRealm ldapsAuthRealmAlways = new SecurityRealm.Builder()
+                    .name(LDAPS_AUTHN_REALM_ALWAYS)
+                    .authentication(
+                            new Authentication.Builder()
+                            .ldap(
+                                    new LdapAuthentication.Builder()
+                                    // shared attributes
+                                    .connection(LDAPS_CONNECTION_ALWAYS)
+                                    // ldap-connection
+                                    .url(ldapsUrl)
+                                    .searchDn(SECURITY_PRINCIPAL)
+                                    .searchCredential(SECURITY_CREDENTIALS)
+                                    .securityRealm(SSL_CONF_REALM)
+                                    .alwaysSendClientCert(true)
+                                    // ldap authentication
+                                    .baseDn("ou=People,dc=jboss,dc=org")
+                                    .recursive(Boolean.TRUE)
+                                    .usernameAttribute("uid")
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .authorization(
+                            new Authorization.Builder()
+                            .path("application-roles.properties")
+                            .relativeTo("jboss.server.config.dir")
+                            .build()
+                    )
+                    .build();
+            final SecurityRealm ldapsAuthRealmSometimes = new SecurityRealm.Builder()
+                    .name(LDAPS_AUTHN_REALM_SOMETIMES)
+                    .authentication(
+                            new Authentication.Builder()
+                            .ldap(
+                                    new LdapAuthentication.Builder()
+                                    // shared attributes
+                                    .connection(LDAPS_CONNECTION_SOMETIMES)
+                                    // ldap-connection
+                                    .url(ldapsUrl)
+                                    .searchDn(SECURITY_PRINCIPAL)
+                                    .searchCredential(SECURITY_CREDENTIALS)
+                                    .securityRealm(SSL_CONF_REALM)
+                                    // ldap authentication
+                                    .baseDn("ou=People,dc=jboss,dc=org")
+                                    .recursive(Boolean.TRUE)
+                                    .usernameAttribute("uid")
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .authorization(
+                            new Authorization.Builder()
+                            .path("application-roles.properties")
+                            .relativeTo("jboss.server.config.dir")
+                            .build()
+                    )
+                    .build();
+            return new SecurityRealm[]{sslConfRealm, ldapsAuthRealmAlways, ldapsAuthRealmSometimes};
         }
     }
 
@@ -330,7 +399,7 @@ public class OutboundLdapConnectionTestCase {
      */
     //@formatter:off
     @CreateDS(
-            name = "JBossDS-OutboundLdapConnectionTestCase",
+            name = "JBossDS-OutboundLdapConnectionClientCertTestCase",
             factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
             partitions = {
                 @CreatePartition(
@@ -368,7 +437,7 @@ public class OutboundLdapConnectionTestCase {
             LdapsInitializer.setAndLockTrustManager(trustAndStoreTrustManager);
             directoryService = DSAnnotationProcessor.getDirectoryService();
             final SchemaManager schemaManager = directoryService.getSchemaManager();
-            try (LdifReader ldifReader = new LdifReader(OutboundLdapConnectionTestCase.class.getResourceAsStream(
+            try (LdifReader ldifReader = new LdifReader(OutboundLdapConnectionClientCertTestCase.class.getResourceAsStream(
                     "OutboundLdapConnectionTestCase.ldif"))) {
                 for (LdifEntry ldifEntry : ldifReader) {
                     directoryService.getAdminSession().add(new DefaultEntry(schemaManager, ldifEntry.getEntry()));
@@ -380,10 +449,11 @@ public class OutboundLdapConnectionTestCase {
             fixTransportAddress(createLdapServer, StringUtils.strip(TestSuiteEnvironment.getSecondaryTestAddress(false)));
             ldapServer = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService);
 
-            /* set setWantClientAuth(true) manually as there is no way to do this via annotation */
+            /* set setNeedClientAuth(true) and setWantClientAuth(true) manually as there is no way to do this via annotation */
             Transport[] transports = ldapServer.getTransports();
             assertTrue("The LDAP server configured via annotations should have just one transport", transports.length == 1);
             final TcpTransport transport = (TcpTransport) transports[0];
+            transport.setNeedClientAuth(true);
             transport.setWantClientAuth(true);
             TcpTransport newTransport = new InitializedTcpTransport(transport);
             ldapServer.setTransports(newTransport);
