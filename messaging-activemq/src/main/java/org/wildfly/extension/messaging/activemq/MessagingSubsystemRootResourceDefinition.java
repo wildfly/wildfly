@@ -117,7 +117,8 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
                 ServerDefinition.JOURNAL_JMS_BINDINGS_TABLE,
                 ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE,
                 ServerDefinition.JOURNAL_PAGE_STORE_TABLE,
-                ServerDefinition.JOURNAL_DATABASE
+                ServerDefinition.JOURNAL_DATABASE,
+                ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT
                 );
         server.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.ALWAYS, ServerDefinition.CREDENTIAL_REFERENCE)

@@ -9,6 +9,7 @@
         </cluster>
         <journal datasource="fooDS"
                  database="mysql"
+                 jdbc-network-timeout="4567"
                  messages-table="MY_MESSAGES"
                  bindings-table="MY_BINDINGS"
                  jms-bindings-table="MY_JMS_BINDINGS"
