@@ -213,11 +213,13 @@
         <version.org.picketlink>2.5.5.SP7</version.org.picketlink>
         <version.org.slf4j>1.7.22</version.org.slf4j>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
+        <version.org.wildfly.arquillian>2.1.0.Alpha1</version.org.wildfly.arquillian>
         <version.org.wildfly.build-tools>1.1.8.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>3.0.0.Beta17</version.org.wildfly.core>
+        <version.org.wildfly.client-config>1.0.0.Beta4</version.org.wildfly.client-config>
+        <version.org.wildfly.discovery-client>1.0.0.Beta10</version.org.wildfly.discovery-client>
         <version.org.wildfly.plugin>1.2.0.Alpha4</version.org.wildfly.plugin>
-        <version.org.wildfly.arquillian>2.1.0.Alpha1</version.org.wildfly.arquillian>
         <version.org.wildfly.http-client>1.0.0.CR2</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.0.Beta14</version.org.wildfly.naming-client>
         <version.org.wildfly.transaction.client>1.0.0.Beta21</version.org.wildfly.transaction.client>
@@ -809,11 +811,6 @@
                     </dependencies>
                 </plugin>
                 <plugin>
-                    <groupId>org.wildfly.core</groupId>
-                    <artifactId>wildfly-build-plugin</artifactId>
-                    <version>${version.org.wildfly.core}</version>
-                </plugin>
-                <plugin>
                     <groupId>org.wildfly.build</groupId>
                     <artifactId>wildfly-feature-pack-build-maven-plugin</artifactId>
                     <version>${version.org.wildfly.build-tools}</version>
@@ -826,14 +823,6 @@
             </plugins>
         </pluginManagement>
     </build>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.wildfly.checkstyle</groupId>
-            <artifactId>wildfly-checkstyle-config</artifactId>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
 
     <dependencyManagement>
         <dependencies>
@@ -6250,6 +6239,30 @@
                 <version>${version.org.wildfly.arquillian}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.wildfly.discovery</groupId>
+                <artifactId>wildfly-discovery-client</artifactId>
+                <version>${version.org.wildfly.discovery-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.wildfly.client</groupId>
+                <artifactId>wildfly-client-config</artifactId>
+                <version>${version.org.wildfly.client-config}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
             <dependency>
                 <groupId>org.wildfly.transaction</groupId>
                 <artifactId>wildfly-transaction-client</artifactId>
