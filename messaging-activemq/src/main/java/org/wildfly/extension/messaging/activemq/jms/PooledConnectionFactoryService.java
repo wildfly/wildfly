@@ -446,7 +446,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             ServiceController<ResourceAdapterDeployment> controller =
                     Services.addServerExecutorDependency(
                         serviceTarget.addService(getResourceAdapterActivatorsServiceName(name), activator),
-                            activator.getExecutorServiceInjector(), false)
+                            activator.getExecutorServiceInjector())
                     .addDependency(ActiveMQActivationService.getServiceName(getActiveMQServiceName(serverName)))
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class,
                             activator.getMdrInjector())

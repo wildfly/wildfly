@@ -184,7 +184,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
                 builder.addCapabilityRequirement(REF_SSL_CONTEXT, SSLContext.class, service.sslContext, sslContext.asString());
             }
             if(securityRealm.isDefined()) {
-                SecurityRealm.ServiceUtil.addDependency(builder, service.securityRealm, securityRealm.asString(), false);
+                SecurityRealm.ServiceUtil.addDependency(builder, service.securityRealm, securityRealm.asString());
             }
             builder.install();
         }

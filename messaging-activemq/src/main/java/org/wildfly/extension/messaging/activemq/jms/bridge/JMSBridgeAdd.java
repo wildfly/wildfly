@@ -92,7 +92,7 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                 final ServiceBuilder<JMSBridge> jmsBridgeServiceBuilder = context.getServiceTarget().addService(bridgeServiceName, bridgeService)
                         .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
                         .setInitialMode(Mode.ACTIVE);
-                addServerExecutorDependency(jmsBridgeServiceBuilder, bridgeService.getExecutorInjector(), false);
+                addServerExecutorDependency(jmsBridgeServiceBuilder, bridgeService.getExecutorInjector());
                 if (dependsOnLocalResources(model, JMSBridgeDefinition.SOURCE_CONTEXT)) {
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.SOURCE_CONNECTION_FACTORY);
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.SOURCE_DESTINATION);

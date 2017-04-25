@@ -154,7 +154,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                             .addDependency(support.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName()), BatchConfiguration.class, jobOperatorService.getBatchConfigurationInjector())
                             .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, jobOperatorService.getSuspendControllerInjector())
                             .addDependency(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), SecurityAwareBatchEnvironment.class, jobOperatorService.getBatchEnvironmentInjector()),
-                    jobOperatorService.getExecutorServiceInjector(), false)
+                    jobOperatorService.getExecutorServiceInjector())
                     .install();
 
             // Add the JobOperatorService to the deployment unit

@@ -129,7 +129,7 @@ public class JMSQueueService implements Service<Queue> {
                 .addDependency(ActiveMQActivationService.getServiceName(serverServiceName))
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(serverServiceName), JMSServerManager.class, service.jmsServer)
                 .setInitialMode(ServiceController.Mode.PASSIVE);
-        addServerExecutorDependency(serviceBuilder, service.executorInjector, false);
+        addServerExecutorDependency(serviceBuilder, service.executorInjector);
         serviceBuilder.install();
 
         return service;

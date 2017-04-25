@@ -172,7 +172,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final ServiceBuilder<?> dataSourceServiceBuilder =
                 Services.addServerExecutorDependency(
                         serviceTarget.addService(dataSourceServiceName, dataSourceService),
-                        dataSourceService.getExecutorServiceInjector(), false)
+                        dataSourceService.getExecutorServiceInjector())
                         .addAliases(dataSourceServiceNameAlias)
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
                         dataSourceService.getManagementRepositoryInjector())

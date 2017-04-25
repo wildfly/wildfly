@@ -208,7 +208,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
             // Create the service
             ServiceBuilder<ResourceAdapterDeployment> builder = Services.addServerExecutorDependency(
                     serviceTarget.addService(deployerServiceName, raDeploymentService),
-                    raDeploymentService.getExecutorServiceInjector(), false)
+                    raDeploymentService.getExecutorServiceInjector())
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, raDeploymentService.getMdrInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, raDeploymentService.getRaRepositoryInjector())
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class, raDeploymentService.getManagementRepositoryInjector())
