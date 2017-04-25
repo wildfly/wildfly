@@ -451,6 +451,7 @@ public class Constants {
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
             .setAllowExpression(true)
             .addAccessConstraint(DS_SECURITY_DEF)
+            .setNullSignificant(false)
             .setRestartAllServices()
             .build();
     public static SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
@@ -754,6 +755,7 @@ public class Constants {
             .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
+            .setNullSignificant(false)
             .setRestartAllServices()
             .build();
 
