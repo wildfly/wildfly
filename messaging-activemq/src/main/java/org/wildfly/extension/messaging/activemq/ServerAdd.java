@@ -60,6 +60,8 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_DATABASE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_DATASOURCE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_FILE_SIZE;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_JMS_BINDINGS_TABLE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MAX_IO;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MESSAGES_TABLE;
@@ -496,10 +498,11 @@ class ServerAdd extends AbstractAddStepHandler {
         }
         DatabaseStorageConfiguration storageConfiguration = new DatabaseStorageConfiguration();
         storageConfiguration.setBindingsTableName(JOURNAL_BINDINGS_TABLE.resolveModelAttribute(context, model).asString());
+        storageConfiguration.setJMSBindingsTableName(JOURNAL_JMS_BINDINGS_TABLE.resolveModelAttribute(context, model).asString());
         storageConfiguration.setMessageTableName(JOURNAL_MESSAGES_TABLE.resolveModelAttribute(context, model).asString());
         storageConfiguration.setLargeMessageTableName(JOURNAL_LARGE_MESSAGES_TABLE.resolveModelAttribute(context, model).asString());
         storageConfiguration.setPageStoreTableName(JOURNAL_PAGE_STORE_TABLE.resolveModelAttribute(context, model).asString());
-
+        storageConfiguration.setJdbcNetworkTimeout(JOURNAL_JDBC_NETWORK_TIMEOUT.resolveModelAttribute(context, model).asInt());
         ModelNode databaseNode = JOURNAL_DATABASE.resolveModelAttribute(context, model);
         final String database = databaseNode.isDefined() ? databaseNode.asString() : null;
         try {

@@ -27,6 +27,7 @@ import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.DAYS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PERCENTAGE;
+import static org.jboss.as.controller.client.helpers.MeasurementUnit.SECONDS;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
@@ -215,6 +216,15 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final SimpleAttributeDefinition JOURNAL_JMS_BINDINGS_TABLE  = create("journal-jms-bindings-table", STRING)
+            .setAttributeGroup("journal")
+            .setXmlName("jms-bindings-table")
+            .setRequired(false)
+            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJMSBindingsTableName()))
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     public static final SimpleAttributeDefinition JOURNAL_LARGE_MESSAGES_TABLE  = create("journal-large-messages-table", STRING)
             .setAttributeGroup("journal")
             .setXmlName("large-messages-table")
@@ -245,6 +255,16 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final AttributeDefinition JOURNAL_DATABASE = create("journal-database", STRING)
             .setAttributeGroup("journal")
             .setXmlName("database")
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final AttributeDefinition JOURNAL_JDBC_NETWORK_TIMEOUT = create("journal-jdbc-network-timeout", INT)
+            .setAttributeGroup("journal")
+            .setXmlName("jdbc-network-timeout")
+            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJdbcNetworkTimeout()))
+            .setMeasurementUnit(SECONDS)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -530,8 +550,8 @@ public class ServerDefinition extends PersistentResourceDefinition {
             PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY,
             PAGE_MAX_CONCURRENT_IO, CREATE_BINDINGS_DIR, CREATE_JOURNAL_DIR, JOURNAL_TYPE, JOURNAL_BUFFER_TIMEOUT,
             JOURNAL_BUFFER_SIZE,
-            JOURNAL_DATASOURCE, JOURNAL_DATABASE,
-            JOURNAL_MESSAGES_TABLE, JOURNAL_BINDINGS_TABLE, JOURNAL_LARGE_MESSAGES_TABLE, JOURNAL_PAGE_STORE_TABLE,
+            JOURNAL_DATASOURCE, JOURNAL_DATABASE, JOURNAL_JDBC_NETWORK_TIMEOUT,
+            JOURNAL_MESSAGES_TABLE, JOURNAL_BINDINGS_TABLE, JOURNAL_JMS_BINDINGS_TABLE, JOURNAL_LARGE_MESSAGES_TABLE, JOURNAL_PAGE_STORE_TABLE,
             JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
             JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_POOL_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,
