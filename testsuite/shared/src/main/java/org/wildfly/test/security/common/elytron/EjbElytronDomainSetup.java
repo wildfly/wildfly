@@ -230,17 +230,22 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         ModelNode remove = Util.createRemoveOperation(address);
         // Don't rollback when the AS detects the war needs the module
         remove.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        remove.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(false);
         return remove;
     }
 
     protected static void applyUpdates(final ModelControllerClient client, final List<ModelNode> updates, boolean allowFailure) {
+        ModelNode compositeOp = new ModelNode();
+        compositeOp.get(OP).set(COMPOSITE);
+        compositeOp.get(OP_ADDR).setEmptyList();
+        compositeOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        ModelNode steps = compositeOp.get(STEPS);
         for (ModelNode update : updates) {
-            try {
-                applyUpdate(client, update, allowFailure);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            steps.add(update);
+        }
+        try {
+            applyUpdate(client, compositeOp, allowFailure);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }
