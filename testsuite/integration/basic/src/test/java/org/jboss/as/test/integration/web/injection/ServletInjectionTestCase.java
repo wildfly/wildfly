@@ -30,7 +30,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -42,7 +41,6 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("WFLY-1730")
 public class ServletInjectionTestCase {
 
     @ArquillianResource
