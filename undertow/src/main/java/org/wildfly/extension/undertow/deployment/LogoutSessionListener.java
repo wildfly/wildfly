@@ -35,6 +35,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 import javax.security.auth.Subject;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
+import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 
@@ -45,20 +46,32 @@ import java.security.PrivilegedAction;
  *
  * @author Stuart Douglas
  */
-public class LogoutSessionListener implements HttpSessionListener {
+class LogoutSessionListener implements HttpSessionListener {
 
     private final AuthenticationManager manager;
 
-    public LogoutSessionListener(AuthenticationManager manager) {
+    LogoutSessionListener(AuthenticationManager manager) {
         this.manager = manager;
     }
 
     @Override
     public void sessionCreated(HttpSessionEvent se) {
     }
-
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
+        if(WildFlySecurityManager.isChecking()) {
+            //we don't use doUnchecked here as there is a chance the below method
+            //can run user supplied code
+            AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                sessionDestroyedImpl(se);
+                return null;
+            });
+        } else {
+            sessionDestroyedImpl(se);
+        }
+    }
+
+    private void sessionDestroyedImpl(HttpSessionEvent se) {
         //we need to get the current account
         //there are two options here, we can look for the account in the current request
         //or we can look for the account that has been saved in the session
@@ -73,17 +86,7 @@ public class LogoutSessionListener implements HttpSessionListener {
         }
         if (se.getSession() instanceof HttpSessionImpl) {
             final HttpSessionImpl impl = (HttpSessionImpl) se.getSession();
-            Session session;
-            if (WildFlySecurityManager.isChecking()) {
-                session = WildFlySecurityManager.doChecked(new PrivilegedAction<Session>() {
-                    @Override
-                    public Session run() {
-                        return impl.getSession();
-                    }
-                });
-            } else {
-                session = impl.getSession();
-            }
+            Session session = impl.getSession();
             if (session != null) {
                 AuthenticatedSessionManager.AuthenticatedSession authenticatedSession = (AuthenticatedSessionManager.AuthenticatedSession) session.getAttribute(CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession");
                 if(authenticatedSession != null) {
