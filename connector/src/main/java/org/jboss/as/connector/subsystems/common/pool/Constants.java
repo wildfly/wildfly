@@ -144,7 +144,7 @@ public class Constants {
     public static final SimpleAttributeDefinition INITIAL_POOL_SIZE = new SimpleAttributeDefinitionBuilder(INITIAL_POOL_SIZE_NAME, ModelType.INT)
             .setXmlName(Pool.Tag.INITIAL_POOL_SIZE.getLocalName())
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(Defaults.MIN_POOL_SIZE))
             .build();
 
@@ -156,7 +156,7 @@ public class Constants {
 
     public static PropertiesAttributeDefinition CAPACITY_INCREMENTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CAPACITY_INCREMENTER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setAttributeMarshaller(new AttributeMarshaller() {
                 @Override
@@ -181,7 +181,7 @@ public class Constants {
 
     public static PropertiesAttributeDefinition CAPACITY_DECREMENTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CAPACITY_DECREMENTER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setAttributeMarshaller(new AttributeMarshaller() {
                 @Override
@@ -221,7 +221,7 @@ public class Constants {
     public static final SimpleAttributeDefinition POOL_FLUSH_STRATEGY = new SimpleAttributeDefinitionBuilder(FLUSH_STRATEGY_NAME, ModelType.STRING)
             .setDefaultValue(new ModelNode(Defaults.FLUSH_STRATEGY.getName()))
             .setXmlName(Pool.Tag.FLUSH_STRATEGY.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setAllowedValues(Stream.of(FlushStrategy.values()).map(FlushStrategy::toString).filter(Objects::nonNull).toArray(String[]::new))
             .setValidator(new EnumValidator<FlushStrategy>(FlushStrategy.class, true, true))

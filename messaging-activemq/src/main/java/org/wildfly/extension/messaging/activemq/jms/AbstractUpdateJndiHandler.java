@@ -58,7 +58,7 @@ public abstract class AbstractUpdateJndiHandler implements OperationStepHandler 
     private static final String REMOVE_JNDI = "remove-jndi";
 
     private static final SimpleAttributeDefinition JNDI_BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.JNDI_BINDING, ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .setValidator(new StringLengthValidator(1))
             .build();
 

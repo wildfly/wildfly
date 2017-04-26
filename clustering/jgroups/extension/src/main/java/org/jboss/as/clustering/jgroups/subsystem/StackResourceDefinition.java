@@ -112,20 +112,20 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
     @Deprecated
     static final ObjectTypeAttributeDefinition TRANSPORT = ObjectTypeAttributeDefinition.Builder.of(TransportResourceDefinition.WILDCARD_PATH.getKey(), AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.getDefinition(), TransportResourceDefinition.Attribute.SHARED.getDefinition(), SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING.getDefinition(), TransportResourceDefinition.Attribute.DIAGNOSTICS_SOCKET_BINDING.getDefinition(), TransportResourceDefinition.ThreadingAttribute.DEFAULT_EXECUTOR.getDefinition(), TransportResourceDefinition.ThreadingAttribute.OOB_EXECUTOR.getDefinition(), TransportResourceDefinition.ThreadingAttribute.TIMER_EXECUTOR.getDefinition(), TransportResourceDefinition.ThreadingAttribute.THREAD_FACTORY.getDefinition(), TransportResourceDefinition.Attribute.SITE.getDefinition(), TransportResourceDefinition.Attribute.RACK.getDefinition(), TransportResourceDefinition.Attribute.MACHINE.getDefinition(), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition())
             .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
-            .setAllowNull(true)
+            .setRequired(false)
             .setSuffix(null)
             .build();
 
     @Deprecated
     static final ObjectTypeAttributeDefinition PROTOCOL = ObjectTypeAttributeDefinition.Builder.of(ProtocolResourceDefinition.WILDCARD_PATH.getKey(), AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.getDefinition(), ProtocolResourceDefinition.DeprecatedAttribute.SOCKET_BINDING.getDefinition(), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition())
-            .setAllowNull(true)
+            .setRequired(false)
             .setSuffix("protocol")
             .build();
 
     @Deprecated
     static final AttributeDefinition PROTOCOLS = ObjectListAttributeDefinition.Builder.of("protocols", PROTOCOL)
             .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {

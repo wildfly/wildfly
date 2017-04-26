@@ -92,7 +92,7 @@ public class StaticEJBDiscoveryDefinition {
                     .build();
 
     public static final AttributeDefinition INSTANCE = ObjectListAttributeDefinition.Builder.of(STATIC_EJB_DISCOVERY, VALUE_TYPE_AD)
-        .setAllowNull(true)
+        .setRequired(false)
         .build();
 
     public static List<StaticEjbDiscovery> createStaticEjbList(final OperationContext context, final ModelNode ejbList) throws OperationFailedException {

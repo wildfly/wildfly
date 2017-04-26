@@ -235,7 +235,7 @@ public class Constants {
 
     static final SimpleAttributeDefinition ARCHIVE = SimpleAttributeDefinitionBuilder.create(ARCHIVE_NAME, ModelType.STRING)
             .setXmlName(Activation.Tag.ARCHIVE.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(false)
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setAttributeMarshaller(new AttributeMarshaller() {
@@ -255,7 +255,7 @@ public class Constants {
 
     static final SimpleAttributeDefinition MODULE = SimpleAttributeDefinitionBuilder.create(MODULE_NAME, ModelType.STRING)
             .setXmlName(AS7ResourceAdapterTags.MODULE.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(false)
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setAttributeMarshaller(new AttributeMarshaller() {
@@ -299,21 +299,21 @@ public class Constants {
 
     static SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition WM_SECURITY = new SimpleAttributeDefinitionBuilder(WM_SECURITY_NAME, ModelType.BOOLEAN)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(false))
             .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition WM_SECURITY_MAPPING_REQUIRED = new SimpleAttributeDefinitionBuilder(WM_SECURITY_MAPPING_REQUIRED_NAME, ModelType.BOOLEAN)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(false))
             .setXmlName(WorkManagerSecurity.Tag.MAPPING_REQUIRED.getLocalName())
             .setRestartAllServices()
@@ -337,14 +337,14 @@ public class Constants {
 
     static final SimpleAttributeDefinition WM_SECURITY_DEFAULT_PRINCIPAL = new SimpleAttributeDefinitionBuilder(WM_SECURITY_DEFAULT_PRINCIPAL_NAME, ModelType.STRING)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setXmlName(WorkManagerSecurity.Tag.DEFAULT_PRINCIPAL.getLocalName())
             .setRestartAllServices()
             .build();
 
     static final StringListAttributeDefinition WM_SECURITY_DEFAULT_GROUPS = (new StringListAttributeDefinition.Builder(WM_SECURITY_DEFAULT_GROUPS_NAME))
             .setXmlName(WorkManagerSecurity.Tag.DEFAULT_GROUPS.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setElementValidator(new StringLengthValidator(1, false, true))
             .setRestartAllServices()
@@ -357,31 +357,31 @@ public class Constants {
 
     static final SimpleAttributeDefinition WM_SECURITY_MAPPING_FROM = new SimpleAttributeDefinitionBuilder(WM_SECURITY_MAPPING_FROM_NAME, ModelType.STRING)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setXmlName(WorkManagerSecurity.Attribute.FROM.getLocalName())
             .build();
 
     static final SimpleAttributeDefinition WM_SECURITY_MAPPING_TO = new SimpleAttributeDefinitionBuilder(WM_SECURITY_MAPPING_TO_NAME, ModelType.STRING)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setXmlName(WorkManagerSecurity.Attribute.TO.getLocalName())
             .build();
 
     static final ObjectTypeAttributeDefinition WM_SECURITY_MAPPING_GROUP = ObjectTypeAttributeDefinition.Builder.of(WM_SECURITY_MAPPING_GROUP_NAME, WM_SECURITY_MAPPING_FROM, WM_SECURITY_MAPPING_TO).build();
     static final ObjectListAttributeDefinition WM_SECURITY_MAPPING_GROUPS = ObjectListAttributeDefinition.Builder.of(WM_SECURITY_MAPPING_GROUPS_NAME, WM_SECURITY_MAPPING_GROUP)
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .build();
 
     static final ObjectTypeAttributeDefinition WM_SECURITY_MAPPING_USER = ObjectTypeAttributeDefinition.Builder.of(WM_SECURITY_MAPPING_USER_NAME, WM_SECURITY_MAPPING_FROM, WM_SECURITY_MAPPING_TO).build();
     static final ObjectListAttributeDefinition WM_SECURITY_MAPPING_USERS = ObjectListAttributeDefinition.Builder.of(WM_SECURITY_MAPPING_USERS_NAME, WM_SECURITY_MAPPING_USER)
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .build();
 
     static final StringListAttributeDefinition BEANVALIDATION_GROUPS = (new StringListAttributeDefinition.Builder(BEANVALIDATIONGROUPS_NAME))
             .setXmlName(Activation.Tag.BEAN_VALIDATION_GROUP.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setElementValidator(new StringLengthValidator(1, false, true))
             .setRestartAllServices()
@@ -410,13 +410,13 @@ public class Constants {
             .setXmlName(DataSource.Attribute.CONNECTABLE.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.CONNECTABLE))
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .build();
     static SimpleAttributeDefinition TRACKING = new SimpleAttributeDefinitionBuilder(TRACKING_NAME, ModelType.BOOLEAN)
             .setXmlName(DataSource.Attribute.TRACKING.getLocalName())
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .build();
     static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_NAME, ModelType.STRING, true)
@@ -471,7 +471,7 @@ public class Constants {
             .setXmlName(Security.Tag.APPLICATION.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.APPLICATION_MANAGED_SECURITY))
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setAlternatives(SECURITY_DOMAIN_NAME, SECURITY_DOMAIN_AND_APPLICATION_NAME, AUTHENTICATION_CONTEXT_NAME,
                     AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME)
@@ -507,7 +507,7 @@ public class Constants {
 
     static SimpleAttributeDefinition SHARABLE = new SimpleAttributeDefinitionBuilder(SHARABLE_NAME, ModelType.BOOLEAN)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(Defaults.SHARABLE))
             .setXmlName(ConnectionDefinition.Attribute.SHARABLE.getLocalName())
             .setRestartAllServices()
@@ -515,7 +515,7 @@ public class Constants {
 
     static SimpleAttributeDefinition ENLISTMENT = new SimpleAttributeDefinitionBuilder(ENLISTMENT_NAME, ModelType.BOOLEAN)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(Defaults.ENLISTMENT))
             .setXmlName(ConnectionDefinition.Attribute.ENLISTMENT.getLocalName())
             .setRestartAllServices()
@@ -525,13 +525,13 @@ public class Constants {
     static SimpleAttributeDefinition ENLISTMENT_TRACE = new SimpleAttributeDefinitionBuilder(ENLISTMENT_TRACE_NAME, ModelType.BOOLEAN)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setXmlName(ConnectionDefinition.Attribute.ENLISTMENT_TRACE.getLocalName())
             .build();
 
     static SimpleAttributeDefinition MCP = new SimpleAttributeDefinitionBuilder(MCP_NAME, ModelType.STRING)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setXmlName(ConnectionDefinition.Attribute.MCP.getLocalName())
             .setRestartAllServices()
             .build();
@@ -560,7 +560,7 @@ public class Constants {
 
 
     static SimpleAttributeDefinition SAME_RM_OVERRIDE = new SimpleAttributeDefinitionBuilder(SAME_RM_OVERRIDE_NAME, ModelType.BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setXmlName(XaPool.Tag.IS_SAME_RM_OVERRIDE.getLocalName())
             .setRestartAllServices()

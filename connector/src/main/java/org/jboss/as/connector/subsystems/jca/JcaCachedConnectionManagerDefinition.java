@@ -86,7 +86,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
     public enum CcmParameters {
         DEBUG(SimpleAttributeDefinitionBuilder.create("debug", ModelType.BOOLEAN)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(new ModelNode().set(false))
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
@@ -94,7 +94,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
                 .build()),
         ERROR(SimpleAttributeDefinitionBuilder.create("error", ModelType.BOOLEAN)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(new ModelNode().set(false))
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
@@ -102,7 +102,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
                 .build()),
         IGNORE_UNKNOWN_CONNECTIONS(SimpleAttributeDefinitionBuilder.create("ignore-unknown-connections", ModelType.BOOLEAN)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(new ModelNode().set(false))
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
@@ -110,7 +110,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
                 .build()),
         INSTALL(SimpleAttributeDefinitionBuilder.create("install", ModelType.BOOLEAN)
                 .setAllowExpression(false)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(new ModelNode().set(false))
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()

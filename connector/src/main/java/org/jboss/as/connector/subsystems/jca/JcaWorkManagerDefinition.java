@@ -162,7 +162,7 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
     public enum WmParameters {
         NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
                 .setAllowExpression(false)
-                .setAllowNull(false)
+                .setRequired(true)
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName("name")

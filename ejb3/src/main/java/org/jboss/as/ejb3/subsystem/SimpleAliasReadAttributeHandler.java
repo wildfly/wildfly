@@ -37,7 +37,7 @@ import org.jboss.dmr.ModelType;
 class SimpleAliasReadAttributeHandler implements OperationStepHandler {
 
     private static final SimpleAttributeDefinition INCLUDE_DEFAULTS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.INCLUDE_DEFAULTS, ModelType.BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(true))
             .build();
 

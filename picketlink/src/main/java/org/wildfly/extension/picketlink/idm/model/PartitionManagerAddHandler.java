@@ -220,7 +220,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                 }
 
                 LDAPMappingConfigurationBuilder storeMapping = storeConfig
-                    .mapping(this.loadClass(moduleNode, typeName));
+                    .mapping(this.<AttributedType>loadClass(moduleNode, typeName));
                 ModelNode relatesToNode = LDAPStoreMappingResourceDefinition.RELATES_TO.resolveModelAttribute(context, ldapMapping);
 
                 if (relatesToNode.isDefined()) {
@@ -230,7 +230,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                         relatesTo = relatesToNode.asString();
                     }
 
-                    storeMapping.forMapping(this.loadClass(moduleNode, relatesTo));
+                    storeMapping.forMapping(this.<AttributedType>loadClass(moduleNode, relatesTo));
                 } else {
                     String baseDN = LDAPStoreMappingResourceDefinition.BASE_DN.resolveModelAttribute(context, ldapMapping)
                         .asString();
@@ -439,7 +439,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                     throw ROOT_LOGGER.typeNotProvided(IDENTITY_STORE_CREDENTIAL_HANDLER.getName());
                 }
 
-                storeConfig.addCredentialHandler(this.loadClass(moduleNode, typeName));
+                storeConfig.addCredentialHandler(this.<CredentialHandler>loadClass(moduleNode, typeName));
             }
         }
     }

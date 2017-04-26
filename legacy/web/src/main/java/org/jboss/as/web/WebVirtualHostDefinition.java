@@ -42,13 +42,13 @@ public class WebVirtualHostDefinition extends ModelOnlyResourceDefinition {
     protected static final SimpleAttributeDefinition NAME =
             new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, false)
                     .setXmlName(Constants.NAME)
-                    .setAllowNull(true)      // todo should be false, but 'add' won't validate then
+                    .setRequired(false)      // todo should be false, but 'add' won't validate then
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
     protected static final ListAttributeDefinition ALIAS =
             new StringListAttributeDefinition.Builder(Constants.ALIAS)
                     .setXmlName(Constants.ALIAS)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setElementValidator(new StringLengthValidator(1, false))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();

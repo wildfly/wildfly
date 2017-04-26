@@ -100,7 +100,7 @@ public class StatisticsResourceDefinition extends SimpleResourceDefinition {
                 modelType = ModelType.LONG;
             }
             SimpleAttributeDefinition attribute = new SimpleAttributeDefinitionBuilder(name, modelType)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setStorageRuntime()
                     .build();
             result.add(attribute);

@@ -56,7 +56,7 @@ public class GroupingHandlerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition TIMEOUT = create("timeout", LONG)
             .setDefaultValue(new ModelNode(1L * ActiveMQDefaultConfiguration.getDefaultGroupingHandlerTimeout()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -65,7 +65,7 @@ public class GroupingHandlerDefinition extends PersistentResourceDefinition {
             // FIXME Cast to a long until Artemis type is fixed
             .setDefaultValue(new ModelNode(1L * ActiveMQDefaultConfiguration.getDefaultGroupingHandlerGroupTimeout()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -73,7 +73,7 @@ public class GroupingHandlerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition REAPER_PERIOD = create("reaper-period", LONG)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultGroupingHandlerReaperPeriod()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

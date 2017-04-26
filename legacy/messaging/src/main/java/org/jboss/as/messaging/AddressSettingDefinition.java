@@ -54,106 +54,106 @@ public class AddressSettingDefinition extends ModelOnlyResourceDefinition {
     public static final SimpleAttributeDefinition ADDRESS_FULL_MESSAGE_POLICY = create("address-full-policy", ModelType.STRING)
             .setDefaultValue(new ModelNode(AddressFullMessagePolicy.PAGE.toString()))
             .setValidator(new EnumValidator<>(AddressFullMessagePolicy.class, true, false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition EXPIRY_DELAY = create("expiry-delay", ModelType.LONG)
             .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition LAST_VALUE_QUEUE = create("last-value-queue", ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition MAX_DELIVERY_ATTEMPTS = create("max-delivery-attempts", ModelType.INT)
             .setDefaultValue(new ModelNode(10))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition MAX_REDELIVERY_DELAY = create("max-redelivery-delay", ModelType.LONG)
             .setDefaultValue(new ModelNode(0L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition MAX_SIZE_BYTES = create("max-size-bytes", ModelType.LONG)
             .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(BYTES)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition MESSAGE_COUNTER_HISTORY_DAY_LIMIT = create("message-counter-history-day-limit", ModelType.INT)
             .setDefaultValue(new ModelNode(0))
             .setMeasurementUnit(DAYS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition PAGE_MAX_CACHE_SIZE = create("page-max-cache-size", ModelType.INT)
             .setDefaultValue(new ModelNode(5))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition PAGE_SIZE_BYTES = create("page-size-bytes", ModelType.LONG)
             .setDefaultValue(new ModelNode(10485760L))
             .setMeasurementUnit(BYTES)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition REDELIVERY_DELAY = create("redelivery-delay", ModelType.LONG)
             .setDefaultValue(new ModelNode(0L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition REDELIVERY_MULTIPLIER = create("redelivery-multiplier", ModelType.DOUBLE)
             .setDefaultValue(new ModelNode(1.0))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition REDISTRIBUTION_DELAY = create("redistribution-delay", ModelType.LONG)
             .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition SEND_TO_DLA_ON_NO_ROUTE = create("send-to-dla-on-no-route", ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition SLOW_CONSUMER_CHECK_PERIOD = create("slow-consumer-check-period", ModelType.LONG)
             .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MINUTES)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition SLOW_CONSUMER_POLICY = create("slow-consumer-policy", ModelType.STRING)
             .setDefaultValue(new ModelNode(SlowConsumerPolicy.NOTIFY.toString()))
             .setValidator(new EnumValidator<>(SlowConsumerPolicy.class, true, true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition SLOW_CONSUMER_THRESHOLD = create("slow-consumer-threshold", ModelType.LONG)
             .setDefaultValue(new ModelNode(5L))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 

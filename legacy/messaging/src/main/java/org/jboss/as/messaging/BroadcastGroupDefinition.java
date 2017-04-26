@@ -66,7 +66,7 @@ public class BroadcastGroupDefinition extends ModelOnlyResourceDefinition {
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.BROADCAST_GROUP);
 
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = PrimitiveListAttributeDefinition.Builder.of(CONNECTORS, STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setElementValidator(new StringLengthValidator(1))
             .setXmlName(CONNECTOR_REF_STRING)
             .setAttributeMarshaller(new AttributeMarshallers.WrappedListAttributeMarshaller(null))
@@ -78,7 +78,7 @@ public class BroadcastGroupDefinition extends ModelOnlyResourceDefinition {
     public static final SimpleAttributeDefinition BROADCAST_PERIOD = create("broadcast-period", LONG)
             .setDefaultValue(new ModelNode(2000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

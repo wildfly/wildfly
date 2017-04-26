@@ -31,7 +31,6 @@ import org.wildfly.extension.picketlink.common.model.ModelElement;
 import java.util.Set;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**

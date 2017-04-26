@@ -37,12 +37,12 @@ import org.jboss.dmr.ModelType;
 public class JASPIMappingModuleDefinition extends MappingModuleDefinition {
 
     static final SimpleAttributeDefinition LOGIN_MODULE_STACK_REF = new SimpleAttributeDefinitionBuilder(Constants.LOGIN_MODULE_STACK_REF, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setValidator(new StringLengthValidator(1, true))
             .build();
 
     private static final SimpleAttributeDefinition FLAG = new SimpleAttributeDefinitionBuilder(Constants.FLAG, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setValidator(new EnumValidator<ModuleFlag>(ModuleFlag.class, true, true))
             .setAllowExpression(true)
             .build();

@@ -38,27 +38,27 @@ import org.jboss.dmr.ModelType;
  */
 interface Attributes {
     SimpleAttributeDefinition WSDL_HOST = new SimpleAttributeDefinitionBuilder(Constants.WSDL_HOST, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setMinSize(1)
             .setAllowExpression(true)
             .setValidator(new AddressValidator(true, true))
             .build();
 
     SimpleAttributeDefinition WSDL_PORT = new SimpleAttributeDefinitionBuilder(Constants.WSDL_PORT, ModelType.INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setMinSize(1)
             .setValidator(new IntRangeValidator(1, true, true))
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition WSDL_SECURE_PORT = new SimpleAttributeDefinitionBuilder(Constants.WSDL_SECURE_PORT, ModelType.INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setMinSize(1)
             .setValidator(new IntRangeValidator(1, true, true))
             .setAllowExpression(true)
             .build();
     SimpleAttributeDefinition WSDL_URI_SCHEME = new SimpleAttributeDefinitionBuilder(Constants.WSDL_URI_SCHEME, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setMinSize(1)
             .setValidator(new EnumValidator<>(WsdlUriSchema.class, false, false))
             .setAllowExpression(true)
@@ -66,18 +66,18 @@ interface Attributes {
     enum WsdlUriSchema {http, https}
 
     SimpleAttributeDefinition MODIFY_WSDL_ADDRESS = new SimpleAttributeDefinitionBuilder(Constants.MODIFY_WSDL_ADDRESS, ModelType.BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(true))
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition WSDL_PATH_REWRITE_RULE = new SimpleAttributeDefinitionBuilder(Constants.WSDL_PATH_REWRITE_RULE, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(false)
             .build();
 
     SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(Constants.STATISTICS_ENABLED, ModelType.BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
             .build();
@@ -85,16 +85,16 @@ interface Attributes {
     SimpleAttributeDefinition[] SUBSYSTEM_ATTRIBUTES = {MODIFY_WSDL_ADDRESS, WSDL_HOST, WSDL_PORT, WSDL_SECURE_PORT, WSDL_URI_SCHEME, WSDL_PATH_REWRITE_RULE};
 
     SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(Constants.VALUE, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition CLASS = new SimpleAttributeDefinitionBuilder(Constants.CLASS, ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .build();
 
     SimpleAttributeDefinition PROTOCOL_BINDINGS = new SimpleAttributeDefinitionBuilder(Constants.PROTOCOL_BINDINGS, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 }

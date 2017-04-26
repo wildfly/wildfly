@@ -132,7 +132,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
 
         DeprecatedAttribute(String name, InfinispanModel deprecation) {
             this(new SimpleMapAttributeDefinition.Builder(name, true)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setAttributeMarshaller(AttributeMarshallers.PROPERTY_LIST)
                     .setAttributeParser(AttributeParsers.COLLECTION)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES), deprecation);

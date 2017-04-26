@@ -62,54 +62,54 @@ public interface CommonAttributes {
     AttributeDefinition CALL_TIMEOUT = create("call-timeout", LONG)
             .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_CALL_TIMEOUT))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition CALL_FAILOVER_TIMEOUT = create("call-failover-timeout", LONG)
             // ActiveMQClient.DEFAULT_CALL_FAILOVER_TIMEOUT was changed from -1 to 30000 in ARTEMIS-255
             .setDefaultValue(new ModelNode(-1L))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
             .build();
 
     SimpleAttributeDefinition CHECK_PERIOD = create("check-period", LONG)
             .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
     SimpleAttributeDefinition CLIENT_ID = create("client-id", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     AttributeDefinition CONSUMER_COUNT = create("consumer-count", INT)
             .setStorageRuntime()
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     SimpleAttributeDefinition BRIDGE_CONFIRMATION_WINDOW_SIZE = create("confirmation-window-size", INT)
             .setDefaultValue(new ModelNode(FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE))
             .setMeasurementUnit(BYTES)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition CONNECTION_TTL = create("connection-ttl", LONG)
             .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_CONNECTION_TTL))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition DEAD_LETTER_ADDRESS = create("dead-letter-address", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
@@ -119,7 +119,7 @@ public interface CommonAttributes {
             .build();
 
     StringListAttributeDefinition DESTINATION_ENTRIES = new StringListAttributeDefinition.Builder(ENTRIES)
-            .setAllowNull(false)
+            .setRequired(true)
             .setListValidator(noDuplicateElements(new StringLengthValidator(1, false, true)))
             .setAllowExpression(true)
             .setAttributeParser(AttributeParser.STRING_LIST)
@@ -128,7 +128,7 @@ public interface CommonAttributes {
             .build();
 
     StringListAttributeDefinition LEGACY_ENTRIES = new StringListAttributeDefinition.Builder("legacy-entries")
-            .setAllowNull(true)
+            .setRequired(false)
             .setListValidator(noDuplicateElements(new StringLengthValidator(1, false, true)))
             .setAllowExpression(true)
             .setAttributeParser(AttributeParser.STRING_LIST)
@@ -138,7 +138,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition DURABLE = create("durable", BOOLEAN)
             .setDefaultValue(new ModelNode().set(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -149,12 +149,12 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition EXPIRY_ADDRESS = create("expiry-address", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition FILTER = create("filter", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -162,7 +162,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition HA = create("ha", BOOLEAN)
             .setDefaultValue(new ModelNode()
                     .set(ActiveMQClient.DEFAULT_HA))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -174,7 +174,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition JGROUPS_STACK = create("jgroups-stack", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             // do not allow expression as this may reference another resource
             .setAllowExpression(false)
             .setRequires("jgroups-channel")
@@ -182,7 +182,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition JGROUPS_CHANNEL = create("jgroups-channel", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             // do not allow expression as this may reference another resource
             .setAllowExpression(false)
             .setAlternatives("socket-binding")
@@ -192,7 +192,7 @@ public interface CommonAttributes {
     AttributeDefinition MAX_RETRY_INTERVAL = create("max-retry-interval", LONG)
             .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_MAX_RETRY_INTERVAL))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -210,7 +210,7 @@ public interface CommonAttributes {
     AttributeDefinition MIN_LARGE_MESSAGE_SIZE = create("min-large-message-size", INT)
             .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE))
             .setMeasurementUnit(BYTES)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -229,14 +229,14 @@ public interface CommonAttributes {
             .build();
 
     ObjectListAttributeDefinition INCOMING_INTERCEPTORS = ObjectListAttributeDefinition.Builder.of("incoming-interceptors", CommonAttributes.CLASS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(false)
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
             .build();
 
     ObjectListAttributeDefinition OUTGOING_INTERCEPTORS = ObjectListAttributeDefinition.Builder.of("outgoing-interceptors", CommonAttributes.CLASS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(false)
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
@@ -245,14 +245,14 @@ public interface CommonAttributes {
     AttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
             .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_RETRY_INTERVAL))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", BIG_DECIMAL)
             .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -263,13 +263,13 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition SELECTOR = create("selector", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition SOCKET_BINDING = create("socket-binding", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAlternatives(JGROUPS_CHANNEL.getName())
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
@@ -280,7 +280,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition TRANSFORMER_CLASS_NAME = create("transformer-class-name", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(false)
             .setRestartAllServices()
             .build();

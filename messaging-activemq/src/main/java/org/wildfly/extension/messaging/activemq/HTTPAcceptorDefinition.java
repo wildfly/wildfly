@@ -50,11 +50,11 @@ import org.jboss.dmr.ModelType;
 public class HTTPAcceptorDefinition extends PersistentResourceDefinition {
 
     static final SimpleAttributeDefinition HTTP_LISTENER = create(CommonAttributes.HTTP_LISTENER, ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .build();
     static final SimpleAttributeDefinition UPGRADE_LEGACY = create("upgrade-legacy", ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 

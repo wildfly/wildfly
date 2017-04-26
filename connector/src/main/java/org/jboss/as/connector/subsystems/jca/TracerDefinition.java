@@ -62,7 +62,7 @@ public class TracerDefinition extends SimpleResourceDefinition {
     public enum TracerParameters {
         TRACER_ENABLED(SimpleAttributeDefinitionBuilder.create("enabled", ModelType.BOOLEAN)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(new ModelNode().set(false))
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()

@@ -79,7 +79,7 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                 }
             }
             this.definition = ObjectTypeAttributeDefinition.Builder.of(name, definitions.toArray(new AttributeDefinition[size]))
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setDeprecated(InfinispanModel.VERSION_4_0_0.getVersion())
                     .setSuffix("table")
                     .build();

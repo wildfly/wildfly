@@ -41,18 +41,18 @@ import org.jboss.dmr.ModelType;
  */
 public class LoginModuleResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition CODE = new SimpleAttributeDefinitionBuilder(Constants.CODE, ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .setMinSize(1)
             .build();
 
     static final SimpleAttributeDefinition FLAG = new SimpleAttributeDefinitionBuilder(Constants.FLAG, ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .setAllowExpression(true)
             .setValidator(new EnumValidator<ModuleFlag>(ModuleFlag.class, false, true))
             .build();
 
     static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(Constants.MODULE, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(false)
             .setMinSize(1)
             .build();

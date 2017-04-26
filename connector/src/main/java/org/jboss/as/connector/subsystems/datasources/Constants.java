@@ -238,22 +238,22 @@ public class Constants {
 
     static final SimpleAttributeDefinition DEPLOYMENT_NAME = SimpleAttributeDefinitionBuilder.create("deployment-name", ModelType.STRING)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     static final SimpleAttributeDefinition MODULE_SLOT = SimpleAttributeDefinitionBuilder.create("module-slot", ModelType.STRING)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     static final SimpleAttributeDefinition JDBC_COMPLIANT = SimpleAttributeDefinitionBuilder.create("jdbc-compliant", ModelType.BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     @Deprecated
     static final SimpleAttributeDefinition PROFILE = SimpleAttributeDefinitionBuilder.create("profile", ModelType.STRING)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setDeprecated(ModelVersion.create(4, 0, 0))
             .build();
@@ -268,7 +268,7 @@ public class Constants {
             .build();
 
     static SimpleAttributeDefinition DRIVER_CLASS = new SimpleAttributeDefinitionBuilder(DATASOURCE_DRIVER_CLASS_NAME, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setXmlName(DataSource.Tag.DRIVER_CLASS.getLocalName())
             .setRestartAllServices()
@@ -278,7 +278,7 @@ public class Constants {
     static SimpleAttributeDefinition DATASOURCE_CLASS = new SimpleAttributeDefinitionBuilder(DATASOURCE_CLASS_NAME, ModelType.STRING)
             .setXmlName(DataSource.Tag.DATASOURCE_CLASS.getLocalName())
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .build();
 
@@ -333,7 +333,7 @@ public class Constants {
 
     static SimpleAttributeDefinition URL_PROPERTY = new SimpleAttributeDefinitionBuilder(URL_PROPERTY_NAME, ModelType.STRING)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setXmlName(XaDataSource.Tag.URL_PROPERTY.getLocalName())
             .setRestartAllServices()
             .build();
@@ -355,7 +355,7 @@ public class Constants {
             .setXmlName(DataSource.Attribute.ENABLED.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.ENABLED))
-            .setAllowNull(true)
+            .setRequired(false)
             .setDeprecated(ModelVersion.create(3), false)
             .setRestartAllServices()
             .build();
@@ -364,7 +364,7 @@ public class Constants {
             .setXmlName(DataSource.Attribute.CONNECTABLE.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.CONNECTABLE))
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .build();
 
@@ -372,12 +372,12 @@ public class Constants {
             .setXmlName(DataSource.Attribute.ENLISTMENT_TRACE.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     static SimpleAttributeDefinition MCP = new SimpleAttributeDefinitionBuilder(MCP_NAME, ModelType.STRING)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreConcurrentLinkedDequeManagedConnectionPool.class.getName()))
             .setXmlName(DataSource.Attribute.MCP.getLocalName())
             .setRestartAllServices()
@@ -387,7 +387,7 @@ public class Constants {
             .setXmlName(DataSource.Attribute.TRACKING.getLocalName())
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .build();
 
@@ -421,7 +421,7 @@ public class Constants {
     public static SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(PASSWORD_NAME, ModelType.STRING)
             .setXmlName(Credential.Tag.PASSWORD.getLocalName())
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setRequires(USERNAME_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(DS_SECURITY_DEF)
@@ -510,13 +510,13 @@ public class Constants {
 
     static SimpleAttributeDefinition CONNECTION_LISTENER_CLASS = new SimpleAttributeDefinitionBuilder(CONNECTION_LISTENER_CLASS_NAME, ModelType.STRING)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setRestartAllServices()
             .build();
     static PropertiesAttributeDefinition CONNECTION_LISTENER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CONNECTION_LISTENER_PROPERTY_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -575,7 +575,7 @@ public class Constants {
 
     static PropertiesAttributeDefinition STALE_CONNECTION_CHECKER_PROPERTIES = new PropertiesAttributeDefinition.Builder(STALECONNECTIONCHECKER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRequires(STALECONNECTIONCHECKERCLASSNAME_NAME)
             .setRestartAllServices()
@@ -589,7 +589,7 @@ public class Constants {
 
     static PropertiesAttributeDefinition VALID_CONNECTION_CHECKER_PROPERTIES = new PropertiesAttributeDefinition.Builder(VALIDCONNECTIONCHECKER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRequires(VALID_CONNECTION_CHECKER_CLASSNAME_NAME)
             .setRestartAllServices()
@@ -669,7 +669,7 @@ public class Constants {
 
     static PropertiesAttributeDefinition REAUTHPLUGIN_PROPERTIES = new PropertiesAttributeDefinition.Builder(REAUTHPLUGIN_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRequires(REAUTHPLUGIN_CLASSNAME_NAME)
             .setRestartAllServices()
@@ -677,7 +677,7 @@ public class Constants {
 
     static SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -737,7 +737,7 @@ public class Constants {
     static SimpleAttributeDefinition RECOVERY_PASSWORD = new SimpleAttributeDefinitionBuilder(RECOVERY_PASSWORD_NAME, ModelType.STRING)
             .setXmlName(Credential.Tag.PASSWORD.getLocalName())
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setRequires(RECOVERY_USERNAME_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .setRestartAllServices()
@@ -746,7 +746,7 @@ public class Constants {
     static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(RECOVERY_SECURITY_DOMAIN_NAME, ModelType.STRING)
             .setXmlName(Security.Tag.SECURITY_DOMAIN.getLocalName())
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .addAlternatives(RECOVERY_USERNAME_NAME, RECOVERY_AUTHENTICATION_CONTEXT_NAME)
             .setRestartAllServices()
             .build();
@@ -785,7 +785,7 @@ public class Constants {
 
     static PropertiesAttributeDefinition RECOVER_PLUGIN_PROPERTIES = new PropertiesAttributeDefinition.Builder(RECOVER_PLUGIN_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -848,7 +848,7 @@ public class Constants {
 
     static final SimpleAttributeDefinition DRIVER_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_NAME_NAME, ModelType.STRING)
             .setXmlName(Driver.Attribute.NAME.getLocalName())
-            .setAllowNull(false)
+            .setRequired(true)
                     //.setResourceOnly()
             .setRestartAllServices()
             .build();
@@ -859,33 +859,33 @@ public class Constants {
             .build();
 
     static final SimpleAttributeDefinition DRIVER_MAJOR_VERSION = new SimpleAttributeDefinitionBuilder(DRIVER_MAJOR_VERSION_NAME, ModelType.INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setXmlName(Driver.Attribute.MAJOR_VERSION.getLocalName())
             .build();
 
 
     static final SimpleAttributeDefinition DRIVER_MINOR_VERSION = new SimpleAttributeDefinitionBuilder(DRIVER_MINOR_VERSION_NAME, ModelType.INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setXmlName(Driver.Attribute.MINOR_VERSION.getLocalName())
             .build();
     static final SimpleAttributeDefinition DRIVER_CLASS_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_CLASS_NAME_NAME, ModelType.STRING)
             .setXmlName(Driver.Tag.DRIVER_CLASS.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     static final SimpleAttributeDefinition DRIVER_DATASOURCE_CLASS_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_DATASOURCE_CLASS_NAME_NAME, ModelType.STRING)
             .setXmlName(Driver.Tag.DATASOURCE_CLASS.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
 
     static final SimpleAttributeDefinition DRIVER_XA_DATASOURCE_CLASS_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_XA_DATASOURCE_CLASS_NAME_NAME, ModelType.STRING)
             .setXmlName(Driver.Tag.XA_DATASOURCE_CLASS.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 

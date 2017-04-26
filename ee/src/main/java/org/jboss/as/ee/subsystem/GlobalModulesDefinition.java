@@ -102,7 +102,7 @@ public class GlobalModulesDefinition {
                     .build();
 
     public static final AttributeDefinition INSTANCE = ObjectListAttributeDefinition.Builder.of(GLOBAL_MODULES, VALUE_TYPE_AD)
-        .setAllowNull(true)
+        .setRequired(false)
         .build();
 
     public static List<GlobalModule> createModuleList(final OperationContext context, final ModelNode globalMods) throws OperationFailedException {

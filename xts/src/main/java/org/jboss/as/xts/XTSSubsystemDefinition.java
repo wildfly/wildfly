@@ -47,7 +47,7 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition HOST_NAME =
             new SimpleAttributeDefinitionBuilder(CommonAttributes.HOST, ModelType.STRING)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setDefaultValue(new ModelNode("default-host"))
                     .setAllowExpression(true)
                     .setXmlName(Attribute.NAME.getLocalName())
