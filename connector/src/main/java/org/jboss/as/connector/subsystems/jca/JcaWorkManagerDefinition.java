@@ -173,7 +173,7 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
                 .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
                 .build());
 
-        private WmParameters(SimpleAttributeDefinition attribute) {
+        WmParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 

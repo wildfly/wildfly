@@ -334,11 +334,8 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
             @Override
             public boolean rejectOperationParameter(PathAddress address, String attributeName,
                     ModelNode attributeValue, ModelNode operation, TransformationContext context) {
-                if (operation.get(ModelDescriptionConstants.OP).asString().equals(ModelDescriptionConstants.ADD)
-                        && !attributeValue.isDefined()) {
-                    return true;
-                }
-                return false;
+                return operation.get(ModelDescriptionConstants.OP).asString().equals(ModelDescriptionConstants.ADD)
+                        && !attributeValue.isDefined();
             }
 
             @Override

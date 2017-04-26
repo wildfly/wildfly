@@ -234,11 +234,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
                             @Override
                             protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
-                                if (attribute.isDefined()) {
-                                    return true;
-                                } else {
-                                    return false;
-                                }
+                                return attribute.isDefined();
                             }
 
                             @Override
@@ -275,11 +271,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
                                     @Override
                                     protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
-                                        if (attribute.isDefined()) {
-                                            return true;
-                                        } else {
-                                            return false;
-                                        }
+                                        return attribute.isDefined();
                                     }
 
                                     @Override
@@ -330,11 +322,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
                             @Override
                             protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
-                                if (attribute.isDefined()) {
-                                    return true;
-                                } else {
-                                    return false;
-                                }
+                                return attribute.isDefined();
                             }
 
                             @Override
@@ -373,11 +361,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
                                     @Override
                                     protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
-                                        if (attribute.isDefined()) {
-                                            return true;
-                                        } else {
-                                            return false;
-                                        }
+                                        return attribute.isDefined();
                                     }
 
                                     @Override

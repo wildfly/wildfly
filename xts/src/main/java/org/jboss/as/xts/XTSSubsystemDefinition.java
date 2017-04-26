@@ -105,7 +105,6 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 ModelNode url = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get(ModelDescriptionConstants.URL);
                 context.getResult().get(ModelDescriptionConstants.URL).set(url);
-                context.stepCompleted();
             }
         });
     }

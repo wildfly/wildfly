@@ -136,10 +136,10 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
 
         } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES.getName())) {
             Pool pool = dataSource.getPool();
-            if (pool == null || ((DsPool) pool).getCapacity() == null || ((DsPool) pool).getCapacity().getIncrementer() == null)
+            if (pool == null || pool.getCapacity() == null || pool.getCapacity().getIncrementer() == null)
                 return;
 
-            final Map<String, String> propertiesMap = ((DsPool) pool).getCapacity().getIncrementer().getConfigPropertiesMap();
+            final Map<String, String> propertiesMap = pool.getCapacity().getIncrementer().getConfigPropertiesMap();
             if (propertiesMap == null) {
                 return;
             }
@@ -150,10 +150,10 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
 
         } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES.getName())) {
             Pool pool = dataSource.getPool();
-            if (pool == null || ((DsPool) pool).getCapacity() == null || ((DsPool) pool).getCapacity().getDecrementer() == null)
+            if (pool == null || pool.getCapacity() == null || pool.getCapacity().getDecrementer() == null)
                 return;
 
-            final Map<String, String> propertiesMap = ((DsPool) pool).getCapacity().getDecrementer().getConfigPropertiesMap();
+            final Map<String, String> propertiesMap = pool.getCapacity().getDecrementer().getConfigPropertiesMap();
             if (propertiesMap == null) {
                 return;
             }

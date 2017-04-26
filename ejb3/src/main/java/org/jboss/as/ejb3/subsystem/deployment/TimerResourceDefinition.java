@@ -346,7 +346,6 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
                     }
                 }, OperationContext.Stage.RUNTIME);
             }
-            context.stepCompleted();
         }
         protected TimerImpl getTimer(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final T ejbcomponent = parentHandler.getComponent(context, operation);

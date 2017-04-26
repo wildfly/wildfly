@@ -66,7 +66,7 @@ public class JcaBootstrapContextDefinition extends SimpleResourceDefinition {
     }
 
 
-    public static enum BootstrapCtxParameters {
+    public enum BootstrapCtxParameters {
         NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
                 .setAllowExpression(false)
                 .setAllowNull(false)
@@ -83,7 +83,7 @@ public class JcaBootstrapContextDefinition extends SimpleResourceDefinition {
                 .build());
 
 
-        private BootstrapCtxParameters(SimpleAttributeDefinition attribute) {
+        BootstrapCtxParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 

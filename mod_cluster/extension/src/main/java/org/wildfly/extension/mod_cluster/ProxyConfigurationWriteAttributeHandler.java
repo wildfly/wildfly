@@ -62,7 +62,6 @@ public class ProxyConfigurationWriteAttributeHandler extends ReloadRequiredWrite
                     // That is not supported.
                     throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.proxyListAttributeUsage());
                 }
-                context.stepCompleted();
             }
         }, OperationContext.Stage.MODEL);
     }

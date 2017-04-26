@@ -57,7 +57,7 @@ public class JcaArchiveValidationDefinition extends SimpleResourceDefinition {
         }
     }
 
-    public static enum ArchiveValidationParameters {
+    public enum ArchiveValidationParameters {
         ARCHIVE_VALIDATION_ENABLED(SimpleAttributeDefinitionBuilder.create("enabled", ModelType.BOOLEAN)
                 .setAllowExpression(true)
                 .setAllowNull(true)
@@ -83,7 +83,7 @@ public class JcaArchiveValidationDefinition extends SimpleResourceDefinition {
                 .setXmlName("fail-on-warn")
                 .build());
 
-        private ArchiveValidationParameters(SimpleAttributeDefinition attribute) {
+        ArchiveValidationParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 

@@ -193,7 +193,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
             };
         }
 
-        private DWmParameters(AttributeDefinition attribute) {
+        DWmParameters(AttributeDefinition attribute) {
             this.attribute = attribute;
         }
 
@@ -218,15 +218,15 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
         }
     }
 
-    public static enum PolicyValue {
+    public enum PolicyValue {
         NEVER,
         ALWAYS,
-        WATERMARK;
+        WATERMARK
     }
 
-    public static enum SelectorValue {
+    public enum SelectorValue {
         FIRST_AVAILABLE,
         PING_TIME,
-        MAX_FREE_THREADS;
+        MAX_FREE_THREADS
     }
 }

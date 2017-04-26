@@ -52,7 +52,6 @@ public class ElementMaxOccurrenceValidationStepHandler implements ModelValidatio
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validateOccurrence(context, operation);
-        context.stepCompleted();
     }
 
     protected void validateOccurrence(OperationContext context, ModelNode operation) throws OperationFailedException {

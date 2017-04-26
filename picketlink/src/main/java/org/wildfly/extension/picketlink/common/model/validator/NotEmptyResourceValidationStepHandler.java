@@ -43,7 +43,6 @@ public class NotEmptyResourceValidationStepHandler implements ModelValidationSte
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validateChildren(context, operation);
-        context.stepCompleted();
     }
 
     protected void validateChildren(OperationContext context, ModelNode operation) throws OperationFailedException {

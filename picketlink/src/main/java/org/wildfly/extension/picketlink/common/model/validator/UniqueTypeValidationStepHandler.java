@@ -48,15 +48,14 @@ public abstract class UniqueTypeValidationStepHandler implements ModelValidation
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validateType(context, operation);
-        context.stepCompleted();
     }
 
     protected void validateType(OperationContext context, ModelNode operation) throws OperationFailedException {
-        PathAddress pathAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-        String elementName = pathAddress.getLastElement().getValue();
+        PathAddress pathAddress = context.getCurrentAddress();
+        String elementName = context.getCurrentAddressValue();
         ModelNode typeNode = context.readResource(EMPTY_ADDRESS, false).getModel();
         String type = getType(context, typeNode);
-        PathAddress parentAddress = pathAddress.subAddress(0, pathAddress.size() - 1);
+        PathAddress parentAddress = pathAddress.getParent();
         Resource parentResource = context.readResourceFromRoot(parentAddress);
         Set<Resource.ResourceEntry> children = parentResource.getChildren(this.element.getName());
 

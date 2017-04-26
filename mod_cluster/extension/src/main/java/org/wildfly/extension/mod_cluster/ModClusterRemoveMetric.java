@@ -55,7 +55,6 @@ public class ModClusterRemoveMetric implements OperationStepHandler {
             ModelNode targetOperation = Util.createRemoveOperation(parent.append(PathElement.pathElement(LoadMetricDefinition.PATH.getKey(), name)));
             context.addStep(targetOperation, new ReloadRequiredRemoveStepHandler(), OperationContext.Stage.MODEL, true);
         }
-        context.stepCompleted();
     }
 
     private String getMetricName(OperationContext context, String type) {

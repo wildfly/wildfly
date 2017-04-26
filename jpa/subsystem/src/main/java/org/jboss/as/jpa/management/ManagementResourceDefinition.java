@@ -266,7 +266,6 @@ public class ManagementResourceDefinition extends SimpleResourceDefinition {
         protected void executeRuntimeStep(final OperationContext context, final ModelNode operation) throws
                 OperationFailedException {
             handle(context.getResult(), context, operation);
-            context.stepCompleted();
         }
     }
 

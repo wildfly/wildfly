@@ -57,7 +57,6 @@ public final class AlternativeAttributeCheckHandler implements OperationStepHand
         // otherwise when an attribute is written, check that there is no alternative
         boolean alternativeMustBeSet = ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION.equals(operationName);
         checkAlternativeAttribute(context, attributeName, alternativeMustBeSet);
-        context.stepCompleted();
     }
 
     private void checkAlternativeAttribute(OperationContext context, String attributeName, boolean alternativeMustBeSet) throws OperationFailedException {

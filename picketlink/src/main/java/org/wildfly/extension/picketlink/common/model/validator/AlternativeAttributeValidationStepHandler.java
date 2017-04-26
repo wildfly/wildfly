@@ -51,7 +51,6 @@ public class AlternativeAttributeValidationStepHandler implements ModelValidatio
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validateAlternatives(context, operation);
-        context.stepCompleted();
     }
 
     protected void validateAlternatives(OperationContext context, ModelNode operation) throws OperationFailedException {

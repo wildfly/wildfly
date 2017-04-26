@@ -84,7 +84,6 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
         if (ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION.equals(opName)) {
             final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
             executeReadAttribute(attributeName, context, component,  address);
-            context.stepCompleted();
         } else if (ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(opName)) {
             final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
             executeWriteAttribute(attributeName, context, operation, component, address);

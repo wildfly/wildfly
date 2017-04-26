@@ -126,14 +126,9 @@ public class WorkManagerRuntimeAttributeReadHandler implements OperationStepHand
                     } catch (Exception e) {
                         throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToGetMetrics(e.getLocalizedMessage()));
                     }
-
-                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-
-        context.stepCompleted();
-
     }
 
 }
