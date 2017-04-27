@@ -104,6 +104,7 @@ public class TestEntityManager implements InvocationHandler {
             closedByReaperThread.set(true);
         } else {
             System.out.println("EntityManager closed by application");
+            closedByReaperThread.set(false);
         }
         return null;
     }
