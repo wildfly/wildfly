@@ -50,9 +50,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
  */
 class TransactionSubsystem10Parser implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
-    public static final TransactionSubsystem10Parser INSTANCE = new TransactionSubsystem10Parser();
-
-    private TransactionSubsystem10Parser() {
+    TransactionSubsystem10Parser() {
 
     }
 

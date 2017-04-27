@@ -79,12 +79,12 @@ public class ResourceAdaptersExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_1_0.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_1_1.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_2_0.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_3_0.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_4_0.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_5_0.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_1_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_1_1.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_2_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_3_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_4_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_5_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
     }
 
 }

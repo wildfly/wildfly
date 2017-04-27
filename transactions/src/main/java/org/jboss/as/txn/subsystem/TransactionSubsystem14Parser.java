@@ -53,13 +53,15 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
  */
 class TransactionSubsystem14Parser implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
-    public static final TransactionSubsystem14Parser INSTANCE = new TransactionSubsystem14Parser(Namespace.TRANSACTIONS_1_4);
-
     private final Namespace validNamespace;
-    TransactionSubsystem14Parser(Namespace validNamespace) {
+    protected TransactionSubsystem14Parser(Namespace validNamespace) {
         this.validNamespace = validNamespace;
         this.relativeToHasDefaultValue = true;
     }
+    TransactionSubsystem14Parser(){
+        this(Namespace.TRANSACTIONS_1_4);
+    }
+
 
     protected boolean choiceObjectStoreEncountered;
 

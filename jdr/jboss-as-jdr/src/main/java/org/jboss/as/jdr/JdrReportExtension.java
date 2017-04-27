@@ -78,7 +78,7 @@ public class JdrReportExtension implements Extension {
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), JdrReportSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), () -> JdrReportSubsystemParser.INSTANCE);
     }
 
 }

@@ -27,7 +27,6 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.jboss.as.controller.operations.common.Util;
-import org.wildfly.extension.undertow.filters.RequestLimitHandler;
 import org.wildfly.extension.undertow.filters.CustomFilterDefinition;
 import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.ExpressionFilterDefinition;
@@ -35,6 +34,7 @@ import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 import org.wildfly.extension.undertow.filters.GzipFilter;
 import org.wildfly.extension.undertow.filters.ModClusterDefinition;
+import org.wildfly.extension.undertow.filters.RequestLimitHandler;
 import org.wildfly.extension.undertow.filters.ResponseHeaderFilter;
 import org.wildfly.extension.undertow.filters.RewriteFilterDefinition;
 import org.wildfly.extension.undertow.handlers.FileHandler;
@@ -46,10 +46,9 @@ import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerHost;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
-    protected static final UndertowSubsystemParser_3_0 INSTANCE = new UndertowSubsystemParser_3_0();
-    private static final PersistentResourceXMLDescription xmlDescription;
+    private final PersistentResourceXMLDescription xmlDescription;
 
-    static {
+    UndertowSubsystemParser_3_0() {
         xmlDescription = builder(UndertowRootDefinition.INSTANCE.getPathElement(), Namespace.UNDERTOW_3_0.getUriString())
                 .addAttributes(UndertowRootDefinition.DEFAULT_VIRTUAL_HOST, UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER, UndertowRootDefinition.DEFAULT_SERVER, UndertowRootDefinition.INSTANCE_ID, UndertowRootDefinition.DEFAULT_SECURITY_DOMAIN)
                 .addAttribute(UndertowRootDefinition.STATISTICS_ENABLED)
@@ -279,12 +278,9 @@ public class UndertowSubsystemParser_3_0 extends PersistentResourceXMLParser {
                 .build();
     }
 
-        private UndertowSubsystemParser_3_0() {
-        }
-
-        @Override
-        public PersistentResourceXMLDescription getParserDescription() {
-                return xmlDescription;
-        }
+    @Override
+    public PersistentResourceXMLDescription getParserDescription() {
+        return xmlDescription;
+    }
 }
 

@@ -167,7 +167,7 @@ public class MessagingExtension implements Extension {
 
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        subsystemRegistration.registerXMLElementWriter(MessagingSubsystemParser_1_1.INSTANCE);
+        subsystemRegistration.registerXMLElementWriter(new MessagingSubsystemParser_1_1());
 
         boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
@@ -204,7 +204,7 @@ public class MessagingExtension implements Extension {
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_0.NAMESPACE, MessagingSubsystemParser_1_0.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_1.NAMESPACE, MessagingSubsystemParser_1_1.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_0.NAMESPACE, MessagingSubsystemParser_1_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_1.NAMESPACE, MessagingSubsystemParser_1_1::new);
     }
 }

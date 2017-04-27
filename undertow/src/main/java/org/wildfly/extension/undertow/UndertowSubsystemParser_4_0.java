@@ -49,10 +49,9 @@ import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerHost;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
-    protected static final UndertowSubsystemParser_4_0 INSTANCE = new UndertowSubsystemParser_4_0();
-    private static final PersistentResourceXMLDescription xmlDescription;
+    private final PersistentResourceXMLDescription xmlDescription;
 
-    static {
+    UndertowSubsystemParser_4_0() {
         xmlDescription = builder(UndertowRootDefinition.INSTANCE.getPathElement(), Namespace.UNDERTOW_4_0.getUriString())
                 .addAttributes(
                         UndertowRootDefinition.DEFAULT_SERVER,
@@ -341,9 +340,6 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                         operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_HANDLERS)));
                 })
                 .build();
-    }
-
-    private UndertowSubsystemParser_4_0() {
     }
 
     @Override

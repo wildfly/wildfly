@@ -50,8 +50,6 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 public class SecuritySubsystemParser_3_0 extends SecuritySubsystemParser {
 
-    public static final SecuritySubsystemParser_3_0 INSTANCE = new SecuritySubsystemParser_3_0();
-
     protected SecuritySubsystemParser_3_0() {
     }
 

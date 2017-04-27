@@ -46,11 +46,9 @@ import org.wildfly.extension.batch.job.repository.JobRepositoryType;
  */
 class BatchSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-    static final BatchSubsystemParser INSTANCE = new BatchSubsystemParser();
-
     private final ThreadsParser threadsParser;
 
-    public BatchSubsystemParser() {
+    BatchSubsystemParser() {
         threadsParser = ThreadsParser.getInstance();
     }
 

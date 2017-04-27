@@ -123,10 +123,10 @@ import org.jboss.msc.service.ServiceName;
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_0.getUriString(), SecuritySubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_1.getUriString(), SecuritySubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_2.getUriString(), SecuritySubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_3_0.getUriString(), SecuritySubsystemParser_3_0.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_0.getUriString(), SecuritySubsystemParser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_1.getUriString(), SecuritySubsystemParser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_2.getUriString(), SecuritySubsystemParser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_3_0.getUriString(), SecuritySubsystemParser_3_0::new);
     }
 
     private void registerTransformers(SubsystemRegistration subsystemRegistration) {

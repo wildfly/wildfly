@@ -71,7 +71,7 @@ public class AppClientExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Constants.SUBSYSTEM_NAME, AppClientExtension.NAMESPACE_1_0, parser);
+        context.setSubsystemXmlMapping(Constants.SUBSYSTEM_NAME, AppClientExtension.NAMESPACE_1_0, () -> parser);
     }
 
 

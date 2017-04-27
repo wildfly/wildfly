@@ -80,7 +80,7 @@ public class IIOPExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(IIOPRootDefinition.INSTANCE);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        subsystem.registerXMLElementWriter(IIOPSubsystemParser_3.INSTANCE);
+        subsystem.registerXMLElementWriter(new IIOPSubsystemParser_3());
 
         if (context.isRegisterTransformers()) {
             IIOPRootDefinition.registerTransformers(subsystem);
@@ -90,8 +90,8 @@ public class IIOPExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.IIOP_OPENJDK_1_0.getUriString(), IIOPSubsystemParser_1.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.IIOP_OPENJDK_3_0.getUriString(), IIOPSubsystemParser_3.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.IIOP_OPENJDK_1_0.getUriString(), IIOPSubsystemParser_1::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.IIOP_OPENJDK_3_0.getUriString(), IIOPSubsystemParser_3::new);
     }
 
     protected static void registerTransformers(final SubsystemRegistration subsystem) {

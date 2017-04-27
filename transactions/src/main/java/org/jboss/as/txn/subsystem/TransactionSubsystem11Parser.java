@@ -51,9 +51,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
-    public static final TransactionSubsystem11Parser INSTANCE = new TransactionSubsystem11Parser();
-
-    private TransactionSubsystem11Parser() {
+    TransactionSubsystem11Parser() {
 
     }
 
