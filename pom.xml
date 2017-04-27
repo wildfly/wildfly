@@ -5242,6 +5242,13 @@
                 <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
                 <scope>test</scope>
             </dependency>
+            
+            <dependency>
+                <groupId>org.jboss.shrinkwrap.descriptors</groupId>
+                <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
+                <version>${version.org.jboss.shrinkwrap.descriptors}</version>
+                <scope>test</scope>
+            </dependency>
 
             <!-- only still used by JPA tests -->
             <dependency>
