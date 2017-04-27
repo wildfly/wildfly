@@ -82,7 +82,7 @@ public class WebSecurityJaspiWithFailingAuthModuleTestCase {
 
     @Test
     public void testShouldReturnErrorCodeIfTheAuthModuleThrowsException() throws Exception {
-        makeCall("anil", "anil", 401);
+        makeCall("anil", "anil", 403);
     }
 
     protected void makeCall(String user, String pass, int expectedStatusCode) throws Exception {
