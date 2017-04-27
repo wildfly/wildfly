@@ -165,9 +165,11 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
                                 ServerDefinition.JOURNAL_DATASOURCE,
                                 ServerDefinition.JOURNAL_MESSAGES_TABLE,
                                 ServerDefinition.JOURNAL_BINDINGS_TABLE,
+                                ServerDefinition.JOURNAL_JMS_BINDINGS_TABLE,
                                 ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE,
                                 ServerDefinition.JOURNAL_PAGE_STORE_TABLE,
-                                ServerDefinition.JOURNAL_DATABASE))
+                                ServerDefinition.JOURNAL_DATABASE,
+                                ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_MASTER_PATH),
                         new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_COLOCATED_PATH, MessagingExtension.CONFIGURATION_MASTER_PATH),

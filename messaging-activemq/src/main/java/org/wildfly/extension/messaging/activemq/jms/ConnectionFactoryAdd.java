@@ -78,7 +78,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
                 .addDependency(ActiveMQActivationService.getServiceName(activeMQServiceName))
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(activeMQServiceName), JMSServerManager.class, service.getJmsServer())
                 .setInitialMode(Mode.PASSIVE);
-        org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.getExecutorInjector(), false);
+        org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.getExecutorInjector());
         serviceBuilder.install();
     }
 

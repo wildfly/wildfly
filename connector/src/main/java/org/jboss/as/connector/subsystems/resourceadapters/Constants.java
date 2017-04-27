@@ -443,6 +443,7 @@ public class Constants {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setNullSignificant(false)
             .setRestartAllServices()
             .build();
     static SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
@@ -625,6 +626,7 @@ public class Constants {
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .setNullSignificant(false)
             .setRestartAllServices()
             .build();
 

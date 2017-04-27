@@ -22,8 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.security.rolelink;
 
+import java.io.File;
+import java.util.concurrent.Callable;
+
 import javax.naming.InitialContext;
-import javax.security.auth.login.LoginContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -57,6 +59,16 @@ public class SecurityRoleLinkTestCase {
         protected String getSecurityDomainName() {
             return CallerRoleCheckerBean.SECURITY_DOMAIN_NAME;
         }
+
+        @Override
+        protected String getUsersFile() {
+            return new File(SecurityRoleLinkTestCase.class.getResource("users.properties").getFile()).getAbsolutePath();
+        }
+
+        @Override
+        protected String getGroupsFile() {
+            return new File(SecurityRoleLinkTestCase.class.getResource("roles.properties").getFile()).getAbsolutePath();
+        }
     }
 
     @Deployment
@@ -88,9 +100,7 @@ public class SecurityRoleLinkTestCase {
     public void testIsCallerInRole() throws Exception {
         final CallerRoleCheckerBean callerRoleCheckerBean = InitialContext.doLookup("java:module/" + CallerRoleCheckerBean.class.getSimpleName());
 
-        final LoginContext loginContext = Util.getCLMLoginContext("phantom", "pass");
-        loginContext.login();
-        try {
+        final Callable<Void> callable = () -> {
             final String realRoleName = "RealRole";
             final boolean callerInRealRole = callerRoleCheckerBean.isCallerInRole(realRoleName);
             Assert.assertTrue("Caller was expected to be in " + realRoleName + " but wasn't", callerInRealRole);
@@ -102,11 +112,13 @@ public class SecurityRoleLinkTestCase {
             final String invalidRole = "UselessRole";
             final boolean callerInUselessRole = callerRoleCheckerBean.isCallerInRole(invalidRole);
             Assert.assertFalse("Caller wasn't expected to be in " + invalidRole + " but was", callerInUselessRole);
-        }catch (Exception e){
+            return null;
+        };
+        try {
+            Util.switchIdentity("phantom", "pass", callable);
+        } catch (Exception e) {
             Assert.fail(e.toString());
             throw e;
-        } finally {
-            loginContext.logout();
         }
     }
 }

@@ -90,7 +90,7 @@ public class HttpsListenerAdd extends ListenerAdd {
         final InjectedValue<SecurityRealm> securityRealmInjector = new InjectedValue<>();
 
         if (securityRealmRef != null) {
-            SecurityRealm.ServiceUtil.addDependency(serviceBuilder, securityRealmInjector, securityRealmRef, false);
+            SecurityRealm.ServiceUtil.addDependency(serviceBuilder, securityRealmInjector, securityRealmRef);
         }
 
         if (sslContextRef != null) {

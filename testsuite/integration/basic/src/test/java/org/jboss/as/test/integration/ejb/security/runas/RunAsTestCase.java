@@ -28,11 +28,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.Principal;
+import java.util.concurrent.Callable;
+
 import org.jboss.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBAccessException;
 import javax.naming.InitialContext;
-import javax.security.auth.login.LoginContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -103,22 +104,18 @@ public class RunAsTestCase {
 
     @Test
     public void testAuthentication_TwoBeans() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             String[] response = entryBean.doubleWhoAmI();
             assertEquals("user1", response[0]);
             assertEquals("anonymous", response[1]); //Unless a run-as-principal configuration has been done, you cannot expect a principal
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     public void testRunAsICIR_TwoBeans() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        Callable<Void> callable = () -> {
             // TODO - Enable once auth checks are working.
             /*
              * try { whoAmIBean.getCallerPrincipal(); fail("Expected call to whoAmIBean to fail"); } catch (Exception expected)
@@ -137,13 +134,11 @@ public class RunAsTestCase {
             response = entryBean.doubleDoIHaveRole("Role2");
             assertFalse(response[0]);
             assertTrue(response[1]);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
 
-        lc = Util.getCLMLoginContext("user2", "password2");
-        lc.login();
-        try {
+        callable = () -> {
             // Verify the call now passes.
             Principal user = whoAmIBean.getCallerPrincipal();
             assertNotNull(user);
@@ -160,9 +155,9 @@ public class RunAsTestCase {
             response = entryBean.doubleDoIHaveRole("Role2");
             assertTrue(response[0]);
             assertTrue(response[1]);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user2", "password2", callable);
     }
 
     @Test
@@ -180,10 +175,7 @@ public class RunAsTestCase {
      */
     @Test
     public void testTimerNoSecurityAssociationPrincipal() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-
-        try {
+        final Callable<Void> callable = () -> {
             TimerTester test = (TimerTester) ctx.lookup("java:module/" + TimerTesterBean.class.getSimpleName());
 
             assertNotNull(test);
@@ -191,8 +183,8 @@ public class RunAsTestCase {
             Assert.assertTrue(TimerTesterBean.awaitTimerCall());
 
             Assert.assertEquals("user2", TimerTesterBean.calleeCallerPrincipal.iterator().next().getName());
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 }

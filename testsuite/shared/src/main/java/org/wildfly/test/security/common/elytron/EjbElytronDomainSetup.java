@@ -20,11 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.elytron.ejb;
+package org.wildfly.test.security.common.elytron;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -44,6 +43,8 @@ import org.wildfly.extension.elytron.ElytronExtension;
  */
 public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
 
+    private static final String DEFAULT_SECURITY_DOMAIN_NAME = "ejb3-tests";
+
     private PathAddress realmAddress;
 
     private PathAddress domainAddress;
@@ -62,40 +63,54 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
 
     private PathAddress undertowDomainAddress;
 
+    private final String usersFile;
+    private final String groupsFile;
+    private final String securityDomainName;
+
+    public EjbElytronDomainSetup(final String usersFile, final String groupsFile) {
+        this(usersFile, groupsFile, DEFAULT_SECURITY_DOMAIN_NAME);
+    }
+
+    public EjbElytronDomainSetup(final String usersFile, final String groupsFile, final String securityDomainName) {
+        this.usersFile = usersFile;
+        this.groupsFile = groupsFile;
+        this.securityDomainName = securityDomainName;
+    }
+
     protected String getSecurityDomainName() {
-        return "ejb3-tests";
+        return securityDomainName;
     }
 
     protected String getSecurityRealmName() {
-        return "ejb3-UsersRoles";
+        return getSecurityDomainName() + "-ejb3-UsersRoles";
     }
 
     protected String getUndertowDomainName() {
-        return "ejb3-tests";
+        return getSecurityDomainName();
     }
 
     protected String getEjbDomainName() {
-        return "ejb3-tests";
+        return getSecurityDomainName();
     }
 
     protected String getSaslAuthenticationName() {
-        return "ejb3-tests";
+        return getSecurityDomainName();
     }
 
     protected String getRemotingConnectorName() {
-        return "ejb3-tests";
+        return getSecurityDomainName();
     }
 
     protected String getHttpAuthenticationName() {
-        return "ejb3-tests";
+        return getSecurityDomainName();
     }
 
     protected String getUsersFile() {
-        return new File(EjbElytronDomainSetup.class.getResource("users.properties").getFile()).getAbsolutePath();
+        return usersFile;
     }
 
     protected String getGroupsFile() {
-        return new File(EjbElytronDomainSetup.class.getResource("roles.properties").getFile()).getAbsolutePath();
+        return groupsFile;
     }
 
     protected boolean isUsersFilePlain() {
@@ -143,8 +158,8 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         // /subsystem=elytron/properties-realm=UsersRoles:add(users-properties={path=users.properties},groups-properties={path=roles.properties})
         ModelNode addRealm = Util.createAddOperation(realmAddress);
         addRealm.get("users-properties").get("path").set(getUsersFile());
+        addRealm.get("users-properties").get("plain-text").set(isUsersFilePlain()); // not hashed
         addRealm.get("groups-properties").get("path").set(getGroupsFile());
-        addRealm.get("plain-text").set(isUsersFilePlain()); // not hashed
         steps.add(addRealm);
 
         // /subsystem=elytron/security-domain=EjbDomain:add(default-realm=UsersRoles, realms=[{realm=UsersRoles}])
@@ -174,7 +189,7 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         addEjbDomain.get("security-domain").set(getSecurityDomainName());
         steps.add(addEjbDomain);
 
-        steps.add(Util.getWriteAttributeOperation(ejbRemoteAddress, "connector-ref", "ejb3-tests-connector"));
+        steps.add(Util.getWriteAttributeOperation(ejbRemoteAddress, "connector-ref", getSecurityDomainName() + "-connector"));
 
         ModelNode addHttpAuthentication = Util.createAddOperation(httpAuthenticationAddress);
         addHttpAuthentication.get("security-domain").set(getSecurityDomainName());

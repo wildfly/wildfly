@@ -22,10 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
+import java.util.concurrent.Callable;
+
 import javax.ejb.EJBAccessException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.security.auth.login.LoginContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -92,9 +93,7 @@ public class SecurityDDOverrideTestCase {
         partialDDBean.permitAllMethod();
 
         // login as user1 and test
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        Callable<Void> callable = () -> {
             // expected to pass since user1 belongs to Role1
             partialDDBean.toBeInvokedOnlyByRole1();
 
@@ -105,14 +104,12 @@ public class SecurityDDOverrideTestCase {
             } catch (EJBAccessException ejbae) {
                 // expected
             }
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
 
         // login as user2 and test
-        lc = Util.getCLMLoginContext("user2", "password2");
-        lc.login();
-        try {
+        callable = () -> {
             // expected to pass since user2 belongs to Role2
             partialDDBean.toBeInvokedByRole2();
 
@@ -123,9 +120,9 @@ public class SecurityDDOverrideTestCase {
             } catch (EJBAccessException ejbae) {
                 // expected
             }
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user2", "password2", callable);
 
 
     }

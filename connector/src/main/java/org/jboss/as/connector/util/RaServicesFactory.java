@@ -74,7 +74,7 @@ public class RaServicesFactory {
         ServiceBuilder<ResourceAdapterDeployment> builder =
                 Services.addServerExecutorDependency(
                         serviceTarget.addService(serviceName, service),
-                        service.getExecutorServiceInjector(), false)
+                        service.getExecutorServiceInjector())
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, service.getMdrInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class,
                         service.getRaRepositoryInjector())

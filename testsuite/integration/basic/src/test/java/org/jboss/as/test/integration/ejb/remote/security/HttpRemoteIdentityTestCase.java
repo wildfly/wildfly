@@ -61,7 +61,7 @@ import org.wildfly.test.security.common.elytron.EJBApplicationSecurityDomainMapp
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({HttpRemoteIdentityTestCase.SecurityDomainsSetup.class, HttpInvokerServerSetupTask.class})
+@ServerSetup({HttpInvokerServerSetupTask.class, HttpRemoteIdentityTestCase.SecurityDomainsSetup.class})
 public class HttpRemoteIdentityTestCase {
 
     @ContainerResource

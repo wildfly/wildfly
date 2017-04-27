@@ -53,7 +53,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
@@ -86,10 +85,10 @@ public class SwitchIdentityTestCase {
 
     public SwitchIdentityTestCase() {
         passwordsToUse = new HashMap<>();
-        passwordsToUse.put("guest", "b5d048a237bfd2874b6928e1f37ee15e");
-        passwordsToUse.put("user1", "23624d2f74dfcb9688651a066d90b97e");
-        passwordsToUse.put("user2", "ab3f9e12039435236d89de9023a304b7");
-        passwordsToUse.put("remoteejbuser", "d37cd830cc282510807b82c4b861256d");
+        passwordsToUse.put("guest", "guest");
+        passwordsToUse.put("user1", "password1");
+        passwordsToUse.put("user2", "password2");
+        passwordsToUse.put("remoteejbuser", "rem@teejbpasswd1");
     }
 
     // Public methods --------------------------------------------------------
@@ -137,7 +136,6 @@ public class SwitchIdentityTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("WFLY-8630")
     public void testClientLoginModule() throws Exception {
         callUsingClientLoginModule("guest", false, false);
         callUsingClientLoginModule("user1", true, false);
