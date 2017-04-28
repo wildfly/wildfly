@@ -211,9 +211,13 @@ public class JcaExtension implements Extension {
                             ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
                         }
 
-                        if (JcaDistributedWorkManagerDefinition.DWmParameters.POLICY.getAttribute().getName().equals(prop.getName()) && prop.getValue().isDefined()) {
+                        if ((JcaDistributedWorkManagerDefinition.DWmParameters.POLICY.getAttribute().getName().equals(prop.getName()) && prop.getValue().isDefined()) ||
+                                (JcaDistributedWorkManagerDefinition.DWmParameters.POLICY.getAttribute().getName().equals(prop.getName()) && workManager.hasDefined(JcaDistributedWorkManagerDefinition.DWmParameters.POLICY_OPTIONS.getAttribute().getName()))) {
                             writer.writeStartElement(Element.POLICY.getLocalName());
-                            writer.writeAttribute(JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute().getXmlName(), prop.getValue().asString());
+                            if (prop.getValue().isDefined() )
+                                writer.writeAttribute(JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute().getXmlName(), prop.getValue().asString());
+                            else
+                                writer.writeAttribute(JcaDistributedWorkManagerDefinition.DWmParameters.NAME.getAttribute().getXmlName(), JcaDistributedWorkManagerDefinition.DWmParameters.POLICY.getAttribute().getDefaultValue().asString());
                             if (workManager.hasDefined(JcaDistributedWorkManagerDefinition.DWmParameters.POLICY_OPTIONS.getAttribute().getName())) {
                                 for (Property option : workManager.get(JcaDistributedWorkManagerDefinition.DWmParameters.POLICY_OPTIONS.getAttribute().getName()).asPropertyList()) {
                                     writeProperty(writer, option.getName(), option
