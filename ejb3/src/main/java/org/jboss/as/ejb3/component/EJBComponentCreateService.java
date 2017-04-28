@@ -110,6 +110,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
+    private final boolean securityRequired;
+
     /**
      * Construct a new instance.
      *
@@ -208,6 +210,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.moduleName = componentConfiguration.getModuleName();
         this.distinctName = componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName();
         this.shutDownInterceptorFactory = ejbComponentDescription.getShutDownInterceptorFactory();
+        this.securityRequired = ejbComponentDescription.isSecurityRequired();
     }
 
     @Override
@@ -416,5 +419,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public ShutDownInterceptorFactory getShutDownInterceptorFactory() {
         return shutDownInterceptorFactory;
+    }
+
+    public boolean isSecurityRequired() {
+        return securityRequired;
     }
 }

@@ -123,11 +123,13 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                             contextID = deploymentUnit.getParent().getName() + "!" + contextID;
                         }
                         EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) description;
+                        final boolean securityRequired = isExplicitSecurityDomainConfigured();
+                        ejbComponentDescription.setSecurityRequired(securityRequired);
                         if (isSecurityDomainKnown()) {
                             final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(contextID, ejbComponentDescription.isEnableJacc());
                             elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> configuration.addPostConstructInterceptor(elytronInterceptorFactory, priority));
                         } else {
-                            configuration.addPostConstructInterceptor(new SecurityContextInterceptorFactory(isExplicitSecurityDomainConfigured(), false, contextID), InterceptorOrder.View.SECURITY_CONTEXT);
+                            configuration.addPostConstructInterceptor(new SecurityContextInterceptorFactory(securityRequired, false, contextID), InterceptorOrder.View.SECURITY_CONTEXT);
                         }
                     }
                 });
