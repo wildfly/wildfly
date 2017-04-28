@@ -202,6 +202,6 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         parameters = Stream.concat(parameters, this.descriptor.getExtraParameters().stream());
         parameters = Stream.concat(parameters, this.descriptor.getAttributeTranslations().keySet().stream());
         parameters.forEach(attribute -> builder.addParameter(attribute));
-        registration.registerOperationHandler(builder.build(), this);
+        registration.registerOperationHandler(builder.build(), this.descriptor.getAddOperationTransformation().apply(this));
     }
 }

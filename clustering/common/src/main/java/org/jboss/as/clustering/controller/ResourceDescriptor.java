@@ -35,6 +35,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.function.Predicates;
 import org.jboss.as.controller.AttributeDefinition;
@@ -73,6 +74,7 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     private final List<OperationStepHandler> translators = new LinkedList<>();
     private final List<OperationStepHandler> runtimeResourceRegistrations = new LinkedList<>();
     private final Map<CapabilityReferenceRecorder, Function<PathAddress, String>> resourceCapabilityReferences = new HashMap<>();
+    private volatile UnaryOperator<OperationStepHandler> addOperationTransformer = UnaryOperator.identity();
 
     public ResourceDescriptor(ResourceDescriptionResolver resolver) {
         this.resolver = resolver;
@@ -241,6 +243,16 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
 
     public ResourceDescriptor addResourceCapabilityReference(CapabilityReferenceRecorder reference, Function<PathAddress, String> resolver) {
         this.resourceCapabilityReferences.put(reference, resolver);
+        return this;
+    }
+
+    @Override
+    public UnaryOperator<OperationStepHandler> getAddOperationTransformation() {
+        return this.addOperationTransformer;
+    }
+
+    public ResourceDescriptor setAddOperationTransformation(UnaryOperator<OperationStepHandler> transformation) {
+        this.addOperationTransformer = transformation;
         return this;
     }
 }
