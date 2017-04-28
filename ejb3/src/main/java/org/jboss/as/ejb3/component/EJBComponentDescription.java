@@ -277,6 +277,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     private BooleanSupplier outflowSecurityDomainsConfigured;
 
+    private boolean securityRequired;
+
     /**
      * Construct a new instance.
      *
@@ -345,11 +347,13 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     configuration.addTimeoutViewInterceptor(configuration.getNamespaceContextInterceptorFactory(), InterceptorOrder.View.JNDI_NAMESPACE_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
                     EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) description;
+                    final boolean securityRequired = hasBeanLevelSecurityMetadata();
+                    ejbComponentDescription.setSecurityRequired(securityRequired);
                     if (ejbComponentDescription.isSecurityDomainKnown()) {
                         final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(policyContextID, ejbComponentDescription.isEnableJacc());
                         elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> configuration.addTimeoutViewInterceptor(elytronInterceptorFactory, priority));
                     } else if (deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED)) {
-                        configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(hasBeanLevelSecurityMetadata(), policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
+                        configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(securityRequired, policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
                     }
                     final Set<Method> classMethods = configuration.getClassIndex().getClassMethods();
                     for (final Method method : classMethods) {
@@ -1188,4 +1192,13 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
         return interceptorFactories;
     }
+
+    public void setSecurityRequired(final boolean securityRequired) {
+        this.securityRequired = securityRequired;
+    }
+
+    public boolean isSecurityRequired() {
+        return securityRequired;
+    }
+
 }

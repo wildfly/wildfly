@@ -62,7 +62,7 @@ public class FileSystemRealm extends AbstractUserRolesCapableElement implements 
                             name, user.getName(), user.getPassword()));
             cli.sendLine(
                     String.format("/subsystem=elytron/filesystem-realm=%s/identity=%s:add-attribute(name=groups, value=[%s])",
-                            name, user.getName(), user.getPassword(), String.join(",", user.getRoles())));
+                            name, user.getName(), String.join(",", user.getRoles())));
         }
     }
 

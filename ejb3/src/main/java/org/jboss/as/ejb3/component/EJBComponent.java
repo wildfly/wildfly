@@ -135,6 +135,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private final boolean enableJacc;
     private SecurityIdentity incomingRunAsIdentity;
     private final Function<SecurityIdentity, Set<SecurityIdentity>> identityOutflowFunction;
+    private final boolean securityRequired;
 
     /**
      * Construct a new instance.
@@ -191,6 +192,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.enableJacc = ejbComponentCreateService.isEnableJacc();
         this.incomingRunAsIdentity = null;
         this.identityOutflowFunction = ejbComponentCreateService.getIdentityOutflowFunction();
+        this.securityRequired = ejbComponentCreateService.isSecurityRequired();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -275,7 +277,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     public Principal getCallerPrincipal() {
         if (isSecurityDomainKnown()) {
-            return (incomingRunAsIdentity == null) ? securityDomain.getCurrentSecurityIdentity().getPrincipal() : incomingRunAsIdentity.getPrincipal();
+            return getCallerSecurityIdentity().getPrincipal();
         } else if (WildFlySecurityManager.isChecking()) {
             return WildFlySecurityManager.doUnchecked(getCaller);
         } else {
@@ -634,7 +636,14 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     }
 
     private SecurityIdentity getCallerSecurityIdentity() {
-        return (incomingRunAsIdentity == null) ? securityDomain.getCurrentSecurityIdentity() : incomingRunAsIdentity;
+        if (incomingRunAsIdentity != null) {
+            return incomingRunAsIdentity;
+        } else if (securityRequired) {
+            return securityDomain.getCurrentSecurityIdentity();
+        } else {
+            // unsecured EJB
+            return securityDomain.getAnonymousSecurityIdentity();
+        }
     }
 
     public EJBSuspendHandlerService getEjbSuspendHandlerService() {

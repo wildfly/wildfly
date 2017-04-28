@@ -106,7 +106,7 @@ public class HttpRemoteIdentityTestCase {
     public void testUnsecured() throws Exception {
         final IntermediateAccess targetBean = lookupEJB(EntryBean.class, IntermediateAccess.class);
 
-        assertEquals("user1", targetBean.getPrincipalName());
+        assertEquals("anonymous", targetBean.getPrincipalName());
     }
 
     private Context getRemoteHTTPContext() throws Exception {
