@@ -36,6 +36,7 @@ import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.fork.UnknownForkHandler;
 import org.jgroups.protocols.FORK;
 import org.jgroups.stack.Protocol;
+import org.jgroups.stack.ProtocolStack;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
@@ -101,7 +102,10 @@ public class JChannelFactory implements ChannelFactory {
         Stream<Protocol> protocols = Stream.concat(protocolConfigs, relayConfig).map(config -> config.createProtocol(this.configuration));
 
         // Add implicit FORK to the top of the stack
-        JChannel channel = new JChannel(Stream.concat(protocols, Stream.of(fork)).collect(Collectors.toList()));
+        ProtocolStack stack = new ProtocolStack().addProtocols(Stream.concat(protocols, Stream.of(fork)).collect(Collectors.toList()));
+        JChannel channel = new JChannel(false);
+        channel.setProtocolStack(stack);
+        stack.init();
 
         channel.setName(this.configuration.getNodeName());
 
