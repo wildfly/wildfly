@@ -34,7 +34,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -72,7 +71,6 @@ public class OrmTestCase {
     private InitialContext iniCtx;
 
     @Test
-    @Ignore
     public void testOrmXmlDefinedEmployeeEntity() throws Exception {
         SFSBCMT sfsbcmt = lookup("SFSBCMT", SFSBCMT.class);
         Employee emp = sfsbcmt.queryEmployeeName(1);
