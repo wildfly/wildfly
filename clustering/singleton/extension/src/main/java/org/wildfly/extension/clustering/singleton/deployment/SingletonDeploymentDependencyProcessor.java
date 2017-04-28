@@ -42,12 +42,12 @@ public class SingletonDeploymentDependencyProcessor implements DeploymentUnitPro
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = context.getDeploymentUnit();
-        DeploymentUnit parent = unit.getParent();
-        // If this is a sub-deployment, any configuration will be attached to the parent deployment unit
-        SingletonDeploymentConfiguration config = ((parent != null) ? parent : unit).getAttachment(CONFIGURATION_KEY);
-        if (config != null) {
-            CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-            context.addDependency(SingletonServiceNameFactory.SINGLETON_POLICY.getServiceName(support, config.getPolicy()), SingletonDeploymentProcessor.POLICY_KEY);
+        if (unit.getParent() == null) {
+            SingletonDeploymentConfiguration config = unit.getAttachment(CONFIGURATION_KEY);
+            if (config != null) {
+                CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+                context.addDependency(SingletonServiceNameFactory.SINGLETON_POLICY.getServiceName(support, config.getPolicy()), SingletonDeploymentProcessor.POLICY_KEY);
+            }
         }
     }
 

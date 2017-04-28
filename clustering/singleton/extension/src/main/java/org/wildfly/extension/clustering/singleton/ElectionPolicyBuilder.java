@@ -36,7 +36,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
@@ -65,7 +64,7 @@ public abstract class ElectionPolicyBuilder extends ElectionPolicyServiceNamePro
     @Override
     public ServiceBuilder<SingletonElectionPolicy> build(ServiceTarget target) {
         Value<SingletonElectionPolicy> value = () -> this.preferences.isEmpty() ? this.getValue() : new PreferredSingletonElectionPolicy(this.getValue(), this.preferences);
-        ServiceBuilder<SingletonElectionPolicy> builder = target.addService(this.getServiceName(), new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        ServiceBuilder<SingletonElectionPolicy> builder = target.addService(this.getServiceName(), new ValueService<>(value));
         this.dependencies.forEach(dependency -> dependency.register(builder));
         return builder;
     }

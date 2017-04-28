@@ -102,4 +102,9 @@ public class SingletonPolicyBuilder implements ResourceServiceBuilder<SingletonP
                 .requireQuorum(this.quorum)
                 ;
     }
+
+    @Override
+    public String toString() {
+        return this.address.getLastElement().getValue();
+    }
 }
