@@ -124,7 +124,7 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addRequiredChildren(StringTableResourceDefinition.PATH)
                 // Translate deprecated TABLE attribute into separate add table operation
-                .addOperationTranslator(new TableAttributeTranslator(DeprecatedAttribute.TABLE, StringTableResourceDefinition.PATH))
+                .setAddOperationTransformation(new TableAttributeTransformation(DeprecatedAttribute.TABLE, StringTableResourceDefinition.PATH))
             , address -> new StringKeyedJDBCStoreBuilder(address.getParent()), registration -> {
                 registration.registerReadWriteAttribute(DeprecatedAttribute.TABLE.getDefinition(), LEGACY_READ_TABLE_HANDLER, LEGACY_WRITE_TABLE_HANDLER);
 

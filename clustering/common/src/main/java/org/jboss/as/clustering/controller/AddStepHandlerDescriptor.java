@@ -63,13 +63,6 @@ public interface AddStepHandlerDescriptor extends WriteAttributeStepHandlerDescr
     Map<AttributeDefinition, AttributeTranslation> getAttributeTranslations();
 
     /**
-     * Returns a collection of translators for an add operation.
-     * Translators are executed prior to populating the resource model from the add operation parameters.
-     * @return a collection of consumers that translate an add operation
-     */
-    Collection<OperationStepHandler> getOperationTranslators();
-
-    /**
      * Returns a collection of handlers that register runtime resources
      * Runtime resource registrations are executed in a separate MODEL stage step.
      * @return a collection of operation step handlers

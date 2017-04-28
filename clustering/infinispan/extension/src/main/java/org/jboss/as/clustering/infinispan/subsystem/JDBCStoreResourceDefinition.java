@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.jdbc.DatabaseType;
@@ -180,26 +181,33 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         }
     }
 
-    static class TableAttributeTranslator implements OperationStepHandler {
+    static class TableAttributeTransformation implements UnaryOperator<OperationStepHandler> {
         private final org.jboss.as.clustering.controller.Attribute attribute;
         private final PathElement path;
 
-        TableAttributeTranslator(org.jboss.as.clustering.controller.Attribute attribute, PathElement path) {
+        TableAttributeTransformation(org.jboss.as.clustering.controller.Attribute attribute, PathElement path) {
             this.attribute = attribute;
             this.path = path;
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (operation.hasDefined(this.attribute.getName())) {
-                // Translate deprecated table attribute into separate add table operation
-                ModelNode addTableOperation = Util.createAddOperation(context.getCurrentAddress().append(this.path));
-                ModelNode parameters = operation.get(this.attribute.getName());
-                for (Property parameter : parameters.asPropertyList()) {
-                    addTableOperation.get(parameter.getName()).set(parameter.getValue());
+        public OperationStepHandler apply(OperationStepHandler handler) {
+            return (context, operation) -> {
+                if (operation.hasDefined(this.attribute.getName())) {
+                    // Translate deprecated table attribute into separate add table operation
+                    ModelNode addTableOperation = Util.createAddOperation(context.getCurrentAddress().append(this.path));
+                    ModelNode parameters = operation.get(this.attribute.getName());
+                    for (Property parameter : parameters.asPropertyList()) {
+                        addTableOperation.get(parameter.getName()).set(parameter.getValue());
+                    }
+                    context.addStep(addTableOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(this.path), ModelDescriptionConstants.ADD), context.getCurrentStage());
                 }
-                context.addStep(addTableOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(this.path), ModelDescriptionConstants.ADD), context.getCurrentStage());
-            }
+                handler.execute(context, operation);
+            };
+        }
+
+        public UnaryOperator<OperationStepHandler> andThen(UnaryOperator<OperationStepHandler> after) {
+            return handler -> after.apply(this.apply(handler));
         }
     }
 
