@@ -30,6 +30,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentMap;
 
+import org.jboss.as.connector.services.workmanager.StatisticsExecutorImpl;
 import org.jboss.as.connector.subsystems.datasources.WildFlyDataSource;
 import org.jboss.jca.adapters.jdbc.WrapperDataSource;
 import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
@@ -37,6 +38,7 @@ import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.connectionmanager.pool.api.Pool;
 import org.jboss.jca.core.connectionmanager.pool.mcp.ManagedConnectionPool;
 import org.jboss.jca.core.util.Injection;
+import org.jboss.threads.BlockingExecutor;
 
 /**
  * Utility class for JCA integration test
@@ -173,6 +175,24 @@ public class JcaTestsUtil {
             Field delegate = clazz.getDeclaredField("delegate");
             delegate.setAccessible(true);
             return (WrapperDataSource) delegate.get(wfds);
+        } catch (Throwable t) {
+            //
+        }
+        return null;
+    }
+
+    /**
+     * Extract BlockingExecutor from StatisticsExecutorImpl by using reflection
+     *
+     * @param sei
+     * @return BlockingExecutor instance, <code>null</code> if not found
+     */
+    public static BlockingExecutor extractBlockingExecutor(StatisticsExecutorImpl sei) {
+        Class clazz = sei.getClass();
+        try {
+            Field delegate = clazz.getDeclaredField("realExecutor");
+            delegate.setAccessible(true);
+            return (BlockingExecutor) delegate.get(sei);
         } catch (Throwable t) {
             //
         }
