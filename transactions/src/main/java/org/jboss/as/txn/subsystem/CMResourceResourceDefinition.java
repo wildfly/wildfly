@@ -44,27 +44,27 @@ public class CMResourceResourceDefinition extends SimpleResourceDefinition {
 
     static SimpleAttributeDefinition JNDI_NAME =  new SimpleAttributeDefinitionBuilder(CommonAttributes.CM_JNDI_NAME, ModelType.STRING)
             .setAllowExpression(true)
-            .setAllowNull(false)
+            .setRequired(true)
             .setResourceOnly()
             .build();
 
     static SimpleAttributeDefinition CM_TABLE_BATCH_SIZE =  new SimpleAttributeDefinitionBuilder(CommonAttributes.CM_BATCH_SIZE, ModelType.INT)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(CommonAttributes.CM_BATCH_SIZE_DEF_VAL))
             .setXmlName(CommonAttributes.CM_BATCH_SIZE)
             .build();
 
     static SimpleAttributeDefinition CM_TABLE_IMMEDIATE_CLEANUP =  new SimpleAttributeDefinitionBuilder(CommonAttributes.CM_IMMEDIATE_CLEANUP, ModelType.BOOLEAN)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(CommonAttributes.CM_IMMEDIATE_CLEANUP_DEF_VAL))
             .setXmlName(CommonAttributes.CM_IMMEDIATE_CLEANUP)
             .build();
 
     static SimpleAttributeDefinition CM_TABLE_NAME = new SimpleAttributeDefinitionBuilder(CommonAttributes.CM_LOCATION_NAME, ModelType.STRING)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(CommonAttributes.CM_LOCATION_NAME_DEF_VAL))
             .setXmlName(CommonAttributes.CM_LOCATION_NAME)
             .build();

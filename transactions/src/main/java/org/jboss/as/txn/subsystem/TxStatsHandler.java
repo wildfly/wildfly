@@ -135,9 +135,7 @@ public class TxStatsHandler extends AbstractRuntimeOnlyHandler {
             }
             context.getResult().set(result);
         }
-
-        context.stepCompleted();
-    }
+   }
 
     void registerMetrics(final ManagementResourceRegistration resourceRegistration) {
         for (TxStat stat : TxStat.values()) {

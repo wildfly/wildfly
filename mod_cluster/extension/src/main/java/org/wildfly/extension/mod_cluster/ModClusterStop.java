@@ -78,7 +78,5 @@ public class ModClusterStop implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-
-        context.stepCompleted();
-    }
+   }
 }

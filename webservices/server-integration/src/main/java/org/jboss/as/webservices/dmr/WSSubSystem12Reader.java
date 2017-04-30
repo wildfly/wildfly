@@ -34,13 +34,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 class WSSubSystem12Reader extends WSSubsystem11Reader {
-    private static final WSSubSystem12Reader INSTANCE = new WSSubSystem12Reader();
-
-    protected WSSubSystem12Reader() {
-    }
-
-    static WSSubSystem12Reader getInstance() {
-        return INSTANCE;
+    WSSubSystem12Reader() {
     }
 
     @Override

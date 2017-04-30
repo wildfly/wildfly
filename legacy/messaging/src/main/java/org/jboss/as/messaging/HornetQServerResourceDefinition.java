@@ -200,7 +200,6 @@ public class HornetQServerResourceDefinition extends ModelOnlyResourceDefinition
                     MessagingLogger.ROOT_LOGGER.warn(MessagingLogger.ROOT_LOGGER.canNotChangeClusteredAttribute(serverAddress));
                 }
                 // ignore the operation
-                context.stepCompleted();
             }
         };
 

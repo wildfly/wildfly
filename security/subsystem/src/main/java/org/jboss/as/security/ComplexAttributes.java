@@ -42,30 +42,30 @@ import org.jboss.dmr.ModelType;
 public class ComplexAttributes {
 
     static final SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(Constants.PASSWORD, ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .setAllowExpression(true)
             .build();
 
     static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(Constants.TYPE, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     static final SimpleAttributeDefinition URL = new SimpleAttributeDefinitionBuilder(Constants.URL, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
     static final SimpleAttributeDefinition PROVIDER = new SimpleAttributeDefinitionBuilder(Constants.PROVIDER, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
     static final SimpleAttributeDefinition PROVIDER_ARGUMENT = new SimpleAttributeDefinitionBuilder(Constants.PROVIDER_ARGUMENT, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     static final SimpleAttributeDefinition ALGORITHM = new SimpleAttributeDefinitionBuilder(Constants.ALGORITHM, ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 

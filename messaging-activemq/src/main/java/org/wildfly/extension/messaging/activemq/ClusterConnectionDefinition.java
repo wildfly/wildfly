@@ -87,7 +87,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
 
     public static final SimpleAttributeDefinition CHECK_PERIOD = create("check-period", LONG)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterFailureCheckPeriod()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
             .setRestartAllServices()
@@ -96,7 +96,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition CONNECTION_TTL = create("connection-ttl", LONG)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterConnectionTtl()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -124,28 +124,28 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition MESSAGE_LOAD_BALANCING_TYPE = create("message-load-balancing-type", STRING)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterMessageLoadBalancingType()))
             .setValidator(new EnumValidator<>(MessageLoadBalancingType.class, true, true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition INITIAL_CONNECT_ATTEMPTS = create("initial-connect-attempts", INT)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterInitialConnectAttempts()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition MAX_HOPS = create("max-hops", INT)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterMaxHops()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition MAX_RETRY_INTERVAL = create("max-retry-interval", LONG)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterMaxRetryInterval()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
             .setRestartAllServices()
@@ -154,7 +154,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition NOTIFICATION_ATTEMPTS = create("notification-attempts",INT)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterNotificationAttempts()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -162,7 +162,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition NOTIFICATION_INTERVAL = create("notification-interval",LONG)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterNotificationInterval()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -170,7 +170,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition PRODUCER_WINDOW_SIZE = create("producer-window-size", INT)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultBridgeProducerWindowSize()))
             .setMeasurementUnit(BYTES)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -178,28 +178,28 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterRetryInterval()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterReconnectAttempts()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", BIG_DECIMAL)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterRetryIntervalMultiplier()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition USE_DUPLICATE_DETECTION = create("use-duplicate-detection", BOOLEAN)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultClusterDuplicateDetection()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

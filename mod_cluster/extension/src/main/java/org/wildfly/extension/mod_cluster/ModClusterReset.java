@@ -57,7 +57,5 @@ public class ModClusterReset implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-
-        context.stepCompleted();
     }
 }

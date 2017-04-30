@@ -99,7 +99,7 @@ public class JaxrsExtension implements Extension {
      */
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JaxrsExtension.NAMESPACE, parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JaxrsExtension.NAMESPACE, () -> parser);
     }
 
     static class JaxrsSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {

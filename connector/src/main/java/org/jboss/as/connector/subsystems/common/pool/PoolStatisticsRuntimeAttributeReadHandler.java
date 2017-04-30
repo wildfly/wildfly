@@ -60,14 +60,9 @@ public class PoolStatisticsRuntimeAttributeReadHandler implements OperationStepH
                     } catch (Exception e) {
                         throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToGetMetrics(e.getLocalizedMessage()));
                     }
-
-                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-
-        context.stepCompleted();
-
     }
 
 }

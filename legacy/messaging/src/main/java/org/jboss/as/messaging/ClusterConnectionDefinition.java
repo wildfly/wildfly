@@ -63,7 +63,7 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
 
     public static final SimpleAttributeDefinition ALLOW_DIRECT_CONNECTIONS_ONLY = create("allow-direct-connections-only", BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setAlternatives(CommonAttributes.DISCOVERY_GROUP_NAME)
             .setRestartAllServices()
@@ -71,7 +71,7 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
 
     public static final SimpleAttributeDefinition CHECK_PERIOD = create("check-period", LONG)
             .setDefaultValue(new ModelNode(30000L))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
             .setRestartAllServices()
@@ -80,7 +80,7 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
     public static final SimpleAttributeDefinition CONNECTION_TTL = create("connection-ttl", LONG)
             .setDefaultValue(new ModelNode(60000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -90,7 +90,7 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = PrimitiveListAttributeDefinition.Builder.of(STATIC_CONNECTORS, STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setElementValidator(new StringLengthValidator(1))
             .setXmlName(CONNECTOR_REF_STRING)
             .setAttributeMarshaller(new AttributeMarshallers.WrappedListAttributeMarshaller(null))
@@ -99,7 +99,7 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition DISCOVERY_GROUP_NAME = create(CommonAttributes.DISCOVERY_GROUP_NAME, STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAlternatives(ALLOW_DIRECT_CONNECTIONS_ONLY.getName(), CONNECTOR_REFS.getName())
             .setAttributeMarshaller(AttributeMarshallers.DISCOVERY_GROUP_MARSHALLER)
             .setRestartAllServices()
@@ -107,28 +107,28 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
 
     public static final SimpleAttributeDefinition FORWARD_WHEN_NO_CONSUMERS = create("forward-when-no-consumers", BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition INITIAL_CONNECT_ATTEMPTS = create("initial-connect-attempts", INT)
             .setDefaultValue(new ModelNode(-1))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition MAX_HOPS = create("max-hops", INT)
             .setDefaultValue(new ModelNode(1))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition MAX_RETRY_INTERVAL = create("max-retry-interval", LONG)
             .setDefaultValue(new ModelNode(2000L))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
             .setRestartAllServices()
@@ -136,7 +136,7 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
 
     public static final SimpleAttributeDefinition NOTIFICATION_ATTEMPTS = create("notification-attempts", INT)
             .setDefaultValue(new ModelNode(2))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -144,7 +144,7 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
     public static final SimpleAttributeDefinition NOTIFICATION_INTERVAL = create("notification-interval",LONG)
             .setDefaultValue(new ModelNode(1000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -152,28 +152,28 @@ public class ClusterConnectionDefinition extends ModelOnlyResourceDefinition {
     public static final SimpleAttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
             .setDefaultValue(new ModelNode(500L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
             .setDefaultValue(new ModelNode(-1))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", DOUBLE)
             .setDefaultValue(new ModelNode(1.0))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition USE_DUPLICATE_DETECTION = create("use-duplicate-detection", BOOLEAN)
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

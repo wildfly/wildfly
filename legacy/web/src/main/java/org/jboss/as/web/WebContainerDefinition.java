@@ -47,7 +47,7 @@ public class WebContainerDefinition extends ModelOnlyResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setElementValidator(new StringLengthValidator(1, true, true))
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
     protected static final PropertiesAttributeDefinition MIME_MAPPINGS = new PropertiesAttributeDefinition.Builder(Constants.MIME_MAPPING, true)
             .setAllowExpression(true)

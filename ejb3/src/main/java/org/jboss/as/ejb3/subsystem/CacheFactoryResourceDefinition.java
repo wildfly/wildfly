@@ -40,7 +40,7 @@ public class CacheFactoryResourceDefinition extends SimpleResourceDefinition {
 
     public static final StringListAttributeDefinition ALIASES = new StringListAttributeDefinition.Builder(EJB3SubsystemModel.ALIASES)
             .setXmlName(EJB3SubsystemXMLAttribute.ALIASES.getLocalName())
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     public static final SimpleAttributeDefinition PASSIVATION_STORE =

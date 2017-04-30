@@ -47,7 +47,7 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition HOST_NAME =
             new SimpleAttributeDefinitionBuilder(CommonAttributes.HOST, ModelType.STRING)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setDefaultValue(new ModelNode("default-host"))
                     .setAllowExpression(true)
                     .setXmlName(Attribute.NAME.getLocalName())
@@ -105,7 +105,6 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 ModelNode url = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get(ModelDescriptionConstants.URL);
                 context.getResult().get(ModelDescriptionConstants.URL).set(url);
-                context.stepCompleted();
             }
         });
     }

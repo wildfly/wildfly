@@ -54,7 +54,7 @@ class RemotingEjbReceiverChannelCreationOptionResource extends SimpleResourceDef
      * Attribute definition of the channel creation option "type"
      */
     static final SimpleAttributeDefinition CHANNEL_CREATION_OPTION_TYPE = new SimpleAttributeDefinitionBuilder(
-            EJB3SubsystemModel.TYPE, ModelType.STRING, true).setAllowNull(false)
+            EJB3SubsystemModel.TYPE, ModelType.STRING, true).setRequired(true)
             .setValidator(AllowedChannelOptionTypesValidator.INSTANCE).build();
 
     public static final Map<String, AttributeDefinition> ATTRIBUTES;

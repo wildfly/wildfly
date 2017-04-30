@@ -48,7 +48,6 @@ public class RequiredChildValidationStepHandler implements ModelValidationStepHa
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validateRequiredChild(context, operation);
-        context.stepCompleted();
     }
 
     protected void validateRequiredChild(OperationContext context, ModelNode operation) throws OperationFailedException {

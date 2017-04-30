@@ -66,7 +66,6 @@ public class ClearStatisticsHandler implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.stepCompleted();
     }
 }
 

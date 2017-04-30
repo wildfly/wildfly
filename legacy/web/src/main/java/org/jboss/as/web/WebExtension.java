@@ -101,7 +101,7 @@ public class WebExtension extends AbstractLegacyExtension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WebDefinition.INSTANCE);
-        subsystem.registerXMLElementWriter(WebSubsystemParser.getInstance());
+        subsystem.registerXMLElementWriter(new WebSubsystemParser());
 
         // connectors
         final ManagementResourceRegistration connectors = registration.registerSubModel(WebConnectorDefinition.INSTANCE);
@@ -158,7 +158,7 @@ public class WebExtension extends AbstractLegacyExtension {
     protected void initializeLegacyParsers(ExtensionParsingContext context) {
         for (Namespace ns : Namespace.values()) {
             if (ns.getUriString() != null) {
-                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ns.getUriString(), WebSubsystemParser.getInstance());
+                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ns.getUriString(), WebSubsystemParser::new);
             }
         }
         context.setProfileParsingCompletionHandler(new DefaultJsfProfileCompletionHandler());

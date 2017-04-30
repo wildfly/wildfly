@@ -66,7 +66,7 @@ public class ImportJournalOperation extends AbstractRuntimeOnlyHandler {
 
     private static AttributeDefinition FILE = SimpleAttributeDefinitionBuilder.create("file", PathResourceDefinition.PATH)
             .setAllowExpression(false)
-            .setAllowNull(false)
+            .setRequired(true)
             .build();
 
     static final ImportJournalOperation INSTANCE = new ImportJournalOperation();

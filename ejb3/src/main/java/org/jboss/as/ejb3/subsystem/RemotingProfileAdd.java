@@ -74,7 +74,6 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
             // RUNTIME handler for any child resources. Doing this will ensure that child resource handlers don't
             // see the installed services and can just ignore doing any RUNTIME stage work
             context1.addStep(ServiceInstallStepHandler.INSTANCE, OperationContext.Stage.RUNTIME);
-            context1.stepCompleted();
         }, OperationContext.Stage.RUNTIME);
     }
 
@@ -210,7 +209,6 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
             final ModelNode model = Resource.Tools.readModel(resource);
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             RemotingProfileAdd.INSTANCE.installServices(context, address, model);
-            context.stepCompleted();
         }
     }
 

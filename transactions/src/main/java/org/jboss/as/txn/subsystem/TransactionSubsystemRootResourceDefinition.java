@@ -342,7 +342,6 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             ModelNode aliased = getAliasedOperation(operation);
             context.addStep(aliased, getHandlerForOperation(context, operation), OperationContext.Stage.MODEL, true);
-            context.stepCompleted();
         }
 
         private ModelNode getAliasedOperation(ModelNode operation) {

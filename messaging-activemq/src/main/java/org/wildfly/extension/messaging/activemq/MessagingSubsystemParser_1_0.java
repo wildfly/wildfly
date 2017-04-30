@@ -24,19 +24,8 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.ha.LiveOnlyDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ReplicationColocatedDefinition;
@@ -60,16 +49,14 @@ import org.wildfly.extension.messaging.activemq.jms.legacy.LegacyConnectionFacto
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
-public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+public class MessagingSubsystemParser_1_0 extends PersistentResourceXMLParser {
 
     static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:1.0";
 
-    protected static final MessagingSubsystemParser_1_0 INSTANCE = new MessagingSubsystemParser_1_0();
+    private final PersistentResourceXMLDescription xmlDescription;
 
-    private static final PersistentResourceXMLDescription xmlDescription;
-
-    static {
-        xmlDescription = builder(MessagingSubsystemRootResourceDefinition.INSTANCE)
+    MessagingSubsystemParser_1_0(){
+        xmlDescription = builder(MessagingSubsystemRootResourceDefinition.INSTANCE.getPathElement(), NAMESPACE)
                 .addChild(
                         builder(MessagingExtension.SERVER_PATH)
                                 .addAttributes(
@@ -131,7 +118,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                         CommonAttributes.INCOMING_INTERCEPTORS,
                                         CommonAttributes.OUTGOING_INTERCEPTORS)
                                 .addChild(
-                                        builder(LiveOnlyDefinition.INSTANCE)
+                                        builder(LiveOnlyDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         ScaleDownAttributes.SCALE_DOWN,
                                                         ScaleDownAttributes.SCALE_DOWN_CLUSTER_NAME,
@@ -139,14 +126,14 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS))
                                 .addChild(
-                                        builder(ReplicationMasterDefinition.INSTANCE)
+                                        builder(ReplicationMasterDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HAAttributes.CLUSTER_NAME,
                                                         HAAttributes.GROUP_NAME,
                                                         HAAttributes.CHECK_FOR_LIVE_SERVER,
                                                         HAAttributes.INITIAL_REPLICATION_SYNC_TIMEOUT))
                                 .addChild(
-                                        builder(ReplicationSlaveDefinition.INSTANCE)
+                                        builder(ReplicationSlaveDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HAAttributes.CLUSTER_NAME,
                                                         HAAttributes.GROUP_NAME,
@@ -160,7 +147,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS))
                                 .addChild(
-                                        builder(ReplicationColocatedDefinition.INSTANCE)
+                                        builder(ReplicationColocatedDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HAAttributes.REQUEST_BACKUP,
                                                         HAAttributes.BACKUP_REQUEST_RETRIES,
@@ -169,14 +156,14 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         HAAttributes.BACKUP_PORT_OFFSET,
                                                         HAAttributes.EXCLUDED_CONNECTORS)
                                                 .addChild(
-                                                        builder(ReplicationMasterDefinition.CONFIGURATION_INSTANCE)
+                                                        builder(ReplicationMasterDefinition.CONFIGURATION_INSTANCE.getPathElement())
                                                                 .addAttributes(
                                                                         HAAttributes.CLUSTER_NAME,
                                                                         HAAttributes.GROUP_NAME,
                                                                         HAAttributes.CHECK_FOR_LIVE_SERVER,
                                                                         HAAttributes.INITIAL_REPLICATION_SYNC_TIMEOUT))
                                                 .addChild(
-                                                        builder(ReplicationSlaveDefinition.CONFIGURATION_INSTANCE)
+                                                        builder(ReplicationSlaveDefinition.CONFIGURATION_INSTANCE.getPathElement())
                                                                 .addAttributes(
                                                                         HAAttributes.CLUSTER_NAME,
                                                                         HAAttributes.GROUP_NAME,
@@ -190,11 +177,11 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS)))
                                 .addChild(
-                                        builder(SharedStoreMasterDefinition.INSTANCE)
+                                        builder(SharedStoreMasterDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN))
                                 .addChild(
-                                        builder(SharedStoreSlaveDefinition.INSTANCE)
+                                        builder(SharedStoreSlaveDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HAAttributes.ALLOW_FAILBACK,
                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN,
@@ -205,7 +192,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS))
                                 .addChild(
-                                        builder(SharedStoreColocatedDefinition.INSTANCE)
+                                        builder(SharedStoreColocatedDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HAAttributes.REQUEST_BACKUP,
                                                         HAAttributes.BACKUP_REQUEST_RETRIES,
@@ -213,11 +200,11 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         HAAttributes.MAX_BACKUPS,
                                                         HAAttributes.BACKUP_PORT_OFFSET)
                                                 .addChild(
-                                                        builder(SharedStoreMasterDefinition.CONFIGURATION_INSTANCE)
+                                                        builder(SharedStoreMasterDefinition.CONFIGURATION_INSTANCE.getPathElement())
                                                                 .addAttributes(
                                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN))
                                                 .addChild(
-                                                        builder(SharedStoreSlaveDefinition.CONFIGURATION_INSTANCE)
+                                                        builder(SharedStoreSlaveDefinition.CONFIGURATION_INSTANCE.getPathElement())
                                                                 .addAttributes(
                                                                         HAAttributes.ALLOW_FAILBACK,
                                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN,
@@ -228,22 +215,22 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS)))
                                 .addChild(
-                                        builder(PathDefinition.BINDINGS_INSTANCE)
+                                        builder(PathDefinition.BINDINGS_INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         PathDefinition.PATHS.get(CommonAttributes.BINDINGS_DIRECTORY),
                                                         PathDefinition.RELATIVE_TO))
                                 .addChild(
-                                        builder(PathDefinition.JOURNAL_INSTANCE)
+                                        builder(PathDefinition.JOURNAL_INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         PathDefinition.PATHS.get(CommonAttributes.JOURNAL_DIRECTORY),
                                                         PathDefinition.RELATIVE_TO))
                                 .addChild(
-                                        builder(PathDefinition.LARGE_MESSAGES_INSTANCE)
+                                        builder(PathDefinition.LARGE_MESSAGES_INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         PathDefinition.PATHS.get(CommonAttributes.LARGE_MESSAGES_DIRECTORY),
                                                         PathDefinition.RELATIVE_TO))
                                 .addChild(
-                                        builder(PathDefinition.PAGING_INSTANCE)
+                                        builder(PathDefinition.PAGING_INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         PathDefinition.PATHS.get(CommonAttributes.PAGING_DIRECTORY),
                                                         PathDefinition.RELATIVE_TO))
@@ -254,9 +241,9 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         CommonAttributes.DURABLE,
                                                         CommonAttributes.FILTER))
                                 .addChild(
-                                        builder(SecuritySettingDefinition.INSTANCE)
+                                        builder(SecuritySettingDefinition.INSTANCE.getPathElement())
                                                 .addChild(
-                                                        builder(SecurityRoleDefinition.INSTANCE)
+                                                        builder(SecurityRoleDefinition.INSTANCE.getPathElement())
                                                                 .addAttributes(
                                                                         SecurityRoleDefinition.SEND,
                                                                         SecurityRoleDefinition.CONSUME,
@@ -266,7 +253,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                                         SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE,
                                                                         SecurityRoleDefinition.MANAGE)))
                                 .addChild(
-                                        builder(AddressSettingDefinition.INSTANCE)
+                                        builder(AddressSettingDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         CommonAttributes.DEAD_LETTER_ADDRESS,
                                                         CommonAttributes.EXPIRY_ADDRESS,
@@ -289,51 +276,51 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES,
                                                         AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES))
                                 .addChild(
-                                        builder(HTTPConnectorDefinition.INSTANCE)
+                                        builder(HTTPConnectorDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HTTPConnectorDefinition.SOCKET_BINDING,
                                                         HTTPConnectorDefinition.ENDPOINT,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(RemoteTransportDefinition.CONNECTOR_INSTANCE)
+                                        builder(RemoteTransportDefinition.CONNECTOR_INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         RemoteTransportDefinition.SOCKET_BINDING,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(InVMTransportDefinition.CONNECTOR_INSTANCE)
+                                        builder(InVMTransportDefinition.CONNECTOR_INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         InVMTransportDefinition.SERVER_ID,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(GenericTransportDefinition.CONNECTOR_INSTANCE)
+                                        builder(GenericTransportDefinition.CONNECTOR_INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         GenericTransportDefinition.SOCKET_BINDING,
                                                         CommonAttributes.FACTORY_CLASS,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(HTTPAcceptorDefinition.INSTANCE)
+                                        builder(HTTPAcceptorDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HTTPAcceptorDefinition.HTTP_LISTENER,
                                                         HTTPAcceptorDefinition.UPGRADE_LEGACY,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(RemoteTransportDefinition.ACCEPTOR_INSTANCE)
+                                        builder(RemoteTransportDefinition.ACCEPTOR_INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         RemoteTransportDefinition.SOCKET_BINDING,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(InVMTransportDefinition.ACCEPTOR_INSTANCE)
+                                        builder(InVMTransportDefinition.ACCEPTOR_INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         InVMTransportDefinition.SERVER_ID,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(GenericTransportDefinition.ACCEPTOR_INSTANCE)
+                                        builder(GenericTransportDefinition.ACCEPTOR_INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         GenericTransportDefinition.SOCKET_BINDING,
                                                         CommonAttributes.FACTORY_CLASS,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(BroadcastGroupDefinition.INSTANCE)
+                                        builder(BroadcastGroupDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         CommonAttributes.SOCKET_BINDING,
                                                         BroadcastGroupDefinition.JGROUPS_STACK,
@@ -341,7 +328,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         BroadcastGroupDefinition.BROADCAST_PERIOD,
                                                         BroadcastGroupDefinition.CONNECTOR_REFS))
                                 .addChild(
-                                        builder(DiscoveryGroupDefinition.INSTANCE)
+                                        builder(DiscoveryGroupDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         CommonAttributes.SOCKET_BINDING,
                                                         DiscoveryGroupDefinition.JGROUPS_STACK,
@@ -349,7 +336,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         DiscoveryGroupDefinition.REFRESH_TIMEOUT,
                                                         DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT))
                                 .addChild(
-                                        builder(ClusterConnectionDefinition.INSTANCE)
+                                        builder(ClusterConnectionDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         ClusterConnectionDefinition.ADDRESS,
                                                         ClusterConnectionDefinition.CONNECTOR_NAME,
@@ -373,7 +360,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY,
                                                         ClusterConnectionDefinition.DISCOVERY_GROUP_NAME))
                                 .addChild(
-                                        builder(GroupingHandlerDefinition.INSTANCE)
+                                        builder(GroupingHandlerDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         GroupingHandlerDefinition.TYPE,
                                                         GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS,
@@ -381,7 +368,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         GroupingHandlerDefinition.GROUP_TIMEOUT,
                                                         GroupingHandlerDefinition.REAPER_PERIOD))
                                 .addChild(
-                                        builder(DivertDefinition.INSTANCE)
+                                        builder(DivertDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         DivertDefinition.ROUTING_NAME,
                                                         DivertDefinition.ADDRESS,
@@ -390,7 +377,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         CommonAttributes.TRANSFORMER_CLASS_NAME,
                                                         DivertDefinition.EXCLUSIVE))
                                 .addChild(
-                                        builder(BridgeDefinition.INSTANCE)
+                                        builder(BridgeDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         BridgeDefinition.QUEUE_NAME,
                                                         BridgeDefinition.FORWARDING_ADDRESS,
@@ -413,7 +400,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         BridgeDefinition.CONNECTOR_REFS,
                                                         BridgeDefinition.DISCOVERY_GROUP_NAME))
                                 .addChild(
-                                        builder(ConnectorServiceDefinition.INSTANCE)
+                                        builder(ConnectorServiceDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         CommonAttributes.FACTORY_CLASS,
                                                         CommonAttributes.PARAMS))
@@ -471,7 +458,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         // regular
                                                         ConnectionFactoryAttributes.Regular.FACTORY_TYPE))
                                 .addChild(
-                                        builder(LegacyConnectionFactoryDefinition.INSTANCE)
+                                        builder(LegacyConnectionFactoryDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         LegacyConnectionFactoryDefinition.ENTRIES,
                                                         LegacyConnectionFactoryDefinition.DISCOVERY_GROUP,
@@ -511,7 +498,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         LegacyConnectionFactoryDefinition.TRANSACTION_BATCH_SIZE,
                                                         LegacyConnectionFactoryDefinition.USE_GLOBAL_POOLS))
                                 .addChild(
-                                        builder(PooledConnectionFactoryDefinition.INSTANCE)
+                                        builder(PooledConnectionFactoryDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         ConnectionFactoryAttributes.Common.ENTRIES,
                                                         // common
@@ -566,7 +553,7 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                                                         ConnectionFactoryAttributes.Pooled.INITIAL_MESSAGE_PACKET_SIZE,
                                                         ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS)))
                 .addChild(
-                        builder(JMSBridgeDefinition.INSTANCE)
+                        builder(JMSBridgeDefinition.INSTANCE.getPathElement())
                                 .addAttributes(
                                         JMSBridgeDefinition.MODULE,
                                         JMSBridgeDefinition.QUALITY_OF_SERVICE,
@@ -591,18 +578,8 @@ public class MessagingSubsystemParser_1_0 implements XMLStreamConstants, XMLElem
                 .build();
     }
 
-    private MessagingSubsystemParser_1_0() {
-    }
-
     @Override
-    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        ModelNode model = new ModelNode();
-        model.get(MessagingSubsystemRootResourceDefinition.INSTANCE.getPathElement().getKeyValuePair()).set(context.getModelNode());
-        xmlDescription.persist(writer, model, NAMESPACE);
-    }
-
-    @Override
-    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-        xmlDescription.parse(reader, PathAddress.EMPTY_ADDRESS, list);
+    public PersistentResourceXMLDescription getParserDescription() {
+        return xmlDescription;
     }
 }

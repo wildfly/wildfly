@@ -62,7 +62,7 @@ public class CmpExtension extends AbstractLegacyExtension {
 
         final SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
-        subsystemRegistration.registerXMLElementWriter(CmpSubsystem11Parser.INSTANCE);
+        subsystemRegistration.registerXMLElementWriter(new CmpSubsystem11Parser());
 
         final ManagementResourceRegistration subsystem =
                 subsystemRegistration.registerSubsystemModel(CMPSubsystemRootResourceDefinition.INSTANCE);
@@ -96,8 +96,8 @@ public class CmpExtension extends AbstractLegacyExtension {
     @Override
     protected void initializeLegacyParsers(final ExtensionParsingContext context) {
 
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CMP_1_0.getUriString(), CmpSubsystem10Parser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CMP_1_1.getUriString(), CmpSubsystem11Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CMP_1_0.getUriString(), CmpSubsystem10Parser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CMP_1_1.getUriString(), CmpSubsystem11Parser::new);
     }
 
 

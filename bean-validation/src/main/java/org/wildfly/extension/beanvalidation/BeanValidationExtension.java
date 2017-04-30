@@ -67,6 +67,6 @@ public class BeanValidationExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.BEAN_VALIDATION_1_0.getUriString(), BeanValidationSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.BEAN_VALIDATION_1_0.getUriString(), () -> BeanValidationSubsystemParser.INSTANCE);
     }
 }

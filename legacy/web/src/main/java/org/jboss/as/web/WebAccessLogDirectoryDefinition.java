@@ -38,7 +38,7 @@ public class WebAccessLogDirectoryDefinition extends ModelOnlyResourceDefinition
     protected static final SimpleAttributeDefinition RELATIVE_TO =
             new SimpleAttributeDefinitionBuilder(Constants.RELATIVE_TO, ModelType.STRING)
                     .setXmlName(Constants.RELATIVE_TO)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
                     .setDefaultValue(new ModelNode("jboss.server.log.dir"))
@@ -46,7 +46,7 @@ public class WebAccessLogDirectoryDefinition extends ModelOnlyResourceDefinition
     protected static final SimpleAttributeDefinition PATH =
             new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING)
                     .setXmlName(Constants.PATH)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true, true))

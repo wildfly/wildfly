@@ -60,9 +60,6 @@ public class JPAExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jpa";
 
-    private static final JPASubsystemElementParser1_1 parser1_1 = new JPASubsystemElementParser1_1();
-    private static final JPASubsystemElementParser1_0 parser1_0 = new JPASubsystemElementParser1_0();
-
     private static final String RESOURCE_NAME = JPAExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     public static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
@@ -80,7 +77,7 @@ public class JPAExtension implements Extension {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration nodeRegistration = registration.registerSubsystemModel(JPADefinition.INSTANCE);
         nodeRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        registration.registerXMLElementWriter(parser1_1);
+        registration.registerXMLElementWriter(new JPASubsystemElementParser1_1());
 
 
 
@@ -97,8 +94,8 @@ public class JPAExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JPA_1_1.getUriString(), parser1_1);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JPA_1_0.getUriString(), parser1_0);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JPA_1_1.getUriString(), JPASubsystemElementParser1_1::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JPA_1_0.getUriString(), JPASubsystemElementParser1_0::new);
     }
 
     static class JPASubsystemElementParser1_1 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,

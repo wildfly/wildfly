@@ -101,7 +101,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
     private static final AttributeDefinition OTHER_QUEUE_NAME = createNonEmptyStringAttribute("other-queue-name");
     private static final AttributeDefinition REJECT_DUPLICATES = SimpleAttributeDefinitionBuilder.create("reject-duplicates", BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
     private static final AttributeDefinition NEW_PRIORITY = SimpleAttributeDefinitionBuilder.create("new-priority", INT)
             .setValidator(PRIORITY_VALIDATOR)

@@ -81,7 +81,7 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .build();
 
     private static final AttributeDefinition METHODS = ObjectTypeAttributeDefinition.Builder.of("methods", EXECUTION_TIME, INVOCATIONS, WAIT_TIME)
-            .setAllowNull(true)
+            .setRequired(false)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
@@ -91,7 +91,7 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .build();
 
     public static final ListAttributeDefinition DECLARED_ROLES = new PrimitiveListAttributeDefinition.Builder("declared-roles", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setElementValidator(new StringLengthValidator(1))
             .setStorageRuntime()
             .build();

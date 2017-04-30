@@ -69,7 +69,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition DEFAULT_DATA_STORE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_DATA_STORE, ModelType.STRING)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setAllowNull(false)
+                    .setRequired(true)
                     //.setDefaultValue(new ModelNode("default-file-store")) //for backward compatibility!
                     .build();
 

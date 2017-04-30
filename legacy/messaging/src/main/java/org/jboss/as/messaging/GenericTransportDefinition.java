@@ -37,7 +37,7 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 public class GenericTransportDefinition extends AbstractTransportDefinition {
 
     public static final SimpleAttributeDefinition SOCKET_BINDING = create("socket-binding", STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();

@@ -53,7 +53,7 @@ public class DiscoveryGroupDefinition extends ModelOnlyResourceDefinition {
     public static final SimpleAttributeDefinition REFRESH_TIMEOUT = create("refresh-timeout", ModelType.LONG)
             .setDefaultValue(new ModelNode(10000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -61,7 +61,7 @@ public class DiscoveryGroupDefinition extends ModelOnlyResourceDefinition {
     public static final SimpleAttributeDefinition INITIAL_WAIT_TIMEOUT = create("initial-wait-timeout", ModelType.LONG)
             .setDefaultValue(new ModelNode(10000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

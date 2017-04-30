@@ -48,9 +48,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 */
 class EESubsystemParser10 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
-    public static final EESubsystemParser10 INSTANCE = new EESubsystemParser10();
-
-    private EESubsystemParser10() {
+    EESubsystemParser10() {
 
     }
 

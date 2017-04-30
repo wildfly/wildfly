@@ -57,7 +57,5 @@ public class ModClusterRefresh implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-
-        context.stepCompleted();
-    }
+  }
 }

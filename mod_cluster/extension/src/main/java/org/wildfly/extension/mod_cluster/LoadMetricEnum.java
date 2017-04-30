@@ -49,7 +49,7 @@ public enum LoadMetricEnum {
     private final String type;
     private final Class<? extends LoadMetric> loadMetricClass;
 
-    private LoadMetricEnum(String type, Class<? extends LoadMetric> loadMetricClass) {
+    LoadMetricEnum(String type, Class<? extends LoadMetric> loadMetricClass) {
         this.type = type;
         this.loadMetricClass = loadMetricClass;
     }

@@ -86,13 +86,8 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
         XMLElementWriter<SubsystemMarshallingContext> {
 
-    private static final WebSubsystemParser INSTANCE = new WebSubsystemParser();
     private static final String RULE_PREFIX = "rule-";
     private static final String CONDITION_PREFIX = "condition-";
-
-    static WebSubsystemParser getInstance() {
-        return INSTANCE;
-    }
 
     /**
      * {@inheritDoc}

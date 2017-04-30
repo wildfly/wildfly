@@ -101,7 +101,6 @@ public abstract class PoolOperations implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.stepCompleted();
     }
 
     protected abstract ModelNode invokeCommandOn(Pool pool, Object... parameters) throws Exception;

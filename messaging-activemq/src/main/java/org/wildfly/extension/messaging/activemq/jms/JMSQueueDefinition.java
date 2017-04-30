@@ -78,12 +78,12 @@ public class JMSQueueDefinition extends PersistentResourceDefinition {
             .build();
 
     static final AttributeDefinition DEAD_LETTER_ADDRESS = create("dead-letter-address", STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setStorageRuntime()
             .build();
 
     static final AttributeDefinition EXPIRY_ADDRESS = create("expiry-address", STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setStorageRuntime()
             .build();
 

@@ -110,7 +110,7 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
     public static final AttributeDefinition CONNECTION_ID = createNonEmptyStringAttribute("connection-id");
     public static final AttributeDefinition REQUIRED_IP_ADDRESS = createNonEmptyStringAttribute("ip-address");
     public static final AttributeDefinition OPTIONAL_IP_ADDRESS = SimpleAttributeDefinitionBuilder.create("ip-address", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .build();
 

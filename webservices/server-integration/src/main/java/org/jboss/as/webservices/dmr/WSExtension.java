@@ -111,7 +111,7 @@ public final class WSExtension implements Extension {
     public void initialize(final ExtensionContext context) {
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        subsystem.registerXMLElementWriter(WSSubsystemWriter.getInstance());
+        subsystem.registerXMLElementWriter(new WSSubsystemWriter());
         // ws subsystem
         ResourceBuilder propertyResource = ResourceBuilder.Factory.create(PROPERTY_PATH, getResourceDescriptionResolver(Constants.PROPERTY))
                 .setAddOperation(PropertyAdd.INSTANCE)
@@ -186,10 +186,10 @@ public final class WSExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_0.getUriString(), WSSubsystemLegacyReader.getInstance());
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_1.getUriString(), WSSubsystem11Reader.getInstance());
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_2.getUriString(), WSSubSystem12Reader.getInstance());
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_2_0.getUriString(), WSSubSystem20Reader.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_0.getUriString(), WSSubsystemLegacyReader::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_1.getUriString(), WSSubsystem11Reader::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_2.getUriString(), WSSubSystem12Reader::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_2_0.getUriString(), WSSubSystem20Reader::new);
     }
 
     private void registerTransformers1_2_0(SubsystemRegistration registration) {

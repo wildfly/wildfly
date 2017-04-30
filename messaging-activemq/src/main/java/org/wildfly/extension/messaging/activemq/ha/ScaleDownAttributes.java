@@ -55,7 +55,7 @@ public class ScaleDownAttributes {
     public static SimpleAttributeDefinition SCALE_DOWN = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SCALE_DOWN, BOOLEAN)
             .setAttributeGroup(CommonAttributes.SCALE_DOWN)
             .setXmlName(CommonAttributes.ENABLED)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -63,7 +63,7 @@ public class ScaleDownAttributes {
     public static SimpleAttributeDefinition SCALE_DOWN_CLUSTER_NAME = SimpleAttributeDefinitionBuilder.create("scale-down-cluster-name", STRING)
             .setAttributeGroup(CommonAttributes.SCALE_DOWN)
             .setXmlName(CommonAttributes.CLUSTER_NAME)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -71,7 +71,7 @@ public class ScaleDownAttributes {
     public static SimpleAttributeDefinition SCALE_DOWN_GROUP_NAME = SimpleAttributeDefinitionBuilder.create("scale-down-group-name", STRING)
             .setAttributeGroup(CommonAttributes.SCALE_DOWN)
             .setXmlName(CommonAttributes.GROUP_NAME)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
