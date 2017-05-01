@@ -311,6 +311,12 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                         break;
                     }
                 }
+                case SOCKET_DISCOVERY_PROTOCOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
+                        this.parseSocketDiscoveryProtocol(reader, address, operations);
+                        break;
+                    }
+                }
                 case JDBC_PROTOCOL: {
                     if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
                         this.parseJDBCProtocol(reader, address, operations);
@@ -442,6 +448,22 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
     }
 
+    private void parseSocketDiscoveryProtocol(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+
+        String type = require(reader, XMLAttribute.TYPE);
+        PathAddress address = stackAddress.append(ProtocolResourceDefinition.pathElement(type));
+        ModelNode operation = Util.createAddOperation(address);
+        operations.put(address, operation);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            this.parseSocketDiscoveryProtocolAttribute(reader, i, operation);
+        }
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            this.parseProtocolElement(reader, address, operations);
+        }
+    }
+
     private void parseJDBCProtocol(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String type = require(reader, XMLAttribute.TYPE);
@@ -495,6 +517,19 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         switch (attribute) {
             case SOCKET_BINDING: {
                 readAttribute(reader, index, operation, SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING);
+                break;
+            }
+            default: {
+                parseProtocolAttribute(reader, index, operation);
+            }
+        }
+    }
+
+    private void parseSocketDiscoveryProtocolAttribute(XMLExtendedStreamReader reader, int index, ModelNode operation) throws XMLStreamException {
+        XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(index));
+        switch (attribute) {
+            case OUTBOUND_SOCKET_BINDINGS: {
+                readAttribute(reader, index, operation, SocketDiscoveryProtocolResourceDefinition.Attribute.OUTBOUND_SOCKET_BINDINGS);
                 break;
             }
             default: {

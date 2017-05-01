@@ -47,6 +47,7 @@ public enum XMLAttribute {
     MODULE(AbstractProtocolResourceDefinition.Attribute.MODULE),
     NAME(ModelDescriptionConstants.NAME),
     @Deprecated OOB_EXECUTOR(TransportResourceDefinition.ThreadingAttribute.OOB_EXECUTOR),
+    OUTBOUND_SOCKET_BINDINGS(SocketDiscoveryProtocolResourceDefinition.Attribute.OUTBOUND_SOCKET_BINDINGS),
     QUEUE_LENGTH(ThreadPoolResourceDefinition.DEFAULT.getQueueLength()),
     RACK(TransportResourceDefinition.Attribute.RACK),
     @Deprecated SHARED(TransportResourceDefinition.Attribute.SHARED),
