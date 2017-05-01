@@ -50,6 +50,7 @@ public enum XMLElement {
     RELAY(RelayResourceDefinition.WILDCARD_PATH),
     REMOTE_SITE(RemoteSiteResourceDefinition.WILDCARD_PATH),
     SOCKET_PROTOCOL("socket-protocol"),
+    SOCKET_DISCOVERY_PROTOCOL("socket-discovery-protocol"),
     STACK(StackResourceDefinition.WILDCARD_PATH),
     STACKS("stacks"),
     TIMER_THREAD_POOL("timer-thread-pool"),
