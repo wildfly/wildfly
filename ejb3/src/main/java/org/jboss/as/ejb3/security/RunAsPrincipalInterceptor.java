@@ -30,6 +30,8 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.wildfly.common.Assert;
+import org.wildfly.security.auth.server.RealmIdentity;
+import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.authz.AuthorizationFailureException;
@@ -68,10 +70,14 @@ public class RunAsPrincipalInterceptor implements Interceptor {
                     newIdentity = currentIdentity.createRunAsAnonymous(false);
                 }
             } else {
-                try {
-                    newIdentity = currentIdentity.createRunAsIdentity(runAsPrincipal);
-                } catch (AuthorizationFailureException ex) {
-                    newIdentity = currentIdentity.createRunAsIdentity(runAsPrincipal, false);
+                if (! runAsPrincipalExists(securityDomain, runAsPrincipal)) {
+                    newIdentity = securityDomain.createAdHocIdentity(runAsPrincipal);
+                } else {
+                    try {
+                        newIdentity = currentIdentity.createRunAsIdentity(runAsPrincipal);
+                    } catch (AuthorizationFailureException ex) {
+                        newIdentity = currentIdentity.createRunAsIdentity(runAsPrincipal, false);
+                    }
                 }
             }
             ejbComponent.setIncomingRunAsIdentity(currentIdentity);
@@ -89,6 +95,18 @@ public class RunAsPrincipalInterceptor implements Interceptor {
             }
         } finally {
             ejbComponent.setIncomingRunAsIdentity(oldIncomingRunAsIdentity);
+        }
+    }
+
+    private boolean runAsPrincipalExists(final SecurityDomain securityDomain, final String runAsPrincipal) throws RealmUnavailableException {
+        RealmIdentity realmIdentity = null;
+        try {
+            realmIdentity = securityDomain.getIdentity(runAsPrincipal);
+            return realmIdentity.exists();
+        } finally {
+            if (realmIdentity != null) {
+                realmIdentity.dispose();
+            }
         }
     }
 }
