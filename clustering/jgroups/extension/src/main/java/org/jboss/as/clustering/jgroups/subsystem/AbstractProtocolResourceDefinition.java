@@ -24,6 +24,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.AttributeMarshallers;
@@ -41,7 +42,10 @@ import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -163,6 +167,31 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
         }
 
         PropertyResourceDefinition.buildTransformation(version, builder);
+    }
+
+    static class LegacyAddOperationTransformation implements UnaryOperator<OperationStepHandler> {
+        private final Predicate<ModelNode> legacy;
+
+        LegacyAddOperationTransformation(Predicate<ModelNode> legacy) {
+            this.legacy = legacy;
+        }
+
+        @Override
+        public OperationStepHandler apply(OperationStepHandler handler) {
+            return (context, operation) -> {
+                if (this.legacy.test(operation)) {
+                    PathElement path = context.getCurrentAddress().getLastElement();
+                    String key = path.getKey();
+                    // This is a legacy add operation - process it using the generic handler
+                    Operations.setPathAddress(operation, context.getCurrentAddress().getParent().append(PathElement.pathElement(key, String.join(".", org.jgroups.conf.ProtocolConfiguration.protocol_prefix, path.getValue()))));
+                    OperationStepHandler genericHandler = context.getResourceRegistration().getParent().getOperationHandler(PathAddress.pathAddress(PathElement.pathElement(key)), ModelDescriptionConstants.ADD);
+                    // Process this step first to preserve protocol order
+                    context.addStep(operation, genericHandler, OperationContext.Stage.MODEL, true);
+                } else {
+                    handler.execute(context, operation);
+                }
+            };
+        }
     }
 
     private final Consumer<ResourceDescriptor> descriptorConfigurator;

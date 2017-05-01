@@ -117,10 +117,6 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
 
     @Override
     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        // Perform operation translation
-        for (OperationStepHandler translator : this.descriptor.getOperationTranslators()) {
-            translator.execute(context, operation);
-        }
         // Validate extra add operation parameters
         for (AttributeDefinition definition : this.descriptor.getExtraParameters()) {
             definition.validateOperation(operation);
@@ -202,6 +198,6 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         parameters = Stream.concat(parameters, this.descriptor.getExtraParameters().stream());
         parameters = Stream.concat(parameters, this.descriptor.getAttributeTranslations().keySet().stream());
         parameters.forEach(attribute -> builder.addParameter(attribute));
-        registration.registerOperationHandler(builder.build(), this);
+        registration.registerOperationHandler(builder.build(), this.descriptor.getAddOperationTransformation().apply(this));
     }
 }
