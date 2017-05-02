@@ -22,6 +22,7 @@
 
 package org.jboss.as.txn.logging;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
@@ -234,7 +235,7 @@ public interface TransactionLogger extends BasicLogger {
     @Message(id = 33, value = "Only one of %s and %s can be 'true'.")
     OperationFailedException onlyOneCanBeTrue(String attrOne, String attrTwo);
 
-    @LogMessage(level = WARN)
+    @LogMessage(level = DEBUG)
     @Message(id = 34, value = "relative_to property of the object-store is set to the default value with jboss.server.data.dir")
     void objectStoreRelativeToIsSetToDefault();
 
