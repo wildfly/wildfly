@@ -387,4 +387,7 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = WARN)
     void configurationOptionIgnoredWhenUsingElytron(String option);
 
+    @Message(id = 95, value = "the path ['%s'] doesn't exist on file system")
+    String unableAddHandlerForPath(String path);
+
 }
