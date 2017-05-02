@@ -76,7 +76,7 @@ public class SocketDiscoveryProtocolResourceDefinition<P extends Protocol & Sock
     SocketDiscoveryProtocolResourceDefinition(String name, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
-                .setAddOperationTransformation(new LegacyAddOperationTransformation(operation -> !operation.hasDefined(Attribute.OUTBOUND_SOCKET_BINDINGS.getName())))
+                .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
             ), address -> new SocketDiscoveryProtocolConfigurationBuilder<>(address), parentBuilderFactory);
     }
 }

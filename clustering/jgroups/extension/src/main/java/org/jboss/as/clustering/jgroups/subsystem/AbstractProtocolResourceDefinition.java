@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -171,6 +173,14 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
 
     static class LegacyAddOperationTransformation implements UnaryOperator<OperationStepHandler> {
         private final Predicate<ModelNode> legacy;
+
+        <E extends Enum<E> & org.jboss.as.clustering.controller.Attribute> LegacyAddOperationTransformation(Class<E> attributeClass) {
+            this(EnumSet.allOf(attributeClass));
+        }
+
+        LegacyAddOperationTransformation(Set<? extends org.jboss.as.clustering.controller.Attribute> attributes) {
+            this(operation -> attributes.stream().noneMatch(attribute -> operation.hasDefined(attribute.getName())));
+        }
 
         LegacyAddOperationTransformation(Predicate<ModelNode> legacy) {
             this.legacy = legacy;

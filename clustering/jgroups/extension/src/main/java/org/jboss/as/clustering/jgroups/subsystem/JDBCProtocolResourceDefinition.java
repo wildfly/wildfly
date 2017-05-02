@@ -72,7 +72,7 @@ public class JDBCProtocolResourceDefinition<P extends Protocol & JDBCProtocol> e
     JDBCProtocolResourceDefinition(String name, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
-                .setAddOperationTransformation(new LegacyAddOperationTransformation(operation -> !operation.hasDefined(Attribute.DATA_SOURCE.getName())))
+                .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
                 ), address -> new JDBCProtocolConfigurationBuilder<>(address), parentBuilderFactory);
     }
 }
