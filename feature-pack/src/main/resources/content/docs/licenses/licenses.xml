@@ -3853,7 +3853,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>>org.wildfly.client</groupId>
+      <groupId>org.wildfly.client</groupId>
       <artifactId>wildfly-client-config</artifactId>
       <licenses>
         <license>
