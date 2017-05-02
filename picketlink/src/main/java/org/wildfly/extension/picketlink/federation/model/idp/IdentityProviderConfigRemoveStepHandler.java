@@ -26,7 +26,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
@@ -44,13 +43,8 @@ public class IdentityProviderConfigRemoveStepHandler extends RestartParentResour
     }
 
     @Override
-    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-        IdentityProviderAddHandler.launchServices(context, parentModel, verificationHandler, null, parentAddress, true);
-    }
-
-    @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        IdentityProviderAddHandler.launchServices(context, parentModel, null, null, parentAddress, true);
+        IdentityProviderAddHandler.launchServices(context, parentModel, parentAddress, true);
     }
 
     @Override

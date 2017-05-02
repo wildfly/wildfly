@@ -22,22 +22,18 @@
 
 package org.wildfly.extension.picketlink.federation.model.keystore;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.picketlink.federation.service.KeyService;
 import org.wildfly.extension.picketlink.federation.service.KeyStoreProviderService;
-
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -46,24 +42,15 @@ public class KeyAddHandler extends AbstractAddStepHandler {
 
     static final KeyAddHandler INSTANCE = new KeyAddHandler();
 
-    static void launchServices(OperationContext context, PathAddress pathAddress, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    static void launchServices(OperationContext context, PathAddress pathAddress, ModelNode model) throws OperationFailedException {
         String federationAlias = pathAddress.subAddress(0, pathAddress.size() - 2).getLastElement().getValue();
         String keyName = pathAddress.getLastElement().getValue();
         String host = KeyResourceDefinition.HOST.resolveModelAttribute(context, model).asString();
         KeyService service = new KeyService(keyName, host);
-        ServiceBuilder<KeyService> serviceBuilder = context.getServiceTarget().addService(KeyService.createServiceName(federationAlias, keyName), service);
-
-        serviceBuilder.addDependency(KeyStoreProviderService.createServiceName(federationAlias), KeyStoreProviderService.class, service.getKeyStoreProviderService());
-
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-
-        ServiceController<KeyService> controller = serviceBuilder.setInitialMode(ServiceController.Mode.PASSIVE).install();
-
-        if (newControllers != null) {
-            newControllers.add(controller);
-        }
+        context.getServiceTarget().addService(KeyService.createServiceName(federationAlias, keyName), service)
+                .addDependency(KeyStoreProviderService.createServiceName(federationAlias), KeyStoreProviderService.class, service.getKeyStoreProviderService())
+                .setInitialMode(ServiceController.Mode.PASSIVE)
+                .install();
     }
 
     @Override
@@ -74,9 +61,8 @@ public class KeyAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-        ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model, verificationHandler, newControllers);
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model);
     }
 
     @Override

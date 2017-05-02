@@ -25,7 +25,6 @@ package org.jboss.as.ejb3.subsystem;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -33,7 +32,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
 import org.jboss.as.ejb3.cache.DelegateCacheFactoryBuilderService;
@@ -41,7 +39,6 @@ import org.jboss.as.ejb3.cache.distributable.DistributableCacheFactoryBuilderSer
 import org.jboss.as.ejb3.cache.simple.SimpleCacheFactoryBuilderService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -63,12 +60,7 @@ public class CacheFactoryAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> serviceControllers) throws OperationFailedException {
-        // add this to the service controllers
-        serviceControllers.addAll(this.installRuntimeServices(context, operation, model, verificationHandler));
-    }
-
-    Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
 
         ModelNode passivationStoreModel = CacheFactoryResourceDefinition.PASSIVATION_STORE.resolveModelAttribute(context,model);
@@ -81,10 +73,7 @@ public class CacheFactoryAdd extends AbstractAddStepHandler {
         for (String alias: aliases) {
             builder.addAliases(CacheFactoryBuilderService.getServiceName(alias));
         }
-        if (verificationHandler != null) {
-            builder.addListener(verificationHandler);
-        }
-        return Collections.<ServiceController<?>>singleton(builder.install());
+        builder.install();
     }
 
     private static ServiceBuilder<?> buildCacheFactoryBuilder(ServiceTarget target, String name, String passivationStore) {

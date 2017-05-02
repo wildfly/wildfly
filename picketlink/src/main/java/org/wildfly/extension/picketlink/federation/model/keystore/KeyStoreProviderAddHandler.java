@@ -27,20 +27,16 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.picketlink.config.federation.AuthPropertyType;
 import org.picketlink.config.federation.KeyProviderType;
 import org.picketlink.identity.federation.core.impl.KeyStoreKeyManager;
 import org.wildfly.extension.picketlink.federation.service.FederationService;
 import org.wildfly.extension.picketlink.federation.service.KeyStoreProviderService;
-
-import java.util.List;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -59,7 +55,7 @@ public class KeyStoreProviderAddHandler extends AbstractAddStepHandler {
         }
     }
 
-    static void launchServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    static void launchServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
         String federationAlias = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
 
@@ -73,29 +69,18 @@ public class KeyStoreProviderAddHandler extends AbstractAddStepHandler {
         String file = KeyStoreProviderResourceDefinition.FILE.resolveModelAttribute(context, model).asString();
 
         KeyStoreProviderService service = new KeyStoreProviderService(toKeyProviderType(context, model), file, relativeTo);
-        ServiceBuilder<KeyStoreProviderService> serviceBuilder = context.getServiceTarget().addService(KeyStoreProviderService
-            .createServiceName(federationAlias), service);
-
-        serviceBuilder.addDependency(FederationService.createServiceName(federationAlias), FederationService.class,
-                                        service.getFederationService());
-
-        serviceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManager());
-
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-
-        ServiceController<KeyStoreProviderService> controller = serviceBuilder.setInitialMode(ServiceController.Mode.PASSIVE).install();
-
-        if (newControllers != null) {
-            newControllers.add(controller);
-        }
+        context.getServiceTarget().addService(KeyStoreProviderService
+            .createServiceName(federationAlias), service)
+                .addDependency(FederationService.createServiceName(federationAlias), FederationService.class,
+                                        service.getFederationService())
+                .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManager())
+                .setInitialMode(ServiceController.Mode.PASSIVE)
+                .install();
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
-        final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        launchServices(context, operation, model, verificationHandler, newControllers);
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        launchServices(context, operation, model);
     }
 
     static KeyProviderType toKeyProviderType(OperationContext context, ModelNode model) throws OperationFailedException {
