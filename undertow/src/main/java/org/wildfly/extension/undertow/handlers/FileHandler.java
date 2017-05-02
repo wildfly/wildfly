@@ -120,7 +120,7 @@ public class FileHandler extends Handler {
         try {
             base = Paths.get(path).normalize().toRealPath(); //workaround for JBEAP-10231
         } catch (IOException e) {
-            throw new OperationFailedException(e);
+            throw new OperationFailedException(UndertowLogger.ROOT_LOGGER.unableAddHandlerForPath(path));
         }
         PathResourceManager resourceManager = new PathResourceManager(base, cacheBufferSize * cacheBuffers, caseSensitive, followSymlink, paths);
         ResourceHandler handler = new ResourceHandler(resourceManager);
