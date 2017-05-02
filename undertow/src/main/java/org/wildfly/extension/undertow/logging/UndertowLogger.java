@@ -387,4 +387,6 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = WARN)
     void configurationOptionIgnoredWhenUsingElytron(String option);
 
+    @Message(id = 95, value = "Rolling back worker change. With HTTP upgrade enabled, remoting susbstem and http(s)-listener must share worker. Requested value '%s', remoting value '%s'.")
+    String workerValueInHTTPListenerMustMatchRemoting(String undertowWorker, String remotingWorker);
 }
