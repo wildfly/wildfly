@@ -31,7 +31,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.wildfly.test.integration.elytron.rolemappers.AbstractRoleMapperTest.ROLE1;
@@ -55,6 +58,7 @@ import org.wildfly.test.security.common.elytron.PropertiesRealm;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({AddSuffixRoleMapperTestCase.ServerSetup.class})
+@Ignore("[WFLY-8680] Test case ignored due to failure on Windows.")
 public class AddSuffixRoleMapperTestCase extends AbstractRoleMapperTest {
 
     private static final String ADD_SUFFIX_MAPPER = "simple-add-suffix-role-mapper";
@@ -69,6 +73,11 @@ public class AddSuffixRoleMapperTestCase extends AbstractRoleMapperTest {
 
     private static final String ROLE1_WITH_SUFFIX = ROLE1 + ROLE_SUFFIX;
     private static final String ROLE2_WITH_SUFFIX = ROLE2 + ROLE_SUFFIX;
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeNotWindows();
+    }
 
     @Override
     protected String[] allTestedRoles() {

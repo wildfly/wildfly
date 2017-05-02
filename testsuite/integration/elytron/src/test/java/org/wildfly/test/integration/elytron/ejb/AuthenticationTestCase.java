@@ -53,12 +53,14 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.wildfly.test.integration.elytron.ejb.authentication.EntryBean;
 import org.wildfly.test.integration.elytron.ejb.base.WhoAmIBean;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.security.client.SecurityClient;
 import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.Archive;
@@ -86,6 +88,11 @@ public class AuthenticationTestCase {
     private static final String WAR_URL = "http://" + SERVER_HOST_PORT + "/ejb3security/";
 
     private static final Logger log = Logger.getLogger(AuthenticationTestCase.class.getName());
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeNotWindows();
+    }
 
     /*
      * Authentication Scenarios

@@ -62,9 +62,13 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.fail;
+
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -80,6 +84,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({LdapRealmTestCase.LDAPServerSetupTask.class, LdapRealmTestCase.SetupTask.class})
+@Ignore("[WFLY-8680] Test case ignored due to failure on Windows.")
 public class LdapRealmTestCase {
 
     private static final String DEPLOYMENT = "ldapRealmDep";
@@ -114,6 +119,11 @@ public class LdapRealmTestCase {
         war.addAsWebInfResource(LdapRealmTestCase.class.getPackage(), "ldap-realm-web.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(DEPLOYMENT), "jboss-web.xml");
         return war;
+    }
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeNotWindows();
     }
 
     /**

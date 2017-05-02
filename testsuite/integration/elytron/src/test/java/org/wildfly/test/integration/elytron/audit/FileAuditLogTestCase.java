@@ -35,7 +35,9 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.elytron.FileAuditLog;
@@ -58,6 +60,11 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
     private static final String AUDIT_LOG_NAME = "test-audit.log";
     private static final File WORK_DIR = new File("target" + File.separatorChar + NAME);
     private static final File AUDIT_LOG_FILE = new File(WORK_DIR, AUDIT_LOG_NAME);
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeNotWindows();
+    }
 
     /**
      * Tests whether successful authentication was logged.

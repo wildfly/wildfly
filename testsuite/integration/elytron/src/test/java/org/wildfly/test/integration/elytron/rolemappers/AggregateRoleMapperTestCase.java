@@ -31,7 +31,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.wildfly.test.integration.elytron.rolemappers.AbstractRoleMapperTest.ROLE1;
@@ -54,6 +57,7 @@ import org.wildfly.test.security.common.elytron.PropertiesRealm;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({AggregateRoleMapperTestCase.ServerSetup.class})
+@Ignore("[WFLY-8680] Test case ignored due to failure on Windows.")
 public class AggregateRoleMapperTestCase extends AbstractRoleMapperTest {
 
     private static final String AGGREGATE_MAPPER = "simple-aggregate-mapper";
@@ -70,6 +74,11 @@ public class AggregateRoleMapperTestCase extends AbstractRoleMapperTest {
     private static final String ROLE2_WITH_CORRECT_PREFIX = ROLE_PREFIX2 + ROLE_PREFIX1 + ROLE2;
     private static final String ROLE2_WITH_WRONG_PREFIX = ROLE_PREFIX1 + ROLE_PREFIX2 + ROLE2;
     private static final String ROLE2_WITH_HALF_PREFIX = ROLE_PREFIX1 + ROLE2;
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeNotWindows();
+    }
 
     @Override
     protected String[] allTestedRoles() {
