@@ -48,7 +48,6 @@ public class DOMImplementationRegistryTestCase {
     }
 
     @Test
-    @Ignore("[WFLY-4416] Cannot obtain DOMImplementationRegistry instance")
     public void testDOMImplementationRegistry() throws Exception {
         DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
         DOMImplementation domImpl = registry.getDOMImplementation("LS 3.0");
