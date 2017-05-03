@@ -54,7 +54,7 @@ public class ElytronSecurityContext implements SecurityContext {
             // iterate through the identities adding all the roles found.
             final Set<String> rolesSet = new HashSet<>();
             for (SecurityIdentity identity : authenticatedIdentities) {
-                for (String role : identity.getRoles()) {
+                for (String role : identity.getRoles(ElytronSecurityIntegration.SECURITY_IDENTITY_ROLE)) {
                     rolesSet.add(role);
                 }
             }

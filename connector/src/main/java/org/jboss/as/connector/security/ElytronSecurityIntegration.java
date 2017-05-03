@@ -38,6 +38,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class ElytronSecurityIntegration implements SecurityIntegration {
 
+    static final String SECURITY_IDENTITY_ROLE = "ejb";
+
     private static final String SECURITY_DOMAIN_CAPABILITY =  "org.wildfly.security.security-domain";
 
     private static final RuntimeCapability<Void> SECURITY_DOMAIN_RUNTIME_CAPABILITY = RuntimeCapability
