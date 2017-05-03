@@ -188,7 +188,7 @@ public class ElytronCallbackHandler implements CallbackHandler, Serializable {
                 if (groups != null) {
                     Set<String> roles = new HashSet<>(Arrays.asList(groups));
                     // TODO what category should we use here?
-                    identity = identity.withRoleMapper("ejb", RoleMapper.constant(Roles.fromSet(roles)));
+                    identity = identity.withRoleMapper(ElytronSecurityIntegration.SECURITY_IDENTITY_ROLE, RoleMapper.constant(Roles.fromSet(roles)));
                 }
             }
         }
