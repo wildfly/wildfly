@@ -32,4 +32,9 @@ public class SessionAttributesKey extends Key<String> {
     public SessionAttributesKey(String id) {
         super(id);
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + "(attributes)";
+    }
 }

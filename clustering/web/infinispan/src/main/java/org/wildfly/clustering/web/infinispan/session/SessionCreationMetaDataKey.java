@@ -33,4 +33,9 @@ public class SessionCreationMetaDataKey extends Key<String> {
     public SessionCreationMetaDataKey(String id) {
         super(id);
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + "(creation-metadata)";
+    }
 }
