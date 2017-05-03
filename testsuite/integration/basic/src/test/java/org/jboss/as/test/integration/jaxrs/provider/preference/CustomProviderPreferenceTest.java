@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.jaxrs.provider.preference;
 
+import java.lang.reflect.ReflectPermission;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -30,6 +31,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -58,6 +60,10 @@ public class CustomProviderPreferenceTest {
         war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n"
                 + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
                 + "        <url-pattern>/api/*</url-pattern>\n" + "    </servlet-mapping>\n" + "\n"), "web.xml");
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new ReflectPermission("suppressAccessChecks"),
+                new RuntimePermission("accessDeclaredMembers")),
+                "permissions.xml");
         return war;
     }
 
