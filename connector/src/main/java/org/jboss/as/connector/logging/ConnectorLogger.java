@@ -904,4 +904,7 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 111, value = "WorkManager hasn't elytron-enabled flag set accordingly with RA one")
     IllegalStateException invalidElytronWorkManagerSetting();
 
+    @LogMessage(level = WARN)
+    @Message(id = 112, value = "The datasource %s is using the driver datasource class \"%s\", only connection-properties are used for configuration.")
+    void usingDatasourceClassWithoutConnectionProperties(String dsName, String datasourceClassName);
 }
