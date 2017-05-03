@@ -135,6 +135,10 @@ public class JMSService implements Service<JMSServerManager> {
         try {
             jmsServer = new JMSServerManagerImpl(activeMQServer.getValue(), new WildFlyBindingRegistry(context.getController().getServiceContainer()));
 
+            activeMQServer.getValue().registerActivationFailureListener(e -> {
+                StartException se = new StartException(e);
+                context.failed(se);
+            });
             activeMQServer.getValue().registerActivateCallback(new ActivateCallback() {
                 private volatile ServiceController<Void> activeMQActivationController;
 
