@@ -48,6 +48,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -55,6 +56,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.extension.batch.jberet.deployment.BatchPermission;
@@ -88,6 +90,11 @@ import org.wildfly.test.security.common.elytron.SimplePermissionMapper;
 public class BatchSubsystemSecurityTestCase {
 
     static final String BATCH_SECURITY_DOMAIN_NAME = "BatchDomain";
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeNotWindows();
+    }
 
     @Deployment
     public static Archive<?> createDeployment() {

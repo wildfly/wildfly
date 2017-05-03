@@ -26,9 +26,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
-import org.jboss.as.test.integration.web.security.SecuredServlet;
-import org.jboss.as.test.integration.web.security.WebSimpleRoleMappingSecurityDomainSetup;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -41,26 +39,13 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(WebSimpleRoleMappingSecurityDomainSetup.class)
+@ServerSetup(WebTestsSecurityDomainSetup.class)
 @Category(CommonCriteria.class)
-public class WebSecurityJBossSimpleRoleMappingTestCase extends AbstractWebSecurityFORMTestCase {
+public class WebSecurityJBossWebSimpleRoleMappingTestCase extends AbstractWebSecurityFORMTestCase {
 
     @Deployment(testable = false)
     public static WebArchive deployment() throws Exception {
-
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure.war");
-        war.addClasses(SecuredServlet.class);
-
-        war.addAsWebResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "login.jsp", "login.jsp");
-        war.addAsWebResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "error.jsp", "error.jsp");
-
-        war.addAsWebInfResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "jboss-web-role-mapping.xml",
-                "jboss-web.xml");
-        war.addAsWebInfResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "web.xml", "web.xml");
-
-        war.addAsResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "users.properties", "users.properties");
-        war.addAsResource(WebSecurityJBossSimpleRoleMappingTestCase.class.getPackage(), "roles.properties", "roles.properties");
-        return war;
+        return prepareDeployment("jboss-web-role-mapping.xml");
     }
 
     /**

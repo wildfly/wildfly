@@ -46,10 +46,12 @@ import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -84,6 +86,7 @@ import org.wildfly.test.security.common.elytron.UserWithRoles;
 @ServerSetup({ UndertowSslSecurityDomainTestCase.ElytronSslContextInUndertowSetupTask.class })
 @RunAsClient
 @Category(CommonCriteria.class)
+@Ignore("[WFLY-8680] Test case ignored due to failure on Windows.")
 public class UndertowSslSecurityDomainTestCase {
 
     private static final String NAME = UndertowSslSecurityDomainTestCase.class.getSimpleName();
@@ -98,6 +101,11 @@ public class UndertowSslSecurityDomainTestCase {
     private static URL securedUrl;
     private static URL securedUrlRole1;
     private static URL securedUrlRole2;
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeNotWindows();
+    }
 
     /**
      * Creates WAR with a secured servlet and CLIENT-CERT authentication configured in web.xml deployment descriptor.

@@ -151,6 +151,7 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
 
         final ModelNode compositeOp = new ModelNode();
         compositeOp.get(OP).set(ModelDescriptionConstants.COMPOSITE);
+        compositeOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         compositeOp.get(OP_ADDR).setEmptyList();
 
         ModelNode steps = compositeOp.get(STEPS);
@@ -189,7 +190,7 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         addEjbDomain.get("security-domain").set(getSecurityDomainName());
         steps.add(addEjbDomain);
 
-        steps.add(Util.getWriteAttributeOperation(ejbRemoteAddress, "connector-ref", getSecurityDomainName() + "-connector"));
+        steps.add(Util.getWriteAttributeOperation(ejbRemoteAddress, "connector-ref", getSecurityDomainName()));
 
         ModelNode addHttpAuthentication = Util.createAddOperation(httpAuthenticationAddress);
         addHttpAuthentication.get("security-domain").set(getSecurityDomainName());
@@ -230,17 +231,22 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         ModelNode remove = Util.createRemoveOperation(address);
         // Don't rollback when the AS detects the war needs the module
         remove.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        remove.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(false);
         return remove;
     }
 
     protected static void applyUpdates(final ModelControllerClient client, final List<ModelNode> updates, boolean allowFailure) {
+        ModelNode compositeOp = new ModelNode();
+        compositeOp.get(OP).set(COMPOSITE);
+        compositeOp.get(OP_ADDR).setEmptyList();
+        compositeOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        ModelNode steps = compositeOp.get(STEPS);
         for (ModelNode update : updates) {
-            try {
-                applyUpdate(client, update, allowFailure);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            steps.add(update);
+        }
+        try {
+            applyUpdate(client, compositeOp, allowFailure);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

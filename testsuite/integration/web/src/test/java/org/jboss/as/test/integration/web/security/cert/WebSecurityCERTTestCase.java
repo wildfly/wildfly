@@ -81,7 +81,6 @@ public class WebSecurityCERTTestCase {
         war.addAsWebInfResource(WebSecurityCERTTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         war.addAsWebInfResource(WebSecurityCERTTestCase.class.getPackage(), "web.xml", "web.xml");
 
-        war.addAsResource(WebSecurityCERTTestCase.class.getPackage(), "users.properties", "users.properties");
         war.addAsResource(WebSecurityCERTTestCase.class.getPackage(), "roles.properties", "roles.properties");
 
         return war;

@@ -38,8 +38,10 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
@@ -60,6 +62,11 @@ public class RegexPrincipalTransformerTestCase {
     private static final String SOME_USER = "someuser";
     private static final String PASSWORD = "password";
     private static final String ROLE = "JBossAdmin";
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeNotWindows();
+    }
 
     @Deployment(name = DEP_SECURITY_DOMAIN_E)
     public static WebArchive deploymentE() {

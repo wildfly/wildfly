@@ -43,10 +43,14 @@ import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.security.WebSecurityPasswordBasedBase;
+import org.jboss.as.test.integration.web.security.SecuredServlet;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
  * An Abstract parent of the FORM based authentication tests. <br/>
- * <i>This class was introduced as a workaround for JBPAPP-9018 - {@link Class#getMethods()} method returns different values in
+ * <i>This class was introduced as a workaround for JBPAPP-9018 - {@link Class#getMethods()} method returns different
+ * values in
  * Oracle JDK and IBM JDK.</i>
  *
  * @author Josef Cacek
@@ -58,6 +62,20 @@ public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswor
     private URL url;
 
     // Protected methods -----------------------------------------------------
+
+    protected static WebArchive prepareDeployment(final String jbossWebFileName) throws Exception {
+
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure.war");
+        war.addClasses(SecuredServlet.class);
+
+        war.addAsWebResource(WebSecurityFORMTestCase.class.getPackage(), "login.jsp", "login.jsp");
+        war.addAsWebResource(WebSecurityFORMTestCase.class.getPackage(), "error.jsp", "error.jsp");
+
+        war.addAsWebInfResource(WebSecurityFORMTestCase.class.getPackage(), jbossWebFileName, "jboss-web.xml");
+        war.addAsWebInfResource(WebSecurityFORMTestCase.class.getPackage(), "web.xml", "web.xml");
+
+        return war;
+    }
 
     /**
      * Makes a HTTP request to the protected web application.
@@ -79,7 +97,9 @@ public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswor
             HttpResponse response = httpclient.execute(httpget);
 
             HttpEntity entity = response.getEntity();
-            if (entity != null) { EntityUtils.consume(entity); }
+            if (entity != null) {
+                EntityUtils.consume(entity);
+            }
 
             // We should get the Login Page
             StatusLine statusLine = response.getStatusLine();
@@ -107,7 +127,9 @@ public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswor
 
             response = httpclient.execute(httpPost);
             entity = response.getEntity();
-            if (entity != null) { EntityUtils.consume(entity); }
+            if (entity != null) {
+                EntityUtils.consume(entity);
+            }
 
             statusLine = response.getStatusLine();
 
@@ -120,7 +142,9 @@ public abstract class AbstractWebSecurityFORMTestCase extends WebSecurityPasswor
             response = httpclient.execute(httpGet);
 
             entity = response.getEntity();
-            if (entity != null) { EntityUtils.consume(entity); }
+            if (entity != null) {
+                EntityUtils.consume(entity);
+            }
 
             LOGGER.trace("Post logon cookies:");
             cookies = httpclient.getCookieStore().getCookies();

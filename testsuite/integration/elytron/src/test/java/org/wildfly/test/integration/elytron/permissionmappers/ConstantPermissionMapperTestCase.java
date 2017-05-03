@@ -55,11 +55,13 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.PermissionUtils;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.ejb.client.RemoteEJBPermission;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.joda.time.JodaTimePermission;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.extension.batch.jberet.deployment.BatchPermission;
@@ -96,6 +98,11 @@ public class ConstantPermissionMapperTestCase {
     private static final String TARGET_NAME = "name";
     private static final String TARGET_NAME_START = "start";
     private static final String ACTION = "action";
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeNotWindows();
+    }
 
     @Deployment(testable = false, name = SD_NO_MAPPER)
     public static WebArchive deployment1() {
