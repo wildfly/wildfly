@@ -90,7 +90,5 @@ public class ModClusterRemoveProxy implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-
-        context.stepCompleted();
-    }
+   }
 }

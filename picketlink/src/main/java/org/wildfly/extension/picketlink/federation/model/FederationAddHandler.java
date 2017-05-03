@@ -25,17 +25,12 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.wildfly.extension.picketlink.federation.service.FederationService;
 import org.wildfly.extension.undertow.UndertowService;
-
-import java.util.List;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -52,28 +47,14 @@ public class FederationAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-                                         ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
             throws OperationFailedException {
         PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-        launchServices(operation, pathAddress, context, verificationHandler, newControllers);
-    }
-
-    void launchServices(ModelNode operation, PathAddress pathAddress, OperationContext context, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         String alias = pathAddress.getLastElement().getValue();
         FederationService service = new FederationService(alias);
-        ServiceBuilder<FederationService> serviceBuilder = context.getServiceTarget().addService(FederationService.createServiceName(alias), service);
-
-        serviceBuilder.addDependency(UndertowService.UNDERTOW);
-
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-
-        ServiceController<FederationService> controller = serviceBuilder.setInitialMode(Mode.ACTIVE).install();
-
-        if (newControllers != null) {
-            newControllers.add(controller);
-        }
+        context.getServiceTarget().addService(FederationService.createServiceName(alias), service)
+                .addDependency(UndertowService.UNDERTOW)
+                .setInitialMode(Mode.ACTIVE)
+                .install();
     }
 }

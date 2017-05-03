@@ -53,11 +53,10 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
 
     static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:1.1";
 
-    protected static final MessagingSubsystemParser_1_1 INSTANCE = new MessagingSubsystemParser_1_1();
+    private final PersistentResourceXMLDescription xmlDescription;
 
-    private static final PersistentResourceXMLDescription xmlDescription;
 
-    static {
+    MessagingSubsystemParser_1_1() {
         xmlDescription = builder(MessagingExtension.SUBSYSTEM_PATH, NAMESPACE)
                 .addAttributes(
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
@@ -133,7 +132,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                         CommonAttributes.INCOMING_INTERCEPTORS,
                                         CommonAttributes.OUTGOING_INTERCEPTORS)
                                 .addChild(
-                                        builder(LiveOnlyDefinition.INSTANCE)
+                                        builder(LiveOnlyDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         ScaleDownAttributes.SCALE_DOWN,
                                                         ScaleDownAttributes.SCALE_DOWN_CLUSTER_NAME,
@@ -141,14 +140,14 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS))
                                 .addChild(
-                                        builder(ReplicationMasterDefinition.INSTANCE)
+                                        builder(ReplicationMasterDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HAAttributes.CLUSTER_NAME,
                                                         HAAttributes.GROUP_NAME,
                                                         HAAttributes.CHECK_FOR_LIVE_SERVER,
                                                         HAAttributes.INITIAL_REPLICATION_SYNC_TIMEOUT))
                                 .addChild(
-                                        builder(ReplicationSlaveDefinition.INSTANCE)
+                                        builder(ReplicationSlaveDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HAAttributes.CLUSTER_NAME,
                                                         HAAttributes.GROUP_NAME,
@@ -162,7 +161,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS))
                                 .addChild(
-                                        builder(ReplicationColocatedDefinition.INSTANCE)
+                                        builder(ReplicationColocatedDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HAAttributes.REQUEST_BACKUP,
                                                         HAAttributes.BACKUP_REQUEST_RETRIES,
@@ -192,11 +191,11 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS)))
                                 .addChild(
-                                        builder(SharedStoreMasterDefinition.INSTANCE)
+                                        builder(SharedStoreMasterDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN))
                                 .addChild(
-                                        builder(SharedStoreSlaveDefinition.INSTANCE)
+                                        builder(SharedStoreSlaveDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HAAttributes.ALLOW_FAILBACK,
                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN,
@@ -207,7 +206,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS))
                                 .addChild(
-                                        builder(SharedStoreColocatedDefinition.INSTANCE)
+                                        builder(SharedStoreColocatedDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HAAttributes.REQUEST_BACKUP,
                                                         HAAttributes.BACKUP_REQUEST_RETRIES,
@@ -256,9 +255,9 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         CommonAttributes.DURABLE,
                                                         CommonAttributes.FILTER))
                                 .addChild(
-                                        builder(SecuritySettingDefinition.INSTANCE)
+                                        builder(SecuritySettingDefinition.INSTANCE.getPathElement())
                                                 .addChild(
-                                                        builder(SecurityRoleDefinition.INSTANCE)
+                                                        builder(SecurityRoleDefinition.INSTANCE.getPathElement())
                                                                 .addAttributes(
                                                                         SecurityRoleDefinition.SEND,
                                                                         SecurityRoleDefinition.CONSUME,
@@ -268,7 +267,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                                         SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE,
                                                                         SecurityRoleDefinition.MANAGE)))
                                 .addChild(
-                                        builder(AddressSettingDefinition.INSTANCE)
+                                        builder(AddressSettingDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         CommonAttributes.DEAD_LETTER_ADDRESS,
                                                         CommonAttributes.EXPIRY_ADDRESS,
@@ -291,7 +290,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES,
                                                         AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES))
                                 .addChild(
-                                        builder(HTTPConnectorDefinition.INSTANCE)
+                                        builder(HTTPConnectorDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HTTPConnectorDefinition.SOCKET_BINDING,
                                                         HTTPConnectorDefinition.ENDPOINT,
@@ -314,7 +313,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         CommonAttributes.FACTORY_CLASS,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(HTTPAcceptorDefinition.INSTANCE)
+                                        builder(HTTPAcceptorDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HTTPAcceptorDefinition.HTTP_LISTENER,
                                                         HTTPAcceptorDefinition.UPGRADE_LEGACY,
@@ -336,7 +335,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         CommonAttributes.FACTORY_CLASS,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(BroadcastGroupDefinition.INSTANCE)
+                                        builder(BroadcastGroupDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         CommonAttributes.SOCKET_BINDING,
                                                         BroadcastGroupDefinition.JGROUPS_STACK,
@@ -344,7 +343,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         BroadcastGroupDefinition.BROADCAST_PERIOD,
                                                         BroadcastGroupDefinition.CONNECTOR_REFS))
                                 .addChild(
-                                        builder(DiscoveryGroupDefinition.INSTANCE)
+                                        builder(DiscoveryGroupDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         CommonAttributes.SOCKET_BINDING,
                                                         DiscoveryGroupDefinition.JGROUPS_STACK,
@@ -352,7 +351,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         DiscoveryGroupDefinition.REFRESH_TIMEOUT,
                                                         DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT))
                                 .addChild(
-                                        builder(ClusterConnectionDefinition.INSTANCE)
+                                        builder(ClusterConnectionDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         ClusterConnectionDefinition.ADDRESS,
                                                         ClusterConnectionDefinition.CONNECTOR_NAME,
@@ -377,7 +376,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY,
                                                         ClusterConnectionDefinition.DISCOVERY_GROUP_NAME))
                                 .addChild(
-                                        builder(GroupingHandlerDefinition.INSTANCE)
+                                        builder(GroupingHandlerDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         GroupingHandlerDefinition.TYPE,
                                                         GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS,
@@ -385,7 +384,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         GroupingHandlerDefinition.GROUP_TIMEOUT,
                                                         GroupingHandlerDefinition.REAPER_PERIOD))
                                 .addChild(
-                                        builder(DivertDefinition.INSTANCE)
+                                        builder(DivertDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         DivertDefinition.ROUTING_NAME,
                                                         DivertDefinition.ADDRESS,
@@ -394,7 +393,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         CommonAttributes.TRANSFORMER_CLASS_NAME,
                                                         DivertDefinition.EXCLUSIVE))
                                 .addChild(
-                                        builder(BridgeDefinition.INSTANCE)
+                                        builder(BridgeDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         BridgeDefinition.QUEUE_NAME,
                                                         BridgeDefinition.FORWARDING_ADDRESS,
@@ -419,7 +418,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         BridgeDefinition.CONNECTOR_REFS,
                                                         BridgeDefinition.DISCOVERY_GROUP_NAME))
                                 .addChild(
-                                        builder(ConnectorServiceDefinition.INSTANCE)
+                                        builder(ConnectorServiceDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         CommonAttributes.FACTORY_CLASS,
                                                         CommonAttributes.PARAMS))
@@ -477,7 +476,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         // regular
                                                         ConnectionFactoryAttributes.Regular.FACTORY_TYPE))
                                 .addChild(
-                                        builder(LegacyConnectionFactoryDefinition.INSTANCE)
+                                        builder(LegacyConnectionFactoryDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         LegacyConnectionFactoryDefinition.ENTRIES,
                                                         LegacyConnectionFactoryDefinition.DISCOVERY_GROUP,
@@ -517,7 +516,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         LegacyConnectionFactoryDefinition.TRANSACTION_BATCH_SIZE,
                                                         LegacyConnectionFactoryDefinition.USE_GLOBAL_POOLS))
                                 .addChild(
-                                        builder(PooledConnectionFactoryDefinition.INSTANCE)
+                                        builder(PooledConnectionFactoryDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         ConnectionFactoryAttributes.Common.ENTRIES,
                                                         // common
@@ -575,7 +574,7 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS,
                                                         ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED)))
                 .addChild(
-                        builder(JMSBridgeDefinition.INSTANCE)
+                        builder(JMSBridgeDefinition.INSTANCE.getPathElement())
                                 .addAttributes(
                                         JMSBridgeDefinition.MODULE,
                                         JMSBridgeDefinition.QUALITY_OF_SERVICE,
@@ -600,9 +599,6 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                         JMSBridgeDefinition.SOURCE_CONTEXT,
                                         JMSBridgeDefinition.TARGET_CONTEXT))
                 .build();
-    }
-
-    private MessagingSubsystemParser_1_1() {
     }
 
     @Override

@@ -89,7 +89,5 @@ public class ModClusterAddProxy implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-
-        context.stepCompleted();
     }
 }

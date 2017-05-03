@@ -111,13 +111,11 @@ final class WSEndpointMetrics implements OperationStepHandler {
                     } else {
                         context.getResult().set(getFallbackMessage());
                     }
-                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         } else {
             context.getResult().set(getFallbackMessage());
         }
-        context.stepCompleted();
     }
 
     @SuppressWarnings("unchecked")

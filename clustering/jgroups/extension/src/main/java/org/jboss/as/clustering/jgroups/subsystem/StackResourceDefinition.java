@@ -112,20 +112,20 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
     @Deprecated
     static final ObjectTypeAttributeDefinition TRANSPORT = ObjectTypeAttributeDefinition.Builder.of(TransportResourceDefinition.WILDCARD_PATH.getKey(), AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.getDefinition(), TransportResourceDefinition.Attribute.SHARED.getDefinition(), SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING.getDefinition(), TransportResourceDefinition.Attribute.DIAGNOSTICS_SOCKET_BINDING.getDefinition(), TransportResourceDefinition.ThreadingAttribute.DEFAULT_EXECUTOR.getDefinition(), TransportResourceDefinition.ThreadingAttribute.OOB_EXECUTOR.getDefinition(), TransportResourceDefinition.ThreadingAttribute.TIMER_EXECUTOR.getDefinition(), TransportResourceDefinition.ThreadingAttribute.THREAD_FACTORY.getDefinition(), TransportResourceDefinition.Attribute.SITE.getDefinition(), TransportResourceDefinition.Attribute.RACK.getDefinition(), TransportResourceDefinition.Attribute.MACHINE.getDefinition(), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition())
             .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
-            .setAllowNull(true)
+            .setRequired(false)
             .setSuffix(null)
             .build();
 
     @Deprecated
     static final ObjectTypeAttributeDefinition PROTOCOL = ObjectTypeAttributeDefinition.Builder.of(ProtocolResourceDefinition.WILDCARD_PATH.getKey(), AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.getDefinition(), ProtocolResourceDefinition.DeprecatedAttribute.SOCKET_BINDING.getDefinition(), AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition())
-            .setAllowNull(true)
+            .setRequired(false)
             .setSuffix("protocol")
             .build();
 
     @Deprecated
     static final AttributeDefinition PROTOCOLS = ObjectListAttributeDefinition.Builder.of("protocols", PROTOCOL)
             .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
@@ -180,48 +180,41 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
                 .addAttributes(Attribute.class)
                 .addExtraParameters(TRANSPORT, PROTOCOLS)
                 .addCapabilities(Capability.class)
-                .addOperationTranslator(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        if (operation.hasDefined(TRANSPORT.getName())) {
-                            PathAddress address = context.getCurrentAddress();
-                            ModelNode transport = operation.get(TRANSPORT.getName());
-                            String type = AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.resolveModelAttribute(context, transport).asString();
-                            PathElement transportPath = TransportResourceDefinition.pathElement(type);
-                            PathAddress transportAddress = address.append(transportPath);
-                            ModelNode transportOperation = Util.createAddOperation(transportAddress);
-                            OperationEntry addOperationEntry = context.getResourceRegistration().getOperationEntry(PathAddress.pathAddress(TransportResourceDefinition.WILDCARD_PATH), ModelDescriptionConstants.ADD);
+                .setAddOperationTransformation(handler -> (context, operation) -> {
+                    if (operation.hasDefined(TRANSPORT.getName())) {
+                        PathAddress address = context.getCurrentAddress();
+                        ModelNode transport = operation.get(TRANSPORT.getName());
+                        String type = AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.resolveModelAttribute(context, transport).asString();
+                        PathElement transportPath = TransportResourceDefinition.pathElement(type);
+                        PathAddress transportAddress = address.append(transportPath);
+                        ModelNode transportOperation = Util.createAddOperation(transportAddress);
+                        OperationEntry addOperationEntry = context.getResourceRegistration().getOperationEntry(PathAddress.pathAddress(TransportResourceDefinition.WILDCARD_PATH), ModelDescriptionConstants.ADD);
+                        for (AttributeDefinition attribute : addOperationEntry.getOperationDefinition().getParameters()) {
+                            String name = attribute.getName();
+                            if (transport.hasDefined(name)) {
+                                transportOperation.get(name).set(transport.get(name));
+                            }
+                        }
+                        context.addStep(transportOperation, addOperationEntry.getOperationHandler(), OperationContext.Stage.MODEL);
+                    }
+                    if (operation.hasDefined(PROTOCOLS.getName())) {
+                        PathAddress address = context.getCurrentAddress();
+                        for (ModelNode protocol : operation.get(PROTOCOLS.getName()).asList()) {
+                            String type = AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.resolveModelAttribute(context, protocol).asString();
+                            PathElement protocolPath = ProtocolResourceDefinition.pathElement(type);
+                            PathAddress protocolAddress = address.append(protocolPath);
+                            ModelNode protocolOperation = Util.createAddOperation(protocolAddress);
+                            OperationEntry addOperationEntry = context.getResourceRegistration().getOperationEntry(PathAddress.pathAddress(ProtocolResourceDefinition.WILDCARD_PATH), ModelDescriptionConstants.ADD);
                             for (AttributeDefinition attribute : addOperationEntry.getOperationDefinition().getParameters()) {
                                 String name = attribute.getName();
-                                if (transport.hasDefined(name)) {
-                                    transportOperation.get(name).set(transport.get(name));
+                                if (protocol.hasDefined(name)) {
+                                    protocolOperation.get(name).set(protocol.get(name));
                                 }
                             }
-                            context.addStep(transportOperation, addOperationEntry.getOperationHandler(), OperationContext.Stage.MODEL);
+                            context.addStep(protocolOperation, addOperationEntry.getOperationHandler(), OperationContext.Stage.MODEL);
                         }
                     }
-                })
-                .addOperationTranslator(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        if (operation.hasDefined(PROTOCOLS.getName())) {
-                            PathAddress address = context.getCurrentAddress();
-                            for (ModelNode protocol : operation.get(PROTOCOLS.getName()).asList()) {
-                                String type = AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.resolveModelAttribute(context, protocol).asString();
-                                PathElement protocolPath = ProtocolResourceDefinition.pathElement(type);
-                                PathAddress protocolAddress = address.append(protocolPath);
-                                ModelNode protocolOperation = Util.createAddOperation(protocolAddress);
-                                OperationEntry addOperationEntry = context.getResourceRegistration().getOperationEntry(PathAddress.pathAddress(ProtocolResourceDefinition.WILDCARD_PATH), ModelDescriptionConstants.ADD);
-                                for (AttributeDefinition attribute : addOperationEntry.getOperationDefinition().getParameters()) {
-                                    String name = attribute.getName();
-                                    if (protocol.hasDefined(name)) {
-                                        protocolOperation.get(name).set(protocol.get(name));
-                                    }
-                                }
-                                context.addStep(protocolOperation, addOperationEntry.getOperationHandler(), OperationContext.Stage.MODEL);
-                            }
-                        }
-                    }
+                    handler.execute(context, operation);
                 })
                 ;
         ResourceServiceHandler handler = new StackServiceHandler(this.builderFactory);

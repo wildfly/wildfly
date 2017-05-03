@@ -25,12 +25,8 @@ package org.wildfly.extension.picketlink.idm;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-
-import java.util.List;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -40,7 +36,7 @@ public class IDMSubsystemAdd extends AbstractAddStepHandler {
     public static final IDMSubsystemAdd INSTANCE = new IDMSubsystemAdd();
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         PicketLinkLogger.ROOT_LOGGER.activatingSubsystem("Identity Management");
     }
 }

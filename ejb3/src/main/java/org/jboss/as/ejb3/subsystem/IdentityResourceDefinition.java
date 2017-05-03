@@ -77,7 +77,7 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
     private static final String SECURITY_DOMAIN_CAPABILITY = "org.wildfly.security.security-domain";
 
     public static final StringListAttributeDefinition OUTFLOW_SECURITY_DOMAINS = new StringListAttributeDefinition.Builder(EJB3SubsystemModel.OUTFLOW_SECURITY_DOMAINS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setMinSize(1)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY, IDENTITY_CAPABILITY, false)

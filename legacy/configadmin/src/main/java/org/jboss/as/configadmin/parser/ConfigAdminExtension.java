@@ -63,7 +63,7 @@ public class ConfigAdminExtension extends AbstractLegacyExtension {
 
     @Override
     public void initializeLegacyParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.VERSION_1_0.getUriString(), ConfigAdminParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.VERSION_1_0.getUriString(), () -> ConfigAdminParser.INSTANCE);
     }
 
     @Override

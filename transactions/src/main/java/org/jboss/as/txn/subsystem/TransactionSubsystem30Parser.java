@@ -42,9 +42,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 class TransactionSubsystem30Parser extends TransactionSubsystem20Parser {
 
-    public static final TransactionSubsystem30Parser INSTANCE = new TransactionSubsystem30Parser();
-
-    private TransactionSubsystem30Parser() {
+    TransactionSubsystem30Parser() {
         super(Namespace.TRANSACTIONS_3_0);
     }
 

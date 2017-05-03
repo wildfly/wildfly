@@ -49,7 +49,6 @@ import org.jboss.dmr.ModelNode;
 public class XTSExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "xts";
-    private static final XTSSubsystemParser parser = new XTSSubsystemParser();
     protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
 
@@ -67,7 +66,7 @@ public class XTSExtension implements Extension {
         XtsAsLogger.ROOT_LOGGER.debug("Initializing XTS Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystem.registerSubsystemModel(XTSSubsystemDefinition.INSTANCE);
-        subsystem.registerXMLElementWriter(parser);
+        subsystem.registerXMLElementWriter(new XTSSubsystemParser());
 
         if (context.isRegisterTransformers()) {
             registerTransformers1x(subsystem);
@@ -75,8 +74,8 @@ public class XTSExtension implements Extension {
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.XTS_1_0.getUriString(), parser);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.XTS_2_0.getUriString(), parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.XTS_1_0.getUriString(), XTSSubsystemParser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.XTS_2_0.getUriString(), XTSSubsystemParser::new);
     }
 
     private void registerTransformers1x(SubsystemRegistration subsystem) {

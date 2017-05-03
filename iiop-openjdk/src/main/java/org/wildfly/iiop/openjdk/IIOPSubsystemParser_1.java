@@ -24,20 +24,9 @@ package org.wildfly.iiop.openjdk;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.as.controller.PersistentResourceXMLParser;
 
 /**
  * <p>
@@ -47,42 +36,16 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-public class IIOPSubsystemParser_1 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
-        XMLElementWriter<SubsystemMarshallingContext> {
+class IIOPSubsystemParser_1 extends PersistentResourceXMLParser {
 
-    static final IIOPSubsystemParser_1 INSTANCE = new IIOPSubsystemParser_1();
-    private static final PersistentResourceXMLDescription xmlDescription;
+    IIOPSubsystemParser_1() {
+    }
 
-    static {
-        xmlDescription = builder(IIOPRootDefinition.INSTANCE)
+    @Override
+    public PersistentResourceXMLDescription getParserDescription() {
+        return builder(IIOPRootDefinition.INSTANCE.getPathElement())
                 .setMarshallDefaultValues(true)
                 .addAttributes(IIOPRootDefinition.ALL_ATTRIBUTES.toArray(new AttributeDefinition[0]))
                 .build();
-    }
-
-    /**
-     * <p>
-     * Private constructor required by the {@code Singleton} pattern.
-     * </p>
-     */
-    private IIOPSubsystemParser_1() {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-        xmlDescription.parse(reader, PathAddress.EMPTY_ADDRESS, list);
-    }
-
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        throw new UnsupportedOperationException();
     }
 }

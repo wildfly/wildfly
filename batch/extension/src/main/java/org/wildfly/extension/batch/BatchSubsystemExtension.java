@@ -45,7 +45,7 @@ public class BatchSubsystemExtension implements Extension {
         for (Namespace namespace : Namespace.values()) {
             final String uri = namespace.getUriString();
             if (uri != null) {
-                context.setSubsystemXmlMapping(BatchSubsystemDefinition.NAME, uri, BatchSubsystemParser.INSTANCE);
+                context.setSubsystemXmlMapping(BatchSubsystemDefinition.NAME, uri, BatchSubsystemParser::new);
             }
         }
     }
@@ -54,7 +54,7 @@ public class BatchSubsystemExtension implements Extension {
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(BatchSubsystemDefinition.NAME, CURRENT_MODEL_VERSION);
         subsystem.registerSubsystemModel(BatchSubsystemDefinition.INSTANCE);
-        subsystem.registerXMLElementWriter(BatchSubsystemParser.INSTANCE);
+        subsystem.registerXMLElementWriter(new BatchSubsystemParser());
         // Register the deployment resources
         if (context.isRuntimeOnlyRegistrationValid()) {
             final SimpleResourceDefinition deploymentResource = new SimpleResourceDefinition(new SimpleResourceDefinition.Parameters(

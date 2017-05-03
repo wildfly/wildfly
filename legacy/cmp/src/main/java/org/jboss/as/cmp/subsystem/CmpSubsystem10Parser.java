@@ -55,7 +55,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
  * @author John Bailey
  */
 class CmpSubsystem10Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-    static CmpSubsystem10Parser INSTANCE = new CmpSubsystem10Parser();
 
     protected CmpSubsystem10Parser() {
     }

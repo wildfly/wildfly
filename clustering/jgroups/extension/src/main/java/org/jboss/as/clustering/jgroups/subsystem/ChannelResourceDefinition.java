@@ -38,9 +38,6 @@ import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -223,24 +220,22 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
+        @SuppressWarnings("deprecation")
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 .addAlias(DeprecatedAttribute.STATS_ENABLED, Attribute.STATISTICS_ENABLED)
-                .addOperationTranslator(new OperationStepHandler() {
-                    @SuppressWarnings("deprecation")
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        // Handle recipe for version < 4.0 where stack was not required and the stack attribute would use default-stack for a default value
-                        if (!operation.hasDefined(Attribute.STACK.getName())) {
-                            ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent()).getModel();
-                            // If default-stack is not defined either, then recipe must be for version >= 4.0 and so this really is an invalid operation
-                            if (parentModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName())) {
-                                operation.get(Attribute.STACK.getName()).set(parentModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName()));
-                            }
+                .setAddOperationTransformation(handler -> (context, operation) -> {
+                    // Handle recipe for version < 4.0 where stack was not required and the stack attribute would use default-stack for a default value
+                    if (!operation.hasDefined(Attribute.STACK.getName())) {
+                        ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent()).getModel();
+                        // If default-stack is not defined either, then recipe must be for version >= 4.0 and so this really is an invalid operation
+                        if (parentModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName())) {
+                            operation.get(Attribute.STACK.getName()).set(parentModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName()));
                         }
                     }
+                    handler.execute(context, operation);
                 })
                 .addRuntimeResourceRegistration(new ProtocolResourceRegistrationHandler())
                 ;

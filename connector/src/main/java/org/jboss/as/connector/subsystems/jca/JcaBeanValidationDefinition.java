@@ -59,17 +59,17 @@ public class JcaBeanValidationDefinition extends SimpleResourceDefinition {
 
     }
 
-    public static enum BeanValidationParameters {
+    public enum BeanValidationParameters {
         BEAN_VALIDATION_ENABLED(SimpleAttributeDefinitionBuilder.create("enabled", ModelType.BOOLEAN)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(new ModelNode().set(true))
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName("enabled")
                 .build());
 
-        private BeanValidationParameters(SimpleAttributeDefinition attribute) {
+        BeanValidationParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 

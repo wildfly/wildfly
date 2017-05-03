@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.wildfly.clustering.service.BinaryRequirement;
 import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.service.UnaryRequirement;
@@ -59,7 +60,7 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
      * @param requirement the requirement of the specified capability
      */
     public CapabilityReference(Capability capability, BinaryRequirement requirement) {
-        this(capability, requirement, context -> context.getCurrentAddressValue());
+        this(capability, requirement, OperationContext::getCurrentAddressValue);
     }
 
     /**
@@ -89,18 +90,28 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
     }
 
     @Override
-    public void addCapabilityRequirements(OperationContext context, String attributeName, String... values) {
+    public void addCapabilityRequirements(OperationContext context, Resource resource,  String attributeName, String... values) {
         String dependentName = this.capability.resolve(context.getCurrentAddress()).getName();
         Stream.of(values).forEach(value -> this.requirementResolver.apply(context, value).ifPresent(requirementName -> context.registerAdditionalCapabilityRequirement(requirementName, dependentName, attributeName)));
     }
 
     @Override
-    public void removeCapabilityRequirements(OperationContext context, String attributeName, String... values) {
+    public void removeCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... values) {
         String dependentName = this.capability.resolve(context.getCurrentAddress()).getName();
         Stream.of(values).forEach(value -> this.requirementResolver.apply(context, value).ifPresent(requirementName -> context.deregisterCapabilityRequirement(requirementName, dependentName)));
     }
+    //todo remove once it is removed from core
+    @Deprecated
+    public void addCapabilityRequirements(OperationContext context, String attributeName, String... attributeValues) {
+        addCapabilityRequirements(context, null, attributeName, attributeValues);
+    }
+    //todo remove once it is removed from core
+    @Deprecated
+    public void removeCapabilityRequirements(OperationContext context, String attributeName, String... attributeValues) {
+        removeCapabilityRequirements(context, null, attributeName, attributeValues);
+    }
 
-    @Override
+    @Deprecated
     public String getBaseDependentName() {
         return this.capability.getDefinition().getName();
     }
@@ -117,7 +128,7 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
 
     @Override
     public int hashCode() {
-        return this.getBaseDependentName().hashCode();
+        return this.capability.getDefinition().getName().hashCode();
     }
 
     @Override

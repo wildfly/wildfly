@@ -83,10 +83,10 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
 
         }
 
-    public static enum CcmParameters {
+    public enum CcmParameters {
         DEBUG(SimpleAttributeDefinitionBuilder.create("debug", ModelType.BOOLEAN)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(new ModelNode().set(false))
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
@@ -94,7 +94,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
                 .build()),
         ERROR(SimpleAttributeDefinitionBuilder.create("error", ModelType.BOOLEAN)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(new ModelNode().set(false))
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
@@ -102,7 +102,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
                 .build()),
         IGNORE_UNKNOWN_CONNECTIONS(SimpleAttributeDefinitionBuilder.create("ignore-unknown-connections", ModelType.BOOLEAN)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(new ModelNode().set(false))
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
@@ -110,14 +110,14 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
                 .build()),
         INSTALL(SimpleAttributeDefinitionBuilder.create("install", ModelType.BOOLEAN)
                 .setAllowExpression(false)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(new ModelNode().set(false))
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .build());
 
 
-        private CcmParameters(SimpleAttributeDefinition attribute) {
+        CcmParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 
@@ -129,7 +129,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
     }
 
 
-    public static enum CcmOperations {
+    public enum CcmOperations {
         GET_NUMBER_OF_CONNECTIONS(new SimpleOperationDefinitionBuilder("get-number-of-connections", JcaExtension.getResourceDescriptionResolver(PATH_CACHED_CONNECTION_MANAGER.getKey()))
                 .setRuntimeOnly()
                 .build()),
@@ -138,7 +138,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
                 .build());
 
 
-        private CcmOperations(SimpleOperationDefinition operation) {
+        CcmOperations(SimpleOperationDefinition operation) {
             this.operation = operation;
         }
 

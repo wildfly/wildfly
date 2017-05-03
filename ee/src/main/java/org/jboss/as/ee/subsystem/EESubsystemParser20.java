@@ -44,9 +44,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.*;
  */
 class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
-    public static final EESubsystemParser20 INSTANCE = new EESubsystemParser20();
-
-    private EESubsystemParser20() {
+    EESubsystemParser20() {
 
     }
 

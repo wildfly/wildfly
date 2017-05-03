@@ -80,7 +80,6 @@ public class RaActivate implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.stepCompleted();
     }
 
 }

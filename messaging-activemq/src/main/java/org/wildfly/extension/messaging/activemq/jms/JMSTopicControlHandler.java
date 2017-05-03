@@ -81,7 +81,7 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
     private static final String LIST_ALL_SUBSCRIPTIONS = "list-all-subscriptions";
 
     private static final AttributeDefinition CLIENT_ID = create(CommonAttributes.CLIENT_ID)
-            .setAllowNull(false)
+            .setRequired(true)
             .setValidator(new StringLengthValidator(1))
             .build();
     private static final AttributeDefinition SUBSCRIPTION_NAME = createNonEmptyStringAttribute("subscription-name");

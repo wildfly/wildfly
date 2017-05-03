@@ -51,6 +51,6 @@ public class ServiceProviderRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        ServiceProviderAddHandler.launchService(context, PathAddress.pathAddress(operation.get(ADDRESS)), model, null, null);
+        ServiceProviderAddHandler.launchService(context, PathAddress.pathAddress(operation.get(ADDRESS)), model);
     }
 }

@@ -50,6 +50,6 @@ public class SAMLRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        SAMLAddHandler.launchServices(context, operation, model, null, null);
+        SAMLAddHandler.launchServices(context, operation, model);
     }
 }

@@ -64,7 +64,6 @@ public class PoolStatisticsRuntimeAttributeWriteHandler implements OperationStep
             }
 
         }
-        context.stepCompleted();
     }
 
 }

@@ -54,14 +54,8 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 class WSSubsystem11Reader implements XMLElementReader<List<ModelNode>> {
 
-    private static final WSSubsystem11Reader INSTANCE = new WSSubsystem11Reader();
+    WSSubsystem11Reader() {
 
-    protected WSSubsystem11Reader() {
-
-    }
-
-    static WSSubsystem11Reader getInstance() {
-        return INSTANCE;
     }
 
     @Override

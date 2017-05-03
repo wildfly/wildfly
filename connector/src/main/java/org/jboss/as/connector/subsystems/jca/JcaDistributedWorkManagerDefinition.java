@@ -129,14 +129,14 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
     enum DWmParameters {
         NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
                 .setAllowExpression(false)
-                .setAllowNull(false)
+                .setRequired(true)
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName("name")
                 .build()),
         SELECTOR(SimpleAttributeDefinitionBuilder.create("selector", ModelType.STRING)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName(Element.SELECTOR.getLocalName())
@@ -145,7 +145,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
                 .build()),
         POLICY(SimpleAttributeDefinitionBuilder.create("policy", ModelType.STRING)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName(Element.POLICY.getLocalName())
@@ -193,7 +193,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
             };
         }
 
-        private DWmParameters(AttributeDefinition attribute) {
+        DWmParameters(AttributeDefinition attribute) {
             this.attribute = attribute;
         }
 
@@ -218,15 +218,15 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
         }
     }
 
-    public static enum PolicyValue {
+    public enum PolicyValue {
         NEVER,
         ALWAYS,
-        WATERMARK;
+        WATERMARK
     }
 
-    public static enum SelectorValue {
+    public enum SelectorValue {
         FIRST_AVAILABLE,
         PING_TIME,
-        MAX_FREE_THREADS;
+        MAX_FREE_THREADS
     }
 }

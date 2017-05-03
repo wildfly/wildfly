@@ -75,7 +75,7 @@ public class JSFExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JSFExtension.NAMESPACE_1_0, JSFSubsystemParser_1_0.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JSFExtension.NAMESPACE_1_0, () -> JSFSubsystemParser_1_0.INSTANCE);
     }
 
     static class JSFSubsystemParser_1_0 extends PersistentResourceXMLParser {
@@ -85,7 +85,7 @@ public class JSFExtension implements Extension {
         private static final PersistentResourceXMLDescription xmlDescription;
 
         static {
-            xmlDescription = builder(JSFResourceDefinition.INSTANCE, NAMESPACE_1_0)
+            xmlDescription = builder(JSFResourceDefinition.INSTANCE.getPathElement(), NAMESPACE_1_0)
                     .addAttributes(JSFResourceDefinition.DEFAULT_JSF_IMPL_SLOT)
                     .build();
         }

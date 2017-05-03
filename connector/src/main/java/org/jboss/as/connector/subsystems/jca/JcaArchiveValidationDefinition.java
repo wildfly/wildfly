@@ -57,10 +57,10 @@ public class JcaArchiveValidationDefinition extends SimpleResourceDefinition {
         }
     }
 
-    public static enum ArchiveValidationParameters {
+    public enum ArchiveValidationParameters {
         ARCHIVE_VALIDATION_ENABLED(SimpleAttributeDefinitionBuilder.create("enabled", ModelType.BOOLEAN)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(new ModelNode().set(true))
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
@@ -68,7 +68,7 @@ public class JcaArchiveValidationDefinition extends SimpleResourceDefinition {
                 .build()),
         ARCHIVE_VALIDATION_FAIL_ON_ERROR(SimpleAttributeDefinitionBuilder.create("fail-on-error", ModelType.BOOLEAN)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(new ModelNode().set(true))
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
@@ -76,14 +76,14 @@ public class JcaArchiveValidationDefinition extends SimpleResourceDefinition {
                 .build()),
         ARCHIVE_VALIDATION_FAIL_ON_WARN(SimpleAttributeDefinitionBuilder.create("fail-on-warn", ModelType.BOOLEAN)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(new ModelNode().set(false))
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName("fail-on-warn")
                 .build());
 
-        private ArchiveValidationParameters(SimpleAttributeDefinition attribute) {
+        ArchiveValidationParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 

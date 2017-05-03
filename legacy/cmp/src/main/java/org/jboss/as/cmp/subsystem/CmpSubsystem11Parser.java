@@ -52,8 +52,6 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * @author Manuel Fehlhammer
  */
 public class CmpSubsystem11Parser extends CmpSubsystem10Parser {
-    static CmpSubsystem11Parser INSTANCE = new CmpSubsystem11Parser();
-
     protected CmpSubsystem11Parser() {
     }
 

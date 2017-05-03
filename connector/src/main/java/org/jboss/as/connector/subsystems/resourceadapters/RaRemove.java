@@ -154,6 +154,5 @@ public class RaRemove implements OperationStepHandler {
                 });
             }
         }, OperationContext.Stage.RUNTIME);
-        context.stepCompleted();
     }
 }

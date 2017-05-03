@@ -73,11 +73,8 @@ public class ListOfConnectionsHandler implements OperationStepHandler {
                     result.get(Constants.TX).set(txResult);
                     result.get(Constants.NON_TX).set(nonTxResult);
                     context.getResult().set(result);
-                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-
-        context.stepCompleted();
     }
 }

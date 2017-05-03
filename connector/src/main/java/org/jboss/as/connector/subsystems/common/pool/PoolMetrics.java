@@ -68,12 +68,9 @@ public abstract class PoolMetrics implements OperationStepHandler {
                             throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToGetMetrics(e.getLocalizedMessage()));
                         }
                     }
-                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-
-        context.stepCompleted();
     }
 
     protected abstract List<StatisticsPlugin> getMatchingStats(String jndiName, ManagementRepository repository);
@@ -102,13 +99,9 @@ public abstract class PoolMetrics implements OperationStepHandler {
                                throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToGetMetrics(e.getLocalizedMessage()));
                             }
                         }
-                        context.stepCompleted();
                     }
                 }, OperationContext.Stage.RUNTIME);
             }
-
-            context.stepCompleted();
-
         }
 
         private void setModelValue(ModelNode result, String attributeName) {

@@ -38,14 +38,8 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 class WSSubSystem20Reader extends WSSubSystem12Reader {
-    private static final WSSubSystem20Reader INSTANCE = new WSSubSystem20Reader();
-    protected WSSubSystem20Reader() {
+    WSSubSystem20Reader() {
     }
-
-    static WSSubSystem20Reader getInstance() {
-        return INSTANCE;
-    }
-
 
     @Override
     protected void readAttributes(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {

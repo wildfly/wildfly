@@ -43,7 +43,7 @@ public class HTTPConnectorDefinition extends AbstractTransportDefinition {
 
     // for remote acceptor, the socket-binding is required
     public static final SimpleAttributeDefinition SOCKET_BINDING = create(GenericTransportDefinition.SOCKET_BINDING)
-            .setAllowNull(false)
+            .setRequired(true)
             .setAllowExpression(false) // references another resource
             .setAttributeMarshaller(new AttributeMarshaller() {
                 public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws javax.xml.stream.XMLStreamException {
@@ -57,7 +57,7 @@ public class HTTPConnectorDefinition extends AbstractTransportDefinition {
 
     // for remote acceptor, the socket-binding is required
     public static final SimpleAttributeDefinition ENDPOINT = create("endpoint", ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .setAllowExpression(false) // references another resource
             .build();
 

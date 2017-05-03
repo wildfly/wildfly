@@ -59,63 +59,63 @@ public interface ConnectionFactoryAttributes {
     interface Common {
         AttributeDefinition AUTO_GROUP = SimpleAttributeDefinitionBuilder.create("auto-group", BOOLEAN)
                 .setDefaultValue(new ModelNode().set(false))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition BLOCK_ON_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("block-on-acknowledge", BOOLEAN)
                 .setDefaultValue(new ModelNode().set(false))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition BLOCK_ON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-durable-send", BOOLEAN)
                 .setDefaultValue(new ModelNode().set(true))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition BLOCK_ON_NON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-non-durable-send", BOOLEAN)
                 .setDefaultValue(new ModelNode().set(false))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition CACHE_LARGE_MESSAGE_CLIENT = SimpleAttributeDefinitionBuilder.create("cache-large-message-client", BOOLEAN)
                 .setDefaultValue(new ModelNode().set(false))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition CLIENT_FAILURE_CHECK_PERIOD =SimpleAttributeDefinitionBuilder.create("client-failure-check-period", LONG)
                 .setDefaultValue(new ModelNode().set(30000L))
                 .setMeasurementUnit(MILLISECONDS)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition COMPRESS_LARGE_MESSAGES = SimpleAttributeDefinitionBuilder.create("compress-large-messages", BOOLEAN)
                 .setDefaultValue(new ModelNode().set(false))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition CONFIRMATION_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("confirmation-window-size", INT)
                 .setDefaultValue(new ModelNode().set(-1))
                 .setMeasurementUnit(BYTES)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition CONNECTION_LOAD_BALANCING_CLASS_NAME = SimpleAttributeDefinitionBuilder.create("connection-load-balancing-policy-class-name", STRING)
                 .setDefaultValue(new ModelNode().set("org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy"))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(false)
                 .build();
 
         AttributeDefinition CONNECTION_TTL = new SimpleAttributeDefinitionBuilder("connection-ttl", LONG)
                 .setDefaultValue(new ModelNode().set(60000L))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setMeasurementUnit(MILLISECONDS)
                 .build();
@@ -155,19 +155,19 @@ public interface ConnectionFactoryAttributes {
         AttributeDefinition CONSUMER_MAX_RATE = SimpleAttributeDefinitionBuilder.create("consumer-max-rate", INT)
                 .setDefaultValue(new ModelNode(-1))
                 .setMeasurementUnit(PER_SECOND)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition CONSUMER_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("consumer-window-size", INT)
                 .setDefaultValue(new ModelNode().set(1048576))
                 .setMeasurementUnit(BYTES)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         SimpleAttributeDefinition DISCOVERY_GROUP_NAME =  SimpleAttributeDefinitionBuilder.create(CommonAttributes.DISCOVERY_GROUP_NAME, STRING)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAlternatives(CommonAttributes.CONNECTOR)
                 .setAttributeMarshaller(AttributeMarshallers.DISCOVERY_GROUP_MARSHALLER)
                 .setRestartAllServices()
@@ -175,7 +175,7 @@ public interface ConnectionFactoryAttributes {
 
         AttributeDefinition DISCOVERY_INITIAL_WAIT_TIMEOUT = SimpleAttributeDefinitionBuilder.create("discovery-initial-wait-timeout", LONG)
                 .setMeasurementUnit(MILLISECONDS)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setRestartAllServices()
                 .setDeprecated(VERSION_1_1_0)
                 .setAttributeMarshaller(NOOP_MARSHALLER)
@@ -183,12 +183,12 @@ public interface ConnectionFactoryAttributes {
 
         AttributeDefinition DUPS_OK_BATCH_SIZE = SimpleAttributeDefinitionBuilder.create("dups-ok-batch-size", INT)
                 .setDefaultValue(new ModelNode().set(1048576))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         ListAttributeDefinition ENTRIES = PrimitiveListAttributeDefinition.Builder.of(CommonAttributes.ENTRIES, ModelType.STRING)
-                .setAllowNull(false)
+                .setRequired(true)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .setListValidator(Validators.noDuplicateElements(new StringLengthValidator(1, false, true)))
@@ -197,96 +197,96 @@ public interface ConnectionFactoryAttributes {
 
         AttributeDefinition FAILOVER_ON_INITIAL_CONNECTION = SimpleAttributeDefinitionBuilder.create("failover-on-initial-connection", BOOLEAN)
                 .setDefaultValue(new ModelNode().set(false))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition FAILOVER_ON_SERVER_SHUTDOWN = SimpleAttributeDefinitionBuilder.create("failover-on-server-shutdown", BOOLEAN)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setRestartAllServices()
                 .setDeprecated(VERSION_1_1_0)
                 .build();
 
         AttributeDefinition GROUP_ID = SimpleAttributeDefinitionBuilder.create("group-id", STRING)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition MAX_RETRY_INTERVAL = SimpleAttributeDefinitionBuilder.create("max-retry-interval", LONG)
                 .setDefaultValue(new ModelNode().set(2000L))
                 .setMeasurementUnit(MILLISECONDS)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition MIN_LARGE_MESSAGE_SIZE = SimpleAttributeDefinitionBuilder.create("min-large-message-size", INT)
                 .setDefaultValue(new ModelNode().set(102400))
                 .setMeasurementUnit(BYTES)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition PRE_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("pre-acknowledge", BOOLEAN)
                 .setDefaultValue(new ModelNode().set(false))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition PRODUCER_MAX_RATE = SimpleAttributeDefinitionBuilder.create("producer-max-rate", INT)
                 .setDefaultValue(new ModelNode().set(-1))
                 .setMeasurementUnit(PER_SECOND)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition PRODUCER_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("producer-window-size", INT)
                 .setDefaultValue(new ModelNode().set(65536))
                 .setMeasurementUnit(BYTES)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
 
         AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
                 .setDefaultValue(new ModelNode().set(0))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition RETRY_INTERVAL = SimpleAttributeDefinitionBuilder.create("retry-interval", LONG)
                 .setDefaultValue(new ModelNode().set(2000L))
                 .setMeasurementUnit(MILLISECONDS)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", DOUBLE)
                 .setDefaultValue(new ModelNode().set(1.0))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition SCHEDULED_THREAD_POOL_MAX_SIZE = SimpleAttributeDefinitionBuilder.create("scheduled-thread-pool-max-size", INT)
                 .setDefaultValue(new ModelNode().set(5))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition THREAD_POOL_MAX_SIZE = SimpleAttributeDefinitionBuilder.create("thread-pool-max-size", INT)
                 .setDefaultValue(new ModelNode().set(30))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition TRANSACTION_BATCH_SIZE = SimpleAttributeDefinitionBuilder.create("transaction-batch-size", INT)
                 .setDefaultValue(new ModelNode().set(1048576))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition USE_GLOBAL_POOLS = SimpleAttributeDefinitionBuilder.create("use-global-pools", BOOLEAN)
                 .setDefaultValue(new ModelNode().set(true))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
@@ -340,7 +340,7 @@ public interface ConnectionFactoryAttributes {
         AttributeDefinition FACTORY_TYPE = create("factory-type", STRING)
                 .setDefaultValue(new ModelNode().set(ConnectionFactoryType.GENERIC.toString()))
                 .setValidator(ConnectionFactoryType.VALIDATOR)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
@@ -359,41 +359,41 @@ public interface ConnectionFactoryAttributes {
         String RECONNECT_ATTEMPTS_PROP_NAME = "reconnectAttempts";
 
         SimpleAttributeDefinition INITIAL_CONNECT_ATTEMPTS = SimpleAttributeDefinitionBuilder.create("initial-connect-attempts", INT)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setDefaultValue(new ModelNode(1))
                 .setRestartAllServices()
                 .build();
 
         SimpleAttributeDefinition INITIAL_MESSAGE_PACKET_SIZE = SimpleAttributeDefinitionBuilder.create("initial-message-packet-size", INT)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setDefaultValue(new ModelNode(1500))
                 .setRestartAllServices()
                 .build();
 
         SimpleAttributeDefinition JNDI_PARAMS = SimpleAttributeDefinitionBuilder.create("jndi-params", STRING)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
         SimpleAttributeDefinition MAX_POOL_SIZE = SimpleAttributeDefinitionBuilder.create("max-pool-size", INT)
                 .setDefaultValue(new ModelNode().set(-1))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
         SimpleAttributeDefinition MIN_POOL_SIZE = SimpleAttributeDefinitionBuilder.create("min-pool-size", INT)
                 .setDefaultValue(new ModelNode().set(-1))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
         SimpleAttributeDefinition PASSWORD = SimpleAttributeDefinitionBuilder.create("password", STRING)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
@@ -405,19 +405,19 @@ public interface ConnectionFactoryAttributes {
          */
         AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
                 .setDefaultValue(new ModelNode().set(-1))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         SimpleAttributeDefinition SETUP_ATTEMPTS = SimpleAttributeDefinitionBuilder.create("setup-attempts", INT)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
         SimpleAttributeDefinition SETUP_INTERVAL =  SimpleAttributeDefinitionBuilder.create("setup-interval", LONG)
                 .setMeasurementUnit(MILLISECONDS)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
@@ -425,7 +425,7 @@ public interface ConnectionFactoryAttributes {
         // FIXME use an enum for allowed values
         SimpleAttributeDefinition TRANSACTION = SimpleAttributeDefinitionBuilder.create("transaction", STRING)
                 .setDefaultValue(new ModelNode().set("transaction"))
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setAttributeMarshaller(new AttributeMarshaller() {
                     public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
@@ -441,25 +441,25 @@ public interface ConnectionFactoryAttributes {
 
         AttributeDefinition USE_AUTO_RECOVERY = SimpleAttributeDefinitionBuilder.create("use-auto-recovery", BOOLEAN)
                 .setDefaultValue(new ModelNode().set(true)) // HornetQResourceAdapter.useAutoRecovery = true but is not exposed publicly
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
         AttributeDefinition USE_JNDI = SimpleAttributeDefinitionBuilder.create("use-jndi", BOOLEAN)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
         AttributeDefinition USE_LOCAL_TX = SimpleAttributeDefinitionBuilder.create("use-local-tx", BOOLEAN)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
         SimpleAttributeDefinition USER = SimpleAttributeDefinitionBuilder.create("user", STRING)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setAllowExpression(true)
                 .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                 .addAccessConstraint(MESSAGING_SECURITY_DEF)

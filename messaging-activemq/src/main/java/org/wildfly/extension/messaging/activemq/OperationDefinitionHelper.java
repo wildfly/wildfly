@@ -42,7 +42,7 @@ import org.jboss.dmr.ModelType;
 public class OperationDefinitionHelper {
     public static AttributeDefinition createNonEmptyStringAttribute(String attributeName) {
         return SimpleAttributeDefinitionBuilder.create(attributeName, ModelType.STRING)
-                .setAllowNull(false)
+                .setRequired(true)
                 .setValidator(new StringLengthValidator(1))
                 .build();
     }

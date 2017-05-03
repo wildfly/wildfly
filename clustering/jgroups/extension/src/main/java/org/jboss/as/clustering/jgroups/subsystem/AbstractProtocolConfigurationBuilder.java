@@ -94,16 +94,15 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
     @SuppressWarnings("unchecked")
     @Override
     public final P createProtocol(ProtocolStackConfiguration stackConfiguration) {
-        StringBuilder builder = new StringBuilder();
-        if (this.moduleName.equals(AbstractProtocolResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue().asString()) && !this.name.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix)) {
-            builder.append(org.jgroups.conf.ProtocolConfiguration.protocol_prefix).append('.');
-        }
-        String className = builder.append(this.name).toString();
+        // A "native" protocol is one that is not specified as a class name
+        boolean nativeProtocol = this.moduleName.equals(AbstractProtocolResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue().asString()) && !this.name.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix);
+        String className = nativeProtocol ? String.join(".", org.jgroups.conf.ProtocolConfiguration.protocol_prefix, this.name) : this.name;
         try {
             Module module = this.loader.getValue().loadModule(this.moduleName);
             Class<? extends Protocol> protocolClass = module.getClassLoader().loadClass(className).asSubclass(Protocol.class);
             Protocol protocol = ProtocolFactory.newInstance(protocolClass);
-            P result = (P) ProtocolFactory.TRANSFORMER.apply(protocol);
+            // Only transform "native" protocols
+            P result = (P) (nativeProtocol ? ProtocolFactory.TRANSFORMER.apply(protocol) : protocol);
             Map<String, String> properties = new HashMap<>(this.defaults.getValue().getProperties(this.name));
             properties.putAll(this.properties);
             Configurator.resolveAndAssignFields(result, properties);
