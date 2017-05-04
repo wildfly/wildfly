@@ -49,14 +49,10 @@ import org.jboss.as.test.integration.security.common.Utils;
 import static org.jboss.as.test.integration.security.common.Utils.createTemporaryFolder;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.crypto.CryptoUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.fail;
-
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -78,7 +74,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({AggregateRealmTestCase.SetupTask.class})
-@Ignore("[WFLY-8680] Test case ignored due to failure on Windows.")
 public class AggregateRealmTestCase {
 
     private static final String CHARSET_UTF_8 = "UTF-8";
@@ -111,11 +106,6 @@ public class AggregateRealmTestCase {
             qparams.add(new BasicNameValuePair(RolePrintingServlet.PARAM_ROLE_NAME, role));
         }
         QUERY_ROLES = URLEncodedUtils.format(qparams, "UTF-8");
-    }
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeNotWindows();
     }
 
     @Deployment(name = AGGREGATE_REALM_SAME_TYPE_NAME)

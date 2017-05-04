@@ -33,12 +33,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
-
 import static org.junit.Assert.assertEquals;
-
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.wildfly.test.integration.elytron.realmmappers.AbstractRealmMapperTest.DEPLOYMENT;
@@ -64,7 +59,6 @@ import static org.wildfly.test.integration.elytron.realmmappers.RealmMapperServe
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({RealmMapperServerSetupTask.class, MappedRegexRealmMapperTestCase.SetupTask.class})
-@Ignore("[WFLY-8680] Test case ignored due to failure on Windows.")
 public class MappedRegexRealmMapperTestCase extends AbstractRealmMapperTest {
 
     private static final String COMMON_REALM_MAPPER = "commonRealmMapper";
@@ -75,11 +69,6 @@ public class MappedRegexRealmMapperTestCase extends AbstractRealmMapperTest {
     private static final String DELEGATE_REALM_MAPPER_WITH_MAPPING = "delegateRealmMapperWithMapping";
 
     private static final String DELEGATED_REALM_MAPPER = "delagetedConstantRealmMapper";
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeNotWindows();
-    }
 
     /**
      * Test whether mapped realm is chosen when user matches pattern and obtained realm is mapped in realm-map.

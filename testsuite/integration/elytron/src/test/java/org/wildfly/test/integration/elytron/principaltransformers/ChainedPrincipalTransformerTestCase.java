@@ -37,10 +37,8 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
@@ -67,11 +65,6 @@ public class ChainedPrincipalTransformerTestCase {
     private static final String PASSWORD2 = "password2";
     private static final String PASSWORD3 = "password3";
     private static final String ROLE = "JBossAdmin";
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeNotWindows();
-    }
 
     @Deployment(name = DEP_SECURITY_DOMAIN_TWO)
     public static WebArchive deploymentTwoTransformersInChain() {
