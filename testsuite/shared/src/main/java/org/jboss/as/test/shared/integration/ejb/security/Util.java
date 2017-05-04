@@ -45,6 +45,8 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import org.jboss.security.ClientLoginModule;
+import org.jboss.security.client.SecurityClient;
+import org.jboss.security.client.SecurityClientFactory;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
@@ -151,7 +153,7 @@ public class Util {
      * @throws Exception if an error occurs while switching the user's identity or if an error occurs while executing the callable task
      */
     public static <T> T switchIdentity(final String username, final String password, final Callable<T> callable) throws Exception {
-        return switchIdentity(username, password, callable, false);
+        return switchIdentity(username, password, callable, false, true);
     }
 
     /**
@@ -164,9 +166,27 @@ public class Util {
      * @param validateException whether or not to validate an exception thrown by the callable task
      * @param <T> the result type of the callable task
      * @return the result of the callable task
-     * @throws Exception Exception if an error occurs while switching the user's identity or if an error occurs while executing the callable task
+     * @throws Exception if an error occurs while switching the user's identity or if an error occurs while executing the callable task
      */
     public static <T> T switchIdentity(final String username, final String password, final Callable<T> callable, boolean validateException) throws Exception {
+        return switchIdentity(username, password, callable, validateException, true);
+    }
+
+    /**
+     * Switch the user's identity using either ClientLoginModule or SecurityClientFactory or Elytron depending on whether or not the Elytron
+     * profile is enabled.
+     *
+     * @param username the new username
+     * @param password the new password
+     * @param callable the callable task to execute under the new identity
+     * @param validateException whether or not to validate an exception thrown by the callable task
+     * @param useClientLoginModule {@code true} if {@link ClientLoginModule} should be used for legacy security,
+     * {@code false} if {@link SecurityClientFactory} should be used for legacy security instead
+     * @param <T> the result type of the callable task
+     * @return the result of the callable task
+     * @throws Exception if an error occurs while switching the user's identity or if an error occurs while executing the callable task
+     */
+    public static <T> T switchIdentity(final String username, final String password, final Callable<T> callable, boolean validateException, boolean useClientLoginModule) throws Exception {
         boolean initialAuthSucceeded = false;
         try {
             if (username != null && password != null) {
@@ -177,13 +197,24 @@ public class Util {
                     initialAuthSucceeded = true;
                     return securityIdentity.runAs(callable);
                 } else {
-                    // legacy security is enabled, use the ClientLoginModule to switch the identity
-                    LoginContext lc = getCLMLoginContext(username, password);
-                    lc.login();
-                    try {
-                        return callable.call();
-                    } finally {
-                        lc.logout();
+                    // legacy security is enabled, use the ClientLoginModule or SecurityClientFactory to switch the identity
+                    if (useClientLoginModule) {
+                        LoginContext lc = getCLMLoginContext(username, password);
+                        lc.login();
+                        try {
+                            return callable.call();
+                        } finally {
+                            lc.logout();
+                        }
+                    } else {
+                        SecurityClient client = SecurityClientFactory.getSecurityClient();
+                        client.setSimple(username, password);
+                        client.login();
+                        try {
+                            return callable.call();
+                        } finally {
+                            client.logout();
+                        }
                     }
                 }
             }
@@ -208,5 +239,20 @@ public class Util {
         } else {
             assertTrue("Expected EJBAccessException due to bad password not thrown. (EJB 3.1 FR 17.6.9)", e instanceof EJBAccessException);
         }
+    }
+
+    /**
+     * Switch the user's identity using either SecurityClientFactory or Elytron depending on whether or not the Elytron
+     * profile is enabled.
+     *
+     * @param username the new username
+     * @param password the new password
+     * @param callable the callable task to execute under the new identity
+     * @param <T> the result type of the callable task
+     * @return the result of the callable task
+     * @throws Exception if an error occurs while switching the user's identity or if an error occurs while executing the callable task
+     */
+    public static <T> T switchIdentitySCF(final String username, final String password, final Callable<T> callable) throws Exception {
+        return switchIdentity(username, password, callable, false, false);
     }
 }
