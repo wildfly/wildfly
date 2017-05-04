@@ -22,6 +22,9 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.workmanager.NamedDistributedWorkManager;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -30,8 +33,8 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.workmanager.policy.Always;
 import org.jboss.jca.core.workmanager.policy.Never;
@@ -39,11 +42,6 @@ import org.jboss.jca.core.workmanager.policy.WaterMark;
 import org.jboss.jca.core.workmanager.selector.FirstAvailable;
 import org.jboss.jca.core.workmanager.selector.MaxFreeThreads;
 import org.jboss.jca.core.workmanager.selector.PingTime;
-
-import java.util.Map;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 
 public class JcaDistributedWorkManagerWriteHandler extends AbstractWriteAttributeHandler<JcaSubsystemConfiguration> {
@@ -107,21 +105,21 @@ public class JcaDistributedWorkManagerWriteHandler extends AbstractWriteAttribut
                 }
             }
         } else if (attributeName.equals(JcaDistributedWorkManagerDefinition.DWmParameters.POLICY_OPTIONS.getAttribute().getName()) && namedDistributedWorkManager.getPolicy() != null) {
-            for (Map.Entry<String, String> entry : ((PropertiesAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.POLICY_OPTIONS.getAttribute()).unwrap(context, operation).entrySet()) {
+            for (Property property : resolvedValue.asPropertyList()) {
                 try {
-                    injector.inject(namedDistributedWorkManager.getPolicy(), entry.getKey(), entry.getValue());
+                    injector.inject(namedDistributedWorkManager.getPolicy(), property.getName(), property.getValue().asString());
                 } catch (Exception e) {
-                    ROOT_LOGGER.unsupportedPolicyOption(entry.getKey());
+                    ROOT_LOGGER.unsupportedPolicyOption(property.getName());
 
                 }
 
             }
         } else if (attributeName.equals(JcaDistributedWorkManagerDefinition.DWmParameters.SELECTOR_OPTIONS.getAttribute().getName())) {
-            for (Map.Entry<String, String> entry : ((PropertiesAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.SELECTOR_OPTIONS.getAttribute()).unwrap(context, operation).entrySet()) {
+            for (Property property : resolvedValue.asPropertyList()) {
                 try {
-                    injector.inject(namedDistributedWorkManager.getSelector(), entry.getKey(), entry.getValue());
+                    injector.inject(namedDistributedWorkManager.getSelector(), property.getName(), property.getValue().asString());
                 } catch (Exception e) {
-                    ROOT_LOGGER.unsupportedSelectorOption(entry.getKey());
+                    ROOT_LOGGER.unsupportedSelectorOption(property.getName());
                 }
 
             }
