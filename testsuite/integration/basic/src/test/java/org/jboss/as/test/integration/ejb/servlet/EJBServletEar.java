@@ -24,6 +24,8 @@ package org.jboss.as.test.integration.ejb.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.concurrent.Callable;
+
 import javax.ejb.EJB;
 import javax.naming.InitialContext;
 import javax.servlet.ServletException;
@@ -31,9 +33,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.logging.Logger;
-import org.jboss.security.client.SecurityClient;
-import org.jboss.security.client.SecurityClientFactory;
 
 /**
  * A servlet that accesses an EJB and tests whether the call argument is serialized.
@@ -51,13 +52,8 @@ public class EJBServletEar extends HttpServlet {
     StatelessLocal injectedStateless;
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        SecurityClient client = null;
-        try {
+        final Callable<Void> callable = () -> {
             InitialContext ctx = new InitialContext();
-
-            client = SecurityClientFactory.getSecurityClient();
-            client.setSimple("user1", "password1");
-            client.login();
 
             injectedSession.hello();
             injectedSession.goodbye();
@@ -68,11 +64,13 @@ public class EJBServletEar extends HttpServlet {
             String lookupString = "java:app/ejb3-ear-servlet-ejbs/Session30!";
             EJBServletHelper test = new EJBServletHelper();
             test.processRequest(lookupString, ctx);
+            return null;
+        };
+        try {
+            Util.switchIdentitySCF("user1", "password1", callable);
         } catch (Exception e) {
             log.error(e);
             throw new ServletException("Failed to call EJBs/Session30 through remote and local interfaces", e);
-        } finally {
-            client.logout();
         }
         response.setContentType("text/plain");
         PrintWriter out = response.getWriter();

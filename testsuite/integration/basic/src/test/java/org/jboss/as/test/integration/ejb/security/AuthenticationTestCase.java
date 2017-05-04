@@ -59,8 +59,6 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
-import org.jboss.security.client.SecurityClient;
-import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -195,10 +193,7 @@ public class AuthenticationTestCase {
     @Test
     public void testAuthenticatedCall() throws Exception {
         // TODO: this is not spec
-        final SecurityClient client = SecurityClientFactory.getSecurityClient();
-        client.setSimple("user1", "password1");
-        client.login();
-        try {
+        final Callable<Void> callable = () -> {
             try {
                 final Principal principal = whoAmIBean.getCallerPrincipal();
                 assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.",
@@ -209,9 +204,9 @@ public class AuthenticationTestCase {
                 fail("EJB 3.1 FR 17.6.5 The EJB container must provide the caller’s security context information during the execution of a business method ("
                         + e.getMessage() + ")");
             }
-        } finally {
-            client.logout();
-        }
+            return null;
+        };
+        Util.switchIdentitySCF("user1", "password1", callable);
     }
 
     @Test

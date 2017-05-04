@@ -22,14 +22,14 @@
 
 package org.jboss.as.test.integration.ee.concurrent;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
-import org.jboss.security.client.SecurityClient;
-import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
@@ -52,20 +52,17 @@ public class DefaultManagedScheduledExecutorServiceTestCase {
     @Deployment
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class, DefaultManagedScheduledExecutorServiceTestCase.class.getSimpleName() + ".war")
-                .addClasses(DefaultManagedScheduledExecutorServiceTestCase.class, DefaultManagedScheduledExecutorServiceTestEJB.class, TestEJBRunnable.class);
+                .addClasses(DefaultManagedScheduledExecutorServiceTestCase.class, DefaultManagedScheduledExecutorServiceTestEJB.class, TestEJBRunnable.class, Util.class);
     }
 
     @Test
     public void testTaskSubmit() throws Exception {
-        SecurityClient client = SecurityClientFactory.getSecurityClient();
-        client.setSimple("guest", "guest");
-        client.login();
-        try {
+        final Callable<Void> callable = () -> {
             final DefaultManagedScheduledExecutorServiceTestEJB testEJB = (DefaultManagedScheduledExecutorServiceTestEJB) new InitialContext().lookup("java:module/" + DefaultManagedScheduledExecutorServiceTestEJB.class.getSimpleName());
             testEJB.schedule(new TestEJBRunnable(), 10L, TimeUnit.MILLISECONDS).get();
-        } finally {
-            client.logout();
-        }
+            return null;
+        };
+        Util.switchIdentitySCF("guest", "guest", callable);
 
     }
 }
