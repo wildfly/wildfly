@@ -40,7 +40,6 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -159,7 +158,6 @@ public class EJBClientDescriptorTestCase {
      */
     @Test
     public void testEJBClientContextConfiguration() throws Exception {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
         deployer.deploy("good-client-config");
         try {
             final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_ONE + "/" + DISTINCT_NAME
@@ -236,7 +234,6 @@ public class EJBClientDescriptorTestCase {
     @Test
     @OperateOnDeployment("jboss-ejb-client_1_2_version")
     public void testClientInvocationTimeout() throws Exception {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
         deployer.deploy("jboss-ejb-client_1_2_version");
         try {
             final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + JBOSS_EJB_CLIENT_1_2_MODULE_NAME + "/" + DISTINCT_NAME
@@ -268,7 +265,6 @@ public class EJBClientDescriptorTestCase {
     @Test
     @OperateOnDeployment("jboss-ejb-client_with_properties_1_2_version")
     public void testClientPropertiesReplacementInConfig() throws Exception {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
         deployer.deploy("jboss-ejb-client_with_properties_1_2_version");
         try {
             final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + JBOSS_EJB_CLIENT_WITH_PROPERTIES_1_2_MODULE_NAME + "/" + DISTINCT_NAME
