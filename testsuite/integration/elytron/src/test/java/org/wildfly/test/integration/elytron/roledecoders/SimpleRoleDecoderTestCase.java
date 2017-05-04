@@ -42,13 +42,10 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.fail;
-
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
@@ -65,7 +62,6 @@ import org.wildfly.test.security.common.elytron.UndertowDomainMapper;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({SimpleRoleDecoderTestCase.SetupTask.class})
-@Ignore("[WFLY-8680] Test case ignored due to failure on Windows.")
 public class SimpleRoleDecoderTestCase {
 
     private static final String DECODE_FROM_ROLE_ATTRIBUTE_A = "decode-from-role-attribute-a";
@@ -88,11 +84,6 @@ public class SimpleRoleDecoderTestCase {
             qparams.add(new BasicNameValuePair(RolePrintingServlet.PARAM_ROLE_NAME, role));
         }
         QUERY_ROLES = URLEncodedUtils.format(qparams, "UTF-8");
-    }
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeNotWindows();
     }
 
     @Deployment(name = DECODE_FROM_ROLE_ATTRIBUTE_A)
@@ -203,6 +194,7 @@ public class SimpleRoleDecoderTestCase {
                 cli.sendLine(String.format("/subsystem=elytron/simple-role-decoder=%s:remove()", DECODE_FROM_ROLE_ATTRIBUTE_B));
                 cli.sendLine(String.format("/subsystem=elytron/simple-role-decoder=%s:remove()", DECODE_FROM_ROLE_ATTRIBUTE_A));
             }
+            ServerReload.reloadIfRequired(mc.getControllerClient());
         }
 
         @Override

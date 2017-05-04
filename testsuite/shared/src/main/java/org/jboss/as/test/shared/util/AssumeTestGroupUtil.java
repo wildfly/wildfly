@@ -18,8 +18,6 @@ public class AssumeTestGroupUtil {
     public static final Supplier<Boolean> CONDITION_SKIP_ELYTRON_PROFILE = () -> (System.getProperty("elytron") == null
             || Boolean.getBoolean("wildfly.tmp.enable.elytron.profile.tests"));
 
-    public static final Supplier<Boolean> SKIP_ON_WINDOWS = () -> (!System.getProperty("os.name").contains("Windows")) || Boolean.getBoolean("wildfly.tmp.enable.windows.tests");
-
     /**
      * Assume for invocation-related test failures. It skips test in case the system property
      * {@codewildfly.tmp.enable.invocation.tests} hasn't value {@code 'true'}.
@@ -36,10 +34,6 @@ public class AssumeTestGroupUtil {
      */
     public static void assumeElytronProfileTestsEnabled() {
         assumeCondition("Tests failing in Elytron profile are disabled", CONDITION_SKIP_ELYTRON_PROFILE);
-    }
-
-    public static void assumeNotWindows() {
-        assumeCondition("Tests failing on Windows are disables.", SKIP_ON_WINDOWS);
     }
 
     private static void assumeCondition(final String message, final Supplier<Boolean> assumeTrueCondition) {

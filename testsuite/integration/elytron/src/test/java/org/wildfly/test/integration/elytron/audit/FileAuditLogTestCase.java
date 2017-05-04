@@ -35,15 +35,14 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.elytron.FileAuditLog;
 
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -60,11 +59,6 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
     private static final String AUDIT_LOG_NAME = "test-audit.log";
     private static final File WORK_DIR = new File("target" + File.separatorChar + NAME);
     private static final File AUDIT_LOG_FILE = new File(WORK_DIR, AUDIT_LOG_NAME);
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeNotWindows();
-    }
 
     /**
      * Tests whether successful authentication was logged.
@@ -105,7 +99,7 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
                 createEmptyDirectory(WORK_DIR);
 
                 auditLog = FileAuditLog.builder().withName(NAME)
-                        .withPath(AUDIT_LOG_FILE.getAbsolutePath())
+                        .withPath(asAbsolutePath(AUDIT_LOG_FILE))
                         .build();
                 auditLog.create(cli);
 

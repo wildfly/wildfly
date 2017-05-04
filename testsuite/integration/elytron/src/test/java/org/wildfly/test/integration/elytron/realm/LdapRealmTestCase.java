@@ -62,13 +62,11 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
+import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.fail;
-
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -84,7 +82,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({LdapRealmTestCase.LDAPServerSetupTask.class, LdapRealmTestCase.SetupTask.class})
-@Ignore("[WFLY-8680] Test case ignored due to failure on Windows.")
 public class LdapRealmTestCase {
 
     private static final String DEPLOYMENT = "ldapRealmDep";
@@ -119,11 +116,6 @@ public class LdapRealmTestCase {
         war.addAsWebInfResource(LdapRealmTestCase.class.getPackage(), "ldap-realm-web.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(DEPLOYMENT), "jboss-web.xml");
         return war;
-    }
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeNotWindows();
     }
 
     /**
@@ -250,7 +242,7 @@ public class LdapRealmTestCase {
 
         @Override
         public void setup(ManagementClient mc, String string) throws Exception {
-            String hostname = "ldap://" + Utils.getSecondaryTestAddress(mc) + ":" + LDAP_PORT;
+            String hostname = "ldap://" + TestSuiteEnvironment.getServerAddress() + ":" + LDAP_PORT;
             try (CLIWrapper cli = new CLIWrapper(true)) {
                 cli.sendLine(String.format(
                         "/subsystem=elytron/dir-context=%s:add(url=\"%s\",principal=\"uid=admin,ou=system\",credential-reference={clear-text=secret})",
@@ -269,6 +261,7 @@ public class LdapRealmTestCase {
                         "/subsystem=undertow/application-security-domain=%s:add(http-authentication-factory=%s)",
                         DEPLOYMENT, LDAP_REALM_RELATED_CONFIGURATION_NAME));
             }
+            ServerReload.reloadIfRequired(mc.getControllerClient());
         }
 
         @Override
@@ -282,6 +275,7 @@ public class LdapRealmTestCase {
                 cli.sendLine(String.format("/subsystem=elytron/ldap-realm=%s:remove()", LDAP_REALM_NAME));
                 cli.sendLine(String.format("/subsystem=elytron/dir-context=%s:remove()", DIR_CONTEXT_NAME));
             }
+            ServerReload.reloadIfRequired(mc.getControllerClient());
         }
 
     }

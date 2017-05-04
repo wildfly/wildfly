@@ -33,12 +33,8 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
-
+import org.jboss.as.test.shared.ServerReload;
 import static org.junit.Assert.assertEquals;
-
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.wildfly.test.integration.elytron.realmmappers.AbstractRealmMapperTest.DEPLOYMENT;
@@ -59,7 +55,6 @@ import static org.wildfly.test.integration.elytron.realmmappers.RealmMapperServe
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({RealmMapperServerSetupTask.class, SimpleRegexRealmMapperTestCase.SetupTask.class})
-@Ignore("[WFLY-8680] Test case ignored due to failure on Windows.")
 public class SimpleRegexRealmMapperTestCase extends AbstractRealmMapperTest {
 
     private static final String COMMON_REALM_MAPPER = "commonRealmMapper";
@@ -67,11 +62,6 @@ public class SimpleRegexRealmMapperTestCase extends AbstractRealmMapperTest {
     private static final String DELEGATE_REALM_MAPPER = "delegateRealmMapper";
 
     private static final String DELEGATED_REALM_MAPPER = "delagetedConstantRealmMapper";
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeNotWindows();
-    }
 
     /**
      * Test whether obtained realm is used when user matches pattern and obtained realm exists.
@@ -198,6 +188,7 @@ public class SimpleRegexRealmMapperTestCase extends AbstractRealmMapperTest {
                 cli.sendLine(String.format("/subsystem=elytron/simple-regex-realm-mapper=%s:add(delegate-realm-mapper=%s,pattern=\".*@(.*)\")",
                         DELEGATE_REALM_MAPPER, DELEGATED_REALM_MAPPER));
             }
+            ServerReload.reloadIfRequired(managementClient.getControllerClient());
         }
 
         @Override
@@ -209,6 +200,7 @@ public class SimpleRegexRealmMapperTestCase extends AbstractRealmMapperTest {
                 cli.sendLine(String.format("/subsystem=elytron/simple-regex-realm-mapper=%s:remove()", COMMON_REALM_MAPPER));
                 cli.sendLine(String.format("/subsystem=elytron/constant-realm-mapper=%s:remove()", DELEGATED_REALM_MAPPER));
             }
+            ServerReload.reloadIfRequired(managementClient.getControllerClient());
         }
 
     }

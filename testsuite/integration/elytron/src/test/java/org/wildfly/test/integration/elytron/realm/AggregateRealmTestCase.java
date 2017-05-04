@@ -48,15 +48,13 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
 import static org.jboss.as.test.integration.security.common.Utils.createTemporaryFolder;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
+import org.jboss.as.test.shared.CliUtils;
+import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.crypto.CryptoUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.fail;
-
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -78,7 +76,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({AggregateRealmTestCase.SetupTask.class})
-@Ignore("[WFLY-8680] Test case ignored due to failure on Windows.")
 public class AggregateRealmTestCase {
 
     private static final String CHARSET_UTF_8 = "UTF-8";
@@ -111,11 +108,6 @@ public class AggregateRealmTestCase {
             qparams.add(new BasicNameValuePair(RolePrintingServlet.PARAM_ROLE_NAME, role));
         }
         QUERY_ROLES = URLEncodedUtils.format(qparams, "UTF-8");
-    }
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeNotWindows();
     }
 
     @Deployment(name = AGGREGATE_REALM_SAME_TYPE_NAME)
@@ -543,17 +535,17 @@ public class AggregateRealmTestCase {
             rolesAuthnRealmFile = new File(tempFolderAbsolutePath, ROLES_AUTHN_REALM_FILENAME);
             usersAuthzRealmFile = new File(tempFolderAbsolutePath, USERS_AUTHZ_REALM_FILENAME);
             rolesAuthzRealmFile = new File(tempFolderAbsolutePath, ROLES_AUTHZ_REALM_FILENAME);
-            fsRealmPath = tempFolderAbsolutePath + File.separator + "fs-realm-users";
+            fsRealmPath = CliUtils.escapePath(tempFolderAbsolutePath + File.separator + "fs-realm-users");
             createPropertiesFiles();
             try (CLIWrapper cli = new CLIWrapper(true)) {
                 cli.sendLine(String.format(
                         "/subsystem=elytron/properties-realm=%s:add(users-properties={path=%s},groups-properties={path=%s})",
-                        PROPERTIES_REALM_AUTHN_NAME, usersAuthnRealmFile.getAbsolutePath(),
-                        rolesAuthnRealmFile.getAbsolutePath()));
+                        PROPERTIES_REALM_AUTHN_NAME, asAbsolutePath(usersAuthnRealmFile),
+                        asAbsolutePath(rolesAuthnRealmFile)));
                 cli.sendLine(String.format(
                         "/subsystem=elytron/properties-realm=%s:add(users-properties={path=%s},groups-properties={path=%s})",
-                        PROPERTIES_REALM_AUTHZ_NAME, usersAuthzRealmFile.getAbsolutePath(),
-                        rolesAuthzRealmFile.getAbsolutePath()));
+                        PROPERTIES_REALM_AUTHZ_NAME, asAbsolutePath(usersAuthzRealmFile),
+                        asAbsolutePath(rolesAuthzRealmFile)));
                 cli.sendLine(String.format(
                         "/subsystem=elytron/filesystem-realm=%s:add(case-sensitive=true,path=%s)",
                         FILESYSTEM_REALM_AUTHN_NAME, fsRealmPath));
@@ -567,6 +559,7 @@ public class AggregateRealmTestCase {
                 addAggregateRealmAndRelatedResources(cli, AGGREGATE_REALM_DIFFERENT_TYPE_NAME, FILESYSTEM_REALM_AUTHN_NAME,
                         PROPERTIES_REALM_AUTHZ_NAME);
             }
+            ServerReload.reloadIfRequired(mc.getControllerClient());
         }
 
         @Override

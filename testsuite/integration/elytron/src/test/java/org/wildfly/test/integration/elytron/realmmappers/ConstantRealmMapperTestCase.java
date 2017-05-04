@@ -33,12 +33,8 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
-
+import org.jboss.as.test.shared.ServerReload;
 import static org.junit.Assert.assertEquals;
-
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.wildfly.test.integration.elytron.realmmappers.RealmMapperServerSetupTask.CORRECT_PASSWORD;
@@ -56,18 +52,12 @@ import static org.wildfly.test.integration.elytron.realmmappers.RealmMapperServe
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({RealmMapperServerSetupTask.class, ConstantRealmMapperTestCase.SetupTask.class})
-@Ignore("[WFLY-8680] Test case ignored due to failure on Windows.")
 public class ConstantRealmMapperTestCase extends AbstractRealmMapperTest {
 
     private static final String DEFAULT_REALM_MAPPER = "defaultRealmMapper";
     private static final String REALM1_MAPPER = "realm1Mapper";
     private static final String REALM2_MAPPER = "realm2Mapper";
     private static final String NON_EXIST_MAPPER = "nonExistMapper";
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeNotWindows();
-    }
 
     /**
      * Test whether default realm is used in security domain when no realm-mapper is configured.
@@ -117,6 +107,7 @@ public class ConstantRealmMapperTestCase extends AbstractRealmMapperTest {
                 cli.sendLine(String.format("/subsystem=elytron/constant-realm-mapper=%s:add(realm-name=nonExistRealm)",
                         NON_EXIST_MAPPER));
             }
+            ServerReload.reloadIfRequired(managementClient.getControllerClient());
         }
 
         @Override
@@ -131,6 +122,7 @@ public class ConstantRealmMapperTestCase extends AbstractRealmMapperTest {
                 cli.sendLine(String.format("/subsystem=elytron/constant-realm-mapper=%s:remove()",
                         NON_EXIST_MAPPER));
             }
+            ServerReload.reloadIfRequired(managementClient.getControllerClient());
         }
 
     }

@@ -43,13 +43,11 @@ import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
@@ -73,7 +71,6 @@ import org.wildfly.test.security.common.elytron.UndertowSslContext;
 @RunWith(Arquillian.class)
 @ServerSetup({ UndertowTwoWaySslTestCase.ElytronSslContextInUndertowSetupTask.class })
 @RunAsClient
-@Ignore("[WFLY-8680] Test case ignored due to failure on Windows.")
 public class UndertowTwoWaySslTestCase {
 
     private static final String NAME = UndertowTwoWaySslTestCase.class.getSimpleName();
@@ -86,11 +83,6 @@ public class UndertowTwoWaySslTestCase {
     private static final String PASSWORD = SecurityTestConstants.KEYSTORE_PASSWORD;
 
     private static URL securedRootUrl;
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeNotWindows();
-    }
 
     // just to make server setup task work
     @Deployment(testable = false)

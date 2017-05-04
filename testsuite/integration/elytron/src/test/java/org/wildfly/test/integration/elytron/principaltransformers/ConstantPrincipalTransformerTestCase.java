@@ -37,10 +37,8 @@ import org.jboss.as.test.integration.security.common.RolesPrintingServletUtils;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
@@ -65,11 +63,6 @@ public class ConstantPrincipalTransformerTestCase {
     private static final String ROLE1 = "role1";
     private static final String ROLE2 = "role2";
     private final String[] allPossibleRoles = {ROLE1, ROLE2};
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeNotWindows();
-    }
 
     @Deployment(name = DEP_SECURITY_DOMAIN)
     public static WebArchive securityDomainWithMappingModuleDeployment() {

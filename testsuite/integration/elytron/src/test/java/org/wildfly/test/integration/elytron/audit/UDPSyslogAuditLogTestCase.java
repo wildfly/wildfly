@@ -29,9 +29,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.as.test.syslogserver.UDPSyslogServerConfig;
-import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.elytron.SyslogAuditLog;
 
@@ -52,11 +50,6 @@ public class UDPSyslogAuditLogTestCase extends AbstractSyslogAuditLogTestCase {
     private static final String NAME = UDPSyslogAuditLogTestCase.class.getSimpleName();
     private static final String HOSTNAME = "hostname-" + NAME;
     private static final int PORT = 10514;
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeNotWindows();
-    }
 
     /**
      * Creates Elytron 'syslog-audit-log' and sets it as ApplicationDomain's security listener.

@@ -31,10 +31,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.wildfly.test.integration.elytron.rolemappers.RoleMapperSetupUtils.PROPERTIES_REALM_NAME;
@@ -53,7 +50,6 @@ import org.wildfly.test.security.common.elytron.PropertiesRealm;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ConstantRoleMapperTestCase.ServerSetup.class})
-@Ignore("[WFLY-8680] Test case ignored due to failure on Windows.")
 public class ConstantRoleMapperTestCase extends AbstractRoleMapperTest {
 
     private static final String ONE_ROLE_MAPPER = "one-role-contant-role-mapper";
@@ -66,11 +62,6 @@ public class ConstantRoleMapperTestCase extends AbstractRoleMapperTest {
     private static final String USER_WITH_THREE_ROLES = "userWithThreeRoles";
 
     private static final String PASSWORD = "password";
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeNotWindows();
-    }
 
     @Override
     protected String[] allTestedRoles() {
