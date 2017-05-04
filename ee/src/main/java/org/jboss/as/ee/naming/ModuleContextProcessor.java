@@ -79,7 +79,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
                 .addInjection(moduleNameBinder.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(moduleDescription.getModuleName())))
                 .addDependency(moduleContextServiceName, ServiceBasedNamingStore.class, moduleNameBinder.getNamingStoreInjector())
                 .install();
-        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES,moduleNameServiceName);
+        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, moduleNameServiceName);
 
         deploymentUnit.putAttachment(MODULE_CONTEXT_CONFIG, moduleContextServiceName);
 
@@ -106,7 +106,10 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         deploymentUnit.putAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION, setupAction);
     }
 
-    public void undeploy(DeploymentUnit context) {
-
+    public void undeploy(DeploymentUnit deploymentUnit) {
+        deploymentUnit.removeAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION);
+        deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS).removeIf(setupAction -> setupAction instanceof JavaNamespaceSetup);
+        deploymentUnit.getAttachmentList(SETUP_ACTIONS).removeIf(setupAction -> setupAction instanceof JavaNamespaceSetup);
+        deploymentUnit.removeAttachment(MODULE_CONTEXT_CONFIG);
     }
 }
