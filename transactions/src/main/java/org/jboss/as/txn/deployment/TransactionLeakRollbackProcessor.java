@@ -23,6 +23,7 @@ package org.jboss.as.txn.deployment;
 
 import javax.transaction.TransactionManager;
 
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -31,7 +32,7 @@ import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Processor that adds a {@link  org.jboss.as.server.deployment.SetupAction} to the deployment that prevents
+ * Processor that adds a {@link org.jboss.as.server.deployment.SetupAction} to the deployment that prevents
  * transactions from leaking from web requests.
  *
  * @author Stuart Douglas
@@ -49,11 +50,12 @@ public class TransactionLeakRollbackProcessor implements DeploymentUnitProcessor
                 .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, service.getTransactionManager())
                 .install();
 
-        deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS, service);
+        deploymentUnit.addToAttachmentList(Attachments.WEB_SETUP_ACTIONS, service);
     }
 
 
     @Override
-    public void undeploy(DeploymentUnit context) {
+    public void undeploy(DeploymentUnit deploymentUnit) {
+        deploymentUnit.getAttachmentList(Attachments.WEB_SETUP_ACTIONS).removeIf(setupAction -> setupAction instanceof TransactionRollbackSetupAction);
     }
 }
