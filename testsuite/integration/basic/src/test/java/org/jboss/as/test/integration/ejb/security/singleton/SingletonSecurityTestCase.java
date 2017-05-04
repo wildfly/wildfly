@@ -33,11 +33,9 @@ import javax.ejb.EJBAccessException;
 import javax.naming.InitialContext;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.categories.CommonCriteria;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -55,11 +53,6 @@ import org.junit.runner.RunWith;
 @Category(CommonCriteria.class)
 public class SingletonSecurityTestCase {
     private static final Logger log = Logger.getLogger(SingletonSecurityTestCase.class.getName());
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
-    }
 
     @Deployment
     public static Archive<?> deploy() {
