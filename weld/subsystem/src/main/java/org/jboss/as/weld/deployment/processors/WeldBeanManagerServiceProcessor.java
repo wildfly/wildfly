@@ -134,8 +134,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
 
     @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
-
-
+        deploymentUnit.getAttachmentList(Attachments.SETUP_ACTIONS).removeIf(setupAction -> setupAction instanceof WeldContextSetup);
     }
 
     private static class BeanManagerManagedReferenceFactory implements ContextListManagedReferenceFactory {
