@@ -92,7 +92,7 @@ public class StatisticsExecutorImpl implements StatisticsExecutor {
                     ((ThreadPoolExecutorMBean) realExecutor).getCurrentThreadCount();
         } else if (realExecutor instanceof ManagedQueueExecutorService) {
             return ((ManagedQueueExecutorService) realExecutor).getMaxThreads() -
-                    ((ManagedQueueExecutorService) realExecutor).getQueueSize();
+                    ((ManagedQueueExecutorService) realExecutor).getCurrentThreadCount();
         } else if (realExecutor instanceof ManagedJBossThreadPoolExecutorService) {
             return ((ManagedJBossThreadPoolExecutorService) realExecutor).getMaxThreads() -
                     ((ManagedJBossThreadPoolExecutorService) realExecutor).getCurrentThreadCount();
