@@ -71,4 +71,12 @@ public interface InfinispanEjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 8, value = "Stateful session bean %s refers to an invalid bean group %s")
     void invalidBeanGroup(Object beanId, Object groupId);
+
+    @LogMessage(level = WARN)
+    @Message(id = 9, value = "Disabling eviction from %s.  SFSB passivation should be configured via the associated EJB subsytem passivation-store.")
+    void evictionDisabled(String cacheName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 10, value = "Disabling expiration from %s.  SFSB expiration should be configured per \u00A74.3.11 of the EJB specification.")
+    void expirationDisabled(String cacheName);
 }
