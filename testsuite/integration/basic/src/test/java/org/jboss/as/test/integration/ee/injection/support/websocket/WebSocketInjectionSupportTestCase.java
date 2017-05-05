@@ -68,7 +68,9 @@ public class WebSocketInjectionSupportTestCase {
                         new PropertyPermission("node0", "read"),
                         new PropertyPermission("jboss.http.port", "read"),
                         // Needed for the serverContainer.connectToServer()
-                        new SocketPermission("*:" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")),
+                        new SocketPermission("*:" + TestSuiteEnvironment.getHttpPort(), "connect,resolve"),
+                        // Needed for xnio's WorkerThread which binds to Xnio.ANY_INET_ADDRESS, see WFLY-7538
+                        new SocketPermission("*:0", "listen,resolve")),
                         "permissions.xml");
     }
 
