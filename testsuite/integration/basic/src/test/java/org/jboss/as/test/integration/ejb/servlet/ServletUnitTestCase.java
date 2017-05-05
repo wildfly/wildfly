@@ -31,7 +31,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -40,7 +40,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,11 +53,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class ServletUnitTestCase {
     private static final Logger log = Logger.getLogger(ServletUnitTestCase.class.getName());
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
-    }
 
     @Deployment(name = "ejb", order = 2)
     public static Archive<?> deployEjbs() {
@@ -81,6 +75,7 @@ public class ServletUnitTestCase {
     public static Archive<?> deployServlet() {
         WebArchive war = getServlet("ejb3-servlet.war");
         war.addClass(EJBServlet.class);
+        war.addClass(Util.class);
         war.addAsWebInfResource(ServletUnitTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         war.addAsWebInfResource(ServletUnitTestCase.class.getPackage(), "web.xml", "web.xml");
         war.addAsManifestResource(new StringAsset("Dependencies: deployment.ejb3-servlet-ejbs.jar \n"), "MANIFEST.MF");
@@ -102,6 +97,7 @@ public class ServletUnitTestCase {
         war.addAsWebInfResource(ServletUnitTestCase.class.getPackage(), "jboss-web-ear.xml", "jboss-web.xml");
         war.addAsWebInfResource(ServletUnitTestCase.class.getPackage(), "web-ear.xml", "web.xml");
         war.addClass(EJBServletEar.class);
+        war.addClass(Util.class);
         ear.addAsModule(war);
 
         ear.addAsManifestResource(ServletUnitTestCase.class.getPackage(), "application.xml", "application.xml");
