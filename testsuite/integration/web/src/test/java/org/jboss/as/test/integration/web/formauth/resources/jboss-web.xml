@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE jboss-web
-    PUBLIC "-//JBoss//DTD Web Application 2.4//EN"
-    "http://www.jboss.org/j2ee/dtd/jboss-web_4_0.dtd">
-<jboss-web>
+<jboss-web version="11.0" xmlns="http://www.jboss.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.jboss.org/j2ee/schema/jboss-web_11_0.xsd">
     <!-- Specify the security domain for authentication/authorization and require that the domain's cache be flushed when the session invalidates. -->
     <security-domain flushOnSessionInvalidation="true">
        other
