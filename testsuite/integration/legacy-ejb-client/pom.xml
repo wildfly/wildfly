@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.eap</groupId>
+        <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>7.1.0.Beta1-redhat-SNAPSHOT</version>
+        <version>11.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-legacy-ejb-client</artifactId>
@@ -55,7 +55,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.eap</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-webservices-tests-integration</artifactId>
             <version>${project.version}</version>
             <exclusions>
@@ -67,7 +67,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.eap</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-testsuite-shared</artifactId>
             <version>${project.version}</version>
             <exclusions>
