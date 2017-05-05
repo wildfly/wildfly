@@ -40,6 +40,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.permission.ElytronPermission;
 
 import javax.security.auth.AuthPermission;
 
@@ -72,7 +73,11 @@ public class RemoteIdentityTestCase {
         jar.addClasses(SecurityInformation.class, IntermediateAccess.class, EntryBean.class, SecuredBean.class, Util.class);
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 // testSwitched(), i.e. org.jboss.as.test.shared.integration.ejb.security.Util#getCLMLoginContext(username, password), needs the following
-                new AuthPermission("modifyPrincipals")
+                new AuthPermission("modifyPrincipals"),
+                // testSwitched(), i.e. org.jboss.as.test.shared.integration.ejb.security.Util#switchIdentity(String, String, Callable<T>, boolean), i.e. SecurityDomain.getCurrent(), needs the following
+                new ElytronPermission("getSecurityDomain"),
+                // and testSwitched() -> Util.switchIdentity() -> securityDomain.authenticate(...) needs the following
+                new ElytronPermission("authenticate")
         ), "permissions.xml");
         return jar;
     }
