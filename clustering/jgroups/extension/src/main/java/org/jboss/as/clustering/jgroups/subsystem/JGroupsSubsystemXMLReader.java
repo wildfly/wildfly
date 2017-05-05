@@ -577,7 +577,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
             case SOCKET_BINDING: {
                 boolean socketProtocol = ProtocolRegistration.ProtocolType.MULTICAST_SOCKET.contains(Operations.getPathAddress(operation).getLastElement().getValue());
-                readAttribute(reader, index, operation, socketProtocol ? SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING : ProtocolResourceDefinition.DeprecatedAttribute.SOCKET_BINDING);
+                readAttribute(reader, index, operation, socketProtocol ? SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING : GenericProtocolResourceDefinition.DeprecatedAttribute.SOCKET_BINDING);
                 break;
             }
             case DATA_SOURCE: {

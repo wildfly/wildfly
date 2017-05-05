@@ -154,7 +154,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         } else if (ProtocolRegistration.ProtocolType.SOCKET_DISCOVERY.contains(property.getName())) {
             writeAttributes(writer, property.getValue(), EnumSet.allOf(SocketDiscoveryProtocolResourceDefinition.Attribute.class));
         } else {
-            writeAttributes(writer, property.getValue(), EnumSet.allOf(ProtocolResourceDefinition.DeprecatedAttribute.class));
+            writeAttributes(writer, property.getValue(), EnumSet.allOf(GenericProtocolResourceDefinition.DeprecatedAttribute.class));
         }
     }
 
