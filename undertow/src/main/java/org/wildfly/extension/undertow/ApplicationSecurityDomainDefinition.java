@@ -333,13 +333,18 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         @Override
         protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+            super.performRemove(context, operation, model);
+            knownApplicationSecurityDomains.remove(context.getCurrentAddressValue());
+        }
+
+        @Override
+        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
             if (context.isResourceServiceRestartAllowed()) {
-                String securityDomainName = context.getCurrentAddressValue();
+                super.performRuntime(context, operation, model);
+                final String securityDomainName = context.getCurrentAddressValue();
                 context.removeService(new SingleSignOnManagerServiceNameProvider(securityDomainName).getServiceName());
                 context.removeService(new SingleSignOnSessionFactoryServiceNameProvider(securityDomainName).getServiceName());
             }
-            super.performRemove(context, operation, model);
-            knownApplicationSecurityDomains.remove(context.getCurrentAddressValue());
         }
 
         @Override
