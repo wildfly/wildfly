@@ -158,7 +158,7 @@
         <version.org.jboss.common.jboss-common-beans>2.0.0.Final</version.org.jboss.common.jboss-common-beans>
         <version.org.jboss.hal.release-stream>2.9.8.Final</version.org.jboss.hal.release-stream>
         <version.org.jboss.ejb-client>4.0.0.Beta26</version.org.jboss.ejb-client>
-        <version.org.jboss.ejb-client-legacy>3.0.0.Beta5</version.org.jboss.ejb-client-legacy>
+        <version.org.jboss.ejb-client-legacy>3.0.0.Beta6</version.org.jboss.ejb-client-legacy>
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>2.0.0.Alpha2</version.org.jboss.genericjms>
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>

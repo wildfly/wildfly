@@ -67,6 +67,7 @@
                 <module>picketlink</module>
                 <module>secman</module>
                 <module>legacy</module>
+                <module>legacy-ejb-client</module>
                 <module>elytron</module>
             </modules>
         </profile>
@@ -89,6 +90,7 @@
                 <module>picketlink</module>
                 <module>secman</module>
                 <module>legacy</module>
+                <module>legacy-ejb-client</module>
                 <module>elytron</module>
             </modules>
         </profile>
@@ -209,6 +211,15 @@
             <activation><property><name>ts.legacy</name></property></activation>
             <modules>
                 <module>legacy</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.legacy.ejb.client -->
+        <profile>
+            <id>ts.integ.group.legacy.ejb.client</id>
+            <activation><property><name>ts.legacy.ejb.client</name></property></activation>
+            <modules>
+                <module>legacy-ejb-client</module>
             </modules>
         </profile>
 
