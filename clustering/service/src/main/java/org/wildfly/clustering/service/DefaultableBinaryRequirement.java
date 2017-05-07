@@ -34,4 +34,9 @@ public interface DefaultableBinaryRequirement extends BinaryRequirement {
     default Class<?> getType() {
         return this.getDefaultRequirement().getType();
     }
+
+    @Override
+    default String resolve(String parent, String child) {
+        return (child != null) ? BinaryRequirement.super.resolve(parent, child) : this.getDefaultRequirement().resolve(parent);
+    }
 }
