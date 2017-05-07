@@ -339,8 +339,8 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+            super.performRuntime(context, operation, model);
             if (context.isResourceServiceRestartAllowed()) {
-                super.performRuntime(context, operation, model);
                 final String securityDomainName = context.getCurrentAddressValue();
                 context.removeService(new SingleSignOnManagerServiceNameProvider(securityDomainName).getServiceName());
                 context.removeService(new SingleSignOnSessionFactoryServiceNameProvider(securityDomainName).getServiceName());
@@ -350,7 +350,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         @Override
         protected ServiceName serviceName(String name) {
             RuntimeCapability<?> dynamicCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(name);
-            return dynamicCapability.getCapabilityServiceName(Function.class);
+            return dynamicCapability.getCapabilityServiceName(BiFunction.class); // no-arg getCapabilityServiceName() would be fine too
         }
 
     }
