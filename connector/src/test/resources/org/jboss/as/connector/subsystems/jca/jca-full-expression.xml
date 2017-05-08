@@ -55,11 +55,9 @@
       <elytron-enabled>false</elytron-enabled>
       <selector name="${test.expr:PING_TIME}">
         <option name="myOption">${test.expr:ignored}</option>
-        <option name="myOtherOption">${test.expr:ignored}</option>
       </selector>
       <policy name="${test.expr:WATERMARK}">
         <option name="watermark">${test.expr:0}</option>
-        <option name="unusedOption">${test.expr:ignored}</option>
       </policy>
       <short-running-threads>
         <core-threads count="${test.expr:50}"/>

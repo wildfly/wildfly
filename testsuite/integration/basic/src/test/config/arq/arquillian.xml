@@ -22,38 +22,4 @@
         </configuration>
     </container>
 
-    <group qualifier="distributed-group">
-        <container qualifier="container-0">
-            <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-distributed-0</property>
-                <!-- AS7-2493 different jboss.node.name must be specified -->
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-distributed-0 -Djboss.node.name=node-0</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
-                <property name="jbossArguments">${jboss.args}</property>
-                <property name="allowConnectingToRunningServer">true</property>
-            <property name="managementAddress">${node0:127.0.0.1}</property>
-                <property name="managementPort">${as.managementPort:9990}</property>
-
-                <!-- AS7-4070 -->
-                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
-            </configuration>
-        </container>
-
-        <container qualifier="container-1">
-            <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-distributed-1</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-distributed-1 -Djboss.node.name=node-1 -Djboss.port.offset=100</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
-                <property name="jbossArguments">${jboss.args}</property>
-                <property name="allowConnectingToRunningServer">true</property>
-		<property name="managementAddress">${node1:127.0.0.1}</property>
-                <property name="managementPort">${as.managementPort.node1:10090}</property>
-
-                <!-- AS7-4070 -->
-                <property name="waitForPorts">${as.debug.port.node1:8887} ${as.managementPort.node1:10090}</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
-            </configuration>
-        </container>
-    </group>
 </arquillian>
