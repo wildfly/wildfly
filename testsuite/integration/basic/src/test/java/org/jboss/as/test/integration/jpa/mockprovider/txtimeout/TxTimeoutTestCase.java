@@ -23,8 +23,8 @@
 package org.jboss.as.test.integration.jpa.mockprovider.txtimeout;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
+import javax.ejb.EJBTransactionRolledbackException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -37,7 +37,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,7 +47,6 @@ import org.junit.runner.RunWith;
  *
  * @author Scott Marlow
  */
-@Ignore // WFLY-5319 is for fixing this test (see failure https://gist.github.com/scottmarlow/6409290362f35f2d1320)
 @RunWith(Arquillian.class)
 public class TxTimeoutTestCase {
 
@@ -138,40 +136,18 @@ public class TxTimeoutTestCase {
      */
     @Test
     @InSequence(2)
-    @Ignore
     public void test_negativeTxTimeoutTest() throws Exception {
         TestEntityManager.clearState();
         assertFalse("entity manager state is not reset", TestEntityManager.getClosedByReaperThread());
         SFSB1 sfsb1 = lookup("ejbjar/SFSB1", SFSB1.class);
 
         try {
-            sfsb1.createEmployeeWaitForTxTimeout(false, "Wily", "1 Appletree Lane", 10);
-        } catch (Exception e) { // ignore the tx rolled back exception
-            //
+            sfsb1.createEmployeeWaitForTxTimeout("Wily", "1 Appletree Lane", 10);
+        } catch (EJBTransactionRolledbackException e) { // ignore the tx rolled back exception
+
         }
         assertFalse("entity manager should not of been closed by the reaper thread", TestEntityManager.getClosedByReaperThread());
     }
 
-    /**
-     * Repeat the same test as test_negativeTxTimeoutTest but also ensure that the reaper thread canceled the tx.
-     * If this test fails, it could be that the tx reaper thread name changed or we are using a different tx manager.
-     *
-     * @throws Exception
-     */
-    @Test
-    @InSequence(3)
-    public void test_negativeTxTimeoutVerifyReaperThreadCanceledTxTest() throws Exception {
-        TestEntityManager.clearState();
-        assertFalse("entity manager state is not reset", TestEntityManager.getClosedByReaperThread());
-        SFSB1 sfsb1 = lookup("ejbjar/SFSB1", SFSB1.class);
-
-        try {
-            sfsb1.createEmployeeWaitForTxTimeout(true, "Wily", "1 Appletree Lane", 10);
-        } catch (Exception e) { // ignore the tx rolled back exception
-            //
-        }
-        assertFalse("entity manager should not of been closed by the reaper thread", TestEntityManager.getClosedByReaperThread());
-        assertTrue("transaction was canceled by reaper thread", SFSB1.isAfterCompletionCalledByTMTimeoutThread());
-    }
 
 }

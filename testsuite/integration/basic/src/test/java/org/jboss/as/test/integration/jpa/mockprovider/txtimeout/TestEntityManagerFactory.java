@@ -27,7 +27,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+
 import javax.persistence.EntityManager;
 
 /**
@@ -45,6 +47,8 @@ public class TestEntityManagerFactory implements InvocationHandler {
         invocations.add(method.getName());
         if (method.getName().equals("createEntityManager")) {
             return entityManager();
+        } else if(method.getName().equals("getProperties")) {
+            return new HashMap<String, Object>();
         } else {
             System.out.println("TestEntityManagerFactory method=" + method.getName() + " is returning null");
         }
