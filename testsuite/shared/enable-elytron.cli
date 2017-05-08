@@ -1,6 +1,9 @@
 embed-server --server-config=standalone.xml
 
 /subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:undefine-attribute(name=security-realm)
+/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:write-attribute(name=http-authentication-factory, value=application-http-authentication)
+
 /subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
 /subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
 
@@ -22,6 +25,8 @@ stop-embedded-server
 embed-server --server-config=standalone-full.xml
 
 /subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:undefine-attribute(name=security-realm)
+/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:write-attribute(name=http-authentication-factory, value=application-http-authentication)
 /subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
 /subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
 /subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
@@ -45,12 +50,16 @@ stop-embedded-server
 embed-host-controller
 
 /profile=default/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/profile=default/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:undefine-attribute(name=security-realm)
+/profile=default/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:write-attribute(name=http-authentication-factory, value=application-http-authentication)
 /profile=default/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
 /profile=default/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
 /profile=default/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
 /profile=default/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
 
 /profile=full/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/profile=full/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:undefine-attribute(name=security-realm)
+/profile=full/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:write-attribute(name=http-authentication-factory, value=application-http-authentication)
 /profile=full/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
 /profile=full/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
 /profile=full/subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
@@ -59,6 +68,8 @@ embed-host-controller
 /profile=full/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
 
 /profile=full-ha/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/profile=full-ha/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:undefine-attribute(name=security-realm)
+/profile=full-ha/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:write-attribute(name=http-authentication-factory, value=application-http-authentication)
 /profile=full-ha/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
 /profile=full-ha/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
 /profile=full-ha/subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
@@ -67,6 +78,8 @@ embed-host-controller
 /profile=full-ha/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
 
 /profile=ha/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/profile=ha/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:undefine-attribute(name=security-realm)
+/profile=ha/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:write-attribute(name=http-authentication-factory, value=application-http-authentication)
 /profile=ha/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
 /profile=ha/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
 /profile=ha/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)

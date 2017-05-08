@@ -22,7 +22,7 @@
 
 package org.jboss.as.security.api;
 
-import org.jboss.remoting3.Connection;
+import org.jboss.as.security.remoting.RemoteConnection;
 import org.jboss.security.SecurityContext;
 
 /**
@@ -36,15 +36,15 @@ import org.jboss.security.SecurityContext;
  */
 public final class ContextStateCache {
 
-    private final Connection connection;
+    private final RemoteConnection connection;
     private final SecurityContext securityContext;
 
-    ContextStateCache(final Connection connection, final SecurityContext securityContext) {
+    ContextStateCache(final RemoteConnection connection, final SecurityContext securityContext) {
         this.connection = connection;
         this.securityContext = securityContext;
     }
 
-    Connection getConnection() {
+    RemoteConnection getConnection() {
         return connection;
     }
 

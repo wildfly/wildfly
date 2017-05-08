@@ -28,27 +28,27 @@ import java.security.Principal;
 import java.util.Set;
 import java.util.stream.StreamSupport;
 
+import javax.net.ssl.SSLSession;
 import javax.security.auth.Subject;
 
 import org.jboss.as.core.security.RealmGroup;
 import org.jboss.as.core.security.RealmRole;
 import org.jboss.as.core.security.RealmUser;
-import org.jboss.remoting3.Connection;
 import org.wildfly.common.Assert;
 import org.wildfly.security.auth.server.SecurityIdentity;
 
 /**
- * A Credential wrapping a Remoting {@link Connection}.
+ * A Credential wrapping a remote connection.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public final class RemotingConnectionCredential {
 
-    private final Connection connection;
+    private final RemoteConnection connection;
     private final SecurityIdentity securityIdentity;
     private final Subject subject;
 
-    public RemotingConnectionCredential(final Connection connection, final SecurityIdentity securityIdentity) {
+    public RemotingConnectionCredential(final RemoteConnection connection, final SecurityIdentity securityIdentity) {
         Assert.checkNotNullParam("connection", connection);
         Assert.checkNotNullParam("securityIdentity", securityIdentity);
         this.connection = connection;
@@ -63,8 +63,8 @@ public final class RemotingConnectionCredential {
         this.subject = subject;
     }
 
-    Connection getConnection() {
-        return connection;
+    SSLSession getSSLSession() {
+        return connection.getSslSession();
     }
 
     SecurityIdentity getSecurityIdentity() {

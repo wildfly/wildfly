@@ -39,8 +39,11 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -66,6 +69,16 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             .setValidator(new StringLengthValidator(1, true))
             .setRestartAllServices()
             .setCapabilityReference(Capabilities.REF_HTTP_AUTHENTICATION_FACTORY)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_FACTORY_REF)
+            .setAlternatives(Constants.SECURITY_REALM)
+            .build();
+
+
+    protected static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(Constants.SECURITY_REALM, ModelType.STRING, true)
+            .setRestartAllServices()
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
+            .setAlternatives(Constants.HTTP_AUTHENITCATION_FACTORY)
             .build();
 
     protected static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING, true)
@@ -77,7 +90,8 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
     static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
             PATH,
-            HTTP_AUTHENTICATION_FACTORY
+            HTTP_AUTHENTICATION_FACTORY,
+            SECURITY_REALM
     );
     static final HttpInvokerDefinition INSTANCE = new HttpInvokerDefinition();
 
@@ -107,9 +121,13 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             final PathAddress serverAddress = hostAddress.getParent();
             String path = PATH.resolveModelAttribute(context, model).asString();
             String httpAuthenticationFactory = null;
+            String securityRealmString = null;
             final ModelNode authFactory = HTTP_AUTHENTICATION_FACTORY.resolveModelAttribute(context, model);
+            final ModelNode securityRealm = SECURITY_REALM.resolveModelAttribute(context, model);
             if (authFactory.isDefined()) {
                 httpAuthenticationFactory = authFactory.asString();
+            } else if(securityRealm.isDefined()) {
+                securityRealmString = securityRealm.asString();
             }
 
             final HttpInvokerHostService service = new HttpInvokerHostService(path);
@@ -124,6 +142,9 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
 
             if (httpAuthenticationFactory != null) {
                 builder.addCapabilityRequirement(Capabilities.REF_HTTP_AUTHENTICATION_FACTORY, HttpAuthenticationFactory.class, service.getHttpAuthenticationFactoryInjectedValue(), httpAuthenticationFactory);
+            } else  if(securityRealmString != null) {
+                final ServiceName realmServiceName = SecurityRealm.ServiceUtil.createServiceName(securityRealmString);
+                builder.addDependency(realmServiceName, SecurityRealmService.class, service.getRealmService());
             }
             if (context.hasOptionalCapability(REF_MOD_CLUSTER, HTTP_INVOKER_HOST_CAPABILITY.getDynamicName(address), null )){
                 // Our mod_cluster integration installs its service using the mod_cluster capability's service

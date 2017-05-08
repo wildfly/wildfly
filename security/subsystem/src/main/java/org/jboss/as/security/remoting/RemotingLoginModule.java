@@ -37,7 +37,6 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 
 import org.jboss.as.core.security.RealmUser;
-import org.jboss.remoting3.Connection;
 import org.jboss.security.SimpleGroup;
 import org.jboss.security.auth.callback.ObjectCallback;
 import org.jboss.security.auth.spi.AbstractServerLoginModule;
@@ -99,7 +98,6 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
         Object credential = getCredential();
         if (credential instanceof RemotingConnectionCredential) {
             final RemotingConnectionCredential remotingConnectionCredential = (RemotingConnectionCredential) credential;
-            Connection con = remotingConnectionCredential.getConnection();
             SecurityIdentity localIdentity = remotingConnectionCredential.getSecurityIdentity();
             identity = new RealmUser(localIdentity.getPrincipal().getName());
             if (getUseFirstPass()) {
@@ -109,7 +107,7 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
                 sharedState.put("javax.security.auth.login.name", identity);
 
                 if (useNewClientCert) {
-                    SSLSession session = con.getSslSession();
+                    SSLSession session = remotingConnectionCredential.getSSLSession();
                     if (session != null) {
                         try {
                             credential = session.getPeerCertificates()[0];
@@ -119,7 +117,7 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
                         }
                     }
                 } else if (useClientCert) {
-                    SSLSession session = con.getSslSession();
+                    SSLSession session = remotingConnectionCredential.getSSLSession();
                     if (session != null) {
                         try {
                             credential = session.getPeerCertificateChain()[0];

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.web.session.SimpleRoutingSupport;
 import org.jboss.as.web.session.SimpleSessionIdentifierCodec;
 import org.jboss.msc.service.Service;
@@ -55,6 +56,7 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
     private final String path;
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final InjectedValue<HttpAuthenticationFactory> httpAuthenticationFactoryInjectedValue = new InjectedValue<>();
+    private final InjectedValue<SecurityRealmService> realmService = new InjectedValue<>();
     private final InjectedValue<PathHandler> remoteHttpInvokerServiceInjectedValue = new InjectedValue<>();
 
     public HttpInvokerHostService(String path) {
@@ -66,6 +68,8 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
         HttpHandler handler = remoteHttpInvokerServiceInjectedValue.getValue();
         if(httpAuthenticationFactoryInjectedValue.getOptionalValue() != null) {
             handler = secureAccess(handler, httpAuthenticationFactoryInjectedValue.getOptionalValue());
+        } else if(realmService.getOptionalValue() != null) {
+            handler = secureAccess(handler, realmService.getOptionalValue().getHttpAuthenticationFactory());
         }
         handler = setupRoutes(handler);
         host.getValue().registerHandler(path, handler);
@@ -140,5 +144,9 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
 
     public InjectedValue<PathHandler> getRemoteHttpInvokerServiceInjectedValue() {
         return remoteHttpInvokerServiceInjectedValue;
+    }
+
+    public InjectedValue<SecurityRealmService> getRealmService() {
+        return realmService;
     }
 }

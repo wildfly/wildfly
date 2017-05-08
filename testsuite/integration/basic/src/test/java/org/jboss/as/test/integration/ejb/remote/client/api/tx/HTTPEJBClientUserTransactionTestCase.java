@@ -26,9 +26,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.http.HttpInvokerServerSetupTask;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
@@ -60,7 +58,6 @@ import java.util.Properties;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(HttpInvokerServerSetupTask.class)
 public class HTTPEJBClientUserTransactionTestCase {
     private static final Logger logger = Logger.getLogger(HTTPEJBClientUserTransactionTestCase.class);
 
