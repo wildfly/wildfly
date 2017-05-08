@@ -37,18 +37,6 @@ public interface DwmAdminObjectEjb {
 
     int getScheduleWorkRejected();
 
-    int getDistributedDoWorkAccepted();
-
-    int getDistributedDoWorkRejected();
-
-    int getDistributedStartWorkAccepted();
-
-    int getDistributedStartWorkRejected();
-
-    int getDistributedScheduleWorkAccepted();
-
-    int getDistributedScheduleWorkRejected();
-
     boolean isDoWorkDistributionEnabled();
 
     void doWork(Work work) throws WorkException;
