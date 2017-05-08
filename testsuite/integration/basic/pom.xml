@@ -65,30 +65,6 @@
             <build>
                 <plugins>
 
-                    <!-- Build the target/jbossas server configuration. -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <!-- Prepare two servers for distributed workmanager scenarios. -->
-                            <!-- one should be in target/jbossas-distributed-0 the other in target/jbossas-distributed-1 -->
-                            <execution>
-                                <id>prepare-distributed-integration</id>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <ant antfile="${basedir}/../src/test/scripts/integration-ha-build.xml">
-                                            <target name="build-distributed"/>
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>keytool-maven-plugin</artifactId>
@@ -236,7 +212,6 @@
                                         <exclude>org/jboss/as/test/integration/ee/naming/defaultbindings/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jca/moduledeployment/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/workmanager/**/*Dwm*.java</exclude>
                                     </excludes>
 
                                     <environmentVariables>
@@ -306,38 +281,11 @@
                                 </configuration>
                             </execution>
 
-                            <execution>
-                                <id>basic-integration-ha.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <!-- If you'd like to run these tests via -Dtest=<testname> you need to provide them
-                                         with the properties defined in systemPropertyVariablees -->
-                                    <!-- E.g. -Djboss.server.config.file.name=standalone-ha.xml -Darquillian.launch=distributed-group -->
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/jca/workmanager/**/*Dwm*.java</include>
-                                    </includes>
-
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
-                                    </environmentVariables>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>distributed-group</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
-                                    </systemPropertyVariables>
-
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
-                                    </additionalClasspathElements>
-                                </configuration>
-                            </execution>
                         </executions>
+
                     </plugin>
+
+
                 </plugins>
             </build>
         </profile>
@@ -385,7 +333,6 @@
                                     <excludes>
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/workmanager/**/*Dwm*.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -428,10 +375,6 @@
                                 </execution>
                                 <execution>
                                     <id>basic-integration-ldap.surefire</id>
-                                    <phase>none</phase>
-                                </execution>
-                                <execution>
-                                    <id>basic-integration-ha.surefire</id>
                                     <phase>none</phase>
                                 </execution>
                             </executions>
