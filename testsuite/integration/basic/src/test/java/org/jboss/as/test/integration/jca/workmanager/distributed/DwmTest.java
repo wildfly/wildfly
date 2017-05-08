@@ -65,7 +65,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.api.Authentication;
@@ -80,7 +79,6 @@ import org.wildfly.test.api.Authentication;
 @ServerSetup(DwmTest.DwmServerSetupTask.class)
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("Ignoring because of windows' failures. Probably test environment setup needs a review")
 public class DwmTest {
 
     private static Logger log = Logger.getLogger(DwmTest.class.getCanonicalName());
