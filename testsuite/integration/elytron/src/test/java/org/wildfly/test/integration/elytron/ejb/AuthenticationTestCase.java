@@ -50,18 +50,17 @@ import javax.ejb.EJB;
 import javax.security.auth.AuthPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -77,15 +76,12 @@ import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup({AuthenticationTestCase.EjbSecurityDomainSetup.class})
+@ServerSetup({ AuthenticationTestCase.EjbSecurityDomainSetup.class })
 @Category(CommonCriteria.class)
-@Ignore("[WFLY-7778] The deployment fails")
 public class AuthenticationTestCase {
 
     private static final String SERVER_HOST_PORT = TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort();
     private static final String WAR_URL = "http://" + SERVER_HOST_PORT + "/ejb3security/";
-
-    private static final Logger log = Logger.getLogger(AuthenticationTestCase.class.getName());
 
     /*
      * Authentication Scenarios
@@ -144,7 +140,6 @@ public class AuthenticationTestCase {
     private Entry entryBean;
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication() throws Exception {
         final Callable<Void> callable = () -> {
             String response = entryBean.whoAmI();
@@ -155,13 +150,11 @@ public class AuthenticationTestCase {
     }
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_BadPwd() throws Exception {
         Util.switchIdentity("user1", "wrong_password", () -> entryBean.whoAmI(), true);
     }
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_TwoBeans() throws Exception {
         final Callable<Void> callable = () -> {
             String[] response = entryBean.doubleWhoAmI();
@@ -173,7 +166,6 @@ public class AuthenticationTestCase {
     }
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_TwoBeans_ReAuth() throws Exception {
         final Callable<Void> callable = () -> {
             String[] response = entryBean.doubleWhoAmI("user2", "password2");
@@ -186,13 +178,11 @@ public class AuthenticationTestCase {
 
     // TODO - Similar test with first bean @RunAs - does it make sense to also manually switch?
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_TwoBeans_ReAuth_BadPwd() throws Exception {
         Util.switchIdentity("user1", "password1", () -> entryBean.doubleWhoAmI("user2", "wrong_password"), true);
     }
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthenticatedCall() throws Exception {
         // TODO: this is not spec
         final Callable<Void> callable = () -> {
@@ -227,41 +217,39 @@ public class AuthenticationTestCase {
     }
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_ViaServlet() throws Exception {
         final String result = getWhoAmI("?method=whoAmI");
         assertEquals("user1", result);
     }
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_ReAuth_ViaServlet() throws Exception {
         final String result = getWhoAmI("?method=whoAmI&username=user2&password=password2");
         assertEquals("user2", result);
     }
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_TwoBeans_ViaServlet() throws Exception {
         final String result = getWhoAmI("?method=doubleWhoAmI");
         assertEquals("user1,user1", result);
     }
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testAuthentication_TwoBeans_ReAuth_ViaServlet() throws Exception {
         final String result = getWhoAmI("?method=doubleWhoAmI&username=user2&password=password2");
         assertEquals("user1,user2", result);
     }
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
+    @RunAsClient
     public void testAuthentication_TwoBeans_ReAuth__BadPwd_ViaServlet() throws Exception {
         try {
             getWhoAmI("?method=doubleWhoAmI&username=user2&password=bad_password");
             fail("Expected IOException");
         } catch (IOException e) {
-            assertTrue(e.getMessage().contains("javax.ejb.EJBAccessException"));
+            final String message = e.getMessage();
+            assertTrue("Response should contain 'ELY01151: Evidence Verification Failed'", message.contains("ELY01151:"));
+            assertTrue("Response should contain 'javax.ejb.EJBException'", message.contains("javax.ejb.EJBException"));
         }
     }
 
@@ -270,7 +258,6 @@ public class AuthenticationTestCase {
      */
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIRSingle() throws Exception {
         final Callable<Void> callable = () -> {
             assertTrue(entryBean.doIHaveRole("Users"));
@@ -282,7 +269,6 @@ public class AuthenticationTestCase {
     }
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIR_TwoBeans() throws Exception {
         final Callable<Void> callable = () -> {
             boolean[] response;
@@ -303,7 +289,6 @@ public class AuthenticationTestCase {
     }
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIR_TwoBeans_ReAuth() throws Exception {
         final Callable<Void> callable = () -> {
             boolean[] response;
@@ -402,7 +387,6 @@ public class AuthenticationTestCase {
 
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIR_ViaServlet() throws Exception {
         String result = getWhoAmI("?method=doIHaveRole&role=Users");
         assertEquals("true", result);
@@ -413,7 +397,6 @@ public class AuthenticationTestCase {
     }
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIR_ReAuth_ViaServlet() throws Exception {
         String result = getWhoAmI("?method=doIHaveRole&role=Users&username=user2&password=password2");
         assertEquals("true", result);
@@ -424,7 +407,6 @@ public class AuthenticationTestCase {
     }
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIR_TwoBeans_ViaServlet() throws Exception {
         String result = getWhoAmI("?method=doubleDoIHaveRole&role=Users");
         assertEquals("true,true", result);
@@ -435,7 +417,6 @@ public class AuthenticationTestCase {
     }
 
     @Test
-    @Ignore("[WFLY-7778] EJB identity propagation does not work with Elytron")
     public void testICIR_TwoBeans_ReAuth_ViaServlet() throws Exception {
         String result = getWhoAmI("?method=doubleDoIHaveRole&role=Users&username=user2&password=password2");
         assertEquals("true,true", result);

@@ -21,13 +21,16 @@
  */
 package org.wildfly.test.integration.elytron.ejb;
 
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.concurrent.Callable;
 
 import javax.annotation.security.DeclareRoles;
 import javax.ejb.EJB;
-import javax.ejb.EJBAccessException;
+import javax.ejb.EJBException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
@@ -46,11 +49,15 @@ import org.jboss.as.test.shared.integration.ejb.security.Util;
 @ServletSecurity(@HttpConstraint(rolesAllowed = { "Users" }))
 @DeclareRoles("Users")
 public class WhoAmIServlet extends HttpServlet {
+
+    private static final long serialVersionUID = 1L;
+
     @EJB
     private Entry bean;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("text/plain");
         Writer writer = resp.getWriter();
         String method = req.getParameter("method");
         String username = req.getParameter("username");
@@ -75,8 +82,9 @@ public class WhoAmIServlet extends HttpServlet {
                 } else {
                     response = bean.doubleWhoAmI();
                 }
-            } catch (EJBAccessException e) {
-                resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.toString());
+            } catch (EJBException e) {
+                resp.setStatus(SC_FORBIDDEN);
+                e.printStackTrace(new PrintWriter(writer));
                 return;
             } catch (Exception e) {
                 throw new ServletException("Unexpected failure", e);

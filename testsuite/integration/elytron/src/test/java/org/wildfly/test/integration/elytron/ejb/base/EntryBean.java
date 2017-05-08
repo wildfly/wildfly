@@ -21,13 +21,15 @@
  */
 package org.wildfly.test.integration.elytron.ejb.base;
 
+import java.util.concurrent.Callable;
+
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 
-import java.util.concurrent.Callable;
-
-import org.jboss.as.test.shared.integration.ejb.security.Util;
+import org.wildfly.security.auth.server.RealmUnavailableException;
+import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.evidence.PasswordGuessEvidence;
 import org.wildfly.test.integration.elytron.ejb.WhoAmI;
 
 /**
@@ -53,7 +55,7 @@ public abstract class EntryBean {
             throw new IllegalStateException("Local getCallerPrincipal changed from '" + localWho + "' to '" + secondLocalWho);
         }
 
-        return new String[]{localWho, remoteWho};
+        return new String[] { localWho, remoteWho };
     }
 
     public String[] doubleWhoAmI(String username, String password) throws Exception {
@@ -61,14 +63,15 @@ public abstract class EntryBean {
 
         final Callable<String[]> callable = () -> {
             String remoteWho = whoAmIBean.getCallerPrincipal().getName();
-            return new String[]{localWho, remoteWho};
+            return new String[] { localWho, remoteWho };
         };
         try {
-            return Util.switchIdentity(username, password, callable);
+            return switchIdentity(username, password, callable);
         } finally {
             String secondLocalWho = context.getCallerPrincipal().getName();
             if (secondLocalWho.equals(localWho) == false) {
-                throw new IllegalStateException("Local getCallerPrincipal changed from '" + localWho + "' to '" + secondLocalWho);
+                throw new IllegalStateException(
+                        "Local getCallerPrincipal changed from '" + localWho + "' to '" + secondLocalWho);
             }
         }
     }
@@ -81,23 +84,30 @@ public abstract class EntryBean {
         boolean localDoI = context.isCallerInRole(roleName);
         boolean remoteDoI = whoAmIBean.doIHaveRole(roleName);
 
-        return new boolean[]{localDoI, remoteDoI};
+        return new boolean[] { localDoI, remoteDoI };
     }
 
     public boolean[] doubleDoIHaveRole(String roleName, String username, String password) throws Exception {
         boolean localDoI = context.isCallerInRole(roleName);
         final Callable<boolean[]> callable = () -> {
             boolean remoteDoI = whoAmIBean.doIHaveRole(roleName);
-            return new boolean[]{localDoI, remoteDoI};
+            return new boolean[] { localDoI, remoteDoI };
         };
         try {
-            return Util.switchIdentity(username, password, callable);
+            return switchIdentity(username, password, callable);
         } finally {
             boolean secondLocalDoI = context.isCallerInRole(roleName);
             if (secondLocalDoI != localDoI) {
-                throw new IllegalStateException("Local call to isCallerInRole for '" + roleName + "' changed from " + localDoI + " to " + secondLocalDoI);
+                throw new IllegalStateException("Local call to isCallerInRole for '" + roleName + "' changed from " + localDoI
+                        + " to " + secondLocalDoI);
             }
         }
+    }
+
+    private static <T> T switchIdentity(final String username, final String password, final Callable<T> callable)
+            throws RealmUnavailableException, Exception {
+        return SecurityDomain.getCurrent().authenticate(username, new PasswordGuessEvidence(password.toCharArray()))
+                .runAs(callable);
     }
 
 }
