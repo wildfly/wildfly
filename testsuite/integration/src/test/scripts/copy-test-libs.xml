@@ -26,4 +26,22 @@
     <target name="copy-jars" description="Copy jars to be tested.">
     	<copy file="${commons-collections:commons-collections:jar}" tofile="${project.build.directory}/test-libs/commons-collections.jar"/>
     </target>
+
+    <target name="build-basic-integration-jts" depends="build-basic-integration" if="basic-jts-tests">
+        <add-jts name="jbossas"/>
+    </target>
+
+    <target name="build-distributed">
+        <echo message="  =========  Building config wildfly-distributed-0  =========  "/>
+        <copy todir="target/wildfly-distributed-0" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+
+        <echo message="  =========  Building config wildfly-distributed-1  =========  "/>
+        <copy todir="target/wildfly-distributed-1" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <ts.config-as.add-port-offset name="wildfly-distributed-1" offset="100" nativePort="9999" httpPort="9990"/>
+    </target>
+
 </project>
