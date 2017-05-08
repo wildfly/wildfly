@@ -847,8 +847,4 @@ public interface MessagingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 94, value = "Unable to detect database dialect from connection metadata or JDBC driver name. Please configure this manually using the 'journal-database' property in your configuration.  Known database dialect strings are %s")
     void jdbcDatabaseDialectDetectionFailed(String databaseDialects);
-
-    @Message(id = 95, value = "The maximum name size for the paging store table, when using Oracle12C is 10 characters.")
-    IllegalArgumentException tableNameIsTooLong();
-
 }
