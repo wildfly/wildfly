@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBAccessException;
@@ -38,8 +39,7 @@ import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.ejb3.Hello;
 import org.jboss.as.test.integration.security.common.ejb3.HelloBean;
-import org.jboss.security.client.SecurityClient;
-import org.jboss.security.client.SecurityClientFactory;
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -94,14 +94,11 @@ public class EjbXACMLAuthorizationModuleTestCase {
      */
     @Test
     public void testAuthz() throws Exception {
-        SecurityClient securityClient = SecurityClientFactory.getSecurityClient();
-        securityClient.setSimple("jduke", "theduke");
-        try {
-            securityClient.login();
+        final Callable<Void> callable = () -> {
             assertEquals(HelloBean.HELLO_WORLD, hello.sayHelloWorld());
-        } finally {
-            securityClient.logout();
-        }
+            return null;
+        };
+        Util.switchIdentitySCF("jduke", "theduke", callable);
     }
 
     /**
@@ -111,16 +108,15 @@ public class EjbXACMLAuthorizationModuleTestCase {
      */
     @Test
     public void testNotAuthz() throws Exception {
-        SecurityClient securityClient = SecurityClientFactory.getSecurityClient();
-        securityClient.setSimple("JohnDoe", "jdoe");
-        try {
-            securityClient.login();
+        final Callable<Void> callable = () -> {
             hello.sayHelloWorld();
             fail("Access to sayHelloWorld() should be denied for JohnDoe.");
+            return null;
+        };
+        try {
+            Util.switchIdentitySCF("JohnDoe", "jdoe", callable);
         } catch (EJBAccessException e) {
             //OK - expected
-        } finally {
-            securityClient.logout();
         }
     }
 
@@ -137,14 +133,11 @@ public class EjbXACMLAuthorizationModuleTestCase {
         } catch (EJBAccessException e) {
             //OK
         }
-        SecurityClient securityClient = SecurityClientFactory.getSecurityClient();
-        securityClient.setSimple("jduke", "theduke");
-        try {
-            securityClient.login();
+        final Callable<Void> callable = () -> {
             assertEquals(HelloBean.HELLO_WORLD, hello.sayHelloWorld());
-        } finally {
-            securityClient.logout();
-        }
+            return null;
+        };
+        Util.switchIdentitySCF("jduke", "theduke", callable);
     }
 
     // Private methods -------------------------------------------------------
@@ -159,7 +152,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
     private static JavaArchive createJar(final String archiveName, final String securityDomainName) {
         final JavaArchive jar = ShrinkWrap
                 .create(JavaArchive.class, archiveName)
-                .addClasses(HelloBean.class, Hello.class, CustomXACMLAuthorizationModule.class)
+                .addClasses(HelloBean.class, Hello.class, CustomXACMLAuthorizationModule.class, Util.class)
                 .addAsResource(new StringAsset("jduke=theduke\nJohnDoe=jdoe"), "users.properties")
                 .addAsResource(new StringAsset("jduke=TestRole,TestRole2\nJohnDoe=TestRole"), "roles.properties")
                 .addAsResource(EjbXACMLAuthorizationModuleTestCase.class.getPackage(),

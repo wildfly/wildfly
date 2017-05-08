@@ -33,6 +33,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.ServerReload;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -106,6 +107,7 @@ public class ConstantRealmMapperTestCase extends AbstractRealmMapperTest {
                 cli.sendLine(String.format("/subsystem=elytron/constant-realm-mapper=%s:add(realm-name=nonExistRealm)",
                         NON_EXIST_MAPPER));
             }
+            ServerReload.reloadIfRequired(managementClient.getControllerClient());
         }
 
         @Override
@@ -120,6 +122,7 @@ public class ConstantRealmMapperTestCase extends AbstractRealmMapperTest {
                 cli.sendLine(String.format("/subsystem=elytron/constant-realm-mapper=%s:remove()",
                         NON_EXIST_MAPPER));
             }
+            ServerReload.reloadIfRequired(managementClient.getControllerClient());
         }
 
     }

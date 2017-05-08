@@ -33,6 +33,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.ServerReload;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -187,6 +188,7 @@ public class SimpleRegexRealmMapperTestCase extends AbstractRealmMapperTest {
                 cli.sendLine(String.format("/subsystem=elytron/simple-regex-realm-mapper=%s:add(delegate-realm-mapper=%s,pattern=\".*@(.*)\")",
                         DELEGATE_REALM_MAPPER, DELEGATED_REALM_MAPPER));
             }
+            ServerReload.reloadIfRequired(managementClient.getControllerClient());
         }
 
         @Override
@@ -198,6 +200,7 @@ public class SimpleRegexRealmMapperTestCase extends AbstractRealmMapperTest {
                 cli.sendLine(String.format("/subsystem=elytron/simple-regex-realm-mapper=%s:remove()", COMMON_REALM_MAPPER));
                 cli.sendLine(String.format("/subsystem=elytron/constant-realm-mapper=%s:remove()", DELEGATED_REALM_MAPPER));
             }
+            ServerReload.reloadIfRequired(managementClient.getControllerClient());
         }
 
     }

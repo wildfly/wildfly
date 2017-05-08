@@ -42,6 +42,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.fail;
@@ -193,6 +194,7 @@ public class SimpleRoleDecoderTestCase {
                 cli.sendLine(String.format("/subsystem=elytron/simple-role-decoder=%s:remove()", DECODE_FROM_ROLE_ATTRIBUTE_B));
                 cli.sendLine(String.format("/subsystem=elytron/simple-role-decoder=%s:remove()", DECODE_FROM_ROLE_ATTRIBUTE_A));
             }
+            ServerReload.reloadIfRequired(mc.getControllerClient());
         }
 
         @Override

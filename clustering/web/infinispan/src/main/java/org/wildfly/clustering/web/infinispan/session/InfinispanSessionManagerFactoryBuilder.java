@@ -21,9 +21,14 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.EvictionConfiguration;
+import org.infinispan.configuration.cache.ExpirationConfiguration;
+import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -49,6 +54,7 @@ import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
+import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 
 public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability> implements CapabilityServiceBuilder<SessionManagerFactory<TransactionBatch>>, InfinispanSessionManagerFactoryConfiguration<C> {
@@ -80,7 +86,23 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability> i
         String templateCacheName =  (configServiceName.length() > 3) ? configServiceName.getSimpleName() : null;
         String cacheName = this.configuration.getDeploymentName();
 
-        this.configurationBuilder = new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(this.containerName, cacheName)), this.containerName, cacheName, templateCacheName);
+        // Ensure eviction and expiration are disabled
+        Consumer<ConfigurationBuilder> configurator = builder -> {
+            // Ensure expiration is not enabled on cache
+            ExpirationConfiguration expiration = builder.expiration().create();
+            if ((expiration.lifespan() >= 0) || (expiration.maxIdle() >= 0)) {
+                builder.expiration().lifespan(-1).maxIdle(-1);
+                InfinispanWebLogger.ROOT_LOGGER.expirationDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(this.containerName, templateCacheName));
+            }
+            // Ensure eviction is not enabled on cache
+            EvictionConfiguration eviction = builder.eviction().create();
+            if (eviction.strategy().isEnabled()) {
+                builder.eviction().size(0L).strategy(EvictionStrategy.MANUAL);
+                InfinispanWebLogger.ROOT_LOGGER.evictionDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(this.containerName, templateCacheName));
+            }
+        };
+
+        this.configurationBuilder = new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(this.containerName, cacheName)), this.containerName, cacheName, templateCacheName, configurator);
         this.cacheBuilder = new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(this.containerName, cacheName)), this.containerName, cacheName);
     }
 

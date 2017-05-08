@@ -34,10 +34,12 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.wildfly.naming.java.permission.JndiPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,6 +55,11 @@ public class RemoteNamingTestCase {
 
     @ContainerResource
     private ManagementClient managementClient;
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
+    }
 
     @Deployment
     public static Archive<?> deploy() {

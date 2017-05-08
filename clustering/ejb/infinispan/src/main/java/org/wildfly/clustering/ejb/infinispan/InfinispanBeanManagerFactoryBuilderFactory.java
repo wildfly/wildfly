@@ -27,8 +27,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Consumer;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.EvictionConfiguration;
+import org.infinispan.configuration.cache.ExpirationConfiguration;
+import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.BuilderAdapter;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -42,6 +47,7 @@ import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactory;
+import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
@@ -94,8 +100,24 @@ public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManage
         String containerName = this.config.getContainerName();
         String templateCacheName = this.config.getCacheName();
 
+        // Ensure eviction and expiration are disabled
+        Consumer<ConfigurationBuilder> configurator = builder -> {
+            // Ensure expiration is not enabled on cache
+            ExpirationConfiguration expiration = builder.expiration().create();
+            if ((expiration.lifespan() >= 0) || (expiration.maxIdle() >= 0)) {
+                builder.expiration().lifespan(-1).maxIdle(-1);
+                InfinispanEjbLogger.ROOT_LOGGER.expirationDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, templateCacheName));
+            }
+            // Ensure eviction is not enabled on cache
+            EvictionConfiguration eviction = builder.eviction().create();
+            if (eviction.strategy().isEnabled()) {
+                builder.eviction().size(0L).strategy(EvictionStrategy.MANUAL);
+                InfinispanEjbLogger.ROOT_LOGGER.evictionDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, templateCacheName));
+            }
+        };
+
         List<CapabilityServiceBuilder<?>> builders = new ArrayList<>(4);
-        builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, templateCacheName));
+        builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, templateCacheName, configurator));
         builders.add(new CacheBuilder<Object, Object>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName) {
             @Override
             public ServiceBuilder<Cache<Object, Object>> build(ServiceTarget target) {

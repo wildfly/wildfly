@@ -42,6 +42,7 @@ import org.wildfly.test.security.common.elytron.FileAuditLog;
 
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -98,7 +99,7 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
                 createEmptyDirectory(WORK_DIR);
 
                 auditLog = FileAuditLog.builder().withName(NAME)
-                        .withPath(AUDIT_LOG_FILE.getAbsolutePath())
+                        .withPath(asAbsolutePath(AUDIT_LOG_FILE))
                         .build();
                 auditLog.create(cli);
 

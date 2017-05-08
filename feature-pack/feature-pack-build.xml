@@ -51,7 +51,7 @@
         <standalone
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-load-balancer.xml"
-                output-file="docs/examples/configs/standalone-load-balancer.xml"/>
+                output-file="standalone/configuration/standalone-load-balancer.xml"/>
         <standalone
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/examples/subsystems-activemq-colocated.xml"
