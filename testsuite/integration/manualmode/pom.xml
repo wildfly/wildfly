@@ -93,6 +93,7 @@
                             <systemPropertyVariables combine.children="append">
                                 <!--<management.address>${node0}</management.address>-->
                                 <jvm.args>${jvm.args.ip.server} ${modular.jdk.args}</jvm.args>
+                                <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} -Dnode0=${node0} -Dnode1=${node1} ${modular.jdk.args}</server.jvm2.args>
                                 <arquillian.launch>manual-mode</arquillian.launch>
                                 <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                 <!-- needed for SSLEJBRemoteClientTestCase only, however setting them from within the test itself isn't possible -->
