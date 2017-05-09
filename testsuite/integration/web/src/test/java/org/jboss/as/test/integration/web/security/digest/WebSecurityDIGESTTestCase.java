@@ -51,9 +51,9 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
-import org.wildfly.test.security.common.elytron.UndertowDomainMapper;
-import org.wildfly.test.security.common.elytron.UserWithRoles;
+import org.jboss.as.test.security.common.elytron.PropertyFileBasedDomain;
+import org.jboss.as.test.security.common.elytron.UndertowDomainMapper;
+import org.jboss.as.test.security.common.elytron.UserWithRoles;
 
 /**
  * Simple test case for web DIGEST authentication.

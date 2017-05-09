@@ -53,22 +53,22 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.wildfly.test.security.common.AbstractElytronSetupTask;
-import org.wildfly.test.security.common.elytron.ClientCertUndertowDomainMapper;
-import org.wildfly.test.security.common.elytron.ConcatenatingPrincipalDecoder;
-import org.wildfly.test.security.common.elytron.ConfigurableElement;
-import org.wildfly.test.security.common.elytron.ConstantPrincipalDecoder;
-import org.wildfly.test.security.common.elytron.CredentialReference;
-import org.wildfly.test.security.common.elytron.Path;
-import org.wildfly.test.security.common.elytron.PropertyFileAuthzBasedDomain;
-import org.wildfly.test.security.common.elytron.SimpleKeyManagers;
-import org.wildfly.test.security.common.elytron.SimpleKeyStore;
-import org.wildfly.test.security.common.elytron.KeyStoreRealm;
-import org.wildfly.test.security.common.elytron.SimpleServerSslContext;
-import org.wildfly.test.security.common.elytron.SimpleTrustManagers;
-import org.wildfly.test.security.common.elytron.X500AttributePrincipalDecoder;
-import org.wildfly.test.security.common.elytron.UndertowSslContext;
-import org.wildfly.test.security.common.elytron.UserWithRoles;
+import org.jboss.as.test.security.common.AbstractElytronSetupTask;
+import org.jboss.as.test.security.common.elytron.ClientCertUndertowDomainMapper;
+import org.jboss.as.test.security.common.elytron.ConcatenatingPrincipalDecoder;
+import org.jboss.as.test.security.common.elytron.ConfigurableElement;
+import org.jboss.as.test.security.common.elytron.ConstantPrincipalDecoder;
+import org.jboss.as.test.security.common.elytron.CredentialReference;
+import org.jboss.as.test.security.common.elytron.Path;
+import org.jboss.as.test.security.common.elytron.PropertyFileAuthzBasedDomain;
+import org.jboss.as.test.security.common.elytron.SimpleKeyManagers;
+import org.jboss.as.test.security.common.elytron.SimpleKeyStore;
+import org.jboss.as.test.security.common.elytron.KeyStoreRealm;
+import org.jboss.as.test.security.common.elytron.SimpleServerSslContext;
+import org.jboss.as.test.security.common.elytron.SimpleTrustManagers;
+import org.jboss.as.test.security.common.elytron.X500AttributePrincipalDecoder;
+import org.jboss.as.test.security.common.elytron.UndertowSslContext;
+import org.jboss.as.test.security.common.elytron.UserWithRoles;
 
 /**
  * Smoke tests for certificate based authentication using Elytron server-ssl-context, security domain,

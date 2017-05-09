@@ -22,9 +22,9 @@
 package org.wildfly.test.integration.elytron.rolemappers;
 
 import java.util.List;
-import org.wildfly.test.security.common.elytron.ConfigurableElement;
-import org.wildfly.test.security.common.elytron.SimpleSecurityDomain;
-import org.wildfly.test.security.common.elytron.UndertowDomainMapper;
+import org.jboss.as.test.security.common.elytron.ConfigurableElement;
+import org.jboss.as.test.security.common.elytron.SimpleSecurityDomain;
+import org.jboss.as.test.security.common.elytron.UndertowDomainMapper;
 
 /**
  *

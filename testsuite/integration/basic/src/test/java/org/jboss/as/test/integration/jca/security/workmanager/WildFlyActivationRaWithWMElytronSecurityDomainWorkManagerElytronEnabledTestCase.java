@@ -83,9 +83,9 @@ import org.junit.runner.RunWith;
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
 import org.wildfly.security.auth.principal.NamePrincipal;
 import org.wildfly.security.permission.ElytronPermission;
-import org.wildfly.test.security.common.AbstractElytronSetupTask;
-import org.wildfly.test.security.common.elytron.ConfigurableElement;
-import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
+import org.jboss.as.test.security.common.AbstractElytronSetupTask;
+import org.jboss.as.test.security.common.elytron.ConfigurableElement;
+import org.jboss.as.test.security.common.elytron.PropertyFileBasedDomain;
 
 /**
  * Test security inflow with JCA work manager using Elytron security domain

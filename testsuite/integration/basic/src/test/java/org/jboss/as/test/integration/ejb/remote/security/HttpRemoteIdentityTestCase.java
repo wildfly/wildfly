@@ -50,9 +50,9 @@ import org.wildfly.naming.client.WildFlyInitialContextFactory;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
-import org.wildfly.test.security.common.AbstractElytronSetupTask;
-import org.wildfly.test.security.common.elytron.ConfigurableElement;
-import org.wildfly.test.security.common.elytron.EJBApplicationSecurityDomainMapping;
+import org.jboss.as.test.security.common.AbstractElytronSetupTask;
+import org.jboss.as.test.security.common.elytron.ConfigurableElement;
+import org.jboss.as.test.security.common.elytron.EJBApplicationSecurityDomainMapping;
 
 /**
  * A test case to test an unsecured EJB setting the username and password before the call reaches a secured EJB.

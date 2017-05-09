@@ -51,7 +51,7 @@ import org.jboss.as.test.integration.web.security.WebSecurityCommon;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.wildfly.extension.undertow.security.jaspi.modules.HTTPSchemeServerAuthModule;
-import org.wildfly.test.security.common.elytron.UserWithRoles;
+import org.jboss.as.test.security.common.elytron.UserWithRoles;
 
 /**
  * Creates SecurityDomain for JASPI auth tests. Concrete classes use different AuthModules.

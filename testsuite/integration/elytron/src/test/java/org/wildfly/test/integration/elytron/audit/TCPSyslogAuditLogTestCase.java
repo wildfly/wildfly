@@ -31,11 +31,9 @@ import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.syslogserver.TCPSyslogServerConfig;
 import org.junit.runner.RunWith;
-import org.wildfly.test.security.common.elytron.SyslogAuditLog;
+import org.jboss.as.test.security.common.elytron.SyslogAuditLog;
 
 import static org.productivity.java.syslog4j.SyslogConstants.TCP;
-import static org.wildfly.test.integration.elytron.audit.AbstractAuditLogTestCase.setEventListenerOfApplicationDomain;
-import static org.wildfly.test.integration.elytron.audit.AbstractSyslogAuditLogTestCase.setupAndStartSyslogServer;
 
 /**
  * Class for particular settings for 'syslog-audit-log' Elytron subsystem resource that communicates over TCP protocol.

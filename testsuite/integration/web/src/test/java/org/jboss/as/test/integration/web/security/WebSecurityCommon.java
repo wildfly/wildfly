@@ -31,7 +31,7 @@ import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.jboss.logging.Logger;
-import org.wildfly.test.security.common.elytron.UserWithRoles;
+import org.jboss.as.test.security.common.elytron.UserWithRoles;
 
 /**
  * @author Jan Stourac

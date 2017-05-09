@@ -38,7 +38,7 @@ import org.jboss.as.test.shared.ServerReload;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.security.common.elytron.FileAuditLog;
+import org.jboss.as.test.security.common.elytron.FileAuditLog;
 
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;

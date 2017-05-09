@@ -66,7 +66,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
+import org.jboss.as.test.security.common.elytron.EjbElytronDomainSetup;
 
 /**
  * Test case to hold the authentication scenarios, these range from calling a servlet which calls a bean to calling a bean which

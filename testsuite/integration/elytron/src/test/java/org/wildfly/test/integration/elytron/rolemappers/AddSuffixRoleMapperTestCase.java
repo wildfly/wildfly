@@ -39,9 +39,9 @@ import static org.wildfly.test.integration.elytron.rolemappers.AbstractRoleMappe
 import static org.wildfly.test.integration.elytron.rolemappers.AbstractRoleMapperTest.createDeploymentForPrintingRoles;
 import static org.wildfly.test.integration.elytron.rolemappers.RoleMapperSetupUtils.PROPERTIES_REALM_NAME;
 import static org.wildfly.test.integration.elytron.rolemappers.RoleMapperSetupUtils.addSecurityDomainWithRoleMapper;
-import org.wildfly.test.security.common.AbstractElytronSetupTask;
-import org.wildfly.test.security.common.elytron.ConfigurableElement;
-import org.wildfly.test.security.common.elytron.PropertiesRealm;
+import org.jboss.as.test.security.common.AbstractElytronSetupTask;
+import org.jboss.as.test.security.common.elytron.ConfigurableElement;
+import org.jboss.as.test.security.common.elytron.PropertiesRealm;
 
 /**
  * Test case for Elytron Add Suffix Role Mapper.

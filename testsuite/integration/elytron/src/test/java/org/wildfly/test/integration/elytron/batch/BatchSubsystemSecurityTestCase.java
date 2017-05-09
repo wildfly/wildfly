@@ -63,12 +63,12 @@ import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
-import org.wildfly.test.security.common.AbstractElytronSetupTask;
-import org.wildfly.test.security.common.elytron.ConfigurableElement;
-import org.wildfly.test.security.common.elytron.EJBApplicationSecurityDomainMapping;
-import org.wildfly.test.security.common.elytron.PermissionRef;
-import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
-import org.wildfly.test.security.common.elytron.SimplePermissionMapper;
+import org.jboss.as.test.security.common.AbstractElytronSetupTask;
+import org.jboss.as.test.security.common.elytron.ConfigurableElement;
+import org.jboss.as.test.security.common.elytron.EJBApplicationSecurityDomainMapping;
+import org.jboss.as.test.security.common.elytron.PermissionRef;
+import org.jboss.as.test.security.common.elytron.PropertyFileBasedDomain;
+import org.jboss.as.test.security.common.elytron.SimplePermissionMapper;
 
 /**
  * This is for testing the BatchPermission from batch-jberet subsystem.
