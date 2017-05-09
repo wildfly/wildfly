@@ -22,8 +22,15 @@
 
 package org.wildfly.test.security.common.elytron;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -211,27 +218,16 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         System.out.println("tearing down...");
 
         List<ModelNode> updates = new LinkedList<>();
-        updates.add(createRemoveIgnoring(undertowDomainAddress));
-        updates.add(createRemoveIgnoring(httpAuthenticationAddress));
+        updates.add(Util.createRemoveOperation(undertowDomainAddress));
+        updates.add(Util.createRemoveOperation(httpAuthenticationAddress));
         updates.add(Util.getWriteAttributeOperation(ejbRemoteAddress, "connector-ref", "http-remoting-connector"));
-        updates.add(createRemoveIgnoring(ejbDomainAddress));
-        updates.add(createRemoveIgnoring(remotingConnectorAddress));
-        updates.add(createRemoveIgnoring(saslAuthenticationAddress));
-        updates.add(createRemoveIgnoring(domainAddress));
-        updates.add(createRemoveIgnoring(realmAddress));
+        updates.add(Util.createRemoveOperation(ejbDomainAddress));
+        updates.add(Util.createRemoveOperation(remotingConnectorAddress));
+        updates.add(Util.createRemoveOperation(saslAuthenticationAddress));
+        updates.add(Util.createRemoveOperation(domainAddress));
+        updates.add(Util.createRemoveOperation(realmAddress));
 
-        try {
-            applyUpdates(managementClient.getControllerClient(), updates, true);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static ModelNode createRemoveIgnoring(PathAddress address) {
-        ModelNode remove = Util.createRemoveOperation(address);
-        // Don't rollback when the AS detects the war needs the module
-        remove.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        return remove;
+        applyUpdates(managementClient.getControllerClient(), updates, false);
     }
 
     protected static void applyUpdates(final ModelControllerClient client, final List<ModelNode> updates, boolean allowFailure) {
@@ -245,7 +241,7 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         }
         try {
             applyUpdate(client, compositeOp, allowFailure);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
