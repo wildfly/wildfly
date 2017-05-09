@@ -39,6 +39,7 @@ import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -46,7 +47,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * @author Ivo Studensky
+ * @author Ivo Studensky - <istudensky@redhat.com>, initial test case
+ * @author Romain Pelisse - <belaran@redhat.com>, rework testcase for work on JBEAP-6449
+ *
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -67,6 +70,7 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
         String objectStoreType = readObjectStoreType();
         assertTrue("Invalid store type: " + objectStoreType,
                 objectStoreType.equals("journal") || objectStoreType.equals("default"));
+        setDefaultObjectStore();
     }
 
     @After
@@ -117,16 +121,17 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
     }
 
     @Test
-    public void ifJournalIsTrueThenHornetQToo() {
-        // default is 'journal' so checking directly
+    public void ifJournalIsTrueThenHornetQToo() throws IOException, MgmtOperationException {
+        useJournalStore();
         checkThatAllUseAttributesAreConsistent("true", "false", "true");
     }
 
-    private void useJdbcStore() throws IOException {
+    private void useJdbcStore() throws IOException, MgmtOperationException {
         useJdbcStore(true);
     }
 
-    private void useJdbcStore(boolean expectedResults) throws IOException {
+    private void useJdbcStore(boolean expectedResults) throws IOException, MgmtOperationException {
+        setDefaultObjectStore();
         // 1 - Create DS - required for the JDBC store
         createDataSource();
         // 2 - Set the value for 'jdbc-store-datasource'
@@ -200,6 +205,70 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
         }
     }
 
+    enum StorageMode {
+
+        USE_JDBC_STORE("use-jdbc-store"), USE_JOURNAL_STORE("use-journal-store"), USE_HORNETQ_STORE("use-hornetq-store");
+
+        StorageMode(String attributeName) {
+            this.attributeName = attributeName;
+        }
+
+        String attributeName;
+
+        public static StorageMode buildFromAttributeName(String attributeName) {
+            for ( StorageMode mode : StorageMode.values() ) {
+                if ( mode.attributeName.equals(attributeName) )
+                    return mode;
+            }
+            throw new IllegalArgumentException("No such storage mode available:" + attributeName);
+        }
+    }
+
+    /*
+     * Checks that using two different storage mechanisms, within a
+     * batch, make the batch fails.
+     *
+     * See https://issues.jboss.org/browse/WFLY-8335 for more information
+     */
+    @Test(expected=java.lang.AssertionError.class)
+    public void testBatchCliFailsIfNoDSisDefined() throws IOException {
+        createDataSource();
+        cli.sendLine("batch");
+        cli.sendLine("/subsystem=transactions:write-attribute(name=use-journal-store,value=true)");
+        cli.sendLine("/subsystem=transactions:write-attribute(name=jdbc-store-datasource, value=java:jboss/datasources/"
+                + JDBC_STORE_DS_NAME + ")");
+        cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store,value=true)");
+        cli.sendLine("run-batch");
+    }
+
+    @Test
+    public void testThatAlternatesAreProperlyDefined() throws IOException {
+        cli.sendLine("/subsystem=transactions:read-resource-description");
+        CLIOpResult result = cli.readAllAsOpResult();
+        if ( result != null && result.getResultAsMap() != null ) {
+            ModelNode atts = (ModelNode)result.getResponseNode().get("result").get("attributes");
+            for ( StorageMode mode : StorageMode.values() )
+                checkStorageMode(atts, mode);
+        }
+        else
+            fail("Read resource description operation did provide any result");
+    }
+
+    private void checkStorageMode(ModelNode atts, StorageMode mode) {
+        ModelNode modeNode = atts.get(mode.attributeName);
+        assertTrue(modeNode != null);
+        ModelNode alternatives = modeNode.get("alternatives");
+        assertTrue(alternatives != null);
+        assertEquals(2, alternatives.asList().size());
+        for ( int nbAlternative = 0; nbAlternative < 2 ; nbAlternative++ )
+            checkAlternative(alternatives.get(nbAlternative).asString(), mode);
+    }
+
+    private void checkAlternative(String alternative, StorageMode mode) {
+        StorageMode alternativeStorageMode = StorageMode.buildFromAttributeName(alternative);
+        assertTrue(alternativeStorageMode != mode );
+    }
+
     private void useJournalStore() throws IOException, MgmtOperationException {
         cli.sendLine("/subsystem=transactions:write-attribute(name=use-journal-store, value=true)");
         check("journal");
@@ -260,12 +329,12 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
 
     private void setDefaultObjectStore() throws IOException, MgmtOperationException {
         final String objectStoreType = readObjectStoreType();
-        if ("journal".equals(objectStoreType)) {
+        if ("default".equals(objectStoreType)) {
             return;
         }
 
         try {
-            cli.sendLine("/subsystem=transactions:write-attribute(name=use-journal-store, value=true)");
+            cli.sendLine("/subsystem=transactions:write-attribute(name=use-journal-store, value=false)");
         } finally {
             cli.sendLine("reload");
         }
