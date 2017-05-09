@@ -30,13 +30,11 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -73,13 +71,6 @@ public class JBossAppXMLSecurityTestCase {
         protected String getSecurityDomainName() {
             return "mydomain";
         }
-    }
-
-    @BeforeClass
-    public static void beforeClass() {
-        // This test fails when the Elytron profile is enabled for the same reason RunAsPrincipalTestCase
-        // currently fails - see JBEAP-9198 and JBEAP-10049
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
     }
 
     @Deployment(testable = false) // the incorrectly named "testable" attribute tells Arquillian whether or not
