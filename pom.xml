@@ -218,7 +218,6 @@
         <version.org.wildfly.build-tools>1.1.8.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>3.0.0.Beta19</version.org.wildfly.core>
-        <version.org.wildfly.client-config>1.0.0.Beta4</version.org.wildfly.client-config>
         <version.org.wildfly.discovery-client>1.0.0.Beta10</version.org.wildfly.discovery-client>
         <version.org.wildfly.plugin>1.2.0.Alpha4</version.org.wildfly.plugin>
         <version.org.wildfly.http-client>1.0.0.CR3</version.org.wildfly.http-client>
@@ -6183,18 +6182,6 @@
                 <groupId>org.wildfly.discovery</groupId>
                 <artifactId>wildfly-discovery-client</artifactId>
                 <version>${version.org.wildfly.discovery-client}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            
-            <dependency>
-                <groupId>org.wildfly.client</groupId>
-                <artifactId>wildfly-client-config</artifactId>
-                <version>${version.org.wildfly.client-config}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
