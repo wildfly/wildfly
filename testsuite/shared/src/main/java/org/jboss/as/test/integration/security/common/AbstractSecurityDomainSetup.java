@@ -1,5 +1,6 @@
 package org.jboss.as.test.integration.security.common;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ public abstract class AbstractSecurityDomainSetup implements ServerSetupTask {
         }
     }
 
-    protected static void applyUpdate(final ModelControllerClient client, ModelNode update, boolean allowFailure) throws Exception {
+    protected static void applyUpdate(final ModelControllerClient client, ModelNode update, boolean allowFailure) throws IOException {
         ModelNode result = client.execute(new OperationBuilder(update).build());
         if (result.hasDefined("outcome") && (allowFailure || "success".equals(result.get("outcome").asString()))) {
             if (result.hasDefined("result")) {
