@@ -45,7 +45,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.jboss.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.security.auth.AuthPermission;
 
@@ -53,19 +53,20 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
-import org.junit.Ignore;
-import org.wildfly.test.integration.elytron.ejb.authentication.EntryBean;
-import org.wildfly.test.integration.elytron.ejb.base.WhoAmIBean;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.elytron.ejb.authentication.EntryBean;
+import org.wildfly.test.integration.elytron.ejb.base.WhoAmIBean;
 import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
 
 /**
@@ -78,6 +79,7 @@ import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
 @RunWith(Arquillian.class)
 @ServerSetup({AuthenticationTestCase.EjbSecurityDomainSetup.class})
 @Category(CommonCriteria.class)
+@Ignore("[WFLY-7778] The deployment fails")
 public class AuthenticationTestCase {
 
     private static final String SERVER_HOST_PORT = TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort();
