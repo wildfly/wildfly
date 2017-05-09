@@ -27,7 +27,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
@@ -76,24 +75,5 @@ class MailServerAdd extends RestartParentResourceAddHandler {
         String jndiName = MailSessionAdd.getJndiName(parentModel, context);
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         context.removeService(bindInfo.getBinderServiceName());
-    }
-
-    //todo this is workaround for recording capabilities as Restart*Parent* handlers don't handle capabilities yet!
-    @Override
-    protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
-        super.updateModel(context, operation);
-        recordCapabilitiesAndRequirements(context, context.readResource(PathAddress.EMPTY_ADDRESS));
-    }
-
-    private void recordCapabilitiesAndRequirements(final OperationContext context, Resource resource) throws OperationFailedException {
-
-        context.registerCapability(MailServerDefinition.SERVER_CAPABILITY.fromBaseCapability(context.getCurrentAddress()));
-
-        ModelNode model = resource.getModel();
-        for (AttributeDefinition ad : attributes) {
-            if (model.hasDefined(ad.getName()) || ad.hasCapabilityRequirements()) {
-                ad.addCapabilityRequirements(context, resource, model.get(ad.getName()));
-            }
-        }
     }
 }
