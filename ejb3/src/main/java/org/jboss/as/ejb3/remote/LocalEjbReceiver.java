@@ -56,6 +56,7 @@ import org.jboss.security.SecurityContextAssociation;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -269,6 +270,12 @@ public class LocalEjbReceiver extends EJBReceiver {
             //we do not marshal the return type unless we have to, the spec only says we have to
             //pass parameters by reference
             receiverContext.resultReady(new CloningResultProducer(invocation, resultCloner, result, allowPassByReference));
+
+            for(Map.Entry<String, Object> entry : interceptorContext.getContextData().entrySet()) {
+                if (entry.getValue() instanceof Serializable) {
+                    invocation.getContextData().put(entry.getKey(), entry.getValue());
+                }
+            }
         }
     }
 
