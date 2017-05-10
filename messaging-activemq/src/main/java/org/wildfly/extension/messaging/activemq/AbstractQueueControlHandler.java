@@ -423,39 +423,19 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
     protected Map<String, String> transformToMap(CompositeData msg){
         Map<String, String> props = new HashMap<String, String>();
 
-        if (msg.get("Text")!= null) {
-            props.put("JMSText", msg.get("Text").toString());
+        if(msg.get("Text")!=null){
+            props.put("JMSText", String.valueOf(msg.get("Text")));
         }
-        if (msg.get("JMSCorrelationID") != null) {
-            props.put("JMSCorrelationID", msg.get("JMSCorrelationID").toString());
-        }
-        if (msg.get("JMSDestination") != null) {
-            props.put("JMSDestination", msg.get("JMSDestination").toString());
-        }
-        if (msg.get("JMSReplyTo") != null) {
-            props.put("JMSReplyTo", msg.get("JMSReplyTo").toString());
-        }
-        if (msg.get("JMSTimestamp")!= null) {
-            props.put("JMSTimestamp", msg.get("JMSTimestamp").toString());
-        }
-        if (msg.get("JMSDeliveryMode")!= null) {
-            props.put("JMSDeliveryMode", msg.get("JMSDeliveryMode").toString());
-        }
-        if (msg.get("JMSExpiration")!= null) {
-            props.put("JMSExpiration",msg.get("JMSExpiration").toString());
-        }
-        if (msg.get("JMSMessageID")!= null) {
-            props.put("JMSMessageID", msg.get("JMSMessageID").toString());
-        }
-        if (msg.get("JMSPriority")!= null) {
-            props.put("JMSPriority", msg.get("JMSPriority").toString());
-        }
-        if (msg.get("JMSRedelivered")!= null) {
-            props.put("JMSRedelivered",msg.get("JMSRedelivered").toString());
-        }
-        if (msg.get("JMSType")!= null) {
-            props.put("JMSType", msg.get("JMSType").toString());
-        }
+            props.put("JMSCorrelationID", String.valueOf(msg.get("JMSCorrelationID")));
+            props.put("JMSDestination", String.valueOf(msg.get("JMSDestination")));
+            props.put("JMSReplyTo", String.valueOf(msg.get("JMSReplyTo")));
+            props.put("JMSTimestamp", String.valueOf(msg.get("JMSTimestamp")));
+            props.put("JMSDeliveryMode", String.valueOf(msg.get("JMSDeliveryMode")));
+            props.put("JMSExpiration",String.valueOf(msg.get("JMSExpiration")));
+            props.put("JMSMessageID", String.valueOf(msg.get("JMSMessageID")));
+            props.put("JMSPriority", String.valueOf(msg.get("JMSPriority")));
+            props.put("JMSRedelivered",String.valueOf(msg.get("JMSRedelivered")));
+            props.put("JMSType", String.valueOf(msg.get("JMSType")));
 
         return props;
     }
