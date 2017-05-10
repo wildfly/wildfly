@@ -47,6 +47,7 @@ public class MessagingDependencyProcessor implements DeploymentUnitProcessor {
     public static final ModuleIdentifier AS_MESSAGING = ModuleIdentifier.create("org.wildfly.extension.messaging-activemq");
     public static final ModuleIdentifier JMS_API = ModuleIdentifier.create("javax.jms.api");
     public static final ModuleIdentifier JTS = ModuleIdentifier.create("org.jboss.jts");
+    private static ModuleIdentifier IRON_JACAMAR_API = ModuleIdentifier.create("org.jboss.ironjacamar.api");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -55,6 +56,7 @@ public class MessagingDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         addDependency(moduleSpecification, moduleLoader, JMS_API);
+        addDependency(moduleSpecification, moduleLoader, IRON_JACAMAR_API);
 
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             addDependency(moduleSpecification, moduleLoader, AS_MESSAGING);
