@@ -24,6 +24,8 @@ package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.createNonEmptyStringAttribute;
 
+import javax.management.openmbean.CompositeData;
+
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
 import org.apache.activemq.artemis.api.jms.management.JMSQueueControl;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
@@ -187,6 +189,11 @@ public class JMSQueueControlHandler extends AbstractQueueControlHandler<JMSQueue
             @Override
             public String listDeliveringMessagesAsJSON() throws Exception {
                 return control.listDeliveringMessagesAsJSON();
+            }
+
+            @Override
+            public CompositeData[] browse(String filter) throws Exception {
+                return control.browse(filter);
             }
         };
     }
