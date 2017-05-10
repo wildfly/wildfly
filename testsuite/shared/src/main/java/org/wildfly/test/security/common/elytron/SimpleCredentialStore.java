@@ -94,7 +94,7 @@ public class SimpleCredentialStore extends AbstractConfigurableElement implement
 
         for (Entry<String, String> entry : aliases.entrySet()) {
             // /subsystem=elytron/credential-store=test/alias=alias1:add(secret-value=mySecretValue)
-            cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add(secret-value=\"%s\")", name,
+            cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:add-alias(alias=%s, secret-value=\"%s\")", name,
                     entry.getKey(), entry.getValue()));
         }
     }
@@ -107,7 +107,7 @@ public class SimpleCredentialStore extends AbstractConfigurableElement implement
         // remove aliases
         for (String alias : aliases.keySet()) {
             // lowercase alias used - https://issues.jboss.org/browse/WFLY-8131
-            cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:remove()", name, alias.toLowerCase(Locale.ROOT)));
+            cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:remove-alias(alias=%s)", name, alias.toLowerCase(Locale.ROOT)));
         }
 
         cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:remove()", name));
