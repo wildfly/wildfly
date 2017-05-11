@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -44,6 +45,7 @@ import org.jboss.as.ee.subsystem.ManagedExecutorServiceResourceDefinition;
 import org.jboss.as.ee.subsystem.ManagedScheduledExecutorServiceResourceDefinition;
 import org.jboss.as.ee.subsystem.ManagedThreadFactoryResourceDefinition;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -70,7 +72,11 @@ public class EEConcurrentManagementTestCase {
     public static Archive<?> deploy() {
         return ShrinkWrap.create(JavaArchive.class, EEConcurrentManagementTestCase.class.getSimpleName() + ".jar")
                 .addClasses(EEConcurrentManagementTestCase.class)
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller, org.jboss.as.ee\n"), "MANIFEST.MF");
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller, org.jboss.as.ee, org.jboss.remoting3\n"), "MANIFEST.MF")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new RemotingPermission("createEndpoint"),
+                        new RemotingPermission("connect")
+                ), "permissions.xml");
     }
 
     @Test

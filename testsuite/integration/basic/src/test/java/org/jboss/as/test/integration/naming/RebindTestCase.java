@@ -42,8 +42,6 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
-import java.io.FilePermission;
-import java.net.SocketPermission;
 import java.net.URL;
 
 import javax.ejb.EJB;
@@ -54,7 +52,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.subsystem.NamingExtension;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
@@ -90,12 +87,8 @@ public class RebindTestCase {
         ), "MANIFEST.MF");
 
         jar.addAsManifestResource(createPermissionsXmlAsset(
-                new RemotingPermission("addConnectionProvider"),
                 new RemotingPermission("connect"),
-                new RemotingPermission("createEndpoint"),
-                new RuntimePermission("createXnioWorker"),
-                new FilePermission(tmpdir + "/standalone/tmp/auth/-", "read"),
-                new SocketPermission(TestSuiteEnvironment.getServerAddress(), "connect,resolve")
+                new RemotingPermission("createEndpoint")
         ), "permissions.xml");
 
         return jar;
