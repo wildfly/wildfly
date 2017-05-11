@@ -36,6 +36,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public abstract class TCCLDeploymentProcessor implements DeploymentUnitProcessor {
 
+    @Override
     public final void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
@@ -46,6 +47,7 @@ public abstract class TCCLDeploymentProcessor implements DeploymentUnitProcessor
         }
     }
 
+    @Override
     public final void undeploy(final DeploymentUnit context) {
         ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {

@@ -135,8 +135,9 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
-
+    public void undeploy(DeploymentUnit deploymentUnit) {
+        deploymentUnit.removeAttachment(WeldAttachments.CLASSES_RESOURCE_ROOT);
+        deploymentUnit.removeAttachment(ExplicitBeanArchiveMetadataContainer.ATTACHMENT_KEY);
     }
 
     private BeansXml parseBeansXml(VirtualFile beansXmlFile, PropertyReplacingBeansXmlParser parser, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {

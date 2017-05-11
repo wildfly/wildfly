@@ -79,6 +79,7 @@ public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor 
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
+    public void undeploy(DeploymentUnit deploymentUnit) {
+        deploymentUnit.removeAttachment(WeldAttachments.BEAN_DEFINING_ANNOTATIONS);
     }
 }

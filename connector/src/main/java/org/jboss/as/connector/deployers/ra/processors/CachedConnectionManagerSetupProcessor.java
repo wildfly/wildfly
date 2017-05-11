@@ -71,8 +71,9 @@ public class CachedConnectionManagerSetupProcessor implements DeploymentUnitProc
     }
 
     @Override
-    public void undeploy(final DeploymentUnit context) {
-
+    public void undeploy(final DeploymentUnit deploymentUnit) {
+        deploymentUnit.getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS).removeIf(setupAction -> setupAction instanceof CachedConnectionManagerSetupAction);
+        deploymentUnit.getAttachmentList(Attachments.WEB_SETUP_ACTIONS).removeIf(setupAction -> setupAction instanceof CachedConnectionManagerSetupAction);
     }
 
     private static class CachedConnectionManagerSetupAction implements SetupAction, Service<Void> {

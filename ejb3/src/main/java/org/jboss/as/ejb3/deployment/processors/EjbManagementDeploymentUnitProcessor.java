@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
+import static org.jboss.as.server.deployment.DeploymentModelUtils.DEPLOYMENT_RESOURCE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +31,13 @@ import java.util.List;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
 import org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentRuntimeHandler;
@@ -92,14 +94,16 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
             return;
         }
 
-        // Iterate through each component, installing it into the container
+        // Iterate through each component, uninstalling it
         for (final InstalledComponent configuration : deploymentUnit.getAttachmentList(EjbDeploymentAttachmentKeys.MANAGED_COMPONENTS)) {
             try {
-                uninstallManagementResource(configuration);
+                uninstallManagementResource(configuration, deploymentUnit);
             } catch (RuntimeException e) {
                 EjbLogger.DEPLOYMENT_LOGGER.failedToRemoveManagementResources(configuration, e.getLocalizedMessage());
             }
         }
+
+        deploymentUnit.removeAttachment(EjbDeploymentAttachmentKeys.MANAGED_COMPONENTS);
     }
 
     private void installManagementResource(ComponentConfiguration configuration, DeploymentUnit deploymentUnit) {
@@ -113,15 +117,24 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
 
         final EJBComponentDescription description = (EJBComponentDescription) configuration.getComponentDescription();
         if (description.isTimerServiceRequired()) {
-            final PathAddress timerServiceAddress = PathAddress.pathAddress(addr.getLastElement(),
-                    EJB3SubsystemModel.TIMER_SERVICE_PATH);
+            final PathAddress timerServiceAddress = PathAddress.pathAddress(addr.getLastElement(), EJB3SubsystemModel.TIMER_SERVICE_PATH);
             final TimerServiceResource timerServiceResource = ((TimerServiceImpl) description.getTimerService()).getResource();
             deploymentResourceSupport.registerDeploymentSubResource(EJB3Extension.SUBSYSTEM_NAME, timerServiceAddress, timerServiceResource);
         }
     }
 
-    private void uninstallManagementResource(final InstalledComponent component) {
+    private void uninstallManagementResource(final InstalledComponent component, DeploymentUnit deploymentUnit) {
         component.getType().getRuntimeHandler().unregisterComponent(component.getAddress());
+
+        // Deregister possible /service=timer-service
+        Resource root = deploymentUnit.getAttachment(DEPLOYMENT_RESOURCE);
+        Resource subResource = root.getChild(component.getAddress().getParent().getLastElement());
+        if (subResource != null) {
+            Resource componentResource = subResource.getChild(component.getAddress().getLastElement());
+            if (componentResource != null) {
+                componentResource.removeChild(EJB3SubsystemModel.TIMER_SERVICE_PATH);
+            }
+        }
     }
 
     private static PathAddress getComponentAddress(EJBComponentType type, ComponentConfiguration configuration, DeploymentUnit deploymentUnit) {

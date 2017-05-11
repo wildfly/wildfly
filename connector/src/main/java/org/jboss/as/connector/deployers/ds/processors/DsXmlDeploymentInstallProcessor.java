@@ -116,7 +116,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
      * file and attach a configuration discovered during processing.
      *
      * @param phaseContext the deployment unit context
-     * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException
+     * @throws DeploymentUnitProcessingException
      *
      */
     @Override
@@ -221,23 +221,26 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
         XMLXaDataSourceRuntimeHandler.INSTANCE.unregisterDataSource(addr);
     }
 
-    public void undeploy(final DeploymentUnit context) {
-        final List<DataSources> dataSourcesList = context.getAttachmentList(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
+    @Override
+    public void undeploy(final DeploymentUnit deploymentUnit) {
+        final List<DataSources> dataSourcesList = deploymentUnit.getAttachmentList(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
 
         for (final DataSources dataSources : dataSourcesList) {
             if (dataSources.getDataSource() != null) {
                 for (int i = 0; i < dataSources.getDataSource().size(); i++) {
-                    DataSource ds = (DataSource)dataSources.getDataSource().get(i);
-                    undeployDataSource(ds, context);
+                    DataSource ds = dataSources.getDataSource().get(i);
+                    undeployDataSource(ds, deploymentUnit);
                 }
             }
             if (dataSources.getXaDataSource() != null) {
-               for (int i = 0; i < dataSources.getXaDataSource().size(); i++) {
-                    XaDataSource xads = (XaDataSource)dataSources.getXaDataSource().get(i);
-                    undeployXaDataSource(xads, context);
+                for (int i = 0; i < dataSources.getXaDataSource().size(); i++) {
+                    XaDataSource xads = dataSources.getXaDataSource().get(i);
+                    undeployXaDataSource(xads, deploymentUnit);
                 }
             }
         }
+
+        deploymentUnit.removeAttachment(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
     }
 
 

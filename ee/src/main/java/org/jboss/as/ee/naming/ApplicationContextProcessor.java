@@ -48,7 +48,7 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
      * Add a ContextService for this module.
      *
      * @param phaseContext the deployment unit context
-     * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException
+     * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -66,11 +66,11 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
                 .addDependency(applicationContextServiceName, ServiceBasedNamingStore.class, applicationNameBinder.getNamingStoreInjector())
                 .addInjection(applicationNameBinder.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(moduleDescription.getApplicationName())))
                 .install();
-        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES,appNameServiceName);
+        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, appNameServiceName);
         deploymentUnit.putAttachment(Attachments.APPLICATION_CONTEXT_CONFIG, applicationContextServiceName);
     }
 
-    public void undeploy(DeploymentUnit context) {
-
+    public void undeploy(DeploymentUnit deploymentUnit) {
+        deploymentUnit.removeAttachment(Attachments.APPLICATION_CONTEXT_CONFIG);
     }
 }

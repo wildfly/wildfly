@@ -185,11 +185,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         return hostName;
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
-
     private void processDeployment(final WarMetaData warMetaData, final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget,
                                    final String deploymentName, final String hostName, final String serverInstanceName)
             throws DeploymentUnitProcessingException {
@@ -517,6 +512,11 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             }
         }
         return securityDomain;
+    }
+
+    @Override
+    public void undeploy(final DeploymentUnit deploymentUnit) {
+        deploymentUnit.removeAttachment(ServletContextAttribute.ATTACHMENT_KEY);
     }
 
 }

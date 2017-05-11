@@ -50,11 +50,14 @@ public final class WSModelDeploymentProcessor extends TCCLDeploymentProcessor im
     }
 
     @Override
-    public void internalUndeploy(final org.jboss.as.server.deployment.DeploymentUnit context) {
+    public void internalUndeploy(final DeploymentUnit context) {
         if (isWebServiceDeployment(context)) {
             ServerConfigImpl config = (ServerConfigImpl)context.getServiceRegistry().getRequiredService(WSServices.CONFIG_SERVICE).getValue();
             config.decrementWSDeploymentCount();
         }
+
+        // Cleans up reference established by AbstractDeploymentModelBuilder#propagateAttachments
+        context.removeAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
     }
 
     private static boolean isWebServiceDeployment(final DeploymentUnit unit) {

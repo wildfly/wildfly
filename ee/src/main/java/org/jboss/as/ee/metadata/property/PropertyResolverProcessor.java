@@ -40,6 +40,9 @@ public class PropertyResolverProcessor implements DeploymentUnitProcessor {
         deploymentUnit.putAttachment(Attachments.FINAL_PROPERTY_REPLACER, PropertyReplacers.resolvingReplacer(propertyResolver));
     }
 
-    public void undeploy(DeploymentUnit context) {
+    public void undeploy(DeploymentUnit deploymentUnit) {
+        deploymentUnit.removeAttachment(Attachments.FINAL_PROPERTY_REPLACER);
+        deploymentUnit.removeAttachment(Attachments.FINAL_PROPERTY_RESOLVER);
+        deploymentUnit.removeAttachment(Attachments.DEPLOYMENT_PROPERTY_RESOLVERS);
     }
 }
