@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.batch.deployment;
 
 import java.io.IOException;
+import java.util.PropertyPermission;
 import java.util.concurrent.TimeUnit;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
@@ -43,11 +44,14 @@ import org.jboss.as.test.integration.batch.common.CountingItemReader;
 import org.jboss.as.test.integration.batch.common.CountingItemWriter;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests the start, stop and restart functionality for deployments.
@@ -73,7 +77,12 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         return createDefaultWar(DEPLOYMENT_NAME, DeploymentDescriptorTestCase.class.getPackage(), "test-chunk.xml")
                 .addClasses(CountingItemReader.class, CountingItemWriter.class)
                 .addClass(Operations.class)
-                .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller\n"), "META-INF/MANIFEST.MF");
+                .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller, org.jboss.remoting3\n"), "META-INF/MANIFEST.MF")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new RemotingPermission("createEndpoint"),
+                        new RemotingPermission("connect"),
+                        new PropertyPermission("ts.timeout.factor", "read")
+                ), "permissions.xml");
     }
 
     @Test
