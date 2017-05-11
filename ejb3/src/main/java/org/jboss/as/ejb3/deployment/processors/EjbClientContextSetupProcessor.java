@@ -227,10 +227,6 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
             if (path != null && ! path.isEmpty()) {
                 rule = rule.matchPath(path);
             }
-            final String userInfo = destinationUri.getUserInfo();
-            if (userInfo != null) {
-                rule = rule.matchUser(userInfo);
-            }
             final OptionMap connectOptions = connectionSpec.getConnectOptions();
             authenticationConfiguration = RemotingOptions.mergeOptionsIntoAuthenticationConfiguration(connectOptions, authenticationConfiguration);
             AuthenticationConfiguration configuration = CLIENT.getAuthenticationConfiguration(destinationUri, context, - 1, "ejb", "jboss", null);
