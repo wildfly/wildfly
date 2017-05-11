@@ -92,20 +92,21 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
         } else if ("default".equals(cacheType)) {
             cacheFactory = new DefaultAuthenticationCacheFactory();
         }
+        SecurityDomainContext sdc;
         try {
-            securityDomainContext = securityManagement.createSecurityDomainContext(name, cacheFactory);
+            sdc = securityManagement.createSecurityDomainContext(name, cacheFactory, jsseSecurityDomain);
         } catch (Exception e) {
             throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityDomainService", e);
         }
         if (jsseSecurityDomain != null) {
             try {
                 jsseSecurityDomain.reloadKeyAndTrustStore();
-                securityDomainContext.setJSSE(jsseSecurityDomain);
             } catch (Exception e) {
                 throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityDomainService", e);
             }
         }
-        securityManagement.getSecurityManagerMap().put(name, securityDomainContext);
+        securityManagement.getSecurityManagerMap().put(name, sdc);
+        this.securityDomainContext = sdc;
     }
 
     /** {@inheritDoc} */

@@ -270,6 +270,21 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
      * @throws Exception if an error occurs during creation
      */
     public SecurityDomainContext createSecurityDomainContext(String securityDomain, AuthenticationCacheFactory cacheFactory) throws Exception {
+        return createSecurityDomainContext(securityDomain, cacheFactory, null);
+    }
+
+    /**
+     * Creates a {@code SecurityDomainContext} optionally including a {@link JSSESecurityDomain}
+     *
+     * @param securityDomain name of the security domain. Cannot be {@code null}
+     * @param cacheFactory creates a cache implementation. Cannot be {@code null}
+     * @param jsseSecurityDomain a JSSE security domain. May be {@code null}
+     * @return an instance of {@code SecurityDomainContext}
+     * @throws Exception if an error occurs during creation
+     */
+    public SecurityDomainContext createSecurityDomainContext(String securityDomain,
+                                                                    AuthenticationCacheFactory cacheFactory,
+                                                                    JSSESecurityDomain jsseSecurityDomain) throws Exception {
         SecurityLogger.ROOT_LOGGER.debugf("Creating SDC for domain = %s", securityDomain);
         AuthenticationManager am = createAuthenticationManager(securityDomain);
         if (cacheFactory != null && am instanceof CacheableManager) {
@@ -287,12 +302,11 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
             setDeepCopySubjectMode(am);
         }
 
-        SecurityDomainContext securityDomainContext = new SecurityDomainContext(am);
-        securityDomainContext.setAuthorizationManager(createAuthorizationManager(securityDomain));
-        securityDomainContext.setAuditManager(createAuditManager(securityDomain));
-        securityDomainContext.setIdentityTrustManager(createIdentityTrustManager(securityDomain));
-        securityDomainContext.setMappingManager(createMappingManager(securityDomain));
-        return securityDomainContext;
+        return new SecurityDomainContext(am,
+                createAuthorizationManager(securityDomain),
+                createAuditManager(securityDomain),
+                createIdentityTrustManager(securityDomain), createMappingManager(securityDomain),
+                jsseSecurityDomain);
     }
 
     /**

@@ -57,6 +57,8 @@ import static org.jboss.as.security.Constants.SERVICE_AUTH_TOKEN;
 import static org.jboss.as.security.Constants.TRUST_MODULE;
 import static org.jboss.as.security.Constants.TYPE;
 import static org.jboss.as.security.Constants.URL;
+import static org.jboss.as.security.SecurityDomainResourceDefinition.CACHE_CONTAINER_NAME;
+import static org.jboss.as.security.SecurityDomainResourceDefinition.LEGACY_SECURITY_DOMAIN;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -152,7 +154,9 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         super.recordCapabilitiesAndRequirements(context, operation, resource);
         String cacheType = getAuthenticationCacheType(resource.getModel());
         if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {
-            context.registerAdditionalCapabilityRequirement(InfinispanDefaultCacheRequirement.CONFIGURATION.resolve(SecurityDomainResourceDefinition.CACHE_CONTAINER_NAME), SecurityDomainResourceDefinition.CACHE_CONTAINER.getDynamicName(context.getCurrentAddressValue()), SecurityDomainResourceDefinition.CACHE_TYPE.getName());
+            context.registerAdditionalCapabilityRequirement(InfinispanDefaultCacheRequirement.CONFIGURATION.resolve(CACHE_CONTAINER_NAME),
+                    LEGACY_SECURITY_DOMAIN.getDynamicName(context.getCurrentAddressValue()),
+                    SecurityDomainResourceDefinition.CACHE_TYPE.getName());
         }
     }
 
@@ -166,15 +170,16 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         final ServiceTarget target = context.getServiceTarget();
         ServiceBuilder<SecurityDomainContext> builder = target
                 .addService(SecurityDomainService.SERVICE_NAME.append(securityDomain), securityDomainService)
+                .addAliases(LEGACY_SECURITY_DOMAIN.getCapabilityServiceName(securityDomain))
                 .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
                         securityDomainService.getSecurityManagementInjector())
                 .addDependency(JaasConfigurationService.SERVICE_NAME, Configuration.class,
                         securityDomainService.getConfigurationInjector());
 
         if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {
-            builder.addDependency(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), SecurityDomainResourceDefinition.CACHE_CONTAINER_NAME),
+            builder.addDependency(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), CACHE_CONTAINER_NAME),
                     Object.class, securityDomainService.getCacheManagerInjector());
-            builder.addDependency(InfinispanDefaultCacheRequirement.CONFIGURATION.getServiceName(context, SecurityDomainResourceDefinition.CACHE_CONTAINER_NAME));
+            builder.addDependency(InfinispanDefaultCacheRequirement.CONFIGURATION.getServiceName(context, CACHE_CONTAINER_NAME));
         }
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
