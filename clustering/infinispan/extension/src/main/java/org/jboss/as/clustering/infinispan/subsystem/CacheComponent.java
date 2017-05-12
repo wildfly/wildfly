@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.stream.Stream;
 
+import org.jboss.as.clustering.controller.ResourceServiceNameFactory;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.msc.service.ServiceName;
@@ -32,7 +33,7 @@ import org.jboss.msc.service.ServiceName;
  * Enumerates the configurable cache components
  * @author Paul Ferraro
  */
-public enum CacheComponent implements ComponentServiceNameFactory {
+public enum CacheComponent implements ResourceServiceNameFactory {
 
     MODULE("module"),
     EVICTION(EvictionResourceDefinition.PATH),

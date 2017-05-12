@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.ResourceServiceNameFactory;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.msc.service.ServiceName;
@@ -29,7 +30,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author Paul Ferraro
  */
-public enum CacheContainerComponent implements ComponentServiceNameFactory {
+public enum CacheContainerComponent implements ResourceServiceNameFactory {
 
     MODULE("module"),
     SITE("site"),
