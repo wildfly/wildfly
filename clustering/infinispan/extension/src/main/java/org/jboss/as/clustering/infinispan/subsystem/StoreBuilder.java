@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Capability.PERSISTENCE;
 import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.FETCH_STATE;
 import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.PASSIVATION;
 import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.PRELOAD;
@@ -38,6 +39,7 @@ import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StoreConfiguration;
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
@@ -48,6 +50,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.Value;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
@@ -55,7 +58,7 @@ import org.wildfly.clustering.service.ValueDependency;
 /**
  * @author Paul Ferraro
  */
-public abstract class StoreBuilder<C extends StoreConfiguration, B extends AbstractStoreConfigurationBuilder<C, B>> extends ComponentBuilder<PersistenceConfiguration> implements ResourceServiceBuilder<PersistenceConfiguration>, Consumer<B> {
+public abstract class StoreBuilder<C extends StoreConfiguration, B extends AbstractStoreConfigurationBuilder<C, B>> extends CapabilityServiceNameProvider implements ResourceServiceBuilder<PersistenceConfiguration>, Value<PersistenceConfiguration>, Consumer<B> {
 
     private final ValueDependency<AsyncStoreConfiguration> async;
     private final Class<B> builderClass;
@@ -68,10 +71,10 @@ public abstract class StoreBuilder<C extends StoreConfiguration, B extends Abstr
     private volatile boolean shared;
     private volatile boolean singleton;
 
-    StoreBuilder(PathAddress cacheAddress, Class<B> builderClass) {
-        super(CacheComponent.PERSISTENCE, cacheAddress);
+    StoreBuilder(PathAddress address, Class<B> builderClass) {
+        super(PERSISTENCE, address);
         this.builderClass = builderClass;
-        this.async = new InjectedValueDependency<>(CacheComponent.STORE_WRITE.getServiceName(cacheAddress), AsyncStoreConfiguration.class);
+        this.async = new InjectedValueDependency<>(CacheComponent.STORE_WRITE.getServiceName(address.getParent()), AsyncStoreConfiguration.class);
     }
 
     @Override

@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Capability.PERSISTENCE;
+
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
@@ -32,8 +34,8 @@ import org.jboss.as.controller.PathAddress;
  */
 public class NoStoreBuilder extends ComponentBuilder<PersistenceConfiguration> implements ResourceServiceBuilder<PersistenceConfiguration> {
 
-    NoStoreBuilder(PathAddress cacheAddress) {
-        super(CacheComponent.PERSISTENCE, cacheAddress);
+    NoStoreBuilder(PathAddress address) {
+        super(PERSISTENCE, address);
     }
 
     @Override

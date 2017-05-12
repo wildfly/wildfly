@@ -23,17 +23,13 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
-import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -41,7 +37,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.service.Requirement;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/store=STORE
@@ -53,31 +48,9 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement("file-store", "FILE_STORE");
     static final PathElement PATH = pathElement("file");
 
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        RELATIVE_PATH("org.wildfly.clustering.infinispan.cache.store.file.relative-path", CommonRequirement.PATH_MANAGER),
-        ;
-        private final RuntimeCapability<Void> definition;
-
-        Capability(String name, Requirement... requirements) {
-            this.definition = RuntimeCapability.Builder.of(name, true).addRequirements(Stream.of(requirements).map(Requirement::getName).toArray(String[]::new)).build();
-        }
-
-        @Override
-        public RuntimeCapability<?> getDefinition() {
-            return this.definition;
-        }
-
-        @Override
-        public RuntimeCapability<?> resolve(PathAddress address) {
-            PathAddress cacheAddress = address.getParent();
-            PathAddress containerAddress = cacheAddress.getParent();
-            return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue(), cacheAddress.getLastElement().getValue());
-        }
-    }
-
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         RELATIVE_PATH("path", ModelType.STRING, builder -> builder.setAllowExpression(true)),
-        RELATIVE_TO("relative-to", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode(ServerEnvironment.SERVER_DATA_DIR)).setCapabilityReference(new CapabilityReference(Capability.RELATIVE_PATH, CommonUnaryRequirement.PATH))),
+        RELATIVE_TO("relative-to", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode(ServerEnvironment.SERVER_DATA_DIR)).setCapabilityReference(new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.PATH))),
         ;
         private final AttributeDefinition definition;
 
@@ -107,8 +80,8 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
 
     FileStoreResourceDefinition() {
         super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH),
-                descriptor -> descriptor.addAttributes(Attribute.class).addCapabilities(Capability.class),
-                address -> new FileStoreBuilder(address.getParent()), registration -> registration.getPathManager().ifPresent(pathManager -> {
+                descriptor -> descriptor.addAttributes(Attribute.class),
+                address -> new FileStoreBuilder(address), registration -> registration.getPathManager().ifPresent(pathManager -> {
                     ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(pathManager)
                             .setPathAttribute(Attribute.RELATIVE_PATH.getDefinition())
                             .setRelativeToAttribute(Attribute.RELATIVE_TO.getDefinition())

@@ -43,9 +43,11 @@ import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperation
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.global.MapOperations;
@@ -66,6 +68,28 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
 
     static PathElement pathElement(String value) {
         return PathElement.pathElement("store", value);
+    }
+
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        PERSISTENCE("org.wildfly.clustering.infinispan.cache.store", PersistenceConfiguration.class),
+        ;
+        private final RuntimeCapability<Void> definition;
+
+        Capability(String name, Class<?> type) {
+            this.definition = RuntimeCapability.Builder.of(name, true, type).build();
+        }
+
+        @Override
+        public RuntimeCapability<Void> getDefinition() {
+            return this.definition;
+        }
+
+        @Override
+        public RuntimeCapability<Void> resolve(PathAddress address) {
+            PathAddress cacheAddress = address.getParent();
+            PathAddress containerAddress = cacheAddress.getParent();
+            return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue(), cacheAddress.getLastElement().getValue());
+        }
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
@@ -141,6 +165,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         this.legacyPath = legacyPath;
         this.descriptorConfigurator = descriptorConfigurator.andThen(descriptor -> descriptor
                 .addAttributes(StoreResourceDefinition.Attribute.class)
+                .addCapabilities(Capability.class)
                 .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
         );
         this.handler = new SimpleResourceServiceHandler<>(builderFactory);

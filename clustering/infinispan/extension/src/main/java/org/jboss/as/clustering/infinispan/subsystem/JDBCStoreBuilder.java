@@ -49,28 +49,28 @@ import org.wildfly.clustering.service.ValueDependency;
  */
 public abstract class JDBCStoreBuilder<C extends AbstractJdbcStoreConfiguration, B extends AbstractJdbcStoreConfigurationBuilder<C, B>> extends StoreBuilder<C, B> {
 
-    private volatile ValueDependency<DataSource> dataSourceDepencency;
+    private volatile ValueDependency<DataSource> dataSource;
     private volatile DatabaseType dialect;
 
-    JDBCStoreBuilder(PathAddress cacheAddress, Class<B> builderClass) {
-        super(cacheAddress, builderClass);
+    JDBCStoreBuilder(PathAddress address, Class<B> builderClass) {
+        super(address, builderClass);
     }
 
     @Override
     public ServiceBuilder<PersistenceConfiguration> build(ServiceTarget target) {
-        return this.dataSourceDepencency.register(super.build(target));
+        return this.dataSource.register(super.build(target));
     }
 
     @Override
     public Builder<PersistenceConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String dataSource = DATA_SOURCE.resolveModelAttribute(context, model).asString();
-        this.dataSourceDepencency = new InjectedValueDependency<>(CommonUnaryRequirement.DATA_SOURCE.getServiceName(context, dataSource), DataSource.class);
+        this.dataSource = new InjectedValueDependency<>(CommonUnaryRequirement.DATA_SOURCE.getServiceName(context, dataSource), DataSource.class);
         this.dialect = ModelNodes.optionalEnum(DIALECT.resolveModelAttribute(context, model), DatabaseType.class).orElse(null);
         return super.configure(context, model);
     }
 
     @Override
     public void accept(B builder) {
-        builder.dialect(this.dialect).connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).setDataSourceDependency(this.dataSourceDepencency);
+        builder.dialect(this.dialect).connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).setDataSourceDependency(this.dataSource);
     }
 }
