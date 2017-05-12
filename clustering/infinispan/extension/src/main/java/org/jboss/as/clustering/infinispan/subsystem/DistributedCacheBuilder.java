@@ -41,7 +41,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
@@ -52,16 +51,15 @@ import org.wildfly.clustering.service.ValueDependency;
  */
 public class DistributedCacheBuilder extends SharedStateCacheBuilder {
 
-    private final String containerName;
+    private final ValueDependency<GlobalConfiguration> global;
 
-    private volatile ValueDependency<GlobalConfiguration> global;
     private volatile HashConfiguration hash;
     private volatile L1Configuration l1;
     private volatile ConsistentHashStrategy consistentHashStrategy;
 
     DistributedCacheBuilder(PathAddress address) {
         super(address, CacheMode.DIST_SYNC);
-        this.containerName = address.getParent().getLastElement().getValue();
+        this.global = new InjectedValueDependency<>(CacheContainerResourceDefinition.Capability.CONFIGURATION.getServiceName(address.getParent()), GlobalConfiguration.class);
     }
 
     @Override
@@ -83,8 +81,6 @@ public class DistributedCacheBuilder extends SharedStateCacheBuilder {
 
         long l1Lifespan = L1_LIFESPAN.resolveModelAttribute(context, model).asLong();
         this.l1 = builder.l1().enabled(l1Lifespan > 0).lifespan(l1Lifespan).create();
-
-        this.global = new InjectedValueDependency<>(InfinispanRequirement.CONFIGURATION.getServiceName(context, this.containerName), GlobalConfiguration.class);
 
         return super.configure(context, model);
     }

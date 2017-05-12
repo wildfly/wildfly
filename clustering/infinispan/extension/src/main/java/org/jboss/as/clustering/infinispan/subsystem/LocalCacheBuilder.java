@@ -22,38 +22,38 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.stream.Stream;
+
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.TransactionConfiguration;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * @author Paul Ferraro
  */
 public class LocalCacheBuilder extends CacheConfigurationBuilder {
 
-    private final InjectedValue<TransactionConfiguration> transaction = new InjectedValue<>();
-    private final InjectedValue<PersistenceConfiguration> persistence = new InjectedValue<>();
-
-    private final PathAddress address;
+    private final ValueDependency<PersistenceConfiguration> persistence;
+    private final ValueDependency<TransactionConfiguration> transaction;
 
     LocalCacheBuilder(PathAddress address) {
         super(address);
-        this.address = address;
+        this.persistence = new InjectedValueDependency<>(CacheComponent.PERSISTENCE.getServiceName(address), PersistenceConfiguration.class);
+        this.transaction = new InjectedValueDependency<>(CacheComponent.TRANSACTION.getServiceName(address), TransactionConfiguration.class);
     }
 
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
-        return super.build(target)
-                .addDependency(CacheComponent.TRANSACTION.getServiceName(this.address), TransactionConfiguration.class, this.transaction)
-                .addDependency(CacheComponent.PERSISTENCE.getServiceName(this.address), PersistenceConfiguration.class, this.persistence)
-        ;
+        ServiceBuilder<Configuration> builder = super.build(target);
+        Stream.of(this.persistence, this.transaction).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 
     @Override
@@ -67,8 +67,5 @@ public class LocalCacheBuilder extends CacheConfigurationBuilder {
 
         // Auto-enable simple cache optimization if cache is non-transactional and non-persistent
         builder.simpleCache(!transaction.transactionMode().isTransactional() && !persistence.usingStores());
-        if (InfinispanLogger.ROOT_LOGGER.isTraceEnabled() && builder.simpleCache()) {
-            InfinispanLogger.ROOT_LOGGER.tracef("Simple cache optimization for %s = %b", this.address, builder.simpleCache());
-        }
     }
 }

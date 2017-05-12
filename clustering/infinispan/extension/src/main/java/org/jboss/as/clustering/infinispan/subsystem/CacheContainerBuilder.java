@@ -40,6 +40,7 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.BatcherFactory;
@@ -65,24 +66,19 @@ import org.wildfly.clustering.service.ValueDependency;
  * @author Paul Ferraro
  */
 @Listener
-public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContainer> {
+public class CacheContainerBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<CacheContainer> {
 
     private final List<ServiceName> aliases = new LinkedList<>();
-    private final PathAddress address;
     private final String name;
+    private final ValueDependency<GlobalConfiguration> configuration;
     private final BatcherFactory batcherFactory = new InfinispanBatcherFactory();
 
     private volatile String defaultCache;
-    private volatile ValueDependency<GlobalConfiguration> configuration;
 
     public CacheContainerBuilder(PathAddress address) {
-        this.address = address;
+        super(CONTAINER, address);
         this.name = address.getLastElement().getValue();
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return CONTAINER.getServiceName(this.address);
+        this.configuration = new InjectedValueDependency<>(CacheContainerResourceDefinition.Capability.CONFIGURATION.getServiceName(address), GlobalConfiguration.class);
     }
 
     @Override
@@ -91,7 +87,6 @@ public class CacheContainerBuilder implements ResourceServiceBuilder<CacheContai
         ModelNodes.optionalList(ALIASES.resolveModelAttribute(context, model)).ifPresent(aliases -> {
             aliases.stream().map(ModelNode::asString).forEach(alias -> this.aliases.add(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), alias)));
         });
-        this.configuration = new InjectedValueDependency<>(InfinispanRequirement.CONFIGURATION.getServiceName(context, this.name), GlobalConfiguration.class);
         this.defaultCache = ModelNodes.optionalString(DEFAULT_CACHE.resolveModelAttribute(context, model)).orElse(BasicCacheContainer.DEFAULT_CACHE_NAME);
         return this;
     }

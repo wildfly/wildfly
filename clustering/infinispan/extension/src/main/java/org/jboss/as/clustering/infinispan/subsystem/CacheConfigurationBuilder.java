@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefiniti
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.*;
 
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
@@ -38,10 +39,10 @@ import org.infinispan.configuration.cache.LockingConfiguration;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.configuration.cache.VersioningScheme;
-import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.distribution.group.Grouper;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -50,10 +51,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
@@ -62,46 +60,37 @@ import org.wildfly.clustering.service.ValueDependency;
  * Builds a cache configuration from its components.
  * @author Paul Ferraro
  */
-public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configuration>, Consumer<ConfigurationBuilder> {
+public class CacheConfigurationBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<Configuration>, Consumer<ConfigurationBuilder> {
 
-    private final InjectedValue<EvictionConfiguration> eviction = new InjectedValue<>();
-    private final InjectedValue<ExpirationConfiguration> expiration = new InjectedValue<>();
-    private final InjectedValue<LockingConfiguration> locking = new InjectedValue<>();
-    private final InjectedValue<PersistenceConfiguration> persistence = new InjectedValue<>();
-    private final InjectedValue<TransactionConfiguration> transaction = new InjectedValue<>();
-    private final InjectedValue<Module> module = new InjectedValue<>();
-
-    private final PathAddress address;
+    private final ValueDependency<EvictionConfiguration> eviction;
+    private final ValueDependency<ExpirationConfiguration> expiration;
+    private final ValueDependency<LockingConfiguration> locking;
+    private final ValueDependency<PersistenceConfiguration> persistence;
+    private final ValueDependency<TransactionConfiguration> transaction;
+    private final ValueDependency<Module> module;
     private final String containerName;
     private final String cacheName;
 
     private volatile Builder<Configuration> builder;
-    private volatile ValueDependency<GlobalConfiguration> global;
     private volatile JMXStatisticsConfiguration statistics;
 
     CacheConfigurationBuilder(PathAddress address) {
-        this.address = address;
+        super(CONFIGURATION, address);
         this.containerName = address.getParent().getLastElement().getValue();
         this.cacheName = address.getLastElement().getValue();
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return CacheResourceDefinition.Capability.CONFIGURATION.getServiceName(this.address);
+        this.eviction = new InjectedValueDependency<>(CacheComponent.EVICTION.getServiceName(address), EvictionConfiguration.class);
+        this.expiration = new InjectedValueDependency<>(CacheComponent.EXPIRATION.getServiceName(address), ExpirationConfiguration.class);
+        this.locking = new InjectedValueDependency<>(CacheComponent.LOCKING.getServiceName(address), LockingConfiguration.class);
+        this.persistence = new InjectedValueDependency<>(CacheComponent.PERSISTENCE.getServiceName(address), PersistenceConfiguration.class);
+        this.transaction = new InjectedValueDependency<>(CacheComponent.TRANSACTION.getServiceName(address), TransactionConfiguration.class);
+        this.module = new InjectedValueDependency<>(CacheComponent.MODULE.getServiceName(address), Module.class);
     }
 
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
-        ServiceBuilder<Configuration> builder = this.builder.build(target)
-                .addDependency(CacheComponent.EVICTION.getServiceName(this.address), EvictionConfiguration.class, this.eviction)
-                .addDependency(CacheComponent.EXPIRATION.getServiceName(this.address), ExpirationConfiguration.class, this.expiration)
-                .addDependency(CacheComponent.LOCKING.getServiceName(this.address), LockingConfiguration.class, this.locking)
-                .addDependency(CacheComponent.PERSISTENCE.getServiceName(this.address), PersistenceConfiguration.class, this.persistence)
-                .addDependency(CacheComponent.TRANSACTION.getServiceName(this.address), TransactionConfiguration.class, this.transaction)
-                .addDependency(CacheComponent.MODULE.getServiceName(this.address), Module.class, this.module)
-                .setInitialMode(ServiceController.Mode.PASSIVE)
-                ;
-        return this.global.register(builder);
+        ServiceBuilder<Configuration> builder = this.builder.build(target).setInitialMode(ServiceController.Mode.PASSIVE);
+        Stream.of(this.eviction, this.expiration, this.locking, this.persistence, this.transaction, this.module).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 
     @Override
@@ -109,7 +98,6 @@ public class CacheConfigurationBuilder implements ResourceServiceBuilder<Configu
         boolean enabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
         this.statistics = new ConfigurationBuilder().jmxStatistics().enabled(enabled).available(enabled).create();
 
-        this.global = new InjectedValueDependency<>(InfinispanRequirement.CONFIGURATION.getServiceName(context, this.containerName), GlobalConfiguration.class);
         this.builder = new org.wildfly.clustering.infinispan.spi.service.ConfigurationBuilder(CONFIGURATION.getServiceName(context.getCurrentAddress()), this.containerName, this.cacheName, this.andThen(builder -> {
             CacheMode mode = builder.clustering().cacheMode();
 
