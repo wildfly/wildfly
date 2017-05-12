@@ -24,6 +24,8 @@ package org.apache.directory.server.ldap.handlers.ssl;
 
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
@@ -34,24 +36,54 @@ import org.apache.directory.server.protocol.shared.transport.TcpTransport;
 import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.core.filterchain.IoFilterChainBuilder;
 import org.apache.mina.filter.ssl.SslFilter;
-import org.jboss.as.test.manualmode.security.TrustAndStoreTrustManager;
 
 /**
- * Re-implementation of LdapsInitializer from ApacheDS project, for testing purposes. This version ask for client authentication
- * during SSL handshake and as a TrustManager uses {@link TrustAndStoreTrustManager} instance.
+ * Re-implementation of LdapsInitializer from ApacheDS project, for testing purposes. This version allows for setting a custom
+ * {@link TrustManager} via {@link #setAndLockTrustManager(TrustManager)}. The {@coden needClientAuth} and
+ * {@coden wantClientAuth} settings are taken from the {@link TcpTransport} passed to {@link #init(LdapServer, TcpTransport)}.
  *
  * @author Josef Cacek
+ * @author <a href="https://github.com/ppalaga">Peter Palaga</a>
  */
 //todo this class needs to go currently it is only here to override the original class that is part of apacheds and it only add TrustAndStoreTrustManager
 public class LdapsInitializer {
 
+    private static TrustManager trustManager;
+
+    /** A lock that prevents two tests to use this class simultaneously */
+    private static final ReentrantLock trustManagerLock = new ReentrantLock();
+
+    /**
+     * Locks {@link #trustManagerLock} and sets the given {@code trustManager}.
+     *
+     * @param trustManager the {@link TrustManager} to set
+     */
+    public static void setAndLockTrustManager(TrustManager trustManager) {
+        trustManagerLock.lock();
+        LdapsInitializer.trustManager = trustManager;
+    }
+
+    /**
+     * Sets {@link #trustManager} to {@code null} and unlocks {@link #trustManagerLock}. Needs to be called from the same thread
+     * as {@link #setAndLockTrustManager(TrustManager)}.
+     */
+    public static void unsetAndUnlockTrustManager() {
+        LdapsInitializer.trustManager = null;
+        trustManagerLock.unlock();
+    }
+
     public static IoFilterChainBuilder init(LdapServer server, TcpTransport transport) throws LdapException {
+
+        if (trustManager == null) {
+            throw new LdapException("You need to set "+ LdapsInitializer.class.getName() +".trustManager before starting the LDAP server");
+        }
+
         SSLContext sslCtx;
         try {
             // Initialize the SSLContext to work with our key managers.
             sslCtx = SSLContext.getInstance("TLS");
             sslCtx.init(server.getKeyManagerFactory().getKeyManagers(), new TrustManager[]
-                    {new TrustAndStoreTrustManager()}, new SecureRandom());
+                    {trustManager}, new SecureRandom());
         } catch (Exception e) {
             throw new LdapException(I18n.err(I18n.ERR_683), e);
         }
@@ -77,7 +109,7 @@ public class LdapsInitializer {
 
         // The remaining SSL parameters
         sslFilter.setNeedClientAuth(transport.isNeedClientAuth());
-        //sslFilter.setWantClientAuth(transport.isWantClientAuth());
+        sslFilter.setWantClientAuth(transport.isWantClientAuth());
 
         chain.addLast("sslFilter", sslFilter);
         return chain;

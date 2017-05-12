@@ -36,15 +36,22 @@ import javax.net.ssl.X509TrustManager;
  */
 public class TrustAndStoreTrustManager implements X509TrustManager {
 
+    /**
+     * Typically the owning test class name for debug purposes.
+     */
+    private final String ownerName;
+
     private static final X509Certificate[] EMPTY_ACCEPTED_ISSUERS = new X509Certificate[0];
 
-    private static final List<X509Certificate> CLIENT_CERTS_LIST = Collections
-            .synchronizedList(new ArrayList<X509Certificate>());
+    private final List<X509Certificate> clientCertsList = new ArrayList<X509Certificate>();
 
-    // Public methods --------------------------------------------------------
+    public TrustAndStoreTrustManager(String ownerName) {
+        super();
+        this.ownerName = ownerName;
+    }
 
     /**
-     * Trust all certificates and add them to the {@link #CLIENT_CERTS_LIST}.
+     * Trust all certificates and add them to the {@link #clientCertsList}.
      *
      * @see javax.net.ssl.X509TrustManager#checkClientTrusted(java.security.cert.X509Certificate[], java.lang.String)
      */
@@ -52,10 +59,12 @@ public class TrustAndStoreTrustManager implements X509TrustManager {
     public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         if (chain != null && chain.length > 0) {
             // if the CLIENT_CERTS_LIST is getting too long, clear it
-            if (CLIENT_CERTS_LIST.size() > 50) {
-                CLIENT_CERTS_LIST.clear();
+            synchronized (clientCertsList) {
+                if (clientCertsList.size() > 50) {
+                    clientCertsList.clear();
+                }
+                Collections.addAll(clientCertsList, chain);
             }
-            Collections.addAll(CLIENT_CERTS_LIST, chain);
         }
     }
 
@@ -79,10 +88,10 @@ public class TrustAndStoreTrustManager implements X509TrustManager {
         return EMPTY_ACCEPTED_ISSUERS;
     }
 
-    public static boolean isSubjectInClientCertChain(String rfc2253Name) {
+    public boolean isSubjectInClientCertChain(String rfc2253Name) {
         if (rfc2253Name != null) {
-            synchronized (CLIENT_CERTS_LIST) {
-                for (X509Certificate cert : CLIENT_CERTS_LIST) {
+            synchronized (clientCertsList) {
+                for (X509Certificate cert : clientCertsList) {
                     if (rfc2253Name.equals(cert.getSubjectX500Principal().getName())) {
                         return true;
                     }
@@ -90,5 +99,17 @@ public class TrustAndStoreTrustManager implements X509TrustManager {
             }
         }
         return false;
+    }
+
+    public void clear() {
+        synchronized (clientCertsList) {
+            clientCertsList.clear();
+        }
+    }
+
+    public int getCertCount() {
+        synchronized (clientCertsList) {
+            return clientCertsList.size();
+        }
     }
 }
