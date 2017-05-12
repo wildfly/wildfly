@@ -111,6 +111,11 @@
  	<jvms>
  	   <jvm name="default">
           <heap size="64m" max-size="128m"/>
+           <jvm-options>
+               <option value="-ea"/>
+               <option value="--add-exports=java.base/sun.nio.ch=ALL-UNNAMED"/>
+               <option value="--permit-illegal-access"/>
+           </jvm-options>
        </jvm>
  	</jvms>
 
@@ -134,6 +139,7 @@
                 </interface>
             </interfaces>
             <socket-bindings socket-binding-group="other-sockets" port-offset="550"/>
+            <jvm name="default" />
         </server>
         <server name="reload-two" group="reload-test-group"  auto-start="false">
             <jvm name="default" />
