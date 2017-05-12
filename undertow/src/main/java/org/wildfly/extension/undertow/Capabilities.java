@@ -39,6 +39,7 @@ public final class Capabilities {
     public static final String CAPABILITY_HANDLER = "org.wildfly.extension.undertow.handler";
     public static final String CAPABILITY_MOD_CLUSTER_FILTER = "org.wildfly.undertow.mod_cluster-filter";
     public static final String CAPABILITY_SERVLET_CONTAINER = "org.wildfly.undertow.servlet-container";
+    public static final String CAPABILITY_WEBSOCKET = "org.wildfly.undertow.servlet-container.websocket";
     public static final String CAPABILITY_HTTP_INVOKER = "org.wildfly.undertow.http-invoker";
     public static final String CAPABILITY_HTTP_INVOKER_HOST = "org.wildfly.undertow.http-invoker.host";
     public static final String CAPABILITY_APPLICATION_SECURITY_DOMAIN = "org.wildfly.undertow.application-security-domain";

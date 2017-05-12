@@ -22,6 +22,14 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.wildfly.extension.undertow.Capabilities.REF_BUFFER_POOL;
+import static org.wildfly.extension.undertow.Capabilities.REF_IO_WORKER;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -31,15 +39,13 @@ import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Global websocket configuration
@@ -48,18 +54,24 @@ import java.util.Map;
  */
 class WebsocketsDefinition extends PersistentResourceDefinition {
 
-    static final WebsocketsDefinition INSTANCE = new WebsocketsDefinition();
+    private static final RuntimeCapability<Void> WEBSOCKET_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_WEBSOCKET, true, UndertowListener.class)
+            .setDynamicNameMapper(pathElements -> new String[]{
+                    pathElements.getParent().getLastElement().getValue()
+            })
+            .build();
 
     protected static final SimpleAttributeDefinition BUFFER_POOL =
             new SimpleAttributeDefinitionBuilder("buffer-pool", ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode("default"))
+                    .setCapabilityReference(REF_BUFFER_POOL)
                     .build();
 
     protected static final SimpleAttributeDefinition WORKER =
             new SimpleAttributeDefinitionBuilder("worker", ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode("default"))
+                    .setCapabilityReference(REF_IO_WORKER)
                     .build();
 
     protected static final SimpleAttributeDefinition DISPATCH_TO_WORKER =
@@ -84,20 +96,15 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(0))
                     .build();
 
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
+    protected static final List<AttributeDefinition> ATTRIBUTES = Arrays.asList(
             BUFFER_POOL,
             WORKER,
             DISPATCH_TO_WORKER,
             PER_MESSAGE_DEFLATE,
             DEFLATER_LEVEL
-    };
-    static final Map<String, AttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
+    );
 
-    static {
-        for (SimpleAttributeDefinition attr : ATTRIBUTES) {
-            ATTRIBUTES_MAP.put(attr.getName(), attr);
-        }
-    }
+    static final WebsocketsDefinition INSTANCE = new WebsocketsDefinition();
 
 
     private WebsocketsDefinition() {
@@ -108,8 +115,13 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
     }
 
     @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(WEBSOCKET_CAPABILITY);
+    }
+
+    @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES_MAP.values();
+        return ATTRIBUTES;
     }
 
     public WebSocketInfo getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
@@ -127,7 +139,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
 
     private static class WebsocketsAdd extends RestartParentResourceAddHandler {
         protected WebsocketsAdd() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey(), Collections.singleton(WEBSOCKET_CAPABILITY), ATTRIBUTES);
         }
 
         @Override
@@ -144,7 +156,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
 
         @Override
         protected ServiceName getParentServiceName(PathAddress parentAddress) {
-            return UndertowService.SERVLET_CONTAINER.append(parentAddress.getLastElement().getValue());
+            return ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY.getCapabilityServiceName(parentAddress);
         }
     }
 
@@ -161,7 +173,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
 
         @Override
         protected ServiceName getParentServiceName(PathAddress parentAddress) {
-            return UndertowService.SERVLET_CONTAINER.append(parentAddress.getLastElement().getValue());
+            return ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY.getCapabilityServiceName(parentAddress);
         }
     }
 
