@@ -22,6 +22,9 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,15 +40,17 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
 import org.jgroups.Channel;
+import org.jgroups.protocols.FORK;
 import org.jgroups.stack.Protocol;
+import org.jgroups.stack.ProtocolStack;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.SuppliedValueService;
 import org.wildfly.clustering.service.ValueDependency;
 
 /**
@@ -55,6 +60,7 @@ import org.wildfly.clustering.service.ValueDependency;
 public class ForkChannelFactoryBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<ChannelFactory> {
 
     private final String channelName;
+    private final String forkName;
     @SuppressWarnings("rawtypes")
     private volatile List<ValueDependency<ProtocolConfiguration>> protocols;
     private volatile ValueDependency<Channel> parentChannel;
@@ -63,13 +69,19 @@ public class ForkChannelFactoryBuilder extends CapabilityServiceNameProvider imp
     public ForkChannelFactoryBuilder(Capability capability, PathAddress address) {
         super(capability, address);
         this.channelName = address.getParent().getLastElement().getValue();
+        this.forkName = address.getLastElement().getValue();
     }
 
     @Override
     public ServiceBuilder<ChannelFactory> build(ServiceTarget target) {
         @SuppressWarnings("unchecked")
-        Value<ChannelFactory> value = () -> new ForkChannelFactory(this.parentChannel.getValue(), this.parentFactory.getValue(), this.protocols.stream().map(Value::getValue).map(protocol -> (ProtocolConfiguration<? extends Protocol>) protocol).collect(Collectors.toList()));
-        ServiceBuilder<ChannelFactory> builder = target.addService(this.getServiceName(), new ValueService<>(value)).setInitialMode(ServiceController.Mode.PASSIVE);
+        Supplier<ChannelFactory> supplier = () -> new ForkChannelFactory(this.parentChannel.getValue(), this.parentFactory.getValue(), this.protocols.stream().map(Value::getValue).map(protocol -> (ProtocolConfiguration<? extends Protocol>) protocol).collect(Collectors.toList()));
+        Consumer<ChannelFactory> destroyer = factory -> {
+            ProtocolStack stack = this.parentChannel.getValue().getProtocolStack();
+            FORK fork = (FORK) stack.findProtocol(FORK.class);
+            fork.remove(this.forkName);
+        };
+        ServiceBuilder<ChannelFactory> builder = target.addService(this.getServiceName(), new SuppliedValueService<>(Function.identity(), supplier, destroyer)).setInitialMode(ServiceController.Mode.PASSIVE);
         Stream.concat(Stream.of(this.parentChannel, this.parentFactory), this.protocols.stream()).forEach(dependency -> dependency.register(builder));
         return builder;
     }
