@@ -53,7 +53,7 @@ public class StringKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcStringBase
     private volatile ValueDependency<Module> module;
 
     StringKeyedJDBCStoreBuilder(PathAddress cacheAddress) {
-        super(JdbcStringBasedStoreConfigurationBuilder.class, cacheAddress);
+        super(cacheAddress, JdbcStringBasedStoreConfigurationBuilder.class);
         this.cacheAddress = cacheAddress;
     }
 

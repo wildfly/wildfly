@@ -41,7 +41,7 @@ public class BinaryKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcBinaryStor
     private final PathAddress cacheAddress;
 
     BinaryKeyedJDBCStoreBuilder(PathAddress cacheAddress) {
-        super(JdbcBinaryStoreConfigurationBuilder.class, cacheAddress);
+        super(cacheAddress, JdbcBinaryStoreConfigurationBuilder.class);
         this.cacheAddress = cacheAddress;
     }
 

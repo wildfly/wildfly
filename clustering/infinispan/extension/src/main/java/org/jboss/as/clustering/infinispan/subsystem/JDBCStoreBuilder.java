@@ -27,7 +27,6 @@ import static org.jboss.as.clustering.infinispan.subsystem.JDBCStoreResourceDefi
 
 import javax.sql.DataSource;
 
-import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.jdbc.DatabaseType;
 import org.infinispan.persistence.jdbc.configuration.AbstractJdbcStoreConfiguration;
@@ -51,11 +50,10 @@ import org.wildfly.clustering.service.ValueDependency;
 public abstract class JDBCStoreBuilder<C extends AbstractJdbcStoreConfiguration, B extends AbstractJdbcStoreConfigurationBuilder<C, B>> extends StoreBuilder<C, B> {
 
     private volatile ValueDependency<DataSource> dataSourceDepencency;
+    private volatile DatabaseType dialect;
 
-    JDBCStoreBuilder(Class<B> builderClass, PathAddress cacheAddress) {
-        super(cacheAddress, (context, model) -> new ConfigurationBuilder().persistence().addStore(builderClass)
-                .dialect(ModelNodes.optionalEnum(DIALECT.resolveModelAttribute(context, model), DatabaseType.class).orElse(null))
-        );
+    JDBCStoreBuilder(PathAddress cacheAddress, Class<B> builderClass) {
+        super(cacheAddress, builderClass);
     }
 
     @Override
@@ -67,11 +65,12 @@ public abstract class JDBCStoreBuilder<C extends AbstractJdbcStoreConfiguration,
     public Builder<PersistenceConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String dataSource = DATA_SOURCE.resolveModelAttribute(context, model).asString();
         this.dataSourceDepencency = new InjectedValueDependency<>(CommonUnaryRequirement.DATA_SOURCE.getServiceName(context, dataSource), DataSource.class);
+        this.dialect = ModelNodes.optionalEnum(DIALECT.resolveModelAttribute(context, model), DatabaseType.class).orElse(null);
         return super.configure(context, model);
     }
 
     @Override
     public void accept(B builder) {
-        builder.connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).setDataSourceDependency(this.dataSourceDepencency);
+        builder.dialect(this.dialect).connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).setDataSourceDependency(this.dataSourceDepencency);
     }
 }

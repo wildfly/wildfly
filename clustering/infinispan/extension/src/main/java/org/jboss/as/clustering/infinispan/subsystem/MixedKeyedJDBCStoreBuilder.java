@@ -42,7 +42,7 @@ public class MixedKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcMixedStoreC
     private final PathAddress cacheAddress;
 
     MixedKeyedJDBCStoreBuilder(PathAddress cacheAddress) {
-        super(JdbcMixedStoreConfigurationBuilder.class, cacheAddress);
+        super(cacheAddress, JdbcMixedStoreConfigurationBuilder.class);
         this.cacheAddress = cacheAddress;
     }
 
