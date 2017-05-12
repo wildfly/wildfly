@@ -22,26 +22,25 @@
 
 package org.jboss.as.test.integration.web.security.tg;
 
+import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
+import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * Testing servlet which enables transport guarantee security constraint.
  *
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>
  */
-
-
-
-@WebServlet(name = "TGSecuredServlet", urlPatterns = { TransportGuaranteeAnnotatedServlet.servletContext }, loadOnStartup = 1)
-@ServletSecurity(@HttpConstraint(rolesAllowed = { "gooduser" }, transportGuarantee = TransportGuarantee.CONFIDENTIAL) )
+@WebServlet(name = "TGSecuredServlet", urlPatterns = {TransportGuaranteeAnnotatedServlet.servletContext},
+        loadOnStartup = 1)
+@ServletSecurity(@HttpConstraint(rolesAllowed = {"gooduser"}, transportGuarantee = TransportGuarantee.CONFIDENTIAL))
 public class TransportGuaranteeAnnotatedServlet extends HttpServlet {
 
     private static final long serialVersionUID = 2L;
@@ -53,9 +52,9 @@ public class TransportGuaranteeAnnotatedServlet extends HttpServlet {
         resp.getWriter().write("TransportGuaranteedGet");
     }
 
-   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-      resp.getWriter().write("TransportGuaranteedPost");
-   }
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.getWriter().write("TransportGuaranteedPost");
+    }
 
 }
 
