@@ -22,11 +22,8 @@
 
 package org.jboss.as.test.integration.web.security.tg;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -37,18 +34,13 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.as.test.integration.management.Listener;
-import org.jboss.as.test.integration.management.ServerManager;
 import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -59,77 +51,57 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-
 /**
  * This test case check if transport-guarantee security constraint works properly.
  *
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>
  */
-
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({WebTestsSecurityDomainSetup.class, TransportGuaranteeTestCase.ListenerSetup.class})
+@ServerSetup(WebTestsSecurityDomainSetup.class)
 @Category(CommonCriteria.class)
 public class TransportGuaranteeTestCase {
-
 
     private static final Logger log = Logger.getLogger(TransportGuaranteeTestCase.class);
     private static final String WAR = ".war";
     private static final String TG_ANN = "tg-annotated";
     private static final String TG_DD = "tg-dd";
     private static final String TG_MIXED = "tg-mixed";
-    private static final File keyStoreFile = new File(System.getProperty("java.io.tmpdir"), "tg-test.keystore");
-    private static final int httpsPort = 8447;
+    private static final int HTTPS_PORT = 8443;
     private static String httpsTestURL = null;
     private static String httpTestURL = null;
-    @ArquillianResource
-    @OperateOnDeployment(TG_ANN + WAR)
-    URL deploymentUrl;
-    /*@ArquillianResource
-    @OperateOnDeployment(TG_ANN + WAR)
-    ManagementClient managementClient;*/
-    //private boolean beforeServerManagerInitialized = false;
 
     @Deployment(name = TG_ANN + WAR, order = 1, testable = false)
     public static WebArchive deployAnnWar() throws Exception {
-
-        log.trace("starting deployAnnWar()");
-
-        WebArchive war = ShrinkWrap.create(WebArchive.class, TG_ANN + WAR);
-        war.addClass(TransportGuaranteeAnnotatedServlet.class);
-
-        war.addAsResource(TransportGuaranteeTestCase.class.getPackage(), "users.properties", "users.properties");
-        war.addAsResource(TransportGuaranteeTestCase.class.getPackage(), "roles.properties", "roles.properties");
-        war.setWebXML(TransportGuaranteeTestCase.class.getPackage(), "annotated-web.xml");
-        war.addAsWebInfResource(TransportGuaranteeTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
-
-        return war;
+        return getDeployment(TG_ANN);
     }
 
     @Deployment(name = TG_DD + WAR, order = 2, testable = false)
     public static WebArchive deployDdWar() {
-
-        WebArchive war = ShrinkWrap.create(WebArchive.class, TG_DD + WAR);
-        war.addClass(TransportGuaranteeServlet.class);
-
-        war.addAsResource(TransportGuaranteeTestCase.class.getPackage(), "users.properties", "users.properties");
-        war.addAsResource(TransportGuaranteeTestCase.class.getPackage(), "roles.properties", "roles.properties");
-        war.setWebXML(TransportGuaranteeTestCase.class.getPackage(), "dd-web.xml");
-        war.addAsWebInfResource(TransportGuaranteeTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
-
-        return war;
+        return getDeployment(TG_DD);
     }
 
     @Deployment(name = TG_MIXED + WAR, order = 3, testable = false)
     public static WebArchive deployMixedWar() {
+        return getDeployment(TG_MIXED);
+    }
 
-        WebArchive war = ShrinkWrap.create(WebArchive.class, TG_MIXED + WAR);
-        war.addClass(TransportGuaranteeMixedServlet.class);
+    private static WebArchive getDeployment(String warName) {
+        log.trace("starting to deploy " + warName + ".war");
 
-        war.addAsResource(TransportGuaranteeTestCase.class.getPackage(), "users.properties", "users.properties");
-        war.addAsResource(TransportGuaranteeTestCase.class.getPackage(), "roles.properties", "roles.properties");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, warName + WAR);
 
-        war.setWebXML(TransportGuaranteeTestCase.class.getPackage(), "mixed-web.xml");
+        if (TG_MIXED.equals(warName)) {
+            war.addClass(TransportGuaranteeMixedServlet.class);
+            war.setWebXML(TransportGuaranteeTestCase.class.getPackage(), "mixed-web.xml");
+        } else if (TG_DD.equals(warName)) {
+            war.addClass(TransportGuaranteeServlet.class);
+            war.setWebXML(TransportGuaranteeTestCase.class.getPackage(), "dd-web.xml");
+        } else if (TG_ANN.equals(warName)) {
+            war.addClass(TransportGuaranteeAnnotatedServlet.class);
+            war.setWebXML(TransportGuaranteeTestCase.class.getPackage(), "annotated-web.xml");
+        }
+
         war.addAsWebInfResource(TransportGuaranteeTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
 
         return war;
@@ -138,15 +110,12 @@ public class TransportGuaranteeTestCase {
     @Before
     public void before() throws IOException {
         // set test URL
-        httpsTestURL = "https://" + deploymentUrl.getHost() + ":" + Integer.toString(httpsPort);
-        httpTestURL = "http://" + deploymentUrl.getHost() + ":" + deploymentUrl.getPort();
+        httpsTestURL = "https://" + TestSuiteEnvironment.getHttpAddress() + ":" + Integer.toString(HTTPS_PORT);
+        httpTestURL = "http://" + TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort();
     }
 
     @AfterClass
-    public static void after()throws IOException{
-        if (keyStoreFile.exists()){
-            keyStoreFile.delete();
-        }
+    public static void after() throws IOException {
     }
 
     /**
@@ -180,8 +149,12 @@ public class TransportGuaranteeTestCase {
             try {
                 hr = httpClient.execute(get);
             } catch (Exception e) {
-                if (responseSubstring == null) { return false; } else // in case substring is defined, rethrow exception so, we can easier analyze the cause
-                { throw new Exception(e); }
+                if (responseSubstring == null) {
+                    return false;
+                } else {
+                    // in case substring is defined, rethrow exception so, we can easier analyze the cause
+                    throw new Exception(e);
+                }
             }
 
             int statusCode = hr.getStatusLine().getStatusCode();
@@ -212,55 +185,20 @@ public class TransportGuaranteeTestCase {
 
     @Test
     public void testTransportGuaranteedAnnotation() throws Exception {
-
-        String testURLContext = "/" + TG_ANN + TransportGuaranteeAnnotatedServlet.servletContext;
-
-        boolean result = checkGetURL(
-                httpsTestURL + testURLContext,
-                "TransportGuaranteedGet",
-                "anil",
-                "anil");
-        Assert.assertTrue("Not expected response", result);
-
-
-        result = checkGetURL(
-                httpTestURL + testURLContext,
-                null,
-                "anil",
-                "anil");
-        Assert.assertFalse("Non secure transport on URL has to be prevented, but was not", result);
-
+        performRequestsAndCheck("/" + TG_ANN + TransportGuaranteeAnnotatedServlet.servletContext);
     }
 
     @Test
     public void testTransportGuaranteedDD() throws Exception {
-
-        String testURLContext = "/" + TG_DD + TransportGuaranteeServlet.servletContext;
-
-        boolean result = checkGetURL(
-                httpsTestURL + testURLContext,
-                "TransportGuaranteedGet",
-                "anil",
-                "anil");
-        Assert.assertTrue("Not expected response", result);
-
-
-        result = checkGetURL(
-                httpTestURL + testURLContext,
-                null,
-                "anil",
-                "anil");
-        Assert.assertFalse("Non secure transport on URL has to be prevented, but was not", result);
-
-
+        performRequestsAndCheck("/" + TG_DD + TransportGuaranteeServlet.servletContext);
     }
 
     @Test
     public void testTransportGuaranteedMixed() throws Exception {
+        performRequestsAndCheck("/" + TG_MIXED + "/tg_mixed_override/srv");
+    }
 
-        String testURLContext = "/" + TG_MIXED
-                + "/tg_mixed_override/srv";
-
+    private void performRequestsAndCheck(String testURLContext) throws Exception {
         boolean result = checkGetURL(
                 httpsTestURL + testURLContext,
                 "TransportGuaranteedGet",
@@ -275,37 +213,5 @@ public class TransportGuaranteeTestCase {
                 "anil",
                 "anil");
         Assert.assertFalse("Non secure transport on URL has to be prevented, but was not", result);
-
-
     }
-
-    static class ListenerSetup implements ServerSetupTask {
-        private ServerManager serverManager;
-
-        @Override
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            /*if (beforeServerManagerInitialized)
-                        return;
-                    beforeServerManagerInitialized = true;*/
-            serverManager = new ServerManager(managementClient);
-
-            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-            FileUtils.copyURLToFile(TransportGuaranteeTestCase.class.getResource("localhost.keystore"), keyStoreFile);
-            try {
-                serverManager.addListener(Listener.HTTPSJIO, httpsPort, null, null, keyStoreFile.getAbsolutePath(), "password");
-            } catch (Exception e) {
-                log.error("Cannot create https connector - HTTPSJIO", e);
-                Assert.fail("Cannot create https connector - HTTPSJIO, cause " + e.getMessage());
-            }
-
-
-        }
-
-        @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            log.trace("begin tidy up");
-            serverManager.removeListener(Listener.HTTPSJIO, httpsTestURL);
-        }
-    }
-
 }
