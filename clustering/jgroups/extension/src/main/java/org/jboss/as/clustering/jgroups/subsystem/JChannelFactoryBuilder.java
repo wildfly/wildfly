@@ -24,9 +24,12 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.jgroups.JChannelFactory;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
@@ -40,7 +43,6 @@ import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
@@ -60,11 +62,10 @@ import org.wildfly.clustering.service.ValueDependency;
  * Builder for a service that provides a {@link ChannelFactory} for creating channels.
  * @author Paul Ferraro
  */
-public class JChannelFactoryBuilder implements ResourceServiceBuilder<ChannelFactory>, ProtocolStackConfiguration {
+public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<ChannelFactory>, ProtocolStackConfiguration {
 
     private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
     private final String name;
-    private final ServiceName serviceName;
     private volatile boolean statisticsEnabled;
 
     @SuppressWarnings("rawtypes")
@@ -74,13 +75,8 @@ public class JChannelFactoryBuilder implements ResourceServiceBuilder<ChannelFac
     private volatile ValueDependency<RelayConfiguration> relay = null;
 
     public JChannelFactoryBuilder(PathAddress address) {
+        super(StackResourceDefinition.Capability.JCHANNEL_FACTORY, address);
         this.name = address.getLastElement().getValue();
-        this.serviceName = StackResourceDefinition.Capability.JCHANNEL_FACTORY.getServiceName(address);
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return this.serviceName;
     }
 
     @Override
@@ -89,11 +85,7 @@ public class JChannelFactoryBuilder implements ResourceServiceBuilder<ChannelFac
         ServiceBuilder<ChannelFactory> builder = target.addService(this.getServiceName(), new ValueService<>(value))
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
-        this.transport.register(builder);
-        this.protocols.forEach(protocol -> protocol.register(builder));
-        if (this.relay != null) {
-            this.relay.register(builder);
-        }
+        Stream.concat(Stream.of(this.transport, this.relay).filter(Objects::nonNull), this.protocols.stream()).forEach(dependency -> dependency.register(builder));
         return builder;
     }
 

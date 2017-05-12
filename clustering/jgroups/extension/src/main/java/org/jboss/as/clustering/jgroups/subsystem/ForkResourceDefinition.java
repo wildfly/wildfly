@@ -88,7 +88,7 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
                 .addCapabilities(Capability.class)
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 ;
-        ResourceServiceBuilderFactory<ChannelFactory> builderFactory = address -> new ForkChannelFactoryBuilder(Capability.FORK_CHANNEL_FACTORY.getServiceName(address), address.getParent().getLastElement().getValue());
+        ResourceServiceBuilderFactory<ChannelFactory> builderFactory = address -> new ForkChannelFactoryBuilder(Capability.FORK_CHANNEL_FACTORY, address);
         ResourceServiceHandler handler = new ForkServiceHandler(builderFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 

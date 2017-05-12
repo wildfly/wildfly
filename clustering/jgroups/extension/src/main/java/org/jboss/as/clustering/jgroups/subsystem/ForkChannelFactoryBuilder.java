@@ -21,10 +21,12 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.jboss.as.clustering.controller.Capability;
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.jgroups.ForkChannelFactory;
 import org.jboss.as.controller.OperationContext;
@@ -34,7 +36,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
@@ -51,45 +52,26 @@ import org.wildfly.clustering.service.ValueDependency;
  * Builder for a service that provides a {@link ChannelFactory} for creating fork channels.
  * @author Paul Ferraro
  */
-public class ForkChannelFactoryBuilder implements ResourceServiceBuilder<ChannelFactory>, Value<ChannelFactory> {
+public class ForkChannelFactoryBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<ChannelFactory> {
 
-    private final ServiceName serviceName;
     private final String channelName;
     @SuppressWarnings("rawtypes")
     private volatile List<ValueDependency<ProtocolConfiguration>> protocols;
-
     private volatile ValueDependency<Channel> parentChannel;
     private volatile ValueDependency<ChannelFactory> parentFactory;
 
-    public ForkChannelFactoryBuilder(ServiceName serviceName, String channelName) {
-        this.serviceName = serviceName;
-        this.channelName = channelName;
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return this.serviceName;
+    public ForkChannelFactoryBuilder(Capability capability, PathAddress address) {
+        super(capability, address);
+        this.channelName = address.getParent().getLastElement().getValue();
     }
 
     @Override
     public ServiceBuilder<ChannelFactory> build(ServiceTarget target) {
-        ServiceBuilder<ChannelFactory> builder = target.addService(this.getServiceName(), new ValueService<>(this)).setInitialMode(ServiceController.Mode.PASSIVE);
-        this.parentChannel.register(builder);
-        this.parentFactory.register(builder);
-        this.protocols.forEach(protocol -> protocol.register(builder));
+        @SuppressWarnings("unchecked")
+        Value<ChannelFactory> value = () -> new ForkChannelFactory(this.parentChannel.getValue(), this.parentFactory.getValue(), this.protocols.stream().map(Value::getValue).map(protocol -> (ProtocolConfiguration<? extends Protocol>) protocol).collect(Collectors.toList()));
+        ServiceBuilder<ChannelFactory> builder = target.addService(this.getServiceName(), new ValueService<>(value)).setInitialMode(ServiceController.Mode.PASSIVE);
+        Stream.concat(Stream.of(this.parentChannel, this.parentFactory), this.protocols.stream()).forEach(dependency -> dependency.register(builder));
         return builder;
-    }
-
-    @Override
-    public ChannelFactory getValue() {
-        // This works in eclipse, but fails in openjdk 1.8.0_121
-        // List<ProtocolConfiguration<? extends Protocol>> protocols = this.protocols.stream().map(Value::getValue).collect(Collectors.toList());
-        List<ProtocolConfiguration<? extends Protocol>> protocols = new ArrayList<>(this.protocols.size());
-        for (@SuppressWarnings("rawtypes") Value<ProtocolConfiguration> protocolValue : this.protocols) {
-            ProtocolConfiguration<? extends Protocol> protocol = protocolValue.getValue();
-            protocols.add(protocol);
-        }
-        return new ForkChannelFactory(this.parentChannel.getValue(), this.parentFactory.getValue(), protocols);
     }
 
     @Override
