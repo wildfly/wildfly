@@ -87,6 +87,8 @@
                 <option value="-server"/>
                 <option value="-XX:MetaspaceSize=96m"/>
                 <option value="-XX:MaxMetaspaceSize=256m"/>
+                <option value="--add-exports=java.base/sun.nio.ch=ALL-UNNAMED"/>
+                <option value="--permit-illegal-access"/>
             </jvm-options>
         </jvm>
     </jvms>
@@ -105,11 +107,13 @@
             <!-- server-two avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
             <socket-bindings port-offset="150"/>
+            <jvm name="default" />
         </server>
         <server name="server-three" group="other-server-group" auto-start="false">
             <!-- server-three avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
             <socket-bindings port-offset="250"/>
+            <jvm name="default" />
         </server>
     </servers>
 
