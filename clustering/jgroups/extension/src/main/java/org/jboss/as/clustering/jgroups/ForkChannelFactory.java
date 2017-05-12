@@ -22,8 +22,9 @@
 package org.jboss.as.clustering.jgroups;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jgroups.Channel;
@@ -63,11 +64,8 @@ public class ForkChannelFactory implements ChannelFactory {
 
     @Override
     public ProtocolStackConfiguration getProtocolStackConfiguration() {
-        List<ProtocolConfiguration<? extends Protocol>> parentProtocols = this.parentFactory.getProtocolStackConfiguration().getProtocols();
-        List<ProtocolConfiguration<? extends Protocol>> protocols = new ArrayList<>(parentProtocols.size() + this.protocols.size());
-        protocols.addAll(parentProtocols);
-        protocols.addAll(this.protocols);
-        return new ForkProtocolStackConfiguration(this.channel.getClusterName(), this.parentFactory.getProtocolStackConfiguration(), protocols);
+        ProtocolStackConfiguration parentStack = this.parentFactory.getProtocolStackConfiguration();
+        return new ForkProtocolStackConfiguration(this.channel.getClusterName(), parentStack, Stream.concat(parentStack.getProtocols().stream(), this.protocols.stream()).collect(Collectors.toList()));
     }
 
     @Override
