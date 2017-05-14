@@ -381,16 +381,14 @@ public interface IIOPLogger extends BasicLogger {
     OperationFailedException sslNotConfigured();
 
     @Message(id = 104, value = "Inconsistent transport-config configuration: %s is supported but it is configured with NONE value")
-    OperationFailedException inconsistentSupportedTransportConfig(final String transportAttributeName);
+    String inconsistentSupportedTransportConfig(final String transportAttributeName);
 
     @Message(id = 105, value = "Inconsistent transport-config configuration: %s is not supported but it is not configured with NONE value")
-    OperationFailedException inconsistentUnsupportedTransportConfig(final String transportAttributeName);
+    String inconsistentUnsupportedTransportConfig(final String transportAttributeName);
 
     @Message(id = 106, value = "Inconsistent transport-config configuration: %s is set to true, but %s is not configured as required")
-    OperationFailedException inconsistentRequiredTransportConfig(final String requiredAttributeName, final String transportAttributeName);
+    String inconsistentRequiredTransportConfig(final String requiredAttributeName, final String transportAttributeName);
 
-    @Message(id = 107, value = "Inconsistent transport-config configuration: %s is set to false, but %s is configured as required")
-    OperationFailedException inconsistentNotRequiredTransportConfig(final String requiredAttributeName, final String transportAttributeName);
 
     @Message(id = 108, value = "Security attribute server-requires-ssl is not supported in previous iiop-openjdk versions and can't be converted")
     String serverRequiresSslNotSupportedInPreviousVersions();
@@ -402,9 +400,8 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 110, value = "Client requires SSL but server does not support it")
     IllegalStateException serverDoesNotSupportSsl();
 
-    @LogMessage(level = WARN)
     @Message(id = 111, value = "SSL has not been configured but ssl-port property has been specified - the connection will use clear-text protocol")
-    void sslPortWithoutSslConfiguration();
+    String sslPortWithoutSslConfiguration();
 
     @Message(id = 112, value = "Security initializer was set to 'elytron' but no authentication-context has been specified")
     OperationFailedException elytronInitializerMissingAuthContext();
