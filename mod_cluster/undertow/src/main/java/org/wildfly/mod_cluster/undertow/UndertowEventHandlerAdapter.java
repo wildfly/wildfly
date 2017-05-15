@@ -120,8 +120,8 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
         return new UndertowContext(deployment, new UndertowHost(host, new UndertowEngine(host.getServer().getValue(), this.configuration.getUndertowService(), this.connector)));
     }
 
-    private Context createContext(String deployment, Host host) {
-        return new SimpleContext(deployment, new UndertowHost(host, new UndertowEngine(host.getServer().getValue(), this.configuration.getUndertowService(), this.connector)));
+    private Context createContext(String contextPath, Host host) {
+        return new LocationContext(contextPath, new UndertowHost(host, new UndertowEngine(host.getServer().getValue(), this.configuration.getUndertowService(), this.connector)));
     }
 
     private synchronized void onStart(Context context) {
@@ -153,13 +153,13 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
     }
 
     @Override
-    public void onDeploymentStart(String deployment, Host host) {
-        this.onStart(this.createContext(deployment, host));
+    public void onDeploymentStart(String contextPath, Host host) {
+        this.onStart(this.createContext(contextPath, host));
     }
 
     @Override
-    public void onDeploymentStop(String deployment, Host host) {
-        this.onStop(this.createContext(deployment, host));
+    public void onDeploymentStop(String contextPath, Host host) {
+        this.onStop(this.createContext(contextPath, host));
     }
 
     @Override

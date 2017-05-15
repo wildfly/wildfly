@@ -69,13 +69,13 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
         }
         handler = setupRoutes(handler);
         host.getValue().registerHandler(path, handler);
-        host.getValue().registerModClusterPath(path);
+        host.getValue().registerLocation(path);
     }
 
     @Override
     public void stop(StopContext stopContext) {
         host.getValue().unregisterHandler(path);
-        host.getValue().unregisterModClusterPath(path);
+        host.getValue().unregisterLocation(path);
     }
 
     private HttpHandler setupRoutes(HttpHandler handler) {

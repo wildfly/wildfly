@@ -73,10 +73,9 @@ public class Host implements Service<Host>, FilterLocation {
     private final Map<String, AuthenticationMechanism> additionalAuthenticationMechanisms = new ConcurrentHashMap<>();
     private final HostRootHandler hostRootHandler = new HostRootHandler();
     private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceInjectedValue = new InjectedValue<>();
-    private final Set<String>  modClusterPaths = new CopyOnWriteArraySet<>();
     private volatile GateHandlerWrapper gateHandlerWrapper;
-
     private final DefaultResponseCodeHandler defaultHandler;
+
     public Host(final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode ) {
         this.name = name;
         this.defaultWebModule = defaultWebModule;
@@ -222,12 +221,6 @@ public class Host implements Service<Host>, FilterLocation {
         undertowService.getValue().fireEvent(listener -> listener.onDeploymentStart(deployment, Host.this));
     }
 
-    public void registerModClusterPath(String path) {
-        String realPath = path.startsWith("/") ? path : "/" + path;
-        modClusterPaths.add(realPath);
-        undertowService.getValue().fireEvent(listener -> listener.onDeploymentStart(realPath, Host.this));
-    }
-
     public void unregisterDeployment(final Deployment deployment) {
         DeploymentInfo deploymentInfo = deployment.getDeploymentInfo();
         String path = getDeployedContextPath(deploymentInfo);
@@ -237,9 +230,15 @@ public class Host implements Service<Host>, FilterLocation {
         UndertowLogger.ROOT_LOGGER.unregisterWebapp(path, getServer().getName());
     }
 
-    public void unregisterModClusterPath(String path) {
+    void registerLocation(String path) {
         String realPath = path.startsWith("/") ? path : "/" + path;
-        modClusterPaths.remove(realPath);
+        locations.put(realPath, null);
+        undertowService.getValue().fireEvent(listener -> listener.onDeploymentStart(realPath, Host.this));
+    }
+
+    void unregisterLocation(String path) {
+        String realPath = path.startsWith("/") ? path : "/" + path;
+        locations.remove(realPath);
         undertowService.getValue().fireEvent(listener -> listener.onDeploymentStop(realPath, Host.this));
     }
 
@@ -263,15 +262,17 @@ public class Host implements Service<Host>, FilterLocation {
     void registerLocation(LocationService location) {
         locations.put(location.getLocationPath(), location);
         registerHandler(location.getLocationPath(), location.getLocationHandler());
+        undertowService.getValue().fireEvent(listener -> listener.onDeploymentStart(location.getLocationPath(), Host.this));
     }
 
     void unregisterLocation(LocationService location) {
         locations.remove(location.getLocationPath());
         unregisterHandler(location.getLocationPath());
+        undertowService.getValue().fireEvent(listener -> listener.onDeploymentStop(location.getLocationPath(), Host.this));
     }
 
-    public Set<String> getModClusterPaths() {
-        return Collections.unmodifiableSet(modClusterPaths);
+    public Set<String> getLocations() {
+        return Collections.unmodifiableSet(locations.keySet());
     }
 
     /**

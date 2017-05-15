@@ -61,13 +61,8 @@ public class UndertowHost implements Host {
     @Override
     public Iterable<Context> getContexts() {
         List<Context> contexts = new ArrayList<>();
-        for(Deployment d : this.host.getDeployments()) {
-            contexts.add(new UndertowContext(d, this));
-        }
-        for(String path : this.host.getModClusterPaths()) {
-            contexts.add(new SimpleContext(path, this));
-        }
-
+        this.host.getDeployments().forEach(deployment -> contexts.add(new UndertowContext(deployment, this)));
+        this.host.getLocations().forEach(path -> contexts.add(new LocationContext(path, this)));
         return contexts;
     }
 
