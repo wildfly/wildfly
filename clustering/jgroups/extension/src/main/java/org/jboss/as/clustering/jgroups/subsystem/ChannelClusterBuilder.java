@@ -24,13 +24,14 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Attribute.CLUSTER;
 
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
@@ -40,21 +41,15 @@ import org.wildfly.clustering.service.Builder;
  * Builds a service providing the cluster name of a channel.
  * @author Paul Ferraro
  */
-public class ChannelClusterBuilder implements ResourceServiceBuilder<String> {
+public class ChannelClusterBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<String> {
 
-    private final ServiceName serviceName;
     private final String name;
 
     private volatile String cluster;
 
-    public ChannelClusterBuilder(ServiceName serviceName, String name) {
-        this.serviceName = serviceName;
-        this.name = name;
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return this.serviceName;
+    public ChannelClusterBuilder(PathAddress address) {
+        super(ChannelResourceDefinition.Capability.JCHANNEL_CLUSTER, address);
+        this.name = address.getLastElement().getValue();
     }
 
     @Override
@@ -65,6 +60,6 @@ public class ChannelClusterBuilder implements ResourceServiceBuilder<String> {
 
     @Override
     public ServiceBuilder<String> build(ServiceTarget target) {
-        return target.addService(this.serviceName, new ValueService<>(new ImmediateValue<>(this.cluster)));
+        return target.addService(this.getServiceName(), new ValueService<>(new ImmediateValue<>(this.cluster)));
     }
 }

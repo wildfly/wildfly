@@ -66,7 +66,7 @@ public class ForkServiceHandler extends ParentResourceServiceHandler<ChannelFact
         new AliasServiceBuilder<>(FORK_CHANNEL_SOURCE.getServiceName(address), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, channel), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
         new AliasServiceBuilder<>(FORK_CHANNEL_MODULE.getServiceName(address), JGroupsRequirement.CHANNEL_MODULE.getServiceName(context, channel), JGroupsRequirement.CHANNEL_MODULE.getType()).build(target).install();
         new AliasServiceBuilder<>(FORK_CHANNEL_CLUSTER.getServiceName(address), JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, channel), JGroupsRequirement.CHANNEL_CLUSTER.getType()).build(target).install();
-        new ChannelBuilder(FORK_CHANNEL.getServiceName(address), name).configure(context, model).build(target).install();
+        new ChannelBuilder(FORK_CHANNEL, address).configure(context, model).build(target).install();
 
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), JGroupsRequirement.CHANNEL.getServiceName(context, name), JGroupsRequirement.CHANNEL.getType()).build(target).install();
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
