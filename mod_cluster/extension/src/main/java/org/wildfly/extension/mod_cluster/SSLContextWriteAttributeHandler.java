@@ -39,9 +39,9 @@ class SSLContextWriteAttributeHandler extends ReloadRequiredWriteAttributeHandle
     @Override
     protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
         context.addStep((ctx, op) -> {
-            if (model.hasChild(ModClusterSSLResourceDefinition.PATH) ) {
+            if (model.hasChild(ModClusterSSLResourceDefinition.PATH)) {
                 throw new OperationFailedException(ROOT_LOGGER.bothElytronAndLegacySslContextDefined());
             }
-        },OperationContext.Stage.MODEL);
+        }, OperationContext.Stage.MODEL);
     }
 }
