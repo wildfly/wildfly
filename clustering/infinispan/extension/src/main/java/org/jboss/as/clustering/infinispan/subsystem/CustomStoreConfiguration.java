@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,12 +22,17 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.msc.service.ServiceName;
+import org.infinispan.commons.configuration.attributes.AttributeSet;
+import org.infinispan.configuration.cache.AbstractStoreConfiguration;
+import org.infinispan.configuration.cache.AsyncStoreConfiguration;
+import org.infinispan.configuration.cache.SingletonStoreConfiguration;
 
 /**
  * @author Paul Ferraro
  */
-public interface ComponentServiceNameFactory {
-    ServiceName getServiceName(PathAddress parentAddress);
+public class CustomStoreConfiguration extends AbstractStoreConfiguration {
+
+    public CustomStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async, SingletonStoreConfiguration singletonStore) {
+        super(attributes, async, singletonStore);
+    }
 }

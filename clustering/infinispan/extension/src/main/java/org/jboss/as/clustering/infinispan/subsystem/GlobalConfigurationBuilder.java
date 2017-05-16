@@ -28,6 +28,8 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import javax.management.MBeanServer;
 
@@ -37,6 +39,7 @@ import org.infinispan.configuration.global.SiteConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.marshall.core.Ids;
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
@@ -51,7 +54,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
@@ -65,30 +67,27 @@ import org.wildfly.clustering.service.ValueDependency;
 /**
  * @author Paul Ferraro
  */
-public class GlobalConfigurationBuilder implements ResourceServiceBuilder<GlobalConfiguration>, Value<GlobalConfiguration> {
+public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<GlobalConfiguration>, Value<GlobalConfiguration> {
 
-    private final InjectedValue<Module> module = new InjectedValue<>();
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
-    private final InjectedValue<TransportConfiguration> transport = new InjectedValue<>();
-    private final InjectedValue<SiteConfiguration> site = new InjectedValue<>();
+    private final ValueDependency<Module> module;
+    private final ValueDependency<TransportConfiguration> transport;
+    private final ValueDependency<SiteConfiguration> site;
     private final Map<ThreadPoolResourceDefinition, ValueDependency<ThreadPoolConfiguration>> pools = new EnumMap<>(ThreadPoolResourceDefinition.class);
     private final Map<ScheduledThreadPoolResourceDefinition, ValueDependency<ThreadPoolConfiguration>> schedulers = new EnumMap<>(ScheduledThreadPoolResourceDefinition.class);
-    private final PathAddress address;
     private final String name;
 
     private volatile ValueDependency<MBeanServer> server;
     private volatile boolean statisticsEnabled;
 
     GlobalConfigurationBuilder(PathAddress address) {
-        this.address = address;
+        super(CONFIGURATION, address);
         this.name = address.getLastElement().getValue();
+        this.module = new InjectedValueDependency<>(CacheContainerComponent.MODULE.getServiceName(address), Module.class);
+        this.transport = new InjectedValueDependency<>(CacheContainerComponent.TRANSPORT.getServiceName(address), TransportConfiguration.class);
+        this.site = new InjectedValueDependency<>(CacheContainerComponent.SITE.getServiceName(address), SiteConfiguration.class);
         EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> this.pools.put(pool, new InjectedValueDependency<>(pool.getServiceName(address), ThreadPoolConfiguration.class)));
         EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).forEach(pool -> this.schedulers.put(pool, new InjectedValueDependency<>(pool.getServiceName(address), ThreadPoolConfiguration.class)));
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return CONFIGURATION.getServiceName(this.address);
     }
 
     @Override
@@ -147,14 +146,12 @@ public class GlobalConfigurationBuilder implements ResourceServiceBuilder<Global
     @Override
     public ServiceBuilder<GlobalConfiguration> build(ServiceTarget target) {
         ServiceBuilder<GlobalConfiguration> builder = target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(CacheContainerComponent.TRANSPORT.getServiceName(this.address), TransportConfiguration.class, this.transport)
-                .addDependency(CacheContainerComponent.SITE.getServiceName(this.address), SiteConfiguration.class, this.site)
-                .addDependency(CacheContainerComponent.MODULE.getServiceName(this.address), Module.class, this.module)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 .setInitialMode(ServiceController.Mode.PASSIVE)
                 ;
         this.pools.values().forEach(dependency -> dependency.register(builder));
         this.schedulers.values().forEach(dependency -> dependency.register(builder));
-        return (this.server != null) ? this.server.register(builder) : builder;
+        Stream.of(this.module, this.transport, this.site, this.server).filter(Objects::nonNull).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 }

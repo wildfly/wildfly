@@ -48,7 +48,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -70,30 +69,8 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
 
     static final PathElement PATH = pathElement("jdbc");
 
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        DATA_SOURCE("org.wildfly.clustering.infinispan.cache-container.cache.store.jdbc.data-source"),
-        ;
-        private final RuntimeCapability<Void> definition;
-
-        Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(name, true).build();
-        }
-
-        @Override
-        public RuntimeCapability<Void> getDefinition() {
-            return this.definition;
-        }
-
-        @Override
-        public RuntimeCapability<Void> resolve(PathAddress address) {
-            PathAddress cacheAddress = address.getParent();
-            PathAddress containerAddress = cacheAddress.getParent();
-            return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue(), cacheAddress.getLastElement().getValue());
-        }
-    }
-
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DATA_SOURCE("data-source", ModelType.STRING, new CapabilityReference(Capability.DATA_SOURCE, CommonUnaryRequirement.DATA_SOURCE), DeprecatedAttribute.DATASOURCE.getName()),
+        DATA_SOURCE("data-source", ModelType.STRING, new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.DATA_SOURCE), DeprecatedAttribute.DATASOURCE.getName()),
         DIALECT("dialect", ModelType.STRING, new EnumValidatorBuilder<>(DatabaseType.class)),
         ;
         private final AttributeDefinition definition;
@@ -254,7 +231,6 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
     JDBCStoreResourceDefinition(PathElement path, PathElement legacyPath, InfinispanResourceDescriptionResolver resolver, Consumer<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory, Consumer<ManagementResourceRegistration> registrationConfigurator) {
         super(path, legacyPath, resolver, configurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
-                .addCapabilities(Capability.class)
                 // Translate deprecated DATASOURCE attribute to DATA_SOURCE attribute
                 .addAttributeTranslation(DeprecatedAttribute.DATASOURCE, Attribute.DATA_SOURCE, POOL_NAME_TO_JNDI_NAME_TRANSLATOR, JNDI_NAME_TO_POOL_NAME_TRANSLATOR)
             ), builderFactory, registrationConfigurator);

@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.KEY_AFFINITY_FACTORY;
+
 import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
@@ -40,11 +42,11 @@ import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.SuppliedValueService;
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.JBossThreadFactory;
 
@@ -55,23 +57,17 @@ import static java.security.AccessController.doPrivileged;
  * Returns a trivial implementation if the specified cache is not distributed.
  * @author Paul Ferraro
  */
-public class KeyAffinityServiceFactoryBuilder implements Builder<KeyAffinityServiceFactory> {
+public class KeyAffinityServiceFactoryBuilder extends CapabilityServiceNameProvider implements Builder<KeyAffinityServiceFactory> {
 
-    private final PathAddress address;
     private volatile int bufferSize = 100;
 
     public KeyAffinityServiceFactoryBuilder(PathAddress address) {
-        this.address = address;
+        super(KEY_AFFINITY_FACTORY, address);
     }
 
     public KeyAffinityServiceFactoryBuilder setBufferSize(int size) {
         this.bufferSize = size;
         return this;
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return CacheContainerResourceDefinition.Capability.KEY_AFFINITY_FACTORY.getServiceName(this.address);
     }
 
     @Override

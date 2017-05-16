@@ -52,7 +52,7 @@ public class NoStoreResourceDefinition extends ChildResourceDefinition<Managemen
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new NoStoreBuilder(address.getParent()));
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new NoStoreBuilder(address));
         new SimpleResourceRegistration(descriptor, handler).register(registration);
     }
 }

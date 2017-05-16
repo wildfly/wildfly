@@ -74,6 +74,7 @@ public class SingletonDeploymentParsingProcessor implements DeploymentUnitProces
 
     @Override
     public void undeploy(DeploymentUnit unit) {
+        unit.removeAttachment(SingletonDeploymentDependencyProcessor.CONFIGURATION_KEY);
     }
 
     private SingletonDeploymentConfiguration parse(DeploymentUnit unit, File file) throws DeploymentUnitProcessingException {

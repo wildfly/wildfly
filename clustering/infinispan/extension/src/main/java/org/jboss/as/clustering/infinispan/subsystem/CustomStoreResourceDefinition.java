@@ -67,6 +67,6 @@ public class CustomStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     CustomStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), descriptor -> descriptor.addAttributes(Attribute.class), address -> new CustomStoreBuilder<>(address.getParent()), Consumers.empty());
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), descriptor -> descriptor.addAttributes(Attribute.class), address -> new CustomStoreBuilder(address), Consumers.empty());
     }
 }

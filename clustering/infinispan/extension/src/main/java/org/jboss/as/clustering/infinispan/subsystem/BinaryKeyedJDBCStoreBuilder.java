@@ -29,7 +29,8 @@ import org.infinispan.persistence.jdbc.configuration.TableManipulationConfigurat
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * Builds a service providing a {@link JdbcBinaryStoreConfiguration}.
@@ -37,17 +38,16 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class BinaryKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcBinaryStoreConfiguration, JdbcBinaryStoreConfigurationBuilder> {
 
-    private final InjectedValue<TableManipulationConfiguration> table = new InjectedValue<>();
-    private final PathAddress cacheAddress;
+    private final ValueDependency<TableManipulationConfiguration> table;
 
-    BinaryKeyedJDBCStoreBuilder(PathAddress cacheAddress) {
-        super(JdbcBinaryStoreConfigurationBuilder.class, cacheAddress);
-        this.cacheAddress = cacheAddress;
+    BinaryKeyedJDBCStoreBuilder(PathAddress address) {
+        super(address, JdbcBinaryStoreConfigurationBuilder.class);
+        this.table = new InjectedValueDependency<>(CacheComponent.BINARY_TABLE.getServiceName(address.getParent()), TableManipulationConfiguration.class);
     }
 
     @Override
     public ServiceBuilder<PersistenceConfiguration> build(ServiceTarget target) {
-        return super.build(target).addDependency(CacheComponent.BINARY_TABLE.getServiceName(this.cacheAddress), TableManipulationConfiguration.class, this.table);
+        return this.table.register(super.build(target));
     }
 
     @Override

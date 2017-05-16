@@ -35,7 +35,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -56,28 +55,6 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
 
     static final PathElement LEGACY_PATH = PathElement.pathElement("remote-store", "REMOTE_STORE");
     static final PathElement PATH = pathElement("remote");
-
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        OUTBOUND_SOCKET_BINDING("org.wildfly.clustering.infinispan.cache-container.cache.store.remote.outbound-socket-binding"),
-        ;
-        private final RuntimeCapability<Void> definition;
-
-        Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(name, true).build();
-        }
-
-        @Override
-        public RuntimeCapability<Void> getDefinition() {
-            return this.definition;
-        }
-
-        @Override
-        public RuntimeCapability<Void> resolve(PathAddress address) {
-            PathAddress cacheAddress = address.getParent();
-            PathAddress containerAddress = cacheAddress.getParent();
-            return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue(), cacheAddress.getLastElement().getValue());
-        }
-    }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         CACHE("cache", ModelType.STRING, new ModelNode(BasicCacheContainer.DEFAULT_CACHE_NAME)),
@@ -100,7 +77,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
         Attribute(String name) {
             this.definition = new StringListAttributeDefinition.Builder(name)
                     .setAttributeParser(AttributeParsers.COLLECTION)
-                    .setCapabilityReference(new CapabilityReference(Capability.OUTBOUND_SOCKET_BINDING, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING))
+                    .setCapabilityReference(new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setMinSize(1)
                     .build();
@@ -138,9 +115,8 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     RemoteStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), descriptor -> descriptor
-                .addAttributes(Attribute.class)
-                .addCapabilities(Capability.class)
-            , address -> new RemoteStoreBuilder(address.getParent()), Consumers.empty());
+        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH),
+                descriptor -> descriptor.addAttributes(Attribute.class),
+                address -> new RemoteStoreBuilder(address), Consumers.empty());
     }
 }

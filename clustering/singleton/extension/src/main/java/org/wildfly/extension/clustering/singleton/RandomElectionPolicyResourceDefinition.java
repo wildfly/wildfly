@@ -22,12 +22,8 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * @author Paul Ferraro
@@ -38,18 +34,6 @@ public class RandomElectionPolicyResourceDefinition extends ElectionPolicyResour
     static final PathElement PATH = pathElement(PATH_VALUE);
 
     RandomElectionPolicyResourceDefinition() {
-        super(PATH, new SingletonResourceDescriptionResolver(PATH, WILDCARD_PATH));
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(ElectionPolicyResourceDefinition.Attribute.class)
-                .addCapabilities(ElectionPolicyResourceDefinition.Capability.class)
-                ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new RandomElectionPolicyBuilder(address.getParent()));
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        super(PATH, new SingletonResourceDescriptionResolver(PATH, WILDCARD_PATH), Consumers.empty(), address -> new RandomElectionPolicyBuilder(address));
     }
 }
