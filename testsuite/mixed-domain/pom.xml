@@ -47,6 +47,7 @@
         <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
 
         <ts.elytron.cli>../shared/enable-elytron.cli</ts.elytron.cli>
+	<ts.skipTests>${skipTests}</ts.skipTests>
     </properties>
 
     <!--
@@ -94,7 +95,7 @@
 
                     <!-- System properties to forked surefire JVM which runs clients. -->
                     <argLine>${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
-                    <skipTests>false</skipTests>
+                    <skipTests>${ts.skipTests}</skipTests>
 
                     <systemPropertyVariables>
                         <jboss.options>${surefire.system.args}</jboss.options>
