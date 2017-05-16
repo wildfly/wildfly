@@ -169,26 +169,6 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformer(ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 2, 0), "jca-full-expression.xml");
     }
 
-    @Test
-    public void testTransformerWF8() throws Exception {
-        testTransformerWF(ModelTestControllerVersion.WILDFLY_8_0_0_FINAL, ModelVersion.create(2, 0, 0), "jca-full.xml");
-    }
-
-    @Test
-    public void testTransformerWF8WithExpressions() throws Exception {
-        testTransformerWF(ModelTestControllerVersion.WILDFLY_8_0_0_FINAL, ModelVersion.create(2, 0, 0), "jca-full-expression.xml");
-    }
-
-    @Test
-    public void testTransformer300() throws Exception {
-        testTransformerWF(ModelTestControllerVersion.WILDFLY_8_2_0_FINAL, ModelVersion.create(3, 0, 0), "jca-full.xml");
-    }
-
-    @Test
-    public void testTransformer300WithExpressions() throws Exception {
-        testTransformerWF(ModelTestControllerVersion.WILDFLY_8_2_0_FINAL, ModelVersion.create(3, 0, 0), "jca-full-expression.xml");
-    }
-
     /**
      * Tests transformation of model from 1.2.0 version into 1.1.0 version.
      *

@@ -125,12 +125,6 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
         standardSubsystemTest("resource-adapters-xapool-expression.xml", "resource-adapters-xapool.xml", true);
     }
 
-
-    @Test
-    public void testRejectinMcpEnlistmentTrace() throws Exception {
-        testRejectingTransformer300("resource-adapters-pool-20.xml", ModelTestControllerVersion.WILDFLY_8_1_0_FINAL, ModelVersion.create(3, 0, 0));
-    }
-
     @Test
     public void testTransformerEAP62() throws Exception {
         testRejectingTransformer("resource-adapters-pool-20.xml", ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 3, 0));
