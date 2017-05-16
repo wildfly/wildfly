@@ -50,7 +50,7 @@ public interface Capability extends Definable<RuntimeCapability<?>>, Requirement
      */
     default RuntimeCapability<?> resolve(PathAddress address) {
         RuntimeCapability<?> definition = this.getDefinition();
-        return definition.isDynamicallyNamed() ? definition.fromBaseCapability(address.getLastElement().getValue()) : definition;
+        return definition.isDynamicallyNamed() ? definition.fromBaseCapability(address) : definition;
     }
 
     @Override
