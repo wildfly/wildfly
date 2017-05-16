@@ -113,7 +113,8 @@ public class PoolConfigurationRWHandler {
 
             return (IDLETIMEOUTMINUTES.getName().equals(parameterName) || BACKGROUNDVALIDATION.getName().equals(parameterName)
                     || BACKGROUNDVALIDATIONMILLIS.getName().equals(parameterName)
-                    || POOL_PREFILL.getName().equals(parameterName) || POOL_FLUSH_STRATEGY.getName().equals(parameterName));
+                    || POOL_PREFILL.getName().equals(parameterName) || POOL_FLUSH_STRATEGY.getName().equals(parameterName)
+                    || MAX_POOL_SIZE.getName().equals(parameterName) || MIN_POOL_SIZE.getName().equals(parameterName));
 
         }
 
