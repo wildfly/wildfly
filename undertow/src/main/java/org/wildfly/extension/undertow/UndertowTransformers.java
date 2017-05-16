@@ -22,22 +22,30 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.wildfly.extension.undertow.HttpsListenerResourceDefinition.SSL_CONTEXT;
+
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.AttributeTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.undertow.filters.FailoverStrategy;
+import org.wildfly.extension.undertow.filters.ModClusterDefinition;
+import org.wildfly.extension.undertow.handlers.ReverseProxyHandler;
 
 
 /**
  * @author Tomaz Cerar (c) 2016 Red Hat Inc.
  */
 public class UndertowTransformers implements ExtensionTransformerRegistration {
+    private static final ModelVersion MODEL_VERSION_EAP7_0_0 = ModelVersion.create(3, 1, 0);
+
     @Override
     public String getSubsystemName() {
         return UndertowExtension.SUBSYSTEM_NAME;
@@ -50,59 +58,85 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
 
 
     private static void registerTransformers_EAP_7_0_0(SubsystemTransformerRegistration subsystemRegistration) {
-        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        final ResourceTransformationDescriptionBuilder serverBuilder = subsystemBuilder.addChildResource(UndertowExtension.SERVER_PATH);
+        final ResourceTransformationDescriptionBuilder hostBuilder = serverBuilder.addChildResource(UndertowExtension.HOST_PATH);
 
         // Version 4.0.0 adds the new SSL_CONTEXT attribute, however it is mutually exclusive to the SECURITY_REALM attribute, both of which can
         // now be set to 'undefined' so instead of rejecting a defined SSL_CONTEXT, reject an undefined SECURITY_REALM as that covers the
         // two new combinations.
-        builder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH)
-                .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.SECURITY_REALM)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName())
-                .addRejectCheck(RejectAttributeChecker.DEFINED, HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName())
-                .end();
+        AttributeTransformationDescriptionBuilder https =
+                serverBuilder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH)
+                        .getAttributeBuilder()
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, SSL_CONTEXT)
+                        .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.SECURITY_REALM)
+                        .setDiscard(DiscardAttributeChecker.UNDEFINED, SSL_CONTEXT)
+                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.CERTIFICATE_FORWARDING)
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING)
+                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING)
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING);
+        addCommonListenerRules(https).end();
 
-        builder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH)
+        AttributeTransformationDescriptionBuilder http = serverBuilder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH)
                 .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName())
-                .addRejectCheck(RejectAttributeChecker.DEFINED, HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName())
-                .end();
+                ;
+        addCommonListenerRules(http).end();
 
-        builder.addChildResource(UndertowExtension.PATH_SERVLET_CONTAINER)
+
+        subsystemBuilder
+                .addChildResource(UndertowExtension.PATH_SERVLET_CONTAINER)
                 .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.DISABLE_FILE_WATCH_SERVICE)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
                 .end()
                 .addChildResource(UndertowExtension.PATH_WEBSOCKETS)
                 .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), Constants.PER_MESSAGE_DEFLATE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.PER_MESSAGE_DEFLATE, Constants.DEFLATER_LEVEL)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), WebsocketsDefinition.PER_MESSAGE_DEFLATE)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(0)), WebsocketsDefinition.DEFLATER_LEVEL)
+
                 .end();
 
-        builder.addChildResource(UndertowExtension.PATH_FILTERS)
-                .addChildResource(PathElement.pathElement(Constants.MOD_CLUSTER))
-                .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.SSL_CONTEXT)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(1)), Constants.MAX_RETRIES)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MAX_RETRIES)
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.ADVERTISE_SOCKET_BINDING)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(FailoverStrategy.LOAD_BALANCED.name())), Constants.FAILOVER_STRATEGY)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.FAILOVER_STRATEGY)
-                .end();
-
-        builder.addChildResource(UndertowExtension.PATH_HANDLERS)
+        subsystemBuilder.addChildResource(UndertowExtension.PATH_HANDLERS)
                 .addChildResource(PathElement.pathElement(Constants.REVERSE_PROXY))
                 .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(1)), Constants.MAX_RETRIES)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(1L)), Constants.MAX_RETRIES)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MAX_RETRIES)
+                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(ReverseProxyHandler.CONNECTIONS_PER_THREAD), ReverseProxyHandler.CONNECTIONS_PER_THREAD)
                 .end()
                 .addChildResource(PathElement.pathElement(Constants.HOST))
                 .getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, SSL_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.SSL_CONTEXT)
                 .end();
 
-        builder.discardChildResource(PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN));
+        subsystemBuilder.addChildResource(UndertowExtension.PATH_FILTERS)
+                .addChildResource(PathElement.pathElement(Constants.MOD_CLUSTER))
+                .getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModClusterDefinition.FAILOVER_STRATEGY.getDefaultValue()), ModClusterDefinition.FAILOVER_STRATEGY)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModClusterDefinition.MAX_RETRIES.getDefaultValue()), ModClusterDefinition.MAX_RETRIES)
+                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(ModClusterDefinition.MAX_AJP_PACKET_SIZE), ModClusterDefinition.MAX_AJP_PACKET_SIZE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, SSL_CONTEXT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ModClusterDefinition.MAX_RETRIES, ModClusterDefinition.FAILOVER_STRATEGY)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ModClusterDefinition.MAX_AJP_PACKET_SIZE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, SSL_CONTEXT)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.SECURITY_REALM)
+                .end();
 
+        hostBuilder.rejectChildResource(UndertowExtension.PATH_HTTP_INVOKER);
+        subsystemBuilder.rejectChildResource(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN);
 
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, UndertowExtension.MODEL_VERSION_EAP7_0_0);
+        TransformationDescription.Tools.register(subsystemBuilder.build(), subsystemRegistration, MODEL_VERSION_EAP7_0_0);
+    }
+
+    private static AttributeTransformationDescriptionBuilder addCommonListenerRules(AttributeTransformationDescriptionBuilder builder) {
+        return builder
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(true)), HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName())
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11)
+                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE), HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE)
+                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE), HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE)
+                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE), HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE)
+
+                ;
     }
 }

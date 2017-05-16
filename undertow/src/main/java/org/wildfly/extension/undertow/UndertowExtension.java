@@ -71,12 +71,14 @@ public class UndertowExtension implements Extension {
     public static final PathElement LOAD_BALANCING_GROUP = PathElement.pathElement(Constants.LOAD_BALANCING_GROUP);
     public static final PathElement NODE = PathElement.pathElement(Constants.NODE);
     public static final PathElement PATH_FILTER_REF = PathElement.pathElement(Constants.FILTER_REF);
+    static final PathElement PATH_APPLICATION_SECURITY_DOMAIN = PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN);
+
     private static final String RESOURCE_NAME = UndertowExtension.class.getPackage().getName() + ".LocalDescriptions";
     static final AccessConstraintDefinition LISTENER_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
                     new SensitivityClassification(SUBSYSTEM_NAME, "web-connector", false, false, false));
 
-    static final ModelVersion MODEL_VERSION_EAP7_0_0 = ModelVersion.create(3, 1, 0);
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
+
 
     public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);

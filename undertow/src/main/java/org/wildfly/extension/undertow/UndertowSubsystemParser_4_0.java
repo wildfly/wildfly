@@ -91,6 +91,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                 ).addChild(
                                         listenerBuilder(HttpsListenerResourceDefinition.INSTANCE)
                                                 // xsd https-listener-type
+                                                .setMarshallDefaultValues(true)
                                                 .addAttributes(
                                                         HttpsListenerResourceDefinition.SSL_CONTEXT,
                                                         HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING,
@@ -203,6 +204,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                 )
                                 .addChild(
                                         builder(WebsocketsDefinition.INSTANCE.getPathElement())
+                                                .setMarshallDefaultValues(true)
                                                 .addAttributes(
                                                         WebsocketsDefinition.WORKER,
                                                         WebsocketsDefinition.BUFFER_POOL,

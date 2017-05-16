@@ -51,7 +51,8 @@ public class ModClusterLoadBalancingGroupDefinition extends SimpleResourceDefini
     public final OperationDefinition STOP_NODES = new SimpleOperationDefinition(Constants.STOP_NODES, getResourceDescriptionResolver());
 
     ModClusterLoadBalancingGroupDefinition() {
-        super(UndertowExtension.LOAD_BALANCING_GROUP, UndertowExtension.getResolver("handler", "mod-cluster", "balancer", "load-balancing-group"), null, null, true);
+        super(new Parameters(UndertowExtension.LOAD_BALANCING_GROUP, UndertowExtension.getResolver("handler", "mod-cluster", "balancer", "load-balancing-group"))
+                .setRuntime());
     }
 
     @Override

@@ -80,7 +80,6 @@ import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
@@ -202,7 +201,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
     private static final Set<String> knownApplicationSecurityDomains = Collections.synchronizedSet(new HashSet<>());
 
     private ApplicationSecurityDomainDefinition() {
-        this((Parameters) new Parameters(PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN),
+        this((Parameters) new Parameters(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN,
                 UndertowExtension.getResolver(Constants.APPLICATION_SECURITY_DOMAIN))
                         .setCapabilities(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY)
                         .addAccessConstraints(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN, false, false, false)),
