@@ -33,11 +33,6 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
  * @author John Bailey
@@ -70,27 +65,7 @@ public class CmpExtension extends AbstractLegacyExtension {
         subsystem.registerSubModel(UUIDKeyGeneratorResourceDefinition.INSTANCE);
 
         subsystem.registerSubModel(HiLoKeyGeneratorResourceDefinition.INSTANCE);
-        if (context.isRegisterTransformers()){
-            registerTransformers(subsystemRegistration);
-        }
-
         return Collections.singleton(subsystem);
-    }
-
-    private void registerTransformers(SubsystemRegistration subsystem) {
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-
-        builder.addChildResource(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH).getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME)
-                .end();
-        builder.addChildResource(CmpSubsystemModel.HILO_KEY_GENERATOR_PATH).getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME)
-                .end();
-
-        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
-
     }
 
     @Override
