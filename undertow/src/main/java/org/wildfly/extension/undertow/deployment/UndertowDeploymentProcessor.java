@@ -90,6 +90,7 @@ import org.wildfly.extension.requestcontroller.RequestControllerActivationMarker
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.HostSingleSignOnDefinition;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
@@ -276,6 +277,13 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(Constants.PERMISSION_COLLECTION_ATTRIBUTE_NAME, deploymentUnit.getAttachment(Attachments.MODULE_PERMISSIONS)));
 
         additionalDependencies.addAll(warMetaData.getAdditionalDependencies());
+        try {
+            String capability = HostSingleSignOnDefinition.HOST_SSO_CAPABILITY.fromBaseCapability(serverInstanceName, hostName).getName();
+            capabilitySupport.getCapabilityRuntimeAPI(capability, Object.class);
+            additionalDependencies.add(capabilitySupport.getCapabilityServiceName(capability));
+        } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
+            //ignore
+        }
 
         final ServiceName hostServiceName = UndertowService.virtualHostName(serverInstanceName, hostName);
         final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName, pathName);
