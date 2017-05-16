@@ -49,7 +49,7 @@ abstract class JobOperationStepHandler implements OperationStepHandler {
     /**
      * Creates a new step handler with a modifiable {@link JobOperator}.
      */
-    protected JobOperationStepHandler() {
+    JobOperationStepHandler() {
         this(true);
     }
 
@@ -59,12 +59,16 @@ abstract class JobOperationStepHandler implements OperationStepHandler {
      * @param modify {@code true} if the {@link #execute(OperationContext, ModelNode, WildFlyJobOperator)} will modify a job
      *               repository, {@code false} for a read-only service
      */
-    protected JobOperationStepHandler(final boolean modify) {
+    JobOperationStepHandler(final boolean modify) {
         this.modify = modify;
     }
 
     @Override
     public final void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        context.addStep(this::executeRuntime, OperationContext.Stage.RUNTIME);
+    }
+
+    private void executeRuntime(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final ServiceController<?> controller = context.getServiceRegistry(modify).getService(getServiceName(context));
         final WildFlyJobOperator jobOperator = (WildFlyJobOperator) controller.getService();
         execute(context, operation, jobOperator);
