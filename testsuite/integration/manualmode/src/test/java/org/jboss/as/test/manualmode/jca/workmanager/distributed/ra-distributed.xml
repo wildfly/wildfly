@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2017, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<connector xmlns="http://java.sun.com/xml/ns/javaee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+           http://java.sun.com/xml/ns/j2ee/connector_1_6.xsd"
+           version="1.6" metadata-complete="true">
+
+    <vendor-name>Red Hat Middleware LLC</vendor-name>
+    <eis-type>Test RA</eis-type>
+    <resourceadapter-version>0.1</resourceadapter-version>
+
+    <resourceadapter>
+        <resourceadapter-class>org.jboss.as.test.manualmode.jca.workmanager.distributed.ra.DistributedResourceAdapter1
+        </resourceadapter-class>
+
+        <outbound-resourceadapter>
+            <connection-definition>
+                <managedconnectionfactory-class>org.jboss.as.test.manualmode.jca.workmanager.distributed.ra.DistributedManagedConnectionFactory1
+                </managedconnectionfactory-class>
+                <connectionfactory-interface>org.jboss.as.test.manualmode.jca.workmanager.distributed.ra.DistributedConnectionFactory1
+                </connectionfactory-interface>
+                <connectionfactory-impl-class>org.jboss.as.test.manualmode.jca.workmanager.distributed.ra.DistributedConnectionFactory1Impl
+                </connectionfactory-impl-class>
+                <connection-interface>org.jboss.as.test.manualmode.jca.workmanager.distributed.ra.DistributedConnection1
+                </connection-interface>
+                <connection-impl-class>org.jboss.as.test.manualmode.jca.workmanager.distributed.ra.DistributedConnection1Impl
+                </connection-impl-class>
+            </connection-definition>
+            <transaction-support>NoTransaction</transaction-support>
+            <reauthentication-support>false</reauthentication-support>
+        </outbound-resourceadapter>
+        <adminobject>
+            <adminobject-interface>org.jboss.as.test.manualmode.jca.workmanager.distributed.ra.DistributedAdminObject1
+            </adminobject-interface>
+            <adminobject-class>org.jboss.as.test.manualmode.jca.workmanager.distributed.ra.DistributedAdminObject1Impl
+            </adminobject-class>
+        </adminobject>
+    </resourceadapter>
+</connector>

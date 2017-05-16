@@ -39,7 +39,6 @@
         <ts.config-as.change-jgroups-multicast-interface name="jbossas"
                                                          interface="multicast"/>
 
-
         <echo message="Copying and configuring instance jbossas-with-remote-outbound-connection"/>
         <copy todir="target/jbossas-with-remote-outbound-connection">
             <fileset dir="target/jbossas"/>
@@ -65,6 +64,19 @@
         <copy todir="target/jbossas-parse-marshal/modules">
             <fileset dir="${jboss.dist}/modules"/>
         </copy>
+
+        <echo message="Copying and configuring instances jbossas-dwm-0 and jbossas-dwm-1  =========  "/>
+        <copy todir="target/jbossas-dwm-0" overwrite="true">
+            <fileset dir="target/jbossas"/>
+        </copy>
+        <copy todir="target/jbossas-dwm-1" overwrite="true">
+            <fileset dir="target/jbossas"/>
+        </copy>
+        <ts.config-as.change-transport-stack name="jbossas-dwm-0"
+                                             stack="tcp"/>
+        <ts.config-as.change-transport-stack name="jbossas-dwm-1"
+                                             stack="tcp"/>
+
         <!-- Connects back to original host (node0) -->
         <ts.config-as.add-remote-outbound-connection name="jbossas-with-remote-outbound-connection" node="${node0}"
                                                      remotePort="8080" protocol="http-remoting" securityRealm="PasswordRealm" userName="user1"/>
