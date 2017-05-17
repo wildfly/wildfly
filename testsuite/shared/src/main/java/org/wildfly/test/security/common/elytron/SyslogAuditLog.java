@@ -35,6 +35,7 @@ public class SyslogAuditLog extends AbstractConfigurableElement {
     private final String hostName;
     private final Integer port;
     private final String serverAddress;
+    private final String sslContext;
     private final String transport;
 
     private SyslogAuditLog(Builder builder) {
@@ -43,6 +44,7 @@ public class SyslogAuditLog extends AbstractConfigurableElement {
         this.hostName = builder.hostName;
         this.port = builder.port;
         this.serverAddress = builder.serverAddress;
+        this.sslContext = builder.sslContext;
         this.transport = builder.transport;
     }
 
@@ -62,6 +64,9 @@ public class SyslogAuditLog extends AbstractConfigurableElement {
         }
         if (isNotBlank(serverAddress)) {
             command.append("server-address=\"").append(serverAddress).append("\", ");
+        }
+        if (isNotBlank(sslContext)) {
+            command.append("ssl-context=\"").append(sslContext).append("\", ");
         }
         if (isNotBlank(transport)) {
             command.append("transport=\"").append(transport).append("\", ");
@@ -95,6 +100,7 @@ public class SyslogAuditLog extends AbstractConfigurableElement {
         private String hostName;
         private Integer port;
         private String serverAddress;
+        private String sslContext;
         private String transport;
 
         private Builder() {
@@ -122,6 +128,11 @@ public class SyslogAuditLog extends AbstractConfigurableElement {
 
         public Builder withFormat(String format) {
             this.format = format;
+            return this;
+        }
+
+        public Builder withSslContext(String sslContext) {
+            this.sslContext = sslContext;
             return this;
         }
 

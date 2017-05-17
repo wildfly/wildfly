@@ -45,7 +45,7 @@ import static org.wildfly.test.integration.elytron.audit.AbstractSyslogAuditLogT
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({TCPSyslogAuditLogTestCase.SyslogAuditLogSetupTask.class})
+@ServerSetup({AbstractAuditLogTestCase.SecurityDomainSetupTask.class, TCPSyslogAuditLogTestCase.SyslogAuditLogSetupTask.class})
 public class TCPSyslogAuditLogTestCase extends AbstractSyslogAuditLogTestCase {
 
     private static final String NAME = TCPSyslogAuditLogTestCase.class.getSimpleName();
