@@ -143,7 +143,7 @@ public class DatasourcePoolAttributesTestCase extends JcaMgmtBase {
         Assert.assertEquals(false, poolConfiguration.isStrictMin());
 
         // modify values
-        writeAttribute(DS_ADDRESS, Constants.INITIAL_POOL_SIZE.getName(), "6");
+        writeAttribute(DS_ADDRESS, Constants.INITIAL_POOL_SIZE.getName(), "4");
         writeAttribute(DS_ADDRESS, Constants.BLOCKING_TIMEOUT_WAIT_MILLIS.getName(), "10000");
         writeAttribute(DS_ADDRESS, Constants.POOL_FAIR.getName(), "false");
         writeAttribute(DS_ADDRESS, Constants.POOL_USE_STRICT_MIN.getName(), "true");
@@ -153,7 +153,7 @@ public class DatasourcePoolAttributesTestCase extends JcaMgmtBase {
         Assert.assertEquals("running", serverState.asString());
 
         // check that runtime was updated
-        Assert.assertEquals(6, poolConfiguration.getInitialSize());
+        Assert.assertEquals(4, poolConfiguration.getInitialSize());
         Assert.assertEquals(10000, poolConfiguration.getBlockingTimeout());
         Assert.assertEquals(false, poolConfiguration.isFair());
         Assert.assertEquals(true, poolConfiguration.isStrictMin());
