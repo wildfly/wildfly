@@ -320,6 +320,20 @@
 
     <profiles>
 
+        <!-- Avoid using Windows-specific DualStackPlainDatagramSocketImpl since it doesn't implement setTimeToLive(). -->
+        <!-- See https://github.com/belaban/JGroups/wiki/FAQ or https://issues.jboss.org/browse/JGRP-1880 -->
+        <profile>
+            <id>windows-jvm-args.profile</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <jvm.args.other>-server -Dimpl.prefix=TwoStacksPlain</jvm.args.other>
+            </properties>
+        </profile>
+
         <profile>
             <id>tools-jar</id>
             <activation>
