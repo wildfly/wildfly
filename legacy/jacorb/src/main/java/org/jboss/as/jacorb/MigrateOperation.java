@@ -154,7 +154,7 @@ public class MigrateOperation implements OperationStepHandler {
                 checkPropertiesWithExpression(jacorbModel, warnings);
 
                 final ModelNode openjdkModel = TransformUtils.transformModel(jacorbModel);
-                ConfigValidator.validateConfig(context, openjdkModel);
+                warnings.addAll(ConfigValidator.validateConfig(context, openjdkModel));
 
                 final PathAddress openjdkAddress = subsystemsAddress.append(OPENJDK_SUBSYSTEM_ELEMENT);
                 addOpenjdkSubsystem(openjdkAddress, openjdkModel, migrateOperations);

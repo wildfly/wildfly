@@ -55,12 +55,9 @@ class IORTransportConfigDefinition extends PersistentResourceDefinition {
     static final ParameterValidator VALIDATOR = new EnumValidator<IORTransportConfigValues>(
             IORTransportConfigValues.class, true, true);
 
-    static final ModelNode DEFAULT_VALUE = new ModelNode(IORTransportConfigValues.NONE.toString());
-
     static final AttributeDefinition INTEGRITY =
             new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_TRANSPORT_INTEGRITY, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(DEFAULT_VALUE)
                     .setValidator(VALIDATOR)
                     .setAllowExpression(true)
                     .build();
@@ -68,7 +65,6 @@ class IORTransportConfigDefinition extends PersistentResourceDefinition {
     static final AttributeDefinition CONFIDENTIALITY =
             new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_TRANSPORT_CONFIDENTIALITY, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(DEFAULT_VALUE)
                     .setValidator(VALIDATOR)
                     .setAllowExpression(true)
                     .build();
@@ -76,7 +72,6 @@ class IORTransportConfigDefinition extends PersistentResourceDefinition {
     static final AttributeDefinition TRUST_IN_TARGET =
             new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_TRANSPORT_TRUST_IN_TARGET, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(DEFAULT_VALUE)
                     .setValidator(new EnumValidator<IORTransportConfigValues>(IORTransportConfigValues.class, true, true,
                             IORTransportConfigValues.NONE, IORTransportConfigValues.SUPPORTED))
                     .setAllowExpression(true)
@@ -85,7 +80,6 @@ class IORTransportConfigDefinition extends PersistentResourceDefinition {
     static final AttributeDefinition TRUST_IN_CLIENT =
             new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_TRANSPORT_TRUST_IN_CLIENT, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(DEFAULT_VALUE)
                     .setValidator(VALIDATOR)
                     .setAllowExpression(true)
                     .build();
@@ -93,7 +87,6 @@ class IORTransportConfigDefinition extends PersistentResourceDefinition {
     static final AttributeDefinition DETECT_REPLAY =
             new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_TRANSPORT_DETECT_REPLAY, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(DEFAULT_VALUE)
                     .setValidator(VALIDATOR)
                     .setAllowExpression(true)
                     .build();
@@ -101,7 +94,6 @@ class IORTransportConfigDefinition extends PersistentResourceDefinition {
     static final SimpleAttributeDefinition DETECT_MISORDERING =
             new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_TRANSPORT_DETECT_MISORDERING, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(DEFAULT_VALUE)
                     .setValidator(VALIDATOR)
                     .setAllowExpression(true)
                     .build();
