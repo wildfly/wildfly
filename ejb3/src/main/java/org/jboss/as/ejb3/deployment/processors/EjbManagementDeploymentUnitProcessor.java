@@ -30,12 +30,13 @@ import java.util.List;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
 import org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentRuntimeHandler;
@@ -43,13 +44,15 @@ import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.ejb3.subsystem.deployment.InstalledComponent;
 import org.jboss.as.ejb3.subsystem.deployment.TimerServiceResource;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-
 
 /**
  * {@link org.jboss.as.server.deployment.Phase#INSTALL} processor that adds management resources describing EJB components.
@@ -57,6 +60,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProcessor {
+
+    private static AttachmentKey<AttachmentList<TimerServiceRemoval>> REMOVAL_KEY = AttachmentKey.createList(TimerServiceRemoval.class);
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -100,6 +105,14 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
                 EjbLogger.DEPLOYMENT_LOGGER.failedToRemoveManagementResources(configuration, e.getLocalizedMessage());
             }
         }
+
+        final List<TimerServiceRemoval> removals = deploymentUnit.getAttachmentList(REMOVAL_KEY);
+        if (removals != null) {
+            for (TimerServiceRemoval removal : removals) {
+                removal.cleanup();
+            }
+            deploymentUnit.removeAttachment(REMOVAL_KEY);
+        }
     }
 
     private void installManagementResource(ComponentConfiguration configuration, DeploymentUnit deploymentUnit) {
@@ -117,6 +130,23 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
                     EJB3SubsystemModel.TIMER_SERVICE_PATH);
             final TimerServiceResource timerServiceResource = ((TimerServiceImpl) description.getTimerService()).getResource();
             deploymentResourceSupport.registerDeploymentSubResource(EJB3Extension.SUBSYSTEM_NAME, timerServiceAddress, timerServiceResource);
+            deploymentUnit.addToAttachmentList(REMOVAL_KEY, new TimerServiceRemoval(timerServiceAddress, getEjbResource(deploymentUnit)));
+        }
+    }
+
+    /**
+     * TODO this is a temporary hack into internals until DeploymentUnit exposes a proper Resource-based API
+     */
+    private Resource getEjbResource(final DeploymentUnit deploymentUnit) {
+        final Resource parent = deploymentUnit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
+        final PathElement address = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
+
+        synchronized (parent) {
+            if (parent.hasChild(address)) {
+                return parent.requireChild(address);
+            } else {
+                return null;
+            }
         }
     }
 
@@ -136,5 +166,28 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
         elements.add(PathElement.pathElement(type.getResourceType(), configuration.getComponentName()));
         return PathAddress.pathAddress(elements);
     }
-}
 
+    private static class TimerServiceRemoval {
+
+        private volatile PathAddress pathAddress;
+        private volatile Resource ejbResource;
+
+        public TimerServiceRemoval(PathAddress pathAddress, Resource ejbResource) {
+            this.pathAddress = pathAddress;
+            this.ejbResource = ejbResource;
+        }
+
+        private void cleanup() {
+            if (ejbResource != null && pathAddress != null && pathAddress.size() == 2) {
+                final PathElement bean = pathAddress.getElement(0);
+                final PathElement timer = pathAddress.getElement(1);
+
+                synchronized (ejbResource) {
+                    if (ejbResource.hasChild(bean)) {
+                        ejbResource.requireChild(bean).removeChild(timer);
+                    }
+                }
+            }
+        }
+    }
+}
