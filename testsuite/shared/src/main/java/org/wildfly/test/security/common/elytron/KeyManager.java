@@ -23,10 +23,10 @@
 package org.wildfly.test.security.common.elytron;
 
 /**
- * Interface representing Elytron trust-managers.
+ * Interface representing Elytron key-manager.
  *
  * @author Josef Cacek
  */
-public interface TrustManagers extends ConfigurableElement {
+public interface KeyManager extends ConfigurableElement {
 
 }

@@ -18,7 +18,6 @@ package org.jboss.as.test.integration.security.credentialreference;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.security.CredentialReference.ALIAS;
 import static org.jboss.as.controller.security.CredentialReference.CREDENTIAL_REFERENCE;
 
 import java.io.IOException;
@@ -67,8 +66,8 @@ public class CredentialStoreServerSetupTask implements ServerSetupTask {
     }
 
     private void createAlias(final ModelControllerClient client) throws IOException {
-        final PathAddress aliasAddress = CREDENTIAL_STORE_ADDRESS.append(ALIAS, "alias001");
-        final ModelNode addOperation = Operations.createAddOperation(aliasAddress.toModelNode());
+        final ModelNode addOperation = Operations.createOperation("add-alias", CREDENTIAL_STORE_ADDRESS.toModelNode());
+        addOperation.get("alias").set("alias001");
         addOperation.get("secret-value").set("chucknorris");
         execute(client, addOperation);
     }

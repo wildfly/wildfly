@@ -24,7 +24,12 @@ package org.jboss.as.ejb3.deployment.processors;
 import static java.security.AccessController.doPrivileged;
 
 import java.net.URI;
+import java.security.GeneralSecurityException;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+
+import javax.net.ssl.SSLContext;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -154,37 +159,41 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
         @Override
         public void start(StartContext context) throws StartException {
 
-            doPrivileged((PrivilegedAction<Void>) () -> {
-                // associate the EJB client context and discovery setup with the deployment classloader
-                final EJBClientContextService ejbClientContextService = ejbClientContextInjectedValue.getValue();
-                final EJBClientContext ejbClientContext = ejbClientContextService.getClientContext();
-                final AuthenticationContext ejbClientClustersAuthenticationContext = ejbClientContextService.getClustersAuthenticationContext();
-                final ModuleClassLoader classLoader = module.getClassLoader();
-                EjbLogger.DEPLOYMENT_LOGGER.debugf("Registering EJB client context %s for classloader %s", ejbClientContext, classLoader);
-                final ContextManager<AuthenticationContext> authenticationContextManager = AuthenticationContext.getContextManager();
-                final RemotingProfileService profileService = profileServiceInjectedValue.getOptionalValue();
-                if (profileService != null || ejbClientClustersAuthenticationContext != null)  {
-                    // this is cheating but it works for our purposes
-                    AuthenticationContext authenticationContext = authenticationContextManager.getClassLoaderDefault(classLoader);
-                    if (authenticationContext == null) {
-                        authenticationContext = authenticationContextManager.get();
-                    }
-                    // now transform it
-                    if (profileService != null) {
-                        for (RemotingProfileService.ConnectionSpec connectionSpec : profileService.getConnectionSpecs()) {
-                            authenticationContext = transformOne(connectionSpec, authenticationContext);
+            try {
+                doPrivileged((PrivilegedExceptionAction<Void>) () -> {
+                    // associate the EJB client context and discovery setup with the deployment classloader
+                    final EJBClientContextService ejbClientContextService = ejbClientContextInjectedValue.getValue();
+                    final EJBClientContext ejbClientContext = ejbClientContextService.getClientContext();
+                    final AuthenticationContext ejbClientClustersAuthenticationContext = ejbClientContextService.getClustersAuthenticationContext();
+                    final ModuleClassLoader classLoader = module.getClassLoader();
+                    EjbLogger.DEPLOYMENT_LOGGER.debugf("Registering EJB client context %s for classloader %s", ejbClientContext, classLoader);
+                    final ContextManager<AuthenticationContext> authenticationContextManager = AuthenticationContext.getContextManager();
+                    final RemotingProfileService profileService = profileServiceInjectedValue.getOptionalValue();
+                    if (profileService != null || ejbClientClustersAuthenticationContext != null) {
+                        // this is cheating but it works for our purposes
+                        AuthenticationContext authenticationContext = authenticationContextManager.getClassLoaderDefault(classLoader);
+                        if (authenticationContext == null) {
+                            authenticationContext = authenticationContextManager.get();
                         }
+                        // now transform it
+                        if (profileService != null) {
+                            for (RemotingProfileService.ConnectionSpec connectionSpec : profileService.getConnectionSpecs()) {
+                                authenticationContext = transformOne(connectionSpec, authenticationContext);
+                            }
+                        }
+                        if (ejbClientClustersAuthenticationContext != null) {
+                            authenticationContext = ejbClientClustersAuthenticationContext.with(authenticationContext);
+                        }
+                        // and set the result
+                        authenticationContextManager.setClassLoaderDefault(classLoader, authenticationContext);
                     }
-                    if (ejbClientClustersAuthenticationContext != null) {
-                        authenticationContext =  ejbClientClustersAuthenticationContext.with(authenticationContext);
-                    }
-                    // and set the result
-                    authenticationContextManager.setClassLoaderDefault(classLoader, authenticationContext);
-                }
-                EJBClientContext.getContextManager().setClassLoaderDefault(classLoader, ejbClientContext);
-                Discovery.getContextManager().setClassLoaderDefault(classLoader, discoveryInjector.getValue());
-                return null;
-            });
+                    EJBClientContext.getContextManager().setClassLoaderDefault(classLoader, ejbClientContext);
+                    Discovery.getContextManager().setClassLoaderDefault(classLoader, discoveryInjector.getValue());
+                    return null;
+                });
+            } catch (PrivilegedActionException e) {
+                throw (StartException) e.getCause();
+            }
         }
 
         @Override
@@ -206,9 +215,10 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
             return null;
         }
 
-        private static AuthenticationContext transformOne(RemotingProfileService.ConnectionSpec connectionSpec, AuthenticationContext context) {
+        private static AuthenticationContext transformOne(RemotingProfileService.ConnectionSpec connectionSpec, AuthenticationContext context) throws StartException {
             final AbstractOutboundConnectionService connectionService = connectionSpec.getInjector().getValue();
             AuthenticationConfiguration authenticationConfiguration = connectionService.getAuthenticationConfiguration();
+            SSLContext sslContext = connectionService.getSSLContext();
             final URI destinationUri = connectionService.getDestinationUri();
             MatchRule rule = MatchRule.ALL;
             final String scheme = destinationUri.getScheme();
@@ -227,14 +237,19 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
             if (path != null && ! path.isEmpty()) {
                 rule = rule.matchPath(path);
             }
-            final String userInfo = destinationUri.getUserInfo();
-            if (userInfo != null) {
-                rule = rule.matchUser(userInfo);
-            }
             final OptionMap connectOptions = connectionSpec.getConnectOptions();
             authenticationConfiguration = RemotingOptions.mergeOptionsIntoAuthenticationConfiguration(connectOptions, authenticationConfiguration);
             AuthenticationConfiguration configuration = CLIENT.getAuthenticationConfiguration(destinationUri, context, - 1, "ejb", "jboss", null);
-            return context.with(0, rule, configuration.with(authenticationConfiguration));
+            if (sslContext == null) {
+                try {
+                    sslContext = CLIENT.getSSLContext(destinationUri, context);
+                } catch (GeneralSecurityException e) {
+                    throw EjbLogger.ROOT_LOGGER.failedToObtainSSLContext(e);
+                }
+            }
+            final SSLContext finalSSLContext = sslContext;
+            AuthenticationContext mergedAuthenticationContext = context.with(0, rule, configuration.with(authenticationConfiguration));
+            return mergedAuthenticationContext.withSsl(0, rule, () -> finalSSLContext);
         }
     }
 }

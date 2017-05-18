@@ -56,13 +56,13 @@ public class FileSystemRealm extends AbstractUserRolesCapableElement implements 
         final String levelStr = level == null ? "" : ("level=" + level);
         cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add(%s, %s)", name, path.asString(), levelStr));
         for (UserWithRoles user : getUsersWithRoles()) {
-            cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s/identity=%s:add()", name, user.getName()));
+            cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add-identity(identity=%s)", name, user.getName()));
             cli.sendLine(
-                    String.format("/subsystem=elytron/filesystem-realm=%s/identity=%s:set-password(clear={password=\"%s\"})",
+                    String.format("/subsystem=elytron/filesystem-realm=%s:set-password(identity=%s, clear={password=\"%s\"})",
                             name, user.getName(), user.getPassword()));
             if (!user.getRoles().isEmpty()) {
                 cli.sendLine(String.format(
-                        "/subsystem=elytron/filesystem-realm=%s/identity=%s:add-attribute(name=groups, value=[%s])", name,
+                        "/subsystem=elytron/filesystem-realm=%s:add-identity-attribute(identity=%s, name=groups, value=[%s])", name,
                         user.getName(), String.join(",", user.getRoles())));
             }
         }
