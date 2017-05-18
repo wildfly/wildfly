@@ -25,7 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.List;
 
 import org.infinispan.commons.api.BasicCacheContainer;
-import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.function.Consumers;
@@ -76,7 +75,6 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
 
         Attribute(String name) {
             this.definition = new StringListAttributeDefinition.Builder(name)
-                    .setAttributeParser(AttributeParsers.COLLECTION)
                     .setCapabilityReference(new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setMinSize(1)

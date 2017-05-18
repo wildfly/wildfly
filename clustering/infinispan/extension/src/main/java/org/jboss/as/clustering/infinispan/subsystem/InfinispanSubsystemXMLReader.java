@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -141,9 +142,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
                 case ALIASES: {
                     if (this.schema.since(InfinispanSchema.VERSION_1_1)) {
-                        for (String value : reader.getListAttributeValue(i)) {
-                            setAttribute(reader, value, operation, CacheContainerResourceDefinition.Attribute.ALIASES);
-                        }
+                        readAttribute(reader, i, operation, CacheContainerResourceDefinition.Attribute.ALIASES);
                         break;
                     }
                 }
@@ -169,12 +168,14 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             operation.get(CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName()).set(true);
         }
 
+        List<String> aliases = new LinkedList<>();
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
                 case ALIAS: {
                     if (InfinispanSchema.VERSION_1_0.since(this.schema)) {
-                        readElement(reader, operation, CacheContainerResourceDefinition.Attribute.ALIASES);
+                        aliases.add(reader.getElementText());
                         break;
                     }
                     throw ParseUtils.unexpectedElement(reader);
@@ -245,6 +246,11 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     throw ParseUtils.unexpectedElement(reader);
                 }
             }
+        }
+
+        if (!aliases.isEmpty()) {
+            // Adapt aliases parsed from legacy schema into format expected by the current attribute parser
+            setAttribute(reader, String.join(" ", aliases), operation, CacheContainerResourceDefinition.Attribute.ALIASES);
         }
     }
 
@@ -1076,9 +1082,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
                 case REMOTE_SERVERS: {
                     if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
-                        for (String value : reader.getListAttributeValue(i)) {
-                            setAttribute(reader, value, operation, RemoteStoreResourceDefinition.Attribute.SOCKET_BINDINGS);
-                        }
+                        readAttribute(reader, i, operation, RemoteStoreResourceDefinition.Attribute.SOCKET_BINDINGS);
                         break;
                     }
                 }

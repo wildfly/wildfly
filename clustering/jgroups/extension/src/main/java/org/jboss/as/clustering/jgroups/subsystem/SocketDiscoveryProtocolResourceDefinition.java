@@ -25,7 +25,6 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -57,7 +56,6 @@ public class SocketDiscoveryProtocolResourceDefinition<P extends Protocol & Sock
             this.definition = configurator.apply(new StringListAttributeDefinition.Builder(name)
                     .setRequired(true)
                     .setMinSize(1)
-                    .setAttributeParser(AttributeParsers.COLLECTION)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     ).build();
         }

@@ -25,7 +25,6 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 
-import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
@@ -154,7 +153,6 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         Attribute(String name) {
             this.definition = new StringListAttributeDefinition.Builder(name)
                     .setRequired(false)
-                    .setAttributeParser(AttributeParsers.COLLECTION)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
         }
