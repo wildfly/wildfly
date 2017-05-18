@@ -31,6 +31,8 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -635,7 +637,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     private void parseProperty(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         ModelNode operation = operations.get(address);
         ParseUtils.requireSingleAttribute(reader, XMLAttribute.NAME.getLocalName());
-        readAttribute(reader, 0, operation, AbstractProtocolResourceDefinition.Attribute.PROPERTIES);
+        readElement(reader, operation, AbstractProtocolResourceDefinition.Attribute.PROPERTIES);
     }
 
     private void parseThreadPool(ThreadPoolResourceDefinition pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
@@ -802,6 +804,12 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     }
 
     private static void readElement(XMLExtendedStreamReader reader, ModelNode operation, Attribute attribute) throws XMLStreamException {
-        attribute.getDefinition().getParser().parseElement(attribute.getDefinition(), reader, operation);
+        AttributeDefinition definition = attribute.getDefinition();
+        AttributeParser parser = definition.getParser();
+        if (parser.isParseAsElement()) {
+            parser.parseElement(definition, reader, operation);
+        } else {
+            parser.parseAndSetParameter(definition, reader.getElementText(), operation, reader);
+        }
     }
 }

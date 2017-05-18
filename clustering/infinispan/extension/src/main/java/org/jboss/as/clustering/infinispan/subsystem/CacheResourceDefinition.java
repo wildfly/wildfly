@@ -29,13 +29,12 @@ import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
 import org.infinispan.configuration.cache.Index;
-import org.jboss.as.clustering.controller.AttributeMarshallers;
-import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.BinaryRequirementCapability;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -49,7 +48,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
@@ -131,11 +129,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         }
 
         DeprecatedAttribute(String name, InfinispanModel deprecation) {
-            this(new SimpleMapAttributeDefinition.Builder(name, true)
-                    .setRequired(false)
-                    .setAttributeMarshaller(AttributeMarshallers.PROPERTY_LIST)
-                    .setAttributeParser(AttributeParsers.COLLECTION)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES), deprecation);
+            this(new PropertiesAttributeDefinition.Builder(name).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES), deprecation);
         }
 
         DeprecatedAttribute(AbstractAttributeDefinitionBuilder<?, ?> builder, ParameterValidatorBuilder validator, InfinispanModel deprecation) {
