@@ -3145,4 +3145,7 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 493, value = "EJB subsystem suspension complete")
     void suspensionComplete();
+
+    @Message(id = 494, value = "Failed to obtain SSLContext")
+    StartException failedToObtainSSLContext(@Cause Exception cause);
 }
