@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.transaction.LockingMode;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
@@ -41,8 +42,7 @@ import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
-import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -76,29 +76,19 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "TRANSACTION");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        LOCKING("locking", ModelType.STRING, new ModelNode(LockingMode.PESSIMISTIC.name()), new EnumValidatorBuilder<>(LockingMode.class)),
-        MODE("mode", ModelType.STRING, new ModelNode(TransactionMode.NONE.name()), new EnumValidatorBuilder<>(TransactionMode.class)),
-        STOP_TIMEOUT("stop-timeout", ModelType.LONG, new ModelNode(10000L)),
+        LOCKING("locking", ModelType.STRING, new ModelNode(LockingMode.PESSIMISTIC.name()), builder -> builder.setValidator(new EnumValidator<>(LockingMode.class))),
+        MODE("mode", ModelType.STRING, new ModelNode(TransactionMode.NONE.name()), builder -> builder.setValidator(new EnumValidator<>(TransactionMode.class))),
+        STOP_TIMEOUT("stop-timeout", ModelType.LONG, new ModelNode(10000L), builder -> builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS)),
         ;
         private final SimpleAttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type, defaultValue).build();
-        }
-
-        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
-            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
-            this.definition = builder.setValidator(validator.configure(builder).build()).build();
-        }
-
-        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
-            return new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-            ;
+                    ).build();
         }
 
         @Override

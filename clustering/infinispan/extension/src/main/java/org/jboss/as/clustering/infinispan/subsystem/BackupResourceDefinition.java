@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.function.UnaryOperator;
+
 import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.configuration.cache.SitesConfiguration;
@@ -31,8 +33,7 @@ import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
-import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -57,20 +58,15 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        ENABLED("enabled", ModelType.BOOLEAN, new ModelNode(true)),
-        FAILURE_POLICY("failure-policy", ModelType.STRING, new ModelNode(BackupFailurePolicy.WARN.name()), new EnumValidatorBuilder<>(BackupFailurePolicy.class)),
-        STRATEGY("strategy", ModelType.STRING, new ModelNode(BackupStrategy.ASYNC.name()), new EnumValidatorBuilder<>(BackupStrategy.class)),
-        TIMEOUT("timeout", ModelType.LONG, new ModelNode(10000L)),
+        ENABLED("enabled", ModelType.BOOLEAN, new ModelNode(true), UnaryOperator.identity()),
+        FAILURE_POLICY("failure-policy", ModelType.STRING, new ModelNode(BackupFailurePolicy.WARN.name()), builder -> builder.setValidator(new EnumValidator<>(BackupFailurePolicy.class))),
+        STRATEGY("strategy", ModelType.STRING, new ModelNode(BackupStrategy.ASYNC.name()), builder -> builder.setValidator(new EnumValidator<>(BackupStrategy.class))),
+        TIMEOUT("timeout", ModelType.LONG, new ModelNode(10000L), UnaryOperator.identity()),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type, defaultValue).build();
-        }
-
-        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
-            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
-            this.definition = builder.setValidator(validator.configure(builder).build()).build();
+        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(createBuilder(name, type, defaultValue)).build();
         }
 
         @Override
