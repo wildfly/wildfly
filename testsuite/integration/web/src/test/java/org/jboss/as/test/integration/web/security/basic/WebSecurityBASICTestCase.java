@@ -22,6 +22,8 @@
 package org.jboss.as.test.integration.web.security.basic;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
 
@@ -103,7 +105,20 @@ public class WebSecurityBASICTestCase extends WebSecurityPasswordBasedBase {
                 log.trace("Response content length: " + entity.getContentLength());
             }
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
+
+            if (200 == expectedStatusCode) {
+                // check only in case authentication was successfull
+                checkResponsecontent(EntityUtils.toString(entity), user, pass);
+            }
             EntityUtils.consume(entity);
         }
+    }
+
+    private void checkResponsecontent(String response, String user, String password) {
+        assertNotNull("Response is 'null', we expected non-null response!", response);
+        assertTrue("Remote user different from what we expected!", response.contains("Remote user: " + user));
+        assertTrue("User principal different from what we expected!", response.contains("User principal: " + password));
+        assertTrue("Authentication type different from what we expected!", response.contains("Authentication type: " +
+                "BASIC"));
     }
 }
