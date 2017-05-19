@@ -27,6 +27,7 @@ import java.io.FileReader;
 import java.io.PrintWriter;
 import java.net.URL;
 import org.codehaus.plexus.util.FileUtils;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -36,6 +37,7 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.ServerReload;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.elytron.FileAuditLog;
@@ -44,6 +46,8 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
 import static org.junit.Assert.assertTrue;
+import static org.wildfly.test.integration.elytron.audit.AbstractAuditLogTestCase.SD_WITHOUT_LOGIN_PERMISSION;
+import static org.wildfly.test.integration.elytron.audit.AbstractAuditLogTestCase.setEventListenerOfApplicationDomain;
 
 /**
  * Test case for 'file-audit-log' Elytron subsystem resource.
@@ -52,7 +56,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({FileAuditLogTestCase.FileAuditLogSetupTask.class})
+@ServerSetup({AbstractAuditLogTestCase.SecurityDomainSetupTask.class, FileAuditLogTestCase.FileAuditLogSetupTask.class})
 public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
 
     private static final String NAME = FileAuditLogTestCase.class.getSimpleName();
@@ -64,6 +68,7 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
      * Tests whether successful authentication was logged.
      */
     @Test
+    @OperateOnDeployment(SD_DEFAULT)
     public void testSuccessfulAuth() throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + "role1");
 
@@ -77,6 +82,7 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
      * Tests whether failed authentication was logged.
      */
     @Test
+    @OperateOnDeployment(SD_DEFAULT)
     public void testFailedAuth() throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + "role1");
 
@@ -84,6 +90,49 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
         Utils.makeCallWithBasicAuthn(servletUrl, UNKNOWN_USER, PASSWORD, SC_UNAUTHORIZED);
 
         assertTrue("Failed authentication was not logged", loggedFailedAuth(AUDIT_LOG_FILE, UNKNOWN_USER));
+    }
+
+    /**
+     * Tests whether authentication with empty username was logged.
+     */
+    @Ignore("https://issues.jboss.org/browse/ELY-1171")
+    @Test
+    @OperateOnDeployment(SD_DEFAULT)
+    public void testAuthWithEmptyName() throws Exception {
+        final URL servletUrl = new URL(url.toExternalForm() + "role1");
+
+        discardCurrentContents(AUDIT_LOG_FILE);
+        Utils.makeCallWithBasicAuthn(servletUrl, "", PASSWORD, SC_UNAUTHORIZED);
+
+        assertTrue("Authentication with empty username was not logged", loggedFailedAuth(AUDIT_LOG_FILE, USER));
+    }
+
+    /**
+     * Tests whether successful permission check was logged.
+     */
+    @Test
+    @OperateOnDeployment(SD_DEFAULT)
+    public void testSuccessfulPermissionCheck() throws Exception {
+        final URL servletUrl = new URL(url.toExternalForm() + "role1");
+
+        discardCurrentContents(AUDIT_LOG_FILE);
+        Utils.makeCallWithBasicAuthn(servletUrl, USER, PASSWORD, SC_OK);
+
+        assertTrue("Successful permission check was not logged", loggedSuccessfulPermissionCheck(AUDIT_LOG_FILE, USER));
+    }
+
+    /**
+     * Tests whether failed permission check was logged.
+     */
+    @Test
+    @OperateOnDeployment(SD_WITHOUT_LOGIN_PERMISSION)
+    public void testFailedPermissionCheck() throws Exception {
+        final URL servletUrl = new URL(url.toExternalForm() + "role1");
+
+        discardCurrentContents(AUDIT_LOG_FILE);
+        Utils.makeCallWithBasicAuthn(servletUrl, USER, PASSWORD, SC_UNAUTHORIZED);
+
+        assertTrue("Failed permission check was not logged", loggedFailedPermissionCheck(AUDIT_LOG_FILE, USER));
     }
 
     /**
@@ -126,6 +175,14 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
 
     private static boolean loggedFailedAuth(File file, String user) throws Exception {
         return loggedAuthResult(file, user, UNSUCCESSFUL_AUTH_EVENT);
+    }
+
+    private static boolean loggedSuccessfulPermissionCheck(File file, String user) throws Exception {
+        return loggedAuthResult(file, user, SUCCESSFUL_PERMISSION_CHECK_EVENT);
+    }
+
+    private static boolean loggedFailedPermissionCheck(File file, String user) throws Exception {
+        return loggedAuthResult(file, user, UNSUCCESSFUL_PERMISSION_CHECK_EVENT);
     }
 
     private static boolean loggedAuthResult(File file, String user, String expectedEvent) throws Exception {
