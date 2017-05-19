@@ -110,7 +110,34 @@
                          <include>**/*TestSuite.java</include>
                     </includes>
                 </configuration>                        
-            </plugin>  
+            </plugin>
+            <!-- Add the console-handler to each profile for the test server -->
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
+                <executions>
+                    <execution>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>execute-commands</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <offline>true</offline>
+                    <fail-on-error>true</fail-on-error>
+                    <jboss-home>${project.build.directory}/jbossas</jboss-home>
+                    <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                    <scripts>
+                        <script>${project.basedir}/../shared/enable-domain-console-logging.cli</script>
+                    </scripts>
+                    <system-properties>
+                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                        <module.path>${jboss.dist}/modules</module.path>
+                    </system-properties>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

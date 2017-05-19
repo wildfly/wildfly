@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
     <subsystems name="default">
-        <subsystem>logging.xml</subsystem>
+        <subsystem supplement="no-console">logging.xml</subsystem>
         <subsystem>core-management.xml</subsystem>
         <subsystem supplement="web-build">ee.xml</subsystem>
         <subsystem>io.xml</subsystem>
@@ -14,7 +14,7 @@
         <subsystem>undertow.xml</subsystem>
     </subsystems>
     <subsystems name="load-balancer">
-        <subsystem>logging.xml</subsystem>
+        <subsystem supplement="no-console">logging.xml</subsystem>
         <subsystem>io.xml</subsystem>
         <subsystem>undertow-load-balancer.xml</subsystem>
     </subsystems>

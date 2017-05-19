@@ -3,7 +3,7 @@
 <config>
     <subsystems name="default">
         <!-- Each subsystem to be included relative to the src/main/resources directory -->
-        <subsystem>logging.xml</subsystem>
+        <subsystem supplement="no-console">logging.xml</subsystem>
         <subsystem>batch-jberet.xml</subsystem>
         <subsystem>bean-validation.xml</subsystem>
         <subsystem>core-management.xml</subsystem>
@@ -35,7 +35,7 @@
     </subsystems>
     <subsystems name="ha">
         <!-- Each subsystem to be included relative to the src/main/resources directory -->
-        <subsystem>logging.xml</subsystem>
+        <subsystem supplement="no-console">logging.xml</subsystem>
         <subsystem>batch-jberet.xml</subsystem>
         <subsystem>bean-validation.xml</subsystem>
         <subsystem>core-management.xml</subsystem>
@@ -70,7 +70,7 @@
     </subsystems>
     <subsystems name="full">
         <!-- Each subsystem to be included relative to the src/main/resources directory -->
-        <subsystem>logging.xml</subsystem>
+        <subsystem supplement="no-console">logging.xml</subsystem>
         <subsystem>batch-jberet.xml</subsystem>
         <subsystem>bean-validation.xml</subsystem>
         <subsystem>core-management.xml</subsystem>
@@ -105,7 +105,7 @@
     </subsystems>
     <subsystems name="full-ha">
         <!-- Each subsystem to be included relative to the src/main/resources directory -->
-        <subsystem>logging.xml</subsystem>
+        <subsystem supplement="no-console">logging.xml</subsystem>
         <subsystem>batch-jberet.xml</subsystem>
         <subsystem>bean-validation.xml</subsystem>
         <subsystem>core-management.xml</subsystem>
@@ -142,7 +142,7 @@
         <subsystem>weld.xml</subsystem>
     </subsystems>
     <subsystems name="load-balancer">
-        <subsystem>logging.xml</subsystem>
+        <subsystem supplement="no-console">logging.xml</subsystem>
         <subsystem>io.xml</subsystem>
         <subsystem>undertow-load-balancer.xml</subsystem>
     </subsystems>
