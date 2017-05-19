@@ -15,6 +15,7 @@
 ##  feel free to use ./mvnw directly                                        ##
 ##                                                                          ##
 ### ====================================================================== ###
+BASH_INTERPRETER=${BASH_INTERPRETER:-${SHELL}}
 
 PROGNAME=`basename $0`
 DIRNAME=`dirname "${BASH_SOURCE[0]}"`
@@ -149,9 +150,9 @@ main() {
 
     #  Execute in debug mode, or simply execute.
     if [ "x$MVN_DEBUG" != "x" ]; then
-        eval /bin/sh -x $MVN $MVN_ARGS $MVN_GOAL $ADDIT_PARAMS
+        eval "${BASH_INTERPRETER}" -x $MVN $MVN_ARGS $MVN_GOAL $ADDIT_PARAMS
     else
-        eval exec       $MVN $MVN_ARGS $MVN_GOAL $ADDIT_PARAMS
+        eval exec ${BASH_INTERPRETER} $MVN $MVN_ARGS $MVN_GOAL $ADDIT_PARAMS
     fi
 }
 
