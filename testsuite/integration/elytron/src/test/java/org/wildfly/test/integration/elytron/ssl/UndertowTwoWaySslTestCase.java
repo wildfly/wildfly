@@ -54,10 +54,10 @@ import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.CredentialReference;
 import org.wildfly.test.security.common.elytron.Path;
-import org.wildfly.test.security.common.elytron.SimpleKeyManagers;
+import org.wildfly.test.security.common.elytron.SimpleKeyManager;
 import org.wildfly.test.security.common.elytron.SimpleKeyStore;
 import org.wildfly.test.security.common.elytron.SimpleServerSslContext;
-import org.wildfly.test.security.common.elytron.SimpleTrustManagers;
+import org.wildfly.test.security.common.elytron.SimpleTrustManager;
 import org.wildfly.test.security.common.elytron.UndertowSslContext;
 
 /**
@@ -161,11 +161,11 @@ public class UndertowTwoWaySslTestCase {
                         .withPath(Path.builder().withPath(SERVER_TRUSTSTORE_FILE.getPath()).build())
                         .withCredentialReference(CredentialReference.builder().withClearText(PASSWORD).build())
                         .build(),
-                SimpleKeyManagers.builder().withName(NAME)
+                SimpleKeyManager.builder().withName(NAME)
                         .withKeyStore(NAME + SecurityTestConstants.SERVER_KEYSTORE)
                         .withCredentialReference(CredentialReference.builder().withClearText(PASSWORD).build())
                         .build(),
-                SimpleTrustManagers.builder().withName(NAME)
+                SimpleTrustManager.builder().withName(NAME)
                         .withKeyStore(NAME + SecurityTestConstants.SERVER_TRUSTSTORE)
                         .build(),
                 SimpleServerSslContext.builder().withName(NAME).withKeyManagers(NAME).withTrustManagers(NAME).build(),

@@ -34,8 +34,8 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
  */
 public class SimpleServerSslContext extends AbstractConfigurableElement implements ServerSslContext {
 
-    private final String keyManagers;
-    private final String trustManagers;
+    private final String keyManager;
+    private final String trustManager;
     private final String securityDomain;
     private final String[] protocols;
     private final boolean needClientAuth;
@@ -43,8 +43,8 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
 
     private SimpleServerSslContext(Builder builder) {
         super(builder);
-        this.keyManagers = builder.keyManagers;
-        this.trustManagers = builder.trustManagers;
+        this.keyManager = builder.keyManager;
+        this.trustManager = builder.trustManager;
         this.securityDomain = builder.securityDomain;
         this.protocols = builder.protocols;
         this.needClientAuth = builder.needClientAuth;
@@ -53,18 +53,18 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
 
     @Override
     public void create(CLIWrapper cli) throws Exception {
-        // /subsystem=elytron/server-ssl-context=twoWaySSC:add(key-managers=twoWayKM,protocols=["TLSv1.2"],
-        // trust-managers=twoWayTM,security-domain=test,need-client-auth=true)
+        // /subsystem=elytron/server-ssl-context=twoWaySSC:add(key-manager=twoWayKM,protocols=["TLSv1.2"],
+        // trust-manager=twoWayTM,security-domain=test,need-client-auth=true)
         StringBuilder sb = new StringBuilder("/subsystem=elytron/server-ssl-context=").append(name).append(":add(");
-        if (StringUtils.isNotBlank(keyManagers)) {
-            sb.append("key-managers=\"").append(keyManagers).append("\", ");
+        if (StringUtils.isNotBlank(keyManager)) {
+            sb.append("key-manager=\"").append(keyManager).append("\", ");
         }
         if (protocols != null) {
             sb.append("protocols=[")
                     .append(Arrays.stream(protocols).map(s -> "\"" + s + "\"").collect(Collectors.joining(", "))).append("], ");
         }
-        if (StringUtils.isNotBlank(trustManagers)) {
-            sb.append("trust-managers=\"").append(trustManagers).append("\", ");
+        if (StringUtils.isNotBlank(trustManager)) {
+            sb.append("trust-manager=\"").append(trustManager).append("\", ");
         }
         if (StringUtils.isNotBlank(securityDomain)) {
             sb.append("security-domain=\"").append(securityDomain).append("\", ");
@@ -94,8 +94,8 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
      * Builder to build {@link SimpleServerSslContext}.
      */
     public static final class Builder extends AbstractConfigurableElement.Builder<Builder> {
-        private String keyManagers;
-        private String trustManagers;
+        private String keyManager;
+        private String trustManager;
         private String securityDomain;
         private String[] protocols;
         private boolean needClientAuth;
@@ -105,12 +105,12 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
         }
 
         public Builder withKeyManagers(String keyManagers) {
-            this.keyManagers = keyManagers;
+            this.keyManager = keyManagers;
             return this;
         }
 
         public Builder withTrustManagers(String trustManagers) {
-            this.trustManagers = trustManagers;
+            this.trustManager = trustManagers;
             return this;
         }
 
