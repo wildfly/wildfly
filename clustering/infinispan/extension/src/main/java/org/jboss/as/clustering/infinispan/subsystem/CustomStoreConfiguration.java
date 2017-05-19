@@ -20,13 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.security.common.elytron;
+package org.jboss.as.clustering.infinispan.subsystem;
+
+import org.infinispan.commons.configuration.attributes.AttributeSet;
+import org.infinispan.configuration.cache.AbstractStoreConfiguration;
+import org.infinispan.configuration.cache.AsyncStoreConfiguration;
+import org.infinispan.configuration.cache.SingletonStoreConfiguration;
 
 /**
- * Interface representing Elytron trust-managers.
- *
- * @author Josef Cacek
+ * @author Paul Ferraro
  */
-public interface TrustManagers extends ConfigurableElement {
+public class CustomStoreConfiguration extends AbstractStoreConfiguration {
 
+    public CustomStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async, SingletonStoreConfiguration singletonStore) {
+        super(attributes, async, singletonStore);
+    }
 }

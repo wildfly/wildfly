@@ -171,8 +171,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     public static final SimpleAttributeDefinition USE_HORNETQ_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_HORNETQ_STORE, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
-            .setAlternatives(CommonAttributes.USE_JDBC_STORE)
-            .setAlternatives(CommonAttributes.USE_JOURNAL_STORE)
+            .addAlternatives(CommonAttributes.USE_JDBC_STORE)
+            .addAlternatives(CommonAttributes.USE_JOURNAL_STORE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAllowExpression(false)
             .setDeprecated(ModelVersion.create(3)).build();
@@ -186,8 +186,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     public static final SimpleAttributeDefinition USE_JOURNAL_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_JOURNAL_STORE, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
-            .setAlternatives(CommonAttributes.USE_JDBC_STORE)
-            .setAlternatives(CommonAttributes.USE_HORNETQ_STORE)
+            .addAlternatives(CommonAttributes.USE_JDBC_STORE)
+            .addAlternatives(CommonAttributes.USE_HORNETQ_STORE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAllowExpression(false).build();
     public static final SimpleAttributeDefinition JOURNAL_STORE_ENABLE_ASYNC_IO = new SimpleAttributeDefinitionBuilder(CommonAttributes.JOURNAL_STORE_ENABLE_ASYNC_IO, ModelType.BOOLEAN, true)
@@ -199,8 +199,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     public static final SimpleAttributeDefinition USE_JDBC_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_JDBC_STORE, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(false))
-            .setAlternatives(CommonAttributes.USE_JOURNAL_STORE)
-            .setAlternatives(CommonAttributes.USE_HORNETQ_STORE)
+            .addAlternatives(CommonAttributes.USE_JOURNAL_STORE)
+            .addAlternatives(CommonAttributes.USE_HORNETQ_STORE)
             .setRequires(CommonAttributes.JDBC_STORE_DATASOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAllowExpression(false).build();

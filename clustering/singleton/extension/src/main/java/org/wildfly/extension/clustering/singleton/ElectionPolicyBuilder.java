@@ -23,10 +23,12 @@
 package org.wildfly.extension.clustering.singleton;
 
 import static org.wildfly.extension.clustering.singleton.ElectionPolicyResourceDefinition.Attribute.*;
+import static org.wildfly.extension.clustering.singleton.ElectionPolicyResourceDefinition.Capability.*;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
@@ -52,13 +54,13 @@ import org.wildfly.extension.clustering.singleton.election.OutboundSocketBinding
  * Builds a service that provides an election policy.
  * @author Paul Ferraro
  */
-public abstract class ElectionPolicyBuilder extends ElectionPolicyServiceNameProvider implements ResourceServiceBuilder<SingletonElectionPolicy>, Value<SingletonElectionPolicy> {
+public abstract class ElectionPolicyBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<SingletonElectionPolicy>, Value<SingletonElectionPolicy> {
 
     private final List<Preference> preferences = new CopyOnWriteArrayList<>();
     private final List<Dependency> dependencies = new CopyOnWriteArrayList<>();
 
-    protected ElectionPolicyBuilder(PathAddress policyAddress) {
-        super(policyAddress);
+    protected ElectionPolicyBuilder(PathAddress address) {
+        super(ELECTION_POLICY, address);
     }
 
     @Override

@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.ResourceServiceNameFactory;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -39,7 +40,7 @@ public abstract class ComponentBuilder<C> implements Builder<C>, Value<C> {
 
     private final ServiceName name;
 
-    ComponentBuilder(ComponentServiceNameFactory factory, PathAddress parentAddress) {
+    ComponentBuilder(ResourceServiceNameFactory factory, PathAddress parentAddress) {
         this.name = factory.getServiceName(parentAddress);
     }
 

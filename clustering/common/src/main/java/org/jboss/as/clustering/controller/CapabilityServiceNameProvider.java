@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,14 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.jboss.as.clustering.controller;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.ServiceNameProvider;
 
 /**
+ * Service name provider for a capability.
  * @author Paul Ferraro
  */
-public interface ComponentServiceNameFactory {
-    ServiceName getServiceName(PathAddress parentAddress);
+public class CapabilityServiceNameProvider implements ServiceNameProvider {
+
+    private final ServiceName name;
+
+    public CapabilityServiceNameProvider(Capability capability, PathAddress address) {
+        this.name = capability.getServiceName(address);
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.name;
+    }
 }

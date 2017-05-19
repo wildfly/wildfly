@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.stream.Stream;
 
+import org.jboss.as.clustering.controller.ResourceServiceNameFactory;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.msc.service.ServiceName;
@@ -32,13 +33,18 @@ import org.jboss.msc.service.ServiceName;
  * Enumerates the configurable cache components
  * @author Paul Ferraro
  */
-public enum CacheComponent implements ComponentServiceNameFactory {
+public enum CacheComponent implements ResourceServiceNameFactory {
 
     MODULE("module"),
     EVICTION(EvictionResourceDefinition.PATH),
     EXPIRATION(ExpirationResourceDefinition.PATH),
     LOCKING(LockingResourceDefinition.PATH),
-    PERSISTENCE(StoreResourceDefinition.WILDCARD_PATH),
+    PERSISTENCE() {
+        @Override
+        public ServiceName getServiceName(PathAddress cacheAddress) {
+            return StoreResourceDefinition.Capability.PERSISTENCE.getServiceName(cacheAddress.append(StoreResourceDefinition.WILDCARD_PATH));
+        }
+    },
     STATE_TRANSFER(StateTransferResourceDefinition.PATH),
     PARTITION_HANDLING(PartitionHandlingResourceDefinition.PATH),
     STORE_WRITE(StoreWriteResourceDefinition.WILDCARD_PATH),
@@ -51,8 +57,16 @@ public enum CacheComponent implements ComponentServiceNameFactory {
 
     private final String[] components;
 
+    CacheComponent() {
+        this(Stream.empty());
+    }
+
     CacheComponent(PathElement... paths) {
-        this(Stream.of(paths).map(path -> path.isWildcard() ? path.getKey() : path.getValue()).toArray(String[]::new));
+        this(Stream.of(paths).map(path -> path.isWildcard() ? path.getKey() : path.getValue()));
+    }
+
+    CacheComponent(Stream<String> components) {
+        this(components.toArray(String[]::new));
     }
 
     CacheComponent(String... components) {

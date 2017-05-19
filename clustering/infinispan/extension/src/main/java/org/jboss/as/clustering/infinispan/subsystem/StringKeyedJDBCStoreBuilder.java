@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.ServiceLoader;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.infinispan.configuration.cache.PersistenceConfiguration;
@@ -30,15 +31,10 @@ import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigu
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
@@ -47,27 +43,22 @@ import org.wildfly.clustering.service.ValueDependency;
  */
 public class StringKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcStringBasedStoreConfiguration, JdbcStringBasedStoreConfigurationBuilder> {
 
-    private final InjectedValue<TableManipulationConfiguration> table = new InjectedValue<>();
-    private final PathAddress cacheAddress;
+    private final ValueDependency<TableManipulationConfiguration> table;
+    private final ValueDependency<Module> module;
 
-    private volatile ValueDependency<Module> module;
-
-    StringKeyedJDBCStoreBuilder(PathAddress cacheAddress) {
-        super(JdbcStringBasedStoreConfigurationBuilder.class, cacheAddress);
-        this.cacheAddress = cacheAddress;
+    StringKeyedJDBCStoreBuilder(PathAddress address) {
+        super(address, JdbcStringBasedStoreConfigurationBuilder.class);
+        PathAddress cacheAddress = address.getParent();
+        PathAddress containerAddress = cacheAddress.getParent();
+        this.table = new InjectedValueDependency<>(CacheComponent.STRING_TABLE.getServiceName(cacheAddress), TableManipulationConfiguration.class);
+        this.module = new InjectedValueDependency<>(CacheContainerComponent.MODULE.getServiceName(containerAddress), Module.class);
     }
 
     @Override
     public ServiceBuilder<PersistenceConfiguration> build(ServiceTarget target) {
-        return this.module.register(super.build(target))
-                .addDependency(CacheComponent.STRING_TABLE.getServiceName(this.cacheAddress), TableManipulationConfiguration.class, this.table)
-                ;
-    }
-
-    @Override
-    public Builder<PersistenceConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.module = new InjectedValueDependency<>(CacheContainerComponent.MODULE.getServiceName(context.getCurrentAddress().getParent().getParent()), Module.class);
-        return super.configure(context, model);
+        ServiceBuilder<PersistenceConfiguration> builder = super.build(target);
+        Stream.of(this.table, this.module).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 
     @Override

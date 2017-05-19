@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.stream.Stream;
+
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.jdbc.configuration.JdbcMixedStoreConfiguration;
 import org.infinispan.persistence.jdbc.configuration.JdbcMixedStoreConfigurationBuilder;
@@ -29,29 +31,29 @@ import org.infinispan.persistence.jdbc.configuration.TableManipulationConfigurat
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * @author Paul Ferraro
  */
 public class MixedKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcMixedStoreConfiguration, JdbcMixedStoreConfigurationBuilder> {
 
-    private final InjectedValue<TableManipulationConfiguration> binaryTable = new InjectedValue<>();
-    private final InjectedValue<TableManipulationConfiguration> stringTable = new InjectedValue<>();
+    private final ValueDependency<TableManipulationConfiguration> binaryTable;
+    private final ValueDependency<TableManipulationConfiguration> stringTable;
 
-    private final PathAddress cacheAddress;
-
-    MixedKeyedJDBCStoreBuilder(PathAddress cacheAddress) {
-        super(JdbcMixedStoreConfigurationBuilder.class, cacheAddress);
-        this.cacheAddress = cacheAddress;
+    MixedKeyedJDBCStoreBuilder(PathAddress address) {
+        super(address, JdbcMixedStoreConfigurationBuilder.class);
+        PathAddress cacheAddress = address.getParent();
+        this.binaryTable = new InjectedValueDependency<>(CacheComponent.BINARY_TABLE.getServiceName(cacheAddress), TableManipulationConfiguration.class);
+        this.stringTable = new InjectedValueDependency<>(CacheComponent.STRING_TABLE.getServiceName(cacheAddress), TableManipulationConfiguration.class);
     }
 
     @Override
     public ServiceBuilder<PersistenceConfiguration> build(ServiceTarget target) {
-        return super.build(target)
-                .addDependency(CacheComponent.BINARY_TABLE.getServiceName(this.cacheAddress), TableManipulationConfiguration.class, this.binaryTable)
-                .addDependency(CacheComponent.STRING_TABLE.getServiceName(this.cacheAddress), TableManipulationConfiguration.class, this.stringTable)
-        ;
+        ServiceBuilder<PersistenceConfiguration> builder = super.build(target);
+        Stream.of(this.binaryTable, this.stringTable).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 
     @Override

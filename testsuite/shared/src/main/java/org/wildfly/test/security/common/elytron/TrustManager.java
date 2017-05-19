@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.singleton;
-
-import org.jboss.as.controller.PathAddress;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.ServiceNameProvider;
+package org.wildfly.test.security.common.elytron;
 
 /**
- * Provides an election policy {@link ServiceName}.
- * @author Paul Ferraro
+ * Interface representing Elytron trust-manager.
+ *
+ * @author Josef Cacek
  */
-public class ElectionPolicyServiceNameProvider implements ServiceNameProvider {
+public interface TrustManager extends ConfigurableElement {
 
-    private final PathAddress policyAddress;
-
-    public ElectionPolicyServiceNameProvider(PathAddress policyAddress) {
-        this.policyAddress = policyAddress;
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return SingletonPolicyResourceDefinition.Capability.POLICY.getServiceName(this.policyAddress).append("election-policy");
-    }
 }

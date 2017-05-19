@@ -121,7 +121,7 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                 .addRequiredChildren(BinaryTableResourceDefinition.PATH)
                 // Translate deprecated TABLE attribute into separate add table operation
                 .setAddOperationTransformation(new TableAttributeTransformation(DeprecatedAttribute.TABLE, BinaryTableResourceDefinition.PATH))
-            , address -> new BinaryKeyedJDBCStoreBuilder(address.getParent()), registration -> {
+            , address -> new BinaryKeyedJDBCStoreBuilder(address), registration -> {
                 registration.registerReadWriteAttribute(DeprecatedAttribute.TABLE.getDefinition(), LEGACY_READ_TABLE_HANDLER, LEGACY_WRITE_TABLE_HANDLER);
 
                 new BinaryTableResourceDefinition().register(registration);

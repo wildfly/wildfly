@@ -645,12 +645,12 @@ public class AggregateRealmTestCase {
 
         private void addUserToFilesystemRealm(CLIWrapper cli, String username, String password, String role)
                 throws Exception {
-            cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s/identity=%s:add()",
+            cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add-identity(identity=%s)",
                     FILESYSTEM_REALM_AUTHN_NAME, username));
-            cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s/identity=%s:set-password(clear={password=\"%s\"})",
+            cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:set-password(identity=%s, clear={password=\"%s\"})",
                     FILESYSTEM_REALM_AUTHN_NAME, username, password));
             if (role != null) {
-                cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s/identity=%s:add-attribute(name=Roles, value=[\"%s\"])",
+                cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add-identity-attribute(identity=%s, name=Roles, value=[\"%s\"])",
                         FILESYSTEM_REALM_AUTHN_NAME, username, role));
             }
         }

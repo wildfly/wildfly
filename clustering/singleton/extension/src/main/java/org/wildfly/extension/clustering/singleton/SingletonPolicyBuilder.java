@@ -25,6 +25,9 @@ package org.wildfly.extension.clustering.singleton;
 import static org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinition.Attribute.*;
 import static org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinition.Capability.*;
 
+import java.util.stream.Stream;
+
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
@@ -38,7 +41,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
@@ -51,31 +53,24 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  * Builds a service that provides a {@link SingletonPolicy}.
  * @author Paul Ferraro
  */
-public class SingletonPolicyBuilder implements ResourceServiceBuilder<SingletonPolicy>, SingletonPolicy {
+public class SingletonPolicyBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<SingletonPolicy>, SingletonPolicy {
 
-    private final InjectedValue<SingletonElectionPolicy> policy = new InjectedValue<>();
-
-    private final PathAddress address;
+    private final ValueDependency<SingletonElectionPolicy> policy;
 
     private volatile ValueDependency<SingletonServiceBuilderFactory> factory;
     private volatile int quorum;
 
     public SingletonPolicyBuilder(PathAddress address) {
-        this.address = address;
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return POLICY.getServiceName(this.address);
+        super(POLICY, address);
+        this.policy = new InjectedValueDependency<>(ElectionPolicyResourceDefinition.Capability.ELECTION_POLICY.getServiceName(address.append(ElectionPolicyResourceDefinition.WILDCARD_PATH)), SingletonElectionPolicy.class);
     }
 
     @Override
     public ServiceBuilder<SingletonPolicy> build(ServiceTarget target) {
-        ServiceBuilder<SingletonPolicy> builder = target.addService(this.getServiceName(), new ValueService<>(new ImmediateValue<SingletonPolicy>(this)))
-                .addDependency(new ElectionPolicyServiceNameProvider(this.address).getServiceName(), SingletonElectionPolicy.class, this.policy)
-                .setInitialMode(ServiceController.Mode.PASSIVE)
-        ;
-        return this.factory.register(builder);
+        Service<SingletonPolicy> service = new ValueService<>(new ImmediateValue<>(this));
+        ServiceBuilder<SingletonPolicy> builder = target.addService(this.getServiceName(), service).setInitialMode(ServiceController.Mode.PASSIVE);
+        Stream.of(this.policy, this.factory).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 
     @Override
@@ -105,6 +100,6 @@ public class SingletonPolicyBuilder implements ResourceServiceBuilder<SingletonP
 
     @Override
     public String toString() {
-        return this.address.getLastElement().getValue();
+        return this.getServiceName().getSimpleName();
     }
 }

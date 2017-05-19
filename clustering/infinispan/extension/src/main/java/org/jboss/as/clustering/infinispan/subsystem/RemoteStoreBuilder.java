@@ -28,7 +28,6 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.remote.configuration.RemoteStoreConfiguration;
 import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationBuilder;
@@ -54,13 +53,12 @@ import org.wildfly.clustering.service.ValueDependency;
 public class RemoteStoreBuilder extends StoreBuilder<RemoteStoreConfiguration, RemoteStoreConfigurationBuilder> {
 
     private volatile List<ValueDependency<OutboundSocketBinding>> bindings;
+    private volatile String remoteCacheName;
+    private volatile long socketTimeout;
+    private volatile boolean tcpNoDelay;
 
-    public RemoteStoreBuilder(PathAddress cacheAddress) {
-        super(cacheAddress, (context, model) -> new ConfigurationBuilder().persistence().addStore(RemoteStoreConfigurationBuilder.class)
-                .remoteCacheName(CACHE.resolveModelAttribute(context, model).asString())
-                .socketTimeout(SOCKET_TIMEOUT.resolveModelAttribute(context, model).asLong())
-                .tcpNoDelay(TCP_NO_DELAY.resolveModelAttribute(context, model).asBoolean())
-        );
+    public RemoteStoreBuilder(PathAddress address) {
+        super(address, RemoteStoreConfigurationBuilder.class);
     }
 
     @Override
@@ -74,12 +72,19 @@ public class RemoteStoreBuilder extends StoreBuilder<RemoteStoreConfiguration, R
 
     @Override
     public Builder<PersistenceConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.remoteCacheName = CACHE.resolveModelAttribute(context, model).asString();
+        this.socketTimeout = SOCKET_TIMEOUT.resolveModelAttribute(context, model).asLong();
+        this.tcpNoDelay = TCP_NO_DELAY.resolveModelAttribute(context, model).asBoolean();
         this.bindings = StringListAttributeDefinition.unwrapValue(context, SOCKET_BINDINGS.resolveModelAttribute(context, model)).stream().map(binding -> new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class)).collect(Collectors.toList());
         return super.configure(context, model);
     }
 
     @Override
     public void accept(RemoteStoreConfigurationBuilder builder) {
+        builder.remoteCacheName(this.remoteCacheName)
+                .socketTimeout(this.socketTimeout)
+                .tcpNoDelay(this.tcpNoDelay)
+                ;
         this.bindings.stream().map(Value::getValue).forEach(binding -> {
             try {
                 builder.addServer().host(binding.getResolvedDestinationAddress().getHostAddress()).port(binding.getDestinationPort());

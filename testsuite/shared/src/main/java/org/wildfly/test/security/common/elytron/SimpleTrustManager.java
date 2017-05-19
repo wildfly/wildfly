@@ -21,8 +21,6 @@
  */
 package org.wildfly.test.security.common.elytron;
 
-import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
-
 import java.util.Objects;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -30,36 +28,34 @@ import javax.net.ssl.KeyManagerFactory;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 
 /**
- * Elytron key-managers configuration implementation.
+ * Elytron trust-managers configuration implementation.
  *
  * @author Josef Cacek
  */
-public class SimpleKeyManagers extends AbstractConfigurableElement implements KeyManagers {
+public class SimpleTrustManager extends AbstractConfigurableElement implements TrustManager {
 
     private final String keyStore;
-    private final CredentialReference credentialReference;
 
-    private SimpleKeyManagers(Builder builder) {
+    private SimpleTrustManager(Builder builder) {
         super(builder);
         this.keyStore = Objects.requireNonNull(builder.keyStore, "Key-store name has to be provided");
-        this.credentialReference = defaultIfNull(builder.credentialReference, CredentialReference.EMPTY);
     }
 
     @Override
     public void create(CLIWrapper cli) throws Exception {
-        // /subsystem=elytron/key-managers=httpsKM:add(key-store=httpsKS,algorithm="SunX509",credential-reference={clear-text=secret})
+        // /subsystem=elytron/trust-manager=twoWayTM:add(key-store=twoWayTS,algorithm="SunX509")
 
-        cli.sendLine(String.format("/subsystem=elytron/key-managers=%s:add(key-store=\"%s\",algorithm=\"%s\", %s)", name,
-                keyStore, KeyManagerFactory.getDefaultAlgorithm(), credentialReference.asString()));
+        cli.sendLine(String.format("/subsystem=elytron/trust-manager=%s:add(key-store=\"%s\",algorithm=\"%s\")", name,
+                keyStore, KeyManagerFactory.getDefaultAlgorithm()));
     }
 
     @Override
     public void remove(CLIWrapper cli) throws Exception {
-        cli.sendLine(String.format("/subsystem=elytron/key-managers=%s:remove()", name));
+        cli.sendLine(String.format("/subsystem=elytron/trust-manager=%s:remove()", name));
     }
 
     /**
-     * Creates builder to build {@link SimpleKeyManagers}.
+     * Creates builder to build {@link SimpleTrustManager}.
      *
      * @return created builder
      */
@@ -68,11 +64,10 @@ public class SimpleKeyManagers extends AbstractConfigurableElement implements Ke
     }
 
     /**
-     * Builder to build {@link SimpleKeyManagers}.
+     * Builder to build {@link SimpleTrustManager}.
      */
     public static final class Builder extends AbstractConfigurableElement.Builder<Builder> {
         private String keyStore;
-        private CredentialReference credentialReference;
 
         private Builder() {
         }
@@ -82,13 +77,8 @@ public class SimpleKeyManagers extends AbstractConfigurableElement implements Ke
             return this;
         }
 
-        public Builder withCredentialReference(CredentialReference credentialReference) {
-            this.credentialReference = credentialReference;
-            return this;
-        }
-
-        public SimpleKeyManagers build() {
-            return new SimpleKeyManagers(this);
+        public SimpleTrustManager build() {
+            return new SimpleTrustManager(this);
         }
 
         @Override

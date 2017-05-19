@@ -101,6 +101,9 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.TARGET_CONNECTION_FACTORY);
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.TARGET_DESTINATION);
                 }
+                // add a dependency to the Artemis thread pool so that if either the source or target JMS broker
+                // corresponds to a local Artemis server, the pool will be cleaned up after the JMS bridge is stopped.
+                jmsBridgeServiceBuilder.addDependency(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);
                 // adding credential source supplier which will later resolve password from CredentialStore using credential-reference
                 addCredentialStoreReference(bridgeService.getSourceCredentialSourceSupplierInjector(), JMSBridgeDefinition.SOURCE_CREDENTIAL_REFERENCE, context, model, jmsBridgeServiceBuilder);
                 addCredentialStoreReference(bridgeService.getTargetCredentialSourceSupplierInjector(), JMSBridgeDefinition.TARGET_CREDENTIAL_REFERENCE, context, model, jmsBridgeServiceBuilder);

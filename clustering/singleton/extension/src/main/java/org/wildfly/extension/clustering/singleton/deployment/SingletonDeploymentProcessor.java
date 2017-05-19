@@ -70,5 +70,6 @@ public class SingletonDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(DeploymentUnit unit) {
+        // We intentionally leave any DEPLOYMENT_UNIT_PHASE_BUILDER attached to the deployment unit
     }
 }

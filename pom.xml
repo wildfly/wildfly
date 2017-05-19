@@ -217,7 +217,7 @@
         <version.org.wildfly.arquillian>2.1.0.Alpha1</version.org.wildfly.arquillian>
         <version.org.wildfly.build-tools>1.2.2.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>3.0.0.Beta21</version.org.wildfly.core>
+        <version.org.wildfly.core>3.0.0.Beta22</version.org.wildfly.core>
         <version.org.wildfly.plugin>1.2.0.Alpha4</version.org.wildfly.plugin>
         <version.org.wildfly.http-client>1.0.0.CR3</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.0.Beta15</version.org.wildfly.naming-client>
@@ -236,6 +236,7 @@
         <version.jacoco.plugin>0.6.3.201306030806</version.jacoco.plugin> <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
         <version.properties.plugin>2.0.1</version.properties.plugin>
         <version.xml.plugin>1.0.1</version.xml.plugin>
+        <version.verifier.plugin>1.1</version.verifier.plugin>
 
         <!-- Modularized JDK support (various workarounds) - activated via profile -->
         <modular.jdk.args/>
@@ -271,6 +272,7 @@
         <module>bean-validation</module>
         <module>build</module>
         <module>client/ejb</module>
+        <module>client/ejb-legacy</module>
         <module>client/jms</module>
         <module>client/shade</module>
         <module>clustering</module>
@@ -818,6 +820,23 @@
                     <groupId>org.wildfly.build</groupId>
                     <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
                     <version>${version.org.wildfly.build-tools}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-verifier-plugin</artifactId>
+                    <version>${version.verifier.plugin}</version>
+                    <configuration>
+                        <verificationFile>target/verifier/verifications.xml</verificationFile>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>main</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -4339,6 +4358,22 @@
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-ejb-client</artifactId>
                 <version>${version.org.jboss.ejb-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.remoting3</groupId>
+                        <artifactId>jboss-remoting</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-ejb-client-legacy</artifactId>
+                <version>${version.org.jboss.ejb-client-legacy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.remoting3</groupId>
