@@ -847,4 +847,8 @@ public interface MessagingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 94, value = "Unable to detect database dialect from connection metadata or JDBC driver name. Please configure this manually using the 'journal-database' property in your configuration.  Known database dialect strings are %s")
     void jdbcDatabaseDialectDetectionFailed(String databaseDialects);
+
+    @LogMessage(level = WARN)
+    @Message(id = 95, value = "Multiple client-mapping found for ActiveMQ [%s] transport configuration. Using configuration: [host: %s, port %s]")
+    void multipleClientMappingsFound(String transportConfigName, String host, int port);
 }
