@@ -109,6 +109,12 @@
         <dependency>
             <groupId>org.wildfly.discovery</groupId>
             <artifactId>wildfly-discovery-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
