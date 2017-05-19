@@ -49,6 +49,7 @@ import org.wildfly.test.security.common.other.SimpleSocketBinding;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ JmsSetup.class, DefaultSaslConfigTestCase.ServerSetup.class })
+@Ignore("WFLY-8801")
 public class DefaultSaslConfigTestCase extends AbstractSaslTestBase {
 
     private static final String DEFAULT_SASL_AUTHENTICATION = "application-sasl-authentication";
