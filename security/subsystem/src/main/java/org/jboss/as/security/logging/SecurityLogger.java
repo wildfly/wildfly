@@ -860,10 +860,20 @@ public interface SecurityLogger extends BasicLogger {
 
     /**
      * Creates an exception indicating the inability to find a component (keystore, truststore, keymanager, etc) in
-     * the specified JSSE-enabled domain.
+     * the specified JSSE security domain.
      *
      * @return a {@link StartException} instance.
      */
-    @Message(id = 101, value = "Unable to find a %s configuration in JSSE-enabled domain %s")
+    @Message(id = 101, value = "Unable to find a %s configuration in JSSE security domain %s")
     StartException unableToLocateComponentInJSSEDomain(final String componentName, final String legacyDomainName);
+
+    /**
+     * Creates an exception indicating that the expected manager type was not found in the JSSE security domain.
+     *
+     * @param managerName the name of the manager being retrieved (KeyManager or TrustManager).
+     * @param managerType the expected type.
+     * @return a {@link StartException} instance.
+     */
+    @Message(id = 102, value = "Could not find a %s of type %s in the JSSE security domain %s")
+    StartException expectedManagerTypeNotFound(final String managerName, final String managerType, final String legacyDomainName);
 }
