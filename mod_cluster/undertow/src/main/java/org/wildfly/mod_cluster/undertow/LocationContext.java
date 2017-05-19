@@ -29,16 +29,17 @@ import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Host;
 
 /**
- * A simulated context, for use by EJB/HTTP.
+ * A simulated context, for use by EJB/HTTP and static locations.
  *
  * @author Stuart Douglas
+ * @author Radoslav Husar
  */
-public class SimpleContext implements Context {
+public class LocationContext implements Context {
 
     private String contextPath;
     private Host host;
 
-    public SimpleContext(String contextPath, Host host) {
+    public LocationContext(String contextPath, Host host) {
         this.contextPath = contextPath;
         this.host = host;
     }
@@ -96,9 +97,9 @@ public class SimpleContext implements Context {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof SimpleContext)) return false;
+        if (!(object instanceof LocationContext)) return false;
 
-        SimpleContext context = (SimpleContext) object;
+        LocationContext context = (LocationContext) object;
         return this.host.equals(context.host) && this.getPath().equals(context.getPath());
     }
 
