@@ -148,6 +148,8 @@ public class ResourceAdapterPoolAttributesTestCase extends JcaMgmtBase {
 
         // check initial values
         Assert.assertNotNull(poolConfiguration);
+        Assert.assertEquals(2, poolConfiguration.getMinSize());
+        Assert.assertEquals(5, poolConfiguration.getMaxSize());
         Assert.assertEquals(0, poolConfiguration.getInitialSize());
         Assert.assertEquals(30000, poolConfiguration.getBlockingTimeout());
         Assert.assertEquals(true, poolConfiguration.isFair());
@@ -162,8 +164,13 @@ public class ResourceAdapterPoolAttributesTestCase extends JcaMgmtBase {
         // check that server is not in reload-required state
         ModelNode serverState = readAttribute(new ModelNode(), "server-state");
         Assert.assertEquals("running", serverState.asString());
+        
+        writeAttribute(CONNECTION_ADDRESS, Constants.MIN_POOL_SIZE.getName(), "4");
+        writeAttribute(CONNECTION_ADDRESS, Constants.MAX_POOL_SIZE.getName(), "10");
 
         // check that runtime was updated
+        Assert.assertEquals(4, poolConfiguration.getMinSize());
+        Assert.assertEquals(10, poolConfiguration.getMaxSize());
         Assert.assertEquals(4, poolConfiguration.getInitialSize());
         Assert.assertEquals(10000, poolConfiguration.getBlockingTimeout());
         Assert.assertEquals(false, poolConfiguration.isFair());
