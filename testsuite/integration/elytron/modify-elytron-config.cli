@@ -1,8 +1,10 @@
-embed-server --admin-only=true
+embed-server --admin-only=true --server-config=standalone-full.xml
 
 /subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
 /subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
 /subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
+/subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
+/subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
 
 /subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
 /subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)

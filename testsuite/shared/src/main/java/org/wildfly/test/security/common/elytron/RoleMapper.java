@@ -23,10 +23,10 @@
 package org.wildfly.test.security.common.elytron;
 
 /**
- * Marker interface representing Elytron Security domain configuration.
+ * Marking interface for configuration classes for Elytron elements providing role-mapper capability.
  *
  * @author Josef Cacek
  */
-public interface SecurityDomain extends ConfigurableElement {
+public interface RoleMapper extends ConfigurableElement {
 
 }

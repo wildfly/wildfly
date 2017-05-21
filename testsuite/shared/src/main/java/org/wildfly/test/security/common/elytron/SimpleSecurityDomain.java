@@ -22,6 +22,8 @@
 
 package org.wildfly.test.security.common.elytron;
 
+import static org.wildfly.test.security.common.ModelNodeUtil.setIfNotNull;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
@@ -73,26 +75,26 @@ public class SimpleSecurityDomain extends AbstractConfigurableElement implements
         if (outflowAnonymous != null) {
             op.get("outflow-anonymous").set(outflowAnonymous);
         }
-        setAttribute(op, "outflow-security-domains", outflowSecurityDomains);
-        setAttribute(op, "permission-mapper", permissionMapper);
-        setAttribute(op, "post-realm-principal-transformer", postRealmPrincipalTransformer);
-        setAttribute(op, "pre-realm-principal-transformer", preRealmPrincipalTransformer);
-        setAttribute(op, "principal-decoder", principalDecoder);
-        setAttribute(op, "realm-mapper", realmMapper);
+        setIfNotNull(op, "outflow-security-domains", outflowSecurityDomains);
+        setIfNotNull(op, "permission-mapper", permissionMapper);
+        setIfNotNull(op, "post-realm-principal-transformer", postRealmPrincipalTransformer);
+        setIfNotNull(op, "pre-realm-principal-transformer", preRealmPrincipalTransformer);
+        setIfNotNull(op, "principal-decoder", principalDecoder);
+        setIfNotNull(op, "realm-mapper", realmMapper);
         if (realms != null) {
             ModelNode realmsNode = op.get("realms");
             for (SecurityDomainRealm realmRef : realms) {
                 ModelNode realmRefNode = new ModelNode();
                 realmRefNode.get("realm").set(realmRef.realm);
-                setAttribute(realmRefNode, "principal-transformer", realmRef.principalTransformer);
-                setAttribute(realmRefNode, "role-decoder", realmRef.roleDecoder);
-                setAttribute(realmRefNode, "role-mapper", realmRef.roleMapper);
+                setIfNotNull(realmRefNode, "principal-transformer", realmRef.principalTransformer);
+                setIfNotNull(realmRefNode, "role-decoder", realmRef.roleDecoder);
+                setIfNotNull(realmRefNode, "role-mapper", realmRef.roleMapper);
                 realmsNode.add(realmRefNode);
             }
         }
-        setAttribute(op, "role-mapper", roleMapper);
-        setAttribute(op, "security-event-listener", securityEventListener);
-        setAttribute(op, "trusted-security-domains", trustedSecurityDomains);
+        setIfNotNull(op, "role-mapper", roleMapper);
+        setIfNotNull(op, "security-event-listener", securityEventListener);
+        setIfNotNull(op, "trusted-security-domains", trustedSecurityDomains);
         Utils.applyUpdate(op, client);
     }
 
@@ -100,21 +102,6 @@ public class SimpleSecurityDomain extends AbstractConfigurableElement implements
     public void remove(ModelControllerClient client, CLIWrapper cli) throws Exception {
         Utils.applyUpdate(Util.createRemoveOperation(
                 PathAddress.pathAddress().append("subsystem", "elytron").append("security-domain", name)), client);
-    }
-
-    private void setAttribute(ModelNode node, String attribute, String value) {
-        if (value != null) {
-            node.get(attribute).set(value);
-        }
-    }
-
-    private void setAttribute(ModelNode node, String attribute, String... listValue) {
-        if (listValue != null) {
-            ModelNode listNode = node.get(attribute);
-            for (String value : listValue) {
-                listNode.add(value);
-            }
-        }
     }
 
     /**

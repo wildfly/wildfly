@@ -349,9 +349,9 @@ public class Utils extends CoreUtils {
 
     /**
      * Returns "secondary.test.address" system property if such exists. If not found, then there is a fallback to
-     * {@link ManagementClient#getMgmtAddress()}. Returned value can be converted to canonical hostname if
-     * useCanonicalHost==true. Returned value is not formatted for URLs (i.e. square brackets are not placed around IPv6 addr -
-     * for instance "::1")
+     * {@link ManagementClient#getMgmtAddress()} or {@link #getDefaultHost(boolean)} (when mgmtClient is <code>null</code>).
+     * Returned value can be converted to canonical hostname if useCanonicalHost==true. Returned value is not formatted for URLs
+     * (i.e. square brackets are not placed around IPv6 addr - for instance "::1")
      *
      * @param mgmtClient management client instance (may be <code>null</code>)
      * @param useCanonicalHost
@@ -359,8 +359,8 @@ public class Utils extends CoreUtils {
      */
     public static String getSecondaryTestAddress(final ManagementClient mgmtClient, final boolean useCanonicalHost) {
         String address = System.getProperty("secondary.test.address");
-        if (StringUtils.isBlank(address) && mgmtClient != null) {
-            address = mgmtClient.getMgmtAddress();
+        if (StringUtils.isBlank(address)) {
+            address = mgmtClient != null ? mgmtClient.getMgmtAddress() : getDefaultHost(false);
         }
         if (useCanonicalHost) {
             address = getCannonicalHost(address);

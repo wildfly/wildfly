@@ -23,10 +23,10 @@
 package org.wildfly.test.security.common.elytron;
 
 /**
- * Marker interface representing Elytron Security domain configuration.
+ * Interface representing Elytron sasl-server-factory capability.
  *
  * @author Josef Cacek
  */
-public interface SecurityDomain extends ConfigurableElement {
+public interface SaslServerFactory extends ConfigurableElement {
 
 }
