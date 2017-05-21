@@ -131,6 +131,10 @@
             <artifactId>jboss-connector-api_1.7_spec</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly.wildfly-http-client</groupId>
+            <artifactId>wildfly-http-ejb-client</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

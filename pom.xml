@@ -1588,48 +1588,24 @@
                 <groupId>org.wildfly.wildfly-http-client</groupId>
                 <artifactId>wildfly-http-ejb-client</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
                 <artifactId>wildfly-http-client-common</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
                 <artifactId>wildfly-http-naming-client</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
                 <artifactId>wildfly-http-transaction-client</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
 
             </dependency>
 
