@@ -27,13 +27,14 @@ import static org.wildfly.test.security.common.ModelNodeUtil.setIfNotNull;
 import java.util.Objects;
 
 import org.jboss.dmr.ModelNode;
+import org.wildfly.test.security.common.elytron.ModelNodeConvertable;
 
 /**
  * Single item represantation of client-mappings list attribute in socket-binding configuration.
  *
  * @author Josef Cacek
  */
-public class ClientMapping {
+public class ClientMapping implements ModelNodeConvertable {
 
     private final String sourceNetwork;
     private final String destinationAddress;
