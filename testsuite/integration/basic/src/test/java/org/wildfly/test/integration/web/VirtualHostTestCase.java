@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 import java.io.IOException;
+import java.net.InetAddress;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -49,6 +50,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -144,7 +146,9 @@ public class VirtualHostTestCase {
 
     @Test
     public void testDefaultHost() throws IOException {
-        callAndTest("http://localhost:8080/", "ROOT"); //this needs to be localhost, as it is by host mapping
+        Assume.assumeTrue("This needs to be localhost, as it is by host mapping",
+                InetAddress.getByName(TestSuiteEnvironment.getServerAddress()).isLoopbackAddress());
+        callAndTest("http://localhost:8080/", "ROOT");
     }
 
     @Test
