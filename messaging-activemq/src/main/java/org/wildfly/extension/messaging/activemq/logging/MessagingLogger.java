@@ -849,6 +849,6 @@ public interface MessagingLogger extends BasicLogger {
     void jdbcDatabaseDialectDetectionFailed(String databaseDialects);
 
     @LogMessage(level = WARN)
-    @Message(id = 95, value = "Multiple client-mapping found for ActiveMQ [%s] transport configuration. Using configuration: [host: %s, port %s]")
-    void multipleClientMappingsFound(String transportConfigName, String host, int port);
+    @Message(id = 95, value = "Multiple client-mapping found in [%s] socket binding used by ActiveMQ [%s] transport configuration. Using address: [host: %s, port %s]")
+    void multipleClientMappingsFound(String socketBindingName, String transportConfigName, String host, int port);
 }

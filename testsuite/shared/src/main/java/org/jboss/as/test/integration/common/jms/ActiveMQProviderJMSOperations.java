@@ -34,7 +34,6 @@ import static org.jboss.as.test.integration.common.jms.JMSOperationsProvider.exe
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -236,7 +235,7 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
     }
 
     @Override
-    public void addJmsConnector(String connectorName, String socketBinding, String endpoint) {
+    public void addHttpConnector(String connectorName, String socketBinding, String endpoint) {
         ModelNode address = getServerAddress()
                 .add("http-connector", connectorName);
 
@@ -248,40 +247,9 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
     }
 
     @Override
-    public void removeJmsConnector(String connectorName) {
+    public void removeHttpConnector(String connectorName) {
         ModelNode address = getServerAddress()
                 .add("http-connector", connectorName);
-        executeOperation(address, REMOVE_OPERATION, null);
-    }
-
-    @Override
-    public void addSocketBinding(String bindingName, ModelNode... clientMappings) {
-        ModelNode address = new ModelNode();
-        address.add("socket-binding-group", "standard-sockets");
-        address.add("socket-binding", bindingName);
-
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set(ClientConstants.ADD);
-        operation.get(OP_ADDR).set(address);
-
-        executeOperation(address, ADD, null);
-
-        if (clientMappings != null) {
-            for (ModelNode clientMapping : clientMappings) {
-                ModelNode attributes = new ModelNode();
-                attributes.get("name").set("client-mappings");
-                attributes.get("value").add(clientMapping);
-
-                executeOperation(address, WRITE_ATTRIBUTE_OPERATION, attributes);
-            }
-        }
-    }
-
-    @Override
-    public void removeSocketBinding(String bindingName) {
-        ModelNode address = new ModelNode();
-        address.add("socket-binding-group", "standard-sockets");
-        address.add("socket-binding", "test-binding");
         executeOperation(address, REMOVE_OPERATION, null);
     }
 }

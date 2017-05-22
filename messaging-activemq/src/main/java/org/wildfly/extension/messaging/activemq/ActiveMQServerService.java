@@ -227,7 +227,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                                 port = clientMapping.getDestinationPort();
 
                                 if (socketBinding.getClientMappings().size() > 1) {
-                                    MessagingLogger.ROOT_LOGGER.multipleClientMappingsFound(tc.getName(), host, port);
+                                    MessagingLogger.ROOT_LOGGER.multipleClientMappingsFound(socketBinding.getName(), tc.getName(), host, port);
                                 }
                             } else {
                                 InetSocketAddress sa = socketBinding.getSocketAddress();

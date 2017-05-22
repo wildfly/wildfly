@@ -67,9 +67,9 @@ public interface JMSOperations {
 
     void close();
 
-    void addJmsConnector(String connectorName, String socketBinding, String endpoint);
+    void addHttpConnector(String connectorName, String socketBinding, String endpoint);
 
-    void removeJmsConnector(String connectorName);
+    void removeHttpConnector(String connectorName);
 
     /**
      * Set system properties for the given destination and resourceAdapter.
@@ -79,8 +79,4 @@ public interface JMSOperations {
     void setSystemProperties(String destination, String resourceAdapter);
 
     void removeSystemProperties();
-
-    void addSocketBinding(String bindingName, ModelNode... clientMappings);
-
-    void removeSocketBinding(String bindingName);
 }
