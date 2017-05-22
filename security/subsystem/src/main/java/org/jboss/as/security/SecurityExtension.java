@@ -33,10 +33,6 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.security.elytron.ElytronIntegrationResourceDefinitions;
 import org.jboss.msc.service.ServiceName;
 
@@ -116,9 +112,6 @@ import org.jboss.msc.service.ServiceName;
         // register the subsystem XML persister.
         subsystem.registerXMLElementWriter(SecuritySubsystemPersister.INSTANCE);
 
-        if (context.isRegisterTransformers()) {
-            registerTransformers(subsystem);
-        }
     }
 
     @Override
@@ -127,27 +120,5 @@ import org.jboss.msc.service.ServiceName;
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_1.getUriString(), SecuritySubsystemParser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_2.getUriString(), SecuritySubsystemParser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_3_0.getUriString(), SecuritySubsystemParser_3_0::new);
-    }
-
-    private void registerTransformers(SubsystemRegistration subsystemRegistration) {
-        // only register transformers for model version 1.3.0 (EAP 6.2+).
-        registerTransformers_1_3_0(subsystemRegistration);
-    }
-
-    private void registerTransformers_1_3_0(SubsystemRegistration subsystemRegistration) {
-        ResourceTransformationDescriptionBuilder builder = ResourceTransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_REALM));
-        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_KEY_STORE));
-        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_TRUST_STORE));
-        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_KEY_MANAGER));
-        builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_TRUST_MANAGER));
-        builder.addChildResource(PathElement.pathElement(Constants.SECURITY_MANAGEMENT))
-                .getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC)
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC);
-
-        SecurityDomainResourceDefinition.registerTransformers_1_3_0(builder);
-
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 3, 0));
     }
 }

@@ -58,7 +58,7 @@ import org.jboss.as.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
@@ -177,14 +177,16 @@ public class EeLegacySubsystemTestCase extends AbstractSubsystemBaseTest {
                             .build();
 
                     final OperationDefinition addExtension = new SimpleOperationDefinitionBuilder("add", NonResolvingResourceDescriptionResolver.INSTANCE)
-                            .addParameter(new SimpleAttributeDefinition("module", ModelType.STRING, false))
+                            .addParameter(new SimpleAttributeDefinitionBuilder("module", ModelType.STRING).setRequired(true).build())
                             .build();
 
                     PathElement bvExtension = PathElement.pathElement(EXTENSION, "org.wildfly.extension.bean-validation");
                     ManagementResourceRegistration extensionRegistration = rootRegistration.registerSubModel(new SimpleResourceDefinition(bvExtension, NonResolvingResourceDescriptionResolver.INSTANCE));
-                    extensionRegistration.registerReadOnlyAttribute(new SimpleAttributeDefinition("module", ModelType.STRING, false), new ReloadRequiredWriteAttributeHandler());
+                    extensionRegistration.registerReadOnlyAttribute(new SimpleAttributeDefinitionBuilder("module", ModelType.STRING).setRequired(true).build(), new ReloadRequiredWriteAttributeHandler());
                     extensionRegistration.registerOperationHandler(removeExtension, new ReloadRequiredRemoveStepHandler());
-                    extensionRegistration.registerOperationHandler(addExtension, new ReloadRequiredAddStepHandler(new SimpleAttributeDefinition("module", ModelType.STRING, false)));
+                    extensionRegistration.registerOperationHandler(addExtension,
+                            new ReloadRequiredAddStepHandler(
+                                    new SimpleAttributeDefinitionBuilder("module", ModelType.STRING).setRequired(true).build()));
 
                     final OperationDefinition removeSubsystem = new SimpleOperationDefinitionBuilder("remove", NonResolvingResourceDescriptionResolver.INSTANCE)
                             .build();

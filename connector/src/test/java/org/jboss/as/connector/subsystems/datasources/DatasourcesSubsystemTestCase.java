@@ -155,16 +155,6 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformerEAP7Rejection("datasources-no-connection-url.xml");
     }
 
-    @Test
-    public void testTransformerWF8() throws Exception {
-        testTransformer("datasources-full.xml", ModelTestControllerVersion.WILDFLY_8_0_0_FINAL, ModelVersion.create(2, 0, 0));
-    }
-
-    @Test
-    public void testTransformerWF82() throws Exception {
-        testTransformer("datasources-full.xml", ModelTestControllerVersion.WILDFLY_8_2_0_FINAL, ModelVersion.create(3, 0, 0));
-    }
-
     private KernelServices initialKernelServices(KernelServicesBuilder builder, ModelTestControllerVersion controllerVersion, final ModelVersion modelVersion) throws Exception {
         LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion);
         String mavenGroupId = controllerVersion.getMavenGroupId();

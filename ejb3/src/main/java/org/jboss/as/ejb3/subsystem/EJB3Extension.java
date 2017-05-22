@@ -95,10 +95,6 @@ public class EJB3Extension implements Extension {
             deploymentsRegistration.registerSubModel(StatefulSessionBeanDeploymentResourceDefinition.INSTANCE);
         }
 
-        // Transformers
-        if (context.isRegisterTransformers()) {
-            EJB3SubsystemRootResourceDefinition.registerTransformers(subsystem);
-        }
     }
 
     /**
