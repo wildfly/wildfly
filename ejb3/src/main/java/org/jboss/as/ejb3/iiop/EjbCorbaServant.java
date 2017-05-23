@@ -42,6 +42,7 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.iiop.csiv2.SASCurrent;
@@ -410,6 +411,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
         interceptorContext.setMethod(op.getMethod());
         interceptorContext.putPrivateData(ComponentView.class, componentView);
         interceptorContext.putPrivateData(Component.class, componentView.getComponent());
+        interceptorContext.putPrivateData(InvocationType.class, InvocationType.REMOTE);
         interceptorContext.setTransaction(inboundTxCurrent == null ? null : inboundTxCurrent.getCurrentTransaction());
     }
 
