@@ -25,10 +25,13 @@ package org.jboss.as.clustering.jgroups.logging;
 import static org.jboss.logging.Logger.Level.INFO;
 
 import java.net.URL;
+import java.net.UnknownHostException;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
@@ -145,4 +148,7 @@ public interface JGroupsLogger extends BasicLogger {
 
     @Message(id = 27, value = "Failed to synthesize key-store add operation due to missing %s property")
     OperationFailedException missingKeyStoreProperty(String propertyName);
+
+    @Message(id = 28, value = "Could not resolve destination address for outbound socket binding named '%s'")
+    IllegalArgumentException failedToResolveSocketBinding(@Cause UnknownHostException cause, OutboundSocketBinding binding);
 }

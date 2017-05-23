@@ -29,15 +29,19 @@
         mcast_send_buf_size="1m"
         ucast_recv_buf_size="20m"
         ucast_send_buf_size="1m"
+        port_range="0"
     />
     <TCP
         send_buf_size="640k"
         sock_conn_timeout="300"
+        port_range="0"
     />
     <TCP_NIO2
         send_buf_size="640k"
         sock_conn_timeout="300"
+        port_range="0"
     />
+    <TCPPING port_range="0"/>
     <MPING ip_ttl="2"/>
     <MERGE3
         min_interval="10000"
@@ -51,6 +55,7 @@
         interval="15000"
         timeout="60000"
         timeout_check_interval="5000"/>
+    <FD_SOCK port_range="0"/>
     <VERIFY_SUSPECT timeout="5000"/>
     <pbcast.NAKACK2 xmit_table_num_rows="50"/>
     <UNICAST3

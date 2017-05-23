@@ -51,6 +51,7 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
         JDBC("JDBC_PING"),
         MULTICAST("pbcast.NAKACK2"),
         MULTICAST_SOCKET("MPING"),
+        SOCKET_DISCOVERY("TCPGOSSIP", "TCPPING"),
         ;
         private final Set<String> protocols;
 
@@ -99,6 +100,14 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
                 EncryptProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
             }
         });
+
+        ProtocolType.SOCKET_DISCOVERY.stream().map(ProtocolResourceDefinition::pathElement).forEach(path -> {
+            if (JGroupsModel.VERSION_4_1_0.requiresTransformation(version)) {
+                parent.rejectChildResource(path);
+            } else {
+                SocketDiscoveryProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
+            }
+        });
     }
 
     private final ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory;
@@ -124,5 +133,7 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
         ProtocolType.JDBC.forEach(protocol -> new JDBCProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration));
 
         ProtocolType.ENCRYPT.forEach(protocol -> new EncryptProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration));
+
+        ProtocolType.SOCKET_DISCOVERY.forEach(protocol -> new SocketDiscoveryProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration));
     }
 }
