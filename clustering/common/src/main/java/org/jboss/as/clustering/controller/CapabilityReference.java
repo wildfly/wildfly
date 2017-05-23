@@ -100,17 +100,8 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
         String dependentName = this.capability.resolve(context.getCurrentAddress()).getName();
         Stream.of(values).forEach(value -> this.requirementResolver.apply(context, value).ifPresent(requirementName -> context.deregisterCapabilityRequirement(requirementName, dependentName)));
     }
-    //todo remove once it is removed from core
-    @Deprecated
-    public void addCapabilityRequirements(OperationContext context, String attributeName, String... attributeValues) {
-        addCapabilityRequirements(context, null, attributeName, attributeValues);
-    }
-    //todo remove once it is removed from core
-    @Deprecated
-    public void removeCapabilityRequirements(OperationContext context, String attributeName, String... attributeValues) {
-        removeCapabilityRequirements(context, null, attributeName, attributeValues);
-    }
 
+    @Override
     @Deprecated
     public String getBaseDependentName() {
         return this.capability.getDefinition().getName();
