@@ -161,7 +161,9 @@ final class AssociationImpl implements Association {
             SecurityActions.remotingContextSetConnection(invocationRequest.getProviderInterface(Connection.class));
 
             try {
-                result = invokeMethod(componentView, invokedMethod, invocationRequest, requestContent, cancellationFlag);
+                final Map<String, Object> contextDataHolder = new HashMap<>();
+                result = invokeMethod(componentView, invokedMethod, invocationRequest, requestContent, cancellationFlag, contextDataHolder);
+                attachments.putAll(contextDataHolder);
             } catch (EJBComponentUnavailableException ex) {
                 // if the EJB is shutting down when the invocation was done, then it's as good as the EJB not being available. The client has to know about this as
                 // a "no such EJB" failure so that it can retry the invocation on a different node if possible.
@@ -395,7 +397,7 @@ final class AssociationImpl implements Association {
         }
     }
 
-    static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag) throws Exception {
+    static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag, Map<String, Object> contextDataHolder) throws Exception {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(content.getParameters());
         interceptorContext.setMethod(method);
@@ -442,6 +444,7 @@ final class AssociationImpl implements Association {
         final boolean isAsync = componentView.isAsynchronous(method);
         final boolean oneWay = isAsync && method.getReturnType() == void.class;
         final boolean isSessionBean = componentView.getComponent() instanceof SessionBeanComponent;
+        contextDataHolder.putAll(interceptorContext.getContextData());
         if (isAsync && isSessionBean) {
             if (! oneWay) {
                 interceptorContext.putPrivateData(CancellationFlag.class, cancellationFlag);
