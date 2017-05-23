@@ -29,6 +29,8 @@ import static org.jboss.as.xts.XTSSubsystemDefinition.HOST_NAME;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.arjuna.schemas.ws._2005._10.wsarjtx.TerminationCoordinatorRPCService;
 import com.arjuna.schemas.ws._2005._10.wsarjtx.TerminationCoordinatorService;
@@ -50,6 +52,7 @@ import com.arjuna.webservices11.wscoor.sei.RegistrationPortTypeImpl;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -183,26 +186,14 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ModelNode coordinatorURLAttribute = ENVIRONMENT_URL.resolveModelAttribute(context, model);
         String coordinatorURL = coordinatorURLAttribute.isDefined() ? coordinatorURLAttribute.asString() : null;
 
+        // formatting possible IPv6 address to contain square brackets
         if (coordinatorURL != null) {
-            String[] attrs = coordinatorURL.split("/");
-            boolean isIPv6Address = false;
-
-            for (int i = 0; i < attrs.length; i++) {
-                if (attrs[i].startsWith("::1")) {
-                    attrs[i] = "[" + attrs[i].substring(0, 3) + "]" + attrs[i].substring(3);
-                    isIPv6Address = true;
-                    break;
-                }
-            }
-
-            if (isIPv6Address) {
-                StringBuffer sb = new StringBuffer(attrs[0]);
-
-                for (int i = 1; i < attrs.length; i++) {
-                    sb.append('/').append(attrs[i]);
-                }
-
-                coordinatorURL = sb.toString();
+            // [1] http://, [2] ::1, [3] 8080, [4] /ws-c11/ActivationService
+            Pattern urlPattern = Pattern.compile("^([a-zA-Z]+://)(.*):([^/]*)(/.*)$");
+            Matcher urlMatcher = urlPattern.matcher(coordinatorURL);
+            if(urlMatcher.matches()) {
+                String address = NetworkUtils.formatPossibleIpv6Address(urlMatcher.group(2));
+                coordinatorURL = String.format("%s%s:%s%s", urlMatcher.group(1), address, urlMatcher.group(3), urlMatcher.group(4));
             }
         }
 
