@@ -23,12 +23,11 @@
 package org.jboss.as.clustering.controller;
 
 
-import java.util.stream.Stream;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.wildfly.clustering.service.BinaryRequirement;
-import org.wildfly.clustering.service.Requirement;
 
 /**
  * Provides a capability definition provider built from a binary requirement.
@@ -39,8 +38,21 @@ public class BinaryRequirementCapability implements Capability {
     private final RuntimeCapability<Void> definition;
     private final BinaryRequirement requirement;
 
-    public BinaryRequirementCapability(BinaryRequirement requirement, Requirement... requirements) {
-        this.definition = RuntimeCapability.Builder.of(requirement.getName(), true, requirement.getType()).addRequirements(Stream.of(requirements).map(Requirement::getName).toArray(String[]::new)).build();
+    /**
+     * Creates a new capability based on the specified requirement
+     * @param requirement the requirement basis
+     */
+    public BinaryRequirementCapability(BinaryRequirement requirement) {
+        this(requirement, UnaryOperator.identity());
+    }
+
+    /**
+     * Creates a new capability based on the specified requirement
+     * @param requirement the requirement basis
+     * @param configurator configures the capability
+     */
+    public BinaryRequirementCapability(BinaryRequirement requirement, UnaryOperator<RuntimeCapability.Builder<Void>> configurator) {
+        this.definition = configurator.apply(RuntimeCapability.Builder.of(requirement.getName(), true).setServiceType(requirement.getType())).build();
         this.requirement = requirement;
     }
 
