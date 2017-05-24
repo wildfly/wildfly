@@ -47,6 +47,7 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
 
     // Enumerates protocols with custom builders or definitions
     enum ProtocolType implements Iterable<String> {
+        AUTH("AUTH"),
         ENCRYPT("ASYM_ENCRYPT", "SYM_ENCRYPT"),
         JDBC("JDBC_PING"),
         MULTICAST("pbcast.NAKACK2"),
@@ -108,6 +109,14 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
                 SocketDiscoveryProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
             }
         });
+
+        ProtocolType.AUTH.stream().map(ProtocolResourceDefinition::pathElement).forEach(path -> {
+            if (JGroupsModel.VERSION_4_1_0.requiresTransformation(version)) {
+                parent.rejectChildResource(path);
+            } else {
+                AuthProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
+            }
+        });
     }
 
     private final ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory;
@@ -144,6 +153,12 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
 
         ProtocolType.SOCKET_DISCOVERY.forEach(protocol -> {
             new SocketDiscoveryProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+            // Add deprecated override definition for legacy variant
+            new GenericProtocolResourceDefinition<>(protocol, JGroupsModel.VERSION_4_1_0, address -> new ProtocolConfigurationBuilder<>(address), this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+        });
+
+        ProtocolType.AUTH.forEach(protocol -> {
+            new AuthProtocolResourceDefinition(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
             // Add deprecated override definition for legacy variant
             new GenericProtocolResourceDefinition<>(protocol, JGroupsModel.VERSION_4_1_0, address -> new ProtocolConfigurationBuilder<>(address), this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
         });

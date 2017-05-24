@@ -77,6 +77,12 @@
             <protocol type="UNICAST2"/>
             <protocol type="pbcast.STABLE"/>
             <protocol type="pbcast.GMS"/>
+            <auth-protocol type="AUTH">
+                <cipher-token algorithm="RSA" key-store="my-key-store" key-alias="alias">
+                    <shared-secret-reference clear-text="changeme"/>
+                    <key-credential-reference store="my-credential-store" alias="credential-alias" type="PASSWORD"/>
+                </cipher-token>
+            </auth-protocol>
             <protocol type="UFC"/>
             <protocol type="MFC"/>
             <protocol type="FRAG2"/>

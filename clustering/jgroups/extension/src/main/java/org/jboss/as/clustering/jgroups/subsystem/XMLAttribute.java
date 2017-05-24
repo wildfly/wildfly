@@ -31,6 +31,7 @@ public enum XMLAttribute {
     // must be first
     UNKNOWN(""),
 
+    ALGORITHM(DigestAuthTokenResourceDefinition.Attribute.ALGORITHM),
     CHANNEL(RemoteSiteResourceDefinition.Attribute.CHANNEL),
     CLUSTER(ChannelResourceDefinition.Attribute.CLUSTER),
     DATA_SOURCE(JDBCProtocolResourceDefinition.Attribute.DATA_SOURCE),
