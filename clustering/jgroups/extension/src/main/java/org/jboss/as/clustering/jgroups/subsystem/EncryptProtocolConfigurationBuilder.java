@@ -66,7 +66,7 @@ public class EncryptProtocolConfigurationBuilder<P extends EncryptBase & Encrypt
         String keyStore = KEY_STORE.resolveModelAttribute(context, model).asString();
         this.keyStore = new InjectedValueDependency<>(CommonUnaryRequirement.KEY_STORE.getServiceName(context, keyStore), KeyStore.class);
         this.keyAlias = KEY_ALIAS.resolveModelAttribute(context, model).asString();
-        this.credentialSource = new CredentialSourceDependency(context, model);
+        this.credentialSource = new CredentialSourceDependency(context, CREDENTIAL, model);
         return super.configure(context, model);
     }
 
@@ -93,8 +93,8 @@ public class EncryptProtocolConfigurationBuilder<P extends EncryptBase & Encrypt
             if (password == null) {
                 throw JGroupsLogger.ROOT_LOGGER.unexpectedCredentialSource();
             }
-            protocol.setKeyStore(this.keyStore.getValue());
-            protocol.setKeyAlias(this.keyAlias);
+            protocol.setKeyStore(store);
+            protocol.setKeyAlias(alias);
             protocol.setKeyPassword(new KeyStore.PasswordProtection(password.getPassword()));
         } catch (KeyStoreException | IOException e) {
             throw new IllegalArgumentException(e);
