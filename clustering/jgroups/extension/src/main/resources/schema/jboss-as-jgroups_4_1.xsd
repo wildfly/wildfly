@@ -154,6 +154,11 @@
                         <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
+                <xs:element name="socket-discovery-protocol" type="tns:socket-discovery-protocol">
+                    <xs:annotation>
+                        <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
                 <xs:element name="jdbc-protocol" type="tns:jdbc-protocol">
                     <xs:annotation>
                         <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
@@ -225,7 +230,19 @@
             <xs:extension base="tns:generic-protocol">
                 <xs:attribute name="socket-binding" type="xs:string" use="required">
                     <xs:annotation>
-                        <xs:documentation>Provides an address/port binding for a protocol.</xs:documentation>
+                        <xs:documentation>Provides a socket binding for a protocol.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="socket-discovery-protocol">
+        <xs:complexContent>
+            <xs:extension base="tns:generic-protocol">
+                <xs:attribute name="socket-bindings" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>Provides a list of socket bindings for a protocol.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>

@@ -78,7 +78,7 @@ public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptPr
     public EncryptProtocolResourceDefinition(String name, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
-                .setAddOperationTransformation(new LegacyAddOperationTransformation(operation -> !operation.hasDefined(Attribute.KEY_STORE.getName()) && !operation.hasDefined(Attribute.KEY_ALIAS.getName()) && !operation.hasDefined(Attribute.CREDENTIAL.getName())))
+                .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
                 ), address -> new EncryptProtocolConfigurationBuilder<>(address), parentBuilderFactory);
     }
 }

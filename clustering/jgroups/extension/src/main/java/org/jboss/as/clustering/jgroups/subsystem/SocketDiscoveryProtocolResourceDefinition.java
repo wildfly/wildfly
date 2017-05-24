@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,14 +25,16 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
+import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.jgroups.protocol.JDBCProtocol;
+import org.jboss.as.clustering.jgroups.protocol.SocketDiscoveryProtocol;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
@@ -40,20 +42,22 @@ import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
- * Resource definition override for protocols that require a JDBC DataSource.
  * @author Paul Ferraro
  */
-public class JDBCProtocolResourceDefinition<P extends Protocol & JDBCProtocol> extends ProtocolResourceDefinition<P> {
+public class SocketDiscoveryProtocolResourceDefinition<P extends Protocol & SocketDiscoveryProtocol> extends ProtocolResourceDefinition<P> {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DATA_SOURCE("data-source", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.DATA_SOURCE))),
+        OUTBOUND_SOCKET_BINDINGS("socket-bindings", ModelType.LIST, builder -> builder
+                .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                .setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING))),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(false)
+        Attribute(String name, ModelType type, UnaryOperator<StringListAttributeDefinition.Builder> configurator) {
+            this.definition = configurator.apply(new StringListAttributeDefinition.Builder(name)
                     .setRequired(true)
+                    .setMinSize(1)
+                    .setAttributeParser(AttributeParsers.COLLECTION)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     ).build();
         }
@@ -69,10 +73,10 @@ public class JDBCProtocolResourceDefinition<P extends Protocol & JDBCProtocol> e
         ProtocolResourceDefinition.addTransformations(version, builder);
     }
 
-    JDBCProtocolResourceDefinition(String name, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+    SocketDiscoveryProtocolResourceDefinition(String name, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
                 .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
-                ), address -> new JDBCProtocolConfigurationBuilder<>(address), parentBuilderFactory);
+            ), address -> new SocketDiscoveryProtocolConfigurationBuilder<>(address), parentBuilderFactory);
     }
 }

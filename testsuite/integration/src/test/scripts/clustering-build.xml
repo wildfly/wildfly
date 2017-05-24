@@ -139,20 +139,11 @@
                                                  managementIPAddress="${node0}" publicIPAddress="${node0}"
                                                  udpMcastAddress="${mcast-lon}" diagnosticsMcastAddress="${mcast-lon}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-lon}"/>
         <ts.config-as.add-port-offset name="wildfly-xsite-LON-0"/>
-        <ts.config-as.change-transport-stack name="wildfly-xsite-LON-0"
-                                             stack="tcp"/>
-        <ts.config-as.copy-stack name="wildfly-xsite-LON-0"
-                                 stack.base="tcp"
-                                 stack.name="tcp-bridge"/>
-        <ts.config-as.change-protocol-socket-binding name="wildfly-xsite-LON-0"
-                                                     stack="tcp"
-                                                     protocol="MPING"
-                                                     socket-binding="jgroups-udp"/>
         <!-- define relay at JGroups level on udp stack -->
-        <ts.config-as.add-xsite-relay name="wildfly-xsite-LON-0" stack="tcp" relay.site="LON"
-                                      remote-site.site="NYC" remote-site.stack="tcp-bridge" remote-site.cluster="bridge"/>
-        <ts.config-as.add-xsite-remote-site name="wildfly-xsite-LON-0" stack="tcp"
-                                      remote-site.site="SFO" remote-site.stack="tcp-bridge" remote-site.cluster="bridge"/>
+        <ts.config-as.add-xsite-relay name="wildfly-xsite-LON-0" stack="udp" relay.site="LON"
+                                      remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+        <ts.config-as.add-xsite-remote-site name="wildfly-xsite-LON-0" stack="udp"
+                                      remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
         <!-- define cache to be backed up at Infinispan level -->
         <ts.config-as.add-xsite-backups name="wildfly-xsite-LON-0" container="web"
                                        cache-type="distributed-cache" cache="dist" backup.site="NYC"/>
@@ -169,20 +160,11 @@
                                                  managementIPAddress="${node1}" publicIPAddress="${node1}"
                                                  udpMcastAddress="${mcast-lon}" diagnosticsMcastAddress="${mcast-lon}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-lon}"/>
         <ts.config-as.add-port-offset name="wildfly-xsite-LON-1" offset="100" nativePort="9999" httpPort="9990"/>
-        <ts.config-as.change-transport-stack name="wildfly-xsite-LON-1"
-                                             stack="tcp"/>
-        <ts.config-as.copy-stack name="wildfly-xsite-LON-1"
-                                 stack.base="tcp"
-                                 stack.name="tcp-bridge"/>
-        <ts.config-as.change-protocol-socket-binding name="wildfly-xsite-LON-1"
-                                                     stack="tcp"
-                                                     protocol="MPING"
-                                                     socket-binding="jgroups-udp"/>
         <!-- define relay at JGroups level -->
-        <ts.config-as.add-xsite-relay name="wildfly-xsite-LON-1" stack="tcp" relay.site="LON"
-                                      remote-site.site="NYC" remote-site.stack="tcp-bridge" remote-site.cluster="bridge"/>
-        <ts.config-as.add-xsite-remote-site name="wildfly-xsite-LON-1" stack="tcp"
-                                      remote-site.site="SFO" remote-site.stack="tcp-bridge" remote-site.cluster="bridge"/>
+        <ts.config-as.add-xsite-relay name="wildfly-xsite-LON-1" stack="udp" relay.site="LON"
+                                      remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+        <ts.config-as.add-xsite-remote-site name="wildfly-xsite-LON-1" stack="udp"
+                                      remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
         <!-- define cache to be backed up at Infinispan level -->
         <ts.config-as.add-xsite-backups name="wildfly-xsite-LON-1" container="web"
                                        cache-type="distributed-cache" cache="dist" backup.site="NYC"/>
@@ -199,20 +181,11 @@
                                                  managementIPAddress="${node2}" publicIPAddress="${node2}"
                                                  udpMcastAddress="${mcast-nyc}" diagnosticsMcastAddress="${mcast-nyc}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-nyc}"/>
         <ts.config-as.add-port-offset name="wildfly-xsite-NYC-0" offset="200" nativePort="9999" httpPort="9990"/>
-        <ts.config-as.change-transport-stack name="wildfly-xsite-NYC-0"
-                                             stack="tcp"/>
-        <ts.config-as.copy-stack name="wildfly-xsite-NYC-0"
-                                 stack.base="tcp"
-                                 stack.name="tcp-bridge"/>
-        <ts.config-as.change-protocol-socket-binding name="wildfly-xsite-NYC-0"
-                                                     stack="tcp"
-                                                     protocol="MPING"
-                                                     socket-binding="jgroups-udp"/>
         <!-- define relay at JGroups level -->
-        <ts.config-as.add-xsite-relay name="wildfly-xsite-NYC-0" stack="tcp" relay.site="NYC"
-                                      remote-site.site="LON" remote-site.stack="tcp-bridge" remote-site.cluster="bridge"/>
-        <ts.config-as.add-xsite-remote-site name="wildfly-xsite-NYC-0" stack="tcp"
-                                      remote-site.site="SFO" remote-site.stack="tcp-bridge" remote-site.cluster="bridge"/>
+        <ts.config-as.add-xsite-relay name="wildfly-xsite-NYC-0" stack="udp" relay.site="NYC"
+                                      remote-site.site="LON" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+        <ts.config-as.add-xsite-remote-site name="wildfly-xsite-NYC-0" stack="udp"
+                                      remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
         <ts.config-as.configure-multicast-ttl name="wildfly-xsite-NYC-0" mcast.ttl="${mcast.ttl}"/>
 
         <!-- site SFO, node 3, mcast 2 -->
@@ -224,20 +197,11 @@
                                                  managementIPAddress="${node3}" publicIPAddress="${node3}"
                                                  udpMcastAddress="${mcast-sfo}" diagnosticsMcastAddress="${mcast-sfo}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-sfo}"/>
         <ts.config-as.add-port-offset name="wildfly-xsite-SFO-0" offset="300" nativePort="9999" httpPort="9990"/>
-        <ts.config-as.change-transport-stack name="wildfly-xsite-SFO-0"
-                                             stack="tcp"/>
-        <ts.config-as.copy-stack name="wildfly-xsite-SFO-0"
-                                 stack.base="tcp"
-                                 stack.name="tcp-bridge"/>
-        <ts.config-as.change-protocol-socket-binding name="wildfly-xsite-SFO-0"
-                                                     stack="tcp"
-                                                     protocol="MPING"
-                                                     socket-binding="jgroups-udp"/>
         <!-- define relay at JGroups level -->
-        <ts.config-as.add-xsite-relay name="wildfly-xsite-SFO-0" stack="tcp" relay.site="SFO"
-                                      remote-site.site="LON" remote-site.stack="tcp-bridge" remote-site.cluster="bridge"/>
-        <ts.config-as.add-xsite-remote-site name="wildfly-xsite-SFO-0" stack="tcp"
-                                      remote-site.site="NYC" remote-site.stack="tcp-bridge" remote-site.cluster="bridge"/>
+        <ts.config-as.add-xsite-relay name="wildfly-xsite-SFO-0" stack="udp" relay.site="SFO"
+                                      remote-site.site="LON" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+        <ts.config-as.add-xsite-remote-site name="wildfly-xsite-SFO-0" stack="udp"
+                                      remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge"/>
         <ts.config-as.configure-multicast-ttl name="wildfly-xsite-SFO-0" mcast.ttl="${mcast.ttl}"/>
 
         <!-- site SFO, node 3, mcast 2 + backupFor -->
@@ -248,21 +212,12 @@
         <ts.config-as.ip-with-multicast-longform name="wildfly-xsite-SFO-0-backupFor"
                                                  managementIPAddress="${node3}" publicIPAddress="${node3}"
                                                  udpMcastAddress="${mcast-sfo}" diagnosticsMcastAddress="${mcast-sfo}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-sfo}"/>
-        <ts.config-as.add-port-offset name="wildfly-xsite-SFO-0-backupFor" offset="300" nativePort="9999" httpPort="9990"/>
-        <ts.config-as.change-transport-stack name="wildfly-xsite-SFO-0-backupFor"
-                                             stack="tcp"/>
-        <ts.config-as.copy-stack name="wildfly-xsite-SFO-0-backupFor"
-                                 stack.base="tcp"
-                                 stack.name="tcp-bridge"/>
-        <ts.config-as.change-protocol-socket-binding name="wildfly-xsite-SFO-0-backupFor"
-                                                     stack="tcp"
-                                                     protocol="MPING"
-                                                     socket-binding="jgroups-udp"/>
+        <ts.config-as.add-port-offset name="wildfly-xsite-SFO-0-backupFor" offset="400" nativePort="9999" httpPort="9990"/>
         <!-- define relay at JGroups level -->
-        <ts.config-as.add-xsite-relay name="wildfly-xsite-SFO-0-backupFor" stack="tcp" relay.site="SFO"
-                                      remote-site.site="LON" remote-site.stack="tcp-bridge" remote-site.cluster="bridge"/>
-        <ts.config-as.add-xsite-remote-site name="wildfly-xsite-SFO-0-backupFor" stack="tcp"
-                                      remote-site.site="NYC" remote-site.stack="tcp-bridge" remote-site.cluster="bridge"/>
+        <ts.config-as.add-xsite-relay name="wildfly-xsite-SFO-0-backupFor" stack="udp" relay.site="SFO"
+                                      remote-site.site="LON" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+        <ts.config-as.add-xsite-remote-site name="wildfly-xsite-SFO-0-backupFor" stack="udp"
+                                      remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge"/>
 
         <!-- create a named backup cache based on repl for LON:web:dist and mark as backup-for -->
         <ts.config-as.copy-cache name="wildfly-xsite-SFO-0-backupFor" container.name="web"
