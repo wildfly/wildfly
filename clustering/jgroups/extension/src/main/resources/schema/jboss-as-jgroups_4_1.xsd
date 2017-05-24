@@ -265,7 +265,11 @@
         <xs:complexContent>
             <xs:extension base="tns:generic-protocol">
                 <xs:sequence>
-                    <xs:element name="credential-reference" type="tns:credential-reference" minOccurs="0"/>
+                    <xs:element name="key-credential-reference" type="tns:credential-reference">
+                        <xs:annotation>
+                            <xs:documentation>References the password credential with which the key is protected.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
                 </xs:sequence>
                 <xs:attribute name="key-store" type="xs:string" use="required">
                     <xs:annotation>

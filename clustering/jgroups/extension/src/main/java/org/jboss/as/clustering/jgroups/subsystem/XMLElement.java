@@ -24,10 +24,10 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolRegistration.ProtocolType;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.security.CredentialReference;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -38,12 +38,12 @@ public enum XMLElement {
 
     CHANNEL(ChannelResourceDefinition.WILDCARD_PATH),
     CHANNELS("channels"),
-    CREDENTIAL_REFERENCE(CredentialReference.CREDENTIAL_REFERENCE),
     DEFAULT_THREAD_POOL("default-thread-pool"),
     ENCRYPT_PROTOCOL("encrypt-protocol"),
     FORK(ForkResourceDefinition.WILDCARD_PATH),
     INTERNAL_THREAD_POOL("internal-thread-pool"),
     JDBC_PROTOCOL("jdbc-protocol"),
+    KEY_CREDENTIAL_REFERENCE(EncryptProtocolResourceDefinition.Attribute.KEY_CREDENTIAL),
     OOB_THREAD_POOL("oob-thread-pool"),
     PROPERTY(ModelDescriptionConstants.PROPERTY),
     PROTOCOL(ProtocolResourceDefinition.WILDCARD_PATH),
@@ -61,6 +61,10 @@ public enum XMLElement {
 
     XMLElement(PathElement path) {
         this.name = path.isWildcard() ? path.getKey() : path.getValue();
+    }
+
+    XMLElement(Attribute attribute) {
+        this.name = attribute.getName();
     }
 
     XMLElement(String name) {

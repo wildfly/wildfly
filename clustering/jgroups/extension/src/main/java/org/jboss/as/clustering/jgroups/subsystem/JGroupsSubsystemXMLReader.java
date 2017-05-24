@@ -609,8 +609,8 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         ModelNode operation = operations.get(address);
         XMLElement element = XMLElement.forName(reader.getLocalName());
         switch (element) {
-            case CREDENTIAL_REFERENCE: {
-                readElement(reader, operation, EncryptProtocolResourceDefinition.Attribute.CREDENTIAL);
+            case KEY_CREDENTIAL_REFERENCE: {
+                readElement(reader, operation, EncryptProtocolResourceDefinition.Attribute.KEY_CREDENTIAL);
                 break;
             }
             default: {

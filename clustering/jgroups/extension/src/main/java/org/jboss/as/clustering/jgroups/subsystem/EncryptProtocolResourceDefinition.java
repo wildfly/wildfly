@@ -47,7 +47,7 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptProtocol> extends ProtocolResourceDefinition<P> {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CREDENTIAL(CredentialReference.getAttributeBuilder(CredentialReference.CREDENTIAL_REFERENCE, CredentialReference.CREDENTIAL_REFERENCE, false, new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
+        KEY_CREDENTIAL(CredentialReference.getAttributeBuilder("key-credential-reference", null, false, new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
         KEY_ALIAS("key-alias", ModelType.STRING, builder -> builder.setAllowExpression(true)),
         KEY_STORE("key-store", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.KEY_STORE))),
         ;

@@ -66,7 +66,7 @@ public class EncryptProtocolConfigurationBuilder<P extends EncryptBase & Encrypt
         String keyStore = KEY_STORE.resolveModelAttribute(context, model).asString();
         this.keyStore = new InjectedValueDependency<>(CommonUnaryRequirement.KEY_STORE.getServiceName(context, keyStore), KeyStore.class);
         this.keyAlias = KEY_ALIAS.resolveModelAttribute(context, model).asString();
-        this.credentialSource = new CredentialSourceDependency(context, CREDENTIAL, model);
+        this.credentialSource = new CredentialSourceDependency(context, KEY_CREDENTIAL, model);
         return super.configure(context, model);
     }
 
