@@ -106,7 +106,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = new StringListAttributeDefinition.Builder(STATIC_CONNECTORS)
-            .setRequired(false)
+            .setRequired(true)
             .setElementValidator(new StringLengthValidator(1))
             .setAttributeParser(AttributeParser.STRING_LIST)
             .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
@@ -115,7 +115,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition DISCOVERY_GROUP_NAME = create(CommonAttributes.DISCOVERY_GROUP, STRING)
-            .setRequired(false)
+            .setRequired(true)
             .setAlternatives(CONNECTOR_REFS.getName())
             .setRestartAllServices()
             .build();
