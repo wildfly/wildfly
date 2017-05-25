@@ -111,7 +111,7 @@ public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManage
             // Ensure eviction is not enabled on cache
             EvictionConfiguration eviction = builder.eviction().create();
             if (eviction.strategy().isEnabled()) {
-                builder.eviction().size(0L).strategy(EvictionStrategy.MANUAL);
+                builder.eviction().size(-1L).strategy(EvictionStrategy.MANUAL);
                 InfinispanEjbLogger.ROOT_LOGGER.evictionDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, templateCacheName));
             }
         };
