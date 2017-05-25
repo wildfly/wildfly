@@ -46,6 +46,7 @@
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.deployment-repository"/>
         <module name="org.jboss.as.transactions"/>
+        <module name="org.jboss.as.network"/>
         <!-- need this for the endpoint service -->
         <module name="org.jboss.as.webservices.server.integration"/>
         <!-- need this for the endpoint security context -->
