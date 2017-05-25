@@ -52,10 +52,12 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.SecurityRealmService;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingStoreService;
 import org.jboss.as.network.OutboundSocketBinding;
@@ -170,6 +172,17 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         HttpHandler gzipHandler = gzipFilterRef.createHttpHandler(new PathHandler());
         Assert.assertNotNull("handler should have been created", gzipHandler);
         Assert.assertEquals(1, host.getFilters().size());
+
+        ModelNode op = Util.createOperation("write-attribute",
+                PathAddress.pathAddress(UndertowExtension.SUBSYSTEM_PATH)
+                        .append("servlet-container", "myContainer")
+                        .append("setting", "websockets")
+        );
+        op.get("name").set("buffer-pool");
+        op.get("value").set("default");
+
+        ModelNode res = ModelTestUtils.checkOutcome(mainServices.executeOperation(op));
+        Assert.assertNotNull(res);
     }
 
     public static void testRuntimeOther(KernelServices mainServices) {
