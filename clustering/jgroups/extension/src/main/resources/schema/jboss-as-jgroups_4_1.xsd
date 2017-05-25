@@ -169,6 +169,11 @@
                         <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
+                <xs:element name="auth-protocol" type="tns:auth-protocol">
+                    <xs:annotation>
+                        <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
             </xs:choice>
             <xs:element name="relay" type="tns:relay" minOccurs="0">
                 <xs:annotation>
@@ -265,16 +270,95 @@
         <xs:complexContent>
             <xs:extension base="tns:generic-protocol">
                 <xs:sequence>
-                    <xs:element name="credential-reference" type="tns:credential-reference" minOccurs="0"/>
+                    <xs:element name="key-credential-reference" type="tns:credential-reference">
+                        <xs:annotation>
+                            <xs:documentation>References the password credential with which the key is protected.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
                 </xs:sequence>
                 <xs:attribute name="key-store" type="xs:string" use="required">
                     <xs:annotation>
-                        <xs:documentation>References key store containing the key used to sign and verify logout requests.</xs:documentation>
+                        <xs:documentation>References key store containing the key used to encrypt messages.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="key-alias" type="xs:string" use="required">
                     <xs:annotation>
-                        <xs:documentation>The alias of the key used to sign and verify logout requests.</xs:documentation>
+                        <xs:documentation>The alias of the key used to encrypt.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="auth-protocol">
+        <xs:complexContent>
+            <xs:extension base="tns:generic-protocol">
+                <xs:choice>
+                    <xs:element name="plain-token" type="tns:plain-token">
+                        <xs:annotation>
+                            <xs:documentation>An auth token using a plain text shared secret.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="digest-token" type="tns:digest-token">
+                        <xs:annotation>
+                            <xs:documentation>An auth token using a digest of a shared secret.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="cipher-token" type="tns:cipher-token">
+                        <xs:annotation>
+                            <xs:documentation>An auth token using an encrypted shared secret.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:choice>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="plain-token">
+        <xs:sequence>
+            <xs:element name="shared-secret-reference" type="tns:credential-reference">
+                <xs:annotation>
+                    <xs:documentation>References a shared secret used to authenticate new members.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="digest-token">
+        <xs:complexContent>
+            <xs:extension base="tns:plain-token">
+                <xs:attribute name="algorithm" type="xs:string" default="SHA-265">
+                    <xs:annotation>
+                        <xs:documentation>The digest algorithm with which to obfuscate the shared secret.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="cipher-token">
+        <xs:complexContent>
+            <xs:extension base="tns:plain-token">
+                <xs:sequence>
+                    <xs:element name="key-credential-reference" type="tns:credential-reference">
+                        <xs:annotation>
+                            <xs:documentation>References the credential required to obtain the specified key from the specified store.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+                <xs:attribute name="key-store" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>References key store containing the private key and certificate used to authenticate new members.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="key-alias" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The alias of the private key and certificate used to authenticate new members.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="algorithm" type="xs:string" default="RSA">
+                    <xs:annotation>
+                        <xs:documentation>The encryption algorithm/transformation used to protect the shared secret during transmission.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
@@ -452,5 +536,9 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
+
+    <xs:simpleType name="list">
+        <xs:list itemType="xs:string"/>
+    </xs:simpleType>
 
 </xs:schema>

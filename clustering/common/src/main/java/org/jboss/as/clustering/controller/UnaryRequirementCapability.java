@@ -22,10 +22,9 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.stream.Stream;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
@@ -41,8 +40,17 @@ public class UnaryRequirementCapability implements Capability {
      * @param requirement the unary requirement basis
      * @param requirements a list of requirements of this capability
      */
-    public UnaryRequirementCapability(UnaryRequirement requirement, Requirement... requirements) {
-        this.definition = RuntimeCapability.Builder.of(requirement.getName(), true, requirement.getType()).addRequirements(Stream.of(requirements).map(Requirement::getName).toArray(String[]::new)).build();
+    public UnaryRequirementCapability(UnaryRequirement requirement) {
+        this(requirement, UnaryOperator.identity());
+    }
+
+    /**
+     * Creates a new capability based on the specified unary requirement
+     * @param requirement the unary requirement basis
+     * @param configurator configures the capability
+     */
+    public UnaryRequirementCapability(UnaryRequirement requirement, UnaryOperator<RuntimeCapability.Builder<Void>> configurator) {
+        this.definition = configurator.apply(RuntimeCapability.Builder.of(requirement.getName(), true).setServiceType(requirement.getType())).build();
     }
 
     @Override

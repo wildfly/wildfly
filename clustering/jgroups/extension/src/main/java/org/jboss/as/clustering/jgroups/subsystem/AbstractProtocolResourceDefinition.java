@@ -28,6 +28,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.AttributeMarshallers;
 import org.jboss.as.clustering.controller.AttributeParsers;
@@ -179,7 +180,13 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
         }
 
         LegacyAddOperationTransformation(Set<? extends org.jboss.as.clustering.controller.Attribute> attributes) {
+            // If none of the specified attributes are defined, then this is a legacy operation
             this(operation -> attributes.stream().noneMatch(attribute -> operation.hasDefined(attribute.getName())));
+        }
+
+        LegacyAddOperationTransformation(String... legacyProperties) {
+            // If any of the specified properties are defined, then this is a legacy operation
+            this(operation -> operation.hasDefined(Attribute.PROPERTIES.getName()) && Stream.of(legacyProperties).anyMatch(legacyProperty -> operation.get(Attribute.PROPERTIES.getName()).hasDefined(legacyProperty)));
         }
 
         LegacyAddOperationTransformation(Predicate<ModelNode> legacy) {

@@ -22,34 +22,31 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.jgroups.protocol.EncryptProtocol;
+import org.jboss.as.clustering.jgroups.auth.CipherAuthToken;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.security.CredentialReference;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jgroups.protocols.EncryptBase;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
- * Resource definition override for protocols that require an encryption key.
  * @author Paul Ferraro
  */
-public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptProtocol> extends ProtocolResourceDefinition<P> {
+public class CipherAuthTokenResourceDefinition extends AuthTokenResourceDefinition<CipherAuthToken> {
+
+    static final PathElement PATH = pathElement("cipher");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        KEY_CREDENTIAL(CredentialReference.getAttributeBuilder("key-credential-reference", null, false, new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
+        KEY_CREDENTIAL(CredentialReference.getAttributeBuilder("key-credential-reference", null, false, new CapabilityReference(Capability.AUTH_TOKEN, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
         KEY_ALIAS("key-alias", ModelType.STRING, builder -> builder.setAllowExpression(true)),
-        KEY_STORE("key-store", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.KEY_STORE))),
+        KEY_STORE("key-store", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.AUTH_TOKEN, CommonUnaryRequirement.KEY_STORE))),
+        ALGORITHM("algorithm", ModelType.STRING, builder -> builder.setAllowExpression(true).setRequired(false).setDefaultValue(new ModelNode("RSA"))),
         ;
         private final AttributeDefinition definition;
 
@@ -70,15 +67,7 @@ public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptPr
         }
     }
 
-    static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-
-        ProtocolResourceDefinition.addTransformations(version, builder);
-    }
-
-    public EncryptProtocolResourceDefinition(String name, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
-                .addAttributes(Attribute.class)
-                .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
-                ), address -> new EncryptProtocolConfigurationBuilder<>(address), parentBuilderFactory);
+    CipherAuthTokenResourceDefinition() {
+        super(PATH, descriptor -> descriptor.addAttributes(Attribute.class), address -> new CipherAuthTokenBuilder(address));
     }
 }

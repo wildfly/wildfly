@@ -24,10 +24,10 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolRegistration.ProtocolType;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.security.CredentialReference;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -36,19 +36,24 @@ public enum XMLElement {
     // must be first
     UNKNOWN(""),
 
+    AUTH_PROTOCOL("auth-protocol"),
+    CIPHER_TOKEN("cipher-token"),
     CHANNEL(ChannelResourceDefinition.WILDCARD_PATH),
     CHANNELS("channels"),
-    CREDENTIAL_REFERENCE(CredentialReference.CREDENTIAL_REFERENCE),
     DEFAULT_THREAD_POOL("default-thread-pool"),
+    DIGEST_TOKEN("digest-token"),
     ENCRYPT_PROTOCOL("encrypt-protocol"),
     FORK(ForkResourceDefinition.WILDCARD_PATH),
     INTERNAL_THREAD_POOL("internal-thread-pool"),
     JDBC_PROTOCOL("jdbc-protocol"),
+    KEY_CREDENTIAL_REFERENCE(EncryptProtocolResourceDefinition.Attribute.KEY_CREDENTIAL),
     OOB_THREAD_POOL("oob-thread-pool"),
+    PLAIN_TOKEN("plain-token"),
     PROPERTY(ModelDescriptionConstants.PROPERTY),
     PROTOCOL(ProtocolResourceDefinition.WILDCARD_PATH),
     RELAY(RelayResourceDefinition.WILDCARD_PATH),
     REMOTE_SITE(RemoteSiteResourceDefinition.WILDCARD_PATH),
+    SHARED_SECRET_CREDENTIAL_REFERENCE(AuthTokenResourceDefinition.Attribute.SHARED_SECRET),
     SOCKET_PROTOCOL("socket-protocol"),
     SOCKET_DISCOVERY_PROTOCOL("socket-discovery-protocol"),
     STACK(StackResourceDefinition.WILDCARD_PATH),
@@ -61,6 +66,10 @@ public enum XMLElement {
 
     XMLElement(PathElement path) {
         this.name = path.isWildcard() ? path.getKey() : path.getValue();
+    }
+
+    XMLElement(Attribute attribute) {
+        this.name = attribute.getName();
     }
 
     XMLElement(String name) {
@@ -77,6 +86,8 @@ public enum XMLElement {
     }
 
     private static final Map<String, XMLElement> elements = new HashMap<>();
+    private static final Map<String, XMLElement> protocols = new HashMap<>();
+    private static final Map<String, XMLElement> tokens = new HashMap<>();
 
     static {
         for (XMLElement element : values()) {
@@ -85,6 +96,16 @@ public enum XMLElement {
                 elements.put(name, element);
             }
         }
+
+        ProtocolType.MULTICAST_SOCKET.forEach(protocol -> protocols.put(protocol, XMLElement.SOCKET_PROTOCOL));
+        ProtocolType.JDBC.forEach(protocol -> protocols.put(protocol, XMLElement.JDBC_PROTOCOL));
+        ProtocolType.ENCRYPT.forEach(protocol -> protocols.put(protocol, XMLElement.ENCRYPT_PROTOCOL));
+        ProtocolType.SOCKET_DISCOVERY.forEach(protocol -> protocols.put(protocol, XMLElement.SOCKET_DISCOVERY_PROTOCOL));
+        ProtocolType.AUTH.forEach(protocol -> protocols.put(protocol, XMLElement.AUTH_PROTOCOL));
+
+        tokens.put(PlainAuthTokenResourceDefinition.PATH.getValue(), XMLElement.PLAIN_TOKEN);
+        tokens.put(DigestAuthTokenResourceDefinition.PATH.getValue(), XMLElement.DIGEST_TOKEN);
+        tokens.put(CipherAuthTokenResourceDefinition.PATH.getValue(), XMLElement.CIPHER_TOKEN);
     }
 
     public static XMLElement forName(String localName) {
@@ -92,11 +113,14 @@ public enum XMLElement {
         return (element != null) ? element : UNKNOWN;
     }
 
-    public static XMLElement forProtocol(String protocol) {
-        if (ProtocolType.MULTICAST_SOCKET.contains(protocol)) return XMLElement.SOCKET_PROTOCOL;
-        if (ProtocolType.JDBC.contains(protocol)) return XMLElement.JDBC_PROTOCOL;
-        if (ProtocolType.ENCRYPT.contains(protocol)) return XMLElement.ENCRYPT_PROTOCOL;
-        if (ProtocolType.SOCKET_DISCOVERY.contains(protocol)) return XMLElement.SOCKET_DISCOVERY_PROTOCOL;
-        return XMLElement.PROTOCOL;
+    public static XMLElement forProtocolName(String protocol) {
+        XMLElement element = protocols.get(protocol);
+        return (element != null) ? element : XMLElement.PROTOCOL;
+    }
+
+    public static XMLElement forAuthTokenName(String token) {
+        XMLElement element = tokens.get(token);
+        if (element == null) throw new IllegalArgumentException(token);
+        return element;
     }
 }

@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.security.CredentialReference;
@@ -54,9 +55,9 @@ public class CredentialSourceDependency implements ValueDependency<CredentialSou
     private final ExceptionSupplier<CredentialSource, Exception> supplier;
     private final Iterable<Dependency> dependencies;
 
-    public CredentialSourceDependency(OperationContext context, ModelNode model) throws OperationFailedException {
+    public CredentialSourceDependency(OperationContext context, Attribute attribute, ModelNode model) throws OperationFailedException {
         DependencyCollectingServiceBuilder builder = new DependencyCollectingServiceBuilder();
-        this.supplier = CredentialReference.getCredentialSourceSupplier(context, CredentialReference.getAttributeDefinition(), model, builder);
+        this.supplier = CredentialReference.getCredentialSourceSupplier(context, (ObjectTypeAttributeDefinition) attribute.getDefinition(), model, builder);
         this.dependencies = builder;
     }
 

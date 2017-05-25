@@ -22,25 +22,23 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.subsystem.EncryptProtocolResourceDefinition.Attribute.*;
+import static org.jboss.as.clustering.jgroups.subsystem.CipherAuthTokenResourceDefinition.Attribute.*;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.util.stream.Stream;
+
+import javax.crypto.Cipher;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.CredentialSourceDependency;
+import org.jboss.as.clustering.jgroups.auth.CipherAuthToken;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
-import org.jboss.as.clustering.jgroups.protocol.EncryptProtocol;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceTarget;
-import org.jgroups.protocols.EncryptBase;
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
@@ -51,41 +49,39 @@ import org.wildfly.security.password.interfaces.ClearPassword;
 /**
  * @author Paul Ferraro
  */
-public class EncryptProtocolConfigurationBuilder<P extends EncryptBase & EncryptProtocol> extends ProtocolConfigurationBuilder<P> {
+public class CipherAuthTokenBuilder extends AuthTokenBuilder<CipherAuthToken> {
 
     private volatile ValueDependency<KeyStore> keyStore;
-    private volatile ValueDependency<CredentialSource> credentialSource;
+    private volatile ValueDependency<CredentialSource> keyCredentialSource;
     private volatile String keyAlias;
+    private volatile String transformation;
 
-    public EncryptProtocolConfigurationBuilder(PathAddress address) {
+    public CipherAuthTokenBuilder(PathAddress address) {
         super(address);
     }
 
     @Override
-    public Builder<ProtocolConfiguration<P>> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public Builder<CipherAuthToken> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String keyStore = KEY_STORE.resolveModelAttribute(context, model).asString();
         this.keyStore = new InjectedValueDependency<>(CommonUnaryRequirement.KEY_STORE.getServiceName(context, keyStore), KeyStore.class);
         this.keyAlias = KEY_ALIAS.resolveModelAttribute(context, model).asString();
-        this.credentialSource = new CredentialSourceDependency(context, KEY_CREDENTIAL, model);
+        this.keyCredentialSource = new CredentialSourceDependency(context, KEY_CREDENTIAL, model);
+        this.transformation = ALGORITHM.resolveModelAttribute(context, model).asString();
         return super.configure(context, model);
     }
 
     @Override
-    public ServiceBuilder<ProtocolConfiguration<P>> build(ServiceTarget target) {
-        ServiceBuilder<ProtocolConfiguration<P>> builder = super.build(target);
-        Stream.of(this.keyStore, this.credentialSource).forEach(dependency -> dependency.register(builder));
-        return builder;
-    }
-
-    @Override
-    public void accept(P protocol) {
+    public CipherAuthToken apply(String authValue) {
         KeyStore store = this.keyStore.getValue();
         String alias = this.keyAlias;
         try {
             if (!store.containsAlias(alias)) {
                 throw JGroupsLogger.ROOT_LOGGER.keyEntryNotFound(alias);
             }
-            PasswordCredential credential = this.credentialSource.getValue().getCredential(PasswordCredential.class);
+            if (!store.entryInstanceOf(alias, KeyStore.PrivateKeyEntry.class)) {
+                throw JGroupsLogger.ROOT_LOGGER.privateKeyStoreEntryExpected(alias);
+            }
+            PasswordCredential credential = this.keyCredentialSource.getValue().getCredential(PasswordCredential.class);
             if (credential == null) {
                 throw JGroupsLogger.ROOT_LOGGER.unexpectedCredentialSource();
             }
@@ -93,10 +89,11 @@ public class EncryptProtocolConfigurationBuilder<P extends EncryptBase & Encrypt
             if (password == null) {
                 throw JGroupsLogger.ROOT_LOGGER.unexpectedCredentialSource();
             }
-            protocol.setKeyStore(store);
-            protocol.setKeyAlias(alias);
-            protocol.setKeyPassword(new KeyStore.PasswordProtection(password.getPassword()));
-        } catch (KeyStoreException | IOException e) {
+            KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) store.getEntry(alias, new KeyStore.PasswordProtection(password.getPassword()));
+            KeyPair pair = new KeyPair(entry.getCertificate().getPublicKey(), entry.getPrivateKey());
+            Cipher cipher = Cipher.getInstance(this.transformation);
+            return new CipherAuthToken(cipher, pair, authValue.getBytes());
+        } catch (GeneralSecurityException | IOException e) {
             throw new IllegalArgumentException(e);
         }
     }

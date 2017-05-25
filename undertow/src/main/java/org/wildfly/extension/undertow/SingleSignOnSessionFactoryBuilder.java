@@ -78,7 +78,7 @@ public class SingleSignOnSessionFactoryBuilder extends SingleSignOnSessionFactor
         String keyStore = KEY_STORE.resolveModelAttribute(context, model).asString();
         this.keyStore = new InjectedValueDependency<>(CommonUnaryRequirement.KEY_STORE.getServiceName(context, keyStore), KeyStore.class);
         this.keyAlias = KEY_ALIAS.resolveModelAttribute(context, model).asString();
-        this.credentialSource = new CredentialSourceDependency(context, model);
+        this.credentialSource = new CredentialSourceDependency(context, CREDENTIAL, model);
         Optional<String> sslContext = ModelNodes.optionalString(SSL_CONTEXT.resolveModelAttribute(context, model));
         this.sslContext = sslContext.map(value -> new InjectedValueDependency<>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, value), SSLContext.class)).orElse(null);
         return this;
