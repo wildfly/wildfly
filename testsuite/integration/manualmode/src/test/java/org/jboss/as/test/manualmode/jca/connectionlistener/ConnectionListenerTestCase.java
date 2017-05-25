@@ -12,12 +12,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.manualmode.ejb.Util;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.jca.adapters.jdbc.spi.listener.ConnectionListener;
 import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -36,11 +34,6 @@ public class ConnectionListenerTestCase extends AbstractTestsuite {
     private ContainerController controller;
     @ArquillianResource
     private Deployer deployer;
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeInvocationTestsEnabled();
-    }
 
     @Before
     public void init() throws Exception {
