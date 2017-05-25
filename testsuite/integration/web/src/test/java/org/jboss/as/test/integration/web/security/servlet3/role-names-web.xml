@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         version="3.0">
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>secured</web-resource-name>
+            <url-pattern>/secured/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>*</role-name> <!--allow all role names defined in the deployment descriptor-->
+        </auth-constraint>
+    </security-constraint>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>weakly-secured</web-resource-name>
+            <url-pattern>/weakly-secured/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>**</role-name> <!--any authenticated user independent of role-->
+        </auth-constraint>
+    </security-constraint>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>hard-secured</web-resource-name>
+            <url-pattern>/hard-secured/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <!--no role -> no access at all-->
+        </auth-constraint>
+    </security-constraint>
+
+    <login-config>
+        <auth-method>BASIC</auth-method>
+        <realm-name>WebSecurityBasic</realm-name>
+    </login-config>
+
+    <security-role>
+        <role-name>gooduser</role-name>
+    </security-role>
+
+</web-app>
