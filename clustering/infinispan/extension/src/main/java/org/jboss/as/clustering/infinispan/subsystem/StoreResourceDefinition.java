@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
@@ -91,23 +92,23 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        FETCH_STATE("fetch-state", true),
-        PASSIVATION("passivation", true),
-        PRELOAD("preload", false),
-        PURGE("purge", true),
-        SHARED("shared", false),
-        SINGLETON("singleton", false),
+        FETCH_STATE("fetch-state", true, UnaryOperator.identity()),
+        PASSIVATION("passivation", true, UnaryOperator.identity()),
+        PRELOAD("preload", false, UnaryOperator.identity()),
+        PURGE("purge", true, UnaryOperator.identity()),
+        SHARED("shared", false, UnaryOperator.identity()),
+        SINGLETON("singleton", false, builder -> builder.setDeprecated(InfinispanModel.VERSION_4_2_0.getVersion())),
         PROPERTIES("properties"),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, boolean defaultValue) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.BOOLEAN)
+        Attribute(String name, boolean defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, ModelType.BOOLEAN)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(new ModelNode(defaultValue))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .build();
+                    ).build();
         }
 
         Attribute(String name) {
