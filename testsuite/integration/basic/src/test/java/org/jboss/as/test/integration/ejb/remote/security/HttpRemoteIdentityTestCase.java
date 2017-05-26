@@ -34,11 +34,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.http.HttpInvokerServerSetupTask;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
-import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -50,9 +47,6 @@ import org.wildfly.naming.client.WildFlyInitialContextFactory;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
-import org.wildfly.test.security.common.AbstractElytronSetupTask;
-import org.wildfly.test.security.common.elytron.ConfigurableElement;
-import org.wildfly.test.security.common.elytron.EJBApplicationSecurityDomainMapping;
 
 /**
  * A test case to test an unsecured EJB setting the username and password before the call reaches a secured EJB.
@@ -61,7 +55,6 @@ import org.wildfly.test.security.common.elytron.EJBApplicationSecurityDomainMapp
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({HttpInvokerServerSetupTask.class, HttpRemoteIdentityTestCase.SecurityDomainsSetup.class})
 public class HttpRemoteIdentityTestCase {
 
     @ContainerResource
@@ -128,19 +121,4 @@ public class HttpRemoteIdentityTestCase {
                 + remoteInterface.getName());
     }
 
-
-    static class SecurityDomainsSetup extends AbstractElytronSetupTask {
-
-        @Override
-        protected ConfigurableElement[] getConfigurableElements() {
-            boolean domainMappingExists = false;
-            try (CLIWrapper cli = new CLIWrapper(true)) {
-                domainMappingExists = cli.sendLine("/subsystem=ejb3/application-security-domain=other:read-resource()", true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return domainMappingExists ? null
-                    : new ConfigurableElement[] { new EJBApplicationSecurityDomainMapping("other", "ApplicationDomain") };
-        }
-    }
 }

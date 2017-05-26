@@ -29,13 +29,13 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 import org.jboss.as.security.logging.SecurityLogger;
+import org.jboss.as.security.remoting.RemoteConnection;
 import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.remoting3.Connection;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.action.GetModuleClassLoaderAction;
 
@@ -144,7 +144,7 @@ class SecurityActions {
         remotingContextAccociationActions().clear();
     }
 
-    static Connection remotingContextGetConnection() {
+    static RemoteConnection remotingContextGetConnection() {
         return remotingContextAccociationActions().getConnection();
     }
 
@@ -159,7 +159,7 @@ class SecurityActions {
 
     private interface RemotingContextAssociationActions {
 
-        Connection getConnection();
+        RemoteConnection getConnection();
 
         boolean isSet();
 
@@ -173,8 +173,8 @@ class SecurityActions {
             }
 
             @Override
-            public Connection getConnection() {
-                return RemotingContext.getConnection();
+            public RemoteConnection getConnection() {
+                return RemotingContext.getRemoteConnection();
             }
 
             @Override
@@ -193,10 +193,10 @@ class SecurityActions {
                 }
             };
 
-            private final PrivilegedAction<Connection> GET_CONNECTION_ACTION = new PrivilegedAction<Connection>() {
+            private final PrivilegedAction<RemoteConnection> GET_CONNECTION_ACTION = new PrivilegedAction<RemoteConnection>() {
 
                 @Override
-                public Connection run() {
+                public RemoteConnection run() {
                     return NON_PRIVILEGED.getConnection();
                 }
             };
@@ -216,7 +216,7 @@ class SecurityActions {
             }
 
             @Override
-            public Connection getConnection() {
+            public RemoteConnection getConnection() {
                 return doPrivileged(GET_CONNECTION_ACTION);
             }
 

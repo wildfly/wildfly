@@ -34,6 +34,7 @@
                 <location name="/" handler="welcome-content" />
                 <filter-ref name="server-header"/>
                 <filter-ref name="x-powered-by-header"/>
+                <http-invoker security-realm="ApplicationRealm"/>
             </host>
         </server>
         <servlet-container name="default">

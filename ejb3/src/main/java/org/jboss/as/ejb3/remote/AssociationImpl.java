@@ -38,6 +38,7 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.network.ClientMapping;
+import org.jboss.as.security.remoting.RemoteConnection;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBIdentifier;
@@ -60,6 +61,7 @@ import org.wildfly.common.annotation.NotNull;
 import org.wildfly.security.auth.server.SecurityIdentity;
 
 import javax.ejb.EJBException;
+import javax.net.ssl.SSLSession;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -158,7 +160,22 @@ final class AssociationImpl implements Association {
             final Object result;
 
             // the Remoting connection that is set here is only used for legacy purposes
-            SecurityActions.remotingContextSetConnection(invocationRequest.getProviderInterface(Connection.class));
+            Connection remotingConnection = invocationRequest.getProviderInterface(Connection.class);
+            if(remotingConnection != null) {
+                SecurityActions.remotingContextSetConnection(remotingConnection);
+            } else {
+                SecurityActions.remotingContextSetConnection(new RemoteConnection() {
+                    @Override
+                    public SSLSession getSslSession() {
+                        return null;
+                    }
+
+                    @Override
+                    public SecurityIdentity getSecurityIdentity() {
+                        return invocationRequest.getSecurityIdentity();
+                    }
+                });
+            }
 
             try {
                 final Map<String, Object> contextDataHolder = new HashMap<>();
@@ -196,6 +213,8 @@ final class AssociationImpl implements Association {
                 }
                 invocationRequest.writeException(exceptionToWrite);
                 return;
+            } finally {
+                SecurityActions.remotingContextClear();
             }
             // invocation was successful
             if (! oneWay) try {

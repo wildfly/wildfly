@@ -41,9 +41,9 @@ import javax.security.jacc.PolicyContext;
 
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.security.logging.SecurityLogger;
+import org.jboss.as.security.remoting.RemoteConnection;
 import org.jboss.as.security.remoting.RemotingConnectionCredential;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
-import org.jboss.remoting3.Connection;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.RunAs;
@@ -298,11 +298,11 @@ public class SimpleSecurityManager implements ServerSecurityManager {
                 // In this case the principal and credential will not have been set to set some random values.
                 SecurityContextUtil util = current.getUtil();
 
-                Connection connection = SecurityActions.remotingContextGetConnection();
+                RemoteConnection connection = SecurityActions.remotingContextGetConnection();
                 Principal p = null;
                 Object credential = null;
 
-                SecurityIdentity localIdentity = SecurityDomain.forIdentity(connection.getLocalIdentity()).getCurrentSecurityIdentity();
+                SecurityIdentity localIdentity = SecurityDomain.forIdentity(connection.getSecurityIdentity()).getCurrentSecurityIdentity();
                 if (localIdentity != null) {
                     p = new SimplePrincipal(localIdentity.getPrincipal().getName());
                     IdentityCredentials privateCredentials = localIdentity.getPrivateCredentials();

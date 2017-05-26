@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.remote;
 
 import java.security.PrivilegedAction;
 
+import org.jboss.as.security.remoting.RemoteConnection;
 import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.remoting3.Connection;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -46,6 +47,15 @@ final class SecurityActions {
     }
 
     /**
+     * Set the Remoting Connection on the RemotingContext.
+     *
+     * @param connection - The Remoting connection.
+     */
+    static void remotingContextSetConnection(final RemoteConnection connection) {
+        remoteContextAssociationActions().setConnection(connection);
+    }
+
+    /**
      * Clear the Remoting Connection on the RemotingContext.
      */
     static void remotingContextClear() {
@@ -57,6 +67,10 @@ final class SecurityActions {
                 : RemotingContextAssociationActions.PRIVILEGED;
     }
 
+    private static RemoteContextAssociationActions remoteContextAssociationActions() {
+        return ! WildFlySecurityManager.isChecking() ? RemoteContextAssociationActions.NON_PRIVILEGED
+                : RemoteContextAssociationActions.PRIVILEGED;
+    }
     private interface RemotingContextAssociationActions {
 
         void setConnection(final Connection connection);
@@ -103,4 +117,49 @@ final class SecurityActions {
 
     }
 
+    private interface RemoteContextAssociationActions {
+
+        void setConnection(final RemoteConnection connection);
+
+        void clear();
+
+        RemoteContextAssociationActions NON_PRIVILEGED = new RemoteContextAssociationActions() {
+
+            public void setConnection(RemoteConnection connection) {
+                RemotingContext.setConnection(connection);
+            }
+
+            public void clear() {
+                RemotingContext.clear();
+            }
+        };
+
+        RemoteContextAssociationActions PRIVILEGED = new RemoteContextAssociationActions() {
+
+            private PrivilegedAction<Void> CLEAR_ACTION = new PrivilegedAction<Void>() {
+
+                public Void run() {
+                    NON_PRIVILEGED.clear();
+                    return null;
+                }
+            };
+
+            public void setConnection(final RemoteConnection connection) {
+                doPrivileged(new PrivilegedAction<Void>() {
+
+                    public Void run() {
+                        NON_PRIVILEGED.setConnection(connection);
+                        return null;
+                    }
+                });
+
+            }
+
+            @Override
+            public void clear() {
+                doPrivileged(CLEAR_ACTION);
+            }
+        };
+
+    }
 }

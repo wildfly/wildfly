@@ -24,7 +24,10 @@ package org.jboss.as.security.remoting;
 
 import java.security.Permission;
 
+import javax.net.ssl.SSLSession;
+
 import org.jboss.remoting3.Connection;
+import org.wildfly.security.auth.server.SecurityIdentity;
 
 /**
  * A simple context to associate the Remoting Connection with the current thread.
@@ -52,14 +55,17 @@ public class RemotingContext {
      */
     private static final RemotingPermission SET_CONNECTION = new RemotingPermission("setConnection");
 
-    private static ThreadLocal<Connection> connection = new ThreadLocal<Connection>();
+    private static ThreadLocal<RemoteConnection> connection = new ThreadLocal<RemoteConnection>();
 
     public static void setConnection(final Connection connection) {
         checkPermission(SET_CONNECTION);
-
-        RemotingContext.connection.set(connection);
+        RemotingContext.connection.set(new RemotingRemoteConnection(connection));
     }
 
+    public static void setConnection(final RemoteConnection connection) {
+        checkPermission(SET_CONNECTION);
+        RemotingContext.connection.set(connection);
+    }
     public static void clear() {
         checkPermission(CLEAR_CONNECTION);
 
@@ -69,6 +75,15 @@ public class RemotingContext {
     public static Connection getConnection() {
         checkPermission(GET_CONNECTION);
 
+        RemoteConnection remoteConnection = connection.get();
+        if(remoteConnection instanceof  RemotingRemoteConnection) {
+            return ((RemotingRemoteConnection) remoteConnection).connection;
+        }
+        return null;
+    }
+
+    public static RemoteConnection getRemoteConnection() {
+        checkPermission(GET_CONNECTION);
         return connection.get();
     }
 
@@ -82,6 +97,25 @@ public class RemotingContext {
         SecurityManager securityManager = System.getSecurityManager();
         if (securityManager != null) {
             securityManager.checkPermission(permission);
+        }
+    }
+
+    private static final class RemotingRemoteConnection implements RemoteConnection {
+
+        final Connection connection;
+
+        private RemotingRemoteConnection(Connection connection) {
+            this.connection = connection;
+        }
+
+        @Override
+        public SSLSession getSslSession() {
+            return connection.getSslSession();
+        }
+
+        @Override
+        public SecurityIdentity getSecurityIdentity() {
+            return connection.getLocalIdentity();
         }
     }
 

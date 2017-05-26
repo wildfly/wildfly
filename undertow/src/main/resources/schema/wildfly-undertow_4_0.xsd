@@ -314,6 +314,7 @@
     <xs:complexType name="http-invokerType">
         <xs:attribute name="path" use="optional" type="xs:string" default="wildfly-services"/>
         <xs:attribute name="http-authentication-factory" type="xs:string" use="optional"/>
+        <xs:attribute name="security-realm" type="xs:string" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="websocketsType">

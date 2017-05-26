@@ -140,7 +140,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         .addAttribute(SingleSignOnDefinition.Attribute.SECURE.getDefinition())
                                                         .addAttribute(SingleSignOnDefinition.Attribute.COOKIE_NAME.getDefinition())
                                         ).addChild(builder(HttpInvokerDefinition.INSTANCE.getPathElement())
-                                            .addAttributes(HttpInvokerDefinition.PATH, HttpInvokerDefinition.HTTP_AUTHENTICATION_FACTORY))
+                                            .addAttributes(HttpInvokerDefinition.PATH, HttpInvokerDefinition.HTTP_AUTHENTICATION_FACTORY, HttpInvokerDefinition.SECURITY_REALM))
                                         )
                 )
                 .addChild(
