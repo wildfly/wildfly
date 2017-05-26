@@ -129,6 +129,7 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
         static final ListCachePrincipals INSTANCE = new ListCachePrincipals();
         static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(Constants.LIST_CACHED_PRINCIPALS,
                 SecurityExtension.getResourceDescriptionResolver(Constants.LIST_CACHED_PRINCIPALS))
+                .setReadOnly()
                 .setRuntimeOnly()
                 .setReplyType(ModelType.LIST)
                 .setReplyValueType(ModelType.STRING)

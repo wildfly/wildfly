@@ -61,7 +61,9 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
             .setRuntimeOnly()
             .build();
     private static final SimpleOperationDefinition DUMP_QUEUED_THREADS = new SimpleOperationDefinitionBuilder("dump-queued-threads-in-pool", RESOLVER)
-            .setRuntimeOnly().build();
+            .setReadOnly()
+            .setRuntimeOnly()
+            .build();
 
     private static final OperationDefinition FLUSH_INVALID_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_INVALID_CONNECTION_IN_POOL, RESOLVER)
                 .setRuntimeOnly()
