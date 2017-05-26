@@ -87,10 +87,10 @@ public interface InfinispanWebLogger extends BasicLogger {
     void missingSessionAttributeCacheEntry(String sessionId, String attribute);
 
     @LogMessage(level = WARN)
-    @Message(id = 12, value = "Disabling eviction from %s.  Web session passivation should be configured via <max-active-sessions/> in jboss-web.xml.")
+    @Message(id = 12, value = "Disabling eviction for cache '%s'. Web session passivation should be configured via <max-active-sessions/> in jboss-web.xml.")
     void evictionDisabled(String cacheName);
 
     @LogMessage(level = WARN)
-    @Message(id = 13, value = "Disabling expiration from %s.  Web session expiration should be configured per \u00A77.5 of the servlet specification.")
+    @Message(id = 13, value = "Disabling expiration for cache '%s'. Web session expiration should be configured per \u00A77.5 of the servlet specification.")
     void expirationDisabled(String cacheName);
 }

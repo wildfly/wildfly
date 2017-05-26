@@ -97,7 +97,7 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability> i
             // Ensure eviction is not enabled on cache
             EvictionConfiguration eviction = builder.eviction().create();
             if (eviction.strategy().isEnabled()) {
-                builder.eviction().size(0L).strategy(EvictionStrategy.MANUAL);
+                builder.eviction().size(-1L).strategy(EvictionStrategy.MANUAL);
                 InfinispanWebLogger.ROOT_LOGGER.evictionDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(this.containerName, templateCacheName));
             }
         };
