@@ -22,20 +22,20 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.jgroups.auth.BinaryAuthToken;
 import org.jboss.as.controller.PathAddress;
-import org.jgroups.auth.SimpleToken;
 
 /**
  * @author Paul Ferraro
  */
-public class PlainAuthTokenBuilder extends AuthTokenBuilder<SimpleToken> {
+public class PlainAuthTokenBuilder extends AuthTokenBuilder<BinaryAuthToken> {
 
     public PlainAuthTokenBuilder(PathAddress address) {
         super(address);
     }
 
     @Override
-    public SimpleToken apply(String sharedSecret) {
-        return new SimpleToken(sharedSecret);
+    public BinaryAuthToken apply(String sharedSecret) {
+        return new BinaryAuthToken(sharedSecret.getBytes());
     }
 }
