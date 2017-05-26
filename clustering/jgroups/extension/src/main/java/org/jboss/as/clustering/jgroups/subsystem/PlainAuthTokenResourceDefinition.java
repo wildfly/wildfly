@@ -23,13 +23,13 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.function.Consumers;
+import org.jboss.as.clustering.jgroups.auth.BinaryAuthToken;
 import org.jboss.as.controller.PathElement;
-import org.jgroups.auth.SimpleToken;
 
 /**
  * @author Paul Ferraro
  */
-public class PlainAuthTokenResourceDefinition extends AuthTokenResourceDefinition<SimpleToken> {
+public class PlainAuthTokenResourceDefinition extends AuthTokenResourceDefinition<BinaryAuthToken> {
 
     static final PathElement PATH = pathElement("plain");
 
