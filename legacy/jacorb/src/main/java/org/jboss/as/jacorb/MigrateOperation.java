@@ -98,6 +98,7 @@ public class MigrateOperation implements OperationStepHandler {
                 new MigrateOperation(false));
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(DESCRIBE_MIGRATION, resourceDescriptionResolver)
                         .setReplyParameters(MIGRATION_WARNINGS_ATTR, MIGRATION_ERROR_ATTR)
+                        .setReadOnly()
                         .build(),
                 new MigrateOperation(true));
 

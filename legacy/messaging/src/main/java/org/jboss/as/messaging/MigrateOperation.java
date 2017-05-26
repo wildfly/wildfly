@@ -184,6 +184,7 @@ public class MigrateOperation implements OperationStepHandler {
                         .addParameter(ADD_LEGACY_ENTRIES)
                         .setReplyParameters(MIGRATION_WARNINGS_ATTR)
                         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.READ_WHOLE_CONFIG)
+                        .setReadOnly()
                         .build(),
                 MigrateOperation.DESCRIBE_MIGRATION_INSTANCE);
     }
