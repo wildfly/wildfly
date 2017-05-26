@@ -23,20 +23,17 @@
 package org.jboss.as.test.integration.jpa.hibernate;
 
 import javax.ejb.Stateful;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
 import javax.persistence.PersistenceUnit;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 /**
- * Test that a peristence unit can be injected into a Hibernate session
+ * Test that a persistence unit can be injected into a Hibernate session
  *
  * @author Scott Marlow
  */
 @Stateful
-@TransactionManagement(TransactionManagementType.BEAN)
 public class SFSBHibernateSessionFactory {
     @PersistenceUnit(unitName = "mypc")
     SessionFactory sessionFactory;
