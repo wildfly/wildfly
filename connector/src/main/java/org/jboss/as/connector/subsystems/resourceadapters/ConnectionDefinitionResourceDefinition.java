@@ -38,7 +38,6 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -56,22 +55,22 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
     static final PathElement PATH = PathElement.pathElement(CONNECTIONDEFINITIONS_NAME);
     private static final ResourceDescriptionResolver RESOLVER = ResourceAdaptersExtension.getResourceDescriptionResolver(CONNECTIONDEFINITIONS_NAME);
     private static final OperationDefinition FLUSH__IDLE_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_IDLE_CONNECTION_IN_POOL, RESOLVER)
-            .withFlag(Flag.RUNTIME_ONLY)
+            .setRuntimeOnly()
             .build();
     private static final OperationDefinition FLUSH_ALL_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_ALL_CONNECTION_IN_POOL, RESOLVER)
-            .withFlag(Flag.RUNTIME_ONLY)
+            .setRuntimeOnly()
             .build();
     private static final SimpleOperationDefinition DUMP_QUEUED_THREADS = new SimpleOperationDefinitionBuilder("dump-queued-threads-in-pool", RESOLVER)
             .setRuntimeOnly().build();
 
     private static final OperationDefinition FLUSH_INVALID_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_INVALID_CONNECTION_IN_POOL, RESOLVER)
-                .withFlag(Flag.RUNTIME_ONLY)
+                .setRuntimeOnly()
                 .build();
     private static final OperationDefinition FLUSH_GRACEFULY_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_GRACEFULLY_CONNECTION_IN_POOL, RESOLVER)
-                .withFlag(Flag.RUNTIME_ONLY)
+                .setRuntimeOnly()
                 .build();
     private static final OperationDefinition TEST_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.TEST_CONNECTION_IN_POOL, RESOLVER)
-            .withFlag(Flag.RUNTIME_ONLY)
+            .setRuntimeOnly()
             .build();
 
     private final boolean readOnly;

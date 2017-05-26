@@ -35,7 +35,6 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.STATIC_C
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.core.server.cluster.impl.MessageLoadBalancingType;
@@ -53,7 +52,6 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 
 
@@ -274,9 +272,9 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
 
         ClusterConnectionControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
 
-        final EnumSet<OperationEntry.Flag> flags = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
         SimpleOperationDefinition getNodesDef = new SimpleOperationDefinitionBuilder(ClusterConnectionDefinition.GET_NODES, getResourceDescriptionResolver())
-                .withFlags(flags)
+                .setReadOnly()
+                .setRuntimeOnly()
                 .setReplyType(OBJECT)
                 .setReplyValueType(STRING)
                 .build();

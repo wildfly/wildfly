@@ -33,7 +33,6 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.SOCKET_B
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,7 +54,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
@@ -127,7 +125,8 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
         BroadcastGroupControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
 
         SimpleOperationDefinition op = new SimpleOperationDefinitionBuilder(GET_CONNECTOR_PAIRS_AS_JSON, getResourceDescriptionResolver())
-                .withFlags(EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY))
+                .setReadOnly()
+                .setRuntimeOnly()
                 .setReplyType(STRING)
                 .build();
         registry.registerOperationHandler(op, BroadcastGroupControlHandler.INSTANCE);

@@ -47,8 +47,6 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXPIRY_A
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.RESOLVE_ADDRESS_SETTING;
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.createNonEmptyStringAttribute;
 
-import java.util.EnumSet;
-
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
@@ -60,7 +58,6 @@ import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -138,7 +135,8 @@ public class AddressSettingsResolveHandler extends AbstractRuntimeOnlyHandler {
 
     public static void registerOperationHandler(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {
         SimpleOperationDefinition op = new SimpleOperationDefinitionBuilder(RESOLVE_ADDRESS_SETTING, resolver)
-                .withFlags(EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY))
+                .setReadOnly()
+                .setRuntimeOnly()
                 .addParameter(ACTIVEMQ_ADDRESS)
                 .setReplyType(ModelType.LIST)
                 .setReplyParameters(AddressSettingDefinition.ATTRIBUTES)
