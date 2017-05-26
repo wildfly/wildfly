@@ -35,12 +35,15 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.naming.java.permission.JndiPermission;
+
+import java.net.SocketPermission;
 
 /**
  * @author John Bailey
@@ -57,7 +60,12 @@ public class DeploymentWithBindTestCase {
                 new JndiPermission("jboss", "listBindings"),
                 new JndiPermission("jboss/exported", "listBindings"),
                 new JndiPermission("/test", "bind"),
-                new JndiPermission("jboss/test", "bind")),
+                new JndiPermission("/web-test", "bind"),
+                new JndiPermission("jboss/test", "bind"),
+                new JndiPermission("jboss/web-test", "bind"),
+                // org.jboss.as.test.integration.common.HttpRequest needs the following permissions
+                new RuntimePermission("modifyThread"),
+                new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")),
                 "permissions.xml");
         return war;
     }
