@@ -52,6 +52,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 
 
@@ -273,6 +274,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
         ClusterConnectionControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
 
         SimpleOperationDefinition getNodesDef = new SimpleOperationDefinitionBuilder(ClusterConnectionDefinition.GET_NODES, getResourceDescriptionResolver())
+                .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY) // TODO WFLY-8854 decide on the ultimate handling of this op in a domain
                 .setReadOnly()
                 .setRuntimeOnly()
                 .setReplyType(OBJECT)
