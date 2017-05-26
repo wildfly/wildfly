@@ -58,6 +58,7 @@ public class LogStoreDefinition extends SimpleResourceDefinition {
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
         final OperationDefinition probe = new SimpleOperationDefinitionBuilder(LogStoreConstants.PROBE, getResourceDescriptionResolver())
+                                .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY) // TODO WFLY-8852 decide how we want to handle this in a domain
                                 .setRuntimeOnly()
                                 .setReadOnly()
                                 .build();
