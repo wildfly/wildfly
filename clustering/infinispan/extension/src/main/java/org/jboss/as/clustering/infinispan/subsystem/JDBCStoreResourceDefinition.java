@@ -36,11 +36,9 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter.Converter;
-import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -70,18 +68,13 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
     static final PathElement PATH = pathElement("jdbc");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DATA_SOURCE("data-source", ModelType.STRING, new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.DATA_SOURCE), DeprecatedAttribute.DATASOURCE.getName()),
-        DIALECT("dialect", ModelType.STRING, new EnumValidatorBuilder<>(DatabaseType.class)),
+        DATA_SOURCE("data-source", ModelType.STRING, builder -> builder.setRequired(true).setCapabilityReference(new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.DATA_SOURCE)).setAlternatives(DeprecatedAttribute.DATASOURCE.getName())),
+        DIALECT("dialect", ModelType.STRING, builder -> builder.setAllowExpression(true).setRequired(false).setValidator(new EnumValidator<>(DatabaseType.class))),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, CapabilityReferenceRecorder reference, String... alternatives) {
-            this.definition = createBuilder(name, type, true).setAllowExpression(false).setCapabilityReference(reference).setAlternatives(alternatives).build();
-        }
-
-        Attribute(String name, ModelType type, ParameterValidatorBuilder validator) {
-            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, false).setAllowExpression(true);
-            this.definition = builder.setValidator(validator.configure(builder).build()).build();
+        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)).build();
         }
 
         @Override
@@ -91,25 +84,18 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
     }
 
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        DATASOURCE("datasource", ModelType.STRING, InfinispanModel.VERSION_4_0_0), // Defines data source as JNDI name
+        DATASOURCE("datasource", ModelType.STRING, builder -> builder.setAllowExpression(true).setRequired(false), InfinispanModel.VERSION_4_0_0), // Defines data source as JNDI name
         ;
         private final AttributeDefinition definition;
 
-        DeprecatedAttribute(String name, ModelType type, InfinispanModel deprecation) {
-            this.definition = createBuilder(name, type, false).setAllowExpression(true).setDeprecated(deprecation.getVersion()).build();
+        DeprecatedAttribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator, InfinispanModel deprecation) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type).setDeprecated(deprecation.getVersion()).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)).build();
         }
 
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, boolean required) {
-        return new SimpleAttributeDefinitionBuilder(name, type)
-                .setRequired(required)
-                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-        ;
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder, PathElement path) {

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,33 +22,19 @@
 
 package org.jboss.as.clustering.controller.validation;
 
-import java.lang.reflect.Array;
 import java.util.EnumSet;
-import java.util.Set;
-
-import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 
 /**
+ * Extension of {@link org.jboss.as.controller.operations.validation.EnumValidator} that additionally exposes
+ * a simple constructor for most common use case, i.e. where all enum values are accepted.
  * @author Paul Ferraro
  */
-public class EnumValidatorBuilder<E extends Enum<E>> extends AbstractParameterValidatorBuilder {
-
-    private final Class<E> enumClass;
-    private final Set<E> allowed;
-
-    public EnumValidatorBuilder(Class<E> enumClass) {
-        this(enumClass, EnumSet.allOf(enumClass));
+public class EnumValidator<E extends Enum<E>> extends org.jboss.as.controller.operations.validation.EnumValidator<E> {
+    public EnumValidator(Class<E> enumClass) {
+        super(enumClass, EnumSet.allOf(enumClass));
     }
 
-    public EnumValidatorBuilder(Class<E> enumClass, Set<E> allowed) {
-        this.enumClass = enumClass;
-        this.allowed = allowed;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public ParameterValidator build() {
-        return new EnumValidator<>(this.enumClass, this.allowsUndefined, this.allowsExpressions, this.allowed.toArray((E[]) Array.newInstance(this.enumClass, this.allowed.size())));
+    public EnumValidator(Class<E> enumClass, EnumSet<E> allowed) {
+        super(enumClass, allowed);
     }
 }

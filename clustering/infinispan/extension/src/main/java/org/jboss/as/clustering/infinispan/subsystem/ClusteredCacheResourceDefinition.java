@@ -29,7 +29,7 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -71,7 +71,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        MODE("mode", ModelType.STRING, new ModelNode(Mode.SYNC.name()), builder -> builder.setValidator(new EnumValidatorBuilder<>(Mode.class).configure(builder).build())),
+        MODE("mode", ModelType.STRING, new ModelNode(Mode.SYNC.name()), builder -> builder.setValidator(new EnumValidator<>(Mode.class))),
         REMOTE_TIMEOUT("remote-timeout", ModelType.LONG, new ModelNode(10000L), UnaryOperator.identity()),
         ;
         private final AttributeDefinition definition;
