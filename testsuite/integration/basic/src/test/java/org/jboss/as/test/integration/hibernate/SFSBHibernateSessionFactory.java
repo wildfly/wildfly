@@ -35,7 +35,7 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 
 /**
- * Test that a Hibernate sessionfactory can be inititated from hibernate.cfg.xml and properties added to Hibernate Configuration
+ * Test that a Hibernate sessionfactory can be initiated from hibernate.cfg.xml and properties added to Hibernate Configuration
  * in AS7 container without any JPA assistance
  *
  * @author Madhumita Sadhukhan

@@ -41,7 +41,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test that a Hibernate sessionfactory can be inititated from hibernate.cfg.xml and properties added to Hibernate Configuration
+ * Test that a Hibernate sessionfactory can be initiated from hibernate.cfg.xml and properties added to Hibernate Configuration
  * in AS7 container without any JPA assistance
  *
  * @author Madhumita Sadhukhan
@@ -102,7 +102,7 @@ public class Hibernate4NativeAPIProviderTestCase {
 
         // add application dependency on H2 JDBC driver, so that the Hibernate classloader (same as app classloader)
         // will see the H2 JDBC driver.
-        // equivalent hack for use of shared Hiberante module, would be to add the H2 dependency directly to the
+        // equivalent hack for use of shared Hibernate module, would be to add the H2 dependency directly to the
         // shared Hibernate module.
         // also add dependency on org.slf4j
         ear.addAsManifestResource(new StringAsset("<jboss-deployment-structure>" + " <deployment>" + " <dependencies>"
