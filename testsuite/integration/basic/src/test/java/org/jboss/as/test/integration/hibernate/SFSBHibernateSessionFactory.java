@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.hibernate;
 
 import java.util.Properties;
+
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -32,6 +33,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
+import org.hibernate.engine.transaction.jta.platform.internal.JBossAppServerJtaPlatform;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorBuilderImpl;
 
@@ -62,6 +64,7 @@ public class SFSBHibernateSessionFactory {
             configuration.setProperty(Environment.DATASOURCE, "java:jboss/datasources/ExampleDS");
             configuration.setProperty("hibernate.listeners.envers.autoRegister", "false");
             configuration.setProperty(AvailableSettings.TRANSACTION_COORDINATOR_STRATEGY, JtaTransactionCoordinatorBuilderImpl.SHORT_NAME);
+            configuration.getProperties().put(AvailableSettings.JTA_PLATFORM, JBossAppServerJtaPlatform.class);
 
             // fetch the properties
             Properties properties = new Properties();
