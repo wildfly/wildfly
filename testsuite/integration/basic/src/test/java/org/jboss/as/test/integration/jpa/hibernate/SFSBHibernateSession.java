@@ -29,7 +29,7 @@ import javax.persistence.PersistenceContextType;
 import org.hibernate.Session;
 
 /**
- * Test that a peristence context can be injected into a Hibernate session
+ * Test that a persistence context can be injected into a Hibernate session
  *
  * @author Scott Marlow
  */
@@ -50,6 +50,5 @@ public class SFSBHibernateSession {
         Employee emp = session.load(Employee.class, id);
         return emp;
     }
-
 
 }

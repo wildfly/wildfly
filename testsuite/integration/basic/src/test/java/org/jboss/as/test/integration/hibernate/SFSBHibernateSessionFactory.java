@@ -33,6 +33,7 @@ import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.internal.util.config.ConfigurationHelper;
+import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorBuilderImpl;
 
 /**
  * Test that a Hibernate sessionfactory can be initiated from hibernate.cfg.xml and properties added to Hibernate Configuration
@@ -60,6 +61,7 @@ public class SFSBHibernateSessionFactory {
             configuration.setProperty(Environment.HBM2DDL_AUTO, "create-drop");
             configuration.setProperty(Environment.DATASOURCE, "java:jboss/datasources/ExampleDS");
             configuration.setProperty("hibernate.listeners.envers.autoRegister", "false");
+            configuration.setProperty(AvailableSettings.TRANSACTION_COORDINATOR_STRATEGY, JtaTransactionCoordinatorBuilderImpl.SHORT_NAME);
 
             // fetch the properties
             Properties properties = new Properties();
