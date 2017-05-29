@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.jboss.as.controller.AbstractControllerService.PATH_MANAGER_CAPABILITY;
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.jboss.as.controller.RunningMode.ADMIN_ONLY;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.BINDINGS_DIRECTORY_PATH;
@@ -45,7 +46,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -60,6 +60,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  */
 public class ExportJournalOperation extends AbstractRuntimeOnlyHandler {
 
+    private static final String OPERATION_NAME = "export-journal";
     static final ExportJournalOperation INSTANCE = new ExportJournalOperation();
 
     // name file of the dump follows the format journal-yyyyMMdd-HHmmssSSSTZ-dump.xml
@@ -70,7 +71,7 @@ public class ExportJournalOperation extends AbstractRuntimeOnlyHandler {
     }
 
     static void registerOperation(final ManagementResourceRegistration registry, final ResourceDescriptionResolver resourceDescriptionResolver) {
-        registry.registerOperationHandler(new SimpleOperationDefinitionBuilder("export-journal", resourceDescriptionResolver)
+        registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(OPERATION_NAME, resourceDescriptionResolver)
                         .setRuntimeOnly()
                         .setReplyValueType(ModelType.STRING)
                         .build(),
@@ -80,10 +81,11 @@ public class ExportJournalOperation extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (context.getRunningMode() != ADMIN_ONLY) {
-            throw MessagingLogger.ROOT_LOGGER.managementOperationAllowedOnlyInRunningMode("export-journal", ADMIN_ONLY);
+            throw MessagingLogger.ROOT_LOGGER.managementOperationAllowedOnlyInRunningMode(OPERATION_NAME, ADMIN_ONLY);
         }
+        checkAllowedOnJournal(context, OPERATION_NAME);
 
-        final ServiceController<PathManager> service = (ServiceController<PathManager>) context.getServiceRegistry(false).getService(PathManagerService.SERVICE_NAME);
+        final ServiceController<PathManager> service = (ServiceController<PathManager>) context.getServiceRegistry(false).getService(PATH_MANAGER_CAPABILITY.getCapabilityServiceName());
         final PathManager pathManager = service.getService().getValue();
 
         final String journal = resolvePath(context, pathManager, JOURNAL_DIRECTORY_PATH);
@@ -121,5 +123,12 @@ public class ExportJournalOperation extends AbstractRuntimeOnlyHandler {
         final String relativeToPath = PathDefinition.RELATIVE_TO.resolveModelAttribute(context, model).asString();
         final String relativeTo = AbsolutePathService.isAbsoluteUnixOrWindowsPath(path) ? null : relativeToPath;
         return pathManager.resolveRelativePathEntry(path, relativeTo);
+    }
+
+    static void checkAllowedOnJournal(OperationContext context, String operationName) throws OperationFailedException {
+        ModelNode journalDatasource = ServerDefinition.JOURNAL_DATASOURCE.resolveModelAttribute(context, context.readResource(EMPTY_ADDRESS).getModel());
+        if (journalDatasource.isDefined() && journalDatasource.asString() != null && !"".equals(journalDatasource.asString())) {
+            throw MessagingLogger.ROOT_LOGGER.operationNotAllowedOnJdbcStore(operationName);
+        }
     }
 }

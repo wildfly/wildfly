@@ -851,4 +851,7 @@ public interface MessagingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 95, value = "Multiple client-mapping found in [%s] socket binding used by ActiveMQ [%s] transport configuration. Using address: [host: %s, port %s]")
     void multipleClientMappingsFound(String socketBindingName, String transportConfigName, String host, int port);
+
+    @Message(id = 96, value = "The %s operation can not be performed on a JDBC store journal")
+    OperationFailedException operationNotAllowedOnJdbcStore(String operationName);
 }
