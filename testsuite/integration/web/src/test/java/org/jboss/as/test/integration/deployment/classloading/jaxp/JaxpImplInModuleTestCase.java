@@ -107,6 +107,7 @@ public class JaxpImplInModuleTestCase {
         return ShrinkWrap.create(WebArchive.class);
     }
 
+
     @Test
     @RunAsClient
     @InSequence(20)
@@ -128,15 +129,21 @@ public class JaxpImplInModuleTestCase {
     @InSequence(0)
     public void wfXalan() throws IOException, TransformerException {
         final String actual = JaxpTestUtils.getTransformer(WF_XALAN_APP.getName());
-        Assert.assertEquals("org.apache.xalan.xsltc.trax.TransformerImpl", actual);
+        final String expected = JaxpTestUtils.isIbmJvm() ? "com.ibm.xtq.xslt.jaxp.TransformerImpl"
+                : "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl";
+        Assert.assertEquals(expected, actual);
     }
 
     @Test
     @RunAsClient
     @InSequence(1)
     public void wfXalanExplicitFactory() throws IOException, TransformerException {
-        final String actual = JaxpTestUtils.getTransformer(WF_XALAN_APP.getName(), "org.apache.xalan.xsltc.trax.TransformerFactoryImpl");
-        Assert.assertEquals("org.apache.xalan.xsltc.trax.TransformerImpl", actual);
+        final String impl = JaxpTestUtils.isIbmJvm() ? "com.ibm.xtq.xslt.jaxp.compiler.TransformerFactoryImpl"
+                : "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl";
+        final String actual = JaxpTestUtils.getTransformer(WF_XALAN_APP.getName(), impl);
+        final String expected = JaxpTestUtils.isIbmJvm() ? "com.ibm.xtq.xslt.jaxp.TransformerImpl"
+                : "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl";
+        Assert.assertEquals(expected, actual);
     }
 
     @Test
@@ -144,15 +151,22 @@ public class JaxpImplInModuleTestCase {
     @InSequence(2)
     public void wfXalanXPath() throws IOException, TransformerException {
         final String actual = JaxpTestUtils.getFactory(WF_XALAN_APP.getName(), Factory.XPath);
-        Assert.assertEquals("org.apache.xpath.jaxp.XPathImpl", actual);
+        /* IBM JVM delivers org.apache.xpath.jaxp.XPathImpl in lib/xml.jar */
+        final String expected = JaxpTestUtils.isIbmJvm() ? "org.apache.xpath.jaxp.XPathImpl"
+                : "com.sun.org.apache.xpath.internal.jaxp.XPathImpl";
+        Assert.assertEquals(expected, actual);
     }
 
     @Test
     @RunAsClient
     @InSequence(3)
     public void wfXalanXPathExplicitFactory() throws IOException, TransformerException {
-        final String actual = JaxpTestUtils.getFactory(WF_XALAN_APP.getName(), Factory.XPath, "org.apache.xpath.jaxp.XPathFactoryImpl");
-        Assert.assertEquals("org.apache.xpath.jaxp.XPathImpl", actual);
+        final String impl = JaxpTestUtils.isIbmJvm() ? "com.ibm.xtq.xpath.jaxp.XPathFactoryImpl"
+                : "com.sun.org.apache.xpath.internal.jaxp.XPathFactoryImpl";
+        final String actual = JaxpTestUtils.getFactory(WF_XALAN_APP.getName(), Factory.XPath, impl);
+        final String expected = JaxpTestUtils.isIbmJvm() ? "com.ibm.xtq.xpath.jaxp.v1.XPath10Impl"
+                : "com.sun.org.apache.xpath.internal.jaxp.XPathImpl";
+        Assert.assertEquals(expected, actual);
     }
 
     @Test

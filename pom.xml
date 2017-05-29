@@ -134,7 +134,6 @@
         <version.org.apache.velocity>1.7</version.org.apache.velocity>
         <version.org.apache.ws.security>2.1.9</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.2.1</version.org.apache.ws.xmlschema>
-        <version.org.apache.xalan>2.7.1.jbossorg-4</version.org.apache.xalan>
         <version.org.bouncycastle>1.56</version.org.bouncycastle>
         <version.org.codehaus.jackson>1.9.13</version.org.codehaus.jackson>
         <version.org.codehaus.jettison>1.3.8</version.org.codehaus.jettison>
@@ -537,6 +536,8 @@
                                             <exclude>sun-jaxb:jaxb-api</exclude>
                                             <exclude>trove:trove</exclude>
                                             <exclude>woodstox:wstx-lgpl</exclude>
+                                            <exclude>xalan:xalan:*:*:compile</exclude>
+                                            <exclude>xalan:serializer:*:*:compile</exclude>
                                             <exclude>xml-apis:xml-apis</exclude>
                                         </excludes>
                                     </bannedDependencies>
@@ -6228,22 +6229,14 @@
             </dependency>
 
             <dependency>
-                <groupId>xalan</groupId>
-                <artifactId>serializer</artifactId>
-                <version>${version.org.apache.xalan}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>xalan</groupId>
-                <artifactId>xalan</artifactId>
-                <version>${version.org.apache.xalan}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>com.io7m.xom</groupId>
                 <artifactId>xom</artifactId>
                 <version>${version.xom}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>xalan</groupId>
+                        <artifactId>xalan</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>xml-apis</groupId>
                         <artifactId>xml-apis</artifactId>

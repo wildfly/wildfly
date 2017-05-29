@@ -102,7 +102,7 @@
 
         <dependency>
             <groupId>javax.activation</groupId>
-            <artifactId>activation</artifactId>            
+            <artifactId>activation</artifactId>
         </dependency>
 
         <dependency>
@@ -415,16 +415,6 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>xalan</groupId>
-            <artifactId>serializer</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>xalan</groupId>
-            <artifactId>xalan</artifactId>
-        </dependency>
-        
     </dependencies>
 
     <build>

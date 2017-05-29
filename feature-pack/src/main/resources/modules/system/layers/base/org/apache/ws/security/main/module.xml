@@ -42,7 +42,6 @@
       <module name="org.apache.commons.logging" />
       <module name="org.apache.neethi" />
       <module name="org.apache.santuario.xmlsec" />
-      <module name="org.apache.xalan" />
       <module name="org.joda.time" />
       <module name="org.opensaml" />
       <module name="org.slf4j" />

@@ -23,15 +23,8 @@
   -->
 
 <module xmlns="urn:jboss:module:1.5" name="org.apache.xalan">
-
-    <resources>
-        <artifact name="${xalan:serializer}"/>
-        <artifact name="${xalan:xalan}"/>
-    </resources>
-
     <dependencies>
-        <module name="javax.api"/>
+        <module name="sun.jdk" export="true"/>
+        <module name="ibm.jdk" export="true"/>
     </dependencies>
-
 </module>
-

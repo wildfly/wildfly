@@ -86,8 +86,10 @@ public class EmbeddedJaxpImplTestCase {
 
         final String appNamePrefix = EmbeddedJaxpImplTestCase.class.getSimpleName();
 
-        XALAN_APP = defaultApp(appNamePrefix + "-xalan-" + rnd.nextInt(Integer.MAX_VALUE)).addAsLibraries(JaxpTestUtils.XALAN_LIBS);
-        XERCES_APP = defaultApp(appNamePrefix + "-xerces-" + rnd.nextInt(Integer.MAX_VALUE)).addAsLibraries(JaxpTestUtils.XERCES_LIBS);
+        XALAN_APP = defaultApp(appNamePrefix + "-xalan-" + rnd.nextInt(Integer.MAX_VALUE))
+                .addAsLibraries(JaxpTestUtils.XALAN_LIBS);
+        XERCES_APP = defaultApp(appNamePrefix + "-xerces-" + rnd.nextInt(Integer.MAX_VALUE))
+                .addAsLibraries(JaxpTestUtils.XERCES_LIBS);
 
         DEFAULT_APP = defaultApp(appNamePrefix + "-default-" + rnd.nextInt(Integer.MAX_VALUE));
 
@@ -103,8 +105,7 @@ public class EmbeddedJaxpImplTestCase {
     }
 
     private static WebArchive defaultApp(String name) {
-        return JaxpTestUtils.baseApp(name,
-                Utils.getJBossDeploymentStructure(DEPENDENCY_MODULE_NAME));
+        return JaxpTestUtils.baseApp(name, Utils.getJBossDeploymentStructure(DEPENDENCY_MODULE_NAME));
     }
 
     @Deployment // needed because otherwise Arquillian does not call the EmbeddedJaxpImplSetupTask
@@ -117,15 +118,21 @@ public class EmbeddedJaxpImplTestCase {
     @InSequence(10)
     public void defaultTransformer() throws IOException, TransformerException {
         final String actual = JaxpTestUtils.getTransformer(DEFAULT_APP.getName());
-        Assert.assertEquals("org.apache.xalan.xsltc.trax.TransformerImpl", actual);
+        final String expected = JaxpTestUtils.isIbmJvm() ? "com.ibm.xtq.xslt.jaxp.TransformerImpl"
+                : "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl";
+        Assert.assertEquals(expected, actual);
     }
 
     @Test
     @RunAsClient
     @InSequence(11)
     public void defaultTransformerExplicitFactory() throws IOException, TransformerException {
-        final String actual = JaxpTestUtils.getTransformer(DEFAULT_APP.getName(), "org.apache.xalan.xsltc.trax.TransformerImpl");
-        Assert.assertEquals("status 500", actual);
+        final String impl = JaxpTestUtils.isIbmJvm() ? "com.ibm.xtq.xslt.jaxp.compiler.TransformerFactoryImpl"
+                : "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl";
+        final String actual = JaxpTestUtils.getTransformer(DEFAULT_APP.getName(), impl);
+        final String expected = JaxpTestUtils.isIbmJvm() ? "com.ibm.xtq.xslt.jaxp.TransformerImpl"
+                : "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl";
+        Assert.assertEquals(expected, actual);
     }
 
     @Test
@@ -182,15 +189,21 @@ public class EmbeddedJaxpImplTestCase {
     @InSequence(18)
     public void defaultSAXTransformer() throws IOException, TransformerException {
         final String actual = JaxpTestUtils.getFactory(DEFAULT_APP.getName(), Factory.SAXTransformer);
-        Assert.assertEquals("org.apache.xalan.xsltc.trax.TransformerImpl", actual);
+        final String expected = JaxpTestUtils.isIbmJvm() ? "com.ibm.xtq.xslt.jaxp.TransformerImpl"
+                : "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl";
+        Assert.assertEquals(expected, actual);
     }
 
     @Test
     @RunAsClient
     @InSequence(19)
     public void defaultSAXTransformerExplicitFactory() throws IOException, TransformerException {
-        final String actual = JaxpTestUtils.getFactory(DEFAULT_APP.getName(), Factory.SAXTransformer, "org.apache.xalan.xsltc.trax.TransformerFactoryImpl");
-        Assert.assertEquals("status 500", actual);
+        final String impl = JaxpTestUtils.isIbmJvm() ? "com.ibm.xtq.xslt.jaxp.compiler.TransformerFactoryImpl"
+                : "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl";
+        final String actual = JaxpTestUtils.getFactory(DEFAULT_APP.getName(), Factory.SAXTransformer, impl);
+        final String expected = JaxpTestUtils.isIbmJvm() ? "com.ibm.xtq.xslt.jaxp.TransformerImpl"
+                : "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl";
+        Assert.assertEquals(expected, actual);
     }
 
     @Test
@@ -246,17 +259,22 @@ public class EmbeddedJaxpImplTestCase {
     @InSequence(26)
     public void defaultXPath() throws IOException, TransformerException {
         final String actual = JaxpTestUtils.getFactory(DEFAULT_APP.getName(), Factory.XPath);
-        Assert.assertEquals("org.apache.xpath.jaxp.XPathImpl", actual);
+        /* IBM JVM delivers org.apache.xpath.jaxp.XPathImpl in lib/xml.jar */
+        final String expected = JaxpTestUtils.isIbmJvm() ? "org.apache.xpath.jaxp.XPathImpl"
+                : "com.sun.org.apache.xpath.internal.jaxp.XPathImpl";
+        Assert.assertEquals(expected, actual);
     }
 
     @Test
     @RunAsClient
     @InSequence(27)
     public void defaultXPathExplicitFactory() throws IOException, TransformerException {
-        final String actual = JaxpTestUtils.getFactory(DEFAULT_APP.getName(), Factory.XPath, "org.apache.xpath.jaxp.XPathFactoryImpl");
-        final String msg = "No XPathFactory implementation found";
-        final String msgIbm = "Provider org.apache.xpath.jaxp.XPathFactoryImpl not found";
-        Assert.assertTrue("Expected "+ msg + " or "+ msgIbm +"; actual "+ actual, actual.contains(msg) || actual.contains(msgIbm));
+        final String impl = JaxpTestUtils.isIbmJvm() ? "com.ibm.xtq.xpath.jaxp.XPathFactoryImpl"
+                : "com.sun.org.apache.xpath.internal.jaxp.XPathFactoryImpl";
+        final String actual = JaxpTestUtils.getFactory(DEFAULT_APP.getName(), Factory.XPath, impl);
+        final String expected = JaxpTestUtils.isIbmJvm() ? "com.ibm.xtq.xpath.jaxp.v1.XPath10Impl"
+                : "com.sun.org.apache.xpath.internal.jaxp.XPathImpl";
+        Assert.assertEquals(expected, actual);
     }
 
     @Test
@@ -335,8 +353,8 @@ public class EmbeddedJaxpImplTestCase {
     @RunAsClient
     @InSequence(1)
     public void xalanTransformerExplicitFactory() throws IOException, TransformerException {
-        final String actual = JaxpTestUtils.getTransformer(XALAN_APP.getName(), "org.apache.xalan.transformer.TransformerFactoryImpl");
-        Assert.assertEquals("status 500", actual);
+        final String actual = JaxpTestUtils.getTransformer(XALAN_APP.getName(), "org.apache.xalan.xsltc.trax.TransformerFactoryImpl");
+        Assert.assertEquals("org.apache.xalan.xsltc.trax.TransformerImpl", actual);
     }
 
     @Test
