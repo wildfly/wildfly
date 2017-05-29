@@ -473,6 +473,8 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
                                                         ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
                                                         ConnectionFactoryAttributes.Common.GROUP_ID,
+                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
+                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
                                                         // regular
                                                         ConnectionFactoryAttributes.Regular.FACTORY_TYPE))
                                 .addChild(
@@ -554,6 +556,8 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
                                                         ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
                                                         ConnectionFactoryAttributes.Common.GROUP_ID,
+                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
+                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
                                                         // pooled
                                                         ConnectionFactoryAttributes.Pooled.USE_JNDI,
                                                         ConnectionFactoryAttributes.Pooled.JNDI_PARAMS,

@@ -137,6 +137,24 @@ public interface ConnectionFactoryAttributes {
                 .setAllowExpression(true)
                 .build();
 
+        StringListAttributeDefinition DESERIALIZATION_WHITELIST = new StringListAttributeDefinition.Builder("deserialization-white-list")
+                .setRequired(false)
+                .setAllowExpression(true)
+                .setListValidator(Validators.noDuplicateElements(new StringLengthValidator(1, true, true)))
+                .setAttributeParser(AttributeParser.STRING_LIST)
+                .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
+                .setRestartAllServices()
+                .build();
+
+        StringListAttributeDefinition DESERIALIZATION_BLACKLIST = new StringListAttributeDefinition.Builder("deserialization-black-list")
+                .setRequired(false)
+                .setAllowExpression(true)
+                .setListValidator(Validators.noDuplicateElements(new StringLengthValidator(1, true, true)))
+                .setAttributeParser(AttributeParser.STRING_LIST)
+                .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
+                .setRestartAllServices()
+                .build();
+
         SimpleAttributeDefinition DISCOVERY_GROUP =  SimpleAttributeDefinitionBuilder.create(CommonAttributes.DISCOVERY_GROUP, STRING)
                 .setRequired(true)
                 .setAlternatives(CommonAttributes.CONNECTORS)
@@ -291,6 +309,8 @@ public interface ConnectionFactoryAttributes {
                 create(SCHEDULED_THREAD_POOL_MAX_SIZE, "scheduledThreadPoolMaxSize", true),
                 create(THREAD_POOL_MAX_SIZE, "threadPoolMaxSize", true),
                 create(GROUP_ID, "groupID", true),
+                create(DESERIALIZATION_BLACKLIST, "deserializationBlackList", true),
+                create(DESERIALIZATION_WHITELIST, "deserializationWhiteList", true),
         };
     }
 
