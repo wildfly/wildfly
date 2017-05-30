@@ -198,10 +198,10 @@
                             <validity>365</validity>
                         </configuration>
                     </plugin>
-
                 </plugins>
             </build>
         </profile>
+
         <profile>
             <id>jdk9</id>
             <activation>

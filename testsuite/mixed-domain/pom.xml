@@ -109,7 +109,7 @@
                          <!-- include>**/*TestCase.java</include -->
                          <include>**/*TestSuite.java</include>
                     </includes>
-                </configuration>                        
+                </configuration>
             </plugin>
             <!-- Add the console-handler to each profile for the test server -->
             <plugin>
