@@ -35,7 +35,6 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.STATIC_C
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.core.server.cluster.impl.MessageLoadBalancingType;
@@ -274,9 +273,10 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
 
         ClusterConnectionControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
 
-        final EnumSet<OperationEntry.Flag> flags = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
         SimpleOperationDefinition getNodesDef = new SimpleOperationDefinitionBuilder(ClusterConnectionDefinition.GET_NODES, getResourceDescriptionResolver())
-                .withFlags(flags)
+                .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY) // TODO WFLY-8854 decide on the ultimate handling of this op in a domain
+                .setReadOnly()
+                .setRuntimeOnly()
                 .setReplyType(OBJECT)
                 .setReplyValueType(STRING)
                 .build();

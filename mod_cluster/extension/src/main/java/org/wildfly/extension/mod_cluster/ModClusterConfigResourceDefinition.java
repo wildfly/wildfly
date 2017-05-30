@@ -395,19 +395,15 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
 
         final OperationDefinition addMetricDef = new SimpleOperationDefinitionBuilder(CommonAttributes.ADD_METRIC, rootResolver)
                 .setParameters(LoadMetricDefinition.ATTRIBUTES)
-                .setRuntimeOnly()
                 .build();
         final OperationDefinition addCustomDef = new SimpleOperationDefinitionBuilder(CommonAttributes.ADD_CUSTOM_METRIC, rootResolver)
                 .setParameters(CustomLoadMetricDefinition.ATTRIBUTES)
-                .setRuntimeOnly()
                 .build();
         final OperationDefinition removeMetricDef = new SimpleOperationDefinitionBuilder(CommonAttributes.REMOVE_METRIC, rootResolver)
                 .setParameters(LoadMetricDefinition.TYPE)
-                .setRuntimeOnly()
                 .build();
         final OperationDefinition removeCustomDef = new SimpleOperationDefinitionBuilder(CommonAttributes.REMOVE_CUSTOM_METRIC, rootResolver)
                 .setParameters(CustomLoadMetricDefinition.CLASS)
-                .setRuntimeOnly()
                 .build();
 
         resourceRegistration.registerOperationHandler(addMetricDef, ModClusterAddMetric.INSTANCE);

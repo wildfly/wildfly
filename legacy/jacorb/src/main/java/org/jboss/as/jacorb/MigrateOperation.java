@@ -93,13 +93,12 @@ public class MigrateOperation implements OperationStepHandler {
 
     static void registerOperation(final ManagementResourceRegistration registry, final ResourceDescriptionResolver resourceDescriptionResolver) {
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(MIGRATE, resourceDescriptionResolver)
-                        .setRuntimeOnly()
                         .setReplyParameters(MIGRATION_WARNINGS_ATTR, MIGRATION_ERROR_ATTR)
                         .build(),
                 new MigrateOperation(false));
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(DESCRIBE_MIGRATION, resourceDescriptionResolver)
-                        .setRuntimeOnly()
                         .setReplyParameters(MIGRATION_WARNINGS_ATTR, MIGRATION_ERROR_ATTR)
+                        .setReadOnly()
                         .build(),
                 new MigrateOperation(true));
 

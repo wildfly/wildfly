@@ -162,15 +162,14 @@ public class WebMigrateOperation implements OperationStepHandler {
 
     static void registerOperations(ManagementResourceRegistration registry, ResourceDescriptionResolver resourceDescriptionResolver) {
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(MIGRATE, resourceDescriptionResolver)
-                        .setRuntimeOnly()
                         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.READ_WHOLE_CONFIG)
                         .setReplyParameters(MIGRATION_WARNINGS_ATTR, MIGRATION_ERROR_ATTR)
                         .build(),
                 WebMigrateOperation.MIGRATE_INSTANCE);
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(DESCRIBE_MIGRATION, resourceDescriptionResolver)
-                        .setRuntimeOnly()
                         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.READ_WHOLE_CONFIG)
                         .setReplyParameters(MIGRATION_WARNINGS_ATTR)
+                        .setReadOnly()
                         .build(),
                 WebMigrateOperation.DESCRIBE_MIGRATION_INSTANCE);
     }

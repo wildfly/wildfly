@@ -912,11 +912,13 @@ public class Constants {
 
     //static final SimpleOperationDefinition INSTALLED_DRIVERS_LIST = new SimpleOperationDefinitionBuilder("installed-drivers-list", DataSourcesExtension.getResourceDescriptionResolver())
     static final SimpleOperationDefinition INSTALLED_DRIVERS_LIST = new SimpleOperationDefinitionBuilder("installed-drivers-list", new NonResolvingResourceDescriptionResolver())
+            .setReadOnly()
             .setRuntimeOnly()
             .setReplyType(ModelType.LIST)
             .setReplyParameters(JDBC_DRIVER_ATTRIBUTES)
             .build();
     static final SimpleOperationDefinition GET_INSTALLED_DRIVER = new SimpleOperationDefinitionBuilder("get-installed-driver", DataSourcesExtension.getResourceDescriptionResolver())
+            .setReadOnly()
             .setRuntimeOnly()
             .setParameters(DRIVER_NAME)
             .setReplyParameters(DRIVER_MINOR_VERSION, DRIVER_MAJOR_VERSION, DEPLOYMENT_NAME, DRIVER_NAME, DRIVER_XA_DATASOURCE_CLASS_NAME, XA_DATASOURCE_CLASS, JDBC_COMPLIANT, MODULE_SLOT, DRIVER_CLASS_NAME, DRIVER_MODULE_NAME)
@@ -930,7 +932,9 @@ public class Constants {
     static final SimpleOperationDefinition FLUSH_ALL_CONNECTION = new SimpleOperationDefinitionBuilder("flush-all-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
             .setRuntimeOnly().build();
     static final SimpleOperationDefinition DUMP_QUEUED_THREADS = new SimpleOperationDefinitionBuilder("dump-queued-threads-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
-            .setRuntimeOnly().build();
+            .setReadOnly()
+            .setRuntimeOnly()
+            .build();
     static final SimpleOperationDefinition FLUSH_INVALID_CONNECTION = new SimpleOperationDefinitionBuilder("flush-invalid-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
             .setRuntimeOnly().build();
     static final SimpleOperationDefinition FLUSH_GRACEFULLY_CONNECTION = new SimpleOperationDefinitionBuilder("flush-gracefully-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())

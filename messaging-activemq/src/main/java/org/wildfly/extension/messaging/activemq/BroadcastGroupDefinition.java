@@ -33,7 +33,6 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.SOCKET_B
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -127,7 +126,9 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
         BroadcastGroupControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
 
         SimpleOperationDefinition op = new SimpleOperationDefinitionBuilder(GET_CONNECTOR_PAIRS_AS_JSON, getResourceDescriptionResolver())
-                .withFlags(EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY))
+                .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY) // TODO WFLY-8854 decide on the ultimate handling of this op in a domain
+                .setReadOnly()
+                .setRuntimeOnly()
                 .setReplyType(STRING)
                 .build();
         registry.registerOperationHandler(op, BroadcastGroupControlHandler.INSTANCE);
