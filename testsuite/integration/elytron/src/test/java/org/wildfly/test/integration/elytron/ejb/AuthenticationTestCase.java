@@ -80,7 +80,7 @@ import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
 @Category(CommonCriteria.class)
 public class AuthenticationTestCase {
 
-    private static final String SERVER_HOST_PORT = TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort();
+    private static final String SERVER_HOST_PORT = TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort();
     private static final String WAR_URL = "http://" + SERVER_HOST_PORT + "/ejb3security/";
 
     /*
