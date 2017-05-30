@@ -49,6 +49,13 @@
                 user="${user:Brian}"
                 password="${password:secret}">
         </bridge>
+
+        <connection-factory name="otherConnectionFactory"
+                            discovery-group="groupC"
+                            entries="otherConnectionFactory"
+                            deserialization-black-list="org.foo.Bar org.foo.Baz"
+                            deserialization-white-list="org.bar.Bar org.baz.Baz" />
+
         <pooled-connection-factory name="hornetq-ra-local"
                                    transaction="local"
                                    user="alice"
@@ -62,7 +69,9 @@
         <pooled-connection-factory name="pcf-with-credential-reference"
                                    entries="java:/JmsLocal2"
                                    connectors="in-vm"
-                                   user="foo">
+                                   user="foo"
+                                   deserialization-black-list="org.foo.Bar org.foo.Baz"
+                                   deserialization-white-list="org.bar.Bar org.baz.Baz">
             <credential-reference clear-text="passwordOut!"/>
         </pooled-connection-factory>
     </server>

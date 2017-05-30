@@ -762,6 +762,8 @@
         <xs:attribute name="scheduled-thread-pool-max-size" type="xs:int" use="optional" />
         <xs:attribute name="thread-pool-max-size" type="xs:int" use="optional" />
         <xs:attribute name="group-id" type="xs:string" use="optional" />
+        <xs:attribute name="deserialization-white-list" type="stringList" use="optional" />
+        <xs:attribute name="deserialization-black-list" type="stringList" use="optional" />
     </xs:attributeGroup>
 
     <xs:simpleType name="connectionFactoryType">

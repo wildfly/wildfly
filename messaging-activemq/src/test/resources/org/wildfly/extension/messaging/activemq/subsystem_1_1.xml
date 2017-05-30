@@ -329,7 +329,9 @@
                             use-global-pools="${use.global.pools:true}"
                             scheduled-thread-pool-max-size="${scheduled.thread.pool.max.size:24}"
                             thread-pool-max-size="${thread.pool.max.size:48}"
-                            group-id="${group.id:myGroup}" />
+                            group-id="${group.id:myGroup}"
+                            deserialization-black-list="org.foo.Bar org.foo.Baz"
+                            deserialization-white-list="org.bar.Bar org.baz.Baz" />
         <legacy-connection-factory name="legacyConnectionFactory-discovery"
                                    entries="legacy/RemoteConnectionFactory java:/global/jms/legacy/RemoteConnectionFactory"
                                    discovery-group="groupT"
@@ -427,6 +429,8 @@
                                    scheduled-thread-pool-max-size="${scheduled.thread.pool.max.size:24}"
                                    thread-pool-max-size="${thread.pool.max.size:48}"
                                    group-id="${group.id:myGroup}"
+                                   deserialization-black-list="org.foo.Bar org.foo.Baz"
+                                   deserialization-white-list="org.bar.Bar org.baz.Baz"
                                    statistics-enabled="${pcf.statistics-enabled:true}">
             <inbound-config
                     use-jndi="${use.jndi:false}"

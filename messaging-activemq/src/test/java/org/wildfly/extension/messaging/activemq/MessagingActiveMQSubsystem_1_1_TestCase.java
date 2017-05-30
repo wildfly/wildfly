@@ -30,6 +30,7 @@ import static org.wildfly.extension.messaging.activemq.MessagingDependencies.get
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getMessagingActiveMQGAV;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.BRIDGE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CLUSTER_CONNECTION_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONNECTION_FACTORY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.POOLED_CONNECTION_FACTORY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_COLOCATED_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_MASTER_PATH;
@@ -183,12 +184,17 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, CLUSTER_CONNECTION_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE))
+                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
+                                ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS,
                                 ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED,
-                                ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE
-                        ))
+                                ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE,
+                                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
+                                ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST))
         );
     }
 
