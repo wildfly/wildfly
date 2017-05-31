@@ -28,6 +28,7 @@ import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.OperationHandler;
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -46,6 +47,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -230,6 +232,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
         OperationStepHandler legacyAddProtocolHandler = new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) {
+                operationDeprecated(context, operation);
                 PathAddress address = context.getCurrentAddress();
                 String protocol = operation.require(AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.getName()).asString();
                 PathElement protocolPath = ProtocolResourceDefinition.pathElement(protocol);
@@ -255,6 +258,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
         OperationStepHandler legacyRemoveProtocolHandler = new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) {
+                operationDeprecated(context, operation);
                 PathAddress address = context.getCurrentAddress();
                 String protocol = operation.require(AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.getName()).asString();
                 PathElement protocolPath = ProtocolResourceDefinition.pathElement(protocol);
@@ -272,5 +276,9 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
         new TransportRegistration(this.builderFactory).register(registration);
         new ProtocolRegistration(this.builderFactory).register(registration);
         new RelayResourceDefinition(this.builderFactory).register(registration);
+    }
+
+    static void operationDeprecated(OperationContext context, ModelNode operation) {
+        ControllerLogger.DEPRECATED_LOGGER.operationDeprecated(Operations.getName(operation), context.getCurrentAddress().toCLIStyleString());
     }
 }
