@@ -238,7 +238,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
                 PathElement protocolPath = ProtocolResourceDefinition.pathElement(protocol);
                 PathAddress protocolAddress = address.append(protocolPath);
                 ModelNode protocolOperation = Util.createAddOperation(protocolAddress);
-                OperationEntry addOperationEntry = context.getResourceRegistration().getOperationEntry(PathAddress.pathAddress(ProtocolResourceDefinition.WILDCARD_PATH), ModelDescriptionConstants.ADD);
+                OperationEntry addOperationEntry = context.getResourceRegistration().getOperationEntry(PathAddress.pathAddress(protocolPath), ModelDescriptionConstants.ADD);
                 for (AttributeDefinition attribute : addOperationEntry.getOperationDefinition().getParameters()) {
                     String name = attribute.getName();
                     if (operation.hasDefined(name)) {
@@ -264,7 +264,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
                 PathElement protocolPath = ProtocolResourceDefinition.pathElement(protocol);
                 PathAddress protocolAddress = address.append(protocolPath);
                 ModelNode removeOperation = Util.createRemoveOperation(protocolAddress);
-                context.addStep(removeOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(ProtocolResourceDefinition.WILDCARD_PATH), ModelDescriptionConstants.REMOVE), context.getCurrentStage());
+                context.addStep(removeOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(protocolPath), ModelDescriptionConstants.REMOVE), context.getCurrentStage());
             }
         };
         registration.registerOperationHandler(legacyRemoveProtocolOperation, legacyRemoveProtocolHandler);
