@@ -78,9 +78,9 @@ public class StaticEJBDiscoveryDefinition {
         @Override
         public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
             if (resourceModel.isDefined()) {
-                writer.writeEmptyElement(attribute.getXmlName());
+                writer.writeEmptyElement(EJB3SubsystemXMLElement.MODULE.getLocalName());
                 for (SimpleAttributeDefinition valueType : VALUE_TYPE_FIELDS) {
-                    valueType.marshallAsAttribute(resourceModel, writer);
+                    valueType.getAttributeMarshaller().marshall(valueType, resourceModel, true, writer);
                 }
             }
         }

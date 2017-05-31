@@ -42,11 +42,11 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.dmr.ModelNode;
@@ -59,7 +59,7 @@ import org.jboss.dmr.ModelType;
 // TODO Convert to ObjectListAttributeDefinition
 public class TimerAttributeDefinition extends ListAttributeDefinition {
 
-    public static final TimerAttributeDefinition INSTANCE = new TimerAttributeDefinition();
+    public static final TimerAttributeDefinition INSTANCE = new TimerAttributeDefinition.Builder().build();
 
     public static final String TIME_REMAINING = "time-remaining";
     public static final String NEXT_TIMEOUT = "next-timeout";
@@ -77,9 +77,23 @@ public class TimerAttributeDefinition extends ListAttributeDefinition {
     public static final String START = "start";
     public static final String END = "end";
 
-    private TimerAttributeDefinition() {
-        super("timers", false, new ModelTypeValidator(ModelType.OBJECT), AttributeAccess.Flag.STORAGE_RUNTIME);
+    private TimerAttributeDefinition(Builder builder) {
+        super(builder);
     }
+    public static final class Builder extends ListAttributeDefinition.Builder<ObjectListAttributeDefinition.Builder, TimerAttributeDefinition>{
+        public Builder() {
+            super("timers", false);
+        }
+
+        @Override
+        public TimerAttributeDefinition build() {
+            setValidator(new ModelTypeValidator(ModelType.OBJECT));
+            setStorageRuntime();
+
+            return new TimerAttributeDefinition(this);
+        }
+    }
+
 
     @Override
     protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
