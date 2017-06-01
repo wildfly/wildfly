@@ -22,8 +22,13 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -33,6 +38,8 @@ import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransf
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -126,6 +133,44 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
             builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleOperationTransformer(removeTransformer));
 
             builder.setCustomResourceTransformer(new LegacyPropertyResourceTransformer());
+        }
+    }
+
+    static class LegacyAddOperationTransformation implements UnaryOperator<OperationStepHandler> {
+        private final Predicate<ModelNode> legacy;
+
+        <E extends Enum<E> & org.jboss.as.clustering.controller.Attribute> LegacyAddOperationTransformation(Class<E> attributeClass) {
+            this(EnumSet.allOf(attributeClass));
+        }
+
+        LegacyAddOperationTransformation(Set<? extends org.jboss.as.clustering.controller.Attribute> attributes) {
+            // If none of the specified attributes are defined, then this is a legacy operation
+            this(operation -> attributes.stream().noneMatch(attribute -> operation.hasDefined(attribute.getName())));
+        }
+
+        LegacyAddOperationTransformation(String... legacyProperties) {
+            // If any of the specified properties are defined, then this is a legacy operation
+            this(operation -> operation.hasDefined(Attribute.PROPERTIES.getName()) && Stream.of(legacyProperties).anyMatch(legacyProperty -> operation.get(Attribute.PROPERTIES.getName()).hasDefined(legacyProperty)));
+        }
+
+        LegacyAddOperationTransformation(Predicate<ModelNode> legacy) {
+            this.legacy = legacy;
+        }
+
+        @Override
+        public OperationStepHandler apply(OperationStepHandler handler) {
+            return (context, operation) -> {
+                if (this.legacy.test(operation)) {
+                    PathElement path = context.getCurrentAddress().getLastElement();
+                    // This is a legacy add operation - process it using the generic handler
+                    Operations.setPathAddress(operation, context.getCurrentAddress().getParent().append(GenericProtocolResourceDefinition.pathElement(path.getValue())));
+                    OperationStepHandler genericHandler = context.getResourceRegistration().getParent().getOperationHandler(PathAddress.pathAddress(ProtocolResourceDefinition.WILDCARD_PATH), ModelDescriptionConstants.ADD);
+                    // Process this step first to preserve protocol order
+                    context.addStep(operation, genericHandler, OperationContext.Stage.MODEL, true);
+                } else {
+                    handler.execute(context, operation);
+                }
+            };
         }
     }
 

@@ -41,6 +41,10 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
  */
 public class GenericProtocolResourceDefinition<P extends Protocol> extends ProtocolResourceDefinition<P> {
 
+    public static PathElement pathElement(String name) {
+        return ProtocolResourceDefinition.pathElement(String.join(".", org.jgroups.conf.ProtocolConfiguration.protocol_prefix, name));
+    }
+
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
         SOCKET_BINDING("socket-binding", ModelType.STRING, JGroupsModel.VERSION_4_1_0), // socket-binding is now a required attribute of SocketBindingProtocolResourceDefinition
@@ -66,7 +70,7 @@ public class GenericProtocolResourceDefinition<P extends Protocol> extends Proto
     }
 
     GenericProtocolResourceDefinition(String name, JGroupsModel deprecation, ResourceServiceBuilderFactory<ProtocolConfiguration<P>> builderFactory, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        this(pathElement(String.join(".", org.jgroups.conf.ProtocolConfiguration.protocol_prefix, name)), descriptorConfigurator, builderFactory, parentBuilderFactory);
+        this(pathElement(name), descriptorConfigurator, builderFactory, parentBuilderFactory);
         this.setDeprecated(deprecation.getVersion());
     }
 

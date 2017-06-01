@@ -36,6 +36,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -80,6 +81,7 @@ public class StorePropertyResourceDefinition extends ChildResourceDefinition<Man
         AbstractAddStepHandler addHandler = new AbstractAddStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) {
+                operationDeprecated(context, operation);
                 context.createResource(PathAddress.EMPTY_ADDRESS);
                 String name = context.getCurrentAddressValue();
                 String value = operation.get(VALUE.getName()).asString();
@@ -93,6 +95,7 @@ public class StorePropertyResourceDefinition extends ChildResourceDefinition<Man
         AbstractRemoveStepHandler removeHandler = new AbstractRemoveStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) {
+                operationDeprecated(context, operation);
                 context.removeResource(PathAddress.EMPTY_ADDRESS);
                 String name = context.getCurrentAddressValue();
                 PathAddress storeAddress = context.getCurrentAddress().getParent();
@@ -105,22 +108,28 @@ public class StorePropertyResourceDefinition extends ChildResourceDefinition<Man
         OperationStepHandler readHandler = new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) {
-                PathAddress address = context.getCurrentAddress().getParent();
+                operationDeprecated(context, operation);
+                PathAddress storeAddress = context.getCurrentAddress().getParent();
                 String key = context.getCurrentAddressValue();
-                ModelNode getOperation = Operations.createMapGetOperation(address, StoreResourceDefinition.Attribute.PROPERTIES, key);
+                ModelNode getOperation = Operations.createMapGetOperation(storeAddress, StoreResourceDefinition.Attribute.PROPERTIES, key);
                 context.addStep(getOperation, MapOperations.MAP_GET_HANDLER, context.getCurrentStage());
             }
         };
         OperationStepHandler writeHandler = new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) {
-                PathAddress address = context.getCurrentAddress().getParent();
+                operationDeprecated(context, operation);
+                PathAddress storeAddress = context.getCurrentAddress().getParent();
                 String key = context.getCurrentAddressValue();
                 String value = Operations.getAttributeValue(operation).asString();
-                ModelNode putOperation = Operations.createMapPutOperation(address, StoreResourceDefinition.Attribute.PROPERTIES, key, value);
+                ModelNode putOperation = Operations.createMapPutOperation(storeAddress, StoreResourceDefinition.Attribute.PROPERTIES, key, value);
                 context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
             }
         };
         registration.registerReadWriteAttribute(VALUE, readHandler, writeHandler);
+    }
+
+    static void operationDeprecated(OperationContext context, ModelNode operation) {
+        ControllerLogger.DEPRECATED_LOGGER.operationDeprecated(Operations.getName(operation), context.getCurrentAddress().toCLIStyleString());
     }
 }
