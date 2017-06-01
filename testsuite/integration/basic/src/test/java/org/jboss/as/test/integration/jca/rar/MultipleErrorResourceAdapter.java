@@ -128,35 +128,6 @@ public class MultipleErrorResourceAdapter implements ResourceAdapter, Serializab
         return null;
     }
 
-    /**
-     * Returns a hash code value for the object.
-     *
-     * @return A hash code value for this object.
-     */
-    @Override
-    public int hashCode() {
-        int result = 17;
-        if (name != null) { result += 31 * result + 7 * name.hashCode(); } else { result += 31 * result + 7; }
-        return result;
-    }
-
-    /**
-     * Indicates whether some other object is equal to this one.
-     *
-     * @param other The reference object with which to compare.
-     * @return true if this object is the same as the obj argument, false otherwise.
-     */
-    @Override
-    public boolean equals(Object other) {
-        if (other == null) { return false; }
-        if (other == this) { return true; }
-        if (!(other instanceof MultipleErrorResourceAdapter)) { return false; }
-        MultipleErrorResourceAdapter obj = (MultipleErrorResourceAdapter) other;
-        boolean result = true;
-        if (result) {
-            if (name == null) { result = obj.getName() == null; } else { result = name.equals(obj.getName()); }
-        }
-        return result;
-    }
+    // equals and hashCode intentionally omitted to trigger validation error
 
 }

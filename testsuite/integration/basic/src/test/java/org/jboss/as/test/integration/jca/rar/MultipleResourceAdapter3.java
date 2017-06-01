@@ -34,14 +34,14 @@ import javax.transaction.xa.XAResource;
 import org.jboss.as.connector.services.workmanager.NamedWorkManager;
 
 /**
- * MultipleResourceAdapter2
+ * MultipleResourceAdapter3
  */
 public class MultipleResourceAdapter3 implements ResourceAdapter {
 
     /**
      * The logger
      */
-    private static Logger log = Logger.getLogger("MultipleResourceAdapter2");
+    private static Logger log = Logger.getLogger("MultipleResourceAdapter3");
 
 
     /**

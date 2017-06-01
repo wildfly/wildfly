@@ -22,23 +22,22 @@
 
 package org.jboss.as.test.integration.hibernate.naturalid;
 
-import java.util.Properties;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.BootstrapServiceRegistryBuilder;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.AvailableSettings;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
-import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.service.ServiceRegistry;
 
 
 /**
- * Test that naturalId API used with Hibernate sessionfactory can be inititated from hibernate.cfg.xml and properties added to
+ * Test that naturalId API used with Hibernate sessionfactory can be initiated from hibernate.cfg.xml and properties added to
  * Hibernate Configuration in AS7 container
  *
  * @author Madhumita Sadhukhan
@@ -48,43 +47,27 @@ import org.hibernate.service.ServiceRegistry;
 public class SFSBHibernateSFNaturalId {
 
     private static SessionFactory sessionFactory;
-    private static BootstrapServiceRegistryBuilder builder;
-
 
     public void cleanup() {
         sessionFactory.close();
     }
 
     public void setupConfig() {
-        // static {
         try {
+            final ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder(new BootstrapServiceRegistryBuilder().build())
+                    .configure("hibernate.cfg.xml")
+                    .applySetting(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true")
+                    .applySetting(AvailableSettings.HBM2DDL_AUTO, "create-drop")
+                    .applySetting(AvailableSettings.DATASOURCE, "java:jboss/datasources/ExampleDS")
+                    .build();
 
-            // prepare the configuration
-            Configuration configuration = new Configuration().setProperty(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS,
-                    "true");
-            configuration.setProperty(Environment.HBM2DDL_AUTO, "create-drop");
-            configuration.setProperty(Environment.DATASOURCE, "java:jboss/datasources/ExampleDS");
+            final Metadata metadata = new MetadataSources(serviceRegistry)
+                    .buildMetadata();
 
-            // configuration.configure("hibernate.cfg.xml");
-
-            // fetch the properties
-            Properties properties = new Properties();
-            properties.putAll(configuration.getProperties());
-
-            Environment.verifyProperties(properties);
-            ConfigurationHelper.resolvePlaceHolders(properties);
-
-            // build the serviceregistry
-            final BootstrapServiceRegistryBuilder bootstrapbuilder = new BootstrapServiceRegistryBuilder();
-            ServiceRegistry serviceRegistry = builder.build();
-
-            // Create the SessionFactory from Configuration
-            sessionFactory = configuration.configure("hibernate.cfg.xml").buildSessionFactory(serviceRegistry);
-
+            sessionFactory = metadata.buildSessionFactory();
         } catch (Throwable ex) {
             throw new RuntimeException("Could not setup config", ex);
         }
-
     }
 
     // create person
