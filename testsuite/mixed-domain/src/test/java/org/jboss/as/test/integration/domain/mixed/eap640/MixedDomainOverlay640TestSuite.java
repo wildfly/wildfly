@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.domain.mixed;
+package org.jboss.as.test.integration.domain.mixed.eap640;
+
+import org.jboss.as.test.integration.domain.mixed.MixedDomainTestSuite;
+import org.jboss.as.test.integration.domain.mixed.Version;
+import org.jboss.as.test.integration.domain.mixed.Version.AsVersion;
+import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 /**
- * Base class for a test suite that uses a minimal domain config in order
- * to not have to deal with subsystem configuration compatibility issues
- * across releases in tests that are focused on the behavior of the kernel.
- *
- * @author Brian Stansberry
+ * @author Emmanuel Hugonnet (c) 2017 Red Hat, inc.
  */
-public class KernelBehaviorTestSuite extends MixedDomainTestSuite {
+@RunWith(Suite.class)
+@SuiteClasses(value= {MixedDomainDeploymentOverlay640TestCase.class})
+@Version(AsVersion.EAP_6_4_0)
+public class MixedDomainOverlay640TestSuite extends MixedDomainTestSuite {
 
-    /**
-     * Call this from a @BeforeClass method
-     *
-     * @param testClass the test/suite class
-     */
-    protected static MixedDomainTestSupport getSupport(Class<?> testClass) {
-        return getSupport(testClass, "master-config/domain-minimal.xml", false, false, false);
+    @BeforeClass
+    public static void initializeDomain() {
+        MixedDomainTestSuite.getSupport(MixedDomainOverlay640TestSuite.class, "master-config/host.xml", "slave-config/host-slave-overlay.xml", true, false, false);
     }
 }

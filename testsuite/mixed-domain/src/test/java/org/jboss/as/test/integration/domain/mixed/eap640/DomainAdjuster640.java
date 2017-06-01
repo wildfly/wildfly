@@ -68,8 +68,8 @@ import org.wildfly.iiop.openjdk.IIOPExtension;
 public class DomainAdjuster640 extends DomainAdjuster700 {
 
     @Override
-    protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress) throws Exception {
-        final List<ModelNode> list = super.adjustForVersion(client, profileAddress);
+    protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
+        final List<ModelNode> list = super.adjustForVersion(client, profileAddress, withMasterServers);
 
         list.addAll(replaceActiveMqWithMessaging(profileAddress.append(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME)));
         list.addAll(removeBatch(profileAddress.append(SUBSYSTEM, BatchSubsystemDefinition.NAME)));

@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2015, Red Hat Middleware LLC, and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<host xmlns="urn:jboss:domain:1.3" name="slave">
+
+    <management>
+        <security-realms>
+            <security-realm name="ManagementRealm">
+                <server-identities>
+                     <!-- Replace this with either a base64 password of your own, or use a vault with a vault expression -->
+                     <secret value="c2xhdmVfdXNlcl9wYXNzd29yZA=="/>
+                </server-identities>
+
+                <authentication>
+                    <local default-user="$local" />
+                    <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir"/>
+                </authentication>
+            </security-realm>
+            <security-realm name="ApplicationRealm">
+                <authentication>
+                    <local default-user="$local" allowed-users="*" />
+                    <properties path="domain/configuration/application-users.properties" relative-to="jboss.home.dir" />
+                </authentication>
+                <authorization>
+                    <properties path="domain/configuration/application-roles.properties" relative-to="jboss.home.dir" />
+                </authorization>
+            </security-realm>
+        </security-realms>
+        <management-interfaces>
+            <native-interface security-realm="ManagementRealm">
+                <socket interface="management" port="19999"/>
+            </native-interface>
+        </management-interfaces>
+    </management>
+
+    <domain-controller>
+       <remote host="${jboss.test.host.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm">
+           <!-- The DomainAdjustors used in the test setup delete all the invalid extensions
+            <ignored-resources type="extension">
+
+                <instance name="org.wildfly.extension.batch"/>
+                <instance name="org.wildfly.extension.bean-validation"/>
+                <instance name="org.wildfly.extension.io"/>
+                <instance name="org.wildfly.extension.undertow"/>
+            </ignored-resources>
+            -->
+       </remote>
+    </domain-controller>
+
+    <interfaces>
+        <interface name="management">
+           <inet-address value="${jboss.test.host.slave.address}"/>
+        </interface>
+        <interface name="public">
+           <inet-address value="${jboss.test.host.slave.address}"/>
+        </interface>
+        <interface name="unsecure">
+            <!-- Used for IIOP sockets in the standard configuration.
+                 To secure JacORB you need to setup SSL -->
+             <inet-address value="${jboss.test.host.slave.address}"/>
+        </interface>
+    </interfaces>
+
+    <jvms>
+	   <jvm name="default">
+            <heap size="64m" max-size="256m"/>
+            <permgen size="256m" max-size="256m"/>
+              <jvm-options>
+                  <option value="-server"/>
+              </jvm-options>
+         </jvm>
+	</jvms>
+
+
+    <servers>
+        <server name="server-one" group="main-server-group">
+            <socket-bindings port-offset="200"/>
+        </server>
+        <server name="server-two" group="other-server-group">
+            <socket-bindings port-offset="300"/>
+        </server>
+    </servers>
+</host>
