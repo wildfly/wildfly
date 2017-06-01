@@ -527,7 +527,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String defaultNodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.getDefaultValue().asString();
 
         if (defaultNodeIdentifier.equals(nodeIdentifier)) {
-            TransactionLogger.ROOT_LOGGER.nodeIdentifierIsSetToDefault();
+            TransactionLogger.ROOT_LOGGER.nodeIdentifierIsSetToDefault(CommonAttributes.NODE_IDENTIFIER, context.getCurrentAddress().toCLIStyleString());
         }
     }
 
