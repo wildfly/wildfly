@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelType;
  */
 public interface CommonAttributes {
 
-    SimpleAttributeDefinition START_TIME = new SimpleAttributeDefinitionBuilder("start-time", ModelType.STRING, false).build();
-    SimpleAttributeDefinition END_TIME = new SimpleAttributeDefinitionBuilder("end-time", ModelType.STRING, false).build();
+    SimpleAttributeDefinition START_TIME = new SimpleAttributeDefinitionBuilder("start-time", ModelType.LONG, false).build();
+    SimpleAttributeDefinition END_TIME = new SimpleAttributeDefinitionBuilder("end-time", ModelType.LONG, false).build();
     SimpleAttributeDefinition REPORT_LOCATION = new SimpleAttributeDefinitionBuilder("report-location", ModelType.STRING, true).build();
 }
