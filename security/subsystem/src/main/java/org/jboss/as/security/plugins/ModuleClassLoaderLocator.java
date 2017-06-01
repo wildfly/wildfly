@@ -71,14 +71,14 @@ public class ModuleClassLoaderLocator implements ClassLoaderLocator {
              * The local resources (such as users.properties) can be present in a web deployment,
              * whose CL is available on the TCCL.
              */
-            return new CombinedClassLoader(classLoaders);
+            return SecurityActions.createCombinedClassLoader(classLoaders);
         } catch (ModuleLoadException e) {
             throw SecurityLogger.ROOT_LOGGER.runtimeException(e);
         }
     }
 
     /** A Classloader that takes a list of Classloaders to delegate to */
-    public class CombinedClassLoader extends SecureClassLoader{
+    public static class CombinedClassLoader extends SecureClassLoader{
         private List<ClassLoader> classLoaders;
 
         public CombinedClassLoader(List<ClassLoader> classLoaders){

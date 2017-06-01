@@ -24,8 +24,10 @@ package org.jboss.as.security.plugins;
 
 import java.security.Principal;
 import java.security.PrivilegedAction;
+import java.util.List;
 
 import org.wildfly.security.manager.action.GetModuleClassLoaderAction;
+import org.jboss.as.security.plugins.ModuleClassLoaderLocator.CombinedClassLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
@@ -46,7 +48,7 @@ class SecurityActions {
 
     static ModuleClassLoader getModuleClassLoader(final ModuleLoader loader, final String moduleSpec) throws ModuleLoadException {
         final Module module = loader.loadModule(ModuleIdentifier.fromString(moduleSpec));
-        return ! WildFlySecurityManager.isChecking() ? doPrivileged(new GetModuleClassLoaderAction(module)) : module.getClassLoader();
+        return WildFlySecurityManager.isChecking() ? doPrivileged(new GetModuleClassLoaderAction(module)) : module.getClassLoader();
     }
 
     static SecurityContext getSecurityContext() {
@@ -104,4 +106,24 @@ class SecurityActions {
             return credential;
         }
     }
+
+    /**
+     * Returns the <code>ModuleClassLoaderLocator.CombinedClassLoader</code> instance with consideration of security manager enabled
+     *
+     * @param classLoaders the delegated ClassLoaders
+     * @return the <code>ModuleClassLoaderLocator.CombinedClassLoader</code> instance
+     */
+    static ModuleClassLoaderLocator.CombinedClassLoader createCombinedClassLoader(final List<ClassLoader> classLoaders) {
+        if (WildFlySecurityManager.isChecking()) {
+            return doPrivileged(new PrivilegedAction<ModuleClassLoaderLocator.CombinedClassLoader>() {
+                @Override
+                public CombinedClassLoader run() {
+                    return new ModuleClassLoaderLocator.CombinedClassLoader(classLoaders);
+                }
+            });
+        } else {
+            return new ModuleClassLoaderLocator.CombinedClassLoader(classLoaders);
+        }
+    }
+
 }
