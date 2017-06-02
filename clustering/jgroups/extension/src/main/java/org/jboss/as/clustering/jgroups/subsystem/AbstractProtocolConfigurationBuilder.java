@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.jgroups.protocol.ProtocolFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -118,6 +119,9 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
                 Configurator.removeDeprecatedProperties(object, properties);
                 Configurator.resolveAndAssignFields(object, properties);
                 Configurator.resolveAndInvokePropertyMethods(object, properties);
+            }
+            if (!properties.isEmpty()) {
+                JGroupsLogger.ROOT_LOGGER.ignoredProperties(this.name, properties);
             }
             this.accept(result);
             result.enableStats(this.statisticsEnabled != null ? this.statisticsEnabled : stackConfiguration.isStatisticsEnabled());
