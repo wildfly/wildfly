@@ -81,12 +81,24 @@
             <param name="cacheMode" value="ASYNC"/>
             <param name="stack" value="tcp"/>
         </antcall>
+        <antcall target="enable-http-trace">
+            <param name="cacheMode" value="ASYNC" />
+            <param name="stack" value="tcp"/>
+        </antcall>
         <antcall target="abstract-build-clustering">
             <param name="cacheMode" value="SYNC"/>
             <param name="stack" value="udp"/>
         </antcall>
+        <antcall target="enable-http-trace">
+            <param name="cacheMode" value="SYNC" />
+            <param name="stack" value="udp"/>
+        </antcall>
         <antcall target="abstract-build-clustering">
             <param name="cacheMode" value="ASYNC"/>
+            <param name="stack" value="udp"/>
+        </antcall>
+        <antcall target="enable-http-trace">
+            <param name="cacheMode" value="ASYNC" />
             <param name="stack" value="udp"/>
         </antcall>
         <antcall target="build-clustering-tunnel"/>
