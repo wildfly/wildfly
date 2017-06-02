@@ -178,7 +178,7 @@
                         <!-- let's override the module.path parent configuration with dummy value, to avoid the "IllegalStateException: Duplicate layer 'base'" -->
                         <module.path>foo</module.path>
                     </systemPropertyVariables>
-                    <argLine>${surefire.system.args}</argLine>
+                    <argLine>${surefire.system.args} ${jvm.args.ip.client}</argLine>
                 </configuration>
             </plugin>
         </plugins>

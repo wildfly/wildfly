@@ -28,6 +28,7 @@ import java.util.List;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +39,7 @@ import org.wildfly.security.sasl.SaslMechanismSelector;
 import org.wildfly.test.integration.elytron.sasl.AbstractSaslTestBase.JmsSetup;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
+import org.wildfly.test.security.common.elytron.ConstantRoleMapper;
 import org.wildfly.test.security.common.other.SimpleRemotingConnector;
 import org.wildfly.test.security.common.other.SimpleSocketBinding;
 
@@ -50,7 +52,6 @@ import org.wildfly.test.security.common.other.SimpleSocketBinding;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ JmsSetup.class, DefaultSaslConfigTestCase.ServerSetup.class })
-@Ignore("WFLY-8801")
 public class DefaultSaslConfigTestCase extends AbstractSaslTestBase {
 
     private static final String DEFAULT_SASL_AUTHENTICATION = "application-sasl-authentication";
@@ -65,7 +66,8 @@ public class DefaultSaslConfigTestCase extends AbstractSaslTestBase {
         // Anonymous not supported in the default configuration
         AuthenticationContext.empty()
                 .with(MatchRule.ALL,
-                        AuthenticationConfiguration.empty().useDefaultProviders().setSaslMechanismSelector(SaslMechanismSelector.fromString("ANONYMOUS")).useAnonymous())
+                        AuthenticationConfiguration.empty()
+                                .setSaslMechanismSelector(SaslMechanismSelector.fromString("ANONYMOUS")).useAnonymous())
                 .run(() -> sendAndReceiveMsg(PORT_DEFAULT, true));
     }
 
@@ -73,11 +75,12 @@ public class DefaultSaslConfigTestCase extends AbstractSaslTestBase {
      * Tests that JBOSS-LOCAL-USER SASL mechanism can be used for authentication in default server configuration.
      */
     @Test
-    @Ignore("WFLY-8742")
+    @Ignore("WFLY-8961")
     public void testJBossLocalInDefault() throws Exception {
         AuthenticationContext.empty()
                 .with(MatchRule.ALL,
-                        AuthenticationConfiguration.empty().useDefaultProviders().setSaslMechanismSelector(SaslMechanismSelector.fromString("JBOSS-LOCAL-USER")))
+                        AuthenticationConfiguration.empty()
+                                .setSaslMechanismSelector(SaslMechanismSelector.fromString("JBOSS-LOCAL-USER")))
                 .run(() -> sendAndReceiveMsg(PORT_DEFAULT, false));
     }
 
@@ -88,8 +91,9 @@ public class DefaultSaslConfigTestCase extends AbstractSaslTestBase {
     public void testDigestInDefault() throws Exception {
         AuthenticationContext.empty()
                 .with(MatchRule.ALL,
-                        AuthenticationConfiguration.empty().useDefaultProviders().setSaslMechanismSelector(SaslMechanismSelector.fromString("DIGEST-MD5"))
-                                .useName("guest").usePassword("guest"))
+                        AuthenticationConfiguration.empty()
+                                .setSaslMechanismSelector(SaslMechanismSelector.fromString("DIGEST-MD5")).useName("guest")
+                                .usePassword("guest"))
                 .run(() -> sendAndReceiveMsg(PORT_DEFAULT, false, "guest", "guest"));
     }
 
@@ -101,6 +105,26 @@ public class DefaultSaslConfigTestCase extends AbstractSaslTestBase {
         @Override
         protected ConfigurableElement[] getConfigurableElements() {
             List<ConfigurableElement> elements = new ArrayList<>();
+
+            // let all the authenticated users has the guest role
+            elements.add(ConstantRoleMapper.builder().withName("guest").withRoles("guest").build());
+            elements.add(new ConfigurableElement() {
+
+                @Override
+                public void create(CLIWrapper cli) throws Exception {
+                    cli.sendLine("/subsystem=elytron/security-domain=ApplicationDomain:write-attribute(name=role-mapper, value=guest)");
+                }
+
+                @Override
+                public void remove(CLIWrapper cli) throws Exception {
+                    cli.sendLine("/subsystem=elytron/security-domain=ApplicationDomain:write-attribute(name=role-mapper)");
+                }
+
+                @Override
+                public String getName() {
+                    return "Configure role-mapper";
+                }
+            });
 
             elements.add(SimpleSocketBinding.builder().withName(DEFAULT).withPort(PORT_DEFAULT).build());
             elements.add(SimpleRemotingConnector.builder().withName(DEFAULT).withSocketBinding(DEFAULT)

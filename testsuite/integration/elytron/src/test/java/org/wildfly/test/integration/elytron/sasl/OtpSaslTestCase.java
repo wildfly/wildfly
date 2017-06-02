@@ -72,7 +72,6 @@ import org.wildfly.test.integration.elytron.sasl.AbstractSaslTestBase.JmsSetup;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.ConstantPermissionMapper;
-import org.wildfly.test.security.common.elytron.ConstantRoleMapper;
 import org.wildfly.test.security.common.elytron.MechanismConfiguration;
 import org.wildfly.test.security.common.elytron.PermissionRef;
 import org.wildfly.test.security.common.elytron.SaslFilter;
@@ -80,18 +79,19 @@ import org.wildfly.test.security.common.elytron.SimpleConfigurableSaslServerFact
 import org.wildfly.test.security.common.elytron.SimpleSaslAuthenticationFactory;
 import org.wildfly.test.security.common.elytron.SimpleSecurityDomain;
 import org.wildfly.test.security.common.elytron.SimpleSecurityDomain.SecurityDomainRealm;
+import org.wildfly.test.security.common.other.MessagingElytronDomainConfigurator;
 import org.wildfly.test.security.common.other.SimpleRemotingConnector;
 import org.wildfly.test.security.common.other.SimpleSocketBinding;
 
 /**
- * Elytron OTP SASL mechanism tests which use Naming + JMS client. The server setup adds for each tested SASL configuration
- * a new native remoting port and client tests functionality against it.
+ * Elytron OTP SASL mechanism tests which use Naming + JMS client. The server setup adds for each tested SASL configuration a
+ * new native remoting port and client tests functionality against it.
  *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({JmsSetup.class, OtpSaslTestCase.ServerSetup.class })
+@ServerSetup({ JmsSetup.class, OtpSaslTestCase.ServerSetup.class })
 @Ignore("WFLY-8667")
 public class OtpSaslTestCase extends AbstractSaslTestBase {
 
@@ -119,14 +119,21 @@ public class OtpSaslTestCase extends AbstractSaslTestBase {
         assertSequenceAndHash(99, OTP_HASH_99);
         Runnable runAndExpectFail = () -> sendAndReceiveMsg(PORT_OTP, true);
         AuthenticationContext.empty()
-                .with(MatchRule.ALL, AuthenticationConfiguration.empty().useDefaultProviders().setSaslMechanismSelector(SaslMechanismSelector.fromString(OTP)))
+                .with(MatchRule.ALL,
+                        AuthenticationConfiguration.empty()
+                                .setSaslMechanismSelector(SaslMechanismSelector.fromString(OTP)))
                 .run(runAndExpectFail);
         assertSequenceAndHash(99, OTP_HASH_99);
-        AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.empty().useDefaultProviders()
-                .setSaslMechanismSelector(SaslMechanismSelector.fromString(OTP)).useName("jduke").usePassword("TeSt")).run(runAndExpectFail);
+        AuthenticationContext.empty().with(MatchRule.ALL,
+                AuthenticationConfiguration.empty()
+                        .setSaslMechanismSelector(SaslMechanismSelector.fromString(OTP)).useName("jduke").usePassword("TeSt"))
+                .run(runAndExpectFail);
         assertSequenceAndHash(99, OTP_HASH_99);
-        AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.empty().useDefaultProviders()
-                .setSaslMechanismSelector(SaslMechanismSelector.fromString(OTP)).useName("jduke").usePassword(OTP_PASSPHRASE))
+        AuthenticationContext.empty()
+                .with(MatchRule.ALL,
+                        AuthenticationConfiguration.empty()
+                                .setSaslMechanismSelector(SaslMechanismSelector.fromString(OTP)).useName("jduke")
+                                .usePassword(OTP_PASSPHRASE))
                 .run(() -> sendAndReceiveMsg(PORT_OTP, false));
         assertSequenceAndHash(98, OTP_HASH_98);
     }
@@ -169,15 +176,13 @@ public class OtpSaslTestCase extends AbstractSaslTestBase {
 
             elements.add(ConstantPermissionMapper.builder().withName(NAME)
                     .withPermissions(PermissionRef.fromPermission(new LoginPermission())).build());
-            elements.add(ConstantRoleMapper.builder().withName(NAME).withRoles("guest").build());
-            elements.add(SimpleSecurityDomain.builder().withName(NAME).withDefaultRealm("ApplicationRealm").withRoleMapper(NAME)
-                    .withPermissionMapper(NAME).withRealms(SecurityDomainRealm.builder().withRealm("ApplicationRealm").build())
-                    .build());
 
             elements.add(new OtpLdapConf());
             elements.add(SimpleSecurityDomain.builder().withName(OTP).withDefaultRealm(OTP).withPermissionMapper(NAME)
                     .withRealms(SecurityDomainRealm.builder().withRealm(OTP).withRoleDecoder("groups-to-roles").build())
                     .build());
+
+            elements.add(MessagingElytronDomainConfigurator.builder().withElytronDomain(OTP).build());
 
             elements.add(SimpleConfigurableSaslServerFactory.builder().withName(OTP).withSaslServerFactory("elytron")
                     .addFilter(SaslFilter.builder().withPatternFilter(OTP).build()).build());
@@ -193,8 +198,8 @@ public class OtpSaslTestCase extends AbstractSaslTestBase {
         }
 
         /**
-         * LDAP configurable element - set's and starts LDAP instance and configures ldap-realm in the Elytron.
-         * The LDAP realm is used as modifiable realm for testing OTP SASL mechanism.
+         * LDAP configurable element - set's and starts LDAP instance and configures ldap-realm in the Elytron. The LDAP realm
+         * is used as modifiable realm for testing OTP SASL mechanism.
          */
         //@formatter:off
         @CreateDS(
