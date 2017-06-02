@@ -255,6 +255,13 @@ public class MixedDeploymentOverlayTestCase {
         }
         performHttpCall(DomainTestSupport.slaveAddress, 8280, "main-deployment/index.html", "Bonjour le monde");
         performHttpCall(DomainTestSupport.slaveAddress, 8380, "other-deployment/index.html", "Bonjour le monde");
+
+        //Remove all CLI style "deployment-overlay remove --name=overlay-test "
+        ModelNode cliRemoveOverlay = Operations.createCompositeOperation();
+        cliRemoveOverlay.get(STEPS).add(Operations.createOperation(REMOVE, PathAddress.pathAddress(MAIN_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode()));
+        cliRemoveOverlay.get(STEPS).add(Operations.createOperation(REMOVE, PathAddress.pathAddress(OTHER_SERVER_GROUP, DEPLOYMENT_OVERLAY_PATH).toModelNode()));
+        cliRemoveOverlay.get(STEPS).add(Operations.createOperation(REMOVE, PathAddress.pathAddress(DEPLOYMENT_OVERLAY_PATH).toModelNode()));
+        executeAsyncForResult(masterClient, cliRemoveOverlay);
     }
 
     private void executeAsyncForResult(DomainClient client, ModelNode op) {
