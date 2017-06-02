@@ -202,6 +202,14 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
     private JBossServiceConfig parseMBean(final XMLExtendedStreamReader reader) throws XMLStreamException  {
         // Handle Attributes
         final JBossServiceConfig serviceConfig = new JBossServiceConfig();
+        String name_initialize = null;
+        String code_initialize = null;
+        String[] aliases_initialize = null;
+        JBossServiceDependencyConfig[] dependencyConfigs_initialize = null;
+        JBossServiceDependencyListConfig[] dependencyConfigLists_initialize = null;
+        JBossServiceAttributeConfig[] attributeConfigs_initialize = null;
+        String[] annotations_initialize = null;
+        JBossServiceConstructorConfig constructorConfig_initialize = null;
 
         final int count = reader.getAttributeCount();
         final Set<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.CODE);
@@ -233,13 +241,17 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT:
-                    serviceConfig.setDependencyConfigs(dependencyConfigs.toArray(new JBossServiceDependencyConfig[dependencyConfigs.size()]));
-                    serviceConfig.setDependencyConfigLists(dependencyListConfigs.toArray(new JBossServiceDependencyListConfig[dependencyListConfigs.size()]));
-                    serviceConfig.setAliases(aliases.toArray(new String[aliases.size()]));
-                    serviceConfig.setAnnotations(annotations.toArray(new String[annotations.size()]));
-                    serviceConfig.setAttributeConfigs(attributes.toArray(new JBossServiceAttributeConfig[attributes.size()]));
+                    dependencyConfigs_initialize = dependencyConfigs
+                            .toArray(new JBossServiceDependencyConfig[dependencyConfigs.size()]);
+                    dependencyConfigLists_initialize = dependencyListConfigs
+                            .toArray(new JBossServiceDependencyListConfig[dependencyListConfigs.size()]);
+                    aliases_initialize = aliases.toArray(new String[aliases.size()]);
+                    annotations_initialize = annotations.toArray(new String[annotations.size()]);
+                    attributeConfigs_initialize = attributes.toArray(new JBossServiceAttributeConfig[attributes.size()]);
 
-                    return serviceConfig;
+                    return new JBossServiceConfig(name_initialize, code_initialize, dependencyConfigs_initialize,
+                            dependencyConfigLists_initialize, aliases_initialize, annotations_initialize,
+                            attributeConfigs_initialize, constructorConfig_initialize);
                 case START_ELEMENT:
                     switch (Namespace.of(reader.getNamespaceURI())) {
                         case NONE:
