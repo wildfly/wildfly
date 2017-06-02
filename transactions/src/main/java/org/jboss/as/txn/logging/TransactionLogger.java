@@ -151,12 +151,11 @@ public interface TransactionLogger extends BasicLogger {
 
     /**
      * If the user has set node identifier to the default value
-     *
-     * @return the message.
      */
     @LogMessage(level = WARN)
-    @Message(id = 13, value = "Node identifier property is set to the default value. Please make sure it is unique.")
-    void nodeIdentifierIsSetToDefault();
+    @Message(id = 13, value = "The %s attribute on the %s is set to the default value. This is a danger for environments running "
+            + "multiple servers. Please make sure the attribute value is unique.")
+    void nodeIdentifierIsSetToDefault(String attributeName, String subsystemAddress);
 
     /**
      * A message indicating that jndi-name is missing and it's a required attribute
