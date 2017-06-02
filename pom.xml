@@ -234,7 +234,7 @@
         <!-- Non-default maven plugin versions and configuration -->
         <version.org.zanata.plugin>3.9.1</version.org.zanata.plugin>
         <version.help.plugin>2.2</version.help.plugin>
-        <version.jacoco.plugin>0.6.3.201306030806</version.jacoco.plugin> <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
+        <version.jacoco.plugin>0.7.9</version.jacoco.plugin>
         <version.properties.plugin>2.0.1</version.properties.plugin>
         <version.xml.plugin>1.0.1</version.xml.plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
@@ -247,7 +247,7 @@
         <!-- Surefire args -->
         <surefire.jpda.args/>
         <surefire.extra.args/>
-        <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} -ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=256m ${surefire.jpda.args} ${surefire.extra.args}</surefire.system.args>
+        <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} -ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=256m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.system.args>
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
 
