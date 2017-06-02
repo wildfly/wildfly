@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore;
+import java.util.stream.Stream;
 
 import javax.crypto.Cipher;
 
@@ -39,6 +40,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
@@ -68,6 +71,13 @@ public class CipherAuthTokenBuilder extends AuthTokenBuilder<CipherAuthToken> {
         this.keyCredentialSource = new CredentialSourceDependency(context, KEY_CREDENTIAL, model);
         this.transformation = ALGORITHM.resolveModelAttribute(context, model).asString();
         return super.configure(context, model);
+    }
+
+    @Override
+    public ServiceBuilder<CipherAuthToken> build(ServiceTarget target) {
+        ServiceBuilder<CipherAuthToken> builder = super.build(target);
+        Stream.of(this.keyStore, this.keyCredentialSource).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 
     @Override
