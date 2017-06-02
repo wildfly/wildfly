@@ -22,15 +22,17 @@
 
 package org.wildfly.test.integration.elytron.sasl;
 
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.junit.Ignore;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
@@ -59,11 +61,15 @@ import org.wildfly.test.security.common.other.SimpleSocketBinding;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ JmsSetup.class, AnonymousSaslMechTestCase.ServerSetup.class })
-@Ignore("WFLY-8742")
 public class AnonymousSaslMechTestCase extends AbstractSaslTestBase {
 
     private static final String ANONYMOUS = "ANONYMOUS";
     private static final int PORT_ANONYMOUS = 10567;
+
+    @BeforeClass
+    public static void beforeClass() {
+        Security.addProvider(new WildFlyElytronProvider());
+    }
 
     /**
      * Tests that client is able to use ANONYMOUS SASL mechanism when server allows it.
