@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
     <subsystems>
-        <subsystem>logging.xml</subsystem>
+        <subsystem supplement="no-console">logging.xml</subsystem>
         <subsystem>batch-jberet.xml</subsystem>
         <subsystem>bean-validation.xml</subsystem>
         <subsystem>core-management.xml</subsystem>
