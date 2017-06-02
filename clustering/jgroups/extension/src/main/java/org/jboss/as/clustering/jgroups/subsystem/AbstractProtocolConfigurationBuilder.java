@@ -111,9 +111,11 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
             P result = (P) (nativeProtocol ? ProtocolFactory.TRANSFORMER.apply(protocol) : protocol);
             Map<String, String> properties = new HashMap<>(this.defaults.getValue().getProperties(this.name));
             properties.putAll(this.properties);
+            Configurator.removeDeprecatedProperties(result, properties);
             Configurator.resolveAndAssignFields(result, properties);
             Configurator.resolveAndInvokePropertyMethods(result, properties);
             for (Object object : this.getConfigurableObjects(result)) {
+                Configurator.removeDeprecatedProperties(object, properties);
                 Configurator.resolveAndAssignFields(object, properties);
                 Configurator.resolveAndInvokePropertyMethods(object, properties);
             }
