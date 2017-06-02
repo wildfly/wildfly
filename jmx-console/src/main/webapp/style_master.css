@@ -1,0 +1,92 @@
+A{
+text-decoration:underline
+}
+A:LINK{
+color:#000099
+}
+A:VISITED{
+color:#880088
+}
+A:HOVER{
+color:#FF6600
+}
+A:ACTIVE{
+color:#FF0000
+}
+BODY{
+background-color:#FFFFFF;
+font-family:Tahoma,Verdana,sans-serif;
+font-size:8pt
+}
+H1{
+color:#000099;
+font-size:16pt;
+font-weight:bold
+}
+H2{
+margin:2px;
+padding:2px;
+font-size:12pt;
+font-weight:bold
+}
+H3{
+margin:2px;
+padding:2px;
+font-size:10pt;
+font-weight:normal
+}
+IMG{
+border:0
+}
+INPUT{
+font-family:Tahoma,Verdana,sans-serif;
+font-size:8pt
+}
+INPUT.readonly{
+border:1px solid #999999;
+background-color:#C0C0C0
+}
+INPUT.writable{
+border:1px solid #999999;
+background-color:#FFFFFF
+}
+TD{
+background-color:#E0E0E0;
+font-family:Tahoma,Verdana,sans-serif;
+font-size:8pt
+}
+TD.arg{
+background-color:#BBBBBB;
+font-family:Tahoma,Verdana,sans-serif;
+font-size:8pt
+}
+TD.param{
+color:#880000;
+font-size:8pt;
+font-weight:bold;
+font-family:Tahoma,Verdana,sans-serif
+}
+TH{
+cellspacing:2px;
+padding-bottom:1px;
+padding-left:4px;
+padding-right:4px;
+padding-top:1px;
+background-color:#999999;
+color:#000000;
+font-family:Tahoma,Verdana,sans-serif;
+font-size:8pt;
+font-weight:bold
+}
+pre {
+  white-space: pre-wrap;       /* css-3 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+* .error {
+  font-size: 8pt;
+  color: red;
+}
+         
