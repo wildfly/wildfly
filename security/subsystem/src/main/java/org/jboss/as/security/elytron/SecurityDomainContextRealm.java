@@ -17,6 +17,7 @@ package org.jboss.as.security.elytron;
 
 import java.security.Principal;
 import java.security.acl.Group;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -95,8 +96,11 @@ public class SecurityDomainContextRealm implements SecurityRealm {
         return new PicketBoxBasedIdentity(principal);
     }
 
-    @Override
     public SupportLevel getCredentialAcquireSupport(Class<? extends Credential> credentialType, String algorithmName) throws RealmUnavailableException {
+        return SupportLevel.UNSUPPORTED;
+    }
+
+    public SupportLevel getCredentialAcquireSupport(Class<? extends Credential> credentialType, String algorithmName, AlgorithmParameterSpec parameterSpec) throws RealmUnavailableException {
         return SupportLevel.UNSUPPORTED;
     }
 
@@ -123,9 +127,12 @@ public class SecurityDomainContextRealm implements SecurityRealm {
             return principal;
         }
 
-        @Override
         public SupportLevel getCredentialAcquireSupport(Class<? extends Credential> credentialType, String algorithmName) throws RealmUnavailableException {
             return SecurityDomainContextRealm.this.getCredentialAcquireSupport(credentialType, algorithmName);
+        }
+
+        public SupportLevel getCredentialAcquireSupport(Class<? extends Credential> credentialType, String algorithmName, AlgorithmParameterSpec parameterSpec) throws RealmUnavailableException {
+            return SecurityDomainContextRealm.this.getCredentialAcquireSupport(credentialType, algorithmName, parameterSpec);
         }
 
         @Override
