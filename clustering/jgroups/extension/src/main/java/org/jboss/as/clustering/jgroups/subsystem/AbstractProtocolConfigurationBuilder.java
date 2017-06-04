@@ -24,15 +24,21 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.AbstractProtocolResourceDefinition.Attribute.*;
 
+import java.lang.reflect.Method;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.jgroups.protocol.ProtocolFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -52,6 +58,7 @@ import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -91,7 +98,6 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
         return this.name;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public final P createProtocol(ProtocolStackConfiguration stackConfiguration) {
         // A "native" protocol is one that is not specified as a class name
@@ -102,16 +108,45 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
             Class<? extends Protocol> protocolClass = module.getClassLoader().loadClass(className).asSubclass(Protocol.class);
             Protocol protocol = ProtocolFactory.newInstance(protocolClass);
             // Only transform "native" protocols
+            @SuppressWarnings("unchecked")
             P result = (P) (nativeProtocol ? ProtocolFactory.TRANSFORMER.apply(protocol) : protocol);
             Map<String, String> properties = new HashMap<>(this.defaults.getValue().getProperties(this.name));
             properties.putAll(this.properties);
+            Configurator.removeDeprecatedProperties(result, properties);
             Configurator.resolveAndAssignFields(result, properties);
             Configurator.resolveAndInvokePropertyMethods(result, properties);
+            for (Object object : this.getConfigurableObjects(result)) {
+                Configurator.removeDeprecatedProperties(object, properties);
+                Configurator.resolveAndAssignFields(object, properties);
+                Configurator.resolveAndInvokePropertyMethods(object, properties);
+            }
+            if (!properties.isEmpty()) {
+                JGroupsLogger.ROOT_LOGGER.ignoredProperties(this.name, properties);
+            }
             this.accept(result);
             result.enableStats(this.statisticsEnabled != null ? this.statisticsEnabled : stackConfiguration.isStatisticsEnabled());
             return result;
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
+        }
+    }
+
+    private List<Object> getConfigurableObjects(P protocol) throws Exception {
+        @SuppressWarnings("unchecked")
+        PrivilegedExceptionAction<List<Object>> action = () -> {
+            // Protocol.getConfigurableObjects() is protected
+            Method method = Protocol.class.getDeclaredMethod("getConfigurableObjects");
+            method.setAccessible(true);
+            try {
+                return (List<Object>) method.invoke(protocol);
+            } finally {
+                method.setAccessible(false);
+            }
+        };
+        try {
+            return Optional.ofNullable(WildFlySecurityManager.doUnchecked(action)).orElse(Collections.emptyList());
+        } catch (PrivilegedActionException e) {
+            throw e.getException();
         }
     }
 }
