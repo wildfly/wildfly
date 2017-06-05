@@ -54,6 +54,8 @@ public abstract class AbstractAuditLogTestCase {
     protected static final String USER = "user1";
     protected static final String UNKNOWN_USER = "unknown-user";
     protected static final String PASSWORD = "password1";
+    protected static final String WRONG_PASSWORD = "wrongPassword";
+    protected static final String EMPTY_PASSWORD = "";
     protected static final String SD_DEFAULT = "other";
     protected static final String SD_WITHOUT_LOGIN_PERMISSION = "no-login-permission";
 

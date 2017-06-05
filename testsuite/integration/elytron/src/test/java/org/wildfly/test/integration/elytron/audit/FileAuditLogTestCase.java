@@ -37,7 +37,6 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.ServerReload;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.elytron.FileAuditLog;
@@ -79,32 +78,45 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
     }
 
     /**
-     * Tests whether failed authentication was logged.
+     * Tests whether failed authentication with wrong user was logged.
      */
     @Test
     @OperateOnDeployment(SD_DEFAULT)
-    public void testFailedAuth() throws Exception {
+    public void testFailedAuthWrongUser() throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + "role1");
 
         discardCurrentContents(AUDIT_LOG_FILE);
         Utils.makeCallWithBasicAuthn(servletUrl, UNKNOWN_USER, PASSWORD, SC_UNAUTHORIZED);
 
-        assertTrue("Failed authentication was not logged", loggedFailedAuth(AUDIT_LOG_FILE, UNKNOWN_USER));
+        assertTrue("Failed authentication with wrong user was not logged", loggedFailedAuth(AUDIT_LOG_FILE, UNKNOWN_USER));
     }
 
     /**
-     * Tests whether authentication with empty username was logged.
+     * Tests whether failed authentication with wrong password was logged.
      */
-    @Ignore("https://issues.jboss.org/browse/ELY-1171")
     @Test
     @OperateOnDeployment(SD_DEFAULT)
-    public void testAuthWithEmptyName() throws Exception {
+    public void testFailedAuthWrongPassword() throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + "role1");
 
         discardCurrentContents(AUDIT_LOG_FILE);
-        Utils.makeCallWithBasicAuthn(servletUrl, "", PASSWORD, SC_UNAUTHORIZED);
+        Utils.makeCallWithBasicAuthn(servletUrl, USER, WRONG_PASSWORD, SC_UNAUTHORIZED);
 
-        assertTrue("Authentication with empty username was not logged", loggedFailedAuth(AUDIT_LOG_FILE, USER));
+        assertTrue("Failed authentication with wrong password was not logged", loggedFailedAuth(AUDIT_LOG_FILE, USER));
+    }
+
+    /**
+     * Tests whether failed authentication with empty password was logged.
+     */
+    @Test
+    @OperateOnDeployment(SD_DEFAULT)
+    public void testFailedAuthEmptyPassword() throws Exception {
+        final URL servletUrl = new URL(url.toExternalForm() + "role1");
+
+        discardCurrentContents(AUDIT_LOG_FILE);
+        Utils.makeCallWithBasicAuthn(servletUrl, USER, EMPTY_PASSWORD, SC_UNAUTHORIZED);
+
+        assertTrue("Failed authentication with empty password was not logged", loggedFailedAuth(AUDIT_LOG_FILE, USER));
     }
 
     /**
