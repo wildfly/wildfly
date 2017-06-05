@@ -27,16 +27,17 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.RuntimeResourceRegistration;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.Attribute;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.FieldType;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceController;
@@ -54,7 +55,7 @@ import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
  * Operation handler for registration of fork protocol runtime resources.
  * @author Paul Ferraro
  */
-public class ForkProtocolResourceRegistrationHandler implements OperationStepHandler, ProtocolMetricsHandler.ProtocolLocator {
+public class ForkProtocolRuntimeResourceRegistration implements RuntimeResourceRegistration, ProtocolMetricsHandler.ProtocolLocator {
 
     @Override
     public Protocol findProtocol(OperationContext context) throws ClassNotFoundException, ModuleLoadException {
@@ -95,12 +96,13 @@ public class ForkProtocolResourceRegistrationHandler implements OperationStepHan
     }
 
     @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+    public void register(OperationContext context) throws OperationFailedException {
 
+        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
         String protocolName = context.getCurrentAddressValue();
-        String moduleName = ProtocolResourceDefinition.Attribute.MODULE.resolveModelAttribute(context, operation).asString();
-        Class<? extends Protocol> protocolClass = ProtocolResourceRegistrationHandler.findProtocolClass(context, protocolName, moduleName);
+        String moduleName = ProtocolResourceDefinition.Attribute.MODULE.resolveModelAttribute(context, resource.getModel()).asString();
+        Class<? extends Protocol> protocolClass = ChannelRuntimeResourceRegistration.findProtocolClass(context, protocolName, moduleName);
 
         final Map<String, Attribute> attributes = ProtocolMetricsHandler.findProtocolAttributes(protocolClass);
 
@@ -130,5 +132,10 @@ public class ForkProtocolResourceRegistrationHandler implements OperationStepHan
             FieldType type = FieldType.valueOf(attribute.getType());
             protocolRegistration.registerMetric(new SimpleAttributeDefinitionBuilder(name, type.getModelType()).setStorageRuntime().build(), handler);
         }
+    }
+
+    @Override
+    public void unregister(OperationContext context) {
+        context.getResourceRegistrationForUpdate().unregisterOverrideModel(context.getCurrentAddressValue());
     }
 }

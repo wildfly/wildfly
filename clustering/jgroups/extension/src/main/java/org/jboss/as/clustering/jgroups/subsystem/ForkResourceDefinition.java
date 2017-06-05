@@ -92,6 +92,6 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
         ResourceServiceHandler handler = new ForkServiceHandler(builderFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-        new ProtocolRegistration(builderFactory, new ForkProtocolResourceRegistrationHandler()).register(registration);
+        new ProtocolRegistration(builderFactory, new ForkProtocolRuntimeResourceRegistration()).register(registration);
     }
 }

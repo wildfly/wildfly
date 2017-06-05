@@ -32,9 +32,9 @@ import java.util.stream.Stream;
 import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.RuntimeResourceRegistration;
 import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
@@ -127,7 +127,7 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
         this.descriptorConfigurator = Consumers.empty();
     }
 
-    ProtocolRegistration(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory, OperationStepHandler runtimeResourceRegistration) {
+    ProtocolRegistration(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory, RuntimeResourceRegistration runtimeResourceRegistration) {
         this.parentBuilderFactory = parentBuilderFactory;
         this.descriptorConfigurator = descriptor -> descriptor.addRuntimeResourceRegistration(runtimeResourceRegistration);
     }
