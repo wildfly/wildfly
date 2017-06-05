@@ -27,7 +27,7 @@
            xmlns:threads="urn:jboss:domain:threads:1.1"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="1.0">
+           version="1.1">
 
     <xs:import namespace="urn:jboss:domain:threads:1.1" schemaLocation="jboss-as-threads_1_1.xsd"/>
 
