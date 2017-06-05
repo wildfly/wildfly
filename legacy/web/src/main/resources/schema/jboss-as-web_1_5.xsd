@@ -28,7 +28,7 @@
            xmlns="urn:jboss:domain:web:1.5"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="2.0">
+           version="1.5">
 
    <!-- The web subsystem root element -->
    <xs:element name="subsystem" type="web-containerType" />
