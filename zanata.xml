@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <config xmlns="http://zanata.org/namespace/config/">
-    <url>https://translate.jboss.org/</url>
-    <project>jboss-eap</project>
+    <url>https://vendors.zanata.redhat.com/</url>
+    <project>eap</project>
     <project-version>7.1</project-version>
     <project-type>properties</project-type>
 
