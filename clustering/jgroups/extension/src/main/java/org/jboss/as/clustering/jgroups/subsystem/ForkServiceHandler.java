@@ -29,8 +29,8 @@ import java.util.EnumSet;
 import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
-import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -46,7 +46,7 @@ import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
 /**
  * @author Paul Ferraro
  */
-public class ForkServiceHandler extends ParentResourceServiceHandler<ChannelFactory> {
+public class ForkServiceHandler extends SimpleResourceServiceHandler<ChannelFactory> {
 
     ForkServiceHandler(ResourceServiceBuilderFactory<ChannelFactory> factory) {
         super(factory);
