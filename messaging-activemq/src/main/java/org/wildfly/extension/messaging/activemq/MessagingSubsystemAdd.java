@@ -87,30 +87,34 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         ModelNode threadPoolMaxSize = operation.get(GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE.getName());
         ModelNode scheduledThreadPoolMaxSize = operation.get(GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE.getName());
-        final int threadPoolMaxSizeValue;
-        final int scheduledThreadPoolMaxSizeValue;
+        final Integer threadPoolMaxSizeValue;
+        final Integer scheduledThreadPoolMaxSizeValue;
 
-        // if Artemis System properties are defined, they have precedence over the default values of undefined
-        // attributes from the management mode (for backwards compatibility).
         // if the attributes are defined, their value is used (and the system properties are ignored)
         Properties sysprops = System.getProperties();
 
-        if (!threadPoolMaxSize.isDefined()
-                && sysprops.containsKey(THREAD_POOL_MAX_SIZE_PROPERTY_KEY)) {
+        if (threadPoolMaxSize.isDefined()) {
+            threadPoolMaxSizeValue = GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt();
+        } else if (sysprops.containsKey(THREAD_POOL_MAX_SIZE_PROPERTY_KEY)) {
             threadPoolMaxSizeValue = Integer.parseInt(sysprops.getProperty(THREAD_POOL_MAX_SIZE_PROPERTY_KEY));
         } else {
-            threadPoolMaxSizeValue = GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt();
+            // property is not configured using sysprop or explicit attribute
+            threadPoolMaxSizeValue = null;
         }
 
-        if (!scheduledThreadPoolMaxSize.isDefined()
-                && sysprops.containsKey(SCHEDULED_THREAD_POOL_SIZE_PROPERTY_KEY)) {
+        if (scheduledThreadPoolMaxSize.isDefined()) {
+            scheduledThreadPoolMaxSizeValue = GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt();
+        } else if (sysprops.containsKey(SCHEDULED_THREAD_POOL_SIZE_PROPERTY_KEY)) {
             scheduledThreadPoolMaxSizeValue = Integer.parseInt(sysprops.getProperty(SCHEDULED_THREAD_POOL_SIZE_PROPERTY_KEY));
         } else {
-            scheduledThreadPoolMaxSizeValue = GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt();
+            // property is not configured using sysprop or explicit attribute
+            scheduledThreadPoolMaxSizeValue = null;
         }
 
-        MessagingLogger.ROOT_LOGGER.debugf("Setting global client thread pool size to: regular=%s, scheduled=%s", threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
-        ActiveMQClient.setGlobalThreadPoolProperties(threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
+        if (threadPoolMaxSizeValue != null && scheduledThreadPoolMaxSizeValue != null) {
+            MessagingLogger.ROOT_LOGGER.debugf("Setting global client thread pool size to: regular=%s, scheduled=%s", threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
+            ActiveMQClient.setGlobalThreadPoolProperties(threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
+        }
         context.getServiceTarget().addService(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL, new ThreadPoolService())
                 .install();
     }

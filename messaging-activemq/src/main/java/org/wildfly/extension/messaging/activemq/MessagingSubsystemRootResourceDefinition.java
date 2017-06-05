@@ -30,7 +30,6 @@ import static org.jboss.dmr.ModelType.INT;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -59,7 +58,6 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
             .setAttributeGroup("global-client")
             .setXmlName("thread-pool-max-size")
             .setRequired(false)
-            .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_THREAD_POOL_MAX_SIZE))
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -68,7 +66,6 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
             .setAttributeGroup("global-client")
             .setXmlName("scheduled-thread-pool-max-size")
             .setRequired(false)
-            .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE))
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
