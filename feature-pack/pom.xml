@@ -40,6 +40,7 @@
 
     <properties>
         <project.version>${project.version}</project.version>
+        <license.directory>${project.build.directory}/${project.build.finalName}/content/docs/licenses</license.directory>
     </properties>
 
     <build>
@@ -3015,7 +3016,7 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${project.basedir}/src/main/resources/content/docs/licenses</outputDirectory>
+                                    <outputDirectory>${license.directory}</outputDirectory>
                                     <resources>
                                         <resource>
                                             <directory>${project.basedir}/src/license</directory>
@@ -3042,8 +3043,8 @@
                                 <phase>prepare-package</phase>
                                 <configuration>
                                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
-                                    <licensesOutputDirectory>${project.basedir}/src/main/resources/content/docs/licenses</licensesOutputDirectory>
-                                    <licensesOutputFile>${project.basedir}/src/main/resources/content/docs/licenses/licenses.xml</licensesOutputFile>
+                                    <licensesOutputDirectory>${license.directory}</licensesOutputDirectory>
+                                    <licensesOutputFile>${license.directory}/licenses.xml</licensesOutputFile>
                                 </configuration>
                             </execution>
                         </executions>
@@ -3076,12 +3077,12 @@
                                 <configuration>
                                     <transformationSets>
                                         <transformationSet>
-                                            <dir>src/main/resources/content/docs/licenses</dir>
+                                            <dir>${license.directory}</dir>
                                             <includes>
                                                 <include>licenses.xml</include>
                                             </includes>
                                             <stylesheet>src/main/resources/content/docs/licenses/licenses.xsl</stylesheet>
-                                            <outputDir>src/main/resources/content/docs/licenses</outputDir>
+                                            <outputDir>${license.directory}</outputDir>
                                             <fileMappers>
                                                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
                                                     <targetExtension>.html</targetExtension>
