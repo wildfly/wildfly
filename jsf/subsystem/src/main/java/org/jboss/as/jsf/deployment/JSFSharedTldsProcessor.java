@@ -52,14 +52,11 @@ public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
 
     private static final String[] JSF_TAGLIBS = { "html_basic.tld", "jsf_core.tld", "mojarra_ext.tld", "myfaces_core.tld", "myfaces_html.tld" };
 
-    private final Map<String, List<TldMetaData>> jsfTldMap = new HashMap<String, List<TldMetaData>>();
-   // private final ArrayList<TldMetaData> jsfTlds = new ArrayList<TldMetaData>();
-
     public JSFSharedTldsProcessor() {
-        init();
     }
 
-    private void init() {
+    private Map<String, List<TldMetaData>> getMap() {
+        final Map<String, List<TldMetaData>> jsfTldMap = new HashMap<>();
         JSFModuleIdFactory moduleFactory = JSFModuleIdFactory.getInstance();
         List<String> jsfSlotNames = moduleFactory.getActiveJSFVersions();
 
@@ -82,6 +79,7 @@ public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
 
             jsfTldMap.put(slot, jsfTlds);
         }
+        return jsfTldMap;
     }
 
     private TldMetaData parseTLD(InputStream is) throws Exception {
@@ -120,7 +118,7 @@ public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
         }
         slot = JSFModuleIdFactory.getInstance().computeSlot(slot);
 
-        List<TldMetaData> jsfTlds = this.jsfTldMap.get(slot);
+        List<TldMetaData> jsfTlds = this.getMap().get(slot);
         if (jsfTlds != null) tldsMetaData.addAll(jsfTlds);
         deploymentUnit.putAttachment(SharedTldsMetaDataBuilder.ATTACHMENT_KEY, tldsMetaData);
     }

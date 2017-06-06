@@ -65,16 +65,9 @@ import io.undertow.websockets.extensions.PerMessageDeflateHandshake;
 import io.undertow.websockets.jsr.ServerWebSocketContainer;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
 
-import org.apache.jasper.deploy.FunctionInfo;
 import org.apache.jasper.deploy.JspPropertyGroup;
-import org.apache.jasper.deploy.TagAttributeInfo;
-import org.apache.jasper.deploy.TagFileInfo;
-import org.apache.jasper.deploy.TagInfo;
 import org.apache.jasper.deploy.TagLibraryInfo;
-import org.apache.jasper.deploy.TagLibraryValidatorInfo;
-import org.apache.jasper.deploy.TagVariableInfo;
 import org.apache.jasper.servlet.JspServlet;
-import org.jboss.annotation.javaee.Icon;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -88,19 +81,16 @@ import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
-import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.spec.AttributeMetaData;
 import org.jboss.metadata.web.spec.CookieConfigMetaData;
 import org.jboss.metadata.web.spec.DispatcherType;
 import org.jboss.metadata.web.spec.EmptyRoleSemanticType;
 import org.jboss.metadata.web.spec.ErrorPageMetaData;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
-import org.jboss.metadata.web.spec.FunctionMetaData;
 import org.jboss.metadata.web.spec.HttpMethodConstraintMetaData;
 import org.jboss.metadata.web.spec.JspConfigMetaData;
 import org.jboss.metadata.web.spec.JspPropertyGroupMetaData;
@@ -113,11 +103,7 @@ import org.jboss.metadata.web.spec.SecurityConstraintMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.metadata.web.spec.SessionConfigMetaData;
 import org.jboss.metadata.web.spec.SessionTrackingModeType;
-import org.jboss.metadata.web.spec.TagFileMetaData;
-import org.jboss.metadata.web.spec.TagMetaData;
-import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.metadata.web.spec.TransportGuaranteeType;
-import org.jboss.metadata.web.spec.VariableMetaData;
 import org.jboss.metadata.web.spec.WebResourceCollectionMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
@@ -207,8 +193,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     public static final ServiceName SERVICE_NAME = ServiceName.of("UndertowDeploymentInfoService");
 
     public static final String DEFAULT_SERVLET_NAME = "default";
-    public static final String OLD_URI_PREFIX = "http://java.sun.com";
-    public static final String NEW_URI_PREFIX = "http://xmlns.jcp.org";
     public static final String UNDERTOW = "undertow";
 
     private DeploymentInfo deploymentInfo;
@@ -216,9 +200,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     private final JBossWebMetaData mergedMetaData;
     private final String deploymentName;
-    private final TldsMetaData tldsMetaData;
-    private final List<TldMetaData> sharedTlds;
     private final Module module;
+    private final HashMap<String, TagLibraryInfo> tldInfo;
     private final ScisMetaData scisMetaData;
     private final VirtualFile deploymentRoot;
     private final String jaccContextId;
@@ -254,11 +237,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<BiFunction> securityFunction = new InjectedValue<>();
     private final List<Predicate> allowSuspendedRequests;
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupHandler> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig, WebSocketDeploymentInfo webSocketDeploymentInfo, File tempDir, List<File> externalResources, List<Predicate> allowSuspendedRequests) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final HashMap<String, TagLibraryInfo> tldInfo, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupHandler> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig, WebSocketDeploymentInfo webSocketDeploymentInfo, File tempDir, List<File> externalResources, List<Predicate> allowSuspendedRequests) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
-        this.tldsMetaData = tldsMetaData;
-        this.sharedTlds = sharedTlds;
+        this.tldInfo = tldInfo;
         this.module = module;
         this.scisMetaData = scisMetaData;
         this.deploymentRoot = deploymentRoot;
@@ -649,8 +631,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
             JSPConfig jspConfig = servletContainer.getJspConfig();
             final Set<String> seenMappings = new HashSet<>();
-
-            HashMap<String, TagLibraryInfo> tldInfo = createTldsInfo(tldsMetaData, sharedTlds);
 
             //default JSP servlet
             final ServletInfo jspServlet = jspConfig != null ? jspConfig.createJSPServletInfo() : null;
@@ -1217,181 +1197,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return ret;
     }
 
-    private static HashMap<String, TagLibraryInfo> createTldsInfo(final TldsMetaData tldsMetaData, List<TldMetaData> sharedTlds) throws ClassNotFoundException {
-
-        final HashMap<String, TagLibraryInfo> ret = new HashMap<>();
-        if (tldsMetaData != null) {
-            if (tldsMetaData.getTlds() != null) {
-                for (Map.Entry<String, TldMetaData> tld : tldsMetaData.getTlds().entrySet()) {
-                    createTldInfo(tld.getKey(), tld.getValue(), ret);
-                }
-            }
-            if (sharedTlds != null) {
-                for (TldMetaData metaData : sharedTlds) {
-
-                    createTldInfo(null, metaData, ret);
-                }
-            }
-        }
-
-        //we also register them under the new namespaces
-        for (String k : new HashSet<>(ret.keySet())) {
-            if (k != null) {
-                if (k.startsWith(OLD_URI_PREFIX)) {
-                    String newUri = k.replace(OLD_URI_PREFIX, NEW_URI_PREFIX);
-                    ret.put(newUri, ret.get(k));
-                }
-            }
-        }
-
-        return ret;
-    }
-
-    private static TagLibraryInfo createTldInfo(final String location, final TldMetaData tldMetaData, final HashMap<String, TagLibraryInfo> ret) throws ClassNotFoundException {
-        String relativeLocation = location;
-        String jarPath = null;
-        if (relativeLocation != null && relativeLocation.startsWith("/WEB-INF/lib/")) {
-            int pos = relativeLocation.indexOf('/', "/WEB-INF/lib/".length());
-            if (pos > 0) {
-                jarPath = relativeLocation.substring(pos);
-                if (jarPath.startsWith("/")) {
-                    jarPath = jarPath.substring(1);
-                }
-                relativeLocation = relativeLocation.substring(0, pos);
-            }
-        }
-
-        TagLibraryInfo tagLibraryInfo = new TagLibraryInfo();
-        tagLibraryInfo.setTlibversion(tldMetaData.getTlibVersion());
-        if (tldMetaData.getJspVersion() == null) {
-            tagLibraryInfo.setJspversion(tldMetaData.getVersion());
-        } else {
-            tagLibraryInfo.setJspversion(tldMetaData.getJspVersion());
-        }
-        tagLibraryInfo.setShortname(tldMetaData.getShortName());
-        tagLibraryInfo.setUri(tldMetaData.getUri());
-        if (tldMetaData.getDescriptionGroup() != null) {
-            tagLibraryInfo.setInfo(tldMetaData.getDescriptionGroup().getDescription());
-        }
-        // Validator
-        if (tldMetaData.getValidator() != null) {
-            TagLibraryValidatorInfo tagLibraryValidatorInfo = new TagLibraryValidatorInfo();
-            tagLibraryValidatorInfo.setValidatorClass(tldMetaData.getValidator().getValidatorClass());
-            if (tldMetaData.getValidator().getInitParams() != null) {
-                for (ParamValueMetaData paramValueMetaData : tldMetaData.getValidator().getInitParams()) {
-                    tagLibraryValidatorInfo.addInitParam(paramValueMetaData.getParamName(), paramValueMetaData.getParamValue());
-                }
-            }
-            tagLibraryInfo.setValidator(tagLibraryValidatorInfo);
-        }
-        // Tag
-        if (tldMetaData.getTags() != null) {
-            for (TagMetaData tagMetaData : tldMetaData.getTags()) {
-                TagInfo tagInfo = new TagInfo();
-                tagInfo.setTagName(tagMetaData.getName());
-                tagInfo.setTagClassName(tagMetaData.getTagClass());
-                tagInfo.setTagExtraInfo(tagMetaData.getTeiClass());
-                if (tagMetaData.getBodyContent() != null) {
-                    tagInfo.setBodyContent(tagMetaData.getBodyContent().toString());
-                }
-                tagInfo.setDynamicAttributes(tagMetaData.getDynamicAttributes());
-                // Description group
-                if (tagMetaData.getDescriptionGroup() != null) {
-                    DescriptionGroupMetaData descriptionGroup = tagMetaData.getDescriptionGroup();
-                    if (descriptionGroup.getIcons() != null && descriptionGroup.getIcons().value() != null
-                            && (descriptionGroup.getIcons().value().length > 0)) {
-                        Icon icon = descriptionGroup.getIcons().value()[0];
-                        tagInfo.setLargeIcon(icon.largeIcon());
-                        tagInfo.setSmallIcon(icon.smallIcon());
-                    }
-                    tagInfo.setInfoString(descriptionGroup.getDescription());
-                    tagInfo.setDisplayName(descriptionGroup.getDisplayName());
-                }
-                // Variable
-                if (tagMetaData.getVariables() != null) {
-                    for (VariableMetaData variableMetaData : tagMetaData.getVariables()) {
-                        TagVariableInfo tagVariableInfo = new TagVariableInfo();
-                        tagVariableInfo.setNameGiven(variableMetaData.getNameGiven());
-                        tagVariableInfo.setNameFromAttribute(variableMetaData.getNameFromAttribute());
-                        tagVariableInfo.setClassName(variableMetaData.getVariableClass());
-                        tagVariableInfo.setDeclare(variableMetaData.getDeclare());
-                        if (variableMetaData.getScope() != null) {
-                            tagVariableInfo.setScope(variableMetaData.getScope().toString());
-                        }
-                        tagInfo.addTagVariableInfo(tagVariableInfo);
-                    }
-                }
-                // Attribute
-                if (tagMetaData.getAttributes() != null) {
-                    for (AttributeMetaData attributeMetaData : tagMetaData.getAttributes()) {
-                        TagAttributeInfo tagAttributeInfo = new TagAttributeInfo();
-                        tagAttributeInfo.setName(attributeMetaData.getName());
-                        tagAttributeInfo.setType(attributeMetaData.getType());
-                        tagAttributeInfo.setReqTime(attributeMetaData.getRtexprvalue());
-                        tagAttributeInfo.setRequired(attributeMetaData.getRequired());
-                        tagAttributeInfo.setFragment(attributeMetaData.getFragment());
-                        if (attributeMetaData.getDeferredValue() != null) {
-                            tagAttributeInfo.setDeferredValue("true");
-                            tagAttributeInfo.setExpectedTypeName(attributeMetaData.getDeferredValue().getType());
-                        } else {
-                            tagAttributeInfo.setDeferredValue("false");
-                        }
-                        if (attributeMetaData.getDeferredMethod() != null) {
-                            tagAttributeInfo.setDeferredMethod("true");
-                            tagAttributeInfo.setMethodSignature(attributeMetaData.getDeferredMethod().getMethodSignature());
-                        } else {
-                            tagAttributeInfo.setDeferredMethod("false");
-                        }
-                        tagInfo.addTagAttributeInfo(tagAttributeInfo);
-                    }
-                }
-                tagLibraryInfo.addTagInfo(tagInfo);
-            }
-        }
-        // Tag files
-        if (tldMetaData.getTagFiles() != null) {
-            for (TagFileMetaData tagFileMetaData : tldMetaData.getTagFiles()) {
-                TagFileInfo tagFileInfo = new TagFileInfo();
-                tagFileInfo.setName(tagFileMetaData.getName());
-                tagFileInfo.setPath(tagFileMetaData.getPath());
-                tagLibraryInfo.addTagFileInfo(tagFileInfo);
-            }
-        }
-        // Function
-        if (tldMetaData.getFunctions() != null) {
-            for (FunctionMetaData functionMetaData : tldMetaData.getFunctions()) {
-                FunctionInfo functionInfo = new FunctionInfo();
-                functionInfo.setName(functionMetaData.getName());
-                functionInfo.setFunctionClass(functionMetaData.getFunctionClass());
-                functionInfo.setFunctionSignature(functionMetaData.getFunctionSignature());
-                tagLibraryInfo.addFunctionInfo(functionInfo);
-            }
-        }
-
-        if (jarPath == null && relativeLocation == null) {
-            if (!ret.containsKey(tagLibraryInfo.getUri())) {
-                ret.put(tagLibraryInfo.getUri(), tagLibraryInfo);
-            }
-        } else if (jarPath == null) {
-            tagLibraryInfo.setLocation("");
-            tagLibraryInfo.setPath(relativeLocation);
-            if (!ret.containsKey(tagLibraryInfo.getUri())) {
-                ret.put(tagLibraryInfo.getUri(), tagLibraryInfo);
-            }
-            ret.put(relativeLocation, tagLibraryInfo);
-        } else {
-            tagLibraryInfo.setLocation(relativeLocation);
-            tagLibraryInfo.setPath(jarPath);
-            if (!ret.containsKey(tagLibraryInfo.getUri())) {
-                ret.put(tagLibraryInfo.getUri(), tagLibraryInfo);
-            }
-            if (jarPath.equals("META-INF/taglib.tld")) {
-                ret.put(relativeLocation, tagLibraryInfo);
-            }
-        }
-        return tagLibraryInfo;
-    }
-
     private static void addListener(final ClassLoader classLoader, final ComponentRegistry components, final DeploymentInfo d, final ListenerMetaData listener) throws ClassNotFoundException {
 
         ListenerInfo l;
@@ -1519,8 +1324,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     public static class Builder {
         private JBossWebMetaData mergedMetaData;
         private String deploymentName;
-        private TldsMetaData tldsMetaData;
-        private List<TldMetaData> sharedTlds;
+        private HashMap<String, TagLibraryInfo> tldInfo;
         private Module module;
         private ScisMetaData scisMetaData;
         private VirtualFile deploymentRoot;
@@ -1554,13 +1358,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return this;
         }
 
-        public Builder setTldsMetaData(final TldsMetaData tldsMetaData) {
-            this.tldsMetaData = tldsMetaData;
-            return this;
-        }
-
-        public Builder setSharedTlds(final List<TldMetaData> sharedTlds) {
-            this.sharedTlds = sharedTlds;
+        public Builder setTldInfo(HashMap<String, TagLibraryInfo> tldInfo) {
+            this.tldInfo = tldInfo;
             return this;
         }
 
@@ -1683,7 +1482,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         }
 
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module,
+            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldInfo, module,
                     scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays,
                     expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers,
                     threadSetupActions, explodedDeployment, servletExtensions, sharedSessionManagerConfig, webSocketDeploymentInfo, tempDir, externalResources, allowSuspendedRequests);
