@@ -113,6 +113,7 @@
                             <systemPropertyVariables combine.children="append">
                                 <arquillian.launch>xts-servers</arquillian.launch>
                             </systemPropertyVariables>
+                            <!--<argLine>${surefire.system.args}</argLine>-->
                         </configuration>
                     </plugin>
                 </plugins>
@@ -135,6 +136,7 @@
                                 <!-- This test uses Byteman and requires permission on a random port every time -->
                                 <exclude>**/BAParticipantCompletionTestCase.java</exclude>
                             </excludes>
+                            <!--<argLine>${surefire.system.args}</argLine>-->
                         </configuration>
                     </plugin>
                 </plugins>

@@ -218,7 +218,7 @@
         <version.org.wildfly.build-tools>1.2.2.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>3.0.0.Beta25</version.org.wildfly.core>
-        <version.org.wildfly.plugin>1.2.0.Alpha4</version.org.wildfly.plugin>
+        <version.org.wildfly.plugin>1.2.0.Alpha5</version.org.wildfly.plugin>
         <version.org.wildfly.http-client>1.0.0.CR4</version.org.wildfly.http-client>
         <version.org.wildfly.maven.plugins>1.0.0</version.org.wildfly.maven.plugins>
         <version.org.wildfly.naming-client>1.0.0.Beta16</version.org.wildfly.naming-client>
@@ -6296,12 +6296,11 @@
                     --add-modules=java.xml.bind
                 </modular.jdk.args>
                 <!-- [WFCORE-1494] remove JUL workaround -->
-                <modular.jdk.props>-Dsun.util.logging.disableCallerCheck=true -Dsun.reflect.debugModuleAccessChecks=true</modular.jdk.props>
+                <modular.jdk.props>-Dsun.util.logging.disableCallerCheck=true -Dsun.reflect.debugModuleAccessChecks=true -Djdk.attach.allowAttachSelf=true</modular.jdk.props>
                 <!-- There are lots of issues with checkstyle runtime on JDK9, it somewhat works but really slows down build, disabling it for now-->
                 <checkstyle.skip>true</checkstyle.skip>
                 <!-- we override javassist to version that works on JDK9 -->
                 <version.org.javassist>3.22.0-CR2</version.org.javassist>
-                <version.org.jboss.byteman>4.0.0-BETA5</version.org.jboss.byteman>
             </properties>
             <build>
                 <plugins>

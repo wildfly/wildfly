@@ -70,22 +70,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <artifactId>maven-checkstyle-plugin</artifactId>
-                        <configuration>
-                            <!-- workaround for not working includeTestSourceDirectory parameter -->
-                            <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>check-style</id>
-                                <phase>test-compile</phase>
-                                <goals>
-                                    <goal>checkstyle</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
                 </plugins>
             </build>
         </profile>
