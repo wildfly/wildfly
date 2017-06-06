@@ -40,7 +40,7 @@
 
     <properties>
         <project.version>${project.version}</project.version>
-        <license.directory>${project.build.directory}/${project.build.finalName}/content/docs/licenses</license.directory>
+        <license.directory>${project.basedir}/target/${project.build.finalName}/content/docs/licenses</license.directory>
     </properties>
 
     <build>
