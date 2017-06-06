@@ -840,6 +840,13 @@
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client-legacy</artifactId>
+            <!--
+                This should not be part of the feature pack since this legacy client will never be used inside a server,
+                it's sole intent is for usage outside of the server. So we use the provided scope to not pollute the
+                testsuite classpath. While the artifact being part of the maven repo and license generation should
+                still work.
+            -->
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
