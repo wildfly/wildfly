@@ -273,7 +273,6 @@
         <module>bean-validation</module>
         <module>build</module>
         <module>client/ejb</module>
-        <module>client/ejb-legacy</module>
         <module>client/jms</module>
         <module>client/shade</module>
         <module>clustering</module>
@@ -4340,22 +4339,6 @@
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-ejb-client</artifactId>
                 <version>${version.org.jboss.ejb-client}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.remoting3</groupId>
-                        <artifactId>jboss-remoting</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss</groupId>
-                <artifactId>jboss-ejb-client-legacy</artifactId>
-                <version>${version.org.jboss.ejb-client-legacy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.remoting3</groupId>
