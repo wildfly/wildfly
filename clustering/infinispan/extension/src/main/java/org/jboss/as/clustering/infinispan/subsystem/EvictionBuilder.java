@@ -42,9 +42,8 @@ import org.wildfly.clustering.service.Builder;
  */
 public class EvictionBuilder extends ComponentBuilder<EvictionConfiguration> {
 
-    private final EvictionConfigurationBuilder builder = new ConfigurationBuilder().eviction();
-
     private volatile EvictionStrategy strategy;
+    private volatile long maxEntries;
 
     EvictionBuilder(PathAddress cacheAddress) {
         super(CacheComponent.EVICTION, cacheAddress);
@@ -53,16 +52,19 @@ public class EvictionBuilder extends ComponentBuilder<EvictionConfiguration> {
     @Override
     public Builder<EvictionConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.strategy = ModelNodes.asEnum(STRATEGY.resolveModelAttribute(context, model), EvictionStrategy.class);
-        // Use MANUAL instead of NONE to silence log WARNs on cache configuration validation
-        this.builder.strategy(this.strategy.isEnabled() ? this.strategy : EvictionStrategy.MANUAL);
-        if (this.strategy.isEnabled()) {
-            this.builder.type(EvictionType.COUNT).size(MAX_ENTRIES.resolveModelAttribute(context, model).asLong());
-        }
+        this.maxEntries = MAX_ENTRIES.resolveModelAttribute(context, model).asLong();
         return this;
     }
 
     @Override
     public EvictionConfiguration getValue() {
-        return this.builder.create();
+        EvictionConfigurationBuilder builder = new ConfigurationBuilder().eviction()
+                // Use MANUAL instead of NONE to silence log WARNs on cache configuration validation
+                .strategy(this.strategy.isEnabled() ? this.strategy : EvictionStrategy.MANUAL)
+                ;
+        if (this.strategy.isEnabled()) {
+            builder.type(EvictionType.COUNT).size(this.maxEntries);
+        }
+        return builder.create();
     }
 }
