@@ -94,7 +94,7 @@ public class ReloadWSDLPublisherTestCase {
     public void testHelloStringAfterReload() throws Exception {
         Assert.assertTrue(containerController.isStarted(DEFAULT_JBOSSAS));
         ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
+                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http");
         QName serviceName = new QName("http://jbossws.org/basic", "POJOService");
         URL wsdlURL = new URL(managementClient.getWebUri().toURL(), '/' + DEPLOYMENT + "/POJOService?wsdl");
         checkWsdl(wsdlURL);

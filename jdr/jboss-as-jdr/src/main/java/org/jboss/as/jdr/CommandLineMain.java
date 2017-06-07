@@ -67,7 +67,7 @@ public class CommandLineMain {
     public static void main(String[] args) {
         int port = 9990;
         String host = "localhost";
-        String protocol = "http-remoting";
+        String protocol = "remote+http";
         String config = null;
         try {
             CommandLine line = parser.parse(options, args, false);

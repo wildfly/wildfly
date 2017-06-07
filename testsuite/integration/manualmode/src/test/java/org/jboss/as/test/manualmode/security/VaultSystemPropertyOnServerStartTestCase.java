@@ -107,7 +107,7 @@ public class VaultSystemPropertyOnServerStartTestCase {
 
         final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
         managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
-                TestSuiteEnvironment.getServerPort(), "http-remoting");
+                TestSuiteEnvironment.getServerPort(), "remote+http");
 
         serverSetup.setup(managementClient, CONTAINER);
 

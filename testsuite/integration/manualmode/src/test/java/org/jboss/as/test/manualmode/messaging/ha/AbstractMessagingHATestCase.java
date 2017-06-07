@@ -151,7 +151,7 @@ public abstract class AbstractMessagingHATestCase {
     protected static InitialContext createJNDIContextFromServer1() throws NamingException {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "http-remoting://127.0.0.1:8080"));
+        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://127.0.0.1:8080"));
         env.put(Context.SECURITY_PRINCIPAL, "guest");
         env.put(Context.SECURITY_CREDENTIALS, "guest");
         return new InitialContext(env);
@@ -160,7 +160,7 @@ public abstract class AbstractMessagingHATestCase {
     protected static  InitialContext createJNDIContextFromServer2() throws NamingException {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "http-remoting://127.0.0.1:8180"));
+        env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://127.0.0.1:8180"));
         env.put(Context.SECURITY_PRINCIPAL, "guest");
         env.put(Context.SECURITY_CREDENTIALS, "guest");
         return new InitialContext(env);

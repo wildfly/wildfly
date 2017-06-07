@@ -210,7 +210,7 @@
         <attribute name="remotePort" default="4447"/>
         <attribute name="securityRealm" default="NOT_DEFINED"/>
         <attribute name="userName" default="NOT_DEFINED"/>
-        <attribute name="protocol" default="http-remoting"/>
+        <attribute name="protocol" default="remote+http"/>
 
         <sequential>
             <echo message="Adding a new remote outbound connection @{connectionName} for config @{name}"/>

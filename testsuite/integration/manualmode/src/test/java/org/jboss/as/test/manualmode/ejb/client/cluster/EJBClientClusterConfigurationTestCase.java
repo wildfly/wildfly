@@ -246,7 +246,7 @@ public class EJBClientClusterConfigurationTestCase {
         final int managementPort = TestSuiteEnvironment.getServerPort() + portOffset;
         final String managementAddress = getServerAddress(container);
 
-        return new ManagementClient(client, managementAddress, managementPort, "http-remoting");
+        return new ManagementClient(client, managementAddress, managementPort, "remote+http");
     }
 
     private static int getContainerPortOffset(final String container) {

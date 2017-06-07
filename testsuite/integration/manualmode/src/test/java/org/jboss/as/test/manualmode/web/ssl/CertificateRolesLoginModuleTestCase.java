@@ -97,7 +97,7 @@ public class CertificateRolesLoginModuleTestCase extends AbstractCertificateLogi
         containerController.start(CONTAINER);
         ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
         ManagementClient managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
-                TestSuiteEnvironment.getServerPort(), "http-remoting");
+                TestSuiteEnvironment.getServerPort(), "remote+http");
 
         LOGGER.trace("*** will configure server now");
         AbstractCertificateLoginModuleTestCase.HTTPSConnectorSetup.INSTANCE.setup(managementClient, CONTAINER);
@@ -127,7 +127,7 @@ public class CertificateRolesLoginModuleTestCase extends AbstractCertificateLogi
         deployer.undeploy(APP_NAME);
         final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
         final ManagementClient managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
-                TestSuiteEnvironment.getServerPort(), "http-remoting");
+                TestSuiteEnvironment.getServerPort(), "remote+http");
 
         LOGGER.trace("*** reseting test configuration");
         AbstractCertificateLoginModuleTestCase.HTTPSConnectorSetup.INSTANCE.tearDown(managementClient, CONTAINER);

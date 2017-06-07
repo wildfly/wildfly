@@ -100,7 +100,7 @@ public class ReloadRequiringChangesTestCase {
     public void testWSDLHostChangeRequiresReloadAndDoesNotAffectRuntime() throws Exception {
         Assert.assertTrue(containerController.isStarted(DEFAULT_JBOSSAS));
         ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
+                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http");
 
         ModelControllerClient client = managementClient.getControllerClient();
         String initialWsdlHost = null;
@@ -132,7 +132,7 @@ public class ReloadRequiringChangesTestCase {
     public void testWSDLHostUndefineRequiresReloadAndDoesNotAffectRuntime() throws Exception {
         Assert.assertTrue(containerController.isStarted(DEFAULT_JBOSSAS));
         ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
+                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http");
 
         ModelControllerClient client = managementClient.getControllerClient();
         String initialWsdlHost = null;

@@ -259,8 +259,8 @@
                                                  udpMcastAddress="${mcast-clusterA}" diagnosticsMcastAddress="${mcast-clusterA}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-clusterA}"/>
         <ts.config-as.add-port-offset name="wildfly-clusterA-node0"/>
         <ts.config-as.configure-multicast-ttl name="wildfly-clusterA-node0" mcast.ttl="${mcast.ttl}"/>
-        <!--ts.config-as.add-remote-outbound-connection name="wildfly-clusterA-node0" node="${node2}" remotePort="8280" protocol="http-remoting"/-->
-        <ts.config-as.add-remote-outbound-connection name="wildfly-clusterA-node0" node="${node2}" remotePort="8280" protocol="http-remoting" securityRealm="PasswordRealm" userName="remoteejbuser"/>
+        <!--ts.config-as.add-remote-outbound-connection name="wildfly-clusterA-node0" node="${node2}" remotePort="8280" protocol="remote+http"/-->
+        <ts.config-as.add-remote-outbound-connection name="wildfly-clusterA-node0" node="${node2}" remotePort="8280" protocol="remote+http" securityRealm="PasswordRealm" userName="remoteejbuser"/>
         <ts.config-as.add-identity-realm name="wildfly-clusterA-node0" realmName="PasswordRealm" secret="cmVtQHRlZWpicGFzc3dkMQ=="/>
 
         <ts.config-as.change-cache-container-name name="wildfly-clusterA-node0" container="ejb" newName="ejb-forwarder"/>
@@ -277,7 +277,7 @@
                                                  udpMcastAddress="${mcast-clusterA}" diagnosticsMcastAddress="${mcast-clusterA}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-clusterA}"/>
         <ts.config-as.add-port-offset name="wildfly-clusterA-node1" offset="100" nativePort="9999" httpPort="9990"/>
         <ts.config-as.configure-multicast-ttl name="wildfly-clusterA-node1" mcast.ttl="${mcast.ttl}"/>
-        <ts.config-as.add-remote-outbound-connection name="wildfly-clusterA-node1" node="${node2}" remotePort="8280" protocol="http-remoting" securityRealm="PasswordRealm" userName="remoteejbuser" />
+        <ts.config-as.add-remote-outbound-connection name="wildfly-clusterA-node1" node="${node2}" remotePort="8280" protocol="remote+http" securityRealm="PasswordRealm" userName="remoteejbuser" />
         <ts.config-as.add-identity-realm name="wildfly-clusterA-node1" realmName="PasswordRealm" secret="cmVtQHRlZWpicGFzc3dkMQ=="/>
 
         <ts.config-as.change-cache-container-name name="wildfly-clusterA-node1" container="ejb" newName="ejb-forwarder"/>
