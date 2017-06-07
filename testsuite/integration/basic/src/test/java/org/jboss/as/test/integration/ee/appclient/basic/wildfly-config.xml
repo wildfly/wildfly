@@ -25,7 +25,7 @@
         </authentication-rules>
         <authentication-configurations>
             <configuration name="default">
-                <allow-all-sasl-mechanisms />
+                <sasl-mechanism-selector selector="#ALL" />
                 <set-mechanism-properties>
                     <property key="wildfly.sasl.local-user.quiet-auth" value="true" />
                  </set-mechanism-properties>
