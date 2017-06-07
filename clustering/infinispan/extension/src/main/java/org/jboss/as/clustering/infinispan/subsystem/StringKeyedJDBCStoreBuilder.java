@@ -46,9 +46,8 @@ public class StringKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcStringBase
     private final ValueDependency<TableManipulationConfiguration> table;
     private final ValueDependency<Module> module;
 
-    StringKeyedJDBCStoreBuilder(PathAddress address) {
-        super(address, JdbcStringBasedStoreConfigurationBuilder.class);
-        PathAddress cacheAddress = address.getParent();
+    StringKeyedJDBCStoreBuilder(PathAddress cacheAddress) {
+        super(cacheAddress, JdbcStringBasedStoreConfigurationBuilder.class);
         PathAddress containerAddress = cacheAddress.getParent();
         this.table = new InjectedValueDependency<>(CacheComponent.STRING_TABLE.getServiceName(cacheAddress), TableManipulationConfiguration.class);
         this.module = new InjectedValueDependency<>(CacheContainerComponent.MODULE.getServiceName(containerAddress), Module.class);

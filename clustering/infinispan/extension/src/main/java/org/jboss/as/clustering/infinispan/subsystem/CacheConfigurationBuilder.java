@@ -50,7 +50,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
@@ -88,7 +87,7 @@ public class CacheConfigurationBuilder extends CapabilityServiceNameProvider imp
 
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
-        ServiceBuilder<Configuration> builder = this.builder.build(target).setInitialMode(ServiceController.Mode.PASSIVE);
+        ServiceBuilder<Configuration> builder = this.builder.build(target);
         Stream.of(this.eviction, this.expiration, this.locking, this.persistence, this.transaction, this.module).forEach(dependency -> dependency.register(builder));
         return builder;
     }

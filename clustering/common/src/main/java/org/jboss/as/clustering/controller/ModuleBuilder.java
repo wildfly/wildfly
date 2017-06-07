@@ -66,7 +66,7 @@ public class ModuleBuilder implements ResourceServiceBuilder<Module>, Service<Mo
     public ServiceBuilder<Module> build(ServiceTarget target) {
         return target.addService(this.name, this)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
-                .setInitialMode(ServiceController.Mode.PASSIVE)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 ;
     }
 

@@ -42,9 +42,8 @@ public class MixedKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcMixedStoreC
     private final ValueDependency<TableManipulationConfiguration> binaryTable;
     private final ValueDependency<TableManipulationConfiguration> stringTable;
 
-    MixedKeyedJDBCStoreBuilder(PathAddress address) {
-        super(address, JdbcMixedStoreConfigurationBuilder.class);
-        PathAddress cacheAddress = address.getParent();
+    MixedKeyedJDBCStoreBuilder(PathAddress cacheAddress) {
+        super(cacheAddress, JdbcMixedStoreConfigurationBuilder.class);
         this.binaryTable = new InjectedValueDependency<>(CacheComponent.BINARY_TABLE.getServiceName(cacheAddress), TableManipulationConfiguration.class);
         this.stringTable = new InjectedValueDependency<>(CacheComponent.STRING_TABLE.getServiceName(cacheAddress), TableManipulationConfiguration.class);
     }

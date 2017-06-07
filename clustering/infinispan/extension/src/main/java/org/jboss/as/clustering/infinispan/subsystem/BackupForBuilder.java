@@ -29,7 +29,6 @@ import java.util.Optional;
 
 import org.infinispan.configuration.cache.BackupForConfiguration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -41,7 +40,7 @@ import org.wildfly.clustering.service.Builder;
  * Builds a service that provides the {@link BackupForConfiguration} for a cache.
  * @author Paul Ferraro
  */
-public class BackupForBuilder extends ComponentBuilder<BackupForConfiguration> implements ResourceServiceBuilder<BackupForConfiguration> {
+public class BackupForBuilder extends ComponentBuilder<BackupForConfiguration> {
 
     private volatile org.infinispan.configuration.cache.BackupForBuilder builder = new ConfigurationBuilder().sites().backupFor();
 

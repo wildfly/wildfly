@@ -31,7 +31,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.LockingConfiguration;
 import org.infinispan.configuration.cache.LockingConfigurationBuilder;
 import org.infinispan.util.concurrent.IsolationLevel;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -42,7 +41,7 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Paul Ferraro
  */
-public class LockingBuilder extends ComponentBuilder<LockingConfiguration> implements ResourceServiceBuilder<LockingConfiguration> {
+public class LockingBuilder extends ComponentBuilder<LockingConfiguration> {
 
     private final LockingConfigurationBuilder builder = new ConfigurationBuilder().locking();
 

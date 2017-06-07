@@ -57,8 +57,8 @@ public class RemoteStoreBuilder extends StoreBuilder<RemoteStoreConfiguration, R
     private volatile long socketTimeout;
     private volatile boolean tcpNoDelay;
 
-    public RemoteStoreBuilder(PathAddress address) {
-        super(address, RemoteStoreConfigurationBuilder.class);
+    public RemoteStoreBuilder(PathAddress cacheAddress) {
+        super(cacheAddress, RemoteStoreConfigurationBuilder.class);
     }
 
     @Override

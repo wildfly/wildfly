@@ -28,7 +28,6 @@ import static org.jboss.as.clustering.infinispan.subsystem.JGroupsTransportResou
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.ChannelFactoryTransport;
 import org.jboss.as.controller.OperationContext;
@@ -46,7 +45,7 @@ import org.wildfly.clustering.service.ValueDependency;
 /**
  * @author Paul Ferraro
  */
-public class JGroupsTransportBuilder extends ComponentBuilder<TransportConfiguration> implements ResourceServiceBuilder<TransportConfiguration> {
+public class JGroupsTransportBuilder extends GlobalComponentBuilder<TransportConfiguration> {
 
     private final String containerName;
 
