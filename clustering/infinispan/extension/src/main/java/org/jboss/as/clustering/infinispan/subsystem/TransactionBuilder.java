@@ -34,7 +34,6 @@ import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.configuration.cache.TransactionConfigurationBuilder;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.tm.DummyTransactionManager;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;
@@ -51,7 +50,7 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Paul Ferraro
  */
-public class TransactionBuilder extends ComponentBuilder<TransactionConfiguration> implements ResourceServiceBuilder<TransactionConfiguration> {
+public class TransactionBuilder extends ComponentBuilder<TransactionConfiguration> {
 
     private final InjectedValue<TransactionManager> tm = new InjectedValue<>();
     private final InjectedValue<TransactionSynchronizationRegistry> tsr = new InjectedValue<>();

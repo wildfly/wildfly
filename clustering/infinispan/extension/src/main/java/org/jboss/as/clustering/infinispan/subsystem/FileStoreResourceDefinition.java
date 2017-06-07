@@ -81,7 +81,7 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     FileStoreResourceDefinition() {
         super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH),
                 descriptor -> descriptor.addAttributes(Attribute.class),
-                address -> new FileStoreBuilder(address), registration -> registration.getPathManager().ifPresent(pathManager -> {
+                address -> new FileStoreBuilder(address.getParent()), registration -> registration.getPathManager().ifPresent(pathManager -> {
                     ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(pathManager)
                             .setPathAttribute(Attribute.RELATIVE_PATH.getDefinition())
                             .setRelativeToAttribute(Attribute.RELATIVE_TO.getDefinition())

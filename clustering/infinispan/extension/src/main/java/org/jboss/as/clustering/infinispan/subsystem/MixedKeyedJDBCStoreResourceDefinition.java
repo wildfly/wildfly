@@ -106,7 +106,7 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
                 .addRequiredChildren(BinaryTableResourceDefinition.PATH, StringTableResourceDefinition.PATH)
                 // Translate deprecated BINARY_TABLE attribute into separate add table operation
                 .setAddOperationTransformation(new TableAttributeTransformation(DeprecatedAttribute.BINARY_TABLE, BinaryTableResourceDefinition.PATH).andThen(new TableAttributeTransformation(DeprecatedAttribute.STRING_TABLE, StringTableResourceDefinition.PATH)))
-            , address -> new MixedKeyedJDBCStoreBuilder(address), registration -> {
+            , address -> new MixedKeyedJDBCStoreBuilder(address.getParent()), registration -> {
                 registration.registerReadWriteAttribute(DeprecatedAttribute.BINARY_TABLE.getDefinition(), BinaryKeyedJDBCStoreResourceDefinition.LEGACY_READ_TABLE_HANDLER, BinaryKeyedJDBCStoreResourceDefinition.LEGACY_WRITE_TABLE_HANDLER);
                 registration.registerReadWriteAttribute(DeprecatedAttribute.STRING_TABLE.getDefinition(), StringKeyedJDBCStoreResourceDefinition.LEGACY_READ_TABLE_HANDLER, StringKeyedJDBCStoreResourceDefinition.LEGACY_WRITE_TABLE_HANDLER);
 

@@ -52,8 +52,8 @@ public abstract class JDBCStoreBuilder<C extends AbstractJdbcStoreConfiguration,
     private volatile ValueDependency<DataSource> dataSource;
     private volatile DatabaseType dialect;
 
-    JDBCStoreBuilder(PathAddress address, Class<B> builderClass) {
-        super(address, builderClass);
+    JDBCStoreBuilder(PathAddress cacheAddress, Class<B> builderClass) {
+        super(cacheAddress, builderClass);
     }
 
     @Override

@@ -27,7 +27,6 @@ import static org.jboss.as.clustering.infinispan.subsystem.JGroupsTransportResou
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.SiteConfiguration;
 import org.infinispan.configuration.global.SiteConfigurationBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -45,7 +44,7 @@ import org.wildfly.clustering.service.ValueDependency;
 /**
  * @author Paul Ferraro
  */
-public class SiteBuilder extends ComponentBuilder<SiteConfiguration> implements ResourceServiceBuilder<SiteConfiguration> {
+public class SiteBuilder extends GlobalComponentBuilder<SiteConfiguration> {
 
     private volatile ValueDependency<ChannelFactory> factory;
 

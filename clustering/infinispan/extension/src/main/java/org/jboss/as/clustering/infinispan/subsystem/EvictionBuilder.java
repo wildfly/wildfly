@@ -30,7 +30,6 @@ import org.infinispan.configuration.cache.EvictionConfiguration;
 import org.infinispan.configuration.cache.EvictionConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -41,7 +40,7 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Paul Ferraro
  */
-public class EvictionBuilder extends ComponentBuilder<EvictionConfiguration> implements ResourceServiceBuilder<EvictionConfiguration> {
+public class EvictionBuilder extends ComponentBuilder<EvictionConfiguration> {
 
     private final EvictionConfigurationBuilder builder = new ConfigurationBuilder().eviction();
 

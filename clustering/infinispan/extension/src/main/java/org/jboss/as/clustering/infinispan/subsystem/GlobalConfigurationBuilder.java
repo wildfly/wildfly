@@ -53,7 +53,6 @@ import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
@@ -147,7 +146,6 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
     public ServiceBuilder<GlobalConfiguration> build(ServiceTarget target) {
         ServiceBuilder<GlobalConfiguration> builder = target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
-                .setInitialMode(ServiceController.Mode.PASSIVE)
                 ;
         this.pools.values().forEach(dependency -> dependency.register(builder));
         this.schedulers.values().forEach(dependency -> dependency.register(builder));

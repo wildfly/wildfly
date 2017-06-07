@@ -27,7 +27,6 @@ import static org.jboss.as.clustering.infinispan.subsystem.StoreWriteBehindResou
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.AsyncStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -37,7 +36,7 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Paul Ferraro
  */
-public class StoreWriteBehindBuilder extends ComponentBuilder<AsyncStoreConfiguration> implements ResourceServiceBuilder<AsyncStoreConfiguration> {
+public class StoreWriteBehindBuilder extends ComponentBuilder<AsyncStoreConfiguration> {
 
     private final AsyncStoreConfigurationBuilder<?> builder = new ConfigurationBuilder().persistence().addSingleFileStore().async();
 

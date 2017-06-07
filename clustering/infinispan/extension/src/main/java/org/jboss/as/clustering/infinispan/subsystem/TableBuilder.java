@@ -31,7 +31,6 @@ import org.infinispan.persistence.jdbc.configuration.TableManipulationConfigurat
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder.StringTableManipulationConfigurationBuilder;
 import org.jboss.as.clustering.controller.Attribute;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -41,7 +40,7 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Paul Ferraro
  */
-public class TableBuilder extends ComponentBuilder<TableManipulationConfiguration> implements ResourceServiceBuilder<TableManipulationConfiguration> {
+public class TableBuilder extends ComponentBuilder<TableManipulationConfiguration> {
 
     private final Attribute prefixAttribute;
     private final TableManipulationConfigurationBuilder<JdbcStringBasedStoreConfigurationBuilder, StringTableManipulationConfigurationBuilder> builder = new ConfigurationBuilder().persistence().addStore(JdbcStringBasedStoreConfigurationBuilder.class).table();
