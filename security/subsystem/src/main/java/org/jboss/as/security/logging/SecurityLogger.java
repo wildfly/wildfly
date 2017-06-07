@@ -876,4 +876,13 @@ public interface SecurityLogger extends BasicLogger {
      */
     @Message(id = 102, value = "Could not find a %s of type %s in the JSSE security domain %s")
     StartException expectedManagerTypeNotFound(final String managerName, final String managerType, final String legacyDomainName);
+
+    /**
+     * Creates an exception indicating that an {@link org.wildfly.security.authz.AuthorizationIdentity} could not be created
+     * because a valid authenticated Subject was not established yet.
+     *
+     * @return a {@link IllegalStateException} instance.
+     */
+    @Message(id = 103, value = "Unable to create AuthorizationIdentity: no authenticated Subject was found")
+    IllegalStateException unableToCreateAuthorizationIdentity();
 }
