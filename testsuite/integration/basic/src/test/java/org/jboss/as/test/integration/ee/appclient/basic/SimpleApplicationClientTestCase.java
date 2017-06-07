@@ -91,7 +91,6 @@ public class SimpleApplicationClientTestCase {
         clientOverride.addAsManifestResource(new StringAsset("Main-Class: " + DescriptorClientMain.class.getName() + "\n"), "MANIFEST.MF");
         clientOverride.addAsManifestResource(SimpleApplicationClientTestCase.class.getPackage(), "application-client.xml", "application-client.xml");
         clientOverride.addAsManifestResource(SimpleApplicationClientTestCase.class.getPackage(), "jboss-client.xml", "jboss-client.xml");
-        clientOverride.addAsManifestResource(SimpleApplicationClientTestCase.class.getPackage(), "wildfly-config.xml", "wildfly-config.xml");
         ear.addAsModule(clientOverride);
 
         archive = ear;
