@@ -25,7 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.StoreWriteBehindResourceDefinition.Attribute.*;
 
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
-import org.infinispan.configuration.cache.AsyncStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -38,7 +37,8 @@ import org.wildfly.clustering.service.Builder;
  */
 public class StoreWriteBehindBuilder extends ComponentBuilder<AsyncStoreConfiguration> {
 
-    private final AsyncStoreConfigurationBuilder<?> builder = new ConfigurationBuilder().persistence().addSingleFileStore().async();
+    private volatile int queueSize;
+    private volatile int poolSize;
 
     StoreWriteBehindBuilder(PathAddress cacheAddress) {
         super(CacheComponent.STORE_WRITE, cacheAddress);
@@ -46,13 +46,16 @@ public class StoreWriteBehindBuilder extends ComponentBuilder<AsyncStoreConfigur
 
     @Override
     public AsyncStoreConfiguration getValue() {
-        return this.builder.create();
+        return new ConfigurationBuilder().persistence().addSingleFileStore().async()
+                .modificationQueueSize(this.queueSize)
+                .threadPoolSize(this.poolSize)
+                .create();
     }
 
     @Override
     public Builder<AsyncStoreConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.builder.modificationQueueSize(MODIFICATION_QUEUE_SIZE.resolveModelAttribute(context, model).asInt());
-        this.builder.threadPoolSize(THREAD_POOL_SIZE.resolveModelAttribute(context, model).asInt());
+        this.queueSize = MODIFICATION_QUEUE_SIZE.resolveModelAttribute(context, model).asInt();
+        this.poolSize = THREAD_POOL_SIZE.resolveModelAttribute(context, model).asInt();
         return this;
     }
 }

@@ -31,7 +31,6 @@ import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.TransactionConfiguration;
-import org.infinispan.configuration.cache.TransactionConfigurationBuilder;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.tm.DummyTransactionManager;
 import org.jboss.as.clustering.dmr.ModelNodes;
@@ -44,19 +43,19 @@ import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.OptionalInjectedValue;
 
 /**
  * @author Paul Ferraro
  */
 public class TransactionBuilder extends ComponentBuilder<TransactionConfiguration> {
 
-    private final InjectedValue<TransactionManager> tm = new InjectedValue<>();
-    private final InjectedValue<TransactionSynchronizationRegistry> tsr = new InjectedValue<>();
+    private final OptionalInjectedValue<TransactionManager> tm = new OptionalInjectedValue<>();
+    private final OptionalInjectedValue<TransactionSynchronizationRegistry> tsr = new OptionalInjectedValue<>();
 
-    private final TransactionConfigurationBuilder builder = new ConfigurationBuilder().transaction();
-
+    private volatile LockingMode locking;
+    private volatile long timeout;
     private volatile TransactionMode mode;
 
     public TransactionBuilder(PathAddress cacheAddress) {
@@ -87,23 +86,21 @@ public class TransactionBuilder extends ComponentBuilder<TransactionConfiguratio
     @Override
     public Builder<TransactionConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.mode = ModelNodes.asEnum(MODE.resolveModelAttribute(context, model), TransactionMode.class);
-        this.builder.lockingMode(ModelNodes.asEnum(LOCKING.resolveModelAttribute(context, model), LockingMode.class));
-        this.builder.cacheStopTimeout(STOP_TIMEOUT.resolveModelAttribute(context, model).asLong());
-        this.builder.transactionMode((this.mode == TransactionMode.NONE) ? org.infinispan.transaction.TransactionMode.NON_TRANSACTIONAL : org.infinispan.transaction.TransactionMode.TRANSACTIONAL);
-        this.builder.useSynchronization(this.mode == TransactionMode.NON_XA);
-        this.builder.recovery().enabled(this.mode == TransactionMode.FULL_XA);
-        this.builder.invocationBatching().disable();
+        this.locking = ModelNodes.asEnum(LOCKING.resolveModelAttribute(context, model), LockingMode.class);
+        this.timeout = STOP_TIMEOUT.resolveModelAttribute(context, model).asLong();
         return this;
     }
 
     @Override
     public TransactionConfiguration getValue() {
-        TransactionManager tm = this.tm.getOptionalValue();
-        this.builder.transactionManagerLookup((tm != null) ? new TransactionManagerProvider(tm) : null);
-
-        TransactionSynchronizationRegistry tsr = this.tsr.getOptionalValue();
-        this.builder.transactionSynchronizationRegistryLookup((tsr != null) ? new TransactionSynchronizationRegistryProvider(tsr) : null);
-
-        return this.builder.create();
+        return new ConfigurationBuilder().transaction()
+                .lockingMode(this.locking)
+                .cacheStopTimeout(this.timeout)
+                .transactionManagerLookup(this.tm.getOptionalValue().map(TransactionManagerProvider::new).orElse(null))
+                .transactionSynchronizationRegistryLookup(this.tsr.getOptionalValue().map(TransactionSynchronizationRegistryProvider::new).orElse(null))
+                .transactionMode((this.mode == TransactionMode.NONE) ? org.infinispan.transaction.TransactionMode.NON_TRANSACTIONAL : org.infinispan.transaction.TransactionMode.TRANSACTIONAL)
+                .useSynchronization(this.mode == TransactionMode.NON_XA)
+                .recovery().enabled(this.mode == TransactionMode.FULL_XA).transaction()
+                .create();
     }
 }
