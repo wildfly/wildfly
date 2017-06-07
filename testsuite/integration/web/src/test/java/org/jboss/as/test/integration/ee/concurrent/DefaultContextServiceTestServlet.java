@@ -62,6 +62,8 @@ public class DefaultContextServiceTestServlet extends HttpServlet {
         final Runnable contextualProxy = contextService.createContextualProxy(runnable,Runnable.class);
         final ExecutorService executorService = Executors.newSingleThreadExecutor();
         try {
+            // WFLY-5588: DefaultContextServiceServletTestCase fails on IBM jdk
+            System.setProperty("com.ibm.enableClassCaching", "false");
             // WFLY-4308: test serialization of contextual proxies
             final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             final ObjectOutputStream stream = new ObjectOutputStream(bytes);
@@ -73,6 +75,7 @@ public class DefaultContextServiceTestServlet extends HttpServlet {
         } catch (Throwable e) {
             throw new ServletException(e);
         } finally {
+            System.clearProperty("com.ibm.enableClassCaching");
             executorService.shutdown();
         }
     }
