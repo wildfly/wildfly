@@ -83,24 +83,24 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * <ul>
  *     <li>
  *         If the target supports identity propagation, the identity obtained from the Elytron configuration that matches
- *         the target URI and the purpose {@code client-auth} is used to build the {@link IdentityToken} that is inserted
- *         into the SAS context. This usually means using a configuration backed by a security domain so that the current
- *         authenticated identity in that domain is used to build the identity token.
+ *         the target URI to build the {@link IdentityToken} that is inserted into the SAS context. This usually means using
+ *         a configuration backed by a security domain so that the current authenticated identity in that domain is used
+ *         to build the identity token.
  *     </li>
  *     <li>
  *         If in addition to the identity token the target requires username/password authentication, it means the target
  *         expects this runtime (server) to identify itself using its own username and credentials. Once this runtime
  *         has been authenticated, the identity contained in the identity token is used as a run-as identity.
  *         <p/>
- *         In terms of configuration, it must match the target URI and the purpose {@code server-auth} and it is usually
- *         a config that defines this server's auth-name and associated credential via credential-reference.
+ *         In terms of configuration, it must match the target URI and it is usually a config that defines this
+ *         server's auth-name and associated credential via credential-reference.
  *     </li>
  *     <li>
  *         If the target doesn't support identity propagation but supports username/password authentication, the identity
- *         and credentials obtained from the Elytron configuration that matches the target URI and the purpose {@code client-auth}
- *         are used to build the {@link InitialContextToken}. Again, this usually means using a configuration backed by a
- *         security domain so that the current authenticated identity in that domain and its associated credentials are
- *         used to build the initial context token.
+ *         and credentials obtained from the Elytron configuration that matches the target URI to build
+ *         the {@link InitialContextToken}. Again, this usually means using a configuration backed by a security domain so
+ *         that the current authenticated identity in that domain and its associated credentials are used to build the
+ *         initial context token.
  *     </li>
  * </ul>
  */
@@ -183,8 +183,7 @@ public class ElytronSASClientInterceptor extends LocalObject implements ClientRe
             }
 
             if ((secMech.sas_context_mech.target_supports & IdentityAssertion.value) != 0) {
-                final AuthenticationConfiguration configuration = AUTH_CONFIG_CLIENT.
-                        getAuthenticationConfiguration(uri, authContext, -1, null, null, "client-auth");
+                final AuthenticationConfiguration configuration = AUTH_CONFIG_CLIENT.getAuthenticationConfiguration(uri, authContext, -1, null, null);
                 final Principal principal = AUTH_CONFIG_CLIENT.getPrincipal(configuration);
 
                 if (principal != null && principal != AnonymousPrincipal.getInstance()) {
@@ -219,13 +218,13 @@ public class ElytronSASClientInterceptor extends LocalObject implements ClientRe
 
                 // target might require an additional initial context token with a username/password pair for authentication.
                 if ((secMech.as_context_mech.target_requires & EstablishTrustInClient.value) != 0) {
-                    encodedAuthenticationToken = this.createInitialContextToken(uri, "server-auth", secMech);
+                    encodedAuthenticationToken = this.createInitialContextToken(uri, secMech);
                 }
             }
             else if ((secMech.as_context_mech.target_supports & EstablishTrustInClient.value) != 0) {
                 // target doesn't require an identity token but supports username/password authentication - try to build
                 // an initial context token using the configuration.
-                encodedAuthenticationToken = this.createInitialContextToken(uri, "client-auth", secMech);
+                encodedAuthenticationToken = this.createInitialContextToken(uri, secMech);
             }
 
             if (identityToken != ABSENT_IDENTITY_TOKEN || encodedAuthenticationToken != NO_AUTHENTICATION_TOKEN) {
@@ -354,20 +353,19 @@ public class ElytronSASClientInterceptor extends LocalObject implements ClientRe
 
     /**
      * Create an encoded {@link InitialContextToken} with an username/password pair obtained from an Elytron client configuration
-     * matched by the specified {@link URI} and purpose.
+     * matched by the specified {@link URI}.
      *
      * @param uri the target {@link URI}.
-     * @param purpose a {@link String} representing the purpose of the configuration that will be used.
      * @param secMech a reference to the {@link CompoundSecMech} that was found in the {@link ClientRequestInfo}.
      * @return the encoded {@link InitialContextToken}, if a valid username is obtained from the matched configuration;
      *         an empty {@code byte[]} otherwise;
      * @throws Exception if an error occurs while building the encoded {@link InitialContextToken}.
      */
-    private byte[] createInitialContextToken(final URI uri, final String purpose, final CompoundSecMech secMech) throws Exception {
+    private byte[] createInitialContextToken(final URI uri, final CompoundSecMech secMech) throws Exception {
 
         AuthenticationContext authContext = this.authContext == null ? AuthenticationContext.captureCurrent() : this.authContext;
-        // obtain the configuration that matches the URI and purpose.
-        final AuthenticationConfiguration configuration = AUTH_CONFIG_CLIENT.getAuthenticationConfiguration(uri, authContext, -1, null, null, purpose);
+        // obtain the configuration that matches the URI.
+        final AuthenticationConfiguration configuration = AUTH_CONFIG_CLIENT.getAuthenticationConfiguration(uri, authContext, -1, null, null);
 
         // get the callback handler from the configuration and use it to obtain a username/password pair.
         final CallbackHandler handler = AUTH_CONFIG_CLIENT.getCallbackHandler(configuration);
