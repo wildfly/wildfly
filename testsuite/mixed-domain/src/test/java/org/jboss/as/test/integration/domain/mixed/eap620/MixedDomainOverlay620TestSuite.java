@@ -40,6 +40,6 @@ public class MixedDomainOverlay620TestSuite extends MixedDomainTestSuite {
 
     @BeforeClass
     public static void initializeDomain() {
-        MixedDomainTestSuite.getSupport(MixedDomainOverlay620TestSuite.class, "master-config/host.xml", "slave-config/host-slave-overlay.xml", true, false, false);
+        MixedDomainTestSuite.getSupport(MixedDomainOverlay620TestSuite.class, "master-config/host.xml", "slave-config/host-slave-overlay.xml", Profile.DEFAULT, true, false, false);
     }
 }

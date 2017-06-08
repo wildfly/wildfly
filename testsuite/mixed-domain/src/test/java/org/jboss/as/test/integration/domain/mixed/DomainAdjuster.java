@@ -71,8 +71,6 @@ import org.junit.Assert;
  */
 public class DomainAdjuster {
 
-    //We only want to test the full ha profile in these tests
-    private final String FULL_HA = "full-ha";
     private final String MAIN_SERVER_GROUP = "main-server-group";
     private final String OTHER_SERVER_GROUP = "other-server-group";
     private static final Set<String> UNUSED_SERVER_GROUP_ATTRIBUTES = new HashSet<>(Arrays.asList("management-subsystem-endpoint", "deployment", "deployment-overlay", "jvm", "system-property"));
@@ -80,7 +78,7 @@ public class DomainAdjuster {
     protected DomainAdjuster() {
     }
 
-    static void adjustForVersion(final DomainClient client, final Version.AsVersion asVersion, final boolean withMasterServers) throws Exception {
+    static void adjustForVersion(final DomainClient client, final Version.AsVersion asVersion, final String profile, final boolean withMasterServers) throws Exception {
 
         final DomainAdjuster adjuster;
         switch (asVersion) {
@@ -99,20 +97,19 @@ public class DomainAdjuster {
             default:
                 adjuster = new DomainAdjuster();
         }
-
-        adjuster.adjust(client, withMasterServers);
+        adjuster.adjust(client, profile, withMasterServers);
     }
 
-    final void adjust(final DomainClient client, boolean withMasterServers) throws Exception {
+    final void adjust(final DomainClient client, String profile, boolean withMasterServers) throws Exception {
         //Trim it down so we have only
         //profile=full-ha,
         //the main-server-group and other-server-group
         //socket-binding-group = full-ha-sockets
         final List<String> allProfiles = getAllChildrenOfType(client, PathAddress.EMPTY_ADDRESS, PROFILE);
-        final ModelNode serverGroup = removeServerGroups(client);
+        final ModelNode serverGroup = removeServerGroups(client, profile);
 
         for (String profileName : allProfiles) {
-            if (profileName.equals(FULL_HA)) {
+            if (profile.equals(profileName)) {
                 continue;
             }
             removeProfile(client, profileName);
@@ -127,10 +124,10 @@ public class DomainAdjuster {
         removeHostExcludes(client);
 
         //Add a jaspi test security domain used later by the tests
-        addJaspiTestSecurityDomain(client);
+        addJaspiTestSecurityDomain(client, profile);
 
         //Version specific changes
-        final List<ModelNode> adjustments = adjustForVersion(client, PathAddress.pathAddress(PROFILE, FULL_HA), withMasterServers);
+        final List<ModelNode> adjustments = adjustForVersion(client, PathAddress.pathAddress(PROFILE, profile), withMasterServers);
         applyVersionAdjustments(client, adjustments);
     }
 
@@ -173,7 +170,7 @@ public class DomainAdjuster {
         return childNames;
     }
 
-    private ModelNode removeServerGroups(final DomainClient client) throws Exception {
+    private ModelNode removeServerGroups(final DomainClient client, String profile) throws Exception {
         final ModelNode op = Util.createEmptyOperation(READ_RESOURCE_OPERATION, PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP)));
         final ModelNode results = executeForResult(op, client);
         ModelNode group = null;
@@ -190,17 +187,37 @@ public class DomainAdjuster {
         }
         Assert.assertNotNull(group);
 
-        //Update main-server-group as a copy of other-server-group (cuts down on the amount of profiles needed)        f
+        //Update main-server-group as a copy of other-server-group (cuts down on the amount of profiles needed)
         final PathAddress mainServerGroupAddress = PathAddress.pathAddress(SERVER_GROUP, MAIN_SERVER_GROUP);
         for (Property property : group.asPropertyList()) {
             ModelNode updateMain;
             if (!UNUSED_SERVER_GROUP_ATTRIBUTES.contains(property.getName())) {
-                if (property.getValue().isDefined()) {
-                    updateMain = Util.getWriteAttributeOperation(mainServerGroupAddress, property.getName(), property.getValue());
+                if (PROFILE.equals(property.getName())) {
+                    updateMain = Util.getWriteAttributeOperation(mainServerGroupAddress, property.getName(), profile);
                 } else {
-                    updateMain = Util.getUndefineAttributeOperation(mainServerGroupAddress, property.getName());
+                    if (property.getValue().isDefined()) {
+                        updateMain = Util.getWriteAttributeOperation(mainServerGroupAddress, property.getName(), property.getValue());
+                    } else {
+                        updateMain = Util.getUndefineAttributeOperation(mainServerGroupAddress, property.getName());
+                    }
                 }
                 executeForResult(updateMain, client);
+            }
+        }
+        final PathAddress otherServerGroupAddress = PathAddress.pathAddress(SERVER_GROUP, OTHER_SERVER_GROUP);
+        for (Property property : group.asPropertyList()) {
+            ModelNode updateOther;
+            if (!UNUSED_SERVER_GROUP_ATTRIBUTES.contains(property.getName())) {
+                if (PROFILE.equals(property.getName())) {
+                    updateOther = Util.getWriteAttributeOperation(otherServerGroupAddress, property.getName(), profile);
+                } else {
+                    if (property.getValue().isDefined()) {
+                        updateOther = Util.getWriteAttributeOperation(mainServerGroupAddress, property.getName(), property.getValue());
+                    } else {
+                        updateOther = Util.getUndefineAttributeOperation(mainServerGroupAddress, property.getName());
+                    }
+                }
+                executeForResult(updateOther, client);
             }
         }
         return group;
@@ -216,9 +233,9 @@ public class DomainAdjuster {
         }
     }
 
-    private void addJaspiTestSecurityDomain(final DomainClient client) throws Exception {
+    private void addJaspiTestSecurityDomain(final DomainClient client, String profile) throws Exception {
         //Before when this test was configured via xml, there was an extra security domain for testing jaspi.
-        final PathAddress domain = PathAddress.pathAddress(PROFILE, FULL_HA)
+        final PathAddress domain = PathAddress.pathAddress(PROFILE, profile)
                 .append(SUBSYSTEM, SecurityExtension.SUBSYSTEM_NAME).append("security-domain", "jaspi-test");
         DomainTestUtils.executeForResult(Util.createAddOperation(domain), client);
 
