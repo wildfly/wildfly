@@ -37,7 +37,7 @@ public class CustomStoreConfigurationBuilder extends AbstractStoreConfigurationB
 
     @Override
     public CustomStoreConfiguration create() {
-        return new CustomStoreConfiguration(this.attributes, this.async.create(), this.singletonStore.create());
+        return new CustomStoreConfiguration(this.attributes.protect(), this.async.create(), this.singletonStore.create());
     }
 
     @Override
