@@ -115,6 +115,6 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     RemoteStoreResourceDefinition() {
         super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH),
                 descriptor -> descriptor.addAttributes(Attribute.class),
-                address -> new RemoteStoreBuilder(address), Consumers.empty());
+                address -> new RemoteStoreBuilder(address.getParent()), Consumers.empty());
     }
 }

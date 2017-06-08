@@ -27,8 +27,6 @@ import static org.jboss.as.clustering.infinispan.subsystem.StateTransferResource
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StateTransferConfiguration;
-import org.infinispan.configuration.cache.StateTransferConfigurationBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -38,9 +36,10 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Paul Ferraro
  */
-public class StateTransferBuilder extends ComponentBuilder<StateTransferConfiguration> implements ResourceServiceBuilder<StateTransferConfiguration> {
+public class StateTransferBuilder extends ComponentBuilder<StateTransferConfiguration> {
 
-    private final StateTransferConfigurationBuilder builder = new ConfigurationBuilder().clustering().stateTransfer();
+    private volatile int chunkSize;
+    private volatile long timeout;
 
     StateTransferBuilder(PathAddress cacheAddress) {
         super(CacheComponent.STATE_TRANSFER, cacheAddress);
@@ -48,15 +47,17 @@ public class StateTransferBuilder extends ComponentBuilder<StateTransferConfigur
 
     @Override
     public StateTransferConfiguration getValue() {
-        return this.builder.create();
+        return new ConfigurationBuilder().clustering().stateTransfer()
+                .chunkSize(this.chunkSize)
+                .fetchInMemoryState(true)
+                .timeout(this.timeout)
+                .create();
     }
 
     @Override
     public Builder<StateTransferConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.builder.chunkSize(CHUNK_SIZE.resolveModelAttribute(context, model).asInt())
-                .fetchInMemoryState(true)
-                .timeout(TIMEOUT.resolveModelAttribute(context, model).asLong())
-        ;
+        this.chunkSize = CHUNK_SIZE.resolveModelAttribute(context, model).asInt();
+        this.timeout = TIMEOUT.resolveModelAttribute(context, model).asLong();
         return this;
     }
 }

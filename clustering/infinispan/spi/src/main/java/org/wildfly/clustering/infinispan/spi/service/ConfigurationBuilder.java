@@ -73,7 +73,7 @@ public class ConfigurationBuilder implements CapabilityServiceBuilder<Configurat
 
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
-        return this.container.register(target.addService(this.name, this).setInitialMode(ServiceController.Mode.PASSIVE));
+        return this.container.register(target.addService(this.name, this).setInitialMode(ServiceController.Mode.ON_DEMAND));
     }
 
     @Override

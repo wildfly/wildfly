@@ -40,9 +40,9 @@ public class BinaryKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcBinaryStor
 
     private final ValueDependency<TableManipulationConfiguration> table;
 
-    BinaryKeyedJDBCStoreBuilder(PathAddress address) {
-        super(address, JdbcBinaryStoreConfigurationBuilder.class);
-        this.table = new InjectedValueDependency<>(CacheComponent.BINARY_TABLE.getServiceName(address.getParent()), TableManipulationConfiguration.class);
+    BinaryKeyedJDBCStoreBuilder(PathAddress cacheAddress) {
+        super(cacheAddress, JdbcBinaryStoreConfigurationBuilder.class);
+        this.table = new InjectedValueDependency<>(CacheComponent.BINARY_TABLE.getServiceName(cacheAddress), TableManipulationConfiguration.class);
     }
 
     @Override

@@ -22,8 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.DEFAULT_CLUSTERING_CAPABILITIES;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.DEFAULT_CAPABILITIES;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.DEFAULT_CLUSTERING_CAPABILITIES;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.*;
 
 import java.util.EnumSet;
@@ -46,6 +46,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
@@ -83,11 +84,11 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
         ServiceTarget target = context.getServiceTarget();
 
-        new ModuleBuilder(CacheContainerComponent.MODULE.getServiceName(address), MODULE).configure(context, model).build(target).install();
-        new GlobalConfigurationBuilder(address).configure(context, model).build(target).install();
+        new ModuleBuilder(CacheContainerComponent.MODULE.getServiceName(address), MODULE).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        new GlobalConfigurationBuilder(address).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         CacheContainerBuilder containerBuilder = new CacheContainerBuilder(address).configure(context, model);
-        containerBuilder.build(target).install();
+        containerBuilder.build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         new KeyAffinityServiceFactoryBuilder(address).build(target).install();
 
