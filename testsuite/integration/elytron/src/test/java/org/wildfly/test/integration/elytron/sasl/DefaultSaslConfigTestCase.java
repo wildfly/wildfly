@@ -22,15 +22,17 @@
 
 package org.wildfly.test.integration.elytron.sasl;
 
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.junit.Ignore;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
@@ -49,12 +51,16 @@ import org.wildfly.test.security.common.other.SimpleSocketBinding;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ JmsSetup.class, DefaultSaslConfigTestCase.ServerSetup.class })
-@Ignore("WFLY-8801")
 public class DefaultSaslConfigTestCase extends AbstractSaslTestBase {
 
     private static final String DEFAULT_SASL_AUTHENTICATION = "application-sasl-authentication";
     private static final String DEFAULT = "DEFAULT";
     private static final int PORT_DEFAULT = 10568;
+
+    @BeforeClass
+    public static void beforeClass() {
+        Security.addProvider(new WildFlyElytronProvider());
+    }
 
     /**
      * Tests that ANONYMOUS SASL mechanism can't be used for authentication in default server configuration.
@@ -72,7 +78,6 @@ public class DefaultSaslConfigTestCase extends AbstractSaslTestBase {
      * Tests that JBOSS-LOCAL-USER SASL mechanism can be used for authentication in default server configuration.
      */
     @Test
-    @Ignore("WFLY-8742")
     public void testJBossLocalInDefault() throws Exception {
         AuthenticationContext.empty()
                 .with(MatchRule.ALL,
