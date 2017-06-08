@@ -752,14 +752,17 @@
         </server-group>
 
         <server-group name="ignored-profile" profile="ignored">
+            <jvm name="default" />
             <socket-binding-group ref="standard-sockets"/>
         </server-group>
 
         <server-group name="ignored-sockets" profile="default">
+            <jvm name="default" />
             <socket-binding-group ref="ignored"/>
         </server-group>
 
         <server-group name="minimal" profile="minimal">
+            <jvm name="default" />
             <socket-binding-group ref="standard-sockets"/>
         </server-group>
 

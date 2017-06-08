@@ -246,19 +246,6 @@
                     </includes>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>check-style</id>
-                        <phase>process-classes</phase>
-                    </execution>
-                </executions>
-                <configuration>
-                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                </configuration>
-            </plugin>
             <!-- Add the console-handler to each profile for the test server -->
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
@@ -277,6 +264,7 @@
                     <fail-on-error>true</fail-on-error>
                     <jboss-home>${project.build.directory}/jbossas</jboss-home>
                     <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                    <java-opts>${modular.jdk.args}</java-opts>
                     <scripts>
                         <script>${project.basedir}/../shared/enable-domain-console-logging.cli</script>
                     </scripts>

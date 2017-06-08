@@ -31,12 +31,12 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
@@ -60,13 +60,12 @@ public class ControllerServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         try {
             final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            final InputStream in = new BufferedInputStream(new FileInputStream("../jcetest.keystore"));
-            try {
-                keyStore.load(in, null);
-            } finally {
-                in.close();
+
+            try (final InputStream in = Files.newInputStream(Paths.get("../jcetest.keystore"))){
+                keyStore.load(in, "password".toCharArray());
             }
             final X509Certificate testCertificate = (X509Certificate) keyStore.getCertificate("test");
+            assert testCertificate != null;
 
             // the three musketeers who are guarding the crown are hardcoded in jse.jar (JarVerifier)
             final Object validator = get("javax.crypto.JarVerifier", "providerValidator", Object.class);    // sun.security.validator.SimpleValidator

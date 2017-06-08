@@ -26,7 +26,7 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>22</version>
+      <version>23</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
@@ -218,7 +218,7 @@
         <version.org.wildfly.build-tools>1.2.2.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>3.0.0.Beta25</version.org.wildfly.core>
-        <version.org.wildfly.plugin>1.2.0.Alpha4</version.org.wildfly.plugin>
+        <version.org.wildfly.plugin>1.2.0.Alpha5</version.org.wildfly.plugin>
         <version.org.wildfly.http-client>1.0.0.CR4</version.org.wildfly.http-client>
         <version.org.wildfly.maven.plugins>1.0.0</version.org.wildfly.maven.plugins>
         <version.org.wildfly.naming-client>1.0.0.Beta16</version.org.wildfly.naming-client>
@@ -6290,30 +6290,17 @@
             <properties>
                 <modular.jdk.args>
                     --add-exports=java.base/sun.nio.ch=ALL-UNNAMED
-                    --add-opens=java.base/java.lang=ALL-UNNAMED
-                    --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
-                    --add-opens=java.base/java.security=ALL-UNNAMED
-                    --add-opens=java.base/java.math=ALL-UNNAMED
-                    --add-opens=java.base/java.io=ALL-UNNAMED
-                    --add-opens=java.base/java.net=ALL-UNNAMED
-                    --add-opens=java.base/java.util=ALL-UNNAMED
-                    --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
-                    --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
-                    --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED
-                    --add-opens=java.base/jdk.internal.reflect=ALL-UNNAMED
-                    --add-opens=java.management/javax.management=ALL-UNNAMED
-                    --add-opens=java.management/javax.management.openmbean=ALL-UNNAMED
-                    --add-opens=java.naming/javax.naming=ALL-UNNAMED
                     --add-exports=jdk.unsupported/sun.reflect=ALL-UNNAMED
                     --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED
+                    --permit-illegal-access
+                    --add-modules=java.xml.bind
                 </modular.jdk.args>
                 <!-- [WFCORE-1494] remove JUL workaround -->
-                <modular.jdk.props>-Dsun.util.logging.disableCallerCheck=true -Dsun.reflect.debugModuleAccessChecks=true</modular.jdk.props>
+                <modular.jdk.props>-Dsun.util.logging.disableCallerCheck=true -Dsun.reflect.debugModuleAccessChecks=true -Djdk.attach.allowAttachSelf=true</modular.jdk.props>
                 <!-- There are lots of issues with checkstyle runtime on JDK9, it somewhat works but really slows down build, disabling it for now-->
                 <checkstyle.skip>true</checkstyle.skip>
                 <!-- we override javassist to version that works on JDK9 -->
-                <version.org.javassist>3.22.0-CR1</version.org.javassist>
-                <version.org.jboss.byteman>4.0.0-BETA3</version.org.jboss.byteman>
+                <version.org.javassist>3.22.0-CR2</version.org.javassist>
             </properties>
             <build>
                 <plugins>
@@ -6322,9 +6309,6 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>${version.compiler.plugin}</version>
                         <configuration>
-                            <!-- fork is needed so compiler args can be used -->
-                          <!--  <release>8</release>-->
-                            <fork>true</fork>
                             <!-- jdk.unsupported is needed for security subsystem FastConcurrentDirectDeque-->
                             <compilerArgument>-J--add-modules=java.xml.ws.annotation,jdk.unsupported</compilerArgument>
                         </configuration>

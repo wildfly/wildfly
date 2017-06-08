@@ -78,6 +78,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
 
         // add another server group to default profile
         cli.sendLine("/server-group=test-server-group:add(profile=default,socket-binding-group=standard-sockets)");
+        cli.sendLine("/server-group=test-server-group/jvm=default:add");
         // add a server to the group
         cli.sendLine("/host=master/server-config=test-one:add(group=test-server-group,socket-binding-port-offset=700");
         cli.sendLine("/host=master/server-config=test-one/interface=public:add(inet-address=" +

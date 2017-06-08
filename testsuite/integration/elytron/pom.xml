@@ -178,22 +178,8 @@
                         <!-- let's override the module.path parent configuration with dummy value, to avoid the "IllegalStateException: Duplicate layer 'base'" -->
                         <module.path>foo</module.path>
                     </systemPropertyVariables>
+                    <argLine>${surefire.system.args}</argLine>
                 </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <configuration>
-                    <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>check-style</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>checkstyle</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
@@ -226,6 +212,7 @@
                             </scripts>
                             <jboss-home>${wildfly.dir}</jboss-home>
                             <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
                             <system-properties>
                                 <public.ip>${node0}</public.ip>
                                 <management.ip>${node0}</management.ip>

@@ -96,7 +96,6 @@
                     <!-- System properties to forked surefire JVM which runs clients. -->
                     <argLine>${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
                     <skipTests>${ts.skipTests}</skipTests>
-                    <skipTests>false</skipTests>
                     <systemPropertyVariables combine.children="append">
                         <mcast>${mcast}</mcast>
                         <mcast1>${mcast1}</mcast1>
@@ -136,6 +135,7 @@
                     <fail-on-error>true</fail-on-error>
                     <jboss-home>${project.build.directory}/jbossas</jboss-home>
                     <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                    <java-opts>${modular.jdk.args}</java-opts>
                     <scripts>
                         <script>${project.basedir}/../shared/enable-domain-console-logging.cli</script>
                     </scripts>
