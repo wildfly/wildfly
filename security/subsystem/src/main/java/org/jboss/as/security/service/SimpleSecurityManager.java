@@ -282,7 +282,15 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         SecurityContext current = establishSecurityContext(securityDomain);
         if (propagate && previous != null) {
             current.setSubjectInfo(getSubjectInfo(previous));
-            current.setIncomingRunAs(previous.getOutgoingRunAs());
+
+            // If the outgoing run-as identity is not set, take the incoming
+            // run-as identity and propagate it (it could be null which is fine)
+            if( previous.getOutgoingRunAs() != null ) {
+              current.setIncomingRunAs(previous.getOutgoingRunAs());
+            }
+            else {
+              current.setIncomingRunAs(previous.getIncomingRunAs());
+            }
         }
 
         RunAs currentRunAs = current.getIncomingRunAs();
