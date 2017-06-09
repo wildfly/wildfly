@@ -185,7 +185,7 @@ interface ModClusterLogger extends BasicLogger {
      *
      * @param trimmedContexts value which is in the wrong format
      */
-    @Message(id = 19, value = "'%s' is not a valid value for 'excludedContexts'.")
+    @Message(id = 19, value = "'%s' is not a valid value for excluded-contexts.")
     IllegalArgumentException excludedContextsWrongFormat(String trimmedContexts);
 
     /**
@@ -193,4 +193,9 @@ interface ModClusterLogger extends BasicLogger {
      */
     @Message(id = 20, value = "Only one of 'ssl-context' attribute or 'ssl' resource can be defined!")
     IllegalStateException bothElytronAndLegacySslContextDefined();
+
+    @LogMessage(level = WARN)
+    @Message(id = 21, value = "Value 'ROOT' for excluded-contexts is deprecated, to exclude the root context use '/' instead.")
+    void excludedContextsUseSlashInsteadROOT();
+
 }
