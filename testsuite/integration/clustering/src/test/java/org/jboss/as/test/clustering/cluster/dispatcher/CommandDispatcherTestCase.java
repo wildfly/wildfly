@@ -13,12 +13,10 @@ import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetri
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.ejb.client.legacy.JBossEJBProperties;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -28,11 +26,6 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
     private static final long VIEW_CHANGE_WAIT = TimeoutUtil.adjust(2000);
     private static final String MODULE_NAME = "command-dispatcher";
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)

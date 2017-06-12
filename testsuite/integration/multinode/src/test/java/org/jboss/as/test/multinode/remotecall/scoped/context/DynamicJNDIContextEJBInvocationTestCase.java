@@ -23,13 +23,11 @@
 package org.jboss.as.test.multinode.remotecall.scoped.context;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -57,11 +55,6 @@ public class DynamicJNDIContextEJBInvocationTestCase {
     private static final String LOCAL_DEPLOYMENT_NAME = "dynamic-jndi-context-ejb-invocation-test";
 
     private static final String REMOTE_SERVER_DEPLOYMENT_NAME = "deployment-on-other-server";
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     @Deployment(name = "local-server-deployment")
     @TargetsContainer("multinode-client")
