@@ -41,14 +41,12 @@ import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingletonRemote;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -68,11 +66,6 @@ public class TransactionInflowTestCase {
 
     @ArquillianResource
     public Deployer deployer;
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
-    }
 
     @Deployment(name = TransactionInflowMdb.RESOURCE_ADAPTER_NAME, order = 1)
     public static ResourceAdapterArchive getResourceAdapterDeployment() {
