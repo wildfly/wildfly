@@ -51,11 +51,9 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -77,15 +75,10 @@ public class LdapUrlInSearchBaseTestCase {
     @ArquillianResource
     URL webAppURL;
 
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
-
     // Public methods --------------------------------------------------------
 
     /**
-     * Creates {@link WebArchive} with the {@link OKServlet}.
+     * Creates {@link WebArchive} with the {@link LdapUrlTestServlet}.
      *
      * @return
      */
