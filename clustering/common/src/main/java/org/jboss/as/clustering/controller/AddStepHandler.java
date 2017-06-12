@@ -93,17 +93,16 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
                     context.addStep(operation, this, OperationContext.Stage.MODEL);
                     return;
                 }
-            } else {
-                Optional<PathElement> singletonPathResult = parentDescriptor.getRequiredSingletonChildren().stream().filter((PathElement requiredPath) -> requiredPath.getKey().equals(path.getKey()) && !requiredPath.getValue().equals(path.getValue())).findFirst();
-                if (singletonPathResult.isPresent()) {
-                    PathElement singletonPath = singletonPathResult.get();
-                    if (context.readResourceFromRoot(parentAddress, false).hasChild(singletonPath)) {
-                        // If there is a required singleton sibling resource, we need to remove it first
-                        PathAddress singletonAddress = parentAddress.append(singletonPath);
-                        context.addStep(Util.createRemoveOperation(singletonAddress), context.getRootResourceRegistration().getOperationHandler(singletonAddress, ModelDescriptionConstants.REMOVE), OperationContext.Stage.MODEL);
-                        context.addStep(operation, this, OperationContext.Stage.MODEL);
-                        return;
-                    }
+            }
+            Optional<PathElement> singletonPathResult = parentDescriptor.getRequiredSingletonChildren().stream().filter(requiredPath -> requiredPath.getKey().equals(path.getKey()) && !requiredPath.getValue().equals(path.getValue())).findFirst();
+            if (singletonPathResult.isPresent()) {
+                PathElement singletonPath = singletonPathResult.get();
+                if (context.readResourceFromRoot(parentAddress, false).hasChild(singletonPath)) {
+                    // If there is a required singleton sibling resource, we need to remove it first
+                    PathAddress singletonAddress = parentAddress.append(singletonPath);
+                    context.addStep(Util.createRemoveOperation(singletonAddress), context.getRootResourceRegistration().getOperationHandler(singletonAddress, ModelDescriptionConstants.REMOVE), OperationContext.Stage.MODEL);
+                    context.addStep(operation, this, OperationContext.Stage.MODEL);
+                    return;
                 }
             }
         }
