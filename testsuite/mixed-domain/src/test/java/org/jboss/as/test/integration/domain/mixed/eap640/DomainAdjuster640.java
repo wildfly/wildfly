@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.domain.mixed.eap640;
 import static org.jboss.as.controller.client.helpers.ClientConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -70,21 +69,34 @@ public class DomainAdjuster640 extends DomainAdjuster700 {
     @Override
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
         final List<ModelNode> list = super.adjustForVersion(client, profileAddress, withMasterServers);
-
-        list.addAll(replaceActiveMqWithMessaging(profileAddress.append(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME)));
+        switch(profileAddress.getElement(0).getValue()) {
+            case "full-ha":
+                list.addAll(adjustJGroups(profileAddress.append(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME)));
+                list.addAll(adjustInfinispan(true, profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
+                list.addAll(replaceActiveMqWithMessaging(profileAddress, profileAddress.append(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME)));
+                list.addAll(replaceIiopOpenJdk(client, profileAddress.append(SUBSYSTEM, IIOPExtension.SUBSYSTEM_NAME)));
+                break;
+            case "full":
+                list.addAll(adjustInfinispan(false, profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
+                list.addAll(replaceActiveMqWithMessaging(profileAddress, profileAddress.append(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME)));
+                list.addAll(replaceIiopOpenJdk(client, profileAddress.append(SUBSYSTEM, IIOPExtension.SUBSYSTEM_NAME)));
+                break;
+            default:
+                list.addAll(adjustInfinispan(false, profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
+                list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.messaging-activemq")));
+                list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.iiop-openjdk")));
+                break;
+        }
         list.addAll(removeBatch(profileAddress.append(SUBSYSTEM, BatchSubsystemDefinition.NAME)));
         list.addAll(removeBeanValidation(profileAddress.append(SUBSYSTEM, BeanValidationExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustEe(profileAddress.append(SUBSYSTEM, EeExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustEjb3(profileAddress.append(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME)));
-        list.addAll(replaceIiopOpenJdk(client, profileAddress.append(SUBSYSTEM, IIOPExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustRemoting(profileAddress.append(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME)));
         list.addAll(removeRequestController(profileAddress.append(SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME)));
         list.addAll(removeSecurityManager(profileAddress.append(SecurityManagerExtension.SUBSYSTEM_PATH)));
         list.addAll(removeSingletonDeployer(profileAddress.append(SUBSYSTEM, SingletonExtension.SUBSYSTEM_NAME)));
         list.addAll(replaceUndertowWithWeb(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME)));
         list.addAll(adjustWeld(profileAddress.append(SUBSYSTEM, WeldExtension.SUBSYSTEM_NAME)));
-        list.addAll(adjustJGroups(profileAddress.append(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME)));
-        list.addAll(adjustInfinispan(profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
 
         //io must be removed after undertow due to capabilities/requirements
         list.addAll(removeIo(profileAddress.append(SUBSYSTEM, IOExtension.SUBSYSTEM_NAME)));
@@ -176,24 +188,26 @@ public class DomainAdjuster640 extends DomainAdjuster700 {
 
     private Collection<? extends ModelNode> removeSingletonDeployer(PathAddress subsystem) {
         List<ModelNode> list = new ArrayList<>();
-        //singleton subsystem and extension doesn't exist
-        list.add(createRemoveOperation(subsystem));
+        if("full-ha".equals(subsystem.getElement(0).getValue())) {
+            //singleton subsystem and extension doesn't exist
+            list.add(createRemoveOperation(subsystem));
+        }
         list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.clustering.singleton")));
         return list;
     }
 
 
-    private List<ModelNode> adjustInfinispan(final PathAddress subsystem) throws Exception {
+    private List<ModelNode> adjustInfinispan(final boolean isFullHa ,final PathAddress subsystem) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
-
-        list.add(getWriteAttributeOperation(subsystem.append("cache-container", "server").append("transport", "jgroups"), "stack", new ModelNode("udp")));
-
-        this.adjustInfinispanStatisticsEnabled(list, subsystem);
+        if(isFullHa) {
+            list.add(getWriteAttributeOperation(subsystem.append("cache-container", "server").append("transport", "jgroups"), "stack", new ModelNode("udp")));
+        }
+        this.adjustInfinispanStatisticsEnabled(list, subsystem, isFullHa);
 
         return list;
     }
 
-    public void adjustInfinispanStatisticsEnabled(final List<ModelNode> list, final PathAddress subsystem) {
+    public void adjustInfinispanStatisticsEnabled(final List<ModelNode> list, final PathAddress subsystem, boolean isFullHa) {
         // No-op for 6.4.0
     }
 
@@ -244,8 +258,7 @@ public class DomainAdjuster640 extends DomainAdjuster700 {
         return list;
     }
 
-
-    private Collection<? extends ModelNode> replaceActiveMqWithMessaging(PathAddress subsystem) throws Exception {
+    private Collection<? extends ModelNode> replaceActiveMqWithMessaging(PathAddress profileAddress, PathAddress subsystem) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
         //messaging-activemq does not exist, remove it and the extension
         list.add(createRemoveOperation(subsystem));
@@ -257,7 +270,7 @@ public class DomainAdjuster640 extends DomainAdjuster700 {
         //Get the subsystem add operations (since the subsystem is huge, and there is a template, use the util)
         LegacySubsystemConfigurationUtil util =
                 new LegacySubsystemConfigurationUtil(
-                        new org.jboss.as.messaging.MessagingExtension(), "messaging", "ha", "subsystem-templates/messaging.xml");
+                        new org.jboss.as.messaging.MessagingExtension(), profileAddress, "messaging", "ha", "subsystem-templates/messaging.xml");
 
         list.addAll(util.getSubsystemOperations());
 
@@ -265,7 +278,7 @@ public class DomainAdjuster640 extends DomainAdjuster700 {
         //Now adjust the things from the template which are not available in the legacy server
 
         //http acceptors and connectors are not available
-        PathAddress messaging = PathAddress.pathAddress(PROFILE, "full-ha").append(SUBSYSTEM, "messaging");
+        PathAddress messaging = profileAddress.append(SUBSYSTEM, "messaging");
         PathAddress server = messaging.append("hornetq-server", "default");
         list.add(createRemoveOperation(server.append("http-acceptor", "http-acceptor")));
         list.add(createRemoveOperation(server.append("http-acceptor", "http-acceptor-throughput")));

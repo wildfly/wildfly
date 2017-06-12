@@ -66,30 +66,43 @@ public class DomainAdjuster620 extends DomainAdjuster630 {
     }
 
     @Override
-    public void adjustInfinispanStatisticsEnabled(final List<ModelNode> list, final PathAddress subsystem) {
+    public void adjustInfinispanStatisticsEnabled(final List<ModelNode> list, final PathAddress subsystem, boolean isFullHa) {
         //Statistics need to be enabled for all cache containers and caches
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "server")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "server").append("replicated-cache", "default")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "web")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "web").append("distributed-cache", "dist")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "web").append("distributed-cache", "concurrent")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "ejb")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "ejb").append("distributed-cache", "dist")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "hibernate")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "hibernate").append("invalidation-cache", "entity")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "hibernate").append("local-cache", "local-query")));
-        list.add(setStatisticsEnabledTrue(
-                subsystem.append("cache-container", "hibernate").append("replicated-cache", "timestamps")));
+        list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "server")));
+        list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "web")));
+        list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "ejb")));
+        list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "hibernate")));
+        if (isFullHa) {
+            list.add(setStatisticsEnabledTrue(
+                    subsystem.append("cache-container", "server").append("replicated-cache", "default")));
+            list.add(setStatisticsEnabledTrue(
+                    subsystem.append("cache-container", "web").append("distributed-cache", "dist")));
+            list.add(setStatisticsEnabledTrue(
+                    subsystem.append("cache-container", "web").append("distributed-cache", "concurrent")));
+
+            list.add(setStatisticsEnabledTrue(
+                    subsystem.append("cache-container", "ejb").append("distributed-cache", "dist")));
+
+            list.add(setStatisticsEnabledTrue(
+                    subsystem.append("cache-container", "hibernate").append("invalidation-cache", "entity")));
+            list.add(setStatisticsEnabledTrue(
+                    subsystem.append("cache-container", "hibernate").append("local-cache", "local-query")));
+            list.add(setStatisticsEnabledTrue(
+                    subsystem.append("cache-container", "hibernate").append("replicated-cache", "timestamps")));
+        } else {
+            list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "server").append("local-cache", "default")));
+
+            list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "web").append("local-cache", "passivation")));
+            list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "web").append("local-cache", "persistent")));
+            list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "web").append("local-cache", "concurrent")));
+
+            list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "ejb").append("local-cache", "passivation")));
+            list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "ejb").append("local-cache", "persistent")));
+
+            list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "hibernate").append("local-cache", "entity")));
+            list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "hibernate").append("local-cache", "local-query")));
+            list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "hibernate").append("local-cache", "timestamps")));
+        }
     }
 
     private ModelNode setStatisticsEnabledTrue(final PathAddress addr) {

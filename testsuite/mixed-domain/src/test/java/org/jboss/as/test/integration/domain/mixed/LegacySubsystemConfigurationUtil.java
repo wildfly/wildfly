@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.domain.mixed;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -68,19 +67,20 @@ public class LegacySubsystemConfigurationUtil {
     final String subsystemName;
     final String supplement;
     final String resourceName;
+    final PathAddress profile;
 
-    public LegacySubsystemConfigurationUtil(Extension extension, String subsystemName, String supplement, String resourceName) {
+    public LegacySubsystemConfigurationUtil(Extension extension, PathAddress profile, String subsystemName, String supplement, String resourceName) {
         this.extension = extension;
         this.subsystemName = subsystemName;
         this.supplement = supplement;
         this.resourceName = resourceName;
+        this.profile = profile;
     }
 
     public List<ModelNode> getSubsystemOperations() throws Exception {
         File file = createAssembly();
         String subsystemXml = extractSubsystemXml(file);
         List<ModelNode> list = parseSubsystemXml(subsystemXml);
-        PathAddress profile = PathAddress.pathAddress(PROFILE, "full-ha");
         for (ModelNode op : list) {
             PathAddress address = PathAddress.pathAddress(op.get(OP_ADDR));
             op.get(OP_ADDR).set(profile.append(address).toModelNode());
