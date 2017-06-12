@@ -53,7 +53,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
@@ -111,7 +110,6 @@ public class CacheContainerBuilder extends CapabilityServiceNameProvider impleme
         Service<CacheContainer> service = new SuppliedValueService<>(mapper, supplier, destroyer);
         ServiceBuilder<CacheContainer> builder = target.addService(this.getServiceName(), service)
                 .addAliases(this.aliases.stream().toArray(ServiceName[]::new))
-                .setInitialMode(ServiceController.Mode.PASSIVE)
                 ;
         return this.configuration.register(builder);
     }

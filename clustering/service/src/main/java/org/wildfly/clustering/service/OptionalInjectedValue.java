@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.wildfly.clustering.service;
 
-import org.infinispan.configuration.global.GlobalConfigurationBuilder;
-import org.infinispan.configuration.global.TransportConfiguration;
-import org.jboss.as.controller.PathAddress;
+import java.util.Optional;
+
+import org.jboss.msc.inject.RetainingInjector;
+import org.jboss.msc.value.Value;
 
 /**
+ * Like {@link org.jboss.msc.value.InjectedValue}, but with support for returning an {@link Optional}.
  * @author Paul Ferraro
  */
-public class NoTransportBuilder extends GlobalComponentBuilder<TransportConfiguration> {
-
-    NoTransportBuilder(PathAddress containerAddress) {
-        super(CacheContainerComponent.TRANSPORT, containerAddress);
-    }
+public class OptionalInjectedValue<T> extends RetainingInjector<T> implements Value<T> {
 
     @Override
-    public TransportConfiguration getValue() {
-        return new GlobalConfigurationBuilder().transport().transport(null).create();
+    public T getValue() {
+        Value<T> value = getStoredValue();
+        if (value == null) {
+            throw new IllegalStateException();
+        }
+        return value.getValue();
+    }
+
+    /**
+     * Returns the optional value, which is only defined if a value was injected.
+     * Analogous to {@link org.jboss.msc.value.InjectedValue#getOptionalValue()}.
+     * @return an optional injected value
+     */
+    public Optional<T> getOptionalValue() {
+        return Optional.ofNullable(this.getStoredValue()).map(Value::getValue);
     }
 }

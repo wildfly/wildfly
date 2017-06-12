@@ -78,7 +78,7 @@ public class XAResourceRecoveryBuilder implements Builder<XAResourceRecovery> {
         };
         Consumer<XAResourceRecovery> destroyer = recovery -> {
             if (recovery != null) {
-                this.registry.getValue().addXAResourceRecovery(recovery);
+                this.registry.getValue().removeXAResourceRecovery(recovery);
             }
         };
         Service<XAResourceRecovery> service = new SuppliedValueService<>(Function.identity(), supplier, destroyer);

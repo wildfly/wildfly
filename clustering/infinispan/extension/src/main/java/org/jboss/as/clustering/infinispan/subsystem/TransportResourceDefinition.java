@@ -25,13 +25,18 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.ManagementResourceRegistration;
+import org.jboss.as.clustering.controller.Registration;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
@@ -54,7 +59,22 @@ public abstract class TransportResourceDefinition extends ChildResourceDefinitio
         }));
     }
 
-    TransportResourceDefinition(PathElement path) {
+    private final Registration<ManagementResourceRegistration> registrar;
+
+    TransportResourceDefinition(PathElement path, Consumer<ResourceDescriptor> configurator, ResourceServiceHandler handler) {
         super(path, new InfinispanResourceDescriptionResolver(path));
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addCapabilities(CLUSTERING_CAPABILITIES.values())
+                ;
+        configurator.accept(descriptor);
+        this.registrar = new SimpleResourceRegistration(descriptor, handler);
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+
+        this.registrar.register(registration);
     }
 }

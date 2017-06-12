@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceNameFactory;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceBuilder;
@@ -30,18 +31,17 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
-import org.wildfly.clustering.service.Builder;
 
 /**
  * Builds a service that provides the configuration of a component.
  * @author Paul Ferraro
  */
-public abstract class ComponentBuilder<C> implements Builder<C>, Value<C> {
+public abstract class ComponentBuilder<C> implements ResourceServiceBuilder<C>, Value<C> {
 
     private final ServiceName name;
 
-    ComponentBuilder(ResourceServiceNameFactory factory, PathAddress parentAddress) {
-        this.name = factory.getServiceName(parentAddress);
+    ComponentBuilder(ResourceServiceNameFactory factory, PathAddress address) {
+        this.name = factory.getServiceName(address);
     }
 
     @Override
@@ -51,6 +51,6 @@ public abstract class ComponentBuilder<C> implements Builder<C>, Value<C> {
 
     @Override
     public ServiceBuilder<C> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this)).setInitialMode(ServiceController.Mode.PASSIVE);
+        return target.addService(this.getServiceName(), new ValueService<>(this)).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

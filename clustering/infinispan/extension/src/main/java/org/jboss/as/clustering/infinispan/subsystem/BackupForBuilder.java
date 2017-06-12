@@ -25,11 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.BackupForResourceDefinition.Attribute.CACHE;
 import static org.jboss.as.clustering.infinispan.subsystem.BackupForResourceDefinition.Attribute.SITE;
 
-import java.util.Optional;
-
 import org.infinispan.configuration.cache.BackupForConfiguration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -41,9 +38,10 @@ import org.wildfly.clustering.service.Builder;
  * Builds a service that provides the {@link BackupForConfiguration} for a cache.
  * @author Paul Ferraro
  */
-public class BackupForBuilder extends ComponentBuilder<BackupForConfiguration> implements ResourceServiceBuilder<BackupForConfiguration> {
+public class BackupForBuilder extends ComponentBuilder<BackupForConfiguration> {
 
-    private volatile org.infinispan.configuration.cache.BackupForBuilder builder = new ConfigurationBuilder().sites().backupFor();
+    private volatile String site;
+    private volatile String cache;
 
     BackupForBuilder(PathAddress cacheAddress) {
         super(CacheComponent.BACKUP_FOR, cacheAddress);
@@ -51,15 +49,17 @@ public class BackupForBuilder extends ComponentBuilder<BackupForConfiguration> i
 
     @Override
     public Builder<BackupForConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        Optional<String> site = ModelNodes.optionalString(SITE.resolveModelAttribute(context, model));
-        if (site.isPresent()) {
-            this.builder.remoteSite(site.get()).remoteCache(CACHE.resolveModelAttribute(context, model).asString());
-        }
+        this.site = ModelNodes.optionalString(SITE.resolveModelAttribute(context, model)).orElse(null);
+        this.cache = CACHE.resolveModelAttribute(context, model).asString();
         return this;
     }
 
     @Override
     public BackupForConfiguration getValue() {
-        return this.builder.create();
+        org.infinispan.configuration.cache.BackupForBuilder builder = new ConfigurationBuilder().sites().backupFor();
+        if (this.site != null) {
+            builder.remoteSite(this.site).remoteCache(this.cache);
+        }
+        return builder.create();
     }
 }

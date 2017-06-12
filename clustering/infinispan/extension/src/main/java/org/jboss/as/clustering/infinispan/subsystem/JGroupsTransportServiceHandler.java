@@ -51,9 +51,9 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
         ServiceTarget target = context.getServiceTarget();
 
         JGroupsTransportBuilder transportBuilder = new JGroupsTransportBuilder(containerAddress).configure(context, model);
-        transportBuilder.build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        transportBuilder.build(target).install();
 
-        new SiteBuilder(containerAddress).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        new SiteBuilder(containerAddress).configure(context, model).build(target).install();
 
         String channel = transportBuilder.getChannel();
 

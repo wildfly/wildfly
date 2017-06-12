@@ -30,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -42,7 +41,7 @@ import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
  * @author Radoslav Husar
  * @version August 2015
  */
-public class ScheduledThreadPoolBuilder extends ComponentBuilder<ThreadPoolConfiguration> implements ResourceServiceBuilder<ThreadPoolConfiguration> {
+public class ScheduledThreadPoolBuilder extends GlobalComponentBuilder<ThreadPoolConfiguration> {
 
     private final ThreadPoolConfigurationBuilder builder = new ThreadPoolConfigurationBuilder(null);
     private final ScheduledThreadPoolDefinition definition;

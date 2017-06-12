@@ -49,9 +49,9 @@ public class CustomStoreBuilder extends StoreBuilder<CustomStoreConfiguration, C
 
     private volatile String className;
 
-    CustomStoreBuilder(PathAddress address) {
-        super(address, CustomStoreConfigurationBuilder.class);
-        this.module = new InjectedValueDependency<>(CacheComponent.MODULE.getServiceName(address.getParent()), Module.class);
+    CustomStoreBuilder(PathAddress cacheAddress) {
+        super(cacheAddress, CustomStoreConfigurationBuilder.class);
+        this.module = new InjectedValueDependency<>(CacheComponent.MODULE.getServiceName(cacheAddress), Module.class);
     }
 
     @Override

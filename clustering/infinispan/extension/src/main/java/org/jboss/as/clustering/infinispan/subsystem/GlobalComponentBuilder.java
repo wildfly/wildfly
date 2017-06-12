@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,21 +22,23 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.configuration.global.GlobalConfigurationBuilder;
-import org.infinispan.configuration.global.TransportConfiguration;
+import org.jboss.as.clustering.controller.ResourceServiceNameFactory;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author Paul Ferraro
  */
-public class NoTransportBuilder extends GlobalComponentBuilder<TransportConfiguration> {
+public abstract class GlobalComponentBuilder<C> extends ComponentBuilder<C> {
 
-    NoTransportBuilder(PathAddress containerAddress) {
-        super(CacheContainerComponent.TRANSPORT, containerAddress);
+    GlobalComponentBuilder(ResourceServiceNameFactory factory, PathAddress containerAddress) {
+        super(factory, containerAddress);
     }
 
     @Override
-    public TransportConfiguration getValue() {
-        return new GlobalConfigurationBuilder().transport().transport(null).create();
+    public ServiceBuilder<C> build(ServiceTarget target) {
+        return super.build(target).setInitialMode(ServiceController.Mode.PASSIVE);
     }
 }

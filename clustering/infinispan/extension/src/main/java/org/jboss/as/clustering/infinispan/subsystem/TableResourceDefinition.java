@@ -22,13 +22,21 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.function.Consumer;
+
+import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.Registration;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -107,7 +115,24 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
         }
     }
 
-    TableResourceDefinition(PathElement path, ResourceDescriptionResolver resolver) {
-        super(path, resolver);
+    private final Registration<ManagementResourceRegistration> registrar;
+
+    TableResourceDefinition(PathElement path, Consumer<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<TableManipulationConfiguration> builderFactory) {
+        super(path, new InfinispanResourceDescriptionResolver(path, WILDCARD_PATH));
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addAttributes(ColumnAttribute.class)
+                ;
+        configurator.accept(descriptor);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(builderFactory);
+        this.registrar = new SimpleResourceRegistration(descriptor, handler);
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+
+        this.registrar.register(registration);
     }
 }

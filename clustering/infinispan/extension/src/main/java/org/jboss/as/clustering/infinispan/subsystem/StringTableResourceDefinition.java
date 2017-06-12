@@ -25,10 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.Arrays;
 
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
@@ -38,7 +34,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -105,19 +100,6 @@ public class StringTableResourceDefinition extends TableResourceDefinition {
     }
 
     StringTableResourceDefinition() {
-        super(PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH));
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class)
-                .addAttributes(TableResourceDefinition.Attribute.class)
-                .addAttributes(TableResourceDefinition.ColumnAttribute.class)
-                ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new StringTableBuilder(address.getParent().getParent()));
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        super(PATH, descriptor -> descriptor.addAttributes(Attribute.class), address -> new StringTableBuilder(address.getParent().getParent()));
     }
 }

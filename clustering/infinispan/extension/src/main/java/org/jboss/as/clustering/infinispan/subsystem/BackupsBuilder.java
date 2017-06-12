@@ -36,7 +36,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.SitesConfiguration;
 import org.infinispan.configuration.cache.SitesConfigurationBuilder;
 import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -52,7 +51,7 @@ import org.wildfly.clustering.service.ValueDependency;
 /**
  * @author Paul Ferraro
  */
-public class BackupsBuilder extends ComponentBuilder<SitesConfiguration> implements ResourceServiceBuilder<SitesConfiguration> {
+public class BackupsBuilder extends ComponentBuilder<SitesConfiguration> {
 
     private final ValueDependency<BackupForConfiguration> backupFor;
     private final Map<String, BackupConfiguration> backups = new HashMap<>();
