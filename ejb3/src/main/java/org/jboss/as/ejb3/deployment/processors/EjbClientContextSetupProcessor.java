@@ -239,7 +239,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
             }
             final OptionMap connectOptions = connectionSpec.getConnectOptions();
             authenticationConfiguration = RemotingOptions.mergeOptionsIntoAuthenticationConfiguration(connectOptions, authenticationConfiguration);
-            AuthenticationConfiguration configuration = CLIENT.getAuthenticationConfiguration(destinationUri, context, - 1, "ejb", "jboss", null);
+            AuthenticationConfiguration configuration = CLIENT.getAuthenticationConfiguration(destinationUri, context, - 1, "ejb", "jboss");
             if (sslContext == null) {
                 try {
                     sslContext = CLIENT.getSSLContext(destinationUri, context);
