@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,27 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.infinispan.spi.distribution;
 
-import org.infinispan.distribution.ch.ConsistentHash;
-import org.infinispan.remoting.transport.Address;
+import org.infinispan.Cache;
+import org.infinispan.distribution.DistributionManager;
 
 /**
- * {@link Locality} implementation based on a {@link ConsistentHash}.
+ * A {@link Locality} implementation that delegates to either a {@link ConsistentHashLocality} or {@link SimpleLocality} depending on the cache mode.
+ * Instances of this object should not be retained for longer than a single unit of work, since this object holds a final reference to the current ConsistentHash, which will become stale on topology change.
  * @author Paul Ferraro
  */
-public class ConsistentHashLocality implements Locality {
+public class CacheLocality implements Locality {
 
-    private final Address localAddress;
-    private final ConsistentHash hash;
+    private final Locality locality;
 
-    public ConsistentHashLocality(Address localAddress, ConsistentHash hash) {
-        this.localAddress = localAddress;
-        this.hash = hash;
+    public CacheLocality(Cache<?, ?> cache) {
+        DistributionManager dist = cache.getAdvancedCache().getDistributionManager();
+        this.locality = (dist != null) ? new ConsistentHashLocality(cache.getCacheManager().getAddress(), dist.getConsistentHash()) : new SimpleLocality(true);
     }
 
     @Override
     public boolean isLocal(Object key) {
-        return this.localAddress.equals(this.hash.locatePrimaryOwner(key));
+        return this.locality.isLocal(key);
     }
 }

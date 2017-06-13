@@ -72,6 +72,7 @@ import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.infinispan.spi.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
@@ -180,7 +181,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         };
         this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.beanName + ".schedulers", this.schedulerContext);
         this.cache.addListener(this, this.filter, null);
-        this.schedule(new SimpleLocality(false), new ConsistentHashLocality(this.cache));
+        this.schedule(new SimpleLocality(false), new CacheLocality(this.cache));
     }
 
     @Override
