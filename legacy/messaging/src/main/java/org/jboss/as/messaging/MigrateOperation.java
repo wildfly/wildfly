@@ -560,6 +560,8 @@ public class MigrateOperation implements OperationStepHandler {
     private void migratePooledConnectionFactory(ModelNode addOperation) {
         migrateConnectorAttribute(addOperation);
         migrateDiscoveryGroupNameAttribute(addOperation);
+        // WFLY-8928 - allow local transacted JMS session
+        addOperation.get("allow-local-transactions").set(new ModelNode(true));
     }
 
     private void migrateClusterConnection(ModelNode addOperation, List<String> warnings) {

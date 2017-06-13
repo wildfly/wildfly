@@ -72,7 +72,7 @@ public class PooledConnectionFactoryDefinition extends PersistentResourceDefinit
                 newAttr = ConnectionFactoryAttribute.create(copy, Pooled.RECONNECT_ATTEMPTS_PROP_NAME, true);
             } else {
                 AttributeDefinition copy = copy(definition, AttributeAccess.Flag.RESTART_ALL_SERVICES);
-                newAttr = ConnectionFactoryAttribute.create(copy, attr.getPropertyName(), attr.isResourceAdapterProperty(), attr.isInboundConfig());
+                newAttr = ConnectionFactoryAttribute.create(copy, attr.getPropertyName(), attr.isResourceAdapterProperty(), attr.getConfigType());
             }
             result[specific.length + i] = newAttr;
         }

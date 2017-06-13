@@ -439,6 +439,8 @@
                     use-local-tx="${use.local.tx:true}"
                     setup-attempts="${setup-attempts:123}"
                     setup-interval="${setup-interval:456}" />
+            <outbound-config
+                    allow-local-transactions="${allow.local.transactions:true}" />
         </pooled-connection-factory>
         <pooled-connection-factory name="pcf-with-credential-reference"
                                    entries="java:/JmsLocal2"

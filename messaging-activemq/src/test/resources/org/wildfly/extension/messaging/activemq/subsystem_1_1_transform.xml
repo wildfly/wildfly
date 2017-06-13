@@ -399,6 +399,8 @@
                     use-local-tx="${use.local.tx:true}"
                     setup-attempts="${setup-attempts:123}"
                     setup-interval="${setup-interval:456}" />
+            <outbound-config
+                    allow-local-transactions="false" />
         </pooled-connection-factory>
     </server>
 </subsystem>

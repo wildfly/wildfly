@@ -162,7 +162,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
                 } else {
                     value = node.asString();
                 }
-                configs.add(new PooledConnectionFactoryConfigProperties(nodeAttribute.getPropertyName(), value, nodeAttribute.getClassType()));
+                configs.add(new PooledConnectionFactoryConfigProperties(nodeAttribute.getPropertyName(), value, nodeAttribute.getClassType(), nodeAttribute.getConfigType()));
             }
         }
         return configs;

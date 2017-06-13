@@ -31,18 +31,23 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
 public class ConnectionFactoryAttribute {
+    enum ConfigType {
+        INBOUND, OUTBOUND;
+    }
+
     private final AttributeDefinition attributeDefinition;
     private String propertyName;
     private final boolean resourceAdapterProperty;
-    private final boolean inboundConfig;
+    private ConfigType configType;
 
     public static ConnectionFactoryAttribute create(final AttributeDefinition attributeDefinition, final String propertyName, boolean resourceAdapterProperty) {
-        return new ConnectionFactoryAttribute(attributeDefinition, propertyName, resourceAdapterProperty, false);
+        return new ConnectionFactoryAttribute(attributeDefinition, propertyName, resourceAdapterProperty, null);
     }
 
-    public static ConnectionFactoryAttribute create(final AttributeDefinition attributeDefinition, final String propertyName, boolean resourceAdapterProperty, boolean inboundConfig) {
+    public static ConnectionFactoryAttribute create(final AttributeDefinition attributeDefinition, final String propertyName, boolean resourceAdapterProperty, ConfigType inboundConfig) {
         return new ConnectionFactoryAttribute(attributeDefinition, propertyName, resourceAdapterProperty, inboundConfig);
     }
+
 
     public static AttributeDefinition[] getDefinitions(final ConnectionFactoryAttribute... attrs) {
         AttributeDefinition[] definitions = new AttributeDefinition[attrs.length];
@@ -53,11 +58,11 @@ public class ConnectionFactoryAttribute {
         return definitions;
     }
 
-    private ConnectionFactoryAttribute(final AttributeDefinition attributeDefinition, final String propertyName, boolean resourceAdapterProperty, boolean inboundConfig) {
+    private ConnectionFactoryAttribute(final AttributeDefinition attributeDefinition, final String propertyName, boolean resourceAdapterProperty, ConfigType configType) {
         this.attributeDefinition = attributeDefinition;
         this.propertyName = propertyName;
         this.resourceAdapterProperty = resourceAdapterProperty;
-        this.inboundConfig = inboundConfig;
+        this.configType = configType;
     }
 
     public String getClassType() {
@@ -91,7 +96,7 @@ public class ConnectionFactoryAttribute {
         return resourceAdapterProperty;
     }
 
-    public boolean isInboundConfig() {
-        return inboundConfig;
+    public ConfigType getConfigType() {
+        return configType;
     }
 }

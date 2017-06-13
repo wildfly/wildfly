@@ -33,11 +33,16 @@ public class PooledConnectionFactoryConfigProperties {
     private final String value;
 
     private String type;
+    private final ConnectionFactoryAttribute.ConfigType configType;
 
-    public PooledConnectionFactoryConfigProperties(String name, String value, String type) {
+    /**
+     * @param configType can be {@code null} to configure a property on the resource adapter.
+     */
+    public PooledConnectionFactoryConfigProperties(String name, String value, String type, ConnectionFactoryAttribute.ConfigType configType) {
         this.name = name;
         this.value = value;
         this.type = type;
+        this.configType = configType;
     }
 
     public String getName() {
@@ -52,4 +57,7 @@ public class PooledConnectionFactoryConfigProperties {
         return type;
     }
 
+    public ConnectionFactoryAttribute.ConfigType getConfigType() {
+        return configType;
+    }
 }

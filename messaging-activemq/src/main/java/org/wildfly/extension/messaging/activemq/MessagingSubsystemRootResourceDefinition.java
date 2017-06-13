@@ -158,7 +158,8 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
         defaultValueAttributeConverter(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE);
         rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE,
                 ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST);
+                ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                ConnectionFactoryAttributes.Pooled.ALLOW_LOCAL_TRANSACTIONS);
 
         TransformationDescription.Tools.register(subsystem.build(), subsystemRegistration, MessagingExtension.VERSION_1_0_0);
     }

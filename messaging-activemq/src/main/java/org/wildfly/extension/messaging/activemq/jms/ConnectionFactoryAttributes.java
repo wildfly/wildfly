@@ -31,6 +31,8 @@ import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.ConfigType.INBOUND;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.ConfigType.OUTBOUND;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.create;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
@@ -331,12 +333,22 @@ public interface ConnectionFactoryAttributes {
     }
 
     interface Pooled {
+        String ALLOW_LOCAL_TRANSACTIONS_PROP_NAME = "allowLocalTransactions";
         String USE_JNDI_PROP_NAME = "useJNDI";
         String SETUP_ATTEMPTS_PROP_NAME = "setupAttempts";
         String SETUP_INTERVAL_PROP_NAME = "setupInterval";
         String REBALANCE_CONNECTIONS_PROP_NAME = "rebalanceConnections";
         String RECONNECT_ATTEMPTS_PROP_NAME = "reconnectAttempts";
         String PASSWORD_PROP_NAME = "password";
+
+
+        SimpleAttributeDefinition ALLOW_LOCAL_TRANSACTIONS = SimpleAttributeDefinitionBuilder.create("allow-local-transactions", BOOLEAN)
+                .setAttributeGroup("outbound-config")
+                .setRequired(false)
+                .setAllowExpression(true)
+                .setDefaultValue(new ModelNode(false))
+                .setRestartAllServices()
+                .build();
 
         ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE =
                 CredentialReference.getAttributeBuilder(true, false)
@@ -480,12 +492,14 @@ public interface ConnectionFactoryAttributes {
          */
         ConnectionFactoryAttribute[] ATTRIBUTES = {
                 /* inbound config */
-                create(USE_JNDI, USE_JNDI_PROP_NAME, true, true),
-                create(JNDI_PARAMS, "jndiParams", true, true),
-                create(REBALANCE_CONNECTIONS, REBALANCE_CONNECTIONS_PROP_NAME, true, true),
-                create(USE_LOCAL_TX, "useLocalTx", true, true),
-                create(SETUP_ATTEMPTS, SETUP_ATTEMPTS_PROP_NAME, true, true),
-                create(SETUP_INTERVAL, SETUP_INTERVAL_PROP_NAME, true, true),
+                create(USE_JNDI, USE_JNDI_PROP_NAME, true, INBOUND),
+                create(JNDI_PARAMS, "jndiParams", true, INBOUND),
+                create(REBALANCE_CONNECTIONS, REBALANCE_CONNECTIONS_PROP_NAME, true, INBOUND),
+                create(USE_LOCAL_TX, "useLocalTx", true, INBOUND),
+                create(SETUP_ATTEMPTS, SETUP_ATTEMPTS_PROP_NAME, true, INBOUND),
+                create(SETUP_INTERVAL, SETUP_INTERVAL_PROP_NAME, true, INBOUND),
+                /* outbound config */
+                create(ALLOW_LOCAL_TRANSACTIONS, ALLOW_LOCAL_TRANSACTIONS_PROP_NAME, false, OUTBOUND),
 
                 create(STATISTICS_ENABLED, null, false),
                 create(TRANSACTION, null, false),

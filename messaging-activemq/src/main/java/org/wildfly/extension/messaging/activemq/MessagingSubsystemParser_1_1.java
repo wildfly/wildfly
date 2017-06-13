@@ -566,12 +566,16 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
                                                         // pooled
+                                                        // inbound config
                                                         ConnectionFactoryAttributes.Pooled.USE_JNDI,
                                                         ConnectionFactoryAttributes.Pooled.JNDI_PARAMS,
                                                         ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS,
                                                         ConnectionFactoryAttributes.Pooled.USE_LOCAL_TX,
                                                         ConnectionFactoryAttributes.Pooled.SETUP_ATTEMPTS,
                                                         ConnectionFactoryAttributes.Pooled.SETUP_INTERVAL,
+                                                        // outbound config
+                                                        ConnectionFactoryAttributes.Pooled.ALLOW_LOCAL_TRANSACTIONS,
+
                                                         ConnectionFactoryAttributes.Pooled.TRANSACTION,
                                                         ConnectionFactoryAttributes.Pooled.USER,
                                                         ConnectionFactoryAttributes.Pooled.PASSWORD,
