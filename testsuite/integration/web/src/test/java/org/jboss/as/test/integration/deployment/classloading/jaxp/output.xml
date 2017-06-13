@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?><root>
+  <txt>Lorem ipsum</txt>
+  <txt>Lorem ipsum</txt>
+  <min>0</min>
+  <EmbeddedJarMethods>org.jboss.as.test.integration.deployment.classloading.jaxp.EmbeddedJarMethods</EmbeddedJarMethods>
+  <CustomModuleMethods>org.jboss.as.test.integration.deployment.classloading.jaxp.CustomModuleMethods</CustomModuleMethods>
+</root>

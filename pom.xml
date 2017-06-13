@@ -174,6 +174,7 @@
         <version.org.jboss.security.jboss-negotiation>3.0.4.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
+        <version.org.jboss.shrinkwrap.resolver>3.0.0-beta-2</version.org.jboss.shrinkwrap.resolver>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0-alpha-8</version.org.jboss.shrinkwrap.descriptors>
         <!-- Include the artifactId for org.jboss.spec project versions because artifactId contains the API spec version -->
@@ -5260,6 +5261,14 @@
                 <groupId>org.jboss.shrinkwrap</groupId>
                 <artifactId>shrinkwrap-impl-base</artifactId>
                 <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- only still used by tests -->
+            <dependency>
+                <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+                <version>${version.org.jboss.shrinkwrap.resolver}</version>
                 <scope>test</scope>
             </dependency>
 
