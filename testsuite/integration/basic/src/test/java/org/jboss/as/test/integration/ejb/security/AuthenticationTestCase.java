@@ -57,15 +57,16 @@ import org.jboss.as.test.integration.ejb.security.base.WhoAmIBean;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.wildfly.security.auth.server.SecurityDomain;
 
 /**
  * Test case to hold the authentication scenarios, these range from calling a servlet which calls a bean to calling a bean which
@@ -84,6 +85,12 @@ public class AuthenticationTestCase {
 
     private static final Logger log = Logger.getLogger(AuthenticationTestCase.class.getName());
 
+    @BeforeClass
+    public static void beforeClass() {
+        //Conditionally ignore all the tests, although only testICIR_TwoBeans_ViaServlet() needs this treatment.
+        //There seems to be an issue with the system property not getting propagated to the server
+        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
+    }
     /*
      * Authentication Scenarios
      *
@@ -247,11 +254,7 @@ public class AuthenticationTestCase {
             getWhoAmI("?method=doubleWhoAmI&username=user2&password=bad_password");
             fail("Expected IOException");
         } catch (IOException e) {
-            if (SecurityDomain.getCurrent() == null) {
-                assertTrue(e.getMessage().contains("javax.ejb.EJBAccessException"));
-            } else {
-                assertTrue(e.getMessage().contains("javax.ejb.EJBException: java.lang.SecurityException: ELY01151"));
-            }
+            assertTrue(e.getMessage().contains("javax.ejb.EJBAccessException"));
         }
     }
 
