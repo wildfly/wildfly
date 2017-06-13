@@ -547,6 +547,7 @@ repositories:
     selectors:
     - org.wildfly.core
     urls:
+    - git:git@github.com:ppalaga/wildfly-core.git
     - git:git@github.com:wildfly/wildfly-core.git
   org.wildfly.discovery:
     selectors:
