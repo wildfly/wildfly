@@ -100,41 +100,44 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                 Date now = new Date();
                 EJB3_TIMER_LOGGER.debugf("Timer task invoked at: %s for timer %s", now, timer);
 
-                // If a retry thread is in progress, we don't want to allow another
-                // interval to execute until the retry is complete. See JIRA-1926.
-                if (timer.isInRetry()) {
-                    EJB3_TIMER_LOGGER.skipInvokeTimeoutDuringRetry(timer, now);
-                    // compute the next timeout, See JIRA AS7-2995.
-                    timer.setNextTimeout(calculateNextTimeout(timer));
-                    timerService.persistTimer(timer, false);
-                    scheduleTimeoutIfRequired(timer);
-                    return;
-                }
-
-                // Check whether the timer is running local
-                // If the recurring timer running longer than the interval is, we don't want to allow another
-                // execution until it is complete. See JIRA AS7-3119
-                if (timer.getState() == TimerState.IN_TIMEOUT || timer.getState() == TimerState.RETRY_TIMEOUT) {
-                    EJB3_TIMER_LOGGER.skipOverlappingInvokeTimeout(timer, now);
-                    timer.setNextTimeout(this.calculateNextTimeout(timer));
-                    timerService.persistTimer(timer, false);
-                    scheduleTimeoutIfRequired(timer);
-                    return;
-                }
-
-                // Check whether we want to run the timer
-                if (!timerService.shouldRun(timer)) {
-                    EJB3_TIMER_LOGGER.debugf("Skipping execution of timer for %s as it is being run on another node or the execution is suppressed by configuration", timer.getTimedObjectId());
-                    timer.setNextTimeout(calculateNextTimeout(timer));
-                    scheduleTimeoutIfRequired(timer);
-                    return;
-                }
-
-                //we lock the timer for this check, because if a cancel is in progress then
-                //we do not want to do the isActive check, but wait for the cancelling transaction to finish
+                //we lock the timer for this check, because if a cancel is in progress or a running timeout is about to finish
+                //and try to update the timer state after finish the inTimeout method,
+                //we do not want to do the isActive check, but wait for the other transaction to finish
                 //one way or another
                 timer.lock();
+
                 try {
+                    // If a retry thread is in progress, we don't want to allow another
+                    // interval to execute until the retry is complete. See JIRA-1926.
+                    if (timer.isInRetry()) {
+                        EJB3_TIMER_LOGGER.skipInvokeTimeoutDuringRetry(timer, now);
+                        // compute the next timeout, See JIRA AS7-2995.
+                        timer.setNextTimeout(calculateNextTimeout(timer));
+                        timerService.persistTimer(timer, false);
+                        scheduleTimeoutIfRequired(timer);
+                        return;
+                    }
+
+                    // Check whether the timer is running local
+                    // If the recurring timer running longer than the interval is, we don't want to allow another
+                    // execution until it is complete. See JIRA AS7-3119
+                    if (timer.getState() == TimerState.IN_TIMEOUT || timer.getState() == TimerState.RETRY_TIMEOUT) {
+                        EJB3_TIMER_LOGGER.skipOverlappingInvokeTimeout(timer, now);
+                        Date newD = this.calculateNextTimeout(timer);
+                        timer.setNextTimeout(newD);
+                        timerService.persistTimer(timer, false);
+                        scheduleTimeoutIfRequired(timer);
+                        return;
+                    }
+
+                    // Check whether we want to run the timer
+                    if (!timerService.shouldRun(timer)) {
+                        EJB3_TIMER_LOGGER.debugf("Skipping execution of timer for %s as it is being run on another node or the execution is suppressed by configuration", timer.getTimedObjectId());
+                        timer.setNextTimeout(calculateNextTimeout(timer));
+                        scheduleTimeoutIfRequired(timer);
+                        return;
+                    }
+
                     if (!timer.isActive()) {
                         EJB3_TIMER_LOGGER.debug("Timer is not active, skipping this scheduled execution at: " + now + "for " + timer);
                         return;
@@ -204,20 +207,37 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
 
     }
 
+    /**
+     * After a timeout failed the timer need to retried.
+     * The method must lock the timer for state check and update but not during callTimeout run.
+     *
+     * @param timer timer to retry and state updates
+     * @throws Exception
+     */
     protected void retryTimeout(TimerImpl timer) throws Exception {
-        if (timer.isActive()) {
-            EJB3_TIMER_LOGGER.retryingTimeout(timer);
-            timer.setTimerState(TimerState.RETRY_TIMEOUT);
-            timerService.persistTimer(timer, false);
+        boolean callTimeout = false;
 
+        timer.lock();
+        try {
+            if (timer.isActive()) {
+                EJB3_TIMER_LOGGER.retryingTimeout(timer);
+                timer.setTimerState(TimerState.RETRY_TIMEOUT);
+                timerService.persistTimer(timer, false);
+                callTimeout = true;
+            } else {
+                EJB3_TIMER_LOGGER.timerNotActive(timer);
+            }
+        } finally {
+            timer.unlock();
+        }
+        if(callTimeout) {
             this.callTimeout(timer);
-        } else {
-            EJB3_TIMER_LOGGER.timerNotActive(timer);
         }
     }
 
     /**
      * After running the timer calculate the new state or expire the timer and persist it if changed.
+     * The method must lock the timer for state check and updates if overridden.
      *
      * @param timer timer to post processing and persist
      */
