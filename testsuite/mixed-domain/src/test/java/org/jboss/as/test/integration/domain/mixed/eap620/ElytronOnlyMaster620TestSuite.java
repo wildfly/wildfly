@@ -21,6 +21,7 @@ package org.jboss.as.test.integration.domain.mixed.eap620;
 import org.jboss.as.test.integration.domain.mixed.ElytronOnlyMasterTestSuite;
 import org.jboss.as.test.integration.domain.mixed.Version;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -30,6 +31,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses(value = {ElytronOnlyMasterSmoke620TestCase.class})
 @Version(Version.AsVersion.EAP_6_2_0)
+@Ignore("Ignore until WFCORE-2882 is integrated")
 public class ElytronOnlyMaster620TestSuite extends ElytronOnlyMasterTestSuite {
 
     @BeforeClass
