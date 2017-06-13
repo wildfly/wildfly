@@ -40,6 +40,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.as.test.shared.integration.ejb.security.Util;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -62,6 +63,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -94,6 +96,11 @@ public class GetCallerPrincipalTestCase {
     private static final String OK = "OK";
 
     public static final String LOCAL_USER = "$local";
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
+    }
 
     @ArquillianResource
     Deployer deployer;
@@ -217,11 +224,7 @@ public class GetCallerPrincipalTestCase {
 
             bean.remove();
 
-            if (System.getProperty("elytron") == null) {
-                Assert.assertEquals(LOCAL_USER + "stop", results.getSfsb("predestroy"));
-            } else {
-                Assert.assertEquals(ANONYMOUS + "stop", results.getSfsb("predestroy"));
-            }
+            Assert.assertEquals(LOCAL_USER +  "stop", results.getSfsb("predestroy"));
             return null;
         };
         try {
