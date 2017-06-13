@@ -218,7 +218,7 @@
         <version.org.wildfly.arquillian>2.1.0.Alpha1</version.org.wildfly.arquillian>
         <version.org.wildfly.build-tools>1.2.2.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>3.0.0.Beta27-SRC-revision-aeda087807d97df95b54cda182ef06a100f4278e</version.org.wildfly.core>
+        <version.org.wildfly.core>3.0.0.Beta27-SRC-revision-a8c59b595d5be3f836791c35e832a4d71fdae215</version.org.wildfly.core>
         <version.org.wildfly.plugin>1.2.0.Alpha5</version.org.wildfly.plugin>
         <version.org.wildfly.http-client>1.0.0.CR4</version.org.wildfly.http-client>
         <version.org.wildfly.maven.plugins>1.0.0</version.org.wildfly.maven.plugins>
