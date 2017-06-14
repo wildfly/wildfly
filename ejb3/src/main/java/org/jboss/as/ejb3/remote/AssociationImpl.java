@@ -68,6 +68,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -463,15 +464,34 @@ final class AssociationImpl implements Association {
         final boolean isAsync = componentView.isAsynchronous(method);
         final boolean oneWay = isAsync && method.getReturnType() == void.class;
         final boolean isSessionBean = componentView.getComponent() instanceof SessionBeanComponent;
-        contextDataHolder.putAll(interceptorContext.getContextData());
+        final Object result;
         if (isAsync && isSessionBean) {
             if (! oneWay) {
                 interceptorContext.putPrivateData(CancellationFlag.class, cancellationFlag);
             }
-            final Object result = invokeWithIdentity(componentView, interceptorContext, securityIdentity);
+            result = invokeWithIdentity(componentView, interceptorContext, securityIdentity);
+            contextDataHolder.putAll(interceptorContext.getContextData());
+            sanitize(contextDataHolder);
             return result == null ? null : ((Future<?>) result).get();
         } else {
-            return invokeWithIdentity(componentView, interceptorContext, securityIdentity);
+            result = invokeWithIdentity(componentView, interceptorContext, securityIdentity);
+            contextDataHolder.putAll(interceptorContext.getContextData());
+            sanitize(contextDataHolder);
+            return result;
+        }
+    }
+
+    // Some objects added to the context data might cause harm if passed through remote calls.
+    // Obvious solution is to remove such objects in interceptors that added them.
+    // Current interceptor implementations, however, discourage that (see Jsr299BindingsCreateInterceptor) and require
+    // modification of many classes in a chain through which added data is passed to allow cleanup actions.
+    private static void sanitize(Map<String, Object> map) {
+        final Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            final Map.Entry<String, Object> entry = it.next();
+            if (entry.getValue().getClass().getName().contains("org.jboss.weld.context.SerializableContextualInstanceImpl")) {
+                it.remove();
+            }
         }
     }
 
