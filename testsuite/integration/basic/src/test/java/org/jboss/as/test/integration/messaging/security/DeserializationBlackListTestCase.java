@@ -22,18 +22,28 @@
 
 package org.jboss.as.test.integration.messaging.security;
 
+import static org.jboss.as.test.integration.messaging.security.DeserializationMessagingBean.BLACK_LIST_CF_LOOKUP;
+import static org.jboss.as.test.integration.messaging.security.DeserializationMessagingBean.BLACK_LIST_REGULAR_CF_LOOKUP;
+import static org.jboss.as.test.integration.messaging.security.DeserializationMessagingBean.WHITE_LIST_CF_LOOKUP;
 import static org.jboss.shrinkwrap.api.ArchivePaths.create;
 
 import java.util.Date;
 import java.util.UUID;
 
 import javax.ejb.EJB;
+import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -41,7 +51,28 @@ import org.junit.runner.RunWith;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
 @RunWith(Arquillian.class)
+@ServerSetup(DeserializationBlackListTestCase.SetupTask.class)
 public class DeserializationBlackListTestCase {
+
+    static class SetupTask implements ServerSetupTask {
+
+        private static final String CF_NAME = "myBlackListCF";
+
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            ModelNode attributes = new ModelNode();
+            attributes.get("connectors").add("in-vm");
+            attributes.get("deserialization-black-list").add(new ModelNode("*"));
+            JMSOperationsProvider.getInstance(managementClient.getControllerClient())
+                    .addJmsConnectionFactory(CF_NAME, BLACK_LIST_REGULAR_CF_LOOKUP, attributes);
+        }
+
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            JMSOperationsProvider.getInstance(managementClient.getControllerClient()).removeJmsConnectionFactory(CF_NAME);
+        }
+    }
 
     @Deployment
     public static JavaArchive createArchive() {
@@ -58,27 +89,41 @@ public class DeserializationBlackListTestCase {
     private DeserializationMessagingBean bean;
 
     @Test
-    public void testDeserializationBlackList() {
+    @Ignore
+    public void testDeserializationBlackList() throws NamingException {
         // UUID is black listed, any other Serializable must be deserialized.
         UUID uuid = UUID.randomUUID();
         Date date = new Date();
 
         bean.send(uuid);
-        bean.receive(uuid, true,true);
+        bean.receive(uuid, BLACK_LIST_CF_LOOKUP,true);
         bean.send(date);
-        bean.receive(date, true,false);
+        bean.receive(date, BLACK_LIST_CF_LOOKUP,false);
     }
 
     @Test
-    public void testDeserializationWhiteList() {
+    public void testDeserializationBlackListFromRegularConnectionFactory() throws NamingException {
+        // all classes are black listed
+        UUID uuid = UUID.randomUUID();
+        Date date = new Date();
+
+        bean.send(uuid);
+        bean.receive(uuid, BLACK_LIST_REGULAR_CF_LOOKUP,true);
+        bean.send(date);
+        bean.receive(date, BLACK_LIST_REGULAR_CF_LOOKUP,true);
+    }
+
+    @Test
+    @Ignore
+    public void testDeserializationWhiteList() throws NamingException {
         // UUID is white listed, any other Serializable must not be deserialized.
         UUID uuid = UUID.randomUUID();
         Date date = new Date();
 
         bean.send(uuid);
-        bean.receive(uuid, false,false);
+        bean.receive(uuid, WHITE_LIST_CF_LOOKUP,false);
         bean.send(date);
-        bean.receive(date, false,true);
+        bean.receive(date, WHITE_LIST_CF_LOOKUP,true);
     }
 
 }
