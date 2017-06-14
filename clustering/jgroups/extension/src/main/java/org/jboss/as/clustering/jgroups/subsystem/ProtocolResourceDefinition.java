@@ -46,6 +46,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -135,6 +136,22 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
             builder.setCustomResourceTransformer(new LegacyPropertyResourceTransformer());
         }
     }
+
+    static final UnaryOperator<OperationStepHandler> LEGACY_OPERATION_TRANSFORMER = handler -> (context, operation) -> {
+        PathAddress address = context.getCurrentAddress();
+        PathAddress parentAddress = address.getParent();
+        Resource parent = context.readResourceFromRoot(parentAddress, false);
+        PathElement legacyPath = GenericProtocolResourceDefinition.pathElement(address.getLastElement().getValue());
+        // If legacy protocol exists, transform this operation using the legacy protocol as the target resource
+        if (parent.hasChild(legacyPath)) {
+            PathAddress legacyAddress = parentAddress.append(legacyPath);
+            Operations.setPathAddress(operation, legacyAddress);
+            String operationName = Operations.getName(operation);
+            context.addStep(operation, context.getRootResourceRegistration().getOperationHandler(legacyAddress, operationName), OperationContext.Stage.MODEL);
+        } else {
+            handler.execute(context, operation);
+        }
+    };
 
     static class LegacyAddOperationTransformation implements UnaryOperator<OperationStepHandler> {
         private final Predicate<ModelNode> legacy;
