@@ -84,7 +84,9 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
                                             path.getLastElement().getValue()})
                         .build();
 
-    public static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder("outbound-socket-binding", ModelType.STRING, true) //todo consider what we can do to make this non nullable
+    public static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder("outbound-socket-binding", ModelType.STRING, true)
+            .setRequired(true)
+            .setValidator(new StringLengthValidator(1, false))
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
