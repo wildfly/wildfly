@@ -6301,6 +6301,7 @@
                 <checkstyle.skip>true</checkstyle.skip>
                 <!-- we override javassist to version that works on JDK9 -->
                 <version.org.javassist>3.22.0-CR2</version.org.javassist>
+                <version.org.jboss.openjdk-orb>8.0.8.Beta1</version.org.jboss.openjdk-orb>
             </properties>
             <build>
                 <plugins>
