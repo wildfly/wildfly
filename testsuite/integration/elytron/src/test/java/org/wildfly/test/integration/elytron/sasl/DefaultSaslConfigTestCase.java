@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
+import org.wildfly.security.sasl.SaslMechanismSelector;
 import org.wildfly.test.integration.elytron.sasl.AbstractSaslTestBase.JmsSetup;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
@@ -64,7 +65,7 @@ public class DefaultSaslConfigTestCase extends AbstractSaslTestBase {
         // Anonymous not supported in the default configuration
         AuthenticationContext.empty()
                 .with(MatchRule.ALL,
-                        AuthenticationConfiguration.EMPTY.useDefaultProviders().allowSaslMechanisms("ANONYMOUS").useAnonymous())
+                        AuthenticationConfiguration.empty().useDefaultProviders().setSaslMechanismSelector(SaslMechanismSelector.fromString("ANONYMOUS")).useAnonymous())
                 .run(() -> sendAndReceiveMsg(PORT_DEFAULT, true));
     }
 
@@ -76,7 +77,7 @@ public class DefaultSaslConfigTestCase extends AbstractSaslTestBase {
     public void testJBossLocalInDefault() throws Exception {
         AuthenticationContext.empty()
                 .with(MatchRule.ALL,
-                        AuthenticationConfiguration.EMPTY.useDefaultProviders().allowSaslMechanisms("JBOSS-LOCAL-USER"))
+                        AuthenticationConfiguration.empty().useDefaultProviders().setSaslMechanismSelector(SaslMechanismSelector.fromString("JBOSS-LOCAL-USER")))
                 .run(() -> sendAndReceiveMsg(PORT_DEFAULT, false));
     }
 
@@ -87,7 +88,7 @@ public class DefaultSaslConfigTestCase extends AbstractSaslTestBase {
     public void testDigestInDefault() throws Exception {
         AuthenticationContext.empty()
                 .with(MatchRule.ALL,
-                        AuthenticationConfiguration.EMPTY.useDefaultProviders().allowSaslMechanisms("DIGEST-MD5")
+                        AuthenticationConfiguration.empty().useDefaultProviders().setSaslMechanismSelector(SaslMechanismSelector.fromString("DIGEST-MD5"))
                                 .useName("guest").usePassword("guest"))
                 .run(() -> sendAndReceiveMsg(PORT_DEFAULT, false, "guest", "guest"));
     }

@@ -67,6 +67,7 @@ import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
 import org.wildfly.security.auth.permission.LoginPermission;
+import org.wildfly.security.sasl.SaslMechanismSelector;
 import org.wildfly.test.integration.elytron.sasl.AbstractSaslTestBase.JmsSetup;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
@@ -118,14 +119,14 @@ public class OtpSaslTestCase extends AbstractSaslTestBase {
         assertSequenceAndHash(99, OTP_HASH_99);
         Runnable runAndExpectFail = () -> sendAndReceiveMsg(PORT_OTP, true);
         AuthenticationContext.empty()
-                .with(MatchRule.ALL, AuthenticationConfiguration.EMPTY.useDefaultProviders().allowSaslMechanisms(OTP))
+                .with(MatchRule.ALL, AuthenticationConfiguration.empty().useDefaultProviders().setSaslMechanismSelector(SaslMechanismSelector.fromString(OTP)))
                 .run(runAndExpectFail);
         assertSequenceAndHash(99, OTP_HASH_99);
-        AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.EMPTY.useDefaultProviders()
-                .allowSaslMechanisms(OTP).useName("jduke").usePassword("TeSt")).run(runAndExpectFail);
+        AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.empty().useDefaultProviders()
+                .setSaslMechanismSelector(SaslMechanismSelector.fromString(OTP)).useName("jduke").usePassword("TeSt")).run(runAndExpectFail);
         assertSequenceAndHash(99, OTP_HASH_99);
-        AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.EMPTY.useDefaultProviders()
-                .allowSaslMechanisms(OTP).useName("jduke").usePassword(OTP_PASSPHRASE))
+        AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.empty().useDefaultProviders()
+                .setSaslMechanismSelector(SaslMechanismSelector.fromString(OTP)).useName("jduke").usePassword(OTP_PASSPHRASE))
                 .run(() -> sendAndReceiveMsg(PORT_OTP, false));
         assertSequenceAndHash(98, OTP_HASH_98);
     }

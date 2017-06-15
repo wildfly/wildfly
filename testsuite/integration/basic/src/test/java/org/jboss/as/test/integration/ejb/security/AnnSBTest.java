@@ -48,6 +48,7 @@ import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
 import org.wildfly.security.auth.principal.AnonymousPrincipal;
+import org.wildfly.security.sasl.SaslMechanismSelector;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Property;
@@ -284,7 +285,7 @@ public abstract class AnnSBTest {
                                 .useName(username == null ? "$local" : username)
                                 .usePassword(password)
                                 .useRealm(null)
-                                .allowSaslMechanisms(password != null ? "DIGEST-MD5" : "JBOSS-LOCAL-USER")
+                                .setSaslMechanismSelector(SaslMechanismSelector.fromString(password != null ? "DIGEST-MD5" : "JBOSS-LOCAL-USER"))
                                 .useMechanismProperties(getSaslProperties(builder.getMap()))
                                 .useProvidersFromClassLoader(AnnSBTest.class.getClassLoader()));
         return authenticationContext;
