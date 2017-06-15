@@ -79,7 +79,7 @@ public class Constants {
 
     private static final Boolean ELYTRON_MANAGED_SECURITY = Boolean.FALSE;
 
-    static final String DATASOURCES = "datasources";
+    public static final String DATASOURCES = "datasources";
 
     static final String DATA_SOURCE = "data-source";
 
@@ -351,7 +351,7 @@ public class Constants {
             .setRestartAllServices()
             .build();
 
-    static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(ENABLED_NAME, ModelType.BOOLEAN)
+    public static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(ENABLED_NAME, ModelType.BOOLEAN)
             .setXmlName(DataSource.Attribute.ENABLED.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.ENABLED))
