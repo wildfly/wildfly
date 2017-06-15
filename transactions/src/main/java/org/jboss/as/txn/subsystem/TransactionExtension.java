@@ -64,7 +64,7 @@ public class TransactionExtension implements Extension {
     static final ModelVersion MODEL_VERSION_EAP62 = ModelVersion.create(1, 3);
     static final ModelVersion MODEL_VERSION_EAP63 = ModelVersion.create(1, 4);
     static final ModelVersion MODEL_VERSION_EAP64 = ModelVersion.create(1, 5);
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 2, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
 
 
     private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
