@@ -63,6 +63,7 @@ import org.junit.runner.RunWith;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
+import org.wildfly.security.sasl.SaslMechanismSelector;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Property;
@@ -207,7 +208,7 @@ public class SwitchIdentityTestCase {
                                 .useName(username == null ? "$local" : username)
                                 .useRealm(null)
                                 .usePassword(passwordsToUse.getOrDefault(username, ""))
-                                .allowSaslMechanisms("DIGEST-MD5")
+                                .setSaslMechanismSelector(SaslMechanismSelector.fromString("DIGEST-MD5"))
                                 .useMechanismProperties(getSaslProperties(builder.getMap()))
                                 .useProvidersFromClassLoader(org.jboss.as.test.integration.ejb.container.interceptor.security.SwitchIdentityTestCase.class.getClassLoader()));
 

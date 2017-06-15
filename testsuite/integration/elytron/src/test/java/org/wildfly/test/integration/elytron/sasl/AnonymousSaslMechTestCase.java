@@ -35,6 +35,7 @@ import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
 import org.wildfly.security.auth.permission.LoginPermission;
+import org.wildfly.security.sasl.SaslMechanismSelector;
 import org.wildfly.test.integration.elytron.sasl.AbstractSaslTestBase.JmsSetup;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
@@ -72,7 +73,7 @@ public class AnonymousSaslMechTestCase extends AbstractSaslTestBase {
     public void testAnonymousAccess() throws Exception {
         AuthenticationContext.empty()
                 .with(MatchRule.ALL,
-                        AuthenticationConfiguration.EMPTY.useDefaultProviders().allowSaslMechanisms(ANONYMOUS).useAnonymous())
+                        AuthenticationConfiguration.empty().useDefaultProviders().setSaslMechanismSelector(SaslMechanismSelector.fromString(ANONYMOUS)).useAnonymous())
                 .run(() -> sendAndReceiveMsg(PORT_ANONYMOUS, false));
     }
 
