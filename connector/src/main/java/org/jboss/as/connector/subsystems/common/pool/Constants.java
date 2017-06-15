@@ -133,12 +133,14 @@ public class Constants {
             .setXmlName(Pool.Tag.MAX_POOL_SIZE.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.MAX_POOL_SIZE))
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition MIN_POOL_SIZE = new SimpleAttributeDefinitionBuilder(MIN_POOL_SIZE_NAME, ModelType.INT, true)
             .setXmlName(Pool.Tag.MIN_POOL_SIZE.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.MIN_POOL_SIZE))
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition INITIAL_POOL_SIZE = new SimpleAttributeDefinitionBuilder(INITIAL_POOL_SIZE_NAME, ModelType.INT)
