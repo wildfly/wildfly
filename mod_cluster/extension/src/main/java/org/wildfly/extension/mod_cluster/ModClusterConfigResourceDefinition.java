@@ -320,7 +320,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
 
-        if (ModClusterModel.VERSION_4_1_0.requiresTransformation(version)) {
+        if (ModClusterModel.VERSION_5_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, SSL_CONTEXT)
                     .addRejectCheck(RejectAttributeChecker.DEFINED, SSL_CONTEXT)
