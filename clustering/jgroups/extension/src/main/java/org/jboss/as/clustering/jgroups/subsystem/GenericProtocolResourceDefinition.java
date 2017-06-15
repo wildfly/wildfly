@@ -47,7 +47,7 @@ public class GenericProtocolResourceDefinition<P extends Protocol> extends Proto
 
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        SOCKET_BINDING("socket-binding", ModelType.STRING, JGroupsModel.VERSION_4_1_0), // socket-binding is now a required attribute of SocketBindingProtocolResourceDefinition
+        SOCKET_BINDING("socket-binding", ModelType.STRING, JGroupsModel.VERSION_5_0_0), // socket-binding is now a required attribute of SocketBindingProtocolResourceDefinition
         ;
         private final AttributeDefinition definition;
 
