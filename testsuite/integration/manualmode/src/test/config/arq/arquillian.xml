@@ -166,6 +166,39 @@
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
+
+        <container qualifier="dwm-container-0">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-dwm-0</property>
+                <!-- AS7-2493 different jboss.node.name must be specified -->
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-dwm-0 -Djboss.node.name=node-0 -Djboss.socket.binding.port-offset=200</property>
+                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:10190}</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8987} ${as.managementPort:10190}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+
+        <container qualifier="dwm-container-1">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-dwm-1</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-dwm-1 -Djboss.node.name=node-1 -Djboss.socket.binding.port-offset=300</property>
+                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node1:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort.node1:10290}</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port.node1:9087} ${as.managementPort.node1:10290}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
     </group>
 
 </arquillian>
