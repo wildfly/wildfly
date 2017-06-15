@@ -45,6 +45,16 @@
             <fileset dir="target/jbossas"/>
         </copy>
 
+        <echo message="Copying and configuring instance inbound-server"/>
+        <copy todir="target/inbound-server">
+            <fileset dir="target/jbossas"/>
+        </copy>
+
+        <echo message="Copying and configuring instance outbound-server"/>
+        <copy todir="target/outbound-server">
+            <fileset dir="target/jbossas"/>
+        </copy>
+
         <echo message="Copying and configuring instance jbossas-layered"/>
         <copy todir="target/jbossas-layered">
             <fileset dir="target/jbossas"/>
