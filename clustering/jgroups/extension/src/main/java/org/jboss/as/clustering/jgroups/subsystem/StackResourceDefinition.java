@@ -245,7 +245,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
                         protocolOperation.get(name).set(operation.get(name));
                     }
                 }
-                context.addStep(protocolOperation, addOperationEntry.getOperationHandler(), OperationContext.Stage.MODEL);
+                context.addStep(protocolOperation, addOperationEntry.getOperationHandler(), OperationContext.Stage.MODEL, true);
             }
         };
         registration.registerOperationHandler(legacyAddProtocolOperation, legacyAddProtocolHandler);
