@@ -116,7 +116,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
-        if (InfinispanModel.VERSION_4_2_0.requiresTransformation(version)) {
+        if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setValueConverter(new DefaultValueAttributeConverter(Attribute.REMOTE_TIMEOUT.getDefinition()), Attribute.REMOTE_TIMEOUT.getDefinition())
                     .setValueConverter(new DefaultValueAttributeConverter(Attribute.MODE.getDefinition()), Attribute.MODE.getDefinition())

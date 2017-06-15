@@ -71,7 +71,7 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
-        if (InfinispanModel.VERSION_4_2_0.requiresTransformation(version)) {
+        if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.RELATIVE_TO.getName());
         }
 

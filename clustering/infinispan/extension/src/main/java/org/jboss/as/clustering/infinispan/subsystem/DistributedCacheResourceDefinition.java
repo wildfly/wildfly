@@ -81,7 +81,7 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
-        if (InfinispanModel.VERSION_4_2_0.requiresTransformation(version)) {
+        if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.L1_LIFESPAN.getDefinition()), Attribute.L1_LIFESPAN.getDefinition())
                     .end();
