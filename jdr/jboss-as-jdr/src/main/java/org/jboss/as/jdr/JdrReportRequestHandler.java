@@ -74,10 +74,10 @@ public class JdrReportRequestHandler implements OperationStepHandler {
                 JdrReport report = jdrCollector.collect();
 
                 if (report.getStartTime() != null) {
-                    response.get("start-time").set(report.getStartTime().toString());
+                    response.get("start-time").set(report.getStartTime());
                 }
                 if (report.getEndTime() != null) {
-                    response.get("end-time").set(report.getEndTime().toString());
+                    response.get("end-time").set(report.getEndTime());
                 }
                 response.get("report-location").set(report.getLocation());
 

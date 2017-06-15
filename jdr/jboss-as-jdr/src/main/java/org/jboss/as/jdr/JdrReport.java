@@ -31,7 +31,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -60,8 +59,8 @@ public class JdrReport {
 
     public static final String DATA_DIR = "data";
 
-    private Date startTime;
-    private Date endTime;
+    private Long startTime;
+    private Long endTime;
     private String location;
     private String jdrUuid;
 
@@ -71,42 +70,59 @@ public class JdrReport {
     }
 
     public JdrReport(ModelNode result) {
-        try {
-            setStartTime(DATE_FORMAT.parse(result.get("start-time").asString()));
-            setEndTime(DATE_FORMAT.parse(result.get("end-time").asString()));
-        } catch(ParseException pe) {
-        }
+        setStartTime(result.get("start-time").asLong());
+        setEndTime(result.get("end-time").asLong());
         setLocation(result.get("report-location").asString());
     }
 
     /**
      * Indicates the time the JDR report collection was initiated.
      */
-    public Date getStartTime() {
+    public Long getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(Date time) {
-        startTime = time;
+    public String getFormattedStartTime() {
+        if(startTime == null)
+            return "";
+        return DATE_FORMAT.format(startTime);
+    }
+
+    public void setStartTime(Date date) {
+        startTime = date.getTime();
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
     }
 
     public void setStartTime() {
-        setStartTime(new Date());
+        setStartTime(new Date().getTime());
     }
 
     /**
      * Indicates the time the JDR report collection was complete.
      */
-    public Date getEndTime() {
+    public Long getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(Date time) {
-        endTime = time;
+    public String getFormattedEndTime() {
+        if(endTime == null)
+            return "";
+        return DATE_FORMAT.format(endTime);
+    }
+
+    public void setEndTime(Date date) {
+        endTime = date.getTime();
+    }
+
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
     }
 
     public void setEndTime() {
-        setEndTime(new Date());
+        setEndTime(new Date().getTime());
     }
 
     /**
