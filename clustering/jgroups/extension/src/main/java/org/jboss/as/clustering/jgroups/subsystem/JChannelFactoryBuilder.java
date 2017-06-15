@@ -65,7 +65,8 @@ import org.wildfly.clustering.service.ValueDependency;
 public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<ChannelFactory>, ProtocolStackConfiguration {
 
     private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
-    private final String name;
+    private final PathAddress address;
+
     private volatile boolean statisticsEnabled;
 
     @SuppressWarnings("rawtypes")
@@ -76,7 +77,7 @@ public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implem
 
     public JChannelFactoryBuilder(PathAddress address) {
         super(StackResourceDefinition.Capability.JCHANNEL_FACTORY, address);
-        this.name = address.getLastElement().getValue();
+        this.address = address;
     }
 
     @Override
@@ -91,23 +92,24 @@ public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implem
 
     @Override
     public Builder<ChannelFactory> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        PathAddress address = context.getCurrentAddress();
-        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         this.statisticsEnabled = StackResourceDefinition.Attribute.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
+
+        Resource resource = context.readResourceFromRoot(this.address, false);
         Optional<PathElement> transport = resource.getChildren(TransportResourceDefinition.WILDCARD_PATH.getKey()).stream().map(Resource.ResourceEntry::getPathElement).findFirst();
         if (!transport.isPresent()) {
             throw JGroupsLogger.ROOT_LOGGER.transportNotDefined(this.getName());
         }
-        this.transport = new InjectedValueDependency<>(new SingletonProtocolServiceNameProvider(address, transport.get()), TransportConfiguration.class);
-        this.protocols = resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).stream().map(entry -> new InjectedValueDependency<>(new ProtocolServiceNameProvider(address, entry.getPathElement()), ProtocolConfiguration.class)).collect(Collectors.toList());
-        this.relay = resource.hasChild(RelayResourceDefinition.PATH) ? new InjectedValueDependency<>(new SingletonProtocolServiceNameProvider(address, RelayResourceDefinition.PATH), RelayConfiguration.class) : null;
+
+        this.transport = new InjectedValueDependency<>(new SingletonProtocolServiceNameProvider(this.address, transport.get()), TransportConfiguration.class);
+        this.protocols = resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).stream().map(entry -> new InjectedValueDependency<>(new ProtocolServiceNameProvider(this.address, entry.getPathElement()), ProtocolConfiguration.class)).collect(Collectors.toList());
+        this.relay = resource.hasChild(RelayResourceDefinition.PATH) ? new InjectedValueDependency<>(new SingletonProtocolServiceNameProvider(this.address, RelayResourceDefinition.PATH), RelayConfiguration.class) : null;
 
         return this;
     }
 
     @Override
     public String getName() {
-        return this.name;
+        return this.address.getLastElement().getValue();
     }
 
     @Override

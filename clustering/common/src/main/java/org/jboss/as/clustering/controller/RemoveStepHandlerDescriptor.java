@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.controller;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
@@ -40,6 +41,15 @@ public interface RemoveStepHandlerDescriptor extends OperationStepHandlerDescrip
      * @return a description resolver
      */
     ResourceDescriptionResolver getDescriptionResolver();
+
+    /**
+     * Returns a collection of handlers that register runtime resources
+     * Runtime resource registrations are executed in a separate MODEL stage step.
+     * @return a collection of operation step handlers
+     */
+    default Collection<RuntimeResourceRegistration> getRuntimeResourceRegistrations() {
+        return Collections.emptyList();
+    }
 
     /**
      * Returns a mapping of capability references to an ancestor resource.

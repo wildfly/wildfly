@@ -29,13 +29,13 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.RuntimeResourceRegistration;
 import org.jboss.as.clustering.controller.descriptions.SimpleResourceDescriptionResolver;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.Attribute;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.FieldType;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
@@ -65,7 +65,7 @@ import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 /**
  * @author Paul Ferraro
  */
-public class ProtocolResourceRegistrationHandler implements OperationStepHandler, ProtocolMetricsHandler.ProtocolLocator {
+public class ChannelRuntimeResourceRegistration implements RuntimeResourceRegistration, ProtocolMetricsHandler.ProtocolLocator {
 
     @Override
     public Protocol findProtocol(OperationContext context) throws ClassNotFoundException, ModuleLoadException {
@@ -100,8 +100,7 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
     }
 
     @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
+    public void register(OperationContext context) throws OperationFailedException {
         OverrideDescriptionProvider provider = new OverrideDescriptionProvider() {
             @Override
             public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
@@ -146,6 +145,12 @@ public class ProtocolResourceRegistrationHandler implements OperationStepHandler
             registration.registerSubModel(this.createProtocolResourceDefinition(RelayConfiguration.PROTOCOL_NAME, RELAY2.class));
             resource.registerChild(ProtocolResourceDefinition.pathElement(RelayConfiguration.PROTOCOL_NAME), PlaceholderResource.INSTANCE);
         }
+    }
+
+    @Override
+    public void unregister(OperationContext context) {
+        context.readResource(PathAddress.EMPTY_ADDRESS).getChildrenNames(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).forEach(name -> context.removeResource(PathAddress.pathAddress(ProtocolResourceDefinition.pathElement(name))));
+        context.getResourceRegistrationForUpdate().unregisterOverrideModel(context.getCurrentAddressValue());
     }
 
     private ResourceDefinition createProtocolResourceDefinition(String protocolName, Class<? extends Protocol> protocolClass) {

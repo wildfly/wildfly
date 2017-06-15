@@ -237,7 +237,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
                     }
                     handler.execute(context, operation);
                 })
-                .addRuntimeResourceRegistration(new ProtocolResourceRegistrationHandler())
+                .addRuntimeResourceRegistration(new ChannelRuntimeResourceRegistration())
                 ;
         ResourceServiceHandler handler = new ChannelServiceHandler();
         new SimpleResourceRegistration(descriptor, handler).register(registration);

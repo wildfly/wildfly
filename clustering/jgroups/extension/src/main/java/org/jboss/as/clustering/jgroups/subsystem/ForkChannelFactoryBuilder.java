@@ -35,6 +35,7 @@ import org.jboss.as.clustering.jgroups.ForkChannelFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -59,8 +60,7 @@ import org.wildfly.clustering.service.ValueDependency;
  */
 public class ForkChannelFactoryBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<ChannelFactory> {
 
-    private final String channelName;
-    private final String forkName;
+    private final PathAddress address;
     @SuppressWarnings("rawtypes")
     private volatile List<ValueDependency<ProtocolConfiguration>> protocols;
     private volatile ValueDependency<Channel> parentChannel;
@@ -68,8 +68,7 @@ public class ForkChannelFactoryBuilder extends CapabilityServiceNameProvider imp
 
     public ForkChannelFactoryBuilder(Capability capability, PathAddress address) {
         super(capability, address);
-        this.channelName = address.getParent().getLastElement().getValue();
-        this.forkName = address.getLastElement().getValue();
+        this.address = address;
     }
 
     @Override
@@ -79,7 +78,7 @@ public class ForkChannelFactoryBuilder extends CapabilityServiceNameProvider imp
         Consumer<ChannelFactory> destroyer = factory -> {
             ProtocolStack stack = this.parentChannel.getValue().getProtocolStack();
             FORK fork = (FORK) stack.findProtocol(FORK.class);
-            fork.remove(this.forkName);
+            fork.remove(this.address.getLastElement().getValue());
         };
         ServiceBuilder<ChannelFactory> builder = target.addService(this.getServiceName(), new SuppliedValueService<>(Function.identity(), supplier, destroyer)).setInitialMode(ServiceController.Mode.PASSIVE);
         Stream.concat(Stream.of(this.parentChannel, this.parentFactory), this.protocols.stream()).forEach(dependency -> dependency.register(builder));
@@ -88,11 +87,11 @@ public class ForkChannelFactoryBuilder extends CapabilityServiceNameProvider imp
 
     @Override
     public Builder<ChannelFactory> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        PathAddress address = context.getCurrentAddress();
-        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-        this.protocols = resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).stream().filter(Resource::isModelDefined).map(entry -> new InjectedValueDependency<>(new ProtocolServiceNameProvider(address, entry.getPathElement()), ProtocolConfiguration.class)).collect(Collectors.toList());
-        this.parentChannel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(context, this.channelName), Channel.class);
-        this.parentFactory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, this.channelName), ChannelFactory.class);
+        Resource resource = model.isDefined() ? context.readResourceFromRoot(this.address, false) : PlaceholderResource.INSTANCE;
+        this.protocols = resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).stream().map(entry -> new InjectedValueDependency<>(new ProtocolServiceNameProvider(this.address, entry.getPathElement()), ProtocolConfiguration.class)).collect(Collectors.toList());
+        String channelName = this.address.getParent().getLastElement().getValue();
+        this.parentChannel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(context, channelName), Channel.class);
+        this.parentFactory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, channelName), ChannelFactory.class);
         return this;
     }
 }

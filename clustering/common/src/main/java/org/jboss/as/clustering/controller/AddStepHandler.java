@@ -110,7 +110,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         super.execute(context, operation);
 
         if (this.requiresRuntime(context)) {
-            this.descriptor.getRuntimeResourceRegistrations().forEach(registration -> context.addStep(registration, OperationContext.Stage.MODEL));
+            this.descriptor.getRuntimeResourceRegistrations().forEach(r -> context.addStep((c, op) -> r.register(c), OperationContext.Stage.MODEL));
         }
     }
 

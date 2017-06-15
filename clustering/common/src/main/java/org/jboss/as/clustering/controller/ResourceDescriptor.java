@@ -71,7 +71,7 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     private final Set<PathElement> requiredChildren = new TreeSet<>(PATH_COMPARATOR);
     private final Set<PathElement> requiredSingletonChildren = new TreeSet<>(PATH_COMPARATOR);
     private final Map<AttributeDefinition, AttributeTranslation> attributeTranslations = new TreeMap<>(ATTRIBUTE_COMPARATOR);
-    private final List<OperationStepHandler> runtimeResourceRegistrations = new LinkedList<>();
+    private final List<RuntimeResourceRegistration> runtimeResourceRegistrations = new LinkedList<>();
     private final Map<CapabilityReferenceRecorder, Function<PathAddress, String>> resourceCapabilityReferences = new HashMap<>();
     private volatile UnaryOperator<OperationStepHandler> addOperationTransformer = UnaryOperator.identity();
 
@@ -216,11 +216,11 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     }
 
     @Override
-    public Collection<OperationStepHandler> getRuntimeResourceRegistrations() {
+    public Collection<RuntimeResourceRegistration> getRuntimeResourceRegistrations() {
         return this.runtimeResourceRegistrations;
     }
 
-    public ResourceDescriptor addRuntimeResourceRegistration(OperationStepHandler registration) {
+    public ResourceDescriptor addRuntimeResourceRegistration(RuntimeResourceRegistration registration) {
         this.runtimeResourceRegistrations.add(registration);
         return this;
     }

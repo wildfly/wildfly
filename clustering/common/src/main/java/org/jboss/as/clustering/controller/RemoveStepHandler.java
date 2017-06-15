@@ -30,7 +30,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -96,32 +95,12 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
 
             this.descriptor.getResourceCapabilityReferences().forEach((reference, resolver) -> reference.removeCapabilityRequirements(context, resource, null, resolver.apply(address)));
 
-            // Remove any runtime child resources
-            removeRuntimeChildren(context, PathAddress.EMPTY_ADDRESS);
+            if (this.requiresRuntime(context)) {
+                this.descriptor.getRuntimeResourceRegistrations().forEach(r -> r.unregister(context));
+            }
         }
 
         super.performRemove(context, operation, model);
-
-        if (remove) {
-            PathAddress address = context.getResourceRegistration().getPathAddress();
-            PathElement path = address.getLastElement();
-            // If override model was registered, unregister it
-            if (!path.isWildcard() && (context.getResourceRegistration().getParent().getSubModel(PathAddress.pathAddress(path.getKey(), PathElement.WILDCARD_VALUE)) != null)) {
-                context.getResourceRegistrationForUpdate().unregisterOverrideModel(context.getCurrentAddressValue());
-            }
-        }
-    }
-
-    private static void removeRuntimeChildren(OperationContext context, PathAddress address) {
-        Resource resource = context.readResource(address);
-        for (String type : resource.getChildTypes()) {
-            for (Resource.ResourceEntry entry : resource.getChildren(type)) {
-                if (entry.isRuntime()) {
-                    removeRuntimeChildren(context, address.append(entry.getPathElement()));
-                    context.removeResource(address);
-                }
-            }
-        }
     }
 
     @Override
