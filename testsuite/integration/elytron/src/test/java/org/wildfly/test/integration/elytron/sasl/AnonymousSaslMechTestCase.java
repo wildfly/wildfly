@@ -28,7 +28,10 @@ import java.util.List;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.junit.Ignore;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.test.integration.management.util.CLIWrapper;
+import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
@@ -59,7 +62,6 @@ import org.wildfly.test.security.common.other.SimpleSocketBinding;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ JmsSetup.class, AnonymousSaslMechTestCase.ServerSetup.class })
-@Ignore("WFLY-8742")
 public class AnonymousSaslMechTestCase extends AbstractSaslTestBase {
 
     private static final String ANONYMOUS = "ANONYMOUS";
@@ -102,7 +104,35 @@ public class AnonymousSaslMechTestCase extends AbstractSaslTestBase {
             elements.add(SimpleRemotingConnector.builder().withName(ANONYMOUS).withSocketBinding(ANONYMOUS)
                     .withSaslAuthenticationFactory(ANONYMOUS).build());
 
+            elements.add(new ChangeMessagingElytronDomain());
             return elements.toArray(new ConfigurableElement[elements.size()]);
         }
     }
+
+    private static class ChangeMessagingElytronDomain implements ConfigurableElement {
+
+        private String originalElytronDomain;
+
+        @Override
+        public void create(ModelControllerClient client, CLIWrapper cli) throws Exception {
+
+            final ModelNode address = Operations.createAddress("subsystem","messaging-activemq","server","default");
+            final ModelNode op = Operations.createReadAttributeOperation(address, "elytron-domain");
+            originalElytronDomain = Operations.readResult(client.execute(op)).toString();
+
+            cli.sendLine("/subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain,value="+NAME+")");
+        }
+
+        @Override
+        public void remove(ModelControllerClient client, CLIWrapper cli) throws Exception {
+            cli.sendLine("/subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain,value=" + originalElytronDomain + ")");
+        }
+
+        @Override
+        public String getName() {
+            return null;
+        }
+
+    }
+
 }
