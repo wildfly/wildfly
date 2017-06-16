@@ -173,7 +173,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     }
                 }
                 case STATISTICS_ENABLED: {
-                    if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
+                    if (this.schema.since(JGroupsSchema.VERSION_5_0)) {
                         readAttribute(reader, i, operation, ChannelResourceDefinition.Attribute.STATISTICS_ENABLED);
                         break;
                     }
@@ -279,7 +279,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     break;
                 }
                 case STATISTICS_ENABLED: {
-                    if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
+                    if (this.schema.since(JGroupsSchema.VERSION_5_0)) {
                         readAttribute(reader, i, operation, StackResourceDefinition.Attribute.STATISTICS_ENABLED);
                         break;
                     }
@@ -308,31 +308,31 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     }
                 }
                 case SOCKET_PROTOCOL: {
-                    if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
+                    if (this.schema.since(JGroupsSchema.VERSION_5_0)) {
                         this.parseSocketProtocol(reader, address, operations);
                         break;
                     }
                 }
                 case SOCKET_DISCOVERY_PROTOCOL: {
-                    if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
+                    if (this.schema.since(JGroupsSchema.VERSION_5_0)) {
                         this.parseSocketDiscoveryProtocol(reader, address, operations);
                         break;
                     }
                 }
                 case JDBC_PROTOCOL: {
-                    if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
+                    if (this.schema.since(JGroupsSchema.VERSION_5_0)) {
                         this.parseJDBCProtocol(reader, address, operations);
                         break;
                     }
                 }
                 case ENCRYPT_PROTOCOL: {
-                    if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
+                    if (this.schema.since(JGroupsSchema.VERSION_5_0)) {
                         this.parseEncryptProtocol(reader, address, operations);
                         break;
                     }
                 }
                 case AUTH_PROTOCOL: {
-                    if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
+                    if (this.schema.since(JGroupsSchema.VERSION_5_0)) {
                         this.parseAuthProtocol(reader, address, operations);
                         break;
                     }
@@ -605,7 +605,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 break;
             }
             case DATA_SOURCE: {
-                if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
+                if (this.schema.since(JGroupsSchema.VERSION_5_0)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 }
                 readAttribute(reader, index, operation, JDBCProtocolResourceDefinition.Attribute.DATA_SOURCE);
@@ -618,7 +618,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 }
             }
             case STATISTICS_ENABLED: {
-                if (this.schema.since(JGroupsSchema.VERSION_4_1)) {
+                if (this.schema.since(JGroupsSchema.VERSION_5_0)) {
                     readAttribute(reader, index, operation, AbstractProtocolResourceDefinition.Attribute.STATISTICS_ENABLED);
                     break;
                 }

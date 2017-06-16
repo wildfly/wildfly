@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:jgroups:4.1">
+<subsystem xmlns="urn:jboss:domain:jgroups:5.0">
     <channels default="default">
         <channel name="default" stack="minimal"/>
         <channel name="bridge" stack="default"/>
