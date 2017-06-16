@@ -151,7 +151,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(this.definition);
 
-        if (JGroupsModel.VERSION_4_1_0.requiresTransformation(version)) {
+        if (JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
             Stream.of(this.minThreads, this.maxThreads, this.queueLength)
                     .map(Definable::getDefinition)
                     .forEach(attribute -> builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(attribute), attribute));

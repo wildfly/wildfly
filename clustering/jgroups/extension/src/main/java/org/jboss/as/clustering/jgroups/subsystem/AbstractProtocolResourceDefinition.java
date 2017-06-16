@@ -126,7 +126,7 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
     @SuppressWarnings("deprecation")
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
-        if (JGroupsModel.VERSION_4_1_0.requiresTransformation(version)) {
+        if (JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
