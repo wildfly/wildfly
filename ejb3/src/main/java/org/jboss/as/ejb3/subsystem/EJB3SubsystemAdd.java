@@ -431,7 +431,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     .setInitialMode(ServiceController.Mode.PASSIVE)
                     .install();
 
-            EnableStatisticsWriteHandler.INSTANCE.updateToRuntime(context, model);
+            StatisticsEnabledWriteHandler.INSTANCE.updateToRuntime(context, model);
 
 
             if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, EJB3SubsystemRootResourceDefinition.EJB_CAPABILITY.getName(), null)) {

@@ -29,16 +29,16 @@ import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceRegistry;
 
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.STATISTICS_ENABLED;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-class EnableStatisticsWriteHandler extends AbstractWriteAttributeHandler<Void> {
-    static EnableStatisticsWriteHandler INSTANCE = new EnableStatisticsWriteHandler();
+class StatisticsEnabledWriteHandler extends AbstractWriteAttributeHandler<Void> {
+    static StatisticsEnabledWriteHandler INSTANCE = new StatisticsEnabledWriteHandler();
 
-    EnableStatisticsWriteHandler() {
-        super(ENABLE_STATISTICS);
+    StatisticsEnabledWriteHandler(){
+        super(STATISTICS_ENABLED);
     }
 
     @Override
@@ -56,9 +56,8 @@ class EnableStatisticsWriteHandler extends AbstractWriteAttributeHandler<Void> {
     }
 
     void updateToRuntime(final OperationContext context, final ModelNode model) throws OperationFailedException {
-        final ModelNode enableStatisticsModel = ENABLE_STATISTICS.resolveModelAttribute(context, model);
-        final boolean enableStatistics = enableStatisticsModel.isDefined() && enableStatisticsModel.asBoolean();
-        utilities(context).setStatisticsEnabled(enableStatistics);
+        final boolean statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
+        utilities(context).setStatisticsEnabled(statisticsEnabled);
     }
 
     private static EJBUtilities utilities(final OperationContext context) {
