@@ -121,7 +121,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
-            .setDeprecated(MessagingExtension.VERSION_1_1_0)
+            .setDeprecated(MessagingExtension.VERSION_2_0_0)
             .build();
     public static final SimpleAttributeDefinition ELYTRON_DOMAIN = create("elytron-domain", ModelType.STRING)
             .setAttributeGroup("security")

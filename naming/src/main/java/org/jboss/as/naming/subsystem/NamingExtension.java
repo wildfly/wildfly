@@ -59,7 +59,7 @@ public class NamingExtension implements Extension {
     private static final String NAMESPACE_1_3 = "urn:jboss:domain:naming:1.3";
     private static final String NAMESPACE_1_4 = "urn:jboss:domain:naming:1.4";
     static final String NAMESPACE_2_0 = "urn:jboss:domain:naming:2.0";
-
+    //2.1 introduced in WildFly 10.1
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 1, 0);
 
     static final String RESOURCE_NAME = NamingExtension.class.getPackage().getName() + ".LocalDescriptions";

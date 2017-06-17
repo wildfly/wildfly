@@ -97,7 +97,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         PRELOAD("preload", false, UnaryOperator.identity()),
         PURGE("purge", true, UnaryOperator.identity()),
         SHARED("shared", false, UnaryOperator.identity()),
-        SINGLETON("singleton", false, builder -> builder.setDeprecated(InfinispanModel.VERSION_4_2_0.getVersion())),
+        SINGLETON("singleton", false, builder -> builder.setDeprecated(InfinispanModel.VERSION_5_0_0.getVersion())),
         PROPERTIES("properties"),
         ;
         private final AttributeDefinition definition;
