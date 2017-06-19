@@ -204,6 +204,7 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         addHttpAuthentication.get("http-server-mechanism-factory").set("global");
         addHttpAuthentication.get("mechanism-configurations").get(0).get("mechanism-name").set("BASIC");
         addHttpAuthentication.get("mechanism-configurations").get(0).get("mechanism-realm-configurations").get(0).get("realm-name").set("TestingRealm");
+        addHttpAuthentication.get("mechanism-configurations").get(1).get("mechanism-name").set("FORM");
         steps.add(addHttpAuthentication);
 
         ModelNode addUndertowDomain = Util.createAddOperation(undertowDomainAddress);
