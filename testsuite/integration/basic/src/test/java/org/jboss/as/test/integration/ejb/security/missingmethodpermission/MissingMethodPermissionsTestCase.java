@@ -36,7 +36,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -44,7 +43,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -70,11 +68,6 @@ public class MissingMethodPermissionsTestCase {
     private static final String MODULE_TWO_NAME = "missing-method-permissions-test-ejb-jar-two";
 
     private static final String MODULE_THREE_NAME = "missing-method-permissions-test-ejb-jar-three";
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
-    }
 
     @Deployment
     public static Archive createDeployment() {
@@ -123,7 +116,8 @@ public class MissingMethodPermissionsTestCase {
             Assert.assertEquals("Unexpected caller prinicpal when invoking method with no role", "user1", callerPrincipalForMethodWithNoRole);
             return null;
         };
-        Util.switchIdentity("user1", "password1", callable);
+        // establish an identity using the security domain associated with the beans in the JARs in the EAR deployment
+        Util.switchIdentity("user1", "password1", callable, SecuredBeanOne.class.getClassLoader());
     }
 
     /**
@@ -150,7 +144,8 @@ public class MissingMethodPermissionsTestCase {
             }
             return null;
         };
-        Util.switchIdentity("user1", "password1", callable);
+        // establish an identity using the security domain associated with the beans in the JARs in the EAR deployment
+        Util.switchIdentity("user1", "password1", callable, SecuredBeanOne.class.getClassLoader());
     }
 
     /**
@@ -176,7 +171,8 @@ public class MissingMethodPermissionsTestCase {
             }
             return null;
         };
-        Util.switchIdentity("user1", "password1", callable);
+        // establish an identity using the security domain associated with the beans in the JARs in the EAR deployment
+        Util.switchIdentity("user1", "password1", callable, SecuredBeanOne.class.getClassLoader());
     }
 
     // Ensure the default security domain gets mapped to an appropriately configured Elytron security domain
