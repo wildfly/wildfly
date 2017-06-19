@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.web.sessionpersistence;
+package org.jboss.as.test.integration.web.session;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -33,7 +33,7 @@ import java.io.IOException;
 /**
  */
 @WebServlet(name = "SessionPersistenceServlet", urlPatterns = {"/SessionPersistenceServlet"})
-public class SessionPersistenceServlet extends HttpServlet {
+public class SessionTestServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
