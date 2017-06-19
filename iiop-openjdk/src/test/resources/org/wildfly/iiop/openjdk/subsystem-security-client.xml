@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:iiop-openjdk:3.0">
+<subsystem xmlns="urn:jboss:domain:iiop-openjdk:2.0">
     <properties>
         <property name="some_property" value="some_value"/>
     </properties>

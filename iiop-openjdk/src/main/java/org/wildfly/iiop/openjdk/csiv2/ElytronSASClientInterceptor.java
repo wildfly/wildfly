@@ -179,7 +179,7 @@ public class ElytronSASClientInterceptor extends LocalObject implements ClientRe
             } else if(currentIdentity == null || currentIdentity.isAnonymous()) {
                 authContext = AuthenticationContext.captureCurrent();
             } else {
-                authContext = AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.EMPTY.useForwardedIdentity(domain));
+                authContext = AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.empty().useForwardedIdentity(domain));
             }
 
             if ((secMech.sas_context_mech.target_supports & IdentityAssertion.value) != 0) {

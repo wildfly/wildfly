@@ -22,22 +22,17 @@
 package org.wildfly.iiop.openjdk;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.io.IOException;
 import java.util.List;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ControllerInitializer;
-import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -59,13 +54,9 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-3.0.xml");
+        return readResource("subsystem-2.0.xml");
     }
 
-    @Override
-    protected String getSubsystemXml(String configId) throws IOException {
-        return readResource(configId);
-    }
 
     @Test
     public void testExpressions() throws Exception {
@@ -74,12 +65,12 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-iiop-openjdk_3_0.xsd";
+        return "schema/wildfly-iiop-openjdk_2_0.xsd";
     }
 
     @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
+        return new String[]{
                 "/subsystem-templates/iiop-openjdk.xml"
         };
     }
@@ -94,8 +85,8 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testParseEmptySubsystem() throws Exception {
         // parse the subsystem xml into operations.
         String subsystemXml =
-                "<subsystem xmlns=\"" +Namespace.CURRENT.getUriString() + "\">" +
-                "</subsystem>";
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                        "</subsystem>";
         List<ModelNode> operations = super.parse(subsystemXml);
 
         // check that we have the expected number of operations.
@@ -116,8 +107,8 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
         // try parsing a XML with an invalid element.
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
-                "   <invalid/>" +
-                "</subsystem>";
+                        "   <invalid/>" +
+                        "</subsystem>";
         try {
             super.parse(subsystemXml);
             Assert.fail("Should not have parsed bad child");
@@ -126,69 +117,16 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // now try parsing a valid element in an invalid position.
         subsystemXml =
-                "<subsystem xmlns=\"" +Namespace.CURRENT.getUriString() + "\">" +
-                "    <orb>" +
-                "        <poa/>" +
-                "    </orb>" +
-                "</subsystem>";
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                        "    <orb>" +
+                        "        <poa/>" +
+                        "    </orb>" +
+                        "</subsystem>";
         try {
             super.parse(subsystemXml);
             Assert.fail("Should not have parsed bad child");
         } catch (XMLStreamException expected) {
         }
-
-    }
-
-    @Test
-    public void testParseSubsystemWithBadAttribute() throws Exception {
-        String subsystemXml =
-                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\" bad=\"very_bad\">" +
-                "</subsystem>";
-        try {
-            super.parse(subsystemXml);
-            Assert.fail("Should not have parsed bad attribute");
-        } catch (XMLStreamException expected) {
-        }
-    }
-
-    @Test
-    public void testDescribeHandler() throws Exception {
-        // parse the subsystem xml and install into the first controller.
-        String subsystemXml =
-                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
-                "<orb socket-binding=\"iiop\" ssl-socket-binding=\"iiop-ssl\"/>"+
-                "</subsystem>";
-
-        AdditionalInitialization additionalInit = new AdditionalInitialization(){
-            @Override
-            protected void setupController(ControllerInitializer controllerInitializer) {
-                controllerInitializer.addSocketBinding("iiop", 3528);
-                controllerInitializer.addSocketBinding("iiop-ssl", 3529);
-            }
-        };
-
-        KernelServices servicesA = createKernelServicesBuilder(additionalInit)
-                .setSubsystemXml(subsystemXml)
-                .build();
-        // get the model and the describe operations from the first controller.
-        ModelNode modelA = servicesA.readWholeModel();
-        ModelNode describeOp = new ModelNode();
-        describeOp.get(OP).set(DESCRIBE);
-        describeOp.get(OP_ADDR).set(
-                PathAddress.pathAddress(
-                        PathElement.pathElement(SUBSYSTEM, IIOPExtension.SUBSYSTEM_NAME)).toModelNode());
-        List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
-        servicesA.shutdown();
-
-        Assert.assertEquals(1, operations.size());
-
-        // install the describe options from the first controller into a second controller.
-        KernelServices servicesB = createKernelServicesBuilder(additionalInit).setBootOperations(operations).build();
-        ModelNode modelB = servicesB.readWholeModel();
-        servicesB.shutdown();
-
-        // make sure the models from the two controllers are identical.
-        super.compare(modelA, modelB);
 
     }
 
