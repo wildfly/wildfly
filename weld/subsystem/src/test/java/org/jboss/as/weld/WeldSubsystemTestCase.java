@@ -122,13 +122,12 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformers30() throws Exception {
+    public void testTransformersEAP70() throws Exception {
         ModelVersion modelVersion = ModelVersion.create(3, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource("subsystem_4_0-transformers.xml");
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, ModelTestControllerVersion.EAP_7_0_0, modelVersion)
                 .addMavenResourceURL("org.jboss.eap:wildfly-weld:" + ModelTestControllerVersion.EAP_7_0_0.getMavenGavVersion())
-                .skipReverseControllerCheck()
                 .dontPersistXml();
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -160,7 +159,6 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-weld:" + controllerVersion.getMavenGavVersion())
-                .skipReverseControllerCheck()
                 .dontPersistXml();
 
         KernelServices mainServices = builder.build();
@@ -188,7 +186,7 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, ModelTestControllerVersion.EAP_7_0_0, modelVersion)
-                .addMavenResourceURL("org.jboss.eap:wildfly-weld:" + ModelTestControllerVersion.EAP_7_0_0.getMavenGavVersion()).skipReverseControllerCheck()
+                .addMavenResourceURL("org.jboss.eap:wildfly-weld:" + ModelTestControllerVersion.EAP_7_0_0.getMavenGavVersion())
                 .dontPersistXml();
 
         KernelServices mainServices = builder.build();
