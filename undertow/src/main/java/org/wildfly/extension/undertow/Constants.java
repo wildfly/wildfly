@@ -225,6 +225,7 @@ public interface Constants {
     String STATISTICS_ENABLED = "statistics-enabled";
     String DEFAULT_SECURITY_DOMAIN = "default-security-domain";
     String DISABLE_FILE_WATCH_SERVICE = "disable-file-watch-service";
+    String DISABLE_SESSION_ID_REUSE = "disable-session-id-reuse";
     String PER_MESSAGE_DEFLATE = "per-message-deflate";
     String DEFLATER_LEVEL = "deflater-level";
     String MAX_RETRIES = "max-retries";

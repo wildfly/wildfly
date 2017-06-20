@@ -615,6 +615,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             d.setAllowNonStandardWrappers(servletContainer.isAllowNonStandardWrappers());
             d.setServletStackTraces(servletContainer.getStackTraces());
             d.setDisableCachingForSecuredPages(servletContainer.isDisableCachingForSecuredPages());
+            if(servletContainer.isDisableSessionIdReuse()) {
+                d.setCheckOtherSessionManagers(false);
+            }
 
             if (servletContainer.getSessionPersistenceManager() != null) {
                 d.setSessionPersistenceManager(servletContainer.getSessionPersistenceManager());

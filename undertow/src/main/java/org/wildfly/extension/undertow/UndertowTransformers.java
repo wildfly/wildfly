@@ -88,6 +88,8 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), ServletContainerDefinition.DISABLE_SESSION_ID_REUSE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DISABLE_SESSION_ID_REUSE)
                 .end()
                 .addChildResource(UndertowExtension.PATH_WEBSOCKETS)
                 .getAttributeBuilder()

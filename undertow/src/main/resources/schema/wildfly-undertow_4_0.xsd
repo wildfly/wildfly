@@ -267,6 +267,7 @@
         <xs:attribute name="session-id-length" type="xs:int" use="optional" default="30" />
         <xs:attribute name="max-sessions" type="xs:int" use="optional" />
         <xs:attribute name="disable-file-watch-service" type="xs:boolean" use="optional" />
+        <xs:attribute name="disable-session-id-reuse" type="xs:boolean" use="optional" />
     </xs:complexType>
 
     <xs:complexType name="mime-mappingsType">
