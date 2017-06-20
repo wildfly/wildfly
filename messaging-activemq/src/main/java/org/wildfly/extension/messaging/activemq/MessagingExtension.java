@@ -35,6 +35,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTO
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.GROUPING_HANDLER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA_POLICY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACCEPTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_CONNECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_QUEUE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_TOPIC;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JOURNAL_DIRECTORY;
@@ -122,6 +123,7 @@ public class MessagingExtension implements Extension {
     static final PathElement QUEUE_PATH = pathElement(QUEUE);
     static final PathElement RUNTIME_QUEUE_PATH = pathElement(RUNTIME_QUEUE);
     static final PathElement GROUPING_HANDLER_PATH = pathElement(GROUPING_HANDLER);
+    static final PathElement HTTP_CONNECTOR_PATH = pathElement(HTTP_CONNECTOR);
     static final PathElement HTTP_ACCEPTOR_PATH = pathElement(HTTP_ACCEPTOR);
     static final PathElement BROADCAST_GROUP_PATH = pathElement(BROADCAST_GROUP);
     static final PathElement CLUSTER_CONNECTION_PATH = pathElement(CLUSTER_CONNECTION);

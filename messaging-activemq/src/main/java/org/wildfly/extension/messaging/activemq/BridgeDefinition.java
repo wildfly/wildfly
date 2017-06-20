@@ -161,14 +161,14 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             CONNECTOR_REFS, DISCOVERY_GROUP_NAME
     };
 
+    private final boolean registerRuntimeOnly;
 
-    static final BridgeDefinition INSTANCE = new BridgeDefinition();
-
-    private BridgeDefinition() {
+    BridgeDefinition(boolean registerRuntimeOnly) {
         super(MessagingExtension.BRIDGE_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.BRIDGE),
                 BridgeAdd.INSTANCE,
                 BridgeRemove.INSTANCE);
+        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
@@ -191,6 +191,8 @@ public class BridgeDefinition extends PersistentResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
         super.registerOperations(registry);
-        BridgeControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
+        if (registerRuntimeOnly) {
+            BridgeControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
+        }
     }
 }

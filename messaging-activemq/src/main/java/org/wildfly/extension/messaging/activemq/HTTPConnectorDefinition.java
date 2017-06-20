@@ -66,9 +66,7 @@ public class HTTPConnectorDefinition extends AbstractTransportDefinition {
             .setAllowExpression(false)
             .build();
 
-    static final HTTPConnectorDefinition INSTANCE = new HTTPConnectorDefinition();
-
-    public HTTPConnectorDefinition() {
-        super(false, CommonAttributes.HTTP_CONNECTOR, SOCKET_BINDING, ENDPOINT, SERVER_NAME, PARAMS);
+    public HTTPConnectorDefinition(boolean registerRuntimeOnly) {
+        super(false, CommonAttributes.HTTP_CONNECTOR, registerRuntimeOnly, SOCKET_BINDING, ENDPOINT, SERVER_NAME, PARAMS);
     }
 }
