@@ -79,6 +79,7 @@ public class EncryptProtocolResourceDefinition<P extends EncryptBase & EncryptPr
         super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
                 .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
+                .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
                 ), address -> new EncryptProtocolConfigurationBuilder<>(address), parentBuilderFactory);
     }
 }

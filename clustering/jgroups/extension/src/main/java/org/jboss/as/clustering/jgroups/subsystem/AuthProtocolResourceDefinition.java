@@ -45,6 +45,7 @@ public class AuthProtocolResourceDefinition extends ProtocolResourceDefinition<A
     AuthProtocolResourceDefinition(String name, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
                 .setAddOperationTransformation(new LegacyAddOperationTransformation("auth_class"))
+                .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
                 .addResourceCapabilityReference(new CapabilityReference(Capability.PROTOCOL, AuthTokenResourceDefinition.Capability.AUTH_TOKEN), address -> address.getParent().getLastElement().getValue()))
             , address -> new AuthProtocolConfigurationBuilder(address), parentBuilderFactory, (parent, registration) -> {
                 new PlainAuthTokenResourceDefinition().register(registration);
