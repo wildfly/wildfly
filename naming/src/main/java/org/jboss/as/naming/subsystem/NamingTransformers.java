@@ -41,13 +41,25 @@ public class NamingTransformers implements ExtensionTransformerRegistration {
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystem) {
         final ModelVersion v2_0_0 = ModelVersion.create(2, 0, 0);
+        final ModelVersion v1_3_0 = ModelVersion.create(1, 3, 0); //eap 6.2 - 6.4
 
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystem.getCurrentSubsystemVersion());
+
+        /*====== Comparing subsystem models ======
+        --- Problems for relative address to root []:
+        ====== Resource root address: ["subsystem" => "naming"] - Current version: 2.1.0; legacy version: 2.0.0 =======
+        --- Problems for relative address to root ["binding" => "*"]:
+        Missing operations in current: []; missing in legacy [rebind]
+        */
         ResourceTransformationDescriptionBuilder builder_2_0 = chainedBuilder.createBuilder(subsystem.getCurrentSubsystemVersion(), v2_0_0);
 
-        builder_2_0.addOperationTransformationOverride(NamingSubsystemModel.REBIND).setReject();
+        builder_2_0.addChildResource(NamingSubsystemModel.BINDING_PATH)
+                .addOperationTransformationOverride(NamingSubsystemModel.REBIND).setReject();
+
+        chainedBuilder.createBuilder(v2_0_0, v1_3_0);
 
         chainedBuilder.buildAndRegister(subsystem, new ModelVersion[]{
+                v1_3_0,
                 v2_0_0,
         });
     }
