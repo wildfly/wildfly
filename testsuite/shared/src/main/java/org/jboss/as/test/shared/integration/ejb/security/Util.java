@@ -163,6 +163,22 @@ public class Util {
      * @param username the new username
      * @param password the new password
      * @param callable the callable task to execute under the new identity
+     * @param classLoader the class loader to use when checking for a security domain association
+     * @param <T> the result type of the callable task
+     * @return the result of the callable task
+     * @throws Exception if an error occurs while switching the user's identity or if an error occurs while executing the callable task
+     */
+    public static <T> T switchIdentity(final String username, final String password, final Callable<T> callable, final ClassLoader classLoader) throws Exception {
+        return switchIdentity(username, password, callable, false, true, classLoader);
+    }
+
+    /**
+     * Switch the user's identity using either ClientLoginModule or Elytron depending on whether or not the Elytron
+     * profile is enabled.
+     *
+     * @param username the new username
+     * @param password the new password
+     * @param callable the callable task to execute under the new identity
      * @param validateException whether or not to validate an exception thrown by the callable task
      * @param <T> the result type of the callable task
      * @return the result of the callable task
@@ -187,10 +203,40 @@ public class Util {
      * @throws Exception if an error occurs while switching the user's identity or if an error occurs while executing the callable task
      */
     public static <T> T switchIdentity(final String username, final String password, final Callable<T> callable, boolean validateException, boolean useClientLoginModule) throws Exception {
+        return switchIdentity(username, password, callable, validateException, useClientLoginModule, null);
+    }
+
+    /**
+     * Switch the user's identity using either ClientLoginModule or SecurityClientFactory or Elytron depending on whether or not the Elytron
+     * profile is enabled.
+     *
+     * @param username the new username
+     * @param password the new password
+     * @param callable the callable task to execute under the new identity
+     * @param validateException whether or not to validate an exception thrown by the callable task
+     * @param useClientLoginModule {@code true} if {@link ClientLoginModule} should be used for legacy security,
+     * {@code false} if {@link SecurityClientFactory} should be used for legacy security instead
+     * @param classLoader the class loader to use when checking for a security domain association
+     * @param <T> the result type of the callable task
+     * @return the result of the callable task
+     * @throws Exception if an error occurs while switching the user's identity or if an error occurs while executing the callable task
+     */
+    public static <T> T switchIdentity(final String username, final String password, final Callable<T> callable, boolean validateException, boolean useClientLoginModule, final ClassLoader classLoader) throws Exception {
         boolean initialAuthSucceeded = false;
         try {
             if (username != null && password != null) {
-                final SecurityDomain securityDomain = SecurityDomain.getCurrent();
+                final SecurityDomain securityDomain;
+                if (classLoader != null) {
+                    final ClassLoader current = Thread.currentThread().getContextClassLoader();
+                    try {
+                        Thread.currentThread().setContextClassLoader(classLoader);
+                        securityDomain = SecurityDomain.getCurrent();
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(current);
+                    }
+                } else {
+                    securityDomain = SecurityDomain.getCurrent();
+                }
                 if (securityDomain != null) {
                     // elytron is enabled, use the new way to switch the identity
                     final SecurityIdentity securityIdentity = securityDomain.authenticate(username, new PasswordGuessEvidence(password.toCharArray()));
