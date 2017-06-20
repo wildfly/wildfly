@@ -176,13 +176,17 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         addDomain.get("default-realm").set(getSecurityRealmName());
         addDomain.get("realms").get(0).get("realm").set(getSecurityRealmName());
         addDomain.get("realms").get(0).get("role-decoder").set("groups-to-roles"); // use attribute "groups" as roles (defined in standalone-elytron.xml)
+        addDomain.get("realms").get(1).get("realm").set("local");
         steps.add(addDomain);
 
         // /subsystem=elytron/sasl-authentication-factory=ejb3-tests-auth-fac:add(sasl-server-factory=configured,security-domain=EjbDomain,mechanism-configurations=[{mechanism-name=BASIC}])
         ModelNode addSaslAuthentication = Util.createAddOperation(saslAuthenticationAddress);
         addSaslAuthentication.get("sasl-server-factory").set("configured");
         addSaslAuthentication.get("security-domain").set(getSecurityDomainName());
-        addSaslAuthentication.get("mechanism-configurations").get(0).get("mechanism-name").set("BASIC");
+        addSaslAuthentication.get("mechanism-configurations").get(0).get("mechanism-name").set("JBOSS-LOCAL-USER");
+        addSaslAuthentication.get("mechanism-configurations").get(0).get("realm-mapper").set("local");
+        addSaslAuthentication.get("mechanism-configurations").get(1).get("mechanism-name").set("DIGEST-MD5");
+        addSaslAuthentication.get("mechanism-configurations").get(1).get("mechanism-realm-configurations").get(0).get("realm-name").set(getSecurityRealmName());
         steps.add(addSaslAuthentication);
 
         // remoting connection with sasl-authentication-factory
