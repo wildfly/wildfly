@@ -95,9 +95,7 @@ public class NamingSubsystemTestCase extends AbstractSubsystemBaseTest {
             }
         }
 
-        for (int i = 1 ; i < list.size() ; i++) {
 
-        }
     }
 
     /**
