@@ -378,7 +378,31 @@
                 <param name="keystore" expression="@{keystore}"/>
                 <param name="password" expression="@{password}"/>
             </xslt>
+        	
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-ha.xml.mod"/>
+                    <include name="**/standalone.xml.mod"/>
+                    <include name="**/standalone-full.xml.mod"/>
+                </fileset>
+                <mapper type="glob" from="*.mod" to="*"/>
+            </move>
+        </sequential>
+    </macrodef>
 
+    <macrodef name="ts.config-as.setup-ssl-support-for-iiop-elytron" description="Creates elytron security settings to support SSL.">
+
+        <attribute name="name" default="jbossas"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="domainName" default="iiop-ssl-domain"/>
+        <attribute name="keystore"/>
+        <attribute name="password"/>
+
+        <sequential>
+            <echo message="Setting up SSL support in IIOP configuration for @{name}"/>
+        	
             <move todir="@{output.dir}/@{name}/@{config.dir.name}">
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                     <include name="**/standalone-ha.xml.mod"/>
@@ -416,6 +440,30 @@
                 <param name="keystore" expression="@{keystore}"/>
                 <param name="password" expression="@{password}"/>
             </xslt>
+
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-ha.xml.mod"/>
+                    <include name="**/standalone.xml.mod"/>
+                    <include name="**/standalone-full.xml.mod"/>
+                </fileset>
+                <mapper type="glob" from="*.mod" to="*"/>
+            </move>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="ts.config-as.setup-legacy-ssl-support-for-iiop-elytron" description="Creates elytron security settings and enables server-reqires setting.">
+
+        <attribute name="name" default="jbossas"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <attribute name="domainName" default="iiop-ssl-domain"/>
+        <attribute name="keystore"/>
+        <attribute name="password"/>
+
+        <sequential>
+            <echo message="Setting up SSL support in IIOP configuration for @{name}"/>
 
             <move todir="@{output.dir}/@{name}/@{config.dir.name}">
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">

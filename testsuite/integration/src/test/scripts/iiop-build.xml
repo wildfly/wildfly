@@ -78,4 +78,90 @@
 
     </target>
 
+    <target name="build-iiop-elytron" description="Builds server configurations for IIOP tests with Elytron">
+
+        <basename property="keystore.client" file="${keystore.client.file}"/>
+        <basename property="keystore.server" file="${keystore.server.file}"/>
+        <basename property="truststore.client" file="${truststore.client.file}"/>
+        <basename property="truststore.server" file="${truststore.server.file}"/>
+
+        <echo message="Building config jbossas-iiop-client"/>
+        <copy todir="target/jbossas-iiop-client">
+            <fileset dir="target/jbossas"/>
+        </copy>
+        <ts.config-as.add-jts name="jbossas-iiop-client"/>
+        <ts.config-as.ip-with-multicast name="jbossas-iiop-client"
+            node="${node0}"
+            mcast="${mcast}"
+        />
+        <echo message="Building config jbossas-iiop-server"/>
+        <copy todir="target/jbossas-iiop-server">
+            <fileset dir="target/jbossas"/>
+        </copy>
+        <ts.config-as.add-jts name="jbossas-iiop-server"/>
+        <ts.config-as.ip-with-multicast name="jbossas-iiop-server"
+            node="${node1}"
+            mcast="${mcast}"
+        />
+        <!-- Build configs for SSL tests -->
+
+        <!-- SSL Client w Sec Domain -->
+        <echo message="Building config jbossas-iiop-ssl-client"/>
+        <copy todir="target/jbossas-iiop-ssl-client">
+            <fileset dir="target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-client"
+                                        node="${node0}"
+                                        mcast="${mcast}"
+                    />
+        <copy todir="target/jbossas-iiop-ssl-client/standalone/configuration">
+            <fileset file="${keystore.client.file}"/>
+            <fileset file="${truststore.client.file}"/>
+            <fileset file="${keystore.server.file}"/>
+            <fileset file="${truststore.server.file}"/>
+        </copy>
+        <ts.config-as.setup-ssl-support-for-iiop-elytron name="jbossas-iiop-ssl-client"
+                                                 keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
+                                                 password="${keystore.password}"/>
+
+        <!-- SSL Server with ior-settings transport config -->
+        <echo message="Building config jbossas-iiop-ssl-server"/>
+        <copy todir="target/jbossas-iiop-ssl-server">
+            <fileset dir="target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-server"
+                                        node="${node1}"
+                                        mcast="${mcast}"
+        />
+        <copy todir="target/jbossas-iiop-ssl-server/standalone/configuration">
+            <fileset file="${keystore.client.file}"/>
+            <fileset file="${truststore.client.file}"/>
+            <fileset file="${keystore.server.file}"/>
+            <fileset file="${truststore.server.file}"/>
+        </copy>
+        <ts.config-as.setup-ssl-support-for-iiop-elytron name="jbossas-iiop-ssl-server"
+                                                 keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
+                                                 password="${keystore.password}"/>
+
+        <!-- SSL Server with server-requires -->
+        <echo message="Building config jbossas-iiop-ssl-legacy-server"/>
+        <copy todir="target/jbossas-iiop-ssl-legacy-server">
+            <fileset dir="target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-legacy-server"
+                                        node="${node1}"
+                                        mcast="${mcast}"
+        />
+        <copy todir="target/jbossas-iiop-ssl-legacy-server/standalone/configuration">
+            <fileset file="${keystore.client.file}"/>
+            <fileset file="${truststore.client.file}"/>
+            <fileset file="${keystore.server.file}"/>
+            <fileset file="${truststore.server.file}"/>
+        </copy>
+        <ts.config-as.setup-legacy-ssl-support-for-iiop-elytron name="jbossas-iiop-ssl-legacy-server"
+                                                        keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
+                                                        password="${keystore.password}"/>
+
+    </target>
+
 </project>

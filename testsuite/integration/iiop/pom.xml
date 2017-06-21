@@ -21,6 +21,9 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <iiop.endorsed.argline>-Djava.endorsed.dirs=${project.build.directory}/endorsed</iiop.endorsed.argline>
+        <ts.elytron.cli>ssl-enable-elytron.cli</ts.elytron.cli>
+        <jbossas>jbossas</jbossas>
+        <wildfly.config.dir>${basedir}/target/${jbossas}/standalone/configuration</wildfly.config.dir>
     </properties>
 
     <profiles>
@@ -178,6 +181,16 @@
                                 <goals>
                                     <goal>clean</goal>
                                 </goals>
+                                <configuration>
+                                    <keystore>${basedir}/target/iiop-test.keystore</keystore>
+                                    <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
+                                    <keypass>password</keypass>
+                                    <storepass>password</storepass>
+                                    <alias>test</alias>
+                                    <keyalg>RSA</keyalg>
+                                    <keysize>2048</keysize>
+                                    <validity>365</validity>
+                                </configuration>
                             </execution>
                             <execution>
                                 <phase>generate-test-resources</phase>
@@ -185,18 +198,140 @@
                                 <goals>
                                     <goal>generateKeyPair</goal>
                                 </goals>
+                                <configuration>
+                                    <keystore>${basedir}/target/iiop-test.keystore</keystore>
+                                    <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
+                                    <keypass>password</keypass>
+                                    <storepass>password</storepass>
+                                    <alias>test</alias>
+                                    <keyalg>RSA</keyalg>
+                                    <keysize>2048</keysize>
+                                    <validity>365</validity>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generateServerKeyPair</id>
+                                <goals>
+                                    <goal>generateKeyPair</goal>
+                                </goals>
+                                <phase>generate-test-resources</phase>
+                                <configuration>
+                                    <keystore>${wildfly.config.dir}/server.keystore.jks</keystore>
+                                    <storepass>secret</storepass>
+                                    <keypass>secret</keypass>
+                                    <alias>localhost</alias>
+                                    <dname>CN=localhost</dname>
+                                    <validity>365</validity>
+                                    <keyalg>RSA</keyalg>
+                                    <keysize>1024</keysize>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generateClientKeyPair</id>
+                                <goals>
+                                    <goal>generateKeyPair</goal>
+                                </goals>
+                                <phase>generate-test-resources</phase>
+                                <configuration>
+                                    <keystore>${wildfly.config.dir}/client.keystore.jks</keystore>
+                                    <storepass>secret</storepass>
+                                    <keypass>secret</keypass>
+                                    <alias>client</alias>
+                                    <dname>CN=client</dname>
+                                    <validity>365</validity>
+                                    <keyalg>RSA</keyalg>
+                                    <keysize>1024</keysize>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>exportServerCert</id>
+                                <goals>
+                                    <goal>exportCertificate</goal>
+                                </goals>
+                                <phase>generate-test-resources</phase>
+                                <configuration>
+                                    <keystore>${wildfly.config.dir}/server.keystore.jks</keystore>
+                                    <storepass>secret</storepass>
+                                    <alias>localhost</alias>
+                                    <keypass>secret</keypass>
+                                    <file>${wildfly.config.dir}/server.cer</file>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>exportClientCert</id>
+                                <goals>
+                                    <goal>exportCertificate</goal>
+                                </goals>
+                                <phase>generate-test-resources</phase>
+                                <configuration>
+                                    <keystore>${wildfly.config.dir}/client.keystore.jks</keystore>
+                                    <storepass>secret</storepass>
+                                    <alias>client</alias>
+                                    <keypass>secret</keypass>
+                                    <file>${wildfly.config.dir}/client.cer</file>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>importClientCertToServer</id>
+                                <goals>
+                                    <goal>importCertificate</goal>
+                                </goals>
+                                <phase>generate-test-resources</phase>
+                                <configuration>
+                                    <keystore>${wildfly.config.dir}/server.truststore.jks</keystore>
+                                    <storepass>secret</storepass>
+                                    <alias>client</alias>
+                                    <file>${wildfly.config.dir}/client.cer</file>
+                                    <trustcacerts>true</trustcacerts>
+                                    <noprompt>true</noprompt>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>importServerCertToServer</id>
+                                <goals>
+                                    <goal>importCertificate</goal>
+                                </goals>
+                                <phase>generate-test-resources</phase>
+                                <configuration>
+                                    <keystore>${wildfly.config.dir}/server.truststore.jks</keystore>
+                                    <storepass>secret</storepass>
+                                    <alias>localhost</alias>
+                                    <file>${wildfly.config.dir}/server.cer</file>
+                                    <trustcacerts>true</trustcacerts>
+                                    <noprompt>true</noprompt>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>importServerCertToClient</id>
+                                <goals>
+                                    <goal>importCertificate</goal>
+                                </goals>
+                                <phase>generate-test-resources</phase>
+                                <configuration>
+                                    <keystore>${wildfly.config.dir}/client.truststore.jks</keystore>
+                                    <storepass>secret</storepass>
+                                    <alias>localhost</alias>
+                                    <file>${wildfly.config.dir}/server.cer</file>
+                                    <trustcacerts>true</trustcacerts>
+                                    <noprompt>true</noprompt>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>importClientCertToClient</id>
+                                <goals>
+                                    <goal>importCertificate</goal>
+                                </goals>
+                                <phase>generate-test-resources</phase>
+                                <configuration>
+                                    <keystore>${wildfly.config.dir}/client.truststore.jks</keystore>
+                                    <storepass>secret</storepass>
+                                    <alias>client</alias>
+                                    <file>${wildfly.config.dir}/client.cer</file>
+                                    <trustcacerts>true</trustcacerts>
+                                    <noprompt>true</noprompt>
+                                </configuration>
                             </execution>
                         </executions>
-                        <configuration>
-                            <keystore>${basedir}/target/iiop-test.keystore</keystore>
-                            <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
-                            <keypass>password</keypass>
-                            <storepass>password</storepass>
-                            <alias>test</alias>
-                            <keyalg>RSA</keyalg>
-                            <keysize>2048</keysize>
-                            <validity>365</validity>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -212,6 +347,57 @@
                 <iiop.endorsed.argline/>
             </properties>
         </profile>
-
+        <profile>
+            <id>elytron.iiop.profile</id>
+            <activation>
+                <property>
+                    <name>elytron</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/*BasicIIOPInvocationTestCase.java</exclude>
+                                <exclude>**/*IIOPTimeoutTestCase.java</exclude>
+                                <exclude>**/*IIOPTransactionPropagationTestCase.java</exclude>
+                                <exclude>**/*TransactionIIOPInvocationTestCase.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>build-clustering.server</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <!-- Configure IIOP server and client. -->
+                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/iiop-build.xml">
+                                            <property name="node0" value="${node0}" /> <!-- inheritAll="true" doesn't work. -->
+                                            <property name="node1" value="${node1}" />
+                                            <property name="keystore.client.file" value="${wildfly.config.dir}/client.keystore.jks"/>
+                                            <property name="keystore.server.file" value="${wildfly.config.dir}/server.keystore.jks"/>
+                                            <property name="truststore.client.file" value="${wildfly.config.dir}/client.truststure.jks"/>
+                                            <property name="truststore.server.file" value="${wildfly.config.dir}/server.truststore.jks"/>
+                                            <property name="keystore.password" value="password"/>
+                                            <target name="build-iiop-elytron" />
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
