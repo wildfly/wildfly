@@ -207,12 +207,12 @@
                     </xs:element>
                     <xs:element name="binary-keyed-jdbc-store" type="tns:binary-keyed-jdbc-store">
                         <xs:annotation>
-                            <xs:documentation>Defines a database cache store accessed via JDBC using binary-based keys.</xs:documentation>
+                            <xs:documentation>Defines a database cache store accessed via JDBC using binary-based keys. Warning: This option has been deprecrated, please use string-keyed-jdbc-store instead</xs:documentation>
                         </xs:annotation>
                     </xs:element>
                     <xs:element name="mixed-keyed-jdbc-store" type="tns:mixed-keyed-jdbc-store">
                         <xs:annotation>
-                            <xs:documentation>Defines a database cache store accessed via JDBC using mixed string and binary-based keys.</xs:documentation>
+                            <xs:documentation>Defines a database cache store accessed via JDBC using mixed string and binary-based keys. Warning: This option has been deprecrated, please use string-keyed-jdbc-store instead.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
                 </xs:choice>
