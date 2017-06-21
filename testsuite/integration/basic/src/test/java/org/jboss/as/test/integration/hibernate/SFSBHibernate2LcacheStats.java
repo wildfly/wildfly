@@ -42,6 +42,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.transaction.jta.platform.internal.JBossAppServerJtaPlatform;
 import org.hibernate.internal.util.config.ConfigurationHelper;
+import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorBuilderImpl;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.stat.Statistics;
 import org.infinispan.manager.CacheContainer;
@@ -79,7 +80,7 @@ public class SFSBHibernate2LcacheStats {
             Configuration configuration = new Configuration().setProperty(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS,
                     "true");
             configuration.getProperties().put(AvailableSettings.JTA_PLATFORM, JBossAppServerJtaPlatform.class);
-            configuration.getProperties().put(AvailableSettings.TRANSACTION_COORDINATOR_STRATEGY, "jta");
+            configuration.setProperty(AvailableSettings.TRANSACTION_COORDINATOR_STRATEGY, JtaTransactionCoordinatorBuilderImpl.SHORT_NAME);
             configuration.setProperty(Environment.HBM2DDL_AUTO, "create-drop");
             configuration.setProperty(Environment.DATASOURCE, "java:jboss/datasources/ExampleDS");
             // set property to enable statistics

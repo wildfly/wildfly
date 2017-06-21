@@ -76,7 +76,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         putPropertyIfAbsent(pu, properties, AvailableSettings.SCANNER, HibernateArchiveScanner.class);
         properties.put(AvailableSettings.APP_CLASSLOADER, pu.getClassLoader());
         putPropertyIfAbsent(pu, properties, AvailableSettings.JTA_PLATFORM,  new JBossAppServerJtaPlatform(jtaManager));
-        putPropertyIfAbsent(pu,properties, org.hibernate.ejb.AvailableSettings.ENTITY_MANAGER_FACTORY_NAME, pu.getScopedPersistenceUnitName());
+        putPropertyIfAbsent(pu,properties, org.hibernate.jpa.AvailableSettings.ENTITY_MANAGER_FACTORY_NAME, pu.getScopedPersistenceUnitName());
         putPropertyIfAbsent(pu, properties, AvailableSettings.SESSION_FACTORY_NAME, pu.getScopedPersistenceUnitName());
         if (!pu.getProperties().containsKey(AvailableSettings.SESSION_FACTORY_NAME)) {
             putPropertyIfAbsent(pu, properties, AvailableSettings.SESSION_FACTORY_NAME_IS_JNDI, Boolean.FALSE);

@@ -31,7 +31,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 /**
- * Test that a peristence unit can be injected into a Hibernate session
+ * Test that a persistence unit can be injected into a Hibernate session
  *
  * @author Scott Marlow
  */
@@ -61,6 +61,5 @@ public class SFSBHibernateSessionFactory {
         Employee emp = sessionFactory.openSession().load(Employee.class, id);
         return emp;
     }
-
 
 }
