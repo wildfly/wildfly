@@ -37,15 +37,15 @@ import org.jboss.as.controller.PersistentResourceXMLParser;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-public class IIOPSubsystemParser_3 extends PersistentResourceXMLParser {
+public class IIOPSubsystemParser_2_0 extends PersistentResourceXMLParser {
 
 
-    IIOPSubsystemParser_3() {
+    IIOPSubsystemParser_2_0() {
     }
 
     @Override
     public PersistentResourceXMLDescription getParserDescription() {
-        return builder(IIOPRootDefinition.INSTANCE.getPathElement(), Namespace.IIOP_OPENJDK_3_0.getUriString())
+        return builder(IIOPRootDefinition.INSTANCE.getPathElement(), Namespace.IIOP_OPENJDK_2_0.getUriString())
                 .setMarshallDefaultValues(true)
                 .addAttributes(IIOPRootDefinition.ALL_ATTRIBUTES.toArray(new AttributeDefinition[0]))
                 .build();

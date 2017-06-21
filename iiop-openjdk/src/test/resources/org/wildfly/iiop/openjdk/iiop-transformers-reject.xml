@@ -1,0 +1,38 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2017, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<subsystem xmlns="urn:jboss:domain:iiop-openjdk:2.0">
+    <properties>
+        <property name="some_property" value="some_value"/>
+    </properties>
+    <!-- test both values being default because there is a bug that nothing gets persisted -->
+    <orb socket-binding="iiop" ssl-socket-binding="iiop-ssl"/>
+    <tcp high-water-mark="500" number-to-reclaim="30"/>
+    <initializers security="elytron" authentication-context="iiop" transactions="spec"/>
+    <naming root-context="JBoss/Naming/root2" export-corbaloc="false"/>
+    <security support-ssl="true" security-domain="domain" add-component-via-interceptor="false" client-requires-ssl="true" server-requires-ssl="true"/>
+    <transport-config integrity="required" confidentiality="required" detect-replay="supported"
+                      detect-misordering="supported"
+                      trust-in-client="required" trust-in-target="supported"/>
+    <as-context auth-method="none" realm="test_realm2" required="true"/>
+    <sas-context caller-propagation="supported"/>
+</subsystem>

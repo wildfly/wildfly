@@ -22,11 +22,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:jboss:domain:iiop-openjdk:3.0"
-           xmlns="urn:jboss:domain:iiop-openjdk:3.0"
+           targetNamespace="urn:jboss:domain:iiop-openjdk:2.0"
+           xmlns="urn:jboss:domain:iiop-openjdk:2.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="3.0">
+           version="2.0">
 
     <!-- The iiop subsystem root element -->
     <xs:element name="subsystem" type="iiopSubsystemType"/>
