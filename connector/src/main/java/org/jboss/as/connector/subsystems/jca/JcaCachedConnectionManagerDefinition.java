@@ -132,9 +132,11 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
     public enum CcmOperations {
         GET_NUMBER_OF_CONNECTIONS(new SimpleOperationDefinitionBuilder("get-number-of-connections", JcaExtension.getResourceDescriptionResolver(PATH_CACHED_CONNECTION_MANAGER.getKey()))
                 .setRuntimeOnly()
+                .setReadOnly()
                 .build()),
         LIST_CONNECTIONS(new SimpleOperationDefinitionBuilder("list-connections", JcaExtension.getResourceDescriptionResolver(PATH_CACHED_CONNECTION_MANAGER.getKey()))
                 .setRuntimeOnly()
+                .setReadOnly()
                 .build());
 
 
