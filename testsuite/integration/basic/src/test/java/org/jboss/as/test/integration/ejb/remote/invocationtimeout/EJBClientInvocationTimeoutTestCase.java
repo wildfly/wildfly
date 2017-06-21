@@ -43,7 +43,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.naming.client.WildFlyInitialContextFactory;
@@ -96,7 +95,6 @@ public class EJBClientInvocationTimeoutTestCase {
      * Set the timeout for all invocations using a scoped context
      */
     @Test
-    @Ignore("fails due to JBEAP-9813")
     public void testScopedContext() throws NamingException {
         final Properties properties = new Properties();
         properties.put("org.jboss.ejb.client.scoped.context", "true");
