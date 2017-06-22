@@ -5,7 +5,7 @@
            targetNamespace="urn:jboss:domain:mail:1.1"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="1.0">
+           version="1.1">
     <!-- The mail subsystem root element -->
     <xs:element name="subsystem" type="mail-subsystemType"/>
     <xs:complexType name="mail-subsystemType">
