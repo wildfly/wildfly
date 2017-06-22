@@ -547,7 +547,7 @@ public class AggregateRealmTestCase {
                         PROPERTIES_REALM_AUTHZ_NAME, asAbsolutePath(usersAuthzRealmFile),
                         asAbsolutePath(rolesAuthzRealmFile)));
                 cli.sendLine(String.format(
-                        "/subsystem=elytron/filesystem-realm=%s:add(case-sensitive=true,path=%s)",
+                        "/subsystem=elytron/filesystem-realm=%s:add(path=%s)",
                         FILESYSTEM_REALM_AUTHN_NAME, fsRealmPath));
                 addUserToFilesystemRealm(cli, USER_WITHOUT_ROLE, CORRECT_PASSWORD);
                 addUserToFilesystemRealm(cli, USER_WITH_ONE_ROLE, CORRECT_PASSWORD);

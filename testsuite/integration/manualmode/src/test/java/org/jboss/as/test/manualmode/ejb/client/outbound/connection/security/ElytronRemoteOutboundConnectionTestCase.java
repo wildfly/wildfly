@@ -68,6 +68,7 @@ import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
+import org.wildfly.security.sasl.SaslMechanismSelector;
 import org.wildfly.test.api.Authentication;
 
 import javax.naming.Context;
@@ -1240,7 +1241,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
     private String callIntermediateWhoAmI() {
         AuthenticationConfiguration common = AuthenticationConfiguration.empty()
                 .useProviders(() -> new Provider[] {new WildFlyElytronProvider()})
-                .allowAllSaslMechanisms();
+                .setSaslMechanismSelector(SaslMechanismSelector.ALL);
         AuthenticationContext authCtxEmpty = AuthenticationContext.empty();
         final AuthenticationContext authCtx = authCtxEmpty.with(MatchRule.ALL, common);
 
