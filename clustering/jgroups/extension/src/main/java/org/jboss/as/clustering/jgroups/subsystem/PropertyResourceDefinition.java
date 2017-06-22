@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.ArrayList;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
@@ -46,11 +47,14 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.logging.ControllerLogger;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.PlaceholderResource;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -104,13 +108,28 @@ public class PropertyResourceDefinition extends ChildResourceDefinition<Manageme
         return (context, operation) -> {
             PathAddress address = context.getCurrentAddress();
             PathAddress protocolAddress = address.getParent();
-            PathElement legacyProtocolPath = GenericProtocolResourceDefinition.pathElement(protocolAddress.getLastElement().getValue());
-            // Use legacy protocol path in address, if one was registered
-            ImmutableManagementResourceRegistration legacyProtocolRegistration = context.getResourceRegistration().getParent().getParent().getSubModel(PathAddress.pathAddress(legacyProtocolPath));
-            if ((legacyProtocolRegistration != null) && !legacyProtocolRegistration.getPathAddress().getLastElement().isWildcard()) {
-                PathAddress genericAddress = protocolAddress.getParent().append(legacyProtocolPath).append(address.getLastElement());
-                Operations.setPathAddress(operation, genericAddress);
-                context.addStep(operation, handler, context.getCurrentStage());
+            PathAddress parentAddress = protocolAddress.getParent();
+            PathElement protocolPath = protocolAddress.getLastElement();
+            String protocolName = protocolPath.getValue();
+            PathElement legacyProtocolPath = GenericProtocolResourceDefinition.pathElement(protocolName);
+            ImmutableManagementResourceRegistration protocolRegistration = context.getResourceRegistration().getParent().getParent().getSubModel(PathAddress.pathAddress(legacyProtocolPath));
+            // If legacy protocol is registered, transform this operation using the property resource of the legacy protocol as the target resource
+            if ((protocolRegistration != null) && !protocolRegistration.getPathAddress().getLastElement().isWildcard()) {
+                PathAddress legacyProtocolAddress = parentAddress.append(legacyProtocolPath);
+                Resource parent = context.readResourceFromRoot(parentAddress, false);
+                // If legacy protocol resource does not exist, we need to delete the protocol and re-add the legacy protocol
+                if (!parent.hasChild(legacyProtocolPath)) {
+                    // Determine index of protocol
+                    int index = new ArrayList<>(parent.getChildrenNames(protocolPath.getKey())).indexOf(protocolName);
+                    ModelNode addOperation = protocolRegistration.isOrderedChildResource() ? Operations.createAddOperation(legacyProtocolAddress, index) : Util.createAddOperation(legacyProtocolAddress);
+                    // Remove first, then add
+                    context.addStep(addOperation, context.getRootResourceRegistration().getOperationHandler(legacyProtocolAddress, ModelDescriptionConstants.ADD), OperationContext.Stage.MODEL, true);
+                    context.addStep(Util.createRemoveOperation(protocolAddress), context.getRootResourceRegistration().getOperationHandler(protocolAddress, ModelDescriptionConstants.REMOVE), OperationContext.Stage.MODEL, true);
+                }
+                PathAddress legacyAddress = legacyProtocolAddress.append(address.getLastElement());
+                Operations.setPathAddress(operation, legacyAddress);
+                String operationName = Operations.getName(operation);
+                context.addStep(operation, context.getRootResourceRegistration().getOperationHandler(legacyAddress, operationName), OperationContext.Stage.MODEL);
             } else {
                 handler.execute(context, operation);
             }
@@ -131,7 +150,7 @@ public class PropertyResourceDefinition extends ChildResourceDefinition<Manageme
             @Override
             public void execute(OperationContext context, ModelNode operation) {
                 operationDeprecated(context, operation);
-                this.createResource(context);
+                context.addResource(PathAddress.EMPTY_ADDRESS, PlaceholderResource.INSTANCE);
                 String name = context.getCurrentAddressValue();
                 String value = operation.get(VALUE.getName()).asString();
                 PathAddress protocolAddress = context.getCurrentAddress().getParent();

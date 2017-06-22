@@ -24,26 +24,17 @@ package org.jboss.as.weld;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.Map;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.weld.logging.WeldLogger;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Domain extension used to initialize the weld subsystem.
@@ -80,9 +71,6 @@ public class WeldExtension implements Extension {
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         subsystem.registerXMLElementWriter(WeldSubsystem40Parser.INSTANCE);
 
-        if (context.isRegisterTransformers()) {
-            registerTransformers(subsystem);
-        }
     }
 
     /** {@inheritDoc} */
@@ -94,45 +82,4 @@ public class WeldExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem40Parser.NAMESPACE, () -> WeldSubsystem40Parser.INSTANCE);
     }
 
-    private void registerTransformers(SubsystemRegistration subsystem) {
-        ModelVersion version1_0_0 = ModelVersion.create(1, 0, 0);
-        ModelVersion version3_0_0 = ModelVersion.create(3, 0, 0);
-
-        ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory
-                .createChainedSubystemInstance(subsystem.getSubsystemVersion());
-
-        // Differences between the current version and 3.0.0
-        ResourceTransformationDescriptionBuilder builder300 = chainedBuilder.createBuilder(subsystem.getSubsystemVersion(), version3_0_0);
-        builder300.getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE)
-                // Reject thread-pool-size attribute if defined
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE).end();
-
-        // Differences between 3.0.0 and 1.0.0
-        ResourceTransformationDescriptionBuilder builder100 = chainedBuilder.createBuilder(version3_0_0, version1_0_0);
-        builder100.getAttributeBuilder()
-                // These new attributes are assumed to be 'true' in the old version but default to false in the current version. So discard if 'true' and reject
-                // if 'undefined'.
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
-                        WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
-                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-
-                    @Override
-                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                        return WeldLogger.ROOT_LOGGER.rejectAttributesMustBeTrue(attributes.keySet());
-                    }
-
-                    @Override
-                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                        // This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
-                        return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
-                    }
-                }, WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
-
-                // development mode - not supported in older versions
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
-                // if the attribute was not discarded it means that it is defined as 'true'. Therefore, reject.
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE).end();
-
-        chainedBuilder.buildAndRegister(subsystem, new ModelVersion[] { version1_0_0, version3_0_0 });
-    }
 }

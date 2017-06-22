@@ -24,11 +24,13 @@ package org.jboss.as.clustering.controller;
 
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.transform.InitialAttributeValueOperationContextAttachment;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -63,7 +65,8 @@ public class WriteAttributeStepHandler extends ReloadRequiredWriteAttributeHandl
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        this.descriptor.getAttributes().forEach(attribute -> registration.registerReadWriteAttribute(attribute, null, this));
+        UnaryOperator<OperationStepHandler> transformer = this.descriptor.getOperationTransformation();
+        this.descriptor.getAttributes().forEach(attribute -> registration.registerReadWriteAttribute(attribute, null, transformer.apply(this)));
     }
 
     @Override

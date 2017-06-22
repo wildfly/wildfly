@@ -63,9 +63,9 @@ public class JaxrsExtension implements Extension {
     public static final String NAMESPACE = "urn:jboss:domain:jaxrs:1.0";
 
     public static final ModelVersion MODEL_VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    public static final ModelVersion MODEL_VERSION_1_1_0 = ModelVersion.create(1, 1, 0);
+    public static final ModelVersion MODEL_VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = MODEL_VERSION_1_1_0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = MODEL_VERSION_2_0_0;
 
     private static final JaxrsSubsystemParser parser = new JaxrsSubsystemParser();
 

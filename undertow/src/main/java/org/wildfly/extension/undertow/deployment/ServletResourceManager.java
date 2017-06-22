@@ -94,17 +94,31 @@ public class ServletResourceManager implements ResourceManager {
 
     @Override
     public boolean isResourceChangeListenerSupported() {
-        return explodedDeployment && deploymentResourceManager.isResourceChangeListenerSupported();
+        return true;
     }
 
     @Override
     public void registerResourceChangeListener(ResourceChangeListener listener) {
-        deploymentResourceManager.registerResourceChangeListener(listener);
+        if(deploymentResourceManager.isResourceChangeListenerSupported()) {
+            deploymentResourceManager.registerResourceChangeListener(listener);
+        }
+        for(ResourceManager external : externalOverlays) {
+            if(external.isResourceChangeListenerSupported()) {
+                external.registerResourceChangeListener(listener);
+            }
+        }
     }
 
     @Override
     public void removeResourceChangeListener(ResourceChangeListener listener) {
-        deploymentResourceManager.removeResourceChangeListener(listener);
+        if(deploymentResourceManager.isResourceChangeListenerSupported()) {
+            deploymentResourceManager.removeResourceChangeListener(listener);
+        }
+        for(ResourceManager external : externalOverlays) {
+            if(external.isResourceChangeListenerSupported()) {
+                external.removeResourceChangeListener(listener);
+            }
+        }
     }
 
     @Override

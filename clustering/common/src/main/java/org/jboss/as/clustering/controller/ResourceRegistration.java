@@ -22,6 +22,11 @@
 
 package org.jboss.as.clustering.controller;
 
+import java.util.function.UnaryOperator;
+
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.operations.global.ListOperations;
+import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
@@ -58,5 +63,17 @@ public class ResourceRegistration implements Registration<ManagementResourceRegi
 
         this.addRegistration.register(registration);
         this.removeRegistration.register(registration);
+
+        UnaryOperator<OperationStepHandler> transformer = this.descriptor.getOperationTransformation();
+
+        registration.registerOperationHandler(MapOperations.MAP_PUT_DEFINITION, transformer.apply(MapOperations.MAP_PUT_HANDLER));
+        registration.registerOperationHandler(MapOperations.MAP_GET_DEFINITION, transformer.apply(MapOperations.MAP_GET_HANDLER));
+        registration.registerOperationHandler(MapOperations.MAP_REMOVE_DEFINITION, transformer.apply(MapOperations.MAP_REMOVE_HANDLER));
+        registration.registerOperationHandler(MapOperations.MAP_CLEAR_DEFINITION, transformer.apply(MapOperations.MAP_CLEAR_HANDLER));
+
+        registration.registerOperationHandler(ListOperations.LIST_ADD_DEFINITION, transformer.apply(ListOperations.LIST_ADD_HANDLER));
+        registration.registerOperationHandler(ListOperations.LIST_REMOVE_DEFINITION, transformer.apply(ListOperations.LIST_REMOVE_HANDLER));
+        registration.registerOperationHandler(ListOperations.LIST_GET_DEFINITION, transformer.apply(ListOperations.LIST_GET_HANDLER));
+        registration.registerOperationHandler(ListOperations.LIST_CLEAR_DEFINITION, transformer.apply(ListOperations.LIST_CLEAR_HANDLER));
     }
 }

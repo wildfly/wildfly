@@ -38,4 +38,14 @@ public interface Contextual<C> {
      * @param context a cache context
      */
     void setCacheContext(C context);
+
+    /**
+     * Removes any cache context associated with this cached object
+     * @return the removed cache context
+     */
+    default C removeCacheContext() {
+        C context = this.getCacheContext();
+        this.setCacheContext(null);
+        return context;
+    }
 }

@@ -128,6 +128,6 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, this.descriptor.getDescriptionResolver()).withFlag(this.flag).build(), this);
+        registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, this.descriptor.getDescriptionResolver()).withFlag(this.flag).build(), this.descriptor.getOperationTransformation().apply(this));
     }
 }

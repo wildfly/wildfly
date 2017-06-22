@@ -19,42 +19,41 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
-package org.wildfly.extension.undertow;
-
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
+package org.wildfly.iiop.openjdk;
 
 import java.io.IOException;
 
-/**
- * This is the barebone test example that tests subsystem
- *
- * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
- */
-public class UndertowDefaultConfigUpgradeTestCase extends AbstractSubsystemBaseTest {
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.KernelServices;
 
-    public UndertowDefaultConfigUpgradeTestCase() {
-        super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension());
+/**
+ * <ṕ>
+ * IIOP subsystem tests.
+ * </ṕ>
+ *
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="sguilhen@jboss.com">Stefan Guilhen</a>
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
+ */
+public class IIOPSubsystem1_0TestCase extends AbstractSubsystemBaseTest {
+
+    public IIOPSubsystem1_0TestCase() {
+        super(IIOPExtension.SUBSYSTEM_NAME, new IIOPExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-default-8.0.0.xml");
+        return readResource("subsystem-1.0.xml");
     }
 
     @Override
-    protected void compareXml(String configId, String original, String marshalled) throws Exception {
-        super.compareXml(configId, marshalled, readResource("undertow-default.xml"));
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
     }
 
     @Override
-    public void testSchema() throws Exception {
-
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/jboss-as-iiop-openjdk_1_0.xsd";
     }
 
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return UndertowSubsystemTestCase.DEFAULT;
-    }
 }

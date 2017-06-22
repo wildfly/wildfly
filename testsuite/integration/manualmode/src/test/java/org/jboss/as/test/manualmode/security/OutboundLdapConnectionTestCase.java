@@ -22,7 +22,6 @@
 package org.jboss.as.test.manualmode.security;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -217,25 +216,23 @@ public class OutboundLdapConnectionTestCase {
     @InSequence(0)
     @OperateOnDeployment(LDAPS_AUTHN_SD)
     public void test(@ArquillianResource ManagementClient mgmtClient) throws Exception {
-        final TrustAndStoreTrustManager trustManager = ldapsSetup.trustAndStoreTrustManager;
+        final SslCertChainRecorder recorder = ldapsSetup.recorder;
         try {
             deployer.deploy(LDAPS_AUTHN_SD);
             deployer.deploy(LDAPS_AUTHN_SD_NO_SSL);
 
             final URL appUrlNoSsl = new URL(mgmtClient.getWebUri().toString() + "/" + LDAPS_AUTHN_SD_NO_SSL + "/" + TEST_FILE);
             Utils.makeCallWithBasicAuthn(appUrlNoSsl, "jduke", "theduke", HttpServletResponse.SC_UNAUTHORIZED);
-            assertFalse("Certificate (client key) from SecurityRealm already known to LDAP server.",
-                    trustManager.isSubjectInClientCertChain("CN=JBAS"));
+            assertEquals("Number of connections with CN=JBAS client cert", 0, recorder.countCerts("CN=JBAS"));
 
             final URL appUrl = new URL(mgmtClient.getWebUri().toString() + "/" + LDAPS_AUTHN_SD + "/" + TEST_FILE);
             final String resp = Utils.makeCallWithBasicAuthn(appUrl, "jduke", "theduke", HttpServletResponse.SC_OK);
             assertEquals(TEST_FILE_CONTENT, resp);
-            assertTrue("Certificate (client key) from SecurityRealm was not used.",
-                    trustManager.isSubjectInClientCertChain("CN=JBAS"));
+            assertEquals("Number of connections with CN=JBAS client cert", 1, recorder.countCerts("CN=JBAS"));
         } finally {
             deployer.undeploy(LDAPS_AUTHN_SD);
             deployer.undeploy(LDAPS_AUTHN_SD_NO_SSL);
-            trustManager.clear();
+            recorder.clear();
         }
 
     }
@@ -359,13 +356,13 @@ public class OutboundLdapConnectionTestCase {
 
         private DirectoryService directoryService;
         private LdapServer ldapServer;
-        private final TrustAndStoreTrustManager trustAndStoreTrustManager = new TrustAndStoreTrustManager(OutboundLdapConnectionClientCertTestCase.class.getSimpleName());
+        private final SslCertChainRecorder recorder = new SslCertChainRecorder();
 
         /**
          * Creates directory services, starts LDAP server and KDCServer.
          */
         public void startLdapServer() throws Exception {
-            LdapsInitializer.setAndLockTrustManager(trustAndStoreTrustManager);
+            LdapsInitializer.setAndLockRecorder(recorder);
             directoryService = DSAnnotationProcessor.getDirectoryService();
             final SchemaManager schemaManager = directoryService.getSchemaManager();
             try (LdifReader ldifReader = new LdifReader(OutboundLdapConnectionTestCase.class.getResourceAsStream(
@@ -413,7 +410,7 @@ public class OutboundLdapConnectionTestCase {
             ldapServer.stop();
             directoryService.shutdown();
             FileUtils.deleteDirectory(directoryService.getInstanceLayout().getInstanceDirectory());
-            LdapsInitializer.unsetAndUnlockTrustManager();
+            LdapsInitializer.unsetAndUnlockRecorder();
         }
     }
 }

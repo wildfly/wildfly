@@ -74,6 +74,7 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     private final List<RuntimeResourceRegistration> runtimeResourceRegistrations = new LinkedList<>();
     private final Map<CapabilityReferenceRecorder, Function<PathAddress, String>> resourceCapabilityReferences = new HashMap<>();
     private volatile UnaryOperator<OperationStepHandler> addOperationTransformer = UnaryOperator.identity();
+    private volatile UnaryOperator<OperationStepHandler> operationTransformer = UnaryOperator.identity();
 
     public ResourceDescriptor(ResourceDescriptionResolver resolver) {
         this.resolver = resolver;
@@ -242,6 +243,16 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
 
     public ResourceDescriptor setAddOperationTransformation(UnaryOperator<OperationStepHandler> transformation) {
         this.addOperationTransformer = transformation;
+        return this;
+    }
+
+    @Override
+    public UnaryOperator<OperationStepHandler> getOperationTransformation() {
+        return this.operationTransformer;
+    }
+
+    public ResourceDescriptor setOperationTransformation(UnaryOperator<OperationStepHandler> transformation) {
+        this.operationTransformer = transformation;
         return this;
     }
 }

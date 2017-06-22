@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -35,16 +34,6 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.TransformationContext;
-
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
-import org.wildfly.iiop.openjdk.logging.IIOPLogger;
-
-import java.util.Map;
 
 /**
  * <p>
@@ -62,8 +51,8 @@ public class IIOPExtension implements Extension {
 
     private static final String RESOURCE_NAME = IIOPExtension.class.getPackage().getName() + ".LocalDescriptions";
 
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2,0,0);
     static final ModelVersion VERSION_1 = ModelVersion.create(1);
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3);
 
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
@@ -80,75 +69,14 @@ public class IIOPExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(IIOPRootDefinition.INSTANCE);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        subsystem.registerXMLElementWriter(new IIOPSubsystemParser_3());
+        subsystem.registerXMLElementWriter(new IIOPSubsystemParser_2_0());
 
-        if (context.isRegisterTransformers()) {
-            IIOPRootDefinition.registerTransformers(subsystem);
-
-        }
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.IIOP_OPENJDK_1_0.getUriString(), IIOPSubsystemParser_1::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.IIOP_OPENJDK_3_0.getUriString(), IIOPSubsystemParser_3::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.IIOP_OPENJDK_2_0.getUriString(), IIOPSubsystemParser_2_0::new);
     }
-
-    protected static void registerTransformers(final SubsystemRegistration subsystem) {
-        ChainedTransformationDescriptionBuilder chained = ResourceTransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
-
-        ResourceTransformationDescriptionBuilder builder = chained.createBuilder(CURRENT_MODEL_VERSION, VERSION_1);
-        builder.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, IIOPRootDefinition.SERVER_SSL_CONTEXT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, IIOPRootDefinition.CLIENT_SSL_CONTEXT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, IIOPRootDefinition.AUTHENTICATION_CONTEXT)
-                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-                    @Override
-                    protected boolean rejectAttribute(PathAddress pathAddress, String s, ModelNode attributeValue, TransformationContext transformationContext) {
-                        return attributeValue.asString().equals("true");
-                    }
-
-                    @Override
-                    public String getRejectionLogMessage(Map<String, ModelNode> map) {
-                        return IIOPLogger.ROOT_LOGGER.serverRequiresSslNotSupportedInPreviousVersions();
-                    }
-                }, IIOPRootDefinition.SERVER_REQUIRES_SSL)
-                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-                    @Override
-                    protected boolean rejectAttribute(PathAddress pathAddress, String s, ModelNode attributeValue, TransformationContext transformationContext) {
-                        return attributeValue.asString().equalsIgnoreCase(Constants.ELYTRON);
-                    }
-
-                    @Override
-                    public String getRejectionLogMessage(Map<String, ModelNode> map) {
-                        return IIOPLogger.ROOT_LOGGER.elytronInitializerNotSupportedInPreviousVersions();
-                    }
-                }, IIOPRootDefinition.SECURITY)
-                .setValueConverter(new AttributeConverter() {
-                    @Override
-                    public void convertOperationParameter(PathAddress pathAddress, String s, ModelNode attributeValue, ModelNode operation, TransformationContext transformationContext) {
-                        convert(attributeValue);
-                    }
-
-                    @Override
-                    public void convertResourceAttribute(PathAddress pathAddress, String s, ModelNode attributeValue, TransformationContext transformationContext) {
-                        convert(attributeValue);
-                    }
-
-                    private void convert(ModelNode attributeValue){
-                        final boolean clientRequiresSsl = attributeValue.asBoolean();
-                        if(clientRequiresSsl){
-                            attributeValue.set(SSLConfigValue.MUTUALAUTH.toString());
-                        } else {
-                            attributeValue.set(SSLConfigValue.NONE.toString());
-                        }
-                    }
-                } , IIOPRootDefinition.CLIENT_REQUIRES_SSL);
-
-        chained.buildAndRegister(subsystem, new ModelVersion[]{
-                VERSION_1
-        });
-    }
-
 
 }

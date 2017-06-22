@@ -22,7 +22,6 @@
 
 package org.wildfly.iiop.openjdk;
 
-import static org.wildfly.iiop.openjdk.IIOPExtension.VERSION_1;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,7 +32,6 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -41,9 +39,6 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -425,16 +420,6 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return ALL_ATTRIBUTES;
-    }
-
-    static void registerTransformers(SubsystemRegistration subsystemRegistration) {
-        registerTransformers_1_0_0(subsystemRegistration);
-    }
-
-    private static void registerTransformers_1_0_0(SubsystemRegistration subsystemRegistration) {
-        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, VERSION_1);
     }
 
     private enum AuthMethodValues {

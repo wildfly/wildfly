@@ -100,6 +100,11 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         } else if (version.equals(VERSION_1_3_0)) {
             TimerServiceResourceDefinition.registerTransformers_1_3_0(builder);
         }
+
+        // Rename new statistics-enabled attribute to old enable-statistics
+        builder.getAttributeBuilder()
+               .addRename(EJB3SubsystemModel.STATISTICS_ENABLED, EJB3SubsystemModel.ENABLE_STATISTICS);
+
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, version);
     }
 
@@ -116,6 +121,11 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         StrictMaxPoolResourceDefinition.registerTransformers_3_0_0(builder);
         ApplicationSecurityDomainDefinition.registerTransformers_3_0_0(builder);
         IdentityResourceDefinition.registerTransformers_3_0_0(builder);
+
+        // Rename new statistics-enabled attribute to old enable-statistics
+        builder.getAttributeBuilder()
+               .addRename(EJB3SubsystemModel.STATISTICS_ENABLED, EJB3SubsystemModel.ENABLE_STATISTICS);
+
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, VERSION_3_0_0);
     }
 
@@ -131,6 +141,10 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
 
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
+
+        // Rename new statistics-enabled attribute to old enable-statistics
+        builder.getAttributeBuilder()
+               .addRename(EJB3SubsystemModel.STATISTICS_ENABLED, EJB3SubsystemModel.ENABLE_STATISTICS);
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, VERSION_4_0_0);
     }

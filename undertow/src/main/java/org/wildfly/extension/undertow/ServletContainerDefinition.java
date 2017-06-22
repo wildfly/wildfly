@@ -154,6 +154,13 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
+    protected static final AttributeDefinition DISABLE_SESSION_ID_REUSE =
+            new SimpleAttributeDefinitionBuilder(Constants.DISABLE_SESSION_ID_REUSE, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(false))
+                    .setAllowExpression(true)
+                    .build();
+
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
     static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
             ALLOW_NON_STANDARD_WRAPPERS,
@@ -169,7 +176,8 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             PROACTIVE_AUTHENTICATION,
             SESSION_ID_LENGTH,
             MAX_SESSIONS,
-            DISABLE_FILE_WATCH_SERVICE
+            DISABLE_FILE_WATCH_SERVICE,
+            DISABLE_SESSION_ID_REUSE
             );
 
     static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();

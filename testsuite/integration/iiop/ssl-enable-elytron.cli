@@ -1,0 +1,20 @@
+embed-server --server-config=standalone-full.xml
+
+/subsystem=iiop-openjdk:undefine-attribute(name=security-domain)
+
+/subsystem=elytron/key-store=twoWayKS:add(path=server.keystore.jks, relative-to=jboss.server.config.dir, credential-reference={clear-text=secret}, type=JKS)
+/subsystem=elytron/key-store=twoWayTS:add(path=server.truststore.jks, relative-to=jboss.server.config.dir, credential-reference={clear-text=secret}, type=JKS)
+/subsystem=elytron/key-manager=twoWayKM:add(key-store=twoWayKS, credential-reference={clear-text=secret})
+/subsystem=elytron/trust-manager=twoWayTM:add(key-store=twoWayTS)
+/subsystem=elytron/server-ssl-context=twoWaySSC:add(key-manager=twoWayKM, protocols=["TLSv1.2"], trust-manager=twoWayTM, need-client-auth=false)
+/subsystem=elytron/client-ssl-context=twoWayCSC:add(key-manager=twoWayKM, trust-manager=twoWayTM, protocols=["TLSv1.2"])
+batch
+/subsystem=iiop-openjdk:write-attribute(name=client-ssl-context,value=twoWayCSC)
+/subsystem=iiop-openjdk:write-attribute(name=server-ssl-context,value=twoWaySSC)
+run-batch
+/subsystem=iiop-openjdk:write-attribute(name=client-requires-ssl,value=false)
+/subsystem=iiop-openjdk:write-attribute(name=server-requires-ssl,value=true)
+/subsystem=iiop-openjdk:write-attribute(name=support-ssl,value=true)
+/subsystem=iiop-openjdk:write-attribute(name=ssl-socket-binding,value=iiop-ssl)
+
+stop-embedded-server

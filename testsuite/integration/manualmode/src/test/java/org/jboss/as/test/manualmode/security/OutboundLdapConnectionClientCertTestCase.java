@@ -220,34 +220,31 @@ public class OutboundLdapConnectionClientCertTestCase {
     @InSequence(0)
     @OperateOnDeployment(LDAPS_AUTHN_SD_ALWAYS)
     public void test(@ArquillianResource ManagementClient mgmtClient) throws Exception {
-        final TrustAndStoreTrustManager trustManager = ldapsSetup.trustAndStoreTrustManager;
+        final SslCertChainRecorder recorder = ldapsSetup.recorder;
         try {
             deployer.deploy(LDAPS_AUTHN_SD_ALWAYS);
             deployer.deploy(LDAPS_AUTHN_SD_SOMETIMES);
 
-            trustManager.clear();
+            recorder.clear();
             final URL appUrlSometimes = new URL(mgmtClient.getWebUri().toString() + "/" + LDAPS_AUTHN_SD_SOMETIMES + "/" + TEST_FILE);
             Utils.makeCallWithBasicAuthn(appUrlSometimes, "jduke", "bad_password", HttpServletResponse.SC_UNAUTHORIZED);
-            assertEquals("Number of certificates stored in TrustAndStoreTrustManager", 1, trustManager.getCertCount());
+            assertEquals("Number of connections with CN=JBAS client cert", 1, recorder.countCerts("CN=JBAS"));
 
-            trustManager.clear();
+            recorder.clear();
             Utils.makeCallWithBasicAuthn(appUrlSometimes, "jduke", "theduke", HttpServletResponse.SC_UNAUTHORIZED);
-            assertEquals("Number of certificates stored in TrustAndStoreTrustManager", 1, trustManager.getCertCount());
+            assertEquals("Number of connections with CN=JBAS client cert", 1, recorder.countCerts("CN=JBAS"));
 
-
-            trustManager.clear();
+            recorder.clear();
             final URL appUrlAlways = new URL(mgmtClient.getWebUri().toString() + "/" + LDAPS_AUTHN_SD_ALWAYS + "/" + TEST_FILE);
             Utils.makeCallWithBasicAuthn(appUrlAlways, "jduke", "bad_password", HttpServletResponse.SC_UNAUTHORIZED);
-            assertEquals("Number of certificates stored in TrustAndStoreTrustManager", 1, trustManager.getCertCount());
+            assertEquals("Number of connections with CN=JBAS client cert", 2, recorder.countCerts("CN=JBAS"));
 
-            trustManager.clear();
+            recorder.clear();
             final String resp = Utils.makeCallWithBasicAuthn(appUrlAlways, "jduke", "theduke", HttpServletResponse.SC_OK);
+            assertEquals("Number of connections with CN=JBAS client cert", 2, recorder.countCerts("CN=JBAS"));
             assertEquals(TEST_FILE_CONTENT, resp);
-            assertTrue("Certificate (client key) from SecurityRealm was not used.",
-                    trustManager.isSubjectInClientCertChain("CN=JBAS"));
-            assertEquals("Number of certificates stored in TrustAndStoreTrustManager", 1, trustManager.getCertCount());
         } finally {
-            trustManager.clear();
+            recorder.clear();
             deployer.undeploy(LDAPS_AUTHN_SD_SOMETIMES);
             deployer.undeploy(LDAPS_AUTHN_SD_ALWAYS);
         }
@@ -428,13 +425,13 @@ public class OutboundLdapConnectionClientCertTestCase {
 
         private DirectoryService directoryService;
         private LdapServer ldapServer;
-        private final TrustAndStoreTrustManager trustAndStoreTrustManager = new TrustAndStoreTrustManager(OutboundLdapConnectionClientCertTestCase.class.getSimpleName());
+        private final SslCertChainRecorder recorder = new SslCertChainRecorder();
 
         /**
          * Creates directory services, starts LDAP server and KDCServer.
          */
         public void startLdapServer() throws Exception {
-            LdapsInitializer.setAndLockTrustManager(trustAndStoreTrustManager);
+            LdapsInitializer.setAndLockRecorder(recorder);
             directoryService = DSAnnotationProcessor.getDirectoryService();
             final SchemaManager schemaManager = directoryService.getSchemaManager();
             try (LdifReader ldifReader = new LdifReader(OutboundLdapConnectionClientCertTestCase.class.getResourceAsStream(
@@ -483,7 +480,7 @@ public class OutboundLdapConnectionClientCertTestCase {
             ldapServer.stop();
             directoryService.shutdown();
             FileUtils.deleteDirectory(directoryService.getInstanceLayout().getInstanceDirectory());
-            LdapsInitializer.unsetAndUnlockTrustManager();
+            LdapsInitializer.unsetAndUnlockRecorder();
         }
     }
 }

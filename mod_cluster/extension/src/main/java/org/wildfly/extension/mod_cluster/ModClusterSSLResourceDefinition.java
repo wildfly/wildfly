@@ -118,7 +118,7 @@ public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
                 ModClusterAddSSL.INSTANCE,
                 new ReloadRequiredRemoveStepHandler()
         );
-        this.setDeprecated(ModClusterModel.VERSION_4_1_0.getVersion());
+        this.setDeprecated(ModClusterModel.VERSION_5_0_0.getVersion());
         this.accessConstraints = ModClusterExtension.MOD_CLUSTER_SECURITY_DEF.wrapAsList();
     }
 

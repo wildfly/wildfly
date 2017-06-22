@@ -75,6 +75,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final boolean proactiveAuth = ServletContainerDefinition.PROACTIVE_AUTHENTICATION.resolveModelAttribute(context, model).asBoolean();
         final String bufferCache = ServletContainerDefinition.DEFAULT_BUFFER_CACHE.resolveModelAttribute(context, model).asString();
         final boolean disableFileWatchService = ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE.resolveModelAttribute(context, model).asBoolean();
+        final boolean disableSessionIdReususe = ServletContainerDefinition.DISABLE_SESSION_ID_REUSE.resolveModelAttribute(context, model).asBoolean();
 
         JSPConfig jspConfig = JspDefinition.INSTANCE.getConfig(context, fullModel.get(JspDefinition.INSTANCE.getPathElement().getKeyValuePair()));
 
@@ -132,7 +133,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 disableCachingForSecuredPages, webSocketInfo != null, webSocketInfo != null && webSocketInfo.isDispatchToWorker(),
                 webSocketInfo != null && webSocketInfo.isPerMessageDeflate(), webSocketInfo == null ? -1 : webSocketInfo.getDeflaterLevel(),
                 mimeMappings,
-                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms, maxSessions, crawlerSessionManagerConfig, disableFileWatchService);
+                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms, maxSessions, crawlerSessionManagerConfig, disableFileWatchService, disableSessionIdReususe);
 
 
         final CapabilityServiceBuilder<ServletContainerService> builder = context.getCapabilityServiceTarget()

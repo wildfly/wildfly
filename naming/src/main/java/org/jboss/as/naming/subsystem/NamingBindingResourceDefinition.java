@@ -38,7 +38,6 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.logging.NamingLogger;
@@ -172,10 +171,6 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
         return ACCESS_CONSTRAINTS;
-    }
-
-    public void registerTransformers_2_0(ResourceTransformationDescriptionBuilder builder) {
-        builder.addOperationTransformationOverride(NamingSubsystemModel.REBIND).setReject();
     }
 
     private static class WriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {

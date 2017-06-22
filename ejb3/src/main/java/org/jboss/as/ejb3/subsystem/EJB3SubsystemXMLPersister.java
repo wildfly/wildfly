@@ -268,9 +268,9 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         }
 
         // statistics element
-        if (model.hasDefined(ENABLE_STATISTICS)) {
+        if (model.hasDefined(STATISTICS_ENABLED)) {
             writer.writeStartElement(EJB3SubsystemXMLElement.STATISTICS.getLocalName());
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.ENABLED.getLocalName(), model.get(EJB3SubsystemModel.ENABLE_STATISTICS).asString());
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.ENABLED.getLocalName(), model.get(EJB3SubsystemModel.STATISTICS_ENABLED).asString());
             writer.writeEndElement();
         }
 

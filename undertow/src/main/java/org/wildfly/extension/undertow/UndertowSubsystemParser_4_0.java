@@ -159,6 +159,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                 .addAttribute(ServletContainerDefinition.SESSION_ID_LENGTH)
                                 .addAttribute(ServletContainerDefinition.MAX_SESSIONS)
                                 .addAttribute(ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
+                                .addAttribute(ServletContainerDefinition.DISABLE_SESSION_ID_REUSE)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE.getPathElement())
                                                 .setXmlElementName(Constants.JSP_CONFIG)

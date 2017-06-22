@@ -75,6 +75,7 @@ public class SocketDiscoveryProtocolResourceDefinition<P extends Protocol & Sock
         super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
                 .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
+                .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
             ), address -> new SocketDiscoveryProtocolConfigurationBuilder<>(address), parentBuilderFactory);
     }
 }

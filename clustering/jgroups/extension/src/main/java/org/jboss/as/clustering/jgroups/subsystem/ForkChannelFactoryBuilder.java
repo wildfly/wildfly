@@ -87,7 +87,7 @@ public class ForkChannelFactoryBuilder extends CapabilityServiceNameProvider imp
 
     @Override
     public Builder<ChannelFactory> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        Resource resource = model.isDefined() ? context.readResourceFromRoot(this.address, false) : PlaceholderResource.INSTANCE;
+        Resource resource = context.getCurrentAddress().equals(this.address) ? context.readResourceFromRoot(this.address, false) : PlaceholderResource.INSTANCE;
         this.protocols = resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).stream().map(entry -> new InjectedValueDependency<>(new ProtocolServiceNameProvider(this.address, entry.getPathElement()), ProtocolConfiguration.class)).collect(Collectors.toList());
         String channelName = this.address.getParent().getLastElement().getValue();
         this.parentChannel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(context, channelName), Channel.class);

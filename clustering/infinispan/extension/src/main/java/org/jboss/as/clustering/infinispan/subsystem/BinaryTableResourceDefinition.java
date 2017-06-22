@@ -102,6 +102,6 @@ public class BinaryTableResourceDefinition extends TableResourceDefinition {
 
     BinaryTableResourceDefinition() {
         super(PATH, descriptor -> descriptor.addAttributes(Attribute.class), address -> new BinaryTableBuilder(address.getParent().getParent()));
-        this.setDeprecated(InfinispanModel.VERSION_4_2_0.getVersion());
+        this.setDeprecated(InfinispanModel.VERSION_5_0_0.getVersion());
     }
 }

@@ -66,6 +66,7 @@ public interface EJB3SubsystemModel {
     String LOG_SYSTEM_EXCEPTIONS = "log-system-exceptions";
 
     String ENABLE_STATISTICS = "enable-statistics";
+    String STATISTICS_ENABLED = "statistics-enabled";
 
     String FILE_DATA_STORE = "file-data-store";
 
