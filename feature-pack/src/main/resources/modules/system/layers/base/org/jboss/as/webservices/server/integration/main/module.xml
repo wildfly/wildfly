@@ -83,7 +83,6 @@
             <include path="META-INF"/>
           </exports>
         </module>
-        <module name="org.apache.xalan" services="export" export="true"/>
         <module name="org.apache.xerces" services="export" export="true"/>
         <module name="org.jboss.as.webservices" services="export" export="true"/>
         <module name="com.sun.xml.messaging.saaj" services="export" export="true"/>

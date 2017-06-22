@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
+<?xml version="1.0"?>
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ Copyright 2017, Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -21,18 +20,21 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+  <xsl:variable name="var1">val1</xsl:variable>
+  <xsl:param name="param1" />
 
-<module xmlns="urn:jboss:module:1.5" name="javax.servlet.jstl.api">
-    <dependencies>
-        <!-- org.xml.sax -->
-        <module name="javax.api" export="false"/>
-        <module name="javax.servlet.api" export="false"/>
-        <module name="javax.servlet.jsp.api" export="false"/>
-    </dependencies>
+  <!-- Assert that a built-in function can be loaded -->
+  <xsl:template match="//txt">
+    <xsl:element name="txt">
+      <xsl:value-of select="normalize-space(.)" />
+    </xsl:element>
+  </xsl:template>
 
-    <resources>
-        <artifact name="${org.apache.taglibs:taglibs-standard-spec}"/>
-        <artifact name="${org.apache.taglibs:taglibs-standard-impl}"/>
-        <artifact name="${org.apache.taglibs:taglibs-standard-compat}"/>
-    </resources>
-</module>
+  <xsl:template match="*">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+  </xsl:template>
+
+</xsl:stylesheet>

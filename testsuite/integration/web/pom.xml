@@ -46,6 +46,12 @@
             <groupId>io.undertow</groupId>
             <artifactId>undertow-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap.resolver</groupId>
+            <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -69,9 +75,9 @@
             </plugin>
         </plugins>
     </build>
-    <!-- WFLY-5588 DefaultContextServiceServletTestCase fails on IBM jdk -->
     <profiles>
         <profile>
+            <!-- WFLY-5588 DefaultContextServiceServletTestCase fails on IBM jdk -->
             <id>ibmjdk.profile</id>
             <activation>
                 <property>
@@ -92,6 +98,78 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <!-- Libs used by tests in org.jboss.as.test.integration.deployment.classloading.jaxp -->
+            <!-- Because the versions of these libs may -->
+            <!-- (i) differ from those ones managed at higher levels and/or -->
+            <!-- (ii) be banned at higher levels -->
+            <!-- we deliberately turn enforcer off -->
+            <id>jaxp.test.dependencies.profile</id>
+            <properties>
+                <enforcer.skip>true</enforcer.skip>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>xerces</groupId>
+                        <artifactId>xercesImpl</artifactId>
+                        <version>2.9.1</version>
+                        <scope>test</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>xalan</groupId>
+                        <artifactId>xalan</artifactId>
+                        <version>2.7.1</version>
+                        <scope>test</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>xalan</groupId>
+                        <artifactId>serializer</artifactId>
+                        <version>2.7.1</version>
+                        <scope>test</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>saxon</groupId>
+                        <artifactId>saxon</artifactId>
+                        <version>6.5.3</version>
+                        <scope>test</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>net.sf.saxon</groupId>
+                        <artifactId>Saxon-HE</artifactId>
+                        <version>9.7.0-18</version>
+                        <scope>test</scope>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+            <dependencies>
+                <dependency>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>xalan</groupId>
+                    <artifactId>xalan</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>xalan</groupId>
+                    <artifactId>serializer</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>saxon</groupId>
+                    <artifactId>saxon</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>net.sf.saxon</groupId>
+                    <artifactId>Saxon-HE</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
 </project>
