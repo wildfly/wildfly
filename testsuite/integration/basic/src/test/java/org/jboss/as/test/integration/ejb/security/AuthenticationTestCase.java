@@ -67,6 +67,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * Test case to hold the authentication scenarios, these range from calling a servlet which calls a bean to calling a bean which
@@ -135,7 +136,11 @@ public class AuthenticationTestCase {
                         // TestSuiteEnvironment reads system properties
                         new PropertyPermission("management.address", "read"),
                         new PropertyPermission("node0", "read"),
-                        new PropertyPermission("jboss.http.port", "read")),
+                        new PropertyPermission("jboss.http.port", "read"),
+                        new PropertyPermission("jboss.bind.address", "read"),
+                        new ElytronPermission("getSecurityDomain"),
+                        new ElytronPermission("authenticate")
+                        ),
                         "permissions.xml");
         war.addPackage(CommonCriteria.class.getPackage());
         return war;
