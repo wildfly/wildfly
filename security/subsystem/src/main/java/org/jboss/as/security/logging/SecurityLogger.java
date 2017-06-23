@@ -436,7 +436,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = 48, value = "Vault Configuration in WildFly configuration file:")
+    @Message(id = 48, value = "Vault Configuration commands in WildFly for CLI:")
     String vaultConfigurationTitle();
 
     /**

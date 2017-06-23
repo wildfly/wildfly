@@ -22,24 +22,8 @@
  * /
  */
 
-package org.jboss.as.security;
+package org.jboss.as.security.vault;
 
-import static java.util.Collections.addAll;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.net.URLDecoder;
-import java.security.KeyStore;
-import java.security.Permission;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.jboss.as.security.vault.MockRuntimeVaultReader;
-import org.jboss.as.security.vault.VaultTool;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -48,30 +32,18 @@ import org.junit.Test;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.security.KeyStore;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public class VaultToolTestCase {
+import static java.util.Collections.addAll;
 
-  private static final String KEYSTORE_PASSWORD = "mypassword";
-  private static final String BLOCK_NAME = "myblock";
-  private static final String ATTRIBUTE_NAME = "the_attribute_I_want_to_store";
-  private static final String VALUE_TO_STORE = "the_value";
-  private static final String KEYSTORE_ALIAS_VALUE = "vault";
-  private static final String ITERATION_COUNT_VALUE = "12";
-  private static final String CODE_LOCATION = VaultToolTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile();
-  private static final String KEYSTORE_URL_VALUE = getKeystorePath();
-  private static final String ENC_FILE_DIR_VALUE = CODE_LOCATION + "test_vault_dir";
-  private static final String MASKED_MYPASSWORD_VALUE = "MASK-0UWB5tlhOmKYzJVl9KZaPN";
-  private static final String MASKED_MYPASSWORD_VALUE_INCORRECT = "MASK-UWB5tlhOmKYzJVl9KZaPN";
-  private static final String SALT_VALUE = "bdfbdf12";
-  private static final ByteArrayOutputStream SYSTEM_OUT = new ByteArrayOutputStream();
-
-  private static String getKeystorePath() {
-     try {
-       return new String(URLDecoder.decode(CODE_LOCATION, "UTF-8" ) + "org/jboss/as/security/vault.keystore");
-     } catch (Exception e) {
-       throw new Error("Unable to decode url", e);
-     }
-  }
+public class VaultToolTestCase extends VaultTest {
 
   private static void createAndFillKeystore(String fileName) throws Exception {
       KeyStore ks = KeyStore.getInstance("JCEKS");
@@ -174,34 +146,6 @@ public class VaultToolTestCase {
     return args.toArray(new String[0]);
   }
 
-  protected static class ExitException extends SecurityException {
-
-    public final int status;
-
-    public ExitException(int status) {
-      super("There is no escape!");
-      this.status = status;
-    }
-  }
-  private static class NoExitSecurityManager extends SecurityManager {
-
-    @Override
-    public void checkPermission(Permission perm) {
-      // allow anything.
-    }
-
-    @Override
-    public void checkPermission(Permission perm, Object context) {
-      // allow anything.
-    }
-
-    @Override
-    public void checkExit(int status) {
-      super.checkExit(status);
-      throw new ExitException(status);
-    }
-  }
-
   @Before
   public void setUp() throws Exception {
     cleanDirectory(ENC_FILE_DIR_VALUE);
@@ -217,19 +161,4 @@ public class VaultToolTestCase {
         keyStoreFile.delete();
     }
   }
-
-  /**
-   * Clean given directory.
-   *
-   * @param directory
-   */
-  private static void cleanDirectory(String dir) {
-    File directory = new File(dir);
-    if (directory.exists()) {
-      for (File f : directory.listFiles()) {
-        f.delete();
-       }
-    }
-  }
-
 }
