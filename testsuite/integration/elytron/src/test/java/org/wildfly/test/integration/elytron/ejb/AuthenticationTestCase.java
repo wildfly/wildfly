@@ -64,6 +64,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.wildfly.security.permission.ElytronPermission;
 import org.wildfly.test.integration.elytron.ejb.authentication.EntryBean;
 import org.wildfly.test.integration.elytron.ejb.base.WhoAmIBean;
 import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
@@ -127,7 +128,11 @@ public class AuthenticationTestCase {
                         // TestSuiteEnvironment reads system properties
                         new PropertyPermission("management.address", "read"),
                         new PropertyPermission("node0", "read"),
-                        new PropertyPermission("jboss.http.port", "read")),
+                        new PropertyPermission("jboss.http.port", "read"),
+                        new PropertyPermission("jboss.bind.address", "read"),
+                        new ElytronPermission("getSecurityDomain"),
+                        new ElytronPermission("authenticate")
+                        ),
                         "permissions.xml");
         war.addPackage(CommonCriteria.class.getPackage());
         return war;
