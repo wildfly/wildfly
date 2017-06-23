@@ -22,10 +22,15 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RestartParentWriteAttributeHandler;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.security.Constants;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.msc.service.ServiceName;
 
@@ -47,7 +52,10 @@ class BasicResourceDefinition extends SimpleResourceDefinition {
                 .setRemoveHandler(new ServiceRemoveStepHandler(add, runtimeCapabilities))
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
-                .setCapabilities(runtimeCapabilities));
+                .setCapabilities(runtimeCapabilities)
+                .addAccessConstraints(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(SecurityExtension.SUBSYSTEM_NAME, Constants.ELYTRON_SECURITY, true, true, true)),
+                    new ApplicationTypeAccessConstraintDefinition(new ApplicationTypeConfig(SecurityExtension.SUBSYSTEM_NAME, Constants.ELYTRON_SECURITY, false))));
+
 
         this.pathKey = pathKey;
         this.firstCapability = runtimeCapabilities[0];
