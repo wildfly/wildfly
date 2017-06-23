@@ -46,9 +46,6 @@ import org.jboss.as.controller.operations.validation.TimeUnitValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService;
 import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfig;
 import org.jboss.dmr.ModelNode;
@@ -177,23 +174,4 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
         }
     }
 
-    static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.addChildResource(INSTANCE.getPathElement())
-            .getAttributeBuilder()
-            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, INSTANCE_ACQUISITION_TIMEOUT_UNIT);
-    }
-
-    static void registerTransformers_1_2_0_and_1_3_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.addChildResource(INSTANCE.getPathElement())
-                .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(DeriveSize.NONE.toString())), DERIVE_SIZE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, DERIVE_SIZE);
-    }
-
-    static void registerTransformers_3_0_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.addChildResource(INSTANCE.getPathElement())
-                .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(DeriveSize.NONE.toString())), DERIVE_SIZE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, DERIVE_SIZE);
-    }
 }

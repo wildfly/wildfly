@@ -31,7 +31,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -90,13 +89,5 @@ public class MdbDeliveryGroupResourceDefinition extends SimpleResourceDefinition
                                 resolvedValue.asBoolean() ? ServiceController.Mode.ACTIVE : ServiceController.Mode.NEVER);
                     }
                 });
-    }
-
-    static void registerTransformers_1_2_0_and_1_3_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.MDB_DELIVERY_GROUP));
-    }
-
-    static void registerTransformers_3_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.MDB_DELIVERY_GROUP));
     }
 }
