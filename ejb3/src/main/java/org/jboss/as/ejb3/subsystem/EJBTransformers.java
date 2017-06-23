@@ -291,7 +291,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         * - sets appropriate defaults for IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, PASSIVATE_EVENTS_ON_REPLICATE, and CLIENT_MAPPINGS_CACHE
         */
     @SuppressWarnings("deprecation")
-    static void registerPassivationStoreTransformers_1_2_1_and_1_3_0(ResourceTransformationDescriptionBuilder parent) {
+    private static void registerPassivationStoreTransformers_1_2_1_and_1_3_0(ResourceTransformationDescriptionBuilder parent) {
 
         ResourceTransformationDescriptionBuilder child = parent.addChildRedirection(PassivationStoreResourceDefinition.INSTANCE.getPathElement(), PathElement.pathElement(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE));
         child.getAttributeBuilder()
