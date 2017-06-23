@@ -42,13 +42,13 @@ enum Namespace {
     TRANSACTIONS_1_5("urn:jboss:domain:transactions:1.5"),
     TRANSACTIONS_2_0("urn:jboss:domain:transactions:2.0"),
     TRANSACTIONS_3_0("urn:jboss:domain:transactions:3.0"),
-    TRANSACTIONS_3_1("urn:jboss:domain:transactions:3.1"),
+    TRANSACTIONS_4_0("urn:jboss:domain:transactions:4.0"),
     ;
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = TRANSACTIONS_3_1;
+    public static final Namespace CURRENT = TRANSACTIONS_4_0;
 
     private final String name;
 
