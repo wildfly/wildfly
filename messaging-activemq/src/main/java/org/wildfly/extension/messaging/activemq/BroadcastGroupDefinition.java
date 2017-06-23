@@ -54,7 +54,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
@@ -95,13 +94,14 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
 
     public static final String GET_CONNECTOR_PAIRS_AS_JSON = "get-connector-pairs-as-json";
 
-    static final BroadcastGroupDefinition INSTANCE = new BroadcastGroupDefinition();
+    private final boolean registerRuntimeOnly;
 
-    private BroadcastGroupDefinition() {
+    BroadcastGroupDefinition(boolean registerRuntimeOnly) {
         super(MessagingExtension.BROADCAST_GROUP_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.BROADCAST_GROUP),
                 BroadcastGroupAdd.INSTANCE,
                 BroadcastGroupRemove.INSTANCE);
+        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
@@ -123,15 +123,17 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
         super.registerOperations(registry);
-        BroadcastGroupControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
 
-        SimpleOperationDefinition op = new SimpleOperationDefinitionBuilder(GET_CONNECTOR_PAIRS_AS_JSON, getResourceDescriptionResolver())
-                .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY) // TODO WFLY-8854 decide on the ultimate handling of this op in a domain
-                .setReadOnly()
-                .setRuntimeOnly()
-                .setReplyType(STRING)
-                .build();
-        registry.registerOperationHandler(op, BroadcastGroupControlHandler.INSTANCE);
+        if (registerRuntimeOnly) {
+            BroadcastGroupControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
+
+            SimpleOperationDefinition op = new SimpleOperationDefinitionBuilder(GET_CONNECTOR_PAIRS_AS_JSON, getResourceDescriptionResolver())
+                    .setReadOnly()
+                    .setRuntimeOnly()
+                    .setReplyType(STRING)
+                    .build();
+            registry.registerOperationHandler(op, BroadcastGroupControlHandler.INSTANCE);
+        }
     }
 
     static void validateConnectors(OperationContext context, ModelNode operation, ModelNode connectorRefs) throws OperationFailedException {

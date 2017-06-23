@@ -22,7 +22,14 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.ACCEPTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.IN_VM_ACCEPTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.IN_VM_CONNECTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_ACCEPTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_CONNECTOR;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
@@ -276,51 +283,51 @@ public class MessagingSubsystemParser_1_0 extends PersistentResourceXMLParser {
                                                         AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES,
                                                         AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES))
                                 .addChild(
-                                        builder(HTTPConnectorDefinition.INSTANCE.getPathElement())
+                                        builder(MessagingExtension.HTTP_CONNECTOR_PATH)
                                                 .addAttributes(
                                                         HTTPConnectorDefinition.SOCKET_BINDING,
                                                         HTTPConnectorDefinition.ENDPOINT,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(RemoteTransportDefinition.CONNECTOR_INSTANCE.getPathElement())
+                                        builder(pathElement(REMOTE_CONNECTOR))
                                                 .addAttributes(
                                                         RemoteTransportDefinition.SOCKET_BINDING,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(InVMTransportDefinition.CONNECTOR_INSTANCE.getPathElement())
+                                        builder(pathElement(IN_VM_CONNECTOR))
                                                 .addAttributes(
                                                         InVMTransportDefinition.SERVER_ID,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(GenericTransportDefinition.CONNECTOR_INSTANCE.getPathElement())
+                                        builder(pathElement(CONNECTOR))
                                                 .addAttributes(
                                                         GenericTransportDefinition.SOCKET_BINDING,
                                                         CommonAttributes.FACTORY_CLASS,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(HTTPAcceptorDefinition.INSTANCE.getPathElement())
+                                        builder(MessagingExtension.HTTP_ACCEPTOR_PATH)
                                                 .addAttributes(
                                                         HTTPAcceptorDefinition.HTTP_LISTENER,
                                                         HTTPAcceptorDefinition.UPGRADE_LEGACY,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(RemoteTransportDefinition.ACCEPTOR_INSTANCE.getPathElement())
+                                        builder(pathElement(REMOTE_ACCEPTOR))
                                                 .addAttributes(
                                                         RemoteTransportDefinition.SOCKET_BINDING,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(InVMTransportDefinition.ACCEPTOR_INSTANCE.getPathElement())
+                                        builder(pathElement(IN_VM_ACCEPTOR))
                                                 .addAttributes(
                                                         InVMTransportDefinition.SERVER_ID,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(GenericTransportDefinition.ACCEPTOR_INSTANCE.getPathElement())
+                                        builder(pathElement(ACCEPTOR))
                                                 .addAttributes(
                                                         GenericTransportDefinition.SOCKET_BINDING,
                                                         CommonAttributes.FACTORY_CLASS,
                                                         CommonAttributes.PARAMS))
                                 .addChild(
-                                        builder(BroadcastGroupDefinition.INSTANCE.getPathElement())
+                                        builder(MessagingExtension.BROADCAST_GROUP_PATH)
                                                 .addAttributes(
                                                         CommonAttributes.SOCKET_BINDING,
                                                         BroadcastGroupDefinition.JGROUPS_STACK,
@@ -336,7 +343,7 @@ public class MessagingSubsystemParser_1_0 extends PersistentResourceXMLParser {
                                                         DiscoveryGroupDefinition.REFRESH_TIMEOUT,
                                                         DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT))
                                 .addChild(
-                                        builder(ClusterConnectionDefinition.INSTANCE.getPathElement())
+                                        builder(MessagingExtension.CLUSTER_CONNECTION_PATH)
                                                 .addAttributes(
                                                         ClusterConnectionDefinition.ADDRESS,
                                                         ClusterConnectionDefinition.CONNECTOR_NAME,
@@ -377,7 +384,7 @@ public class MessagingSubsystemParser_1_0 extends PersistentResourceXMLParser {
                                                         CommonAttributes.TRANSFORMER_CLASS_NAME,
                                                         DivertDefinition.EXCLUSIVE))
                                 .addChild(
-                                        builder(BridgeDefinition.INSTANCE.getPathElement())
+                                        builder(MessagingExtension.BRIDGE_PATH)
                                                 .addAttributes(
                                                         BridgeDefinition.QUEUE_NAME,
                                                         BridgeDefinition.FORWARDING_ADDRESS,

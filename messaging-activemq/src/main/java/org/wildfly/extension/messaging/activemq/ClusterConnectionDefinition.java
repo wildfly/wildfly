@@ -52,7 +52,6 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 
 
@@ -64,10 +63,6 @@ import org.jboss.dmr.ModelNode;
 public class ClusterConnectionDefinition extends PersistentResourceDefinition {
 
     public static final String GET_NODES = "get-nodes";
-
-    public static final String[] OPERATIONS = {
-            GET_NODES
-    };
 
     public static final SimpleAttributeDefinition ADDRESS = create("cluster-connection-address", STRING)
             .setXmlName(CommonAttributes.ADDRESS)
@@ -236,13 +231,14 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             NODE_ID
     };
 
-    static final ClusterConnectionDefinition INSTANCE = new ClusterConnectionDefinition();
+    private final boolean registerRuntimeOnly;
 
-    private ClusterConnectionDefinition() {
+    ClusterConnectionDefinition(boolean registerRuntimeOnly) {
         super(MessagingExtension.CLUSTER_CONNECTION_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CLUSTER_CONNECTION),
                 ClusterConnectionAdd.INSTANCE,
                 ClusterConnectionRemove.INSTANCE);
+        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
@@ -271,15 +267,16 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
 
         super.registerOperations(registry);
 
-        ClusterConnectionControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
+        if (registerRuntimeOnly) {
+            ClusterConnectionControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
 
-        SimpleOperationDefinition getNodesDef = new SimpleOperationDefinitionBuilder(ClusterConnectionDefinition.GET_NODES, getResourceDescriptionResolver())
-                .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY) // TODO WFLY-8854 decide on the ultimate handling of this op in a domain
-                .setReadOnly()
-                .setRuntimeOnly()
-                .setReplyType(OBJECT)
-                .setReplyValueType(STRING)
-                .build();
-        registry.registerOperationHandler(getNodesDef, ClusterConnectionControlHandler.INSTANCE);
+            SimpleOperationDefinition getNodesDef = new SimpleOperationDefinitionBuilder(ClusterConnectionDefinition.GET_NODES, getResourceDescriptionResolver())
+                    .setReadOnly()
+                    .setRuntimeOnly()
+                    .setReplyType(OBJECT)
+                    .setReplyValueType(STRING)
+                    .build();
+            registry.registerOperationHandler(getNodesDef, ClusterConnectionControlHandler.INSTANCE);
+        }
     }
 }

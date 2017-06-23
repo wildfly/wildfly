@@ -617,22 +617,10 @@ public class ServerDefinition extends PersistentResourceDefinition {
                 AddressSettingDefinition.INSTANCE,
                 SecuritySettingDefinition.INSTANCE,
 
-                // Connectors
-                HTTPConnectorDefinition.INSTANCE,
-                RemoteTransportDefinition.CONNECTOR_INSTANCE,
-                InVMTransportDefinition.CONNECTOR_INSTANCE,
-                GenericTransportDefinition.CONNECTOR_INSTANCE,
-
                 // Acceptors
                 HTTPAcceptorDefinition.INSTANCE,
-                RemoteTransportDefinition.ACCEPTOR_INSTANCE,
-                InVMTransportDefinition.ACCEPTOR_INSTANCE,
-                GenericTransportDefinition.ACCEPTOR_INSTANCE,
 
-                BroadcastGroupDefinition.INSTANCE,
                 DiscoveryGroupDefinition.INSTANCE,
-                BridgeDefinition.INSTANCE,
-                ClusterConnectionDefinition.INSTANCE,
                 DivertDefinition.INSTANCE,
                 ConnectorServiceDefinition.INSTANCE,
                 GroupingHandlerDefinition.INSTANCE,
@@ -642,6 +630,19 @@ public class ServerDefinition extends PersistentResourceDefinition {
                 PooledConnectionFactoryDefinition.INSTANCE));
 
         // Dynamic resources (depending on registerRuntimeOnly)
+        // acceptors
+        children.add(GenericTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
+        children.add(InVMTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
+        children.add(RemoteTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
+        // connectors
+        children.add(GenericTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        children.add(InVMTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        children.add(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        children.add(new HTTPConnectorDefinition(registerRuntimeOnly));
+
+        children.add(new BridgeDefinition(registerRuntimeOnly));
+        children.add(new BroadcastGroupDefinition(registerRuntimeOnly));
+        children.add(new ClusterConnectionDefinition(registerRuntimeOnly));
         children.add(new QueueDefinition(registerRuntimeOnly, MessagingExtension.QUEUE_PATH));
         children.add(new JMSQueueDefinition(false, registerRuntimeOnly));
         children.add(new JMSTopicDefinition(false, registerRuntimeOnly));

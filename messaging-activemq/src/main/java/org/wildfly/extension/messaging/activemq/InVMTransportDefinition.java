@@ -55,9 +55,6 @@ public class InVMTransportDefinition extends AbstractTransportDefinition {
 
     static AttributeDefinition[] ATTRIBUTES = { SERVER_ID, PARAMS };
 
-    static final InVMTransportDefinition CONNECTOR_INSTANCE = createConnectorDefinition(false);
-    static final InVMTransportDefinition ACCEPTOR_INSTANCE = createAcceptorDefinition(false);
-
     public static InVMTransportDefinition createAcceptorDefinition(final boolean registerRuntimeOnly) {
         return new InVMTransportDefinition(registerRuntimeOnly, true, CommonAttributes.IN_VM_ACCEPTOR);
     }
@@ -67,6 +64,6 @@ public class InVMTransportDefinition extends AbstractTransportDefinition {
     }
 
     private InVMTransportDefinition(final boolean registerRuntimeOnly, boolean isAcceptor, String specificType) {
-        super(isAcceptor, specificType, ATTRIBUTES);
+        super(isAcceptor, specificType, registerRuntimeOnly, ATTRIBUTES);
     }
 }
