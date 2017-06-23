@@ -1021,6 +1021,7 @@
             <xs:enumeration value="HSQL"/>
             <xs:enumeration value="INFORMIX"/>
             <xs:enumeration value="INTERBASE"/>
+            <xs:enumeration value="MARIA_DB"/>
             <xs:enumeration value="MYSQL"/>
             <xs:enumeration value="ORACLE"/>
             <xs:enumeration value="POSTGRES"/>
