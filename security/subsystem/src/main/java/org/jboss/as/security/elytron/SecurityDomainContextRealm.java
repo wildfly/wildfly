@@ -24,6 +24,7 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.wildfly.security.auth.SupportLevel;
 import org.wildfly.security.auth.server.RealmIdentity;
@@ -116,7 +117,7 @@ public class SecurityDomainContextRealm implements SecurityRealm {
 
         private final Principal principal;
 
-        private Subject jaasSubject;
+        private Subject authenticatedSubject;
 
         private PicketBoxBasedIdentity(final Principal principal) {
             this.principal = principal;
@@ -151,41 +152,47 @@ public class SecurityDomainContextRealm implements SecurityRealm {
                 throw new RealmUnavailableException();
             }
             else {
-                jaasSubject = new Subject();
+                final Subject jaasSubject = new Subject();
                 Object jaasCredential = evidence;
                 if (evidence instanceof PasswordGuessEvidence) {
                     jaasCredential = ((PasswordGuessEvidence) evidence).getGuess();
                 }
-                return domainContext.getAuthenticationManager().isValid(principal, jaasCredential, jaasSubject);
+                final boolean isValid = domainContext.getAuthenticationManager().isValid(principal, jaasCredential, jaasSubject);
+                if (isValid) {
+                    // set the authenticated subject when the authentication succeeds.
+                    this.authenticatedSubject = jaasSubject;
+                }
+                return isValid;
             }
         }
 
         @Override
         public boolean exists() throws RealmUnavailableException {
-            return true;
+            return this.authenticatedSubject != null;
         }
 
         @Override
         public AuthorizationIdentity getAuthorizationIdentity() throws RealmUnavailableException {
+            if (this.authenticatedSubject == null){
+                throw SecurityLogger.ROOT_LOGGER.unableToCreateAuthorizationIdentity();
+            }
             Attributes attributes = null;
-            if (this.jaasSubject != null) {
-                /* process the JAAS subject, extracting attributes from groups that might have been set in the subject
-                   by the JAAS login modules (e.g. caller principal, roles) */
-                final Set<Principal> principals = jaasSubject.getPrincipals();
-                if (principals != null) {
-                    for (Principal principal : principals) {
-                        if (principal instanceof Group) {
-                            final String key = principal.getName();
-                            final Set<String> values = new HashSet<>();
-                            final Enumeration<? extends Principal> enumeration = ((Group) principal).members();
-                            while (enumeration.hasMoreElements()) {
-                                values.add(enumeration.nextElement().getName());
-                            }
-                            if (attributes == null) {
-                                attributes = new MapAttributes();
-                            }
-                            attributes.addAll(key, values);
+            /* process the JAAS subject, extracting attributes from groups that might have been set in the subject
+               by the JAAS login modules (e.g. caller principal, roles) */
+            final Set<Principal> principals = authenticatedSubject.getPrincipals();
+            if (principals != null) {
+                for (Principal principal : principals) {
+                    if (principal instanceof Group) {
+                        final String key = principal.getName();
+                        final Set<String> values = new HashSet<>();
+                        final Enumeration<? extends Principal> enumeration = ((Group) principal).members();
+                        while (enumeration.hasMoreElements()) {
+                            values.add(enumeration.nextElement().getName());
                         }
+                        if (attributes == null) {
+                            attributes = new MapAttributes();
+                        }
+                        attributes.addAll(key, values);
                     }
                 }
             }
