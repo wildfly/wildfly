@@ -28,7 +28,6 @@ import java.util.List;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
@@ -48,6 +47,7 @@ import org.wildfly.test.security.common.elytron.SimpleConfigurableSaslServerFact
 import org.wildfly.test.security.common.elytron.SimpleSaslAuthenticationFactory;
 import org.wildfly.test.security.common.elytron.SimpleSecurityDomain;
 import org.wildfly.test.security.common.elytron.SimpleSecurityDomain.SecurityDomainRealm;
+import org.wildfly.test.security.common.other.MessagingElytronDomainConfigurator;
 import org.wildfly.test.security.common.other.SimpleRemotingConnector;
 import org.wildfly.test.security.common.other.SimpleSocketBinding;
 
@@ -60,7 +60,6 @@ import org.wildfly.test.security.common.other.SimpleSocketBinding;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ JmsSetup.class, AnonymousSaslMechTestCase.ServerSetup.class })
-@Ignore("WFLY-8742")
 public class AnonymousSaslMechTestCase extends AbstractSaslTestBase {
 
     private static final String ANONYMOUS = "ANONYMOUS";
@@ -73,7 +72,8 @@ public class AnonymousSaslMechTestCase extends AbstractSaslTestBase {
     public void testAnonymousAccess() throws Exception {
         AuthenticationContext.empty()
                 .with(MatchRule.ALL,
-                        AuthenticationConfiguration.empty().useDefaultProviders().setSaslMechanismSelector(SaslMechanismSelector.fromString(ANONYMOUS)).useAnonymous())
+                        AuthenticationConfiguration.empty()
+                        .setSaslMechanismSelector(SaslMechanismSelector.fromString(ANONYMOUS)))
                 .run(() -> sendAndReceiveMsg(PORT_ANONYMOUS, false));
     }
 
@@ -98,6 +98,8 @@ public class AnonymousSaslMechTestCase extends AbstractSaslTestBase {
             elements.add(SimpleSaslAuthenticationFactory.builder().withName(ANONYMOUS).withSaslServerFactory(ANONYMOUS)
                     .withSecurityDomain(NAME)
                     .addMechanismConfiguration(MechanismConfiguration.builder().withMechanismName(ANONYMOUS).build()).build());
+
+            elements.add(MessagingElytronDomainConfigurator.builder().withElytronDomain(NAME).build());
 
             elements.add(SimpleSocketBinding.builder().withName(ANONYMOUS).withPort(PORT_ANONYMOUS).build());
             elements.add(SimpleRemotingConnector.builder().withName(ANONYMOUS).withSocketBinding(ANONYMOUS)

@@ -103,22 +103,16 @@ public abstract class AbstractSaslTestBase {
 
             Destination destination = (Destination) namingContext.lookup(NAME);
 
-            int count = 1;
-
             try (JMSContext context = (username != null ? connectionFactory.createContext(username, password)
                     : connectionFactory.createContext())) {
-                // Send the specified number of messages
-                for (int i = 0; i < count; i++) {
-                    context.createProducer().send(destination, MESSAGE);
-                }
+                // Send a message
+                context.createProducer().send(destination, MESSAGE);
 
                 // Create the JMS consumer
                 JMSConsumer consumer = context.createConsumer(destination);
-                // Then receive the same number of messages that were sent
-                for (int i = 0; i < count; i++) {
-                    String text = consumer.receiveBody(String.class, 5000);
-                    Assert.assertEquals(MESSAGE, text);
-                }
+                // Then receive the same message that was sent
+                String text = consumer.receiveBody(String.class, 5000);
+                Assert.assertEquals(MESSAGE, text);
             }
         } catch (NamingException e) {
             LOGGER.error("Naming problem occured.", e);
