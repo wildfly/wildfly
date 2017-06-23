@@ -22,6 +22,7 @@
 package org.jboss.as.connector.subsystems.jca;
 
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
+import static org.jboss.as.connector.subsystems.jca.JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -158,7 +159,6 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         assertTrue(result.asBoolean());
     }
 
-
     @Test
     public void testTransformerEAP62() throws Exception {
         testTransformer(ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 2, 0), "jca-full.xml");
@@ -169,6 +169,15 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformer(ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 2, 0), "jca-full-expression.xml");
     }
 
+    @Test
+    public void testTransformerEAP7() throws Exception {
+        testTransformer7(ModelTestControllerVersion.EAP_7_0_0, ModelVersion.create(4, 0, 0), "jca-full.xml");
+    }
+
+    @Test
+    public void testTransformerEAP7Elytron() throws Exception {
+        testRejectingTransformerElytronEnabled(ModelTestControllerVersion.EAP_7_0_0, ModelVersion.create(4, 0, 0), "jca-full-elytron.xml");
+    }
     /**
      * Tests transformation of model from 1.2.0 version into 1.1.0 version.
      *
@@ -201,6 +210,77 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER, PathElement.pathElement(WORKMANAGER_SHORT_RUNNING)),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE));
+    }
+
+    /**
+     * Tests transformation of model from 1.2.0 version into 1.1.0 version.
+     *
+     * @throws Exception
+     */
+    private void testTransformer7(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, String xmlResourceName) throws Exception {
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXmlResource(xmlResourceName);
+
+        // create builder for legacy subsystem version
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-connector:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL(controllerVersion.getCoreMavenGroupId() + ":wildfly-threads:" + controllerVersion.getCoreVersion())
+                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension")
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class))
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, new ModelFixer() {
+            @Override
+            public ModelNode fixModel(ModelNode modelNode) {
+                //These two are true in the original model but get removed by the transformers, so they default to false. Set them to true
+                //modelNode.get(Constants.TRACER, Constants.TRACER). add(new ModelNode(Constants.TRACER));
+                //.add(Constants.TRACER);
+                modelNode.get(Constants.TRACER, Constants.TRACER, TracerDefinition.TracerParameters.TRACER_ENABLED.getAttribute().getName()).set(true);
+                return modelNode;
+
+            }
+        });
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+
+        Assert.assertNotNull(legacyServices);
+        assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+    }
+
+    /**
+     * Tests transformation of model from 1.2.0 version into 1.1.0 version.
+     *
+     * @throws Exception
+     */
+    private void testRejectingTransformerElytronEnabled(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, String xmlResourceName) throws Exception {
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+
+        // create builder for legacy subsystem version
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-connector:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL(controllerVersion.getCoreMavenGroupId() + ":wildfly-threads:" + controllerVersion.getCoreVersion())
+                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension")
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+
+        Assert.assertNotNull(legacyServices);
+        assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        assertTrue(legacyServices.isSuccessfulBoot());
+
+        List<ModelNode> xmlOps = builder.parseXmlResource(xmlResourceName);
+
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps,
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER),
+                                new FailedOperationTransformationConfig.NewAttributesConfig(ELYTRON_ENABLED.getAttribute()))
+                        .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaWorkManagerDefinition.PATH_WORK_MANAGER),
+                                new FailedOperationTransformationConfig.NewAttributesConfig(ELYTRON_ENABLED.getAttribute())));
     }
 
     /**

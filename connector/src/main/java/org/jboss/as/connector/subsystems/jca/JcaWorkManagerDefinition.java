@@ -46,9 +46,6 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.threads.BoundedQueueThreadPoolAdd;
 import org.jboss.as.threads.BoundedQueueThreadPoolRemove;
 import org.jboss.as.threads.BoundedQueueThreadPoolResourceDefinition;
@@ -147,16 +144,6 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
                 && !entrySet.iterator().next().getName().equals(threadPoolPath.getLastElement().getValue())) {
             throw ConnectorLogger.ROOT_LOGGER.oneThreadPoolWorkManager(threadPoolPath.getLastElement().getValue(), type, workManagerPath.getLastElement().getValue());
         }
-    }
-
-    static void registerElytronTransformers(ResourceTransformationDescriptionBuilder parentBuilder) {
-        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_WORK_MANAGER);
-        builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
-                        WmParameters.ELYTRON_ENABLED.getAttribute())
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WmParameters.ELYTRON_ENABLED.getAttribute())
-                .end();
-
     }
 
     public enum WmParameters {
