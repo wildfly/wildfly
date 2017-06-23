@@ -34,8 +34,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -158,9 +156,4 @@ class RemoteConnectorChannelCreationOptionResource extends SimpleResourceDefinit
         }
     }
 
-    static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.addChildResource(INSTANCE.getPathElement())
-            .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CHANNEL_CREATION_OPTION_VALUE);
-    }
 }
