@@ -50,7 +50,7 @@
             <!--You have a CHOICE of the next 3 items at this level-->
             <!--Optional:-->
             <elytron-enabled>true</elytron-enabled>
-            <authentication-context>SomeAuthenticationContext</authentication-context>
+            <authentication-context-and-application>SomeAuthenticationContext</authentication-context-and-application>
           </security>
           <!--Optional:-->
           <timeout>
