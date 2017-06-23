@@ -765,6 +765,8 @@ public class Constants {
             .setRequires(RECOVERY_ELYTRON_ENABLED_NAME)
             .addAlternatives(RECOVERY_SECURITY_DOMAIN_NAME, RECOVERY_USERNAME_NAME)
             .setCapabilityReference(Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY, Capabilities.DATA_SOURCE_CAPABILITY)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
+            .addAccessConstraint(DS_SECURITY_DEF)
             .setRestartAllServices()
             .build();
 
