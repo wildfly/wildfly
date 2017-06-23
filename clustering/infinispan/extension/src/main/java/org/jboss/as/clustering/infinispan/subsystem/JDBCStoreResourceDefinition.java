@@ -100,6 +100,13 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder, PathElement path) {
 
+        if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    // WFLY-8985 value MARIA_DB and any expression which could potentially resolve to that value on a slave node must be rejected
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.DIALECT.getDefinition())
+                    .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(DatabaseType.MARIA_DB.name())), Attribute.DIALECT.getDefinition());
+        }
+
         if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version) && !InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             // DATASOURCE attribute was only supported as an add operation parameter
             builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, DeprecatedAttribute.DATASOURCE.getDefinition());

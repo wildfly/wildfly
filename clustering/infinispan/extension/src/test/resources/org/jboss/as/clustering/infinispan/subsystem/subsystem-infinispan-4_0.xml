@@ -88,7 +88,7 @@
             <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="UNORDERED"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <mixed-keyed-jdbc-store data-source="ExampleDS" dialect="MYSQL" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="false">
+            <mixed-keyed-jdbc-store data-source="ExampleDS" dialect="MARIA_DB" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="false">
                 <write-behind modification-queue-size="2048" thread-pool-size="1"/>
                 <binary-keyed-table prefix="ispn_entry" batch-size="100" fetch-size="100">
                     <id-column name="id" type="VARCHAR"/>
