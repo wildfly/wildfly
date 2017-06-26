@@ -88,7 +88,6 @@
                 <option value="-XX:MetaspaceSize=96m"/>
                 <option value="-XX:MaxMetaspaceSize=256m"/>
                 <option value="--add-exports=java.base/sun.nio.ch=ALL-UNNAMED"/>
-                <option value="--permit-illegal-access"/>
             </jvm-options>
         </jvm>
     </jvms>
