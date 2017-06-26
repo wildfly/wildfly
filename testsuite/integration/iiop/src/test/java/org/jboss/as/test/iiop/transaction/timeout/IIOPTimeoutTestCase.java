@@ -22,35 +22,32 @@
 
 package org.jboss.as.test.iiop.transaction.timeout;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-
-import java.rmi.RemoteException;
-import java.util.PropertyPermission;
-
-import javax.naming.NamingException;
-import javax.transaction.TransactionRolledbackException;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.transactions.TransactionTestLookupUtil;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingletonRemote;
+import org.jboss.as.test.integration.transactions.TransactionTestLookupUtil;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.naming.NamingException;
+import javax.transaction.TransactionRolledbackException;
+import java.rmi.RemoteException;
+import java.util.PropertyPermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests on transaction timeout behavior with SLSB beans
@@ -61,11 +58,6 @@ import org.junit.runner.RunWith;
 public class IIOPTimeoutTestCase {
     private static final int DEFAULT_IIOP_PORT = 3528;
     private static final String DEPLOYMENT_NAME = "stateless-iiop-txn-timeout";
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     @ContainerResource("iiop-client")
     private ManagementClient mgmtClient;
