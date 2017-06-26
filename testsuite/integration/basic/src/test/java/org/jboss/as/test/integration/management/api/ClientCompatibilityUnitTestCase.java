@@ -45,7 +45,6 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
 import org.jboss.as.process.protocol.StreamUtils;
 import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -54,7 +53,6 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,7 +82,13 @@ public class ClientCompatibilityUnitTestCase {
             op.get(ModelDescriptionConstants.OP_ADDR).set(address());
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
             op.get(ModelDescriptionConstants.SOCKET_BINDING).set("management-native");
-            op.get(ModelDescriptionConstants.SECURITY_REALM).set("ManagementRealm");
+
+            if (System.getProperty("elytron") == null) { // legacy security
+                op.get(ModelDescriptionConstants.SECURITY_REALM).set("ManagementRealm");
+            } else { // elytron
+                op.get(ModelDescriptionConstants.SASL_AUTHENTICATION_FACTORY).set("management-sasl-authentication");
+            }
+
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         }
 
@@ -104,11 +108,6 @@ public class ClientCompatibilityUnitTestCase {
                     .append(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT)
                     .append(ModelDescriptionConstants.MANAGEMENT_INTERFACE, ModelDescriptionConstants.NATIVE_INTERFACE).toModelNode();
         }
-    }
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
     }
 
     // Arquillian requires a deployment to trigger @ServerSetup handling

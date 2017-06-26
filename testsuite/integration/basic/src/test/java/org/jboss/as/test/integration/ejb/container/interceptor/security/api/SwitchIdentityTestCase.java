@@ -120,7 +120,7 @@ public class SwitchIdentityTestCase {
 
     @BeforeClass
     public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
+        AssumeTestGroupUtil.assumeElytronProfileEnabled(); // PicketBox specific feature - not supported in Elytron
     }
 
     /**

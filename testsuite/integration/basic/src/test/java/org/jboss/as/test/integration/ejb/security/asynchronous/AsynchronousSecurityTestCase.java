@@ -84,7 +84,7 @@ public class AsynchronousSecurityTestCase {
 
     @BeforeClass
     public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
+        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled(); // JBEAP-11933
     }
 
     @ArquillianResource
