@@ -208,6 +208,7 @@ public class GetCallerPrincipalTestCase {
     @Test
     public void testStatefulLifecycle() throws Exception {
         deployer.deploy("sfsb");
+        final boolean elytronProfile = System.getProperty("elytron") != null;
         final Callable<Void> callable = () -> {
             ITestResultsSingleton results = this.getResultsSingleton();
             IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/sfsb//" + SFSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName() + "?stateful");
@@ -217,7 +218,7 @@ public class GetCallerPrincipalTestCase {
 
             bean.remove();
 
-            if (System.getProperty("elytron") == null) {
+            if (! elytronProfile) {
                 Assert.assertEquals(LOCAL_USER + "stop", results.getSfsb("predestroy"));
             } else {
                 Assert.assertEquals(ANONYMOUS + "stop", results.getSfsb("predestroy"));

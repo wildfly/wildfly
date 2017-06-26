@@ -12,12 +12,10 @@ import org.wildfly.naming.java.permission.JndiPermission;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import org.jboss.remoting3.security.RemotingPermission;
@@ -40,12 +38,6 @@ public class MultipleClientRemoteJndiTestCase {
     private URL urlTwo;
 
     private static final Package thisPackage = MultipleClientRemoteJndiTestCase.class.getPackage();
-
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
-    }
 
     @Deployment(name="one")
     public static WebArchive deploymentOne() {

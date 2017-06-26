@@ -17,7 +17,6 @@ import org.jboss.as.test.integration.management.deploy.runtime.ejb.singleton.tim
 import org.jboss.as.test.integration.management.deploy.runtime.ejb.singleton.timer.PointlessInterface;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -47,11 +46,6 @@ public class TimerEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
     private static final String SUB_DEPLOYMENT_MODULE_NAME = "ejb";
     private static final String SUB_DEPLOYMENT_NAME = SUB_DEPLOYMENT_MODULE_NAME + ".jar";
     private static ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
-    }
 
     @BeforeClass
     public static void setup() throws Exception {
