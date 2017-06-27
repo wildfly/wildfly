@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import javax.net.ssl.SSLContext;
 
+import io.undertow.UndertowOptions;
 import io.undertow.protocols.ssl.UndertowXnioSsl;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.proxy.LoadBalancingProxyClient;
@@ -129,6 +130,13 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .build();
 
+    public static final SimpleAttributeDefinition ENABLE_HTTP2 = new SimpleAttributeDefinitionBuilder(Constants.ENABLE_HTTP2, ModelType.BOOLEAN)
+            .setRequired(false)
+            .setDefaultValue(new ModelNode(false))
+            .setRestartAllServices()
+            .build();
+
+
     public static final ReverseProxyHandlerHost INSTANCE = new ReverseProxyHandlerHost();
 
     private ReverseProxyHandlerHost() {
@@ -139,7 +147,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(OUTBOUND_SOCKET_BINDING, SCHEME, INSTANCE_ID, PATH, SSL_CONTEXT, SECURITY_REALM);
+        return Arrays.asList(OUTBOUND_SOCKET_BINDING, SCHEME, INSTANCE_ID, PATH, SSL_CONTEXT, SECURITY_REALM, ENABLE_HTTP2);
     }
 
 
@@ -168,6 +176,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             final String socketBinding = OUTBOUND_SOCKET_BINDING.resolveModelAttribute(context, model).asString();
             final String scheme = SCHEME.resolveModelAttribute(context, model).asString();
             final String path = PATH.resolveModelAttribute(context, model).asString();
+            final boolean enableHttp2 = ENABLE_HTTP2.resolveModelAttribute(context, model).asBoolean();
             final String jvmRoute;
             final ModelNode securityRealm = SECURITY_REALM.resolveModelAttribute(context, model);
             final ModelNode sslContext = SSL_CONTEXT.resolveModelAttribute(context, model);
@@ -176,7 +185,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             } else {
                 jvmRoute = null;
             }
-            ReverseProxyHostService service = new ReverseProxyHostService(scheme, jvmRoute, path);
+            ReverseProxyHostService service = new ReverseProxyHostService(scheme, jvmRoute, path, enableHttp2);
             CapabilityServiceBuilder<ReverseProxyHostService> builder = context.getCapabilityServiceTarget()
                     .addCapability(REVERSE_PROXY_HOST_RUNTIME_CAPABILITY, service)
                     .addCapabilityRequirement(Capabilities.CAPABILITY_HANDLER, HttpHandler.class, service.proxyHandler, proxyName)
@@ -202,11 +211,13 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
         private final String instanceId;
         private final String scheme;
         private final String path;
+        private final boolean enableHttp2;
 
-        private ReverseProxyHostService(String scheme, String instanceId, String path) {
+        private ReverseProxyHostService(String scheme, String instanceId, String path, boolean enableHttp2) {
             this.instanceId = instanceId;
             this.scheme = scheme;
             this.path = path;
+            this.enableHttp2 = enableHttp2;
         }
         private URI getUri() throws URISyntaxException {
             OutboundSocketBinding binding = socketBinding.getValue();
@@ -229,14 +240,14 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
                 }
 
                 if (sslContext == null) {
-                    client.addHost(getUri(), instanceId);
+                    client.addHost(getUri(), instanceId, null, OptionMap.create(UndertowOptions.ENABLE_HTTP2, enableHttp2));
                 } else {
                     OptionMap.Builder builder = OptionMap.builder();
                     builder.set(Options.USE_DIRECT_BUFFERS, true);
                     OptionMap combined = builder.getMap();
 
                     XnioSsl xnioSsl = new UndertowXnioSsl(Xnio.getInstance(), combined, sslContext);
-                    client.addHost(getUri(), instanceId, xnioSsl);
+                    client.addHost(getUri(), instanceId, xnioSsl, OptionMap.create(UndertowOptions.ENABLE_HTTP2, enableHttp2));
                 }
             } catch (URISyntaxException e) {
                 throw new StartException(e);

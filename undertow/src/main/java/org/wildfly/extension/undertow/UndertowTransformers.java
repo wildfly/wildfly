@@ -110,6 +110,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, SSL_CONTEXT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.SSL_CONTEXT)
+                .setDiscard(DiscardAttributeChecker.ALWAYS, Constants.ENABLE_HTTP2) //we just discard, as older versions will just continue to use HTTP/1.1, and enabling this does not guarentee a HTTP/2 connection anyway (if the backend does not support it)
                 .end();
 
         subsystemBuilder.addChildResource(UndertowExtension.PATH_FILTERS)

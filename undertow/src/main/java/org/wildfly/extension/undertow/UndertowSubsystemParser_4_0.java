@@ -258,7 +258,8 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                                 ReverseProxyHandlerHost.PATH,
                                                                 ReverseProxyHandlerHost.INSTANCE_ID,
                                                                 ReverseProxyHandlerHost.SSL_CONTEXT,
-                                                                ReverseProxyHandlerHost.SECURITY_REALM))
+                                                                ReverseProxyHandlerHost.SECURITY_REALM,
+                                                                ReverseProxyHandlerHost.ENABLE_HTTP2))
                                 )
 
 
