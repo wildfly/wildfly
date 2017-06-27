@@ -76,7 +76,7 @@ public class ConstantPrincipalDecoderTestCase {
     private static final String CONST_ADMIN = "admin";
     private static final String CONST_WHITESPACE = "two words";
     private static final String CONST_I18N = STR_SYMBOLS + STR_CHINESE + STR_ARABIC + STR_EURO_LOWER + STR_EURO_UPPER;
-    private static final String PD_NAME_ADMIN = CONST_ADMIN;
+    private static final String PD_NAME_ADMIN = CONST_ADMIN + "PD";
     private static final String PD_NAME_I18N = "i18n";
     private static final String PD_NAME_WHITESPACE = "whitespace";
     private static final String SD_NAME_NO_PD = "no-principal-decoder";
