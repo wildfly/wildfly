@@ -34,7 +34,6 @@ import java.util.Set;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
-import org.apache.activemq.artemis.api.core.ChannelBroadcastEndpointFactory;
 import org.apache.activemq.artemis.api.core.UDPBroadcastEndpointFactory;
 import org.apache.activemq.artemis.core.config.Configuration;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -181,7 +180,7 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
         final long broadcastPeriod = config.getBroadcastPeriod();
         final List<String> connectorRefs = config.getConnectorInfos();
 
-        final BroadcastEndpointFactory endpointFactory = new ChannelBroadcastEndpointFactory(channel, channelName);
+        final BroadcastEndpointFactory endpointFactory = new ClosingChannelBroadcastEndpointFactory(channel, channelName);
 
         return new BroadcastGroupConfiguration()
                 .setName(name)
