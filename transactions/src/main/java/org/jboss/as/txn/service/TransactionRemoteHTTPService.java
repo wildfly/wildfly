@@ -48,7 +48,7 @@ public class TransactionRemoteHTTPService implements Service<TransactionRemoteHT
 
     @Override
     public void stop(StopContext context) {
-        pathHandlerInjectedValue.getValue().removePrefixPath("/ejb");
+        pathHandlerInjectedValue.getValue().removePrefixPath("/txn");
     }
 
     @Override
