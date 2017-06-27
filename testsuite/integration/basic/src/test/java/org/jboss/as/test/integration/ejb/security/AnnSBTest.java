@@ -37,13 +37,11 @@ import org.jboss.as.test.integration.ejb.security.authorization.AnnOnlyCheckSLSB
 import org.jboss.as.test.integration.ejb.security.authorization.ParentAnnOnlyCheck;
 import org.jboss.as.test.integration.ejb.security.authorization.SimpleAuthorizationRemote;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
@@ -63,11 +61,6 @@ public abstract class AnnSBTest {
 
     @ContainerResource
     private ManagementClient managementClient;
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
-    }
 
     public static Archive<JavaArchive> testAppDeployment(final Logger LOG, final String MODULE, final Class SB_TO_TEST) {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE + ".jar")
