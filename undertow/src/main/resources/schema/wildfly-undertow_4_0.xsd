@@ -485,6 +485,7 @@
         <xs:attribute name="instance-id" use="optional" type="xs:string"/>
         <xs:attribute name="ssl-context" type="xs:string" />
         <xs:attribute name="security-realm" type="xs:string" use="optional" />
+        <xs:attribute name="enable-http2" type="xs:boolean" use="optional" default="false" />
     </xs:complexType>
 
     <xs:complexType name="filter-refType">
