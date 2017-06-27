@@ -106,7 +106,7 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
     }
 
     protected String getRemotingConnectorName() {
-        return getSecurityDomainName();
+        return "http-remoting-connector";
     }
 
     protected String getHttpAuthenticationName() {
@@ -190,18 +190,13 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         steps.add(addSaslAuthentication);
 
         // remoting connection with sasl-authentication-factory
-        ModelNode addRemotingConnector = Util.createAddOperation(remotingConnectorAddress);
-        addRemotingConnector.get("sasl-authentication-factory").set(getSaslAuthenticationName());
-        addRemotingConnector.get("connector-ref").set("default");
-        // authentication-provider  sasl-protocol  security-realm  server-name
-        steps.add(addRemotingConnector);
+        ModelNode updateRemotingConnector = Util.getWriteAttributeOperation(remotingConnectorAddress, "sasl-authentication-factory", getSaslAuthenticationName());
+        steps.add(updateRemotingConnector);
 
         // /subsystem=ejb3/application-security-domain=ejb3-tests:add(security-domain=ApplicationDomain)
         ModelNode addEjbDomain = Util.createAddOperation(ejbDomainAddress);
         addEjbDomain.get("security-domain").set(getSecurityDomainName());
         steps.add(addEjbDomain);
-
-        steps.add(Util.getWriteAttributeOperation(ejbRemoteAddress, "connector-ref", getSecurityDomainName()));
 
         ModelNode addHttpAuthentication = Util.createAddOperation(httpAuthenticationAddress);
         addHttpAuthentication.get("security-domain").set(getSecurityDomainName());
@@ -225,7 +220,7 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         System.out.println("tearing down...");
 
         try {
-            applyUpdate(managementClient.getControllerClient(), Util.getWriteAttributeOperation(ejbRemoteAddress, "connector-ref", "http-remoting-connector"), false);
+            applyUpdate(managementClient.getControllerClient(), Util.getWriteAttributeOperation(remotingConnectorAddress, "sasl-authentication-factory", "application-sasl-authentication"), false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -242,7 +237,6 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         applyRemoveAllowReload(managementClient.getControllerClient(), undertowDomainAddress, false);
         applyRemoveAllowReload(managementClient.getControllerClient(), httpAuthenticationAddress, false);
         applyRemoveAllowReload(managementClient.getControllerClient(), ejbDomainAddress, false);
-        applyRemoveAllowReload(managementClient.getControllerClient(), remotingConnectorAddress, false);
         // TODO: remove this reload once WFLY-8821 is fixed
         try {
             ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
