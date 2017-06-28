@@ -3147,5 +3147,5 @@ public interface EjbLogger extends BasicLogger {
     void suspensionComplete();
 
     @Message(id = 494, value = "Failed to obtain SSLContext")
-    StartException failedToObtainSSLContext(@Cause Exception cause);
+    RuntimeException failedToObtainSSLContext(@Cause Exception cause);
 }
