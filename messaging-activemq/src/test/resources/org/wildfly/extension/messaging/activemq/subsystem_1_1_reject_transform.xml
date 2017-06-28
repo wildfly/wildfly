@@ -63,8 +63,11 @@
                                    connectors="in-vm"
                                    entries="java:/JmsLocal"
                                    statistics-enabled="true">
-        <inbound-config
-                rebalance-connections="true" />
+            <inbound-config
+                    rebalance-connections="true" />
+            <outbound-config
+                    allow-local-transactions="true" />
+
         </pooled-connection-factory>
         <pooled-connection-factory name="pcf-with-credential-reference"
                                    entries="java:/JmsLocal2"

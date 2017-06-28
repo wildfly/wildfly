@@ -589,6 +589,11 @@
                                 <xs:attribute name="setup-interval" type="xs:long" use="optional" />
                             </xs:complexType>
                         </xs:element>
+                        <xs:element name="outbound-config" minOccurs="0" maxOccurs="1">
+                            <xs:complexType>
+                                <xs:attribute name="allow-local-transactions" type="xs:boolean" use="optional" />
+                            </xs:complexType>
+                        </xs:element>
                         <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation>

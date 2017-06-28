@@ -190,6 +190,7 @@ public class MessagingActiveMQSubsystem_1_1_TestCase extends AbstractSubsystemBa
                                 ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
+                                ConnectionFactoryAttributes.Pooled.ALLOW_LOCAL_TRANSACTIONS,
                                 ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS,
                                 ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED,
                                 ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE,

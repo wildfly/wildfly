@@ -308,7 +308,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
                 continue;
             }
 
-            props.add(new PooledConnectionFactoryConfigProperties(attribute.getPropertyName(), property.getValue().asString(), attribute.getClassType()));
+            props.add(new PooledConnectionFactoryConfigProperties(attribute.getPropertyName(), property.getValue().asString(), attribute.getClassType(), attribute.getConfigType()));
         }
         return props;
     }

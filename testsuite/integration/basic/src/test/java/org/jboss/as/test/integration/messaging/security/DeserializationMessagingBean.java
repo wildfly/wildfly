@@ -41,6 +41,9 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
@@ -71,18 +74,18 @@ import javax.jms.Queue;
 @Stateless
 public class DeserializationMessagingBean {
 
+    public static final String BLACK_LIST_CF_LOOKUP = "java:comp/env/myBlackListCF";
+    public static final String WHITE_LIST_CF_LOOKUP = "java:comp/env/myWhiteListCF";
+    public static final String BLACK_LIST_REGULAR_CF_LOOKUP = "java:/jms/myBlackListCF";
+
     @Resource(lookup = "java:comp/env/myQueue")
     private Queue queue;
 
-    @Resource(lookup = "java:comp/env/myBlackListCF")
-    private ConnectionFactory blackListCF;
-
-    @Resource(lookup = "java:comp/env/myWhiteListCF")
-    private ConnectionFactory whiteListCF;
-
-    public void send(Serializable serializable) {
+    public void send(Serializable serializable) throws NamingException {
         assertNotNull(queue);
-        ConnectionFactory cf = blackListCF;
+
+        Context namingContext = new InitialContext();
+        ConnectionFactory cf = (ConnectionFactory) namingContext.lookup(BLACK_LIST_CF_LOOKUP);
         assertNotNull(cf);
 
         try (JMSContext context = cf.createContext(JMSContext.AUTO_ACKNOWLEDGE)) {
@@ -90,12 +93,14 @@ public class DeserializationMessagingBean {
         }
     }
 
-    public void receive(Serializable serializable, boolean useBlackList, boolean consumeMustFail) {
+    public void receive(Serializable serializable, String cfLookup, boolean consumeMustFail) throws NamingException {
         assertNotNull(queue);
-        ConnectionFactory cf = useBlackList ? blackListCF : whiteListCF;
-        assertNotNull(cf);
 
-        try (JMSContext context = cf.createContext(JMSContext.AUTO_ACKNOWLEDGE)) {
+        Context namingContext = new InitialContext();
+        ConnectionFactory cf = (ConnectionFactory) namingContext.lookup(cfLookup);
+
+        try (
+                JMSContext context = cf.createContext(JMSContext.AUTO_ACKNOWLEDGE)) {
             JMSConsumer consumer = context.createConsumer(queue);
             try {
                 Message response = consumer.receive(1000);

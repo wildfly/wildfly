@@ -345,6 +345,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private void createService(ServiceTarget serviceTarget, ServiceContainer container) throws Exception {
         InputStream is = null;
         InputStream isIj = null;
+        // Properties for the resource adapter
         List<ConfigProperty> properties = new ArrayList<ConfigProperty>();
         try {
             StringBuilder connectorClassname = new StringBuilder();
@@ -407,6 +408,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
             boolean hasReconnect = false;
             final List<ConfigProperty> inboundProperties = new ArrayList<>();
+            final List<ConfigProperty> outboundProperties = new ArrayList<>();
             final String reconnectName = ConnectionFactoryAttributes.Pooled.RECONNECT_ATTEMPTS_PROP_NAME;
             for (PooledConnectionFactoryConfigProperties adapterParam : adapterParams) {
                 hasReconnect |= reconnectName.equals(adapterParam.getName());
@@ -418,7 +420,13 @@ public class PooledConnectionFactoryService implements Service<Void> {
                         inboundProperties.add(p);
                     }
                 } else {
-                    properties.add(p);
+                    if (adapterParam.getConfigType() == ConnectionFactoryAttribute.ConfigType.INBOUND) {
+                        inboundProperties.add(p);
+                    } else if (adapterParam.getConfigType() == ConnectionFactoryAttribute.ConfigType.OUTBOUND) {
+                        outboundProperties.add(p);
+                    } else {
+                        properties.add(p);
+                    }
                 }
             }
 
@@ -431,7 +439,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
             WildFlyRecoveryRegistry.container = container;
 
-            OutboundResourceAdapter outbound = createOutbound();
+            OutboundResourceAdapter outbound = createOutbound(outboundProperties);
             InboundResourceAdapter inbound = createInbound(inboundProperties);
             ResourceAdapter ra = createResourceAdapter15(properties, outbound, inbound);
             Connector cmd = createConnector15(ra);
@@ -581,9 +589,9 @@ public class PooledConnectionFactoryService implements Service<Void> {
         return new InboundResourceAdapterImpl(message, null);
     }
 
-    private static OutboundResourceAdapter createOutbound() {
-        List<org.jboss.jca.common.api.metadata.spec.ConnectionDefinition> definitions = new ArrayList<org.jboss.jca.common.api.metadata.spec.ConnectionDefinition>();
-        List<ConfigProperty> props = new ArrayList<ConfigProperty>();
+    private static OutboundResourceAdapter createOutbound(List<ConfigProperty> outboundProperties) {
+        List<org.jboss.jca.common.api.metadata.spec.ConnectionDefinition> definitions = new ArrayList();
+        List<ConfigProperty> props = new ArrayList(outboundProperties);
         props.add(simpleProperty15(SESSION_DEFAULT_TYPE, STRING_TYPE, JMS_QUEUE));
         props.add(simpleProperty15(TRY_LOCK, INTEGER_TYPE, "0"));
         definitions.add(new org.jboss.jca.common.metadata.spec.ConnectionDefinitionImpl(str(RAMANAGED_CONN_FACTORY), props, str(RA_CONN_FACTORY), str(RA_CONN_FACTORY_IMPL), str(JMS_SESSION), str(ACTIVEMQ_RA_SESSION), null));

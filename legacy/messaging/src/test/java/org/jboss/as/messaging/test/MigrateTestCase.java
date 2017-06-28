@@ -185,6 +185,7 @@ public class MigrateTestCase extends AbstractSubsystemTest {
 
         assertEquals("STRICT", newServer.get("cluster-connection", "cc2", "message-load-balancing-type").asString());
         assertEquals("ON_DEMAND", newServer.get("cluster-connection", "cc3", "message-load-balancing-type").asString());
+        assertEquals(true, newServer.get("pooled-connection-factory", "hornetq-ra", "allow-local-transactions").asBoolean());
 
         if (addLegacyEntries) {
             // check that legacy entries were added to JMS resources
