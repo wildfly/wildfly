@@ -41,8 +41,10 @@ public class LogStoreTransactionParticipantDefinition extends SimpleResourceDefi
     static final LogStoreTransactionParticipantDefinition INSTANCE = new LogStoreTransactionParticipantDefinition();
 
     private LogStoreTransactionParticipantDefinition() {
-        super(TransactionExtension.PARTICIPANT_PATH,
-                TransactionExtension.getResourceDescriptionResolver(LogStoreConstants.LOG_STORE, CommonAttributes.TRANSACTION, CommonAttributes.PARTICIPANT));
+        super(new Parameters(TransactionExtension.PARTICIPANT_PATH,
+                TransactionExtension.getResourceDescriptionResolver(LogStoreConstants.LOG_STORE, CommonAttributes.TRANSACTION, CommonAttributes.PARTICIPANT))
+                .setRuntime()
+        );
     }
 
     @Override

@@ -41,8 +41,10 @@ public class LogStoreTransactionDefinition extends SimpleResourceDefinition {
 
 
     public LogStoreTransactionDefinition(final LogStoreResource resource) {
-        super(TransactionExtension.TRANSACTION_PATH,
-                TransactionExtension.getResourceDescriptionResolver(LogStoreConstants.LOG_STORE, CommonAttributes.TRANSACTION));
+        super(new Parameters(TransactionExtension.TRANSACTION_PATH,
+                TransactionExtension.getResourceDescriptionResolver(LogStoreConstants.LOG_STORE, CommonAttributes.TRANSACTION))
+                .setRuntime()
+        );
         this.resource = resource;
     }
 
