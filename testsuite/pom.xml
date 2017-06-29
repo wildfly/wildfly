@@ -1262,6 +1262,7 @@
                                     <goal>clean</goal>
                                 </goals>
                                 <configuration>
+                                    <failOnError>false</failOnError>
                                     <excludeDefaultDirectories>true</excludeDefaultDirectories>
                                     <filesets>
                                         <fileset>
