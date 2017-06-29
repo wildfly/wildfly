@@ -175,17 +175,21 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
                         if (authenticationContext == null) {
                             authenticationContext = authenticationContextManager.get();
                         }
-                        // now transform it
-                        if (profileService != null) {
-                            for (RemotingProfileService.ConnectionSpec connectionSpec : profileService.getConnectionSpecs()) {
-                                authenticationContext = transformOne(connectionSpec, authenticationContext);
+                        final AuthenticationContext finalAuthenticationContext = authenticationContext;
+                        authenticationContextManager.setClassLoaderDefaultSupplier(classLoader, () -> {
+                            AuthenticationContext transformed = finalAuthenticationContext;
+                            // now transform it
+                            if (profileService != null) {
+                                for (RemotingProfileService.ConnectionSpec connectionSpec : profileService.getConnectionSpecs()) {
+                                    transformed = transformOne(connectionSpec, transformed);
+                                }
                             }
-                        }
-                        if (ejbClientClustersAuthenticationContext != null) {
-                            authenticationContext = ejbClientClustersAuthenticationContext.with(authenticationContext);
-                        }
-                        // and set the result
-                        authenticationContextManager.setClassLoaderDefault(classLoader, authenticationContext);
+                            if (ejbClientClustersAuthenticationContext != null) {
+                                transformed = ejbClientClustersAuthenticationContext.with(transformed);
+                            }
+
+                            return transformed;
+                        });
                     }
                     EJBClientContext.getContextManager().setClassLoaderDefault(classLoader, ejbClientContext);
                     Discovery.getContextManager().setClassLoaderDefault(classLoader, discoveryInjector.getValue());
@@ -215,7 +219,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
             return null;
         }
 
-        private static AuthenticationContext transformOne(RemotingProfileService.ConnectionSpec connectionSpec, AuthenticationContext context) throws StartException {
+        private static AuthenticationContext transformOne(RemotingProfileService.ConnectionSpec connectionSpec, AuthenticationContext context) {
             final AbstractOutboundConnectionService connectionService = connectionSpec.getInjector().getValue();
             AuthenticationConfiguration authenticationConfiguration = connectionService.getAuthenticationConfiguration();
             SSLContext sslContext = connectionService.getSSLContext();
