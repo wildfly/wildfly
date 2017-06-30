@@ -38,7 +38,7 @@ import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
 import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.WAIT_TIME;
 
 /**
- * {@link OperationStepHandler} that enables all web application context for all engines.
+ * {@link OperationStepHandler} that attempts to gracefully stop all web applications, within the specified timeout.
  *
  * @author Jean-Frederic Clere
  * @author Radoslav Husar
@@ -62,11 +62,12 @@ public class ModClusterStop implements OperationStepHandler {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ServiceController<?> controller = context.getServiceRegistry(false).getService(ContainerEventHandlerService.SERVICE_NAME);
                     final ModClusterServiceMBean service = (ModClusterServiceMBean) controller.getValue();
-                    ROOT_LOGGER.debugf("enable: %s", operation);
+                    ROOT_LOGGER.debugf("stop: %s", operation);
 
                     final int waitTime = WAIT_TIME.resolveModelAttribute(context, operation).asInt();
 
-                    service.stop(waitTime, TimeUnit.SECONDS);
+                    boolean success = service.stop(waitTime, TimeUnit.SECONDS);
+                    context.getResult().get(CommonAttributes.SESSION_DRAINING_COMPLETE).set(success);
 
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override

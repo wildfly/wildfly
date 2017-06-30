@@ -73,7 +73,8 @@ public class ModClusterStopContext implements OperationStepHandler {
                     final int waitTime = WAIT_TIME.resolveModelAttribute(context, operation).asInt();
 
                     try {
-                        service.stopContext(webHost, webContext, waitTime, TimeUnit.SECONDS);
+                        boolean success = service.stopContext(webHost, webContext, waitTime, TimeUnit.SECONDS);
+                        context.getResult().get(CommonAttributes.SESSION_DRAINING_COMPLETE).set(success);
                     } catch (IllegalArgumentException e) {
                         throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(webHost, webContext));
                     }
