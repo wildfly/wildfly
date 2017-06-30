@@ -34,10 +34,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FilePermission;
 import java.io.IOException;
+import java.net.SocketPermission;
 import java.net.URL;
 import java.util.List;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.jboss.as.test.xts.suspend.Helpers.getExecutorService;
 import static org.jboss.as.test.xts.suspend.Helpers.getRemoteService;
 
@@ -74,7 +78,13 @@ public abstract class AbstractTestCase {
         return ShrinkWrap.create(WebArchive.class, EXECUTOR_SERVICE_ARCHIVE_NAME + ".war")
                 .addClasses(ExecutorService.class, RemoteService.class, Helpers.class)
                 .addAsResource("context-handlers.xml", "context-handlers.xml")
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts, org.jboss.jts"), "MANIFEST.MF");
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts, org.jboss.jts"), "MANIFEST.MF")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new SocketPermission("127.0.0.1:8180", "connect,resolve"),
+                        new RuntimePermission("org.apache.cxf.permission", "resolveUri"),
+                        // WSDLFactory#L243 from wsdl4j library needs the following
+                        new FilePermission(System.getProperty("java.home") + File.separator + "lib" + File.separator + "wsdl.properties", "read")
+                        ), "permissions.xml");
     }
 
     protected static WebArchive getRemoteServiceArchiveBase() {
