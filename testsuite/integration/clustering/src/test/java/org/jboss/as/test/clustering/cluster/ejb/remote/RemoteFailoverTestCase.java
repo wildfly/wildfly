@@ -119,12 +119,11 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
 
     @InSequence(4)
     @Test
-    @Ignore("WFLY-9002")
     public void testSecureStatelessFailover() throws Exception {
         AuthenticationContext context = AuthenticationContext.captureCurrent();
         context = context.with(
             MatchRule.ALL.matchAbstractType("ejb", "jboss"),
-            AuthenticationConfiguration.empty().useName("test1").usePassword("password1")
+            AuthenticationConfiguration.empty().useName("user1").usePassword("password1")
         );
         this.testStatelessFailover(context, SecureStatelessIncrementorBean.class);
     }
