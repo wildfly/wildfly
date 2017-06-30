@@ -43,7 +43,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -89,7 +88,6 @@ public class DeserializationBlackListTestCase {
     private DeserializationMessagingBean bean;
 
     @Test
-    @Ignore
     public void testDeserializationBlackList() throws NamingException {
         // UUID is black listed, any other Serializable must be deserialized.
         UUID uuid = UUID.randomUUID();
@@ -114,7 +112,6 @@ public class DeserializationBlackListTestCase {
     }
 
     @Test
-    @Ignore
     public void testDeserializationWhiteList() throws NamingException {
         // UUID is white listed, any other Serializable must not be deserialized.
         UUID uuid = UUID.randomUUID();
