@@ -93,11 +93,11 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                         .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
                         .setInitialMode(Mode.ACTIVE);
                 addServerExecutorDependency(jmsBridgeServiceBuilder, bridgeService.getExecutorInjector());
-                if (dependsOnLocalResources(model, JMSBridgeDefinition.SOURCE_CONTEXT)) {
+                if (dependsOnLocalResources(context, model, JMSBridgeDefinition.SOURCE_CONTEXT)) {
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.SOURCE_CONNECTION_FACTORY);
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.SOURCE_DESTINATION);
                 }
-                if (dependsOnLocalResources(model, JMSBridgeDefinition.TARGET_CONTEXT)) {
+                if (dependsOnLocalResources(context, model, JMSBridgeDefinition.TARGET_CONTEXT)) {
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.TARGET_CONNECTION_FACTORY);
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.TARGET_DESTINATION);
                 }
@@ -116,10 +116,11 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
     }
 
-    private boolean dependsOnLocalResources(ModelNode model, AttributeDefinition attr) throws OperationFailedException {
-        // if either the source or target context attribute is not defined, this means that the JMS resources will be looked up
-        // from the local ActiveMQ server.
-        return !(model.hasDefined(attr.getName()));
+    private boolean dependsOnLocalResources(OperationContext context, ModelNode model, AttributeDefinition attr) throws OperationFailedException {
+        // if either the source or target context attribute is resolved to a null or empty Properties, this means that the JMS resources will be
+        // looked up from the local ActiveMQ server.
+        Properties properties = resolveContextProperties(attr, context, model);
+        return properties == null || properties.size() == 0;
     }
 
     private void addDependencyForJNDIResource(final ServiceBuilder<JMSBridge> builder, final ModelNode model, final OperationContext context,
