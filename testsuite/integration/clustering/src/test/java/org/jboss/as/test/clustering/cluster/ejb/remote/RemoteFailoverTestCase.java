@@ -79,6 +79,7 @@ import org.wildfly.security.auth.client.MatchRule;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("WFLY-9037")
 public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     private static final String MODULE_NAME = "remote-failover-test";
     private static final String CLIENT_PROPERTIES = "org/jboss/as/test/clustering/cluster/ejb/remote/jboss-ejb-client.properties";
