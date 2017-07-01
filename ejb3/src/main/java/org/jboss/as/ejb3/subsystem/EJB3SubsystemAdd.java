@@ -42,12 +42,12 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
-import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.Resource;
@@ -121,10 +121,9 @@ import org.jboss.as.ejb3.iiop.RemoteObjectSubstitutionService;
 import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.AssociationService;
+import org.jboss.as.ejb3.remote.ClientMappingsRegistryBuilder;
 import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.ejb3.remote.LocalTransportProvider;
-import org.jboss.as.ejb3.remote.RegistryCollector;
-import org.jboss.as.ejb3.remote.RegistryCollectorService;
 import org.jboss.as.ejb3.remote.http.EJB3RemoteHTTPService;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -147,11 +146,14 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.omg.PortableServer.POA;
+import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 import org.wildfly.clustering.singleton.SingletonPolicy;
 import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
 import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.transaction.client.LocalTransactionContext;
+
+import io.undertow.server.handlers.PathHandler;
 
 /**
  * Add operation handler for the EJB3 subsystem.
@@ -225,10 +227,13 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         final AssociationService associationService = new AssociationService();
         final ServiceBuilder<AssociationService> associationServiceBuilder = context.getServiceTarget().addService(AssociationService.SERVICE_NAME, associationService);
         associationServiceBuilder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, associationService.getDeploymentRepositoryInjector())
-            .addDependency(RegistryCollectorService.SERVICE_NAME, RegistryCollector.class, associationService.getRegistryCollectorInjector())
-            .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, associationService.getSuspendControllerInjector())
-            .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, associationService.getServerEnvironmentServiceInjector())
-            .setInitialMode(ServiceController.Mode.ACTIVE);
+                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, associationService.getSuspendControllerInjector())
+                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, associationService.getServerEnvironmentServiceInjector())
+                .setInitialMode(ServiceController.Mode.ACTIVE);
+
+        if (context.readResource(PathAddress.EMPTY_ADDRESS, false).hasChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH)) {
+            associationServiceBuilder.addDependency(ClientMappingsRegistryBuilder.SERVICE_NAME, Registry.class, associationService.getClientMappingsRegistryInjector());
+        }
         associationServiceBuilder.install();
 
         //setup IIOP related stuff
@@ -437,7 +442,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, EJB3SubsystemRootResourceDefinition.EJB_CAPABILITY.getName(), null)) {
                 EJB3RemoteHTTPService service = new EJB3RemoteHTTPService();
 
-
                 ServiceBuilder<EJB3RemoteHTTPService> builder = context.getServiceTarget().addService(EJB3RemoteHTTPService.SERVICE_NAME, service)
                         .addDependency(context.getCapabilityServiceName(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class), PathHandler.class, service.getPathHandlerInjectedValue())
                         .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, service.getLocalTransactionContextInjectedValue())
@@ -499,7 +503,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static void addClusteringServices(final OperationContext context, final boolean appclient) {
         ServiceTarget target = context.getServiceTarget();
-        target.addService(RegistryCollectorService.SERVICE_NAME, new RegistryCollectorService<>()).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         if (appclient) {
             return;
         }

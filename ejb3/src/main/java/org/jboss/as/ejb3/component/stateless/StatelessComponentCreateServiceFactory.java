@@ -28,7 +28,7 @@ import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
-import org.jboss.as.ejb3.remote.RegistryInstallerService;
+import org.jboss.as.ejb3.remote.ClientMappingsRegistryBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 
@@ -45,7 +45,7 @@ public class StatelessComponentCreateServiceFactory extends EJBComponentCreateSe
         configuration.getCreateDependencies().add(new DependencyConfigurator<StatelessSessionComponentCreateService>() {
             @Override
             public void configureDependency(ServiceBuilder<?> builder, StatelessSessionComponentCreateService service) {
-                builder.addDependency(DependencyType.OPTIONAL, RegistryInstallerService.SERVICE_NAME);
+                builder.addDependency(DependencyType.OPTIONAL, ClientMappingsRegistryBuilder.SERVICE_NAME);
                 builder.addDependency(DependencyType.OPTIONAL, EJBRemoteConnectorService.SERVICE_NAME);
             }
         });
