@@ -56,17 +56,22 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessIncrementor
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
+import org.jboss.ejb.client.ClusterAffinity;
+import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EJBIdentifier;
+import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.ejb.client.legacy.JBossEJBProperties;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.auth.client.AuthenticationConfiguration;
+import org.wildfly.security.auth.client.AuthenticationContext;
+import org.wildfly.security.auth.client.MatchRule;
 
 /**
  * Validates @Stateful vs @Stateless failover behavior of a remotely accessed clustered session beans.
@@ -74,19 +79,14 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("WFLY-9037")
 public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     private static final String MODULE_NAME = "remote-failover-test";
     private static final String CLIENT_PROPERTIES = "org/jboss/as/test/clustering/cluster/ejb/remote/jboss-ejb-client.properties";
-    private static final String SECURE_CLIENT_PROPERTIES = "org/jboss/as/test/clustering/cluster/ejb/remote/jboss-ejb-client-secure.properties";
 
     private static final int COUNT = 20;
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
     private static final long INVOCATION_WAIT = TimeoutUtil.adjust(10);
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -114,20 +114,31 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     @InSequence(1)
     @Test
     public void testStatelessFailover() throws Exception {
-        this.testStatelessFailover(CLIENT_PROPERTIES, StatelessIncrementorBean.class);
+        AuthenticationContext context = AuthenticationContext.captureCurrent();
+        this.testStatelessFailover(context, StatelessIncrementorBean.class);
     }
 
     @InSequence(4)
     @Test
     public void testSecureStatelessFailover() throws Exception {
-        this.testStatelessFailover(SECURE_CLIENT_PROPERTIES, SecureStatelessIncrementorBean.class);
+        AuthenticationContext context = AuthenticationContext.captureCurrent();
+        context = context.with(
+            MatchRule.ALL.matchAbstractType("ejb", "jboss"),
+            AuthenticationConfiguration.empty().useName("user1").usePassword("password1")
+        );
+        this.testStatelessFailover(context, SecureStatelessIncrementorBean.class);
     }
 
-    private void testStatelessFailover(String properties, Class<? extends Incrementor> beanClass) throws Exception {
-        JBossEJBProperties ejbProperties = JBossEJBProperties.fromClassPath(RemoteFailoverTestCase.class.getClassLoader(), properties);
-        ejbProperties.runCallable(() -> {
+    private void testStatelessFailover(AuthenticationContext authenticationContext, Class<? extends Incrementor> beanClass) throws Exception {
+        authenticationContext.runCallable(() -> {
             try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
-                Incrementor bean = context.lookupStateless(beanClass, Incrementor.class);
+                Incrementor bean = EJBClient.createProxy(
+                    StatelessEJBLocator.create(
+                        Incrementor.class,
+                        new EJBIdentifier("", MODULE_NAME, beanClass.getSimpleName(), ""),
+                        new ClusterAffinity("ejb")
+                    )
+                );
 
                 // Allow sufficient time for client to receive full topology
                 Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
@@ -208,7 +219,14 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         JBossEJBProperties properties = JBossEJBProperties.fromClassPath(RemoteFailoverTestCase.class.getClassLoader(), CLIENT_PROPERTIES);
         properties.runCallable(() -> {
             try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
-                Incrementor bean = context.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
+                // this approach is OK and supported, but it'd be better to fix the test to use a clustered JNDI lookup instead
+                Incrementor bean = EJBClient.createSessionProxy(
+                    StatelessEJBLocator.create(
+                        Incrementor.class,
+                        new EJBIdentifier("", "remote-failover-test", StatefulIncrementorBean.class.getSimpleName(), ""),
+                        new ClusterAffinity("ejb")
+                    )
+                );
 
                 Result<Integer> result = bean.increment();
                 String target = result.getNode();
@@ -302,11 +320,19 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         this.testConcurrentFailover(new RedeployLifecycle());
     }
 
+    @InSequence(7)
     public void testConcurrentFailover(Lifecycle lifecycle) throws Exception {
         JBossEJBProperties properties = JBossEJBProperties.fromClassPath(RemoteFailoverTestCase.class.getClassLoader(), CLIENT_PROPERTIES);
         properties.runCallable(() -> {
             try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
-                Incrementor bean = directory.lookupStateful(SlowToDestroyStatefulIncrementorBean.class, Incrementor.class);
+                // this approach is OK and supported, but it'd be better to fix the test to use a clustered JNDI lookup instead
+                Incrementor bean = EJBClient.createSessionProxy(
+                    StatelessEJBLocator.create(
+                        Incrementor.class,
+                        new EJBIdentifier("", "remote-failover-test", SlowToDestroyStatefulIncrementorBean.class.getSimpleName(), ""),
+                        new ClusterAffinity("ejb")
+                    )
+                );
                 AtomicInteger count = new AtomicInteger();
 
                 // Allow sufficient time for client to receive full topology
@@ -362,11 +388,18 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         JBossEJBProperties properties = JBossEJBProperties.fromClassPath(RemoteFailoverTestCase.class.getClassLoader(), CLIENT_PROPERTIES);
         properties.runCallable(() -> {
             try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
-                Incrementor bean = context.lookupStateful(InfinispanExceptionThrowingIncrementorBean.class, Incrementor.class);
+                // this approach is OK and supported, but it'd be better to fix the test to use a clustered JNDI lookup instead
+                Incrementor bean = EJBClient.createSessionProxy(
+                    StatelessEJBLocator.create(
+                        Incrementor.class,
+                        new EJBIdentifier("", "remote-failover-test", InfinispanExceptionThrowingIncrementorBean.class.getSimpleName(), ""),
+                        new ClusterAffinity("ejb")
+                    )
+                );
 
                 bean.increment();
             } catch (Exception ejbException) {
-                assertTrue("Expected exception wrapped in EJBException", ejbException instanceof EJBException);
+                assertTrue("Expected exception wrapped in EJBException, got " + ejbException.getClass(), ejbException instanceof EJBException);
                 assertNull("Cause of EJBException has not been removed", ejbException.getCause());
                 return null;
             }

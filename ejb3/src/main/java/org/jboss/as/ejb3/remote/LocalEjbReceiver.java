@@ -41,9 +41,9 @@ import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EJBReceiver;
 import org.jboss.ejb.client.EJBReceiverInvocationContext;
+import org.jboss.ejb.client.EJBReceiverSessionCreationContext;
 import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.ejb.client.SessionID;
-import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.ejb.client.TransactionID;
 import org.jboss.invocation.InterceptorContext;
@@ -53,7 +53,6 @@ import org.jboss.marshalling.cloner.ObjectCloner;
 import org.jboss.marshalling.cloner.ObjectCloners;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
-import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import java.io.Serializable;
@@ -65,8 +64,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-
-import javax.net.ssl.SSLContext;
 
 /**
  * {@link EJBReceiver} for local same-VM invocations. This handles all invocations on remote interfaces
@@ -338,16 +335,14 @@ public class LocalEjbReceiver extends EJBReceiver {
         return parameterCloner;
     }
 
-    @Override
-    protected <T> StatefulEJBLocator<T> createSession(final StatelessEJBLocator<T> statelessLocator, final AuthenticationConfiguration authenticationConfiguration, final SSLContext sslContext) throws Exception {
+    protected SessionID createSession(final EJBReceiverSessionCreationContext receiverContext) throws Exception {
+        final StatelessEJBLocator<?> statelessLocator = receiverContext.getClientInvocationContext().getLocator().asStateless();
         final EjbDeploymentInformation ejbInfo = findBean(statelessLocator);
         final EJBComponent component = ejbInfo.getEjbComponent();
         if (!(component instanceof StatefulSessionComponent)) {
             throw EjbLogger.ROOT_LOGGER.notStatefulSessionBean(statelessLocator.getAppName(), statelessLocator.getModuleName(), statelessLocator.getDistinctName(), statelessLocator.getBeanName());
         }
-        final StatefulSessionComponent statefulComponent = (StatefulSessionComponent) component;
-        final SessionID sessionID = statefulComponent.createSession();
-        return statelessLocator.withSession(sessionID);
+        return ((StatefulSessionComponent) component).createSession();
     }
 
     static Object clone(final Class<?> target, final ObjectCloner cloner, final Object object, final boolean allowPassByReference) {
