@@ -75,4 +75,9 @@ public class LocalGroup implements Group {
     public List<Node> getNodes() {
         return Collections.singletonList(this.node);
     }
+
+    @Override
+    public boolean isLocal() {
+        return true;
+    }
 }
