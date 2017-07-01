@@ -79,7 +79,6 @@ import org.wildfly.security.auth.client.MatchRule;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("WFLY-9037")
 public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     private static final String MODULE_NAME = "remote-failover-test";
     private static final String CLIENT_PROPERTIES = "org/jboss/as/test/clustering/cluster/ejb/remote/jboss-ejb-client.properties";
@@ -113,6 +112,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
 
     @InSequence(1)
     @Test
+    @Ignore("EJB client does not yet request cluster topology for Stateless EJBs")
     public void testStatelessFailover() throws Exception {
         AuthenticationContext context = AuthenticationContext.captureCurrent();
         this.testStatelessFailover(context, StatelessIncrementorBean.class);
@@ -120,6 +120,7 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
 
     @InSequence(4)
     @Test
+    @Ignore("EJB client does not yet request cluster topology for Stateless EJBs")
     public void testSecureStatelessFailover() throws Exception {
         AuthenticationContext context = AuthenticationContext.captureCurrent();
         context = context.with(
@@ -309,7 +310,9 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         });
     }
 
+    @InSequence(7)
     @Test
+    @Ignore("AssociationService needs clean shutdown support")
     public void testGracefulShutdownConcurrentFailover() throws Exception {
         this.testConcurrentFailover(new GracefulRestartLifecycle());
     }
@@ -320,7 +323,6 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         this.testConcurrentFailover(new RedeployLifecycle());
     }
 
-    @InSequence(7)
     public void testConcurrentFailover(Lifecycle lifecycle) throws Exception {
         JBossEJBProperties properties = JBossEJBProperties.fromClassPath(RemoteFailoverTestCase.class.getClassLoader(), CLIENT_PROPERTIES);
         properties.runCallable(() -> {
