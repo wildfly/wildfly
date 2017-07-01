@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -87,11 +88,11 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
 
 
     private EJB3RemoteResourceDefinition() {
-        super(EJB3SubsystemModel.REMOTE_SERVICE_PATH,
-                EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.REMOTE),
-                EJB3RemoteServiceAdd.INSTANCE, EJB3RemoteServiceRemove.INSTANCE,
-                // WFLY-3438
-                OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
+        super(new Parameters(EJB3SubsystemModel.REMOTE_SERVICE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.REMOTE))
+                .setAddHandler(EJB3RemoteServiceAdd.INSTANCE)
+                .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES));
     }
 
     @Override
