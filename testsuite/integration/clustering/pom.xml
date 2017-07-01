@@ -22,6 +22,7 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
+        <test-group>org/jboss/as/test/clustering/cluster</test-group>
     </properties>
 
     <profiles>
@@ -88,9 +89,11 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
+                                    <!-- Needed for EJB client tests -->
+                                    <reuseForks>false</reuseForks>
                                     <!-- Tests to execute. -->
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
+                                        <include>${test-group}/**/*TestCase.java</include>
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
@@ -207,8 +210,10 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
+                                    <!-- Needed for EJB client tests -->
+                                    <reuseForks>false</reuseForks>
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
+                                        <include>${test-group}/**/*TestCase.java</include>
                                     </includes>
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
@@ -226,6 +231,8 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
+                                    <!-- Needed for EJB client tests -->
+                                    <reuseForks>false</reuseForks>
                                     <includes>
                                         <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
                                     </includes>
@@ -245,8 +252,10 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
+                                    <!-- Needed for EJB client tests -->
+                                    <reuseForks>false</reuseForks>
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
+                                        <include>${test-group}/**/*TestCase.java</include>
                                     </includes>
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
@@ -289,6 +298,8 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
+                                    <!-- Needed for EJB client tests -->
+                                    <reuseForks>false</reuseForks>
                                     <!-- Force the order of tests -->
                                     <runOrder>reversealphabetical</runOrder>
 
