@@ -116,6 +116,7 @@ public class CacheGroup implements Group, AutoCloseable {
     @Override
     public List<Node> getNodes() {
         List<Address> addresses = this.getAddresses();
+        if (addresses == null) return Collections.singletonList(this.getLocalNode());
         List<Node> nodes = new ArrayList<>(addresses.size());
         for (Address address: addresses) {
             nodes.add(this.factory.createNode(address));
@@ -193,5 +194,10 @@ public class CacheGroup implements Group, AutoCloseable {
     private List<Address> getAddresses() {
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
         return (dist != null) ? dist.getConsistentHash().getMembers() : this.cache.getCacheManager().getMembers();
+    }
+
+    @Override
+    public boolean isLocal() {
+        return !this.cache.getCacheConfiguration().clustering().cacheMode().isClustered();
     }
 }

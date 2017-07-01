@@ -92,4 +92,10 @@ public interface Group {
      * @return a list of nodes
      */
     List<Node> getNodes();
+
+    /**
+     * Indicates whether this is a local group.  A local group only ever contains a single member.
+     * @return true, if this is a local group, false otherwise.
+     */
+    boolean isLocal();
 }
