@@ -106,7 +106,7 @@ class JSR77ManagementSubsystemAdd extends AbstractBoottimeAddStepHandler {
                                     //TODO I think this is needed here since we don't go through EjbClientContextSetupProcessor
                             .addDependency(EJBClientContextService.DEFAULT_SERVICE_NAME, EJBClientContextService.class, managementEjbService.ejbClientContextValue)
                             .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, managementEjbService.associationServiceInjector)
-                            .setInitialMode(Mode.ACTIVE)
+                            .setInitialMode(Mode.PASSIVE)
                             .install();
 
                     //TODO null for source ok?
