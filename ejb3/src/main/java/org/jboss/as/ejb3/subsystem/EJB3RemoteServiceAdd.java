@@ -123,7 +123,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, ejbRemoteConnectorService.getAssociationServiceInjector())
                 .addDependency(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, RemotingTransactionService.class, ejbRemoteConnectorService.getRemotingTransactionServiceInjector())
                 .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, ejbRemoteConnectorService.getControlledProcessStateServiceInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE);
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
         if (!executeInWorker) {
             builder.addDependency(EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName), ExecutorService.class, ejbRemoteConnectorService.getExecutorService());
         }

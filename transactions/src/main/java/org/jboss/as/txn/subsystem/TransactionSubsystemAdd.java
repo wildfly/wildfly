@@ -434,7 +434,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
             context.getServiceTarget().addService(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, remoteTransactionServiceService)
                 .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, remoteTransactionServiceService.getLocalTransactionContextInjector())
                 .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, remoteTransactionServiceService.getEndpointInjector())
-                .setInitialMode(Mode.ACTIVE)
+                .setInitialMode(Mode.ON_DEMAND)
                 .install();
         }
 

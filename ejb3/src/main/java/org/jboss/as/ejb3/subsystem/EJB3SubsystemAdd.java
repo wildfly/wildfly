@@ -229,7 +229,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         associationServiceBuilder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, associationService.getDeploymentRepositoryInjector())
                 .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, associationService.getSuspendControllerInjector())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, associationService.getServerEnvironmentServiceInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE);
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
 
         if (context.readResource(PathAddress.EMPTY_ADDRESS, false).hasChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH)) {
             associationServiceBuilder.addDependency(ClientMappingsRegistryBuilder.SERVICE_NAME, Registry.class, associationService.getClientMappingsRegistryInjector());
@@ -442,11 +442,12 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, EJB3SubsystemRootResourceDefinition.EJB_CAPABILITY.getName(), null)) {
                 EJB3RemoteHTTPService service = new EJB3RemoteHTTPService();
 
-                ServiceBuilder<EJB3RemoteHTTPService> builder = context.getServiceTarget().addService(EJB3RemoteHTTPService.SERVICE_NAME, service)
+                context.getServiceTarget().addService(EJB3RemoteHTTPService.SERVICE_NAME, service)
                         .addDependency(context.getCapabilityServiceName(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class), PathHandler.class, service.getPathHandlerInjectedValue())
                         .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, service.getLocalTransactionContextInjectedValue())
-                        .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, service.getAssociationServiceInjectedValue());
-                builder.install();
+                        .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, service.getAssociationServiceInjectedValue())
+                        .setInitialMode(ServiceController.Mode.PASSIVE)
+                        .install();
             }
         }
     }
