@@ -40,7 +40,7 @@ import org.wildfly.security.authz.AuthorizationFailureException;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public class RunAsPrincipalInterceptor implements Interceptor {
-    private static final String ANONYMOUS_PRINCIPAL = "anonymous";
+    public static final String ANONYMOUS_PRINCIPAL = "anonymous";
     private final String runAsPrincipal;
 
     public RunAsPrincipalInterceptor(final String runAsPrincipal) {

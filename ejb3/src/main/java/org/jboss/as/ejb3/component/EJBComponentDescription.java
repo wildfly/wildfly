@@ -350,7 +350,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     final boolean securityRequired = hasBeanLevelSecurityMetadata();
                     ejbComponentDescription.setSecurityRequired(securityRequired);
                     if (ejbComponentDescription.isSecurityDomainKnown()) {
-                        final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(policyContextID, ejbComponentDescription.isEnableJacc());
+                        final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(policyContextID, ejbComponentDescription.isEnableJacc(), true);
                         elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> configuration.addTimeoutViewInterceptor(elytronInterceptorFactory, priority));
                     } else if (deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED)) {
                         configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(securityRequired, policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
@@ -1140,7 +1140,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 '}' + "@" + Integer.toHexString(hashCode());
     }
 
-    public HashMap<Integer, InterceptorFactory> getElytronInterceptorFactories(String policyContextID, boolean enableJacc) {
+    public HashMap<Integer, InterceptorFactory> getElytronInterceptorFactories(String policyContextID, boolean enableJacc, boolean propagateSecurity) {
         final HashMap<Integer, InterceptorFactory> interceptorFactories = new HashMap<>(2);
         final Set<String> roles = new HashSet<>();
 
@@ -1172,6 +1172,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     roles.addAll(extraRoles);
                 }
             }
+
+        // Next interceptor: prevent identity propagation
+        } else if (! propagateSecurity) {
+            interceptorFactories.put(InterceptorOrder.View.RUN_AS_PRINCIPAL, new ImmediateInterceptorFactory(new RunAsPrincipalInterceptor(RunAsPrincipalInterceptor.ANONYMOUS_PRINCIPAL)));
         }
 
         // Next interceptor: run-as-role
