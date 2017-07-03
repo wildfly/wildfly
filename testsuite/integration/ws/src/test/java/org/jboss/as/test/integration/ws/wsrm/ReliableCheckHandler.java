@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Set;
 import javax.xml.namespace.QName;
+import javax.xml.soap.Node;
 import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
@@ -91,9 +92,9 @@ public class ReliableCheckHandler implements SOAPHandler<SOAPMessageContext> {
             switch (status % 4) {
                 case 0:
                     @SuppressWarnings("unchecked")
-                    Iterator<SOAPElement> it = (Iterator<SOAPElement>) message.getSOAPBody().getChildElements();
+                    Iterator<Node> it = (Iterator<Node>) message.getSOAPBody().getChildElements();
                     if (it.hasNext()) {
-                        firstBodyElement = it.next();
+                        firstBodyElement = (SOAPElement) it.next();
                         final QName createSequenceQName = new QName("http://schemas.xmlsoap.org/ws/2005/02/rm", "CreateSequence");
                         if (!createSequenceQName.equals(firstBodyElement.getElementQName())) {
                             throw new WebServiceException("CreateSequence in soap body was expected, but it contains '"
