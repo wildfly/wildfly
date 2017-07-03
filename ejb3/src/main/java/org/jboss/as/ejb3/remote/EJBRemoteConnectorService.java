@@ -21,13 +21,9 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.ejb.protocol.remote.RemoteEJBService;
 import org.jboss.msc.service.Service;
@@ -53,12 +49,11 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
 
-    private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
-    private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
+    private final InjectedValue<Endpoint> endpointValue = new InjectedValue<>();
+    private final InjectedValue<ExecutorService> executorService = new InjectedValue<>();
     private final InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfoInjectedValue = new InjectedValue<>();
     private final InjectedValue<AssociationService> associationServiceInjectedValue = new InjectedValue<>();
     private final InjectedValue<RemotingTransactionService> remotingTransactionServiceInjectedValue = new InjectedValue<>();
-    private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceInjectedValue = new InjectedValue<>();
     private volatile Registration registration;
     private final OptionMap channelCreationOptions;
 
@@ -75,35 +70,14 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         final AssociationService associationService = associationServiceInjectedValue.getValue();
         final Endpoint endpoint = endpointValue.getValue();
         Executor executor = executorService.getOptionalValue();
-        if(executor != null) {
+        if (executor != null) {
             associationService.setExecutor(executor);
         }
         RemoteEJBService remoteEJBService = RemoteEJBService.create(
             associationService.getAssociation(),
             remotingTransactionServiceInjectedValue.getValue()
         );
-        final ControlledProcessStateService processStateService = controlledProcessStateServiceInjectedValue.getValue();
-        if (processStateService.getCurrentState() == ControlledProcessState.State.STARTING) {
-            final PropertyChangeListener listener = new PropertyChangeListener() {
-                public void propertyChange(final PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals("currentState") && evt.getOldValue() == ControlledProcessState.State.STARTING) {
-                        remoteEJBService.serverUp();
-                        // can't use a lambda because of this line...
-                        processStateService.removePropertyChangeListener(this);
-                    }
-                }
-            };
-            processStateService.addPropertyChangeListener(listener);
-            // this is actually racy, so we have to double-check the state afterwards just to be sure it didn't transition before we got here.
-            if (processStateService.getCurrentState() != ControlledProcessState.State.STARTING) {
-                // this method is idempotent so it's OK if the listener got fired
-                remoteEJBService.serverUp();
-                // this one too
-                processStateService.removePropertyChangeListener(listener);
-            }
-        } else {
-            remoteEJBService.serverUp();
-        }
+        remoteEJBService.serverUp();
 
         // Register an EJB channel open listener
         OpenListener channelOpenListener = remoteEJBService.getOpenListener();
@@ -125,7 +99,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     }
 
     @Override
-    public EJBRemoteConnectorService getValue() throws IllegalStateException, IllegalArgumentException {
+    public EJBRemoteConnectorService getValue() {
         return this;
     }
 
@@ -139,10 +113,6 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     public InjectedValue<RemotingTransactionService> getRemotingTransactionServiceInjector() {
         return remotingTransactionServiceInjectedValue;
-    }
-
-    public InjectedValue<ControlledProcessStateService> getControlledProcessStateServiceInjector() {
-        return controlledProcessStateServiceInjectedValue;
     }
 
     public InjectedValue<AssociationService> getAssociationServiceInjector() {
