@@ -65,7 +65,7 @@ public class StatelessSessionComponentCreateService extends SessionBeanComponent
 
     public Affinity getWeakAffinity() {
         Group group = this.group.getOptionalValue();
-        return (group != null) && (group.getLocalNode().getSocketAddress() != null) ? new ClusterAffinity(group.getName()) : Affinity.NONE;
+        return (group != null) && !group.isLocal() ? new ClusterAffinity(group.getName()) : Affinity.NONE;
     }
 
     public Injector<Group> getGroupInjector() {

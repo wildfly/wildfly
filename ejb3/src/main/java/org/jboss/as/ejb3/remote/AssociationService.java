@@ -28,13 +28,13 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
+import org.jboss.as.network.ClientMapping;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.ejb.server.Association;
-import org.jboss.ejb.server.ClusterTopologyListener;
 import org.jboss.ejb.server.ListenerHandle;
 import org.jboss.ejb.server.ModuleAvailabilityListener;
 import org.jboss.msc.service.Service;
@@ -43,6 +43,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.registry.Registry;
 import org.wildfly.discovery.AttributeValue;
 import org.wildfly.discovery.ServiceURL;
 import org.wildfly.discovery.impl.MutableDiscoveryProvider;
@@ -59,39 +61,32 @@ public final class AssociationService implements Service<AssociationService> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "association");
 
     private final InjectedValue<DeploymentRepository> deploymentRepositoryInjector = new InjectedValue<>();
-    private final InjectedValue<RegistryCollector> registryCollectorInjector = new InjectedValue<>();
+    @SuppressWarnings("rawtypes")
+    private final InjectedValue<Registry> clientMappingsRegistryInjector = new InjectedValue<>();
     private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
     private final InjectedValue<ServerEnvironment> serverEnvironmentServiceInjector = new InjectedValue<>();
 
     private final Object serviceLock = new Object();
-    private final Set<String> ourClusters = new HashSet<>();
     private final Set<EJBModuleIdentifier> ourModules = new HashSet<>();
     private volatile ServiceURL cachedServiceURL;
 
     private final MutableDiscoveryProvider mutableDiscoveryProvider = new MutableDiscoveryProvider();
 
-    private String ourNodeName;
     private AssociationImpl value;
-    private ListenerHandle handle1;
-    private ListenerHandle handle2;
+    private ListenerHandle moduleAvailabilityListener;
 
-    public AssociationService() {
-    }
-
+    @Override
     public void start(final StartContext context) throws StartException {
         // todo suspendController
         //noinspection unchecked
-        value = new AssociationImpl(deploymentRepositoryInjector.getValue(), registryCollectorInjector.getValue());
+        // Registry can be null if remote EJBs are not supported
+        Registry<String, List<ClientMapping>> clientMappingsRegistry = this.clientMappingsRegistryInjector.getOptionalValue();
+        value = new AssociationImpl(deploymentRepositoryInjector.getValue(), clientMappingsRegistry);
 
-        // register the fact that the local receiver can handle invocations targeted at its node name
-        final ServiceURL.Builder builder = new ServiceURL.Builder();
-        builder.setAbstractType("ejb").setAbstractTypeAuthority("jboss");
-        builder.setUri(Affinity.LOCAL.getUri());
-        ourNodeName = serverEnvironmentServiceInjector.getValue().getNodeName();
-        builder.addAttribute(EJBClientContext.FILTER_ATTR_NODE, AttributeValue.fromString(ourNodeName));
+        String ourNodeName = serverEnvironmentServiceInjector.getValue().getNodeName();
 
         // track deployments at an association level for local dispatchers to utilize
-        handle1 = value.registerModuleAvailabilityListener(new ModuleAvailabilityListener() {
+        moduleAvailabilityListener = value.registerModuleAvailabilityListener(new ModuleAvailabilityListener() {
 
             public void moduleAvailable(final List<EJBModuleIdentifier> modules) {
                 synchronized (serviceLock) {
@@ -107,49 +102,6 @@ public final class AssociationService implements Service<AssociationService> {
                 }
             }
         });
-        handle2 = value.registerClusterTopologyListener(new ClusterTopologyListener() {
-            public void clusterTopology(final List<ClusterInfo> clusterInfoList) {
-                synchronized (serviceLock) {
-                    for (ClusterInfo clusterInfo : clusterInfoList) {
-                        for (NodeInfo nodeInfo : clusterInfo.getNodeInfoList()) {
-                            if (nodeInfo.getNodeName().equals(ourNodeName)) {
-                                ourClusters.add(clusterInfo.getClusterName());
-                            }
-                        }
-                    }
-                    cachedServiceURL = null;
-                }
-            }
-
-            public void clusterRemoval(final List<String> clusterNames) {
-                synchronized (serviceLock) {
-                    ourClusters.removeAll(clusterNames);
-                    cachedServiceURL = null;
-                }
-            }
-
-            public void clusterNewNodesAdded(final ClusterInfo clusterInfo) {
-                synchronized (serviceLock) {
-                    for (NodeInfo nodeInfo : clusterInfo.getNodeInfoList()) {
-                        if (nodeInfo.getNodeName().equals(ourNodeName)) {
-                            ourClusters.add(clusterInfo.getClusterName());
-                        }
-                    }
-                    cachedServiceURL = null;
-                }
-            }
-
-            public void clusterNodesRemoved(final List<ClusterRemovalInfo> clusterRemovalInfoList) {
-                synchronized (serviceLock) {
-                    for (ClusterRemovalInfo removalInfo : clusterRemovalInfoList) {
-                        if (removalInfo.getNodeNames().contains(ourNodeName)) {
-                            ourClusters.remove(removalInfo.getClusterName());
-                        }
-                    }
-                    cachedServiceURL = null;
-                }
-            }
-        });
         // do this last
         mutableDiscoveryProvider.setDiscoveryProvider((serviceType, filterSpec, result) -> {
             ServiceURL serviceURL = this.cachedServiceURL;
@@ -160,8 +112,11 @@ public final class AssociationService implements Service<AssociationService> {
                         ServiceURL.Builder b = new ServiceURL.Builder();
                         b.setUri(Affinity.LOCAL.getUri()).setAbstractType("ejb").setAbstractTypeAuthority("jboss");
                         b.addAttribute(EJBClientContext.FILTER_ATTR_NODE, AttributeValue.fromString(ourNodeName));
-                        for (String cluster : ourClusters) {
-                            b.addAttribute(EJBClientContext.FILTER_ATTR_CLUSTER, AttributeValue.fromString(cluster));
+                        if (clientMappingsRegistry != null) {
+                            Group group = clientMappingsRegistry.getGroup();
+                            if (!group.isLocal()) {
+                                b.addAttribute(EJBClientContext.FILTER_ATTR_CLUSTER, AttributeValue.fromString(group.getName()));
+                            }
                         }
                         for (EJBModuleIdentifier moduleIdentifier : ourModules) {
                             final String appName = moduleIdentifier.getAppName();
@@ -193,21 +148,21 @@ public final class AssociationService implements Service<AssociationService> {
         });
     }
 
+    @Override
     public void stop(final StopContext context) {
+        value.close();
         value = null;
-        handle1.close();
-        handle2.close();
-        handle1 = null;
-        handle2 = null;
+        moduleAvailabilityListener.close();
+        moduleAvailabilityListener = null;
         mutableDiscoveryProvider.setDiscoveryProvider(DiscoveryProvider.EMPTY);
         synchronized (serviceLock) {
             cachedServiceURL = null;
             ourModules.clear();
-            ourClusters.clear();
         }
     }
 
-    public AssociationService getValue() throws IllegalStateException, IllegalArgumentException {
+    @Override
+    public AssociationService getValue() {
         return this;
     }
 
@@ -219,8 +174,8 @@ public final class AssociationService implements Service<AssociationService> {
         return deploymentRepositoryInjector;
     }
 
-    public InjectedValue<RegistryCollector> getRegistryCollectorInjector() {
-        return registryCollectorInjector;
+    public InjectedValue<Registry> getClientMappingsRegistryInjector() {
+        return clientMappingsRegistryInjector;
     }
 
     public InjectedValue<SuspendController> getSuspendControllerInjector() {
