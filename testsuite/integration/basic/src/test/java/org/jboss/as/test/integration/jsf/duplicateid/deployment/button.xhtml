@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:composite="http://java.sun.com/jsf/composite"
+>
+
+<composite:interface>
+    <composite:attribute name="idx" />
+</composite:interface>
+
+<composite:implementation>
+    <div id="#{cc.clientId}">
+        <h:commandButton action="#{includeBean.show(cc.attrs.idx)}" value="Show #{cc.attrs.idx}" rendered="#{!includeBean.isVisible(cc.attrs.idx)}"/>
+        <h:commandButton action="#{includeBean.hide(cc.attrs.idx)}" value="Hide #{cc.attrs.idx}" rendered="#{includeBean.isVisible(cc.attrs.idx)}"/>
+    </div>
+</composite:implementation>
+
+</html>
