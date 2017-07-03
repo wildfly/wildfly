@@ -143,7 +143,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         ejbComponentDescription.setSecurityRequired(securityRequired);
         // setup the security context interceptor
         if (isSecurityDomainKnown) {
-            final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = ejbComponentDescription.getElytronInterceptorFactories(contextID, ejbComponentDescription.isEnableJacc());
+            final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = ejbComponentDescription.getElytronInterceptorFactories(contextID, ejbComponentDescription.isEnableJacc(), true);
             elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> viewConfiguration.addViewInterceptor(elytronInterceptorFactory, priority));
         } else {
             viewConfiguration.addViewInterceptor(new SecurityContextInterceptorFactory(securityRequired, true, contextID), InterceptorOrder.View.SECURITY_CONTEXT);

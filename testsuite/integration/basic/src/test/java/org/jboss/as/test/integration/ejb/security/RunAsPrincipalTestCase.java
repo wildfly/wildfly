@@ -45,14 +45,12 @@ import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.Sing
 import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.StatelessSingletonUseBean;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -74,11 +72,6 @@ public class RunAsPrincipalTestCase  {
     @ArquillianResource
     public Deployer deployer;
 
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
-    }
-
     @Deployment(name = STARTUP_SINGLETON_DEPLOYMENT, managed = false, testable = false)
     public static Archive<?> runAsStartupTransitiveDeployment() {
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
@@ -99,12 +92,6 @@ public class RunAsPrincipalTestCase  {
 
     @Deployment
     public static Archive<?> runAsDeployment() {
-        //XXX This is hack related to Elytron profile assumption in beforeClass() method.
-        // Arquillian does deploy before executing @BeforeClass annotated methods. So let's create a dummy deployment
-        if (! AssumeTestGroupUtil.CONDITION_SKIP_ELYTRON_PROFILE.get()) {
-            return ShrinkWrap.create(WebArchive.class).addAsWebResource(new StringAsset(""), "index.html");
-        }
-
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT + ".war")
                 .addPackage(WhoAmI.class.getPackage())
@@ -205,14 +192,14 @@ public class RunAsPrincipalTestCase  {
         final Callable<Void> callable = () -> {
             WhoAmI bean = lookupSingletonUseBeanWithIdentity(); //To load the singleton
             bean.getCallerPrincipal();
-            Assert.fail("Deployment should fail");
+            Assert.fail("EJB call should fail - identity should not be propagated from @PostConstruct method");
             return null;
         };
         try {
             Util.switchIdentitySCF("user1", "password1", callable);
         } catch (Exception dex) {
             Throwable t = checkEjbException(dex);
-            log.trace("Expected deployment error because the Singleton has nosecurity context per itself", dex.getCause());
+            log.trace("Expected EJB call fail because identity should not be propagated from @PostConstruct method", dex.getCause());
             Assert.assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("WFLYEJB0364"));
         }
     }
