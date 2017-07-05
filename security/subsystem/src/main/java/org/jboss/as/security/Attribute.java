@@ -74,7 +74,8 @@ public enum Attribute {
     VALUE("value"),
     // ELYTRON INTEGRATION ATTRIBUTES
     LEGACY_JAAS_CONFIG(Constants.LEGACY_JAAS_CONFIG),
-    LEGACY_JSSE_CONFIG(Constants.LEGACY_JSSE_CONFIG);
+    LEGACY_JSSE_CONFIG(Constants.LEGACY_JSSE_CONFIG),
+    APPLY_ROLE_MAPPERS(Constants.APPLY_ROLE_MAPPERS);
 
     private final String name;
 

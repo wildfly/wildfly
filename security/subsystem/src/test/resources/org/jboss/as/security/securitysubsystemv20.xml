@@ -151,7 +151,7 @@
     <elytron-integration>
         <security-realms>
             <elytron-realm name="LegacyRealm1" legacy-jaas-config="other"/>
-            <elytron-realm name="LegacyRealm2" legacy-jaas-config="other2"/>
+            <elytron-realm name="LegacyRealm2" legacy-jaas-config="other2" apply-role-mappers="false"/>
         </security-realms>
         <tls>
             <elytron-key-store name="LegacyKeyStore" legacy-jsse-config="other"/>

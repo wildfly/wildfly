@@ -28,6 +28,7 @@ import static org.jboss.as.security.Constants.ELYTRON_KEY_STORE;
 import static org.jboss.as.security.Constants.ELYTRON_REALM;
 import static org.jboss.as.security.Constants.ELYTRON_TRUST_MANAGER;
 import static org.jboss.as.security.Constants.ELYTRON_TRUST_STORE;
+import static org.jboss.as.security.elytron.ElytronIntegrationResourceDefinitions.APPLY_ROLE_MAPPERS;
 import static org.jboss.as.security.elytron.ElytronIntegrationResourceDefinitions.LEGACY_JAAS_CONFIG;
 import static org.jboss.as.security.elytron.ElytronIntegrationResourceDefinitions.LEGACY_JSSE_CONFIG;
 
@@ -43,14 +44,14 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * This class implements a parser for the 3.0 version of legacy security subsystem. It extends the {@link SecuritySubsystemParser}
+ * This class implements a parser for the 2.0 version of legacy security subsystem. It extends the {@link SecuritySubsystemParser}
  * and adds support for the {@code elytron-integration} section of the schema.
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-public class SecuritySubsystemParser_3_0 extends SecuritySubsystemParser {
+public class SecuritySubsystemParser_2_0 extends SecuritySubsystemParser {
 
-    protected SecuritySubsystemParser_3_0() {
+    protected SecuritySubsystemParser_2_0() {
     }
 
     @Override
@@ -125,6 +126,10 @@ public class SecuritySubsystemParser_3_0 extends SecuritySubsystemParser {
                 }
                 case LEGACY_JAAS_CONFIG: {
                     LEGACY_JAAS_CONFIG.parseAndSetParameter(value, elytronRealmAddOperation, reader);
+                    break;
+                }
+                case APPLY_ROLE_MAPPERS: {
+                    APPLY_ROLE_MAPPERS.parseAndSetParameter(value, elytronRealmAddOperation, reader);
                     break;
                 }
                 default:

@@ -129,5 +129,6 @@ public interface Constants {
     String ELYTRON_KEY_MANAGER = "elytron-key-manager";
     String ELYTRON_TRUST_MANAGER = "elytron-trust-manager";
     String LEGACY_JSSE_CONFIG = "legacy-jsse-config";
+    String APPLY_ROLE_MAPPERS = "apply-role-mappers";
     String ELYTRON_SECURITY = "elytron-security";
 }

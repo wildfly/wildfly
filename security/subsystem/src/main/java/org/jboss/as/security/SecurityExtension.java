@@ -119,6 +119,6 @@ import org.jboss.msc.service.ServiceName;
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_0.getUriString(), SecuritySubsystemParser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_1.getUriString(), SecuritySubsystemParser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_1_2.getUriString(), SecuritySubsystemParser::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_2_0.getUriString(), SecuritySubsystemParser_3_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.SECURITY_2_0.getUriString(), SecuritySubsystemParser_2_0::new);
     }
 }
