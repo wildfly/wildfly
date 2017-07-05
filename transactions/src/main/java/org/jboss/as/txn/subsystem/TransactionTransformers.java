@@ -19,23 +19,21 @@ import static org.jboss.as.txn.subsystem.TransactionExtension.CURRENT_MODEL_VERS
 import static org.jboss.as.txn.subsystem.TransactionExtension.MODEL_VERSION_EAP62;
 import static org.jboss.as.txn.subsystem.TransactionExtension.MODEL_VERSION_EAP63;
 import static org.jboss.as.txn.subsystem.TransactionExtension.MODEL_VERSION_EAP64;
-import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING;
+import static org.jboss.as.txn.subsystem.TransactionExtension.MODEL_VERSION_EAP70;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
-import static org.jboss.as.txn.subsystem.TransactionExtension.MODEL_VERSION_EAP70;
-
 /**
- *
  * @author Emmanuel Hugonnet (c) 2017 Red Hat, inc.
  */
-public class TransactionTransformers implements ExtensionTransformerRegistration{
+public class TransactionTransformers implements ExtensionTransformerRegistration {
 
     @Override
     public String getSubsystemName() {
@@ -45,20 +43,25 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
-        /*final ModelVersion v2_0_0 = ModelVersion.create(2, 0, 0);
-        ResourceTransformationDescriptionBuilder builder_2_0 = chainedBuilder.createBuilder(subsystem.getSubsystemVersion(), v2_0_0);
+        // 4.0.0 --> 3.0.0
+        /*
+        Missing attributes in current: []; missing in legacy [number-of-system-rollbacks, average-commit-time] //both runtime
+        Different 'default' for attribute 'object-store-relative-to'. Current: undefined; legacy: "jboss.server.data.dir"
+        Different 'nillable' for attribute 'process-id-socket-binding'. Current: true; legacy: false //alternatives
+        Different 'nillable' for attribute 'process-id-uuid'. Current: true; legacy: false //alternatives
+         */
 
-        //Versions < 3.0.0 is not able to handle commit-markable-resource
-        builder_2_0.rejectChildResource(CMResourceResourceDefinition.PATH_CM_RESOURCE);
-        builder_2_0.getAttributeBuilder()
-                .addRename(TransactionSubsystemRootResourceDefinition.USE_JOURNAL_STORE, CommonAttributes.USE_HORNETQ_STORE)
-                .addRename(TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO, CommonAttributes.HORNETQ_STORE_ENABLE_ASYNC_IO);*/
+        ResourceTransformationDescriptionBuilder builderEap7 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP70);
+        builderEap7.getAttributeBuilder()
+                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(OBJECT_STORE_RELATIVE_TO), OBJECT_STORE_RELATIVE_TO)
+                .end();
 
-         // 4.0.0 --> 3.0.0
-          ResourceTransformationDescriptionBuilder builderEap7 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP70);
-          builderEap7.getAttributeBuilder()
-                  .addRejectCheck(RejectAttributeChecker.UNDEFINED, PROCESS_ID_SOCKET_BINDING)
-                  .end();
+        builderEap7.addChildResource(TransactionExtension.LOG_STORE_PATH)
+                .addChildResource(TransactionExtension.TRANSACTION_PATH)
+                .addChildResource(TransactionExtension.PARTICIPANT_PATH)
+                .addOperationTransformationOverride("delete")
+                .setReject();
+
         // 3.0.0 --> 1.5.0
         ResourceTransformationDescriptionBuilder builderEap64 = chainedBuilder.createBuilder(MODEL_VERSION_EAP70, MODEL_VERSION_EAP64);
         builderEap64.getAttributeBuilder()
