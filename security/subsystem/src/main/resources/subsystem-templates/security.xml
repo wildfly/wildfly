@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
    <extension-module>org.jboss.as.security</extension-module>
-   <subsystem xmlns="urn:jboss:domain:security:3.0">
+   <subsystem xmlns="urn:jboss:domain:security:2.0">
        <security-domains>
            <security-domain name="other" cache-type="default">
                <authentication>

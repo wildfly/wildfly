@@ -38,13 +38,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Security subsystem tests for the version 3.0 of the subsystem schema.
+ * Security subsystem tests for the version 2.0 of the subsystem schema.
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-public class SecurityDomainModelv30UnitTestCase extends AbstractSubsystemBaseTest {
+public class SecurityDomainModelv20UnitTestCase extends AbstractSubsystemBaseTest {
 
-    public SecurityDomainModelv30UnitTestCase() {
+    public SecurityDomainModelv20UnitTestCase() {
         super(SecurityExtension.SUBSYSTEM_NAME, new SecurityExtension());
     }
 
@@ -54,7 +54,7 @@ public class SecurityDomainModelv30UnitTestCase extends AbstractSubsystemBaseTes
     @BeforeClass
     public static void beforeClass() {
         try {
-            File target = new File(SecurityDomainModelv30UnitTestCase.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
+            File target = new File(SecurityDomainModelv20UnitTestCase.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
             File config = new File(target, "config");
             config.mkdir();
             oldConfig = System.setProperty("jboss.server.config.dir", config.getAbsolutePath());
@@ -75,12 +75,12 @@ public class SecurityDomainModelv30UnitTestCase extends AbstractSubsystemBaseTes
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("securitysubsystemv30.xml");
+        return readResource("securitysubsystemv20.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-security_3_0.xsd";
+        return "schema/wildfly-security_2_0.xsd";
     }
 
     @Override
@@ -144,7 +144,7 @@ public class SecurityDomainModelv30UnitTestCase extends AbstractSubsystemBaseTes
         // any elytron-related resources in the model should get rejected as those are not supported in model version 1.3.0.
         PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()));
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version,
-                builder.parseXmlResource("securitysubsystemv30.xml"),
+                builder.parseXmlResource("securitysubsystemv20.xml"),
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(PathAddress.pathAddress(subsystemAddress, PathElement.pathElement(Constants.ELYTRON_REALM)),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
