@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-package org.wildfly.extension.batch.jberet.deployment;
+package org.jboss.as.test.integration.batch.batchlet;
 
-import org.jberet.spi.ArtifactFactory;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.enterprise.context.RequestScoped;
 
 /**
- * ArtifactFactory for Java EE runtime environment.
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public interface WildFlyArtifactFactory extends ArtifactFactory {
+@RequestScoped
+public class RequestScopeCounter {
+    private final AtomicInteger counter = new AtomicInteger();
 
-    /**
-     * Creates a {@linkplain ContextHandle context handle} required for setting up the CDI context.
-     *
-     * @return the newly create context handle
-     */
-    ContextHandle createContextHandle();
+    public int get() {
+        return counter.get();
+    }
+
+    public int incrementAndGet() {
+        return counter.incrementAndGet();
+    }
 }

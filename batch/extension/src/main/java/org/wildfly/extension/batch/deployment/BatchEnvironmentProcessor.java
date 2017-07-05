@@ -25,6 +25,7 @@ package org.wildfly.extension.batch.deployment;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
+import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.ContextClassLoaderJobOperatorContextSelector;
 import org.jberet.spi.JobOperatorContext;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -40,16 +41,19 @@ import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.extension.batch.BatchServiceNames;
 import org.wildfly.extension.batch._private.BatchLogger;
 import org.wildfly.extension.batch._private.Capabilities;
 import org.wildfly.extension.batch.jberet.BatchConfiguration;
+import org.wildfly.extension.batch.jberet.deployment.ArtifactFactoryService;
 import org.wildfly.extension.batch.jberet.deployment.BatchAttachments;
 import org.wildfly.extension.batch.jberet.deployment.BatchEnvironmentService;
 import org.wildfly.extension.batch.jberet.deployment.JobOperatorService;
 import org.wildfly.extension.batch.jberet.deployment.SecurityAwareBatchEnvironment;
+import org.wildfly.extension.batch.jberet.deployment.WildFlyArtifactFactory;
 import org.wildfly.extension.batch.jberet.deployment.WildFlyJobXmlResolver;
 import org.wildfly.extension.batch.job.repository.JobRepositoryFactory;
 import org.wildfly.extension.requestcontroller.RequestController;
@@ -94,11 +98,18 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             serviceBuilder.addDependency(support.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName()), BatchConfiguration.class, service.getBatchConfigurationInjector());
             serviceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, service.getTransactionManagerInjector());
 
+            final ServiceName artifactFactoryServiceName = BatchServiceNames.batchArtifactFactoryServiceName(deploymentUnit);
+            final ArtifactFactoryService artifactFactoryService = new ArtifactFactoryService();
+            final ServiceBuilder<ArtifactFactory> artifactFactoryServiceBuilder = serviceTarget.addService(artifactFactoryServiceName, artifactFactoryService);
+
             // Register the bean manager if this is a CDI deployment
             if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
                 BatchLogger.LOGGER.tracef("Adding BeanManager service dependency for deployment %s", deploymentUnit.getName());
-                serviceBuilder.addDependency(BatchServiceNames.beanManagerServiceName(deploymentUnit), BeanManager.class, service.getBeanManagerInjector());
+                artifactFactoryServiceBuilder.addDependency(BatchServiceNames.beanManagerServiceName(deploymentUnit), BeanManager.class,
+                        artifactFactoryService.getBeanManagerInjector());
             }
+            artifactFactoryServiceBuilder.install();
+            serviceBuilder.addDependency(artifactFactoryServiceName, WildFlyArtifactFactory.class, service.getArtifactFactoryInjector());
 
             if (rcPresent) {
                 serviceBuilder.addDependency(RequestController.SERVICE_NAME, RequestController.class, service.getRequestControllerInjector());
