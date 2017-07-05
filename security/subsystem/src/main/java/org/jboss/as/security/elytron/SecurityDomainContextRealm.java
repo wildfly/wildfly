@@ -45,7 +45,7 @@ import org.wildfly.security.evidence.PasswordGuessEvidence;
  * {@code mydomain}:
  *
  * <pre>
- *     &lt;subsystem xmlns="urn:jboss:domain:security:3.0"&gt;
+ *     &lt;subsystem xmlns="urn:jboss:domain:security:2.0"&gt;
  *         &lt;security-domains&gt;
  *             &lt;security-domain name="mydomain" cache-type="default"&gt;
  *                 ...

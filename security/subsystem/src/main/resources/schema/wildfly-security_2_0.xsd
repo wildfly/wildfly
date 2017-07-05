@@ -22,8 +22,8 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:jboss:domain:security:3.0"
-           xmlns="urn:jboss:domain:security:3.0"
+           targetNamespace="urn:jboss:domain:security:2.0"
+           xmlns="urn:jboss:domain:security:2.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="3.0">
