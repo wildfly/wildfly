@@ -19,13 +19,21 @@ import java.security.Principal;
 import java.security.acl.Group;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.security.auth.Subject;
 
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.SecurityDomainContext;
+import org.jboss.security.SecurityConstants;
+import org.jboss.security.identity.Role;
+import org.jboss.security.identity.RoleGroup;
+import org.jboss.security.identity.plugins.SimpleRoleGroup;
+import org.jboss.security.mapping.MappingContext;
+import org.jboss.security.mapping.MappingType;
 import org.wildfly.security.auth.SupportLevel;
 import org.wildfly.security.auth.server.RealmIdentity;
 import org.wildfly.security.auth.server.RealmUnavailableException;
@@ -38,11 +46,10 @@ import org.wildfly.security.evidence.Evidence;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
 
 /**
- * A {@link org.wildfly.security.auth.server.SecurityRealm} implementation that delegates credential verification to an
- * underlying {@link org.jboss.as.security.plugins.SecurityDomainContext}. This realm is exported as a capability by the
- * legacy security subsystem by using the {@code elytron-realm} element that is available in the {@code elytron-integration}
- * section in the subsystem configuration. The example bellow illustrates how to export a realm for the security domain
- * {@code mydomain}:
+ * A {@link SecurityRealm} implementation that delegates credential verification to an underlying {@link SecurityDomainContext}.
+ * This realm is exported as a capability by the legacy security subsystem by using the {@code elytron-realm} element that
+ * is available in the {@code elytron-integration} section in the subsystem configuration. The example bellow illustrates
+ * how to export a realm for the security domain {@code mydomain}:
  *
  * <pre>
  *     &lt;subsystem xmlns="urn:jboss:domain:security:2.0"&gt;
@@ -54,7 +61,7 @@ import org.wildfly.security.evidence.PasswordGuessEvidence;
  *         &lt;/security-domains&gt;
  *         &lt;elytron-integration&gt;
  *             &lt;security-realms&gt;
- *                 &lt;elytron-realm name="LegacyRealm" legacy-jaas-config="mydomain"/&gt;
+ *                 &lt;elytron-realm name="LegacyRealm" legacy-jaas-config="mydomain" apply-role-mappers="false"/&gt;
  *             &lt;security-realms/&gt;
  *         &lt;/elytron-integration&gt;
  *         ...
@@ -77,10 +84,14 @@ import org.wildfly.security.evidence.PasswordGuessEvidence;
  * </pre>
  * <p/>
  * The above Elytron security domain can then be used anywhere in the Elytron subsystem (for example, to setup a
- * http-authentication-factory).
+ * {@code http-authentication-factory}).
  * </p>
  * The {@code legacy-jaas-config} attribute MUST reference a valid legacy JAAS security domain. Failure to do so will result
  * in a dependency resolution error that will prevent the realm from being created.
+ * </p>
+ * The {@code apply-role-mappers} attribute, which defaults to {@code true}, indicates to the realm if any role mappers
+ * defined in the legacy JAAS security domain should be applied to the roles retrieved from the authenticated {@link Subject}
+ * when constructing the {@link AuthorizationIdentity}.
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
@@ -88,8 +99,11 @@ public class SecurityDomainContextRealm implements SecurityRealm {
 
     private SecurityDomainContext domainContext;
 
-    public SecurityDomainContextRealm(final SecurityDomainContext context) {
+    private final boolean applyRoleMappers;
+
+    public SecurityDomainContextRealm(final SecurityDomainContext context, final boolean applyRoleMappers) {
         this.domainContext = context;
+        this.applyRoleMappers = applyRoleMappers;
     }
 
     @Override
@@ -183,22 +197,54 @@ public class SecurityDomainContextRealm implements SecurityRealm {
             if (principals != null) {
                 for (Principal principal : principals) {
                     if (principal instanceof Group) {
-                        final String key = principal.getName();
-                        final Set<String> values = new HashSet<>();
-                        final Enumeration<? extends Principal> enumeration = ((Group) principal).members();
-                        while (enumeration.hasMoreElements()) {
-                            values.add(enumeration.nextElement().getName());
-                        }
+                        final Set<String> values = this.processGroup((Group) principal);
                         if (attributes == null) {
                             attributes = new MapAttributes();
                         }
-                        attributes.addAll(key, values);
+                        attributes.addAll(principal.getName(), values);
                     }
                 }
             }
             if (attributes == null)
                 attributes = Attributes.EMPTY;
             return AuthorizationIdentity.basicIdentity(attributes);
+        }
+
+        private Set<String> processGroup(final Group group) {
+            final Set<String> groupContents = new HashSet<>();
+
+            // extract the principals from the Group.
+            final Set<Principal> groupPrincipals = new HashSet<>();
+            final Enumeration<? extends Principal> enumeration = group.members();
+            while (enumeration.hasMoreElements()) {
+                groupPrincipals.add(enumeration.nextElement());
+            }
+
+            // if the Group contains roles and role mapping has been enabled, map the roles found the in Group.
+            if (applyRoleMappers && SecurityConstants.ROLES_IDENTIFIER.equals(group.getName()) && domainContext.getMappingManager() != null) {
+                MappingContext<RoleGroup> mappingContext = domainContext.getMappingManager().getMappingContext(MappingType.ROLE.name());
+                if (mappingContext != null && mappingContext.hasModules()) {
+                    RoleGroup roleGroup = new SimpleRoleGroup(groupPrincipals);
+                    Map<String, Object> contextMap = new HashMap<>();
+                    contextMap.put(SecurityConstants.ROLES_IDENTIFIER, roleGroup);
+                    if (this.principal != null) {
+                        contextMap.put(SecurityConstants.PRINCIPAL_IDENTIFIER, this.principal);
+                    }
+                    mappingContext.performMapping(contextMap, roleGroup);
+
+                    // at this point, roleGroup contains the mapped roles.
+                    for (Role role : roleGroup.getRoles()) {
+                        groupContents.add(role.getRoleName());
+                    }
+                }
+            }
+            if (groupContents.isEmpty()) {
+                // Group has no roles, mapping has been disabled or no role mappers were found: simply return the Group contents.
+                for (Principal rolePrincipal : groupPrincipals) {
+                    groupContents.add(rolePrincipal.getName());
+                }
+            }
+            return groupContents;
         }
     }
 }

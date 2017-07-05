@@ -486,11 +486,16 @@
 
                      * legacy-jaas-config - the name of the legacy security domain to which the exported realm will delegate
                      the authentication decision.
+
+                     * apply-role-mappers - if true the realm will apply any role-mappers specified in the legacy JAAS
+                     security domain to the roles extracted from the authenticated Subject when creating an authorization
+                     identity. If not specified this attribute defaults to true.
                 ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="legacy-jaas-config" type="xs:string" use="required"/>
+        <xs:attribute name="apply-role-mappers" type="xs:boolean" use="optional" default="true"/>
     </xs:complexType>
 
     <xs:complexType name="tlsType">

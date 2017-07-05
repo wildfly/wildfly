@@ -58,7 +58,7 @@ public class ElytronIntegrationResourceDefinitions {
 
     public static final SimpleAttributeDefinition LEGACY_JAAS_CONFIG =
             new SimpleAttributeDefinitionBuilder(Constants.LEGACY_JAAS_CONFIG, ModelType.STRING, false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setValidator(new StringLengthValidator(1))
                     .setAllowExpression(false)
                     .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
@@ -66,10 +66,17 @@ public class ElytronIntegrationResourceDefinitions {
 
     public static final SimpleAttributeDefinition LEGACY_JSSE_CONFIG =
             new SimpleAttributeDefinitionBuilder(Constants.LEGACY_JSSE_CONFIG, ModelType.STRING, false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setValidator(new StringLengthValidator(1))
                     .setAllowExpression(false)
                     .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+                    .build();
+
+    public static final SimpleAttributeDefinition APPLY_ROLE_MAPPERS =
+            new SimpleAttributeDefinitionBuilder(Constants.APPLY_ROLE_MAPPERS, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setDefaultValue(new ModelNode(true))
+                    .setAllowExpression(true)
                     .build();
 
     /**
@@ -83,12 +90,13 @@ public class ElytronIntegrationResourceDefinitions {
      */
     public static ResourceDefinition getElytronRealmResourceDefinition() {
 
-        final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JAAS_CONFIG};
+        final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JAAS_CONFIG, APPLY_ROLE_MAPPERS};
         final AbstractAddStepHandler addHandler = new BasicAddHandler<SecurityRealm>(attributes, SECURITY_REALM_RUNTIME_CAPABILITY) {
 
             @Override
             protected BasicService.ValueSupplier<SecurityRealm> getValueSupplier(ServiceBuilder<SecurityRealm> serviceBuilder, OperationContext context, ModelNode model) throws OperationFailedException {
                 final String legacyJAASConfig = asStringIfDefined(context, LEGACY_JAAS_CONFIG, model);
+                final boolean applyRoleMappers = APPLY_ROLE_MAPPERS.resolveModelAttribute(context, model).asBoolean();
                 final InjectedValue<SecurityDomainContext> securityDomainContextInjector = new InjectedValue<>();
                 if (legacyJAASConfig != null) {
                     serviceBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(legacyJAASConfig), SecurityDomainContext.class, securityDomainContextInjector);
@@ -96,7 +104,7 @@ public class ElytronIntegrationResourceDefinitions {
 
                 return () -> {
                     final SecurityDomainContext domainContext = securityDomainContextInjector.getValue();
-                    return new SecurityDomainContextRealm(domainContext);
+                    return new SecurityDomainContextRealm(domainContext, applyRoleMappers);
                 };
             }
         };
