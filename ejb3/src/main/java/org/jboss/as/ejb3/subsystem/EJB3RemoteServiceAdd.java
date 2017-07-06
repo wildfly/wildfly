@@ -121,7 +121,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, ejbRemoteConnectorService.getRemotingConnectorInfoInjectedValue())
                 .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, ejbRemoteConnectorService.getAssociationServiceInjector())
                 .addDependency(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, RemotingTransactionService.class, ejbRemoteConnectorService.getRemotingTransactionServiceInjector())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+                .setInitialMode(ServiceController.Mode.LAZY);
         if (!executeInWorker) {
             builder.addDependency(EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName), ExecutorService.class, ejbRemoteConnectorService.getExecutorService());
         }

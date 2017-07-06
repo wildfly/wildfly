@@ -229,7 +229,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         associationServiceBuilder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, associationService.getDeploymentRepositoryInjector())
                 .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, associationService.getSuspendControllerInjector())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, associationService.getServerEnvironmentServiceInjector())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+                .setInitialMode(ServiceController.Mode.LAZY);
 
         if (context.readResource(PathAddress.EMPTY_ADDRESS, false).hasChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH)) {
             associationServiceBuilder.addDependency(ClientMappingsRegistryBuilder.SERVICE_NAME, Registry.class, associationService.getClientMappingsRegistryInjector());
