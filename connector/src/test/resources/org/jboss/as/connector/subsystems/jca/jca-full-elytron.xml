@@ -1,0 +1,77 @@
+<subsystem xmlns="urn:jboss:domain:jca:5.0">
+  <!--Optional:-->
+  <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
+  <!--Optional:-->
+  <bean-validation enabled="false"/>
+  <tracer enabled="true" />
+  <default-workmanager>
+    <short-running-threads allow-core-timeout="true">
+      <!--Optional:-->
+      <core-threads count="3"/>
+      <queue-length count="3"/>
+      <max-threads count="3"/>
+      <!--Optional:-->
+      <keepalive-time time="10" unit="minutes"/>
+      <!--Optional:-->
+      <thread-factory name="string"/>
+    </short-running-threads>
+    <!--Optional:-->
+    <long-running-threads allow-core-timeout="true">
+      <!--Optional:-->
+      <core-threads count="3"/>
+      <queue-length count="3"/>
+      <max-threads count="3"/>
+      <!--Optional:-->
+      <keepalive-time time="10" unit="milliseconds"/>
+      <!--Optional:-->
+      <thread-factory name="string"/>
+    </long-running-threads>
+  </default-workmanager>
+  <!--Zero or more repetitions:-->
+  <workmanager name="anotherWm">
+    <elytron-enabled>true</elytron-enabled>
+    <short-running-threads allow-core-timeout="true">
+      <!--Optional:-->
+      <core-threads count="3"/>
+      <queue-length count="3"/>
+      <max-threads count="3"/>
+      <!--Optional:-->
+      <keepalive-time time="10" unit="milliseconds"/>
+      <!--Optional:-->
+      <thread-factory name="string"/>
+    </short-running-threads>
+    <!--Optional:-->
+    <long-running-threads allow-core-timeout="false">
+      <!--Optional:-->
+      <core-threads count="3"/>
+      <queue-length count="3"/>
+      <max-threads count="3"/>
+      <!--Optional:-->
+      <keepalive-time time="10" unit="hours"/>
+      <!--Optional:-->
+      <thread-factory name="string"/>
+    </long-running-threads>
+  </workmanager>
+  <!--Optional:-->
+  <distributed-workmanager name="MyDWM">
+    <elytron-enabled>true</elytron-enabled>
+    <selector name="PING_TIME">
+      <option name="myOption">ignored</option>
+    </selector>
+    <policy name="WATERMARK">
+      <option name="watermark">0</option>
+    </policy>
+    <short-running-threads>
+      <core-threads count="50"/>
+      <queue-length count="50"/>
+      <max-threads count="50"/>
+      <keepalive-time time="10" unit="seconds"/>
+    </short-running-threads>
+  </distributed-workmanager>
+  <bootstrap-contexts>
+    <!--1 or more repetitions:-->
+    <bootstrap-context name="bootStrapContext" workmanager="anotherWm"/>
+  </bootstrap-contexts>
+  <!--Optional:-->
+  <cached-connection-manager debug="false" error="true"/>
+</subsystem>

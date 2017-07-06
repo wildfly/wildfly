@@ -29,16 +29,11 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.INSTALLED_
 import static org.jboss.as.connector.subsystems.datasources.Constants.INSTALLED_DRIVERS_LIST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
  * @author Stefano Maestri
@@ -88,70 +83,7 @@ public class DataSourcesSubsystemRootDefinition extends SimpleResourceDefinition
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         if (! deployed )
             resourceRegistration.registerSubModel(JdbcDriverDefinition.INSTANCE);
-
         resourceRegistration.registerSubModel(DataSourceDefinition.createInstance(registerRuntimeOnly, deployed));
-
         resourceRegistration.registerSubModel(XaDataSourceDefinition.createInstance(registerRuntimeOnly, deployed));
-
     }
-
-    static void registerTransformers(SubsystemRegistration subsystem) {
-        TransformationDescription.Tools.register(get120TransformationDescription(), subsystem, ModelVersion.create(1, 2, 0)); //EAP 6.2.0
-        TransformationDescription.Tools.register(get130TransformationDescription(), subsystem, ModelVersion.create(1, 3, 0)); //EAP 6.2.0
-        TransformationDescription.Tools.register(get200TransformationDescription(), subsystem, ModelVersion.create(2, 0, 0));
-        TransformationDescription.Tools.register(get300TransformationDescription(), subsystem, ModelVersion.create(3, 0, 0));
-        TransformationDescription.Tools.register(get400TransformationDescription(), subsystem, ModelVersion.create(4, 0, 0));
-    }
-
-
-
-    static TransformationDescription get130TransformationDescription() {
-
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        //No change
-        //JdbcDriverDefinition.registerTransformers130(builder);
-        DataSourceDefinition.registerTransformers130(builder);
-        XaDataSourceDefinition.registerTransformers130(builder);
-        return builder.build();
-    }
-
-    static TransformationDescription get120TransformationDescription() {
-
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        //No change
-        //JdbcDriverDefinition.registerTransformers110(builder);
-        DataSourceDefinition.registerTransformers120(builder);
-        XaDataSourceDefinition.registerTransformers120(builder);
-        return builder.build();
-    }
-
-    static TransformationDescription get200TransformationDescription() {
-
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        //No change
-        //JdbcDriverDefinition.registerTransformers110(builder);
-        DataSourceDefinition.registerTransformers200(builder);
-        XaDataSourceDefinition.registerTransformers200(builder);
-        return builder.build();
-    }
-
-    static TransformationDescription get300TransformationDescription() {
-
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        //No change
-        JdbcDriverDefinition.registerTransformers300(builder);
-        DataSourceDefinition.registerTransformers300(builder);
-        XaDataSourceDefinition.registerTransformers300(builder);
-        return builder.build();
-    }
-
-    static TransformationDescription get400TransformationDescription() {
-
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-
-        DataSourceDefinition.registerTransformers400(builder);
-        XaDataSourceDefinition.registerTransformers400(builder);
-        return builder.build();
-    }
-
 }

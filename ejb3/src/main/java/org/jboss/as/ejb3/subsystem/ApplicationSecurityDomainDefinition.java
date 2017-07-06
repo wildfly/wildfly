@@ -50,7 +50,6 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.dmr.ModelNode;
@@ -216,17 +215,5 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
 
     Function<String, ApplicationSecurityDomainConfig> getKnownSecurityDomainFunction() {
         return name -> knownApplicationSecurityDomains.stream().filter(applicationSecurityDomainConfig -> applicationSecurityDomainConfig.isSameDomain(name)).findFirst().orElse(null);
-    }
-
-    static void registerTransformers_1_2_0_and_1_3_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN));
-    }
-
-    static void registerTransformers_3_0_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN));
-    }
-
-    static void registerTransformers_4_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN));
     }
 }

@@ -25,10 +25,10 @@ package org.jboss.as.txn.subsystem;
 /**
  * The {@link org.jboss.staxmapper.XMLElementReader} that handles the version 3.1 of Transaction subsystem xml.
  */
-class TransactionSubsystem31Parser extends TransactionSubsystem30Parser {
+class TransactionSubsystem40Parser extends TransactionSubsystem30Parser {
 
-    TransactionSubsystem31Parser() {
-        super(Namespace.TRANSACTIONS_3_1);
+    TransactionSubsystem40Parser() {
+        super(Namespace.TRANSACTIONS_4_0);
         this.relativeToHasDefaultValue = false;
     }
 

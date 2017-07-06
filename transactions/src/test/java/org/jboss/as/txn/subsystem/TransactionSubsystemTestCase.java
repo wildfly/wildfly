@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.txn.subsystem.TransactionExtension.MODEL_VERSION_EAP62;
 import static org.jboss.as.txn.subsystem.TransactionExtension.MODEL_VERSION_EAP63;
 import static org.jboss.as.txn.subsystem.TransactionExtension.MODEL_VERSION_EAP64;
+import static org.jboss.as.txn.subsystem.TransactionExtension.MODEL_VERSION_EAP70;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -36,6 +37,8 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -49,6 +52,7 @@ import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
+
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -67,7 +71,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-txn_3_1.xsd";
+        return "schema/wildfly-txn_4_0.xsd";
     }
 
     @Override
@@ -132,8 +136,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testParser_3_1() throws Exception {
-        standardSubsystemTest("full-3.1.xml");
+    public void testParser_4_0() throws Exception {
+        standardSubsystemTest("full-4.0.xml");
     }
 
     @Test
@@ -155,6 +159,12 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(TxStats.getInstance().getAverageCommitTime(), result.get(ModelDescriptionConstants.RESULT).asLong());
     }
 
+    private static ModelNode success() {
+        final ModelNode result = new ModelNode();
+        result.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.SUCCESS);
+        result.get(ModelDescriptionConstants.RESULT);
+        return result;
+    }
 
     @Test
     public void testAsyncIOExpressions() throws Exception {
@@ -227,6 +237,35 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         testRejectTransformers(ModelTestControllerVersion.EAP_6_4_0, MODEL_VERSION_EAP64, new FailedOperationTransformationConfig()); //nothing is rejected
     }
 
+    @Test
+    public void testRejectTransformersEAP7() throws Exception {
+        testRejectTransformers7(ModelTestControllerVersion.EAP_7_0_0, MODEL_VERSION_EAP70, new FailedOperationTransformationConfig()); //nothing is rejected
+    }
+
+    private void testRejectTransformers7(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, FailedOperationTransformationConfig config) throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.eap:wildfly-transactions:" + controllerVersion.getMavenGavVersion())
+                .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
+
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        assertNotNull(legacyServices);
+        assertTrue(legacyServices.isSuccessfulBoot());
+
+        List<ModelNode> ops = builder.parseXmlResource("full-expressions.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, config);
+
+        PathAddress subsystemAddress = PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH);
+        PathAddress participants = subsystemAddress.append(TransactionExtension.LOG_STORE_PATH).append(TransactionExtension.TRANSACTION_PATH).append(TransactionExtension.PARTICIPANT_PATH);
+        //check that we reject log-store=log-store/transactions=*/participants=*:delete
+        OperationTransformer.TransformedOperation transOp = mainServices.transformOperation(modelVersion, Util.createOperation("delete", participants));
+        Assert.assertTrue(transOp.getFailureDescription(), transOp.rejectOperation(success()));
+
+    }
 
     private void testRejectTransformers(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, FailedOperationTransformationConfig config) throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());

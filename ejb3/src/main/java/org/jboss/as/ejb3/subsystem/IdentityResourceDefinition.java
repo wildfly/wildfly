@@ -47,7 +47,6 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -189,17 +188,5 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
 
     BooleanSupplier getOutflowSecurityDomainsConfiguredSupplier() {
         return () -> ! outflowSecurityDomains.isEmpty();
-    }
-
-    static void registerTransformers_1_2_0_and_1_3_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.rejectChildResource(EJB3SubsystemModel.IDENTITY_PATH);
-    }
-
-    static void registerTransformers_3_0_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.rejectChildResource(EJB3SubsystemModel.IDENTITY_PATH);
-    }
-
-    static void registerTransformers_4_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.rejectChildResource(EJB3SubsystemModel.IDENTITY_PATH);
     }
 }

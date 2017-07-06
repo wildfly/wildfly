@@ -101,13 +101,15 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setValidator(new StringBytesLengthValidator(0,23,true,true))
             .build();
 
-    public static final SimpleAttributeDefinition PROCESS_ID_UUID = new SimpleAttributeDefinitionBuilder("process-id-uuid", ModelType.BOOLEAN, false)
+    public static final SimpleAttributeDefinition PROCESS_ID_UUID = new SimpleAttributeDefinitionBuilder("process-id-uuid", ModelType.BOOLEAN)
+            .setRequired(true)
             .setDefaultValue(new ModelNode().set(false))
             .setAlternatives("process-id-socket-binding")
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    public static final SimpleAttributeDefinition PROCESS_ID_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder("process-id-socket-binding", ModelType.STRING, false)
+    public static final SimpleAttributeDefinition PROCESS_ID_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder("process-id-socket-binding", ModelType.STRING)
+            .setRequired(true)
             .setValidator(new StringLengthValidator(1, true))
             .setAlternatives("process-id-uuid")
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -262,15 +264,6 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
             JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
             JOURNAL_STORE_ENABLE_ASYNC_IO
-    };
-
-    static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSIONS_AFTER_1_1_0 = new AttributeDefinition[] {
-            DEFAULT_TIMEOUT, STATISTICS_ENABLED, ENABLE_STATISTICS, ENABLE_TSM_STATUS, NODE_IDENTIFIER, OBJECT_STORE_PATH, OBJECT_STORE_RELATIVE_TO,
-            PROCESS_ID_SOCKET_BINDING, PROCESS_ID_SOCKET_MAX_PORTS, RECOVERY_LISTENER, BINDING, STATUS_BINDING
-    };
-
-    static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSIONS_AFTER_1_1_1 = new AttributeDefinition[] {
-            JTS, USE_HORNETQ_STORE
     };
 
     static final AttributeDefinition[] attributes_1_2 = new AttributeDefinition[] {USE_JDBC_STORE, JDBC_STORE_DATASOURCE,

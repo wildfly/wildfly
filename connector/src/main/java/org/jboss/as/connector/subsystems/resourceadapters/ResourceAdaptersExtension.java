@@ -70,11 +70,6 @@ public class ResourceAdaptersExtension implements Extension {
 
         // Remoting subsystem description and operation handlers
         registration.registerSubsystemModel(new ResourceAdaptersRootResourceDefinition(context.isRuntimeOnlyRegistrationValid()));
-
-        if (context.isRegisterTransformers()) {
-            ResourceAdaptersRootResourceDefinition.registerTransformers(registration);
-        }
-
     }
 
     @Override
