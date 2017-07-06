@@ -27,6 +27,8 @@ import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import org.wildfly.naming.client.WildFlyInitialContextFactory;
+
 /**
  * @author Paul Ferraro
  */
@@ -34,7 +36,7 @@ public class RemoteEJBDirectory extends AbstractEJBDirectory {
     private static final Properties env = new Properties();
 
     static {
-        env.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+        env.setProperty(Context.INITIAL_CONTEXT_FACTORY, WildFlyInitialContextFactory.class.getName());
     }
 
     private final String module;
