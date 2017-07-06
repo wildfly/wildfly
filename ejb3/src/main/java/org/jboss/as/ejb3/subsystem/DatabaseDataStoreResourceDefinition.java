@@ -36,9 +36,6 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -115,11 +112,4 @@ public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinitio
         }
     }
 
-    static void registerTransformers1_3_0(ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder db = parent.addChildResource(EJB3SubsystemModel.DATABASE_DATA_STORE_PATH);
-        db.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(-1)), REFRESH_INTERVAL)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ALLOW_EXECUTION)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, REFRESH_INTERVAL, ALLOW_EXECUTION);
-    }
 }

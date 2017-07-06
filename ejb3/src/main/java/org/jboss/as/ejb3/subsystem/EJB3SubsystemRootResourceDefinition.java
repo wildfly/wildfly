@@ -36,7 +36,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -335,13 +334,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
         subsystemRegistration.registerSubModel(IDENTITY);
     }
-
-    static void registerTransformers(SubsystemRegistration subsystemRegistration) {
-
-    }
-
-
-
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {
 

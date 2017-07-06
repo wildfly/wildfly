@@ -31,13 +31,12 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class LogStoreTransactionDefinition extends SimpleResourceDefinition {
+class LogStoreTransactionDefinition extends SimpleResourceDefinition {
     private final LogStoreResource resource;
 
     static final SimpleAttributeDefinition[] TRANSACTION_ATTRIBUTE = new SimpleAttributeDefinition[]{
             LogStoreConstants.JMX_NAME, LogStoreConstants.TRANSACTION_ID,
-            LogStoreConstants.TRANSACTION_AGE,
-            LogStoreConstants.RECORD_TYPE};
+            LogStoreConstants.TRANSACTION_AGE, LogStoreConstants.RECORD_TYPE};
 
 
     public LogStoreTransactionDefinition(final LogStoreResource resource) {
