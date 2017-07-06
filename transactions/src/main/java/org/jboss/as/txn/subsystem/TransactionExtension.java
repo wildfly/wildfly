@@ -22,6 +22,7 @@
 
 package org.jboss.as.txn.subsystem;
 
+
 import javax.management.MBeanServer;
 
 import org.jboss.as.controller.Extension;
@@ -36,9 +37,6 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
-import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -64,7 +62,8 @@ public class TransactionExtension implements Extension {
     static final ModelVersion MODEL_VERSION_EAP62 = ModelVersion.create(1, 3);
     static final ModelVersion MODEL_VERSION_EAP63 = ModelVersion.create(1, 4);
     static final ModelVersion MODEL_VERSION_EAP64 = ModelVersion.create(1, 5);
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
+    static final ModelVersion MODEL_VERSION_EAP70 = ModelVersion.create(3, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
 
 
     private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
@@ -122,16 +121,12 @@ public class TransactionExtension implements Extension {
         }
 
         subsystem.registerXMLElementWriter(TransactionSubsystemXMLPersister.INSTANCE);
-
-        if (context.isRegisterTransformers()) {
-            // Register the model transformers
-            registerTransformers(subsystem);
-        }
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_0.getUriString(), TransactionSubsystem10Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_1.getUriString(), TransactionSubsystem11Parser::new);
@@ -141,48 +136,7 @@ public class TransactionExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_5.getUriString(), TransactionSubsystem15Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_2_0.getUriString(), TransactionSubsystem20Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_3_0.getUriString(), TransactionSubsystem30Parser::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_3_1.getUriString(), TransactionSubsystem31Parser::new);
-    }
-
-    // Transformation
-
-    /**
-     * Register the transformers for older model versions.
-     *
-     * @param subsystem the subsystems registration
-     */
-    private void registerTransformers(SubsystemRegistration subsystem) {
-        ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystem.getSubsystemVersion());
-        /*final ModelVersion v2_0_0 = ModelVersion.create(2, 0, 0);
-        ResourceTransformationDescriptionBuilder builder_2_0 = chainedBuilder.createBuilder(subsystem.getSubsystemVersion(), v2_0_0);
-
-        //Versions < 3.0.0 is not able to handle commit-markable-resource
-        builder_2_0.rejectChildResource(CMResourceResourceDefinition.PATH_CM_RESOURCE);
-        builder_2_0.getAttributeBuilder()
-                .addRename(TransactionSubsystemRootResourceDefinition.USE_JOURNAL_STORE, CommonAttributes.USE_HORNETQ_STORE)
-                .addRename(TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO, CommonAttributes.HORNETQ_STORE_ENABLE_ASYNC_IO);*/
-
-
-        // 2.0.0 --> 1.5.0
-        ResourceTransformationDescriptionBuilder builderEap64 = chainedBuilder.createBuilder(subsystem.getSubsystemVersion(), MODEL_VERSION_EAP64);
-        builderEap64.getAttributeBuilder()
-                .addRename(TransactionSubsystemRootResourceDefinition.USE_JOURNAL_STORE, CommonAttributes.USE_HORNETQ_STORE)
-                .addRename(TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO, CommonAttributes.HORNETQ_STORE_ENABLE_ASYNC_IO)
-                .addRename(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED, CommonAttributes.ENABLE_STATISTICS);
-
-        // 1.5.0 --> 1.4.0
-        ResourceTransformationDescriptionBuilder builderEap63 = chainedBuilder.createBuilder(MODEL_VERSION_EAP64, MODEL_VERSION_EAP63);
-        builderEap63.rejectChildResource(CMResourceResourceDefinition.PATH_CM_RESOURCE);
-
-        //1.4.0 --> 1.3.0
-        ResourceTransformationDescriptionBuilder builderEap62 = chainedBuilder.createBuilder(MODEL_VERSION_EAP63, MODEL_VERSION_EAP62);
-
-        chainedBuilder.buildAndRegister(subsystem, new ModelVersion[]{
-                MODEL_VERSION_EAP62,
-                MODEL_VERSION_EAP63,
-                MODEL_VERSION_EAP64,
-                // v2_0_0
-        });
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_4_0.getUriString(), TransactionSubsystem40Parser::new);
     }
 
 }

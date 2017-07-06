@@ -31,8 +31,6 @@ import java.util.EnumSet;
 
 import org.jboss.as.connector.metadata.api.common.Security;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
@@ -43,11 +41,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
@@ -94,37 +87,6 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
     public void registerCapabilities(ManagementResourceRegistration registration) {
         EnumSet.allOf(DWmCapabilities.class).forEach(capability -> registration.registerCapability(capability.getRuntimeCapability()));
     }
-
-    static void registerTransformers300(ResourceTransformationDescriptionBuilder parentBuilder) {
-        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DISTRIBUTED_WORK_MANAGER);
-        builder.addOperationTransformationOverride("add")
-                .inheritResourceAttributeDefinitions()
-                .setCustomOperationTransformer(new OperationTransformer() {
-                    @Override
-                    public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
-                            throws OperationFailedException {
-                        ModelNode copy = operation.clone();
-                        copy.add("transport-jgroups-cluster").set(address.getLastElement().toString());
-                        return new TransformedOperation(copy, TransformedOperation.ORIGINAL_RESULT);
-                    }
-                }).end()
-                .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
-                        DWmParameters.ELYTRON_ENABLED.getAttribute())
-                .addRejectCheck(RejectAttributeChecker.DEFINED, DWmParameters.ELYTRON_ENABLED.getAttribute())
-                .end();
-    }
-
-    static void registerElytronTransformers(ResourceTransformationDescriptionBuilder parentBuilder) {
-        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DISTRIBUTED_WORK_MANAGER);
-        builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
-                        DWmParameters.ELYTRON_ENABLED.getAttribute())
-                .addRejectCheck(RejectAttributeChecker.DEFINED, DWmParameters.ELYTRON_ENABLED.getAttribute())
-                .end();
-
-    }
-
 
     enum DWmParameters {
         NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)

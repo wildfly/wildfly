@@ -50,6 +50,9 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.jboss.as.txn.subsystem.TransactionExtension.MODEL_VERSION_EAP70;
+
+
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -67,7 +70,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-txn_3_1.xsd";
+        return "schema/wildfly-txn_4_0.xsd";
     }
 
     @Override
@@ -132,8 +135,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testParser_3_1() throws Exception {
-        standardSubsystemTest("full-3.1.xml");
+    public void testParser_4_0() throws Exception {
+        standardSubsystemTest("full-4.0.xml");
     }
 
     @Test
@@ -155,6 +158,12 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(TxStats.getInstance().getAverageCommitTime(), result.get(ModelDescriptionConstants.RESULT).asLong());
     }
 
+    private static ModelNode success() {
+        final ModelNode result = new ModelNode();
+        result.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.SUCCESS);
+        result.get(ModelDescriptionConstants.RESULT);
+        return result;
+    }
 
     @Test
     public void testAsyncIOExpressions() throws Exception {
@@ -227,6 +236,28 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         testRejectTransformers(ModelTestControllerVersion.EAP_6_4_0, MODEL_VERSION_EAP64, new FailedOperationTransformationConfig()); //nothing is rejected
     }
 
+    @Test
+    public void testRejectTransformersEAP7() throws Exception {
+        testRejectTransformers7(ModelTestControllerVersion.EAP_7_0_0, MODEL_VERSION_EAP70, new FailedOperationTransformationConfig()); //nothing is rejected
+    }
+
+    private void testRejectTransformers7(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, FailedOperationTransformationConfig config) throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.eap:wildfly-transactions:" + controllerVersion.getMavenGavVersion())
+                .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
+
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        assertNotNull(legacyServices);
+        assertTrue(legacyServices.isSuccessfulBoot());
+
+        List<ModelNode> ops = builder.parseXmlResource("full-expressions.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, config);
+    }
 
     private void testRejectTransformers(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, FailedOperationTransformationConfig config) throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());

@@ -22,8 +22,11 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.EXECUTE_IN_WORKER;
+import static org.jboss.as.ejb3.subsystem.StrictMaxPoolResourceDefinition.DERIVE_SIZE;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -36,6 +39,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 
 /**
  * @author Tomaz Cerar (c) 2017 Red Hat Inc.
@@ -60,14 +64,14 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
     }
 
     private static void registerTransformers_1_2_1(SubsystemTransformerRegistration subsystemRegistration) {
-        registerTransformers1_2_1_and_1_3_0(subsystemRegistration, VERSION_1_2_1);
+        registerTransformers_1_2_1_and_1_3_0(subsystemRegistration, VERSION_1_2_1);
     }
 
     private static void registerTransformers_1_3_0(SubsystemTransformerRegistration subsystemRegistration) {
-        registerTransformers1_2_1_and_1_3_0(subsystemRegistration, VERSION_1_3_0);
+        registerTransformers_1_2_1_and_1_3_0(subsystemRegistration, VERSION_1_3_0);
     }
 
-    private static void registerTransformers1_2_1_and_1_3_0(SubsystemTransformerRegistration subsystemRegistration, ModelVersion version) {
+    private static void registerTransformers_1_2_1_and_1_3_0(SubsystemTransformerRegistration subsystemRegistration, ModelVersion version) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder.getAttributeBuilder().addRename(DEFAULT_SFSB_CACHE, EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE);
         builder.getAttributeBuilder().addRename(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, DEFAULT_SFSB_CACHE);
@@ -89,11 +93,11 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
 
         PassivationStoreResourceDefinition.registerTransformers_1_2_1_and_1_3_0(builder);
-        EJB3RemoteResourceDefinition.registerTransformers_1_2_0_and_1_3_0(builder);
-        MdbDeliveryGroupResourceDefinition.registerTransformers_1_2_0_and_1_3_0(builder);
-        StrictMaxPoolResourceDefinition.registerTransformers_1_2_0_and_1_3_0(builder);
-        ApplicationSecurityDomainDefinition.registerTransformers_1_2_0_and_1_3_0(builder);
-        IdentityResourceDefinition.registerTransformers_1_2_0_and_1_3_0(builder);
+        registerRemoteTransformers(builder);
+        registerMdbDeliveryGroupTransformers(builder);
+        registerStrictMaxPoolTransformers(builder);
+        registerApplicationSecurityDomainDTransformers(builder);
+        registerIdentityTransformers(builder);
         builder.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE));
         if (version.equals(VERSION_1_2_1)) {
             TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
@@ -116,25 +120,25 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
-        MdbDeliveryGroupResourceDefinition.registerTransformers_3_0(builder);
-        EJB3RemoteResourceDefinition.registerTransformers_3_0(builder);
-        StrictMaxPoolResourceDefinition.registerTransformers_3_0_0(builder);
-        ApplicationSecurityDomainDefinition.registerTransformers_3_0_0(builder);
-        IdentityResourceDefinition.registerTransformers_3_0_0(builder);
+        registerMdbDeliveryGroupTransformers(builder);
+        registerRemoteTransformers(builder);
+        registerStrictMaxPoolTransformers(builder);
+        registerApplicationSecurityDomainDTransformers(builder);
+        registerIdentityTransformers(builder);
 
         // Rename new statistics-enabled attribute to old enable-statistics
-        builder.getAttributeBuilder()
-               .addRename(EJB3SubsystemModel.STATISTICS_ENABLED, EJB3SubsystemModel.ENABLE_STATISTICS);
-
+        builder.getAttributeBuilder().addRename(EJB3SubsystemModel.STATISTICS_ENABLED, EJB3SubsystemModel.ENABLE_STATISTICS);
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, VERSION_3_0_0);
     }
 
     private static void registerTransformers_4_0_0(SubsystemTransformerRegistration subsystemRegistration) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-        ApplicationSecurityDomainDefinition.registerTransformers_4_0(builder);
-        IdentityResourceDefinition.registerTransformers_4_0(builder);
-        RemotingProfileResourceDefinition.registerTransformers_4_0(builder);
+        registerApplicationSecurityDomainDTransformers(builder);
+        registerIdentityTransformers(builder);
+        builder.addChildResource(RemotingProfileResourceDefinition.INSTANCE).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, StaticEJBDiscoveryDefinition.INSTANCE)
+                .end();
 
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
@@ -148,4 +152,33 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, VERSION_4_0_0);
     }
+
+    private static void registerRemoteTransformers(ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder remoteService = parent.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH);
+        remoteService.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME)), CLIENT_MAPPINGS_CLUSTER_NAME)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_MAPPINGS_CLUSTER_NAME)
+                .setDiscard(DiscardAttributeChecker.ALWAYS, EXECUTE_IN_WORKER) //as this does not affect functionality we just discard
+                .end();
+    }
+
+    private  static void registerIdentityTransformers(ResourceTransformationDescriptionBuilder parent) {
+        parent.rejectChildResource(EJB3SubsystemModel.IDENTITY_PATH);
+    }
+
+    private  static void registerApplicationSecurityDomainDTransformers(ResourceTransformationDescriptionBuilder parent) {
+        parent.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN));
+    }
+
+    private static void registerStrictMaxPoolTransformers(ResourceTransformationDescriptionBuilder parent) {
+        parent.addChildResource(PathElement.pathElement(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL))
+                .getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(StrictMaxPoolResourceDefinition.DeriveSize.NONE.toString())), DERIVE_SIZE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, DERIVE_SIZE);
+    }
+
+    private static void registerMdbDeliveryGroupTransformers(ResourceTransformationDescriptionBuilder parent) {
+        parent.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.MDB_DELIVERY_GROUP));
+    }
+
 }

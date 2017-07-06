@@ -24,36 +24,22 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOW_MULTIPLE_USERS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.AUTHENTICATION_CONTEXT;
-import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DUMP_QUEUED_THREADS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_GRACEFULLY_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_INVALID_CONNECTION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.MCP;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_CREDENTIAL_REFERENCE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_PROPERTIES_ATTRIBUTES;
 
 import java.util.List;
-import java.util.Map;
-
-import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -65,12 +51,6 @@ import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
 
 /**
  * @author Stefano Maestri
@@ -173,132 +153,5 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
         return accessConstraints;
-    }
-
-    static void registerTransformers120(ResourceTransformationDescriptionBuilder parentBuilder) {
-        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
-        builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ENLISTMENT_TRACE)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
-                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
-                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-
-                    @Override
-                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                        return ConnectorLogger.ROOT_LOGGER.rejectAttributesMustBeTrue(attributes.keySet());
-                    }
-
-                    @Override
-                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
-                                                      TransformationContext context) {
-                        //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
-                        return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
-                    }
-                }, STATISTICS_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
-                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
-                .end()
-                //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
-                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
-                .end()
-                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
-                .end();
-    }
-
-    static void registerTransformers130(ResourceTransformationDescriptionBuilder parentBuilder) {
-        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
-        builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
-                    @Override
-                    protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                        return attributeValue.equals(new ModelNode(false));
-                    }
-                }, TRACKING)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
-                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
-                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
-                .end();
-
-    }
-
-
-    static void registerTransformers200(ResourceTransformationDescriptionBuilder parentBuilder) {
-        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
-        builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ENLISTMENT_TRACE)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
-                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
-                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-
-                    @Override
-                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                        return ConnectorLogger.ROOT_LOGGER.rejectAttributesMustBeTrue(attributes.keySet());
-                    }
-
-                    @Override
-                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
-                                                      TransformationContext context) {
-                        //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
-                        return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
-                    }
-                }, STATISTICS_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ENABLED)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
-                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
-                .end()
-                //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
-                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
-                .end()
-                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
-                .end();
-    }
-
-    static void registerTransformers300(ResourceTransformationDescriptionBuilder parentBuilder) {
-        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
-        builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ENLISTMENT_TRACE)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), MCP)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
-                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ALLOW_MULTIPLE_USERS)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT_TRACE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, MCP)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
-                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
-                .end();
-    }
-
-    static void registerTransformers400(ResourceTransformationDescriptionBuilder parentBuilder) {
-        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
-        builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
-                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(ENLISTMENT_TRACE), ENLISTMENT_TRACE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED,
-                        AUTHENTICATION_CONTEXT, RECOVERY_AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, RECOVERY_CREDENTIAL_REFERENCE)
-                .end();
     }
 }

@@ -23,15 +23,10 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.SUBSYSTEM_NAME;
 
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
  *
@@ -55,24 +50,5 @@ public class ResourceAdaptersRootResourceDefinition extends SimpleResourceDefini
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(new ResourceAdapterResourceDefinition(false, runtimeOnlyRegistrationValid));
-    }
-
-    static void registerTransformers(SubsystemRegistration subsystem) {
-        ResourceTransformationDescriptionBuilder builder130 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceAdapterResourceDefinition.registerTransformers130(builder130);
-        TransformationDescription.Tools.register(builder130.build(), subsystem, ModelVersion.create(1, 3, 0));
-
-        ResourceTransformationDescriptionBuilder builder200 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceAdapterResourceDefinition.registerTransformers200(builder200);
-        TransformationDescription.Tools.register(builder200.build(), subsystem, ModelVersion.create(2, 0, 0));
-
-        ResourceTransformationDescriptionBuilder builder300 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceAdapterResourceDefinition.registerTransformers300(builder300);
-        TransformationDescription.Tools.register(builder300.build(), subsystem, ModelVersion.create(3, 0, 0));
-
-        ResourceTransformationDescriptionBuilder builder400 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceAdapterResourceDefinition.registerTransformers400(builder400);
-        TransformationDescription.Tools.register(builder400.build(), subsystem, ModelVersion.create(4, 0, 0));
-
     }
 }
