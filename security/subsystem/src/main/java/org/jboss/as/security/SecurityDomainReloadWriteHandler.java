@@ -26,6 +26,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentWriteAttributeHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -47,5 +48,11 @@ public class SecurityDomainReloadWriteHandler extends RestartParentWriteAttribut
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
         return SecurityDomainResourceDefinition.getSecurityDomainServiceName(parentAddress);
+    }
+
+    // TODO: Remove this method once WFCORE-3055 and WFCORE-3056 are fixed
+    @Override
+    protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
+        SecurityDomainResourceDefinition.CACHE_TYPE.validateOperation(model.getModel());
     }
 }
