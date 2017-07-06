@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ee.concurrent;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import javax.naming.InitialContext;
@@ -33,6 +35,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * Test for EE's default ManagedScheduledExecutorService
@@ -45,7 +48,8 @@ public class DefaultManagedScheduledExecutorServiceTestCase {
     @Deployment
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class, DefaultManagedScheduledExecutorServiceTestCase.class.getSimpleName() + ".war")
-                .addClasses(DefaultManagedScheduledExecutorServiceTestCase.class, DefaultManagedScheduledExecutorServiceTestEJB.class, TestEJBRunnable.class, Util.class);
+                .addClasses(DefaultManagedScheduledExecutorServiceTestCase.class, DefaultManagedScheduledExecutorServiceTestEJB.class, TestEJBRunnable.class, Util.class)
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
     }
 
     @Test
