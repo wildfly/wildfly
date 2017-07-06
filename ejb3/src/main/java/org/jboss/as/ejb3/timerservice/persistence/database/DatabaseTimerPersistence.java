@@ -37,6 +37,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -128,6 +130,8 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private static final String LOAD_TIMER = "load-timer";
     private static final String DELETE_TIMER = "delete-timer";
     private static final String UPDATE_RUNNING = "update-running";
+    /** The format for scheduler start and end date*/
+    private static final String SCHEDULER_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     public DatabaseTimerPersistence(final String database, String partition, String nodeName, int refreshInterval, boolean allowExecution) {
         this.database = database;
@@ -521,6 +525,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         boolean requiresReset = false;
 
         TimerImpl.Builder builder = null;
+        final String timerId = resultSet.getString(1); // needed for error message
         if (calendarTimer) {
             CalendarTimer.Builder cb = CalendarTimer.builder();
             builder = cb;
@@ -532,8 +537,8 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             cb.setScheduleExprDayOfMonth(resultSet.getString(14));
             cb.setScheduleExprMonth(resultSet.getString(15));
             cb.setScheduleExprYear(resultSet.getString(16));
-            cb.setScheduleExprStartDate(resultSet.getTimestamp(17));
-            cb.setScheduleExprEndDate(resultSet.getTimestamp(18));
+            cb.setScheduleExprStartDate(stringAsSchedulerDate(resultSet.getString(17), timerId));
+            cb.setScheduleExprEndDate(stringAsSchedulerDate(resultSet.getString(18), timerId));
             cb.setScheduleExprTimezone(resultSet.getString(19));
             cb.setAutoTimer(resultSet.getBoolean(20));
 
@@ -554,7 +559,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         }
 
 
-        builder.setId(resultSet.getString(1));
+        builder.setId(timerId);
         builder.setTimedObjectId(resultSet.getString(2));
         builder.setInitialDate(resultSet.getTimestamp(3));
         builder.setRepeatInterval(resultSet.getLong(4));
@@ -594,8 +599,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             statement.setString(14, c.getScheduleExpression().getDayOfMonth());
             statement.setString(15, c.getScheduleExpression().getMonth());
             statement.setString(16, c.getScheduleExpression().getYear());
-            statement.setTimestamp(17, timestamp(c.getScheduleExpression().getStart()));
-            statement.setTimestamp(18, timestamp(c.getScheduleExpression().getEnd()));
+            // WFLY-9054: Oracle ojdbc6/7 store a timestamp as '06-JUL-17 01.54.00.269000000 PM'
+            //            but expect 'YYYY-MM-DD hh:mm:ss.fffffffff' as all other DB
+            statement.setString(17, schedulerDateAsString(c.getScheduleExpression().getStart()));
+            statement.setString(18, schedulerDateAsString(c.getScheduleExpression().getEnd()));
             statement.setString(19, c.getScheduleExpression().getTimezone());
             statement.setBoolean(20, c.isAutoTimer());
             if (c.isAutoTimer()) {
@@ -671,6 +678,26 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             throw new RuntimeException(e);
         } finally {
             safeClose(in);
+        }
+    }
+
+    private String schedulerDateAsString(final Date date) {
+        if (date == null) {
+            return null;
+        }
+        return new SimpleDateFormat(SCHEDULER_DATE_FORMAT).format(date);
+    }
+
+    /** Convert the stored date-string from database back to Date */
+    private Date stringAsSchedulerDate(final String date, final String timerId) {
+        if (date == null) {
+            return null;
+        }
+        try {
+            return new SimpleDateFormat(SCHEDULER_DATE_FORMAT).parse(date);
+        } catch (ParseException e) {
+            EjbLogger.EJB3_TIMER_LOGGER.scheduleExpressionDateFromTimerPersistenceInvalid(timerId, e.getMessage());
+            return null;
         }
     }
 
