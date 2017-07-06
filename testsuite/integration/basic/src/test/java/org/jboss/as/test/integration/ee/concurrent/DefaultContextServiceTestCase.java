@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ee.concurrent;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.util.concurrent.Callable;
 
 import javax.naming.InitialContext;
@@ -33,6 +35,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * Test for EE's default context service
@@ -46,7 +49,10 @@ public class DefaultContextServiceTestCase {
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class, DefaultContextServiceTestCase.class.getSimpleName() + ".war")
                 .addClasses(DefaultContextServiceTestCase.class, DefaultContextServiceTestEJB.class, TestEJBRunnable.class, Util.class)
-                .addAsManifestResource(DefaultContextServiceTestCase.class.getPackage(), "permissions.xml", "permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new RuntimePermission("modifyThread"),
+                        new ElytronPermission("getSecurityDomain")
+                        ), "permissions.xml");
     }
 
     @Test
