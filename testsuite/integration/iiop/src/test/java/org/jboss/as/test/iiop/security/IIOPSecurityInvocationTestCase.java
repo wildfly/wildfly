@@ -46,6 +46,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * A simple IIOP invocation for one AS7 server to another
@@ -87,7 +88,7 @@ public class IIOPSecurityInvocationTestCase {
                 .addAsManifestResource(IIOPSecurityInvocationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(ejbJar, properties)), "ejb-jar.xml")
                 // the following permission is needed because of usage of LoginContext in the test
-                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new AuthPermission("modifyPrincipals")), "permissions.xml");
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new RuntimePermission("accessDeclaredMembers"), new ElytronPermission("getSecurityDomain"), new AuthPermission("modifyPrincipals")), "permissions.xml");
 
         return jar;
     }
