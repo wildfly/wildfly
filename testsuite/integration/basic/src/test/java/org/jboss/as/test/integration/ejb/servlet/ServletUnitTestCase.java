@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.servlet;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -42,6 +44,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * A servlet that accesses an EJB and tests whether the call argument is serialized.
@@ -79,6 +82,7 @@ public class ServletUnitTestCase {
         war.addAsWebInfResource(ServletUnitTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         war.addAsWebInfResource(ServletUnitTestCase.class.getPackage(), "web.xml", "web.xml");
         war.addAsManifestResource(new StringAsset("Dependencies: deployment.ejb3-servlet-ejbs.jar \n"), "MANIFEST.MF");
+        war.addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
         return war;
     }
 
@@ -98,6 +102,7 @@ public class ServletUnitTestCase {
         war.addAsWebInfResource(ServletUnitTestCase.class.getPackage(), "web-ear.xml", "web.xml");
         war.addClass(EJBServletEar.class);
         war.addClass(Util.class);
+        ear.addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
         ear.addAsModule(war);
 
         ear.addAsManifestResource(ServletUnitTestCase.class.getPackage(), "application.xml", "application.xml");
