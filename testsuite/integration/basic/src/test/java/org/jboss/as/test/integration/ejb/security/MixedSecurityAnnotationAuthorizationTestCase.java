@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
+import org.wildfly.security.permission.ElytronPermission;
 import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
 
 import javax.ejb.EJB;
@@ -44,6 +45,7 @@ import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -69,6 +71,10 @@ public class MixedSecurityAnnotationAuthorizationTestCase {
                 .addClasses(MixedSecurityAnnotationAuthorizationTestCase.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class, EjbElytronDomainSetup.class)
                 .addAsWebInfResource(currentPackage, "jboss-web.xml", "jboss-web.xml");
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new ElytronPermission("getSecurityDomain"),
+                new ElytronPermission("authenticate")
+                ), "permissions.xml");
         war.addPackage(CommonCriteria.class.getPackage());
         return war;
     }

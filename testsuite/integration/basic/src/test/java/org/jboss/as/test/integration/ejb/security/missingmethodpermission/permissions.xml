@@ -4,4 +4,16 @@
         <class-name>javax.security.auth.AuthPermission</class-name>
         <name>modifyPrincipals</name>
     </permission>
+    <permission>
+        <class-name>java.lang.RuntimePermission</class-name>
+        <name>getClassLoader</name>
+    </permission>
+     <permission>
+        <class-name>java.lang.RuntimePermission</class-name>
+        <name>setContextClassLoader</name>
+    </permission>
+    <permission>
+        <class-name>org.wildfly.security.permission.ElytronPermission</class-name>
+        <name>getSecurityDomain</name>
+    </permission>
 </permissions>
