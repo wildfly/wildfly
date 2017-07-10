@@ -118,7 +118,7 @@
         <version.net.shibboleth.utilities.java-support>7.1.1</version.net.shibboleth.utilities.java-support>
         <version.org.apache.activemq.artemis>1.5.5.jbossorg-004</version.org.apache.activemq.artemis>
         <version.org.apache.avro>1.8.1</version.org.apache.avro>
-        <version.org.apache.cxf>3.1.11</version.org.apache.cxf>
+        <version.org.apache.cxf>3.1.12</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.0.5</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M20</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.2</version.org.apache.httpcomponents.httpasyncclient>
@@ -132,7 +132,7 @@
         <version.org.apache.qpid.proton>0.8</version.org.apache.qpid.proton>
         <version.org.apache.santuario>2.0.8</version.org.apache.santuario>
         <version.org.apache.velocity>1.7</version.org.apache.velocity>
-        <version.org.apache.ws.security>2.1.9</version.org.apache.ws.security>
+        <version.org.apache.ws.security>2.1.10</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.2.1</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-4</version.org.apache.xalan>
         <version.org.bouncycastle>1.56</version.org.bouncycastle>
@@ -202,8 +202,8 @@
         <version.org.jboss.ws.api>1.0.3.Final</version.org.jboss.ws.api>
         <version.org.jboss.ws.spi>3.1.4.Final</version.org.jboss.ws.spi>
         <version.org.jboss.ws.common>3.1.5.Final</version.org.jboss.ws.common>
-        <version.org.jboss.ws.common.tools>1.2.3.Final</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>5.1.8.Final</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.common.tools>1.2.4.Final</version.org.jboss.ws.common.tools>
+        <version.org.jboss.ws.cxf>5.1.9.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jgroups>3.6.13.Final</version.org.jgroups>
         <version.org.jgroups.azure>1.1.0.Final</version.org.jgroups.azure>
