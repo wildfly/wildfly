@@ -176,7 +176,7 @@ public class JcaTestsUtil {
             delegate.setAccessible(true);
             return (WrapperDataSource) delegate.get(wfds);
         } catch (Throwable t) {
-            //
+            fail(t.getMessage());
         }
         return null;
     }
@@ -194,7 +194,7 @@ public class JcaTestsUtil {
             delegate.setAccessible(true);
             return (BlockingExecutor) delegate.get(sei);
         } catch (Throwable t) {
-            //
+            fail(t.getMessage());
         }
         return null;
     }

@@ -153,7 +153,9 @@ public class LongRunningThreadsCheckTestCase extends JcaMgmtBase {
                 MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class, JcaMgmtServerSetupTask.class,
                 JcaMgmtBase.class, JcaTestsUtil.class);
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
-        ja.addAsManifestResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller-client, org.jboss.as.cli, org.jboss.as.connector"),
+        ja.addAsManifestResource(new StringAsset("Dependencies: org.jboss.dmr, " +
+                        "org.jboss.as.controller-client, org.jboss.as.cli, " +
+                        "org.jboss.as.connector, org.jboss.threads"),
                 "MANIFEST.MF");
 
         ResourceAdapterArchive ra1 = ShrinkWrap.create(ResourceAdapterArchive.class, "wm1.rar");
