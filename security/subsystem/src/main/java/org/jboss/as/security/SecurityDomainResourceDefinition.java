@@ -45,6 +45,7 @@ import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraint
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -72,7 +73,7 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition CACHE_TYPE = new SimpleAttributeDefinitionBuilder(Constants.CACHE_TYPE, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setAllowedValues("default", INFINISPAN_CACHE_TYPE)
+            .setValidator(new StringAllowedValuesValidator("default", INFINISPAN_CACHE_TYPE))
             .build();
 
     private final boolean registerRuntimeOnly;
