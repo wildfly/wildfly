@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.remote;
 
-import java.util.Collection;
-
-import org.wildfly.clustering.registry.Registry;
+package org.jboss.as.test.clustering.cluster.ejb.remote;
 
 /**
- * Facility that maintains a collection of registries.
+ * Validates failover behavior of a remotely accessed secure @Stateless EJB using a thread authentication context.
  * @author Paul Ferraro
  */
-public interface RegistryCollector<K, V> {
-    interface Listener<K, V> {
-        void registryAdded(Registry<K, V> registry);
+@org.junit.Ignore("WFLY-9050")
+public class ThreadAuthContextRemoteStatelessEJBFailoverTestCase extends AuthContextRemoteStatelessEJBFailoverTestCase {
 
-        void registryRemoved(Registry<K, V> registry);
+    public ThreadAuthContextRemoteStatelessEJBFailoverTestCase() {
+        super(task -> () -> AUTHENTICATION_CONTEXT.runCallable(task));
     }
-
-    void addListener(Listener<K, V> listener);
-
-    void removeListener(Listener<K, V> listener);
-
-    void add(Registry<K, V> registry);
-
-    void remove(Registry<K, V> registry);
-
-    Collection<Registry<K, V>> getRegistries();
 }
+

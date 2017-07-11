@@ -203,6 +203,11 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
         return getNodes(this.view.get());
     }
 
+    @Override
+    public boolean isLocal() {
+        return false;
+    }
+
     private Address getCoordinatorAddress() {
         List<Address> members = this.view.get().getMembers();
         return !members.isEmpty() ? members.get(0) : null;

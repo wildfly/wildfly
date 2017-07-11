@@ -73,23 +73,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-final class AssociationImpl implements Association {
+final class AssociationImpl implements Association, AutoCloseable {
 
     private final DeploymentRepository deploymentRepository;
-    private final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector;
+    private final ClusterTopologyRegistrar clusterTopologyRegistrar;
     private volatile Executor executor;
 
-    AssociationImpl(final DeploymentRepository deploymentRepository, final RegistryCollector<String, List<ClientMapping>> registryCollector) {
+    AssociationImpl(final DeploymentRepository deploymentRepository, final Registry<String, List<ClientMapping>> clientMappingRegistry) {
         this.deploymentRepository = deploymentRepository;
-        clientMappingRegistryCollector = registryCollector;
-        this.executor = executor;
+        this.clusterTopologyRegistrar = (clientMappingRegistry != null) ? new ClusterTopologyRegistrar(clientMappingRegistry) : null;
+    }
+
+    @Override
+    public void close() {
+        if (this.clusterTopologyRegistrar != null) this.clusterTopologyRegistrar.close();
     }
 
     @Override
@@ -296,91 +302,47 @@ final class AssociationImpl implements Association {
 
     @Override
     public ListenerHandle registerClusterTopologyListener(@NotNull final ClusterTopologyListener clusterTopologyListener) {
-        RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector = this.clientMappingRegistryCollector;
-        final RegistryCollector.Listener<String, List<ClientMapping>> listener = new RegistryCollector.Listener<String, List<ClientMapping>>() {
-            public void registryAdded(final Registry<String, List<ClientMapping>> registry) {
-                final String clusterName = registry.getGroup().getName();
-                registry.addListener(new ClusterTopologyUpdateListener(clusterName, clusterTopologyListener));
-            }
-
-            public void registryRemoved(final Registry<String, List<ClientMapping>> registry) {
-                // Only send the cluster removal message if the cluster node count reaches 0
-                final Map.Entry<String, List<ClientMapping>> localEntry = registry.getEntry(registry.getGroup().getLocalNode());
-                final Map<String, List<ClientMapping>> entries = registry.getEntries();
-                if ((localEntry != null) ? (entries.size() == 1) && entries.containsKey(localEntry.getKey()) : entries.isEmpty()) {
-                    clusterTopologyListener.clusterRemoval(Collections.singletonList(registry.getGroup().getName()));
-                }
-            }
-        };
-        clientMappingRegistryCollector.addListener(listener);
-        // Ensure the cluster topology listener is also added for any registries that have already been added to clientMappingRegistryCollector
-        for (Registry<String, List<ClientMapping>> registry : clientMappingRegistryCollector.getRegistries()) {
-            registry.addListener(new ClusterTopologyUpdateListener(registry.getGroup().getName(), clusterTopologyListener));
-        }
-        List<ClusterTopologyListener.ClusterInfo> list = new ArrayList<>();
-        for (Registry<String, List<ClientMapping>> r : clientMappingRegistryCollector.getRegistries()) {
-            list.add(getClusterInfo(r.getEntries(), r.getGroup().getName()));
-        }
-        clusterTopologyListener.clusterTopology(list);
-        return () -> clientMappingRegistryCollector.removeListener(listener);
-    }
-
-    ClusterTopologyListener.ClusterInfo getClusterInfo(final Map<String, List<ClientMapping>> added, final String clusterName) {
-        final List<ClusterTopologyListener.NodeInfo> nodeInfoList = new ArrayList<>(added.size());
-        for (Map.Entry<String, List<ClientMapping>> entry : added.entrySet()) {
-            final String nodeName = entry.getKey();
-            final List<ClientMapping> clientMappingList = entry.getValue();
-            final List<ClusterTopologyListener.MappingInfo> mappingInfoList = new ArrayList<>();
-            for (ClientMapping clientMapping : clientMappingList) {
-                mappingInfoList.add(new ClusterTopologyListener.MappingInfo(
-                    clientMapping.getDestinationAddress(),
-                    clientMapping.getDestinationPort(),
-                    clientMapping.getSourceNetworkAddress(),
-                    clientMapping.getSourceNetworkMaskBits())
-                );
-            }
-            nodeInfoList.add(new ClusterTopologyListener.NodeInfo(nodeName, mappingInfoList));
-        }
-        return new ClusterTopologyListener.ClusterInfo(clusterName, nodeInfoList);
+        return (this.clusterTopologyRegistrar != null) ? this.clusterTopologyRegistrar.registerClusterTopologyListener(clusterTopologyListener) : () -> {};
     }
 
     @Override
     public ListenerHandle registerModuleAvailabilityListener(@NotNull final ModuleAvailabilityListener moduleAvailabilityListener) {
         final DeploymentRepositoryListener listener = new DeploymentRepositoryListener() {
+            @Override
             public void listenerAdded(final DeploymentRepository repository) {
-                List<EJBModuleIdentifier> identifierList = new ArrayList<>();
-                for (DeploymentModuleIdentifier identifier : repository.getModules().keySet()) {
-                    final EJBModuleIdentifier EJBModuleIdentifier = toModuleIdentifier(identifier);
-                    identifierList.add(EJBModuleIdentifier);
-                }
-                moduleAvailabilityListener.moduleAvailable(identifierList);
+                moduleAvailabilityListener.moduleAvailable(repository.getModules().keySet().stream().map(AssociationImpl::toModuleIdentifier).collect(Collectors.toList()));
             }
 
-            private EJBModuleIdentifier toModuleIdentifier(final DeploymentModuleIdentifier identifier) {
-                return new EJBModuleIdentifier(identifier.getApplicationName(), identifier.getModuleName(), identifier.getDistinctName());
-            }
-
+            @Override
             public void deploymentAvailable(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
                 moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
 
+            @Override
             public void deploymentStarted(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
             }
 
+            @Override
             public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
                 moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
 
-            @Override public void deploymentSuspended(DeploymentModuleIdentifier deployment) {
+            @Override
+            public void deploymentSuspended(DeploymentModuleIdentifier deployment) {
                 moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
 
-            @Override public void deploymentResumed(DeploymentModuleIdentifier deployment) {
+            @Override
+            public void deploymentResumed(DeploymentModuleIdentifier deployment) {
                 moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
         };
         deploymentRepository.addListener(listener);
         return () -> deploymentRepository.removeListener(listener);
+    }
+
+    static EJBModuleIdentifier toModuleIdentifier(final DeploymentModuleIdentifier identifier) {
+        return new EJBModuleIdentifier(identifier.getApplicationName(), identifier.getModuleName(), identifier.getDistinctName());
     }
 
     private EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {
@@ -396,29 +358,76 @@ final class AssociationImpl implements Association {
         return moduleDeployment.getEjbs().get(beanName);
     }
 
-    private class ClusterTopologyUpdateListener implements Registry.Listener<String, List<ClientMapping>> {
-        private final String clusterName;
-        private final ClusterTopologyListener delegate;
+    private class ClusterTopologyRegistrar implements Registry.Listener<String, List<ClientMapping>> {
+        private final Set<ClusterTopologyListener> clusterTopologyListeners = ConcurrentHashMap.newKeySet();
+        private final Registry<String, List<ClientMapping>> clientMappingRegistry;
 
-        ClusterTopologyUpdateListener(final String clusterName, final ClusterTopologyListener delegate) {
-            this.clusterName = clusterName;
-            this.delegate = delegate;
+        ClusterTopologyRegistrar(Registry<String, List<ClientMapping>> clientMappingRegistry) {
+            this.clientMappingRegistry = clientMappingRegistry;
+            this.clientMappingRegistry.addListener(this);
         }
 
-        public void addedEntries(final Map<String, List<ClientMapping>> added) {
-            delegate.clusterNewNodesAdded(getClusterInfo(added, clusterName));
+        @Override
+        public void addedEntries(Map<String, List<ClientMapping>> added) {
+            ClusterTopologyListener.ClusterInfo info = getClusterInfo(added);
+            this.clusterTopologyListeners.forEach(listener -> {
+                // Synchronize each listener to ensure that the initial topology was set before processing new entries
+                synchronized (listener) {
+                    listener.clusterNewNodesAdded(info);
+                }
+            });
         }
 
-        public void updatedEntries(final Map<String, List<ClientMapping>> updated) {
-            delegate.clusterNewNodesAdded(getClusterInfo(updated, clusterName));
+        @Override
+        public void updatedEntries(Map<String, List<ClientMapping>> updated) {
+            this.addedEntries(updated);
         }
 
-        public void removedEntries(final Map<String, List<ClientMapping>> removed) {
-            final ArrayList<ClusterTopologyListener.ClusterRemovalInfo> list = new ArrayList<>();
-            list.add(new ClusterTopologyListener.ClusterRemovalInfo(clusterName, new ArrayList<>(removed.keySet())));
-            delegate.clusterNodesRemoved(list);
+        @Override
+        public void removedEntries(Map<String, List<ClientMapping>> removed) {
+            List<ClusterTopologyListener.ClusterRemovalInfo> removals = Collections.singletonList(new ClusterTopologyListener.ClusterRemovalInfo(this.clientMappingRegistry.getGroup().getName(), new ArrayList<>(removed.keySet())));
+            this.clusterTopologyListeners.forEach(listener -> {
+                // Synchronize each listener to ensure that the initial topology was set before processing removed entries
+                synchronized (listener) {
+                    listener.clusterNodesRemoved(removals);
+                }
+            });
+        }
+
+        ListenerHandle registerClusterTopologyListener(ClusterTopologyListener listener) {
+            // Synchronize on the listener to ensure that the initial topology is set before processing any changes from the registry listener
+            synchronized (listener) {
+                this.clusterTopologyListeners.add(listener);
+                listener.clusterTopology(Collections.singletonList(getClusterInfo(this.clientMappingRegistry.getEntries())));
+            }
+            return () -> this.clusterTopologyListeners.remove(listener);
+        }
+
+        void close() {
+            this.clientMappingRegistry.removeListener(this);
+            this.clusterTopologyListeners.clear();
+        }
+
+        private ClusterTopologyListener.ClusterInfo getClusterInfo(final Map<String, List<ClientMapping>> entries) {
+            final List<ClusterTopologyListener.NodeInfo> nodeInfoList = new ArrayList<>(entries.size());
+            for (Map.Entry<String, List<ClientMapping>> entry : entries.entrySet()) {
+                final String nodeName = entry.getKey();
+                final List<ClientMapping> clientMappingList = entry.getValue();
+                final List<ClusterTopologyListener.MappingInfo> mappingInfoList = new ArrayList<>(clientMappingList.size());
+                for (ClientMapping clientMapping : clientMappingList) {
+                    mappingInfoList.add(new ClusterTopologyListener.MappingInfo(
+                        clientMapping.getDestinationAddress(),
+                        clientMapping.getDestinationPort(),
+                        clientMapping.getSourceNetworkAddress(),
+                        clientMapping.getSourceNetworkMaskBits())
+                    );
+                }
+                nodeInfoList.add(new ClusterTopologyListener.NodeInfo(nodeName, mappingInfoList));
+            }
+            return new ClusterTopologyListener.ClusterInfo(this.clientMappingRegistry.getGroup().getName(), nodeInfoList);
         }
     }
+
 
     static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag, Map<String, Object> contextDataHolder) throws Exception {
         final InterceptorContext interceptorContext = new InterceptorContext();
