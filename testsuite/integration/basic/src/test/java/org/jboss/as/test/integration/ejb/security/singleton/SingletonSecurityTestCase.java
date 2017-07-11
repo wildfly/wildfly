@@ -42,6 +42,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * Tests that invocations on a secured singleton bean work as expected.
@@ -60,7 +61,10 @@ public class SingletonSecurityTestCase {
         jar.addPackage(SingletonSecurityTestCase.class.getPackage());
         jar.addPackage(CommonCriteria.class.getPackage());
         jar.addClass(Util.class);
-        jar.addAsResource(createPermissionsXmlAsset(new RuntimePermission("org.jboss.security.setSecurityContext")), "META-INF/jboss-permissions.xml");
+        jar.addAsResource(createPermissionsXmlAsset(
+                new RuntimePermission("org.jboss.security.setSecurityContext"),
+                new ElytronPermission("getSecurityDomain")
+                ), "META-INF/permissions.xml");
         return jar;
     }
 
