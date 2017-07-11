@@ -24,7 +24,6 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.jsf.deployment.JSFModuleIdFactory;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -38,7 +37,6 @@ public class JSFImplListHandler implements OperationStepHandler {
     public static final String OPERATION_NAME = "list-active-jsf-impls";
 
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, JSFExtension.getResourceDescriptionResolver())
-            .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY) // TODO WFLY-8851 -- is this how we want this op treated in a domain?
             .setRuntimeOnly()
             .setReadOnly()
             .setReplyType(ModelType.LIST)
