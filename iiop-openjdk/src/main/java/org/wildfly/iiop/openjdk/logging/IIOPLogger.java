@@ -380,13 +380,13 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 103, value = "IOR settings imply ssl connections usage, but secure connections have not been configured")
     OperationFailedException sslNotConfigured();
 
-    @Message(id = 104, value = "Inconsistent transport-config configuration: %s is supported but it is configured with NONE value")
-    String inconsistentSupportedTransportConfig(final String transportAttributeName);
+    @Message(id = 104, value = "Inconsistent transport-config configuration: %s is supported, please configure it to %s value")
+    String inconsistentSupportedTransportConfig(final String transportAttributeName, final String suggested);
 
-    @Message(id = 105, value = "Inconsistent transport-config configuration: %s is not supported but it is not configured with NONE value")
+    @Message(id = 105, value = "Inconsistent transport-config configuration: %s is not supported, please remove it or configure it to none value")
     String inconsistentUnsupportedTransportConfig(final String transportAttributeName);
 
-    @Message(id = 106, value = "Inconsistent transport-config configuration: %s is set to true, but %s is not configured as required")
+    @Message(id = 106, value = "Inconsistent transport-config configuration: %s is set to true, please configure %s as required")
     String inconsistentRequiredTransportConfig(final String requiredAttributeName, final String transportAttributeName);
 
 
