@@ -99,7 +99,7 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
         if(managedThreadFactory == null) {
             // if not injected create one using normal thread priority
             final String threadFactoryName = "EE-ManagedExecutorService-"+name;
-            managedThreadFactory = new ManagedThreadFactoryImpl(threadFactoryName, null, Thread.NORM_PRIORITY);
+            managedThreadFactory = new ElytronManagedThreadFactory(threadFactoryName, null, Thread.NORM_PRIORITY);
         }
 
         if(requestController.getOptionalValue() != null) {
