@@ -499,7 +499,7 @@ public interface ConnectionFactoryAttributes {
                 create(SETUP_ATTEMPTS, SETUP_ATTEMPTS_PROP_NAME, true, INBOUND),
                 create(SETUP_INTERVAL, SETUP_INTERVAL_PROP_NAME, true, INBOUND),
                 /* outbound config */
-                create(ALLOW_LOCAL_TRANSACTIONS, ALLOW_LOCAL_TRANSACTIONS_PROP_NAME, false, OUTBOUND),
+                create(ALLOW_LOCAL_TRANSACTIONS, ALLOW_LOCAL_TRANSACTIONS_PROP_NAME, true, OUTBOUND),
 
                 create(STATISTICS_ENABLED, null, false),
                 create(TRANSACTION, null, false),
