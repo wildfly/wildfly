@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:messaging-activemq:1.1">
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:2.0">
     <server name="default"
             persistence-enabled="${persistence.enabled:false}"
             persist-id-cache="${persist.id.cache:false}"
