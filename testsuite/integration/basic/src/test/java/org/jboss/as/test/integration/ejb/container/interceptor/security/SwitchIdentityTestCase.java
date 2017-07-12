@@ -96,7 +96,7 @@ public class SwitchIdentityTestCase {
 
     @BeforeClass
     public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
+        AssumeTestGroupUtil.assumeElytronProfileEnabled(); // PicketBox specific feature - not supported in Elytron
     }
 
     /**
@@ -182,7 +182,7 @@ public class SwitchIdentityTestCase {
         final AuthenticationContext authenticationContext = AuthenticationContext.empty()
                 .with(
                         MatchRule.ALL,
-                        AuthenticationConfiguration.EMPTY
+                        AuthenticationConfiguration.empty()
                                 .useName(username == null ? "$local" : username)
                                 .useRealm(null)
                                 .usePassword(passwordsToUse.getOrDefault(username, ""))
@@ -261,7 +261,7 @@ public class SwitchIdentityTestCase {
             }
             assertEquals(Manage.RESULT, result);
             if (!hasAccess) {
-                fail("Acess should be denied.");
+                fail("Access should be denied.");
             }
         } catch (EJBAccessException e) {
             if (hasAccess) {

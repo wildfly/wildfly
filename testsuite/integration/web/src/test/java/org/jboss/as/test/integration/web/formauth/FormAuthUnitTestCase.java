@@ -289,7 +289,7 @@ public class FormAuthUnitTestCase {
      */
     @Test
     public void testFlushOnSessionInvalidation() throws Exception {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
+        AssumeTestGroupUtil.assumeElytronProfileEnabled(); // not supported in Elytron
 
         log.trace("+++ testFlushOnSessionInvalidation");
 

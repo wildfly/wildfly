@@ -36,6 +36,14 @@ public class AssumeTestGroupUtil {
         assumeCondition("Tests failing in Elytron profile are disabled", CONDITION_SKIP_ELYTRON_PROFILE);
     }
 
+    /**
+     * Assume for test failures when running with Elytron profile enabled. It skips test in case the {@code '-Delytron'} Maven
+     * argument is used (for Elytron profile activation). For legacy-security only tests.
+     */
+    public static void assumeElytronProfileEnabled() {
+        assumeCondition("Tests failing in Elytron profile are disabled", () -> System.getProperty("elytron") == null);
+    }
+
     private static void assumeCondition(final String message, final Supplier<Boolean> assumeTrueCondition) {
         AccessController.doPrivileged(new PrivilegedAction<Void>() {
             @Override
