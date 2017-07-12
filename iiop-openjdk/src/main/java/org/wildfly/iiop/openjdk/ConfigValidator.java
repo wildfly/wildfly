@@ -103,7 +103,7 @@ public class ConfigValidator {
             final String attribute = attributeNode.asString();
             if(sslConfigured) {
                 if(attribute.equals(Constants.IOR_NONE)){
-                    final String warning = IIOPLogger.ROOT_LOGGER.inconsistentSupportedTransportConfig(attributeDefinition.getName());
+                    final String warning = IIOPLogger.ROOT_LOGGER.inconsistentSupportedTransportConfig(attributeDefinition.getName(), serverRequiresSsl ? Constants.IOR_REQUIRED : Constants.IOR_SUPPORTED);
                     IIOPLogger.ROOT_LOGGER.warn(warning);
                     warnings.add(warning);
                 }
@@ -127,7 +127,7 @@ public class ConfigValidator {
         if(establishTrustInTargetNode.isDefined()){
             final String establishTrustInTarget = establishTrustInTargetNode.asString();
             if(sslConfigured && establishTrustInTarget.equals(Constants.IOR_NONE)){
-                final String warning = IIOPLogger.ROOT_LOGGER.inconsistentSupportedTransportConfig(Constants.IOR_TRANSPORT_TRUST_IN_TARGET);
+                final String warning = IIOPLogger.ROOT_LOGGER.inconsistentSupportedTransportConfig(Constants.IOR_TRANSPORT_TRUST_IN_TARGET, Constants.IOR_SUPPORTED);
                 IIOPLogger.ROOT_LOGGER.warn(warning);
                 warnings.add(warning);
             }
@@ -137,7 +137,7 @@ public class ConfigValidator {
     private static void validateSupportedAttribute(final OperationContext context, final ModelNode resourceModel, final AttributeDefinition attributeDefinition, final List<String> warnings) throws OperationFailedException{
         final ModelNode attributeNode = attributeDefinition.resolveModelAttribute(context, resourceModel);
         if(attributeNode.isDefined() && !attributeNode.asString().equals(Constants.IOR_SUPPORTED)) {
-            final String warning = IIOPLogger.ROOT_LOGGER.inconsistentSupportedTransportConfig(attributeDefinition.getName());
+            final String warning = IIOPLogger.ROOT_LOGGER.inconsistentSupportedTransportConfig(attributeDefinition.getName(), Constants.IOR_SUPPORTED);
             IIOPLogger.ROOT_LOGGER.warn(warning);
             warnings.add(warning);
         }
