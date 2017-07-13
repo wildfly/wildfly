@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:composite="http://java.sun.com/jsf/composite">
+
+<composite:interface>
+    <composite:attribute name="idx"/>
+</composite:interface>
+
+<composite:implementation>
+    <p id="#{cc.clientId}">
+        <!--
+           - The duplicate id complaint does not arise from the composite component itself, but
+           - from a component inside the composite component:
+           -->
+        <h:outputText id="outputText" value="OutputText #{cc.attrs.idx}"/>
+    </p>
+</composite:implementation>
+
+</html>
