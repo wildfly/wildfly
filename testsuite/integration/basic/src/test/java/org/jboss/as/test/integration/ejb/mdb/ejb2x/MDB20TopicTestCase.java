@@ -30,8 +30,10 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -45,6 +47,7 @@ import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
+import java.io.FilePermission;
 import java.util.PropertyPermission;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
@@ -91,13 +94,21 @@ public class MDB20TopicTestCase extends AbstractMDB2xTestCase {
     @Deployment
     public static Archive getDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "MDB20TopicTestCase.jar");
+        final String tempDir = TestSuiteEnvironment.getTmpDir();
+
         ejbJar.addClasses(EJB2xMDB.class, AbstractMDB2xTestCase.class);
         ejbJar.addPackage(JMSOperations.class.getPackage());
         ejbJar.addClasses(JmsQueueSetup.class, TimeoutUtil.class);
         ejbJar.addAsManifestResource(MDB20TopicTestCase.class.getPackage(), "ejb-jar-20-topic.xml", "ejb-jar.xml");
         ejbJar.addAsManifestResource(MDB20TopicTestCase.class.getPackage(), "jboss-ejb3-topic.xml", "jboss-ejb3.xml");
-        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
-        ejbJar.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml");
+        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.jboss.remoting3\n"), "MANIFEST.MF");
+        ejbJar.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission("ts.timeout.factor", "read"),
+                new RemotingPermission("createEndpoint"),
+                new RemotingPermission("connect"),
+                new FilePermission(tempDir+"/-", "read")
+        ), "jboss-permissions.xml");
+
         return ejbJar;
     }
 
