@@ -69,8 +69,8 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:thofman@redhat.com">Tomas Hofman</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(DatasourcePoolAttributesTestCase.DatasourceServerSetupTask.class)
-public class DatasourcePoolAttributesTestCase extends JcaMgmtBase {
+@ServerSetup(DatasourceMaxPoolAttributeTestCase.DatasourceServerSetupTask.class)
+public class DatasourceMaxPoolAttributeTestCase extends JcaMgmtBase {
 
     private static final String DS_NAME = "DS";
     private static final ModelNode DS_ADDRESS = new ModelNode().add(SUBSYSTEM, "datasources")
@@ -90,7 +90,7 @@ public class DatasourcePoolAttributesTestCase extends JcaMgmtBase {
                 WildFlyDataSource.class,
                 WrapperDataSource.class,
                 JcaMgmtServerSetupTask.class,
-                DatasourcePoolAttributesTestCase.class,
+                DatasourceMaxPoolAttributeTestCase.class,
                 AbstractMgmtServerSetupTask.class,
                 AbstractMgmtTestBase.class,
                 JcaMgmtBase.class,
@@ -127,36 +127,27 @@ public class DatasourcePoolAttributesTestCase extends JcaMgmtBase {
         return managementClient.getControllerClient();
     }
 
-    /**
-     * Checks that attributes not requiring reload can be set.
-     */
     @Test
-    public void testModifyNonReloadAttributes() throws Exception {
+    public void testModifyMinPoolAttribute() throws Exception {
         WrapperDataSource wrapperDataSource = JcaTestsUtil.extractWrapperDatasource((WildFlyDataSource) datasource);
         PoolConfiguration poolConfiguration = JcaTestsUtil.exctractPoolConfiguration(wrapperDataSource);
 
         // check initial values
         Assert.assertNotNull(poolConfiguration);
-        Assert.assertEquals(0, poolConfiguration.getInitialSize());
-        Assert.assertEquals(30000, poolConfiguration.getBlockingTimeout());
-        Assert.assertEquals(true, poolConfiguration.isFair());
-        Assert.assertEquals(false, poolConfiguration.isStrictMin());
+        Assert.assertEquals(20, poolConfiguration.getMaxSize());
 
         // modify values
-        writeAttribute(DS_ADDRESS, Constants.INITIAL_POOL_SIZE.getName(), "4");
-        writeAttribute(DS_ADDRESS, Constants.BLOCKING_TIMEOUT_WAIT_MILLIS.getName(), "10000");
-        writeAttribute(DS_ADDRESS, Constants.POOL_FAIR.getName(), "false");
-        writeAttribute(DS_ADDRESS, Constants.POOL_USE_STRICT_MIN.getName(), "true");
+        writeAttribute(DS_ADDRESS, Constants.MAX_POOL_SIZE.getName(), "10");
 
-        // check that server is not in reload-required state
+        // check that server is reload-required state
         ModelNode serverState = readAttribute(new ModelNode(), "server-state");
-        Assert.assertEquals("running", serverState.asString());
+        Assert.assertEquals("reload-required", serverState.asString());
+
         // check that runtime was updated
-        Assert.assertEquals(4, poolConfiguration.getInitialSize());
-        Assert.assertEquals(10000, poolConfiguration.getBlockingTimeout());
-        Assert.assertEquals(false, poolConfiguration.isFair());
-        Assert.assertEquals(true, poolConfiguration.isStrictMin());
+        Assert.assertEquals(10, poolConfiguration.getMaxSize());
+
     }
+
 
     static class DatasourceServerSetupTask extends JcaMgmtServerSetupTask {
 
