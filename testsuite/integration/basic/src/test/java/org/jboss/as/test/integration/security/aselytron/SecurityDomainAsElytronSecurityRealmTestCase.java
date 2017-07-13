@@ -47,7 +47,6 @@ import org.jboss.as.test.integration.security.common.servlets.RolePrintingServle
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -235,7 +234,6 @@ public class SecurityDomainAsElytronSecurityRealmTestCase {
      * user has assigned also role from that mapping module.
      */
     @Test
-    @Ignore("https://issues.jboss.org/browse/WFLY-8316")
     @OperateOnDeployment(ELY_WITH_MAPPING_MODULE)
     public void testAssignRoleFromMappingModule(@ArquillianResource URL webAppURL) throws Exception {
         URL prepareRolePrintingUrl = RolesPrintingServletUtils.prepareRolePrintingUrl(webAppURL, allPossibleRoles);
