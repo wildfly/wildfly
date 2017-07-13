@@ -275,7 +275,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setXmlName("file-size")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJournalFileSize()))
             .setMeasurementUnit(BYTES)
-            .setValidator(new ModularLongRangeParameterValidator(512, 1024, Long.MAX_VALUE, true, true))
+            .setValidator(new LongRangeValidator(1024, Long.MAX_VALUE, true, true))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
