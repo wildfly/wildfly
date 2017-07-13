@@ -3148,4 +3148,8 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 494, value = "Failed to obtain SSLContext")
     RuntimeException failedToObtainSSLContext(@Cause Exception cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 495, value = "Ignoring the persisted start or end date for scheduled expression of timer ID:%s as it is not valid : %s.")
+    void scheduleExpressionDateFromTimerPersistenceInvalid(String timerId, String parserMessage);
 }
