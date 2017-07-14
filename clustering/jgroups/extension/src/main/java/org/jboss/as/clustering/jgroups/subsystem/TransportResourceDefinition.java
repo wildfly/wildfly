@@ -225,11 +225,11 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
     };
 
     TransportResourceDefinition(ResourceServiceBuilderFactory<TransportConfiguration<T>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        this(new Parameters(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), builderFactory, parentBuilderFactory);
+        this(new Parameters(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), builderFactory, parentBuilderFactory);
     }
 
     TransportResourceDefinition(PathElement path, ResourceServiceBuilderFactory<TransportConfiguration<T>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        this(new Parameters(path, new JGroupsResourceDescriptionResolver(path, WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), builderFactory, parentBuilderFactory);
+        this(new Parameters(path, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), builderFactory, parentBuilderFactory);
     }
 
     private TransportResourceDefinition(Parameters parameters, ResourceServiceBuilderFactory<TransportConfiguration<T>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {

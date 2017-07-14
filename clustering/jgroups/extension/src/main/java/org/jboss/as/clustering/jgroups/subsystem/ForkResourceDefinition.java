@@ -77,7 +77,7 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
     }
 
     ForkResourceDefinition() {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH));
+        super(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
 
     @Override

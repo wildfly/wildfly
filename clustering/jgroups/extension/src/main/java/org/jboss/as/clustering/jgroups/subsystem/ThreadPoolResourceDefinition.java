@@ -85,7 +85,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     }
 
     ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime, BiFunction<ThreadPoolDefinition, PathAddress, ResourceServiceBuilder<? extends Object>> factory) {
-        this.definition = new SimpleResourceDefinition(pathElement(name), new JGroupsResourceDescriptionResolver(pathElement(PathElement.WILDCARD_VALUE)));
+        this.definition = new SimpleResourceDefinition(pathElement(name), JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(pathElement(PathElement.WILDCARD_VALUE)));
         this.prefix = prefix;
         this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0)).build());

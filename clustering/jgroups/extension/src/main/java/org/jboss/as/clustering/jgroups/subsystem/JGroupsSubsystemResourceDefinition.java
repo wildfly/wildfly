@@ -106,7 +106,7 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
     }
 
     JGroupsSubsystemResourceDefinition() {
-        super(PATH, new JGroupsResourceDescriptionResolver());
+        super(PATH, JGroupsExtension.SUBSYSTEM_RESOLVER);
     }
 
     @Override

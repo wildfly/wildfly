@@ -67,7 +67,7 @@ public class StorePropertyResourceDefinition extends ChildResourceDefinition<Man
     }
 
     StorePropertyResourceDefinition() {
-        super(WILDCARD_PATH, new InfinispanResourceDescriptionResolver(WILDCARD_PATH));
+        super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
         this.setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion());
     }
 

@@ -169,7 +169,7 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
     private final ResourceServiceBuilderFactory<RelayConfiguration> parentBuilderFactory;
 
     RemoteSiteResourceDefinition(ResourceServiceBuilderFactory<RelayConfiguration> parentBuilderFactory) {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH));
+        super(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
         this.parentBuilderFactory = parentBuilderFactory;
     }
 
