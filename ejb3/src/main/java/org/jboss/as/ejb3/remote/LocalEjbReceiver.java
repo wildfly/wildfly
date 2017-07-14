@@ -53,6 +53,8 @@ import org.jboss.marshalling.cloner.ObjectCloner;
 import org.jboss.marshalling.cloner.ObjectCloners;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
+import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import java.io.Serializable;
@@ -179,11 +181,15 @@ public class LocalEjbReceiver extends EJBReceiver {
                     }
                 }
                 final SecurityContext securityContext;
+                final SecurityDomain securityDomain;
                 if (WildFlySecurityManager.isChecking()) {
                     securityContext = AccessController.doPrivileged((PrivilegedAction<SecurityContext>) SecurityContextAssociation::getSecurityContext);
+                    securityDomain = AccessController.doPrivileged((PrivilegedAction<SecurityDomain>) SecurityDomain::getCurrent);
                 } else {
                     securityContext = SecurityContextAssociation.getSecurityContext();
+                    securityDomain = SecurityDomain.getCurrent();
                 }
+                final SecurityIdentity securityIdentity = securityDomain != null ? securityDomain.getCurrentSecurityIdentity() : null;
                 final StartupCountdown.Frame frame = StartupCountdown.current();
                 final Runnable task = () -> {
                     if (! flag.runIfNotCancelled()) {
@@ -249,7 +255,7 @@ public class LocalEjbReceiver extends EJBReceiver {
                 } else {
                     // this normally isn't necessary unless the client didn't detect that it was an async method for some reason
                     receiverContext.proceedAsynchronously();
-                    executor.execute(task);
+                    executor.execute(securityIdentity == null ? task : () -> securityIdentity.runAs(task));
                 }
             } else {
                 throw EjbLogger.ROOT_LOGGER.asyncInvocationOnlyApplicableForSessionBeans();
