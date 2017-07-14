@@ -79,7 +79,7 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     FileStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH),
+        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH),
                 descriptor -> descriptor.addAttributes(Attribute.class),
                 address -> new FileStoreBuilder(address.getParent()), registration -> registration.getPathManager().ifPresent(pathManager -> {
                     ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(pathManager)

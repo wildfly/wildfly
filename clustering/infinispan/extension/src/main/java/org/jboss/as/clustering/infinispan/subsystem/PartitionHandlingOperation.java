@@ -46,7 +46,7 @@ public enum PartitionHandlingOperation implements Operation<AdvancedCache<?, ?>>
     private final OperationDefinition definition;
 
     PartitionHandlingOperation(String name) {
-        this.definition = new SimpleOperationDefinitionBuilder(name, new InfinispanResourceDescriptionResolver(PartitionHandlingResourceDefinition.PATH)).setRuntimeOnly().build();
+        this.definition = new SimpleOperationDefinitionBuilder(name, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PartitionHandlingResourceDefinition.PATH)).setRuntimeOnly().build();
     }
 
     @Override

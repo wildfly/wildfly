@@ -196,7 +196,7 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
     }
 
     ProtocolResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ProtocolConfiguration<P>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory, BiConsumer<ManagementResourceRegistration, ManagementResourceRegistration> registrationConfigurator) {
-        super(new Parameters(path, path.isWildcard() ? new JGroupsResourceDescriptionResolver(path) : new JGroupsResourceDescriptionResolver(path, WILDCARD_PATH)).setOrderedChild(), descriptorConfigurator.andThen(descriptor -> descriptor
+        super(new Parameters(path, path.isWildcard() ? JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path) : JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH)).setOrderedChild(), descriptorConfigurator.andThen(descriptor -> descriptor
                 .addCapabilities(Capability.class)
                 ), builderFactory, parentBuilderFactory, registrationConfigurator);
     }

@@ -62,7 +62,7 @@ public enum StackOperation implements Operation<ChannelFactory> {
     private final OperationDefinition definition;
 
     StackOperation(String name, ModelType replyType) {
-        this.definition = new SimpleOperationDefinitionBuilder(name, new JGroupsResourceDescriptionResolver(StackResourceDefinition.WILDCARD_PATH)).setReplyType(replyType).setReadOnly().build();
+        this.definition = new SimpleOperationDefinitionBuilder(name, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(StackResourceDefinition.WILDCARD_PATH)).setReplyType(replyType).setReadOnly().build();
     }
 
     @Override

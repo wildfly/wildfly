@@ -77,7 +77,7 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinitionP
 
     ScheduledThreadPoolResourceDefinition(String name, int defaultMaxThreads, long defaultKeepaliveTime) {
         PathElement path = pathElement(name);
-        this.definition = new SimpleResourceDefinition(path, new InfinispanResourceDescriptionResolver(path, pathElement(PathElement.WILDCARD_VALUE)));
+        this.definition = new SimpleResourceDefinition(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, pathElement(PathElement.WILDCARD_VALUE)));
         this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepaliveTime), new LongRangeValidatorBuilder().min(0)).build());
     }

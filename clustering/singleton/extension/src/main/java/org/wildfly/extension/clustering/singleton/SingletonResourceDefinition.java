@@ -103,7 +103,7 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition<Sub
     }
 
     SingletonResourceDefinition() {
-        super(PATH, new SingletonResourceDescriptionResolver());
+        super(PATH, SingletonExtension.SUBSYSTEM_RESOLVER);
     }
 
     @Override

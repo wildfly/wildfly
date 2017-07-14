@@ -137,7 +137,7 @@ public class PropertyResourceDefinition extends ChildResourceDefinition<Manageme
     };
 
     PropertyResourceDefinition() {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH));
+        super(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
         this.setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion());
     }
 

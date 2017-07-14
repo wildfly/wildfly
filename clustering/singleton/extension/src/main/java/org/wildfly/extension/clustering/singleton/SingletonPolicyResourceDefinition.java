@@ -127,7 +127,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
     }
 
     SingletonPolicyResourceDefinition() {
-        super(WILDCARD_PATH, new SingletonResourceDescriptionResolver(WILDCARD_PATH));
+        super(WILDCARD_PATH, SingletonExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
 
     @Override
