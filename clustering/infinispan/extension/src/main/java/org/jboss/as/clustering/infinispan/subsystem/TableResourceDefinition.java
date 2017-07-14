@@ -118,7 +118,7 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
     private final Registration<ManagementResourceRegistration> registrar;
 
     TableResourceDefinition(PathElement path, Consumer<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<TableManipulationConfiguration> builderFactory) {
-        super(path, new InfinispanResourceDescriptionResolver(path, WILDCARD_PATH));
+        super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)

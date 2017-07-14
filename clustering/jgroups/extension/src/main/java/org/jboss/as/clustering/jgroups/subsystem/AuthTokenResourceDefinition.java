@@ -96,7 +96,7 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
     private final ResourceServiceBuilderFactory<T> builderFactory;
 
     AuthTokenResourceDefinition(PathElement path, Consumer<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<T> builderFactory) {
-        super(path, new JGroupsResourceDescriptionResolver(path, WILDCARD_PATH));
+        super(path, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH));
         this.configurator = configurator;
         this.builderFactory = builderFactory;
     }

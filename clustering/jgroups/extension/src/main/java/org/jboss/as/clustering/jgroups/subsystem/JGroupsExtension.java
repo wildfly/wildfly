@@ -24,6 +24,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.EnumSet;
 
 import org.jboss.as.clustering.controller.ContextualSubsystemRegistration;
+import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.clustering.jgroups.LogFactory;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -40,9 +41,10 @@ import org.kohsuke.MetaInfServices;
 @MetaInfServices(Extension.class)
 public class JGroupsExtension implements Extension {
 
-    public static final String SUBSYSTEM_NAME = "jgroups";
+    static final String SUBSYSTEM_NAME = "jgroups";
+    static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, JGroupsExtension.class);
 
-    // Workaround for JGRP-1475
+            // Workaround for JGRP-1475
     // Configure JGroups to use jboss-logging.
     static {
         org.jgroups.logging.LogFactory.setCustomLogFactory(new LogFactory());

@@ -112,13 +112,13 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
             .build();
 
     @Deprecated
-    static final OperationDefinition ALIAS_ADD = new SimpleOperationDefinitionBuilder("add-alias", new InfinispanResourceDescriptionResolver(WILDCARD_PATH))
+    static final OperationDefinition ALIAS_ADD = new SimpleOperationDefinitionBuilder("add-alias", InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH))
             .setParameters(ALIAS)
             .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
             .build();
 
     @Deprecated
-    static final OperationDefinition ALIAS_REMOVE = new SimpleOperationDefinitionBuilder("remove-alias", new InfinispanResourceDescriptionResolver(WILDCARD_PATH))
+    static final OperationDefinition ALIAS_REMOVE = new SimpleOperationDefinitionBuilder("remove-alias", InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH))
             .setParameters(ALIAS)
             .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
             .build();
@@ -258,7 +258,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     CacheContainerResourceDefinition() {
-        super(WILDCARD_PATH, new InfinispanResourceDescriptionResolver(WILDCARD_PATH));
+        super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
 
     @Override

@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsExtension;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSchema;
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.parsing.ProfileParsingCompletionHandler;
 import org.jboss.dmr.ModelNode;
@@ -63,7 +63,7 @@ public class InfinispanProfileParsingCompletionHandler implements ProfileParsing
             PathAddress operationAddress = Operations.getPathAddress(op);
 
             // If this operation is intended for JGroups subsystem, remove it from here
-            if (operationAddress.getElement(0).getValue().equals(JGroupsExtension.SUBSYSTEM_NAME)) {
+            if (operationAddress.getElement(0).equals(JGroupsSubsystemResourceDefinition.PATH)) {
                 jgroupsOpsToMove.add(op);
                 iterator.remove();
             }

@@ -198,7 +198,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
     private final Consumer<ManagementResourceRegistration> registrationConfigurator;
 
     public CacheResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, CacheServiceHandler handler, Consumer<ManagementResourceRegistration> registrationConfigurator) {
-        super(path, new InfinispanResourceDescriptionResolver(path, PathElement.pathElement("cache")));
+        super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, PathElement.pathElement("cache")));
         this.descriptorConfigurator = descriptorConfigurator.andThen(descriptor -> descriptor
             .addAttributes(Attribute.class)
             .addAttributes(DeprecatedAttribute.class)
