@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
-import org.apache.activemq.artemis.api.core.ChannelBroadcastEndpointFactory;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.UDPBroadcastEndpointFactory;
 import org.apache.activemq.artemis.core.config.Configuration;
@@ -49,6 +48,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.JChannel;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
 
 /**
@@ -149,11 +149,11 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
     }
 
 
-    static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final DiscoveryGroupConfiguration config, final JChannel channel, final String channelName) throws Exception {
+    static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final DiscoveryGroupConfiguration config, final ChannelFactory channelFactory, final String channelName, Map<String, JChannel> channels) throws Exception {
         final long refreshTimeout = config.getRefreshTimeout();
         final long initialWaitTimeout = config.getDiscoveryInitialWaitTimeout();
 
-        final BroadcastEndpointFactory endpointFactory = new ChannelBroadcastEndpointFactory(channel, channelName);
+        final BroadcastEndpointFactory endpointFactory = new JGroupsBroadcastEndpointFactory(channelName, channelFactory, channels);
 
         return new DiscoveryGroupConfiguration()
                 .setName(name)
