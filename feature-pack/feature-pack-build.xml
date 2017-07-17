@@ -70,6 +70,13 @@
             <property name="jgroups.supplement" value="ec2" />
             <property name="mod_cluster.supplement" value="no-multicast" />
         </standalone>
+        <domain
+                template="configuration/domain/template.xml"
+                subsystems="configuration/domain/subsystems.xml"
+                output-file="docs/examples/configs/domain-ec2.xml">
+            <property name="jgroups.supplement" value="ec2" />
+            <property name="mod_cluster.supplement" value="no-multicast" />
+        </domain>
         <!-- azure.AZURE_PING -->
         <standalone
                 template="configuration/standalone/template.xml"
@@ -123,7 +130,10 @@
         <domain
                 template="configuration/domain/template.xml"
                 subsystems="configuration/domain/subsystems.xml"
-                output-file="domain/configuration/domain.xml"/>
+                output-file="domain/configuration/domain.xml">
+            <property name="jgroups.supplement" value="" />
+            <property name="mod_cluster.supplement" value="" />
+        </domain>
         <host
                 template="configuration/host/host.xml"
                 subsystems="configuration/host/subsystems.xml"
