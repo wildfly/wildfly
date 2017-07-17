@@ -24,8 +24,13 @@ package org.wildfly.extension.messaging.activemq;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpoint;
 import org.apache.activemq.artemis.api.core.ChannelBroadcastEndpointFactory;
+import org.apache.activemq.artemis.api.core.JGroupsBroadcastEndpoint;
+import org.apache.activemq.artemis.api.core.JGroupsChannelBroadcastEndpoint;
 import org.apache.activemq.artemis.api.core.jgroups.JChannelManager;
+import org.apache.activemq.artemis.core.server.ActivateCallback;
+import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jgroups.JChannel;
+import org.jgroups.fork.ForkChannel;
 
 /**
  * An implementation of {@link org.apache.activemq.artemis.api.core.BroadcastEndpointFactory} which closes the channel
@@ -35,13 +40,45 @@ import org.jgroups.JChannel;
  */
 public class ClosingChannelBroadcastEndpointFactory extends ChannelBroadcastEndpointFactory {
 
-    public ClosingChannelBroadcastEndpointFactory(JChannel channel, String channelName) {
+    private final ActiveMQServer server;
+
+    public ClosingChannelBroadcastEndpointFactory(JChannel channel, String channelName, ActiveMQServer server) {
         super(channel, channelName);
+        this.server = server;
     }
 
     @Override
     public BroadcastEndpoint createBroadcastEndpoint() throws Exception {
-        return new ClosingChannelBroadcastEndpoint(JChannelManager.getInstance(), this.getChannel(), this.getChannelName()).initChannel();
+        JGroupsBroadcastEndpoint endpoint;
+        if (getChannel() instanceof ForkChannel) {
+            // If the channel is a ForkChannel, close it only when ActiveMQ is deactivated
+            endpoint = new JGroupsChannelBroadcastEndpoint(JChannelManager.getInstance(), getChannel(), getChannelName());
+            server.registerActivateCallback(new ActivateCallback() {
+                @Override
+                public void preActivate() {
+
+                }
+
+                @Override
+                public void activated() {
+
+                }
+
+                @Override
+                public void deActivate() {
+                    getChannel().close();
+                }
+
+                @Override
+                public void activationComplete() {
+
+                }
+            });
+        } else {
+            // otherwise, always close the channel when internalCloseChannel is called.
+            return new ClosingChannelBroadcastEndpoint(JChannelManager.getInstance(), this.getChannel(), this.getChannelName());
+        }
+        return endpoint.initChannel();
     }
 
 }
