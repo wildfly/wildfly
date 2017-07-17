@@ -198,6 +198,22 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         configuration.setPagingDirectory(pathConfig.resolvePagingPath(pathManager));
         pathConfig.registerCallbacks(pathManager);
 
+        // security - if an Elytron domain has been defined we delegate security checks to the Elytron based security manager.
+        ActiveMQSecurityManager securityManager = null;
+        final SecurityDomain elytronDomain = this.elytronSecurityDomain.getOptionalValue();
+        if (elytronDomain != null) {
+            securityManager = new ElytronSecurityManager(elytronDomain);
+        }
+        else {
+            securityManager = new WildFlySecurityManager(securityDomainContextValue.getValue());
+        }
+
+        // insert possible credential source hold passwords
+        setBridgePasswordsFromCredentialSource();
+        setClusterPasswordFromCredentialSource();
+
+        server = new ActiveMQServerImpl(configuration, mbeanServer.getOptionalValue(), securityManager);
+
         try {
             // Update the acceptor/connector port/host values from the
             // Map the socket bindings onto the connectors/acceptors
@@ -286,7 +302,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                         String channelName = jgroupsChannels.get(key);
                         JChannel channel = (JChannel) channelFactory.createChannel(channelName);
                         channels.put(channelName, channel);
-                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, channel, channelName));
+                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, server, channel, channelName));
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {
@@ -313,7 +329,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                             channel = (JChannel) channelFactory.createChannel(channelName);
                             channels.put(channelName, channel);
                         }
-                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), channel, channelName);
+                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), channel, channelName, server);
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {
@@ -325,20 +341,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                     configuration.getDiscoveryGroupConfigurations().put(name, config);
                 }
             }
-
-            // security - if an Elytron domain has been defined we delegate security checks to the Elytron based security manager.
-            ActiveMQSecurityManager securityManager = null;
-            final SecurityDomain elytronDomain = this.elytronSecurityDomain.getOptionalValue();
-            if (elytronDomain != null) {
-                securityManager = new ElytronSecurityManager(elytronDomain);
-            }
-            else {
-                securityManager = new WildFlySecurityManager(securityDomainContextValue.getValue());
-            }
-
-            // insert possible credential source hold passwords
-            setBridgePasswordsFromCredentialSource();
-            setClusterPasswordFromCredentialSource();
 
             DataSource ds = dataSource.getOptionalValue();
             if (ds != null) {
@@ -352,8 +354,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                 ROOT_LOGGER.infof("use JDBC store for Artemis server, bindingsTable:%s",
                         dbConfiguration.getBindingsTableName());
             }
-            // Now start the server
-            server = new ActiveMQServerImpl(configuration, mbeanServer.getOptionalValue(), securityManager);
             if (ActiveMQDefaultConfiguration.getDefaultClusterPassword().equals(server.getConfiguration().getClusterPassword())) {
                 server.getConfiguration().setClusterPassword(java.util.UUID.randomUUID().toString());
             }
