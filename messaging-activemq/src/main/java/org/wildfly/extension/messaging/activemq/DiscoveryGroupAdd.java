@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
+import org.apache.activemq.artemis.api.core.ChannelBroadcastEndpointFactory;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.UDPBroadcastEndpointFactory;
 import org.apache.activemq.artemis.core.config.Configuration;
@@ -152,7 +153,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
         final long refreshTimeout = config.getRefreshTimeout();
         final long initialWaitTimeout = config.getDiscoveryInitialWaitTimeout();
 
-        final BroadcastEndpointFactory endpointFactory = new ClosingChannelBroadcastEndpointFactory(channel, channelName);
+        final BroadcastEndpointFactory endpointFactory = new ChannelBroadcastEndpointFactory(channel, channelName);
 
         return new DiscoveryGroupConfiguration()
                 .setName(name)
