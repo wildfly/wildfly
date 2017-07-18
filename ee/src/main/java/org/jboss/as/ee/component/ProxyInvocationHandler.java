@@ -24,11 +24,15 @@ package org.jboss.as.ee.component;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * An invocation handler for a component proxy.
@@ -65,6 +69,9 @@ public final class ProxyInvocationHandler implements InvocationHandler {
         context.putPrivateData(Object.class, proxy);
         context.putPrivateData(Component.class, componentView.getComponent());
         context.putPrivateData(ComponentView.class, componentView);
+        context.putPrivateData(SecurityDomain.class, WildFlySecurityManager.isChecking() ?
+                AccessController.doPrivileged((PrivilegedAction<SecurityDomain>) SecurityDomain::getCurrent) :
+                SecurityDomain.getCurrent());
         instance.prepareInterceptorContext(context);
         context.setParameters(args);
         context.setMethod(method);

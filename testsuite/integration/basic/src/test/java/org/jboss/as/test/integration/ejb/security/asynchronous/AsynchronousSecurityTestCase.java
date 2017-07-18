@@ -41,14 +41,12 @@ import org.jboss.as.test.integration.ejb.security.AnnotationAuthorizationTestCas
 import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -80,11 +78,6 @@ public class AsynchronousSecurityTestCase {
         protected String getGroupsFile() {
             return new File(AsynchronousSecurityTestCase.class.getResource("roles.properties").getFile()).getAbsolutePath();
         }
-    }
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled(); // JBEAP-11933
     }
 
     @ArquillianResource
@@ -119,7 +112,6 @@ public class AsynchronousSecurityTestCase {
 
         // Test 1
         SecuredStatelessBean.reset();
-
         Callable<Boolean> callable = () -> {
             Future<Boolean> future = securedBean.method();
             SecuredStatelessBean.startLatch.countDown();
@@ -161,7 +153,7 @@ public class AsynchronousSecurityTestCase {
             if(!(ee.getCause() instanceof EJBAccessException) && ! (ee.getCause() instanceof SecurityException)) {
                 Assert.fail("Exception cause was not EJBAccessException or SecurityException and was " + ee);
             }
-        } catch (EJBAccessException ejbe) {
+        } catch (EJBAccessException | SecurityException ejbe) {
             // it's ok too
         }
         Assert.assertFalse(result);
