@@ -54,7 +54,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
 
     protected static final HttpsListenerResourceDefinition INSTANCE = new HttpsListenerResourceDefinition();
 
-    protected static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, true)
+    protected static final SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(Constants.SSL_CONTEXT, ModelType.STRING, false)
             .setAlternatives(Constants.SECURITY_REALM, Constants.VERIFY_CLIENT, Constants.ENABLED_CIPHER_SUITES, Constants.ENABLED_PROTOCOLS, Constants.SSL_SESSION_CACHE_SIZE, Constants.SSL_SESSION_TIMEOUT)
             .setCapabilityReference(REF_SSL_CONTEXT)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -62,7 +62,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
             .build();
 
-    protected static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(Constants.SECURITY_REALM, ModelType.STRING, true)
+    protected static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(Constants.SECURITY_REALM, ModelType.STRING, false)
             .setAlternatives(Constants.SSL_CONTEXT)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
