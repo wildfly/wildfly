@@ -32,10 +32,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.permission.ElytronPermission;
@@ -47,11 +45,6 @@ import org.wildfly.security.permission.ElytronPermission;
  */
 @RunWith(Arquillian.class)
 public class DefaultManagedThreadFactoryTestCase {
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled(); // JBEAP-12056
-    }
 
     @Deployment
     public static WebArchive getDeployment() {
@@ -68,6 +61,5 @@ public class DefaultManagedThreadFactoryTestCase {
             return null;
         };
         Util.switchIdentitySCF("guest", "guest", callable);
-
     }
 }

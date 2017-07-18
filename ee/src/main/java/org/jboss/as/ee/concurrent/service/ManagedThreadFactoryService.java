@@ -58,7 +58,7 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Man
     @Override
     void startValue(StartContext context) throws StartException {
         final String threadFactoryName = "EE-ManagedThreadFactory-"+name;
-        managedThreadFactory = new ManagedThreadFactoryImpl(threadFactoryName, contextService.getOptionalValue(), priority);
+        managedThreadFactory = new ElytronManagedThreadFactory(threadFactoryName, contextService.getOptionalValue(), priority);
     }
 
     @Override
