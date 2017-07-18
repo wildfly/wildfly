@@ -23,8 +23,8 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:domain:messaging-activemq:1.1"
-           targetNamespace="urn:jboss:domain:messaging-activemq:1.1"
+           xmlns="urn:jboss:domain:messaging-activemq:2.0"
+           targetNamespace="urn:jboss:domain:messaging-activemq:2.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="2.0">

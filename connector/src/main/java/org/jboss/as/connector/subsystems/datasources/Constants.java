@@ -21,14 +21,8 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.logging.ConnectorLogger;
@@ -38,7 +32,6 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -48,13 +41,9 @@ import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.security.CredentialReference;
-import org.jboss.as.controller.transform.OperationResultTransformer;
-import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.common.api.metadata.Defaults;
@@ -944,47 +933,5 @@ public class Constants {
     static final SimpleOperationDefinition TEST_CONNECTION = new SimpleOperationDefinitionBuilder("test-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
             .setParameters(USERNAME, PASSWORD)
             .setRuntimeOnly().build();
-
-    static final OperationTransformer ENABLE_TRANSFORMER = new OperationTransformer() {
-        @Override
-        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-
-            final String attributeName = operation.require(NAME).asString();
-            if (ENABLED.getName().equals(attributeName)) {
-                final ModelNode transformed = new ModelNode();
-                //If using the same transformer for UNDEFINE_ATTRIBUTE as well, check if it is undefined and set whatever is default
-                ModelNode value = operation.get(VALUE);
-                boolean booleanValue = value.isDefined() ? value.asBoolean() : Defaults.ENABLED;
-                transformed.get(OP).set(booleanValue ? ENABLE : DISABLE);
-                transformed.get(OP_ADDR).set(address.toModelNode());
-
-                return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
-            }
-            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
-        }
-    };
-
-    static final OperationTransformer ENABLE_ADD_TRANSFORMER = new OperationTransformer() {
-        @Override
-        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-            if (operation.hasDefined(ENABLED.getName()) && operation.get(ENABLED.getName()).asBoolean()) {
-                ModelNode add = operation.clone();
-                add.remove(ENABLED.getName());
-
-                ModelNode composite = new ModelNode();
-                composite.get(OP).set(COMPOSITE);
-                composite.get(OP_ADDR).setEmptyList();
-                composite.get(STEPS).add(add);
-
-                ModelNode enable = Util.createEmptyOperation(ENABLE, PathAddress.pathAddress(operation.get(OP_ADDR)));
-                composite.get(STEPS).add(enable);
-
-                return new TransformedOperation(composite, OperationResultTransformer.ORIGINAL_RESULT);
-
-            } else {
-                return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
-            }
-        }
-    };
 
 }

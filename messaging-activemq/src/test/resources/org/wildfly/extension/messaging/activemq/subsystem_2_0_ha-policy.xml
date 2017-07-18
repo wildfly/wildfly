@@ -1,5 +1,5 @@
 
-<subsystem xmlns="urn:jboss:domain:messaging-activemq:1.1">
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:2.0">
     <server name="ha-policy-live-only-scale-down-discovery-group">
         <live-only>
             <scale-down enabled="${scale-down.enabled:true}"

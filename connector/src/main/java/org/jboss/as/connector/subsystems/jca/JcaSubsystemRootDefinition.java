@@ -24,15 +24,10 @@ package org.jboss.as.connector.subsystems.jca;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -58,46 +53,16 @@ public class JcaSubsystemRootDefinition extends SimpleResourceDefinition {
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
         resourceRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-
-
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(JcaArchiveValidationDefinition.INSTANCE);
-
         resourceRegistration.registerSubModel(JcaBeanValidationDefinition.INSTANCE);
-
         resourceRegistration.registerSubModel(TracerDefinition.INSTANCE);
-
         resourceRegistration.registerSubModel(JcaCachedConnectionManagerDefinition.INSTANCE);
-
         resourceRegistration.registerSubModel(JcaWorkManagerDefinition.createInstance(registerRuntimeOnly));
-
         resourceRegistration.registerSubModel(JcaDistributedWorkManagerDefinition.createInstance(registerRuntimeOnly));
-
         resourceRegistration.registerSubModel(JcaBootstrapContextDefinition.INSTANCE);
-
-    }
-
-    static void registerTransformers(SubsystemRegistration subsystem) {
-        ResourceTransformationDescriptionBuilder builder12 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        builder12.rejectChildResource(JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER);
-        builder12.discardChildResource(TracerDefinition.PATH_TRACER);
-        JcaWorkManagerDefinition.registerElytronTransformers(builder12);
-        TransformationDescription.Tools.register(builder12.build(), subsystem, ModelVersion.create(1, 2, 0));
-        ResourceTransformationDescriptionBuilder builder20 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        builder20.discardChildResource(TracerDefinition.PATH_TRACER);
-        JcaDistributedWorkManagerDefinition.registerElytronTransformers(builder20);
-        JcaWorkManagerDefinition.registerElytronTransformers(builder20);
-        TransformationDescription.Tools.register(builder20.build(), subsystem, ModelVersion.create(2, 0, 0));
-        ResourceTransformationDescriptionBuilder builder30 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        JcaDistributedWorkManagerDefinition.registerTransformers300(builder30);
-        JcaWorkManagerDefinition.registerElytronTransformers(builder30);
-        TransformationDescription.Tools.register(builder30.build(), subsystem, ModelVersion.create(3, 0, 0));
-        ResourceTransformationDescriptionBuilder builder40 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        JcaDistributedWorkManagerDefinition.registerElytronTransformers(builder40);
-        JcaWorkManagerDefinition.registerElytronTransformers(builder40);
-        TransformationDescription.Tools.register(builder40.build(), subsystem, ModelVersion.create(4, 0, 0));
     }
 }

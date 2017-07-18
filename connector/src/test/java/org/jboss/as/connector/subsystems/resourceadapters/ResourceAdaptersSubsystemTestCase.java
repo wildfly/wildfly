@@ -22,6 +22,7 @@
 package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MCP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
@@ -140,6 +141,12 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
     @Test
     public void testElytronEnabledEAP62() throws Exception {
         testRejectingTransformerElytronEnabled("resource-adapters-pool-elytron-enabled.xml", ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 3, 0));
+    }
+
+
+    @Test
+    public void testElytronEnabledEAP7() throws Exception {
+        testRejectingTransformer7ElytronEnabled("resource-adapters-pool-elytron-enabled.xml", ModelTestControllerVersion.EAP_7_0_0, ModelVersion.create(4, 0, 0));
     }
 
     /**
@@ -280,6 +287,44 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
      *
      * @throws Exception
      */
+    private void testRejectingTransformer7ElytronEnabled(String subsystemXml, ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        //.setSubsystemXmlResource(subsystemXml);
+        String artifactId = ":wildfly-connector:";
+        String ironJacamarVersion = "1.3.3.Final-redhat-1";
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL(controllerVersion.getMavenGroupId() + artifactId  + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:" + ironJacamarVersion)
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:" + ironJacamarVersion)
+                .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension")
+                .addOperationValidationResolve("add", PathAddress.pathAddress(
+                        PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
+                        PathElement.pathElement("resource-adapter", "*"),
+                        PathElement.pathElement("connection-definitions", "*")))
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class)).skipReverseControllerCheck();
+
+        KernelServices mainServices = builder.build();
+        org.junit.Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        org.junit.Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        org.junit.Assert.assertNotNull(legacyServices);
+
+        List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
+        PathAddress subsystemAddress = PathAddress.pathAddress(ResourceAdaptersExtension.SUBSYSTEM_PATH);
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
+                .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(RESOURCEADAPTER_NAME)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig( WM_ELYTRON_SECURITY_DOMAIN))
+                .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(RESOURCEADAPTER_NAME), ConnectionDefinitionResourceDefinition.PATH),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ELYTRON_ENABLED, AUTHENTICATION_CONTEXT, AUTHENTICATION_CONTEXT_AND_APPLICATION,
+                                        RECOVERY_ELYTRON_ENABLED, RECOVERY_AUTHENTICATION_CONTEXT, RECOVERY_CREDENTIAL_REFERENCE)));
+    }
+    /**
+     * Tests transformation of model from current to passed one
+     *
+     * @throws Exception
+     */
     private void testRejectingTransformerElytronEnabled(String subsystemXml, ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
@@ -345,7 +390,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
                                 })
                                 .addConfig(new FailedOperationTransformationConfig.AttributesPathAddressConfig(TRACKING.getName(),
-                                        ELYTRON_ENABLED.getName(), AUTHENTICATION_CONTEXT.getName(), MCP.getName(),
+                                        ELYTRON_ENABLED.getName(), AUTHENTICATION_CONTEXT.getName(), MCP.getName(), AUTHENTICATION_CONTEXT_AND_APPLICATION.getName(),
                                         RECOVERY_ELYTRON_ENABLED.getName(), RECOVERY_AUTHENTICATION_CONTEXT.getName(), RECOVERY_CREDENTIAL_REFERENCE.getName()) {
 
                                     @Override
@@ -363,37 +408,6 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
                                         return new ModelNode();
                                     }
                                 }).build()));
-    }
-
-
-    private void testRejectingTransformer300(String subsystemXml, ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
-        //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
-        //.setSubsystemXmlResource(subsystemXml);
-
-        // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:1.1.4.Final")
-                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:1.1.4.Final")
-                .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension")
-                .addOperationValidationResolve("add", PathAddress.pathAddress(
-                        PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
-                        PathElement.pathElement("resource-adapter", "*"),
-                        PathElement.pathElement("connection-definitions", "*")))
-                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class)).skipReverseControllerCheck();
-
-        KernelServices mainServices = builder.build();
-        org.junit.Assert.assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        org.junit.Assert.assertTrue(legacyServices.isSuccessfulBoot());
-        org.junit.Assert.assertNotNull(legacyServices);
-
-        List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
-        PathAddress subsystemAddress = PathAddress.pathAddress(ResourceAdaptersExtension.SUBSYSTEM_PATH);
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
-                .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(RESOURCEADAPTER_NAME), ConnectionDefinitionResourceDefinition.PATH),
-                        FailedOperationTransformationConfig.REJECTED_RESOURCE));
     }
 
 

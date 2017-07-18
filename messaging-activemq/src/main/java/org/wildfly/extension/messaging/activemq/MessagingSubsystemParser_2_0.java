@@ -56,15 +56,12 @@ import org.wildfly.extension.messaging.activemq.jms.legacy.LegacyConnectionFacto
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
-public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
+public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
 
-    static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:1.1";
+    static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:2.0";
 
-    private final PersistentResourceXMLDescription xmlDescription;
-
-
-    MessagingSubsystemParser_1_1() {
-        xmlDescription = builder(MessagingExtension.SUBSYSTEM_PATH, NAMESPACE)
+    public PersistentResourceXMLDescription getParserDescription(){
+        return builder(MessagingExtension.SUBSYSTEM_PATH, NAMESPACE)
                 .addAttributes(
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE)
@@ -177,14 +174,14 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         HAAttributes.BACKUP_PORT_OFFSET,
                                                         HAAttributes.EXCLUDED_CONNECTORS)
                                                 .addChild(
-                                                        builder(ReplicationMasterDefinition.CONFIGURATION_INSTANCE)
+                                                        builder(ReplicationMasterDefinition.CONFIGURATION_INSTANCE.getPathElement())
                                                                 .addAttributes(
                                                                         HAAttributes.CLUSTER_NAME,
                                                                         HAAttributes.GROUP_NAME,
                                                                         HAAttributes.CHECK_FOR_LIVE_SERVER,
                                                                         HAAttributes.INITIAL_REPLICATION_SYNC_TIMEOUT))
                                                 .addChild(
-                                                        builder(ReplicationSlaveDefinition.CONFIGURATION_INSTANCE)
+                                                        builder(ReplicationSlaveDefinition.CONFIGURATION_INSTANCE.getPathElement())
                                                                 .addAttributes(
                                                                         HAAttributes.CLUSTER_NAME,
                                                                         HAAttributes.GROUP_NAME,
@@ -221,11 +218,11 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                         HAAttributes.MAX_BACKUPS,
                                                         HAAttributes.BACKUP_PORT_OFFSET)
                                                 .addChild(
-                                                        builder(SharedStoreMasterDefinition.CONFIGURATION_INSTANCE)
+                                                        builder(SharedStoreMasterDefinition.CONFIGURATION_INSTANCE.getPathElement())
                                                                 .addAttributes(
                                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN))
                                                 .addChild(
-                                                        builder(SharedStoreSlaveDefinition.CONFIGURATION_INSTANCE)
+                                                        builder(SharedStoreSlaveDefinition.CONFIGURATION_INSTANCE.getPathElement())
                                                                 .addAttributes(
                                                                         HAAttributes.ALLOW_FAILBACK,
                                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN,
@@ -236,22 +233,22 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS)))
                                 .addChild(
-                                        builder(PathDefinition.BINDINGS_INSTANCE)
+                                        builder(PathDefinition.BINDINGS_INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         PathDefinition.PATHS.get(CommonAttributes.BINDINGS_DIRECTORY),
                                                         PathDefinition.RELATIVE_TO))
                                 .addChild(
-                                        builder(PathDefinition.JOURNAL_INSTANCE)
+                                        builder(PathDefinition.JOURNAL_INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         PathDefinition.PATHS.get(CommonAttributes.JOURNAL_DIRECTORY),
                                                         PathDefinition.RELATIVE_TO))
                                 .addChild(
-                                        builder(PathDefinition.LARGE_MESSAGES_INSTANCE)
+                                        builder(PathDefinition.LARGE_MESSAGES_INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         PathDefinition.PATHS.get(CommonAttributes.LARGE_MESSAGES_DIRECTORY),
                                                         PathDefinition.RELATIVE_TO))
                                 .addChild(
-                                        builder(PathDefinition.PAGING_INSTANCE)
+                                        builder(PathDefinition.PAGING_INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         PathDefinition.PATHS.get(CommonAttributes.PAGING_DIRECTORY),
                                                         PathDefinition.RELATIVE_TO))
@@ -616,8 +613,4 @@ public class MessagingSubsystemParser_1_1 extends PersistentResourceXMLParser {
                 .build();
     }
 
-    @Override
-    public PersistentResourceXMLDescription getParserDescription() {
-        return xmlDescription;
-    }
 }

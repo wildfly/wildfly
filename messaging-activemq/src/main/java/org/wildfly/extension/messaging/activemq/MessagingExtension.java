@@ -84,8 +84,8 @@ import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
  *   <dt><strong>Current</strong> - WildFly 11</dt>
  *   <dd>
  *     <ul>
- *       <li>XML namespace: urn:jboss:domain:messaging-activemq:1.1
- *       <li>Management model: 1.1.0
+ *       <li>XML namespace: urn:jboss:domain:messaging-activemq:2.0
+ *       <li>Management model: 2.0.0
  *     </ul>
  *   </dd>
  *   <dt>WildFly 10</dt>
@@ -169,7 +169,7 @@ public class MessagingExtension implements Extension {
 
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        subsystemRegistration.registerXMLElementWriter(new MessagingSubsystemParser_1_1());
+        subsystemRegistration.registerXMLElementWriter(new MessagingSubsystemParser_2_0());
 
         boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
@@ -207,6 +207,6 @@ public class MessagingExtension implements Extension {
 
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_0.NAMESPACE, MessagingSubsystemParser_1_0::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_1.NAMESPACE, MessagingSubsystemParser_1_1::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_2_0.NAMESPACE, MessagingSubsystemParser_2_0::new);
     }
 }
