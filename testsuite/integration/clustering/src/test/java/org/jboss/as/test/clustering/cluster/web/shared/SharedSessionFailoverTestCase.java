@@ -95,13 +95,13 @@ public class SharedSessionFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL baseURLDep1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL baseURLDep2)
             throws URISyntaxException, IOException {
-        URL baseURL1 = new URL(baseURLDep1.toExternalForm() + "/");
-        URL baseURL2 = new URL(baseURLDep2.toExternalForm() + "/");
+        URI baseURI1 = new URI(baseURLDep1.toExternalForm() + "/");
+        URI baseURI2 = new URI(baseURLDep2.toExternalForm() + "/");
 
-        URI uri11 = SimpleServlet.createURI(baseURL1.toURI().resolve(MODULE_1 + "/").toURL());
-        URI uri12 = SimpleServlet.createURI(baseURL1.toURI().resolve(MODULE_2 + "/").toURL());
-        URI uri21 = SimpleServlet.createURI(baseURL2.toURI().resolve(MODULE_1 + "/").toURL());
-        URI uri22 = SimpleServlet.createURI(baseURL2.toURI().resolve(MODULE_2 + "/").toURL());
+        URI uri11 = SimpleServlet.createURI(baseURI1.resolve(MODULE_1 + "/"));
+        URI uri12 = SimpleServlet.createURI(baseURI1.resolve(MODULE_2 + "/"));
+        URI uri21 = SimpleServlet.createURI(baseURI2.resolve(MODULE_1 + "/"));
+        URI uri22 = SimpleServlet.createURI(baseURI2.resolve(MODULE_2 + "/"));
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(uri11));
