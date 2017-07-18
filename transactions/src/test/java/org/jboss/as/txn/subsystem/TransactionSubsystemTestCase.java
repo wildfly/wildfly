@@ -199,7 +199,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
             public ModelNode fixModel(ModelNode modelNode) {
                 modelNode.remove("path");
                 modelNode.remove("relative-to");
-                modelNode.get("process-id-uuid").set(false); //only needs to be removed for 6.2
+                modelNode.remove("process-id-uuid");
                 return modelNode;
             }
         });

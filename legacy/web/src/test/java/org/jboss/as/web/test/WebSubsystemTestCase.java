@@ -153,7 +153,13 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer.CumulativeModelFixer(SSLConfigurationNameFixer.INSTANCE, AccessLogPrefixFixer_1_2_0.INSTANCE));
+        checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer.CumulativeModelFixer(SSLConfigurationNameFixer.INSTANCE, AccessLogPrefixFixer_1_2_0.INSTANCE, new ModelFixer() {
+            @Override
+            public ModelNode fixModel(ModelNode modelNode) {
+                modelNode.get("connector").get("http").remove("redirect-port");
+                return modelNode;
+            }
+        }));
     }
 
 
