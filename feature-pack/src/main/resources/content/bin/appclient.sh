@@ -105,12 +105,12 @@ if [ "x$SERVER_SET" = "x" ]; then
     fi
 
     # Check for OpenJDK JVM w/server support
-    if [ "x$HAS_OPENJDK_" = "x" ]; then
+    if [ "x$HAS_OPENJDK" = "x" ]; then
         HAS_OPENJDK=`"$JAVA" $JVM_OPTVERSION 2>&1 | $GREP -i OpenJDK`
     fi
 
     # Enable -server if we have Hotspot or OpenJDK, unless we can't
-    if [ "x$HAS_HOTSPOT" != "x" -o "x$HAS_OPENJDK" != "x" ]; then
+    if [ "x$HAS_HOTSPOT" != "x" ] || [ "x$HAS_OPENJDK" != "x" ]; then
         # MacOS does not support -server flag
         if [ "$darwin" != "true" ]; then
             JAVA_OPTS="-server $JAVA_OPTS"
