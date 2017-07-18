@@ -22,10 +22,12 @@
 package org.jboss.as.test.integration.ejb.security;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -253,9 +255,9 @@ public class AuthenticationTestCase {
             fail("Expected IOException");
         } catch (IOException e) {
             if (SecurityDomain.getCurrent() == null) {
-                assertTrue(e.getMessage().contains("javax.ejb.EJBAccessException"));
+                assertThat(e.getMessage(), containsString("javax.ejb.EJBAccessException"));
             } else {
-                assertTrue(e.getMessage().contains("javax.ejb.EJBException: java.lang.SecurityException: ELY01151"));
+                assertThat(e.getMessage(), containsString("javax.ejb.EJBException: java.lang.SecurityException: ELY01151"));
             }
         }
     }
