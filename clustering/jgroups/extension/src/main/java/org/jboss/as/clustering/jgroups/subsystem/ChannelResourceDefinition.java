@@ -213,7 +213,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
     }
 
     ChannelResourceDefinition() {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH));
+        super(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
 
     @Override

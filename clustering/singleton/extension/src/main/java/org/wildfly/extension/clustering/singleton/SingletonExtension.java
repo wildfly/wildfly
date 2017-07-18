@@ -24,6 +24,7 @@ package org.wildfly.extension.clustering.singleton;
 
 import java.util.EnumSet;
 
+import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -38,6 +39,8 @@ import org.kohsuke.MetaInfServices;
 public class SingletonExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "singleton";
+
+    static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, SingletonExtension.class);
 
     @Override
     public void initialize(ExtensionContext context) {

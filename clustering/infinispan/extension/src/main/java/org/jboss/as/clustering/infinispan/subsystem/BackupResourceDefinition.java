@@ -108,7 +108,7 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
     private final ResourceServiceBuilderFactory<SitesConfiguration> parentBuilderFactory;
 
     BackupResourceDefinition(ResourceServiceBuilderFactory<SitesConfiguration> parentBuilderFactory) {
-        super(WILDCARD_PATH, new InfinispanResourceDescriptionResolver(WILDCARD_PATH));
+        super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
         this.parentBuilderFactory = parentBuilderFactory;
     }
 

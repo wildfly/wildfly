@@ -35,6 +35,6 @@ public abstract class ComponentResourceDefinition extends ChildResourceDefinitio
     }
 
     ComponentResourceDefinition(PathElement path) {
-        super(path, new InfinispanResourceDescriptionResolver(path));
+        super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path));
     }
 }

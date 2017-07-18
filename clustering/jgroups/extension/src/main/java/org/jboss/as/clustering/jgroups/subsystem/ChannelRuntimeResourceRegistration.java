@@ -42,7 +42,6 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
@@ -109,8 +108,7 @@ public class ChannelRuntimeResourceRegistration implements RuntimeResourceRegist
 
             @Override
             public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                StandardResourceDescriptionResolver resolver = new JGroupsResourceDescriptionResolver();
-                String description = resolver.getChildTypeDescription(ProtocolResourceDefinition.WILDCARD_PATH.getKey(), locale, resolver.getResourceBundle(locale));
+                String description = JGroupsExtension.SUBSYSTEM_RESOLVER.getChildTypeDescription(ProtocolResourceDefinition.WILDCARD_PATH.getKey(), locale, JGroupsExtension.SUBSYSTEM_RESOLVER.getResourceBundle(locale));
                 ModelNode result = new ModelNode();
                 result.get(ModelDescriptionConstants.DESCRIPTION).set(description);
                 return Collections.singletonMap(ProtocolResourceDefinition.WILDCARD_PATH.getKey(), result);

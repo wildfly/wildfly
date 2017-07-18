@@ -38,6 +38,6 @@ public abstract class StoreWriteResourceDefinition extends ChildResourceDefiniti
     }
 
     StoreWriteResourceDefinition(PathElement path) {
-        super(path, new InfinispanResourceDescriptionResolver(path));
+        super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path));
     }
 }
