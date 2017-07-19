@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import org.jboss.as.test.integration.domain.management.cli.CapabilityCompletionTestCase;
 
 import org.jboss.as.test.integration.domain.management.cli.DataSourceTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeployAllServerGroupsTestCase;
@@ -53,7 +54,8 @@ import org.junit.runners.Suite;
         RolloutPlanTestCase.class,
         DomainDeployWithRuntimeNameTestCase.class,
         DataSourceTestCase.class,
-        CloneProfileTestCase.class
+        CloneProfileTestCase.class,
+        CapabilityCompletionTestCase.class
 })
 public class CLITestSuite {
 
