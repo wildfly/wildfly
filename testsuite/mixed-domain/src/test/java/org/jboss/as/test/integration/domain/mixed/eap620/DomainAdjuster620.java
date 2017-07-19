@@ -77,8 +77,6 @@ public class DomainAdjuster620 extends DomainAdjuster630 {
                     subsystem.append("cache-container", "server").append("replicated-cache", "default")));
             list.add(setStatisticsEnabledTrue(
                     subsystem.append("cache-container", "web").append("distributed-cache", "dist")));
-            list.add(setStatisticsEnabledTrue(
-                    subsystem.append("cache-container", "web").append("distributed-cache", "concurrent")));
 
             list.add(setStatisticsEnabledTrue(
                     subsystem.append("cache-container", "ejb").append("distributed-cache", "dist")));
@@ -93,11 +91,8 @@ public class DomainAdjuster620 extends DomainAdjuster630 {
             list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "server").append("local-cache", "default")));
 
             list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "web").append("local-cache", "passivation")));
-            list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "web").append("local-cache", "persistent")));
-            list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "web").append("local-cache", "concurrent")));
 
             list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "ejb").append("local-cache", "passivation")));
-            list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "ejb").append("local-cache", "persistent")));
 
             list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "hibernate").append("local-cache", "entity")));
             list.add(setStatisticsEnabledTrue(subsystem.append("cache-container", "hibernate").append("local-cache", "local-query")));
