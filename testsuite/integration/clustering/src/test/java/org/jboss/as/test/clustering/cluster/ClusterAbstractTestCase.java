@@ -111,7 +111,7 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
     }
 
     protected void stop(int timeout, String... containers) {
-        NodeUtil.stop(timeout, this.controller, containers);
+        NodeUtil.stop(this.controller, timeout, containers);
     }
 
     protected void deploy(String... deployments) {

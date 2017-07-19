@@ -24,6 +24,7 @@ package org.jboss.as.test.clustering.arquillian;
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.Container.State;
 import org.jboss.arquillian.container.spi.ContainerRegistry;
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.core.spi.LoadableExtension;
 import org.jboss.arquillian.test.spi.event.suite.AfterSuite;
@@ -38,7 +39,7 @@ import org.jboss.logging.Logger;
  */
 public class StopCustomContainersOnAfterSuiteExtension implements LoadableExtension {
 
-    private static final Logger log = Logger.getLogger(StopCustomContainersOnAfterSuiteExtension.class);
+    static final Logger log = Logger.getLogger(StopCustomContainersOnAfterSuiteExtension.class);
 
     @Override
     public void register(ExtensionBuilder builder) {
@@ -50,10 +51,11 @@ public class StopCustomContainersOnAfterSuiteExtension implements LoadableExtens
             for (Container c: registry.getContainers()) {
                 if (c.getState() == State.STARTED && "custom".equalsIgnoreCase(c.getContainerConfiguration().getMode())) {
                     try {
+                        log.tracef("Stopping custom container %s", c.getName());
                         c.stop();
-                        log.trace("Stopped custom container: " + c.getName());
-                    } catch (Exception e) {
-                        log.error("Failed to stop custom container: " + c.getName(), e);
+                        log.tracef("Stopped custom container %s", c.getName());
+                    } catch (LifecycleException e) {
+                        log.errorf("Failed to stop custom container %s", c.getName(), e);
                     }
                 }
             }
