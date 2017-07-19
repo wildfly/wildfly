@@ -486,7 +486,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                 authMethods.forEach(c -> {
                     String name = c.getName();
                     if (availableMechanisms.contains(name) == false) {
-                        throw ROOT_LOGGER.requiredMechanismNotAvailable(name);
+                        throw ROOT_LOGGER.requiredMechanismNotAvailable(name, availableMechanisms);
                     }
 
                     Map<String, String> mechanismConfiguration;
