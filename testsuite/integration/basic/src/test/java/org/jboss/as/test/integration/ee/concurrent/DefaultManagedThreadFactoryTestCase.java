@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ee.concurrent;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.util.PropertyPermission;
 import java.util.concurrent.Callable;
 
 import javax.naming.InitialContext;
@@ -50,7 +51,10 @@ public class DefaultManagedThreadFactoryTestCase {
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class, DefaultManagedThreadFactoryTestCase.class.getSimpleName() + ".war")
                 .addClasses(DefaultManagedThreadFactoryTestCase.class, DefaultManagedThreadFactoryTestEJB.class, TestEJBRunnable.class, Util.class, TimeoutUtil.class)
-                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new ElytronPermission("getSecurityDomain"),
+                        new PropertyPermission("ts.timeout.factor", "read")
+                        ), "permissions.xml");
     }
 
     @Test
