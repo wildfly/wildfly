@@ -127,8 +127,6 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-        System.out.println("elytron setup...");
-
         realmAddress = PathAddress.pathAddress()
                 .append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)
                 .append("properties-realm", getSecurityRealmName());
@@ -217,8 +215,6 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
 
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) {
-        System.out.println("tearing down...");
-
         try {
             applyUpdate(managementClient.getControllerClient(), Util.getWriteAttributeOperation(remotingConnectorAddress, "sasl-authentication-factory", "application-sasl-authentication"), false);
         } catch (Exception e) {

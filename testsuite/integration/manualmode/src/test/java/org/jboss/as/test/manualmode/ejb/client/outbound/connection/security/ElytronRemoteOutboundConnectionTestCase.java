@@ -30,6 +30,8 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.security.Provider;
 import java.util.Properties;
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -70,9 +72,6 @@ import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
 import org.wildfly.security.sasl.SaslMechanismSelector;
 import org.wildfly.test.api.Authentication;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
 
 /**
  * Test case pertaining to remote outbound connection authentication between two server instances using remote-outbound-connection
@@ -209,7 +208,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
     }
 
     @After
-    public void cleanResources() {
+    public void cleanResources()throws Exception {
         deployer.undeploy(EJB_CLIENT_DEPLOYMENT);
         deployer.undeploy(EJB_SERVER_DEPLOYMENT);
 
@@ -252,38 +251,40 @@ public class ElytronRemoteOutboundConnectionTestCase {
         //==================================
         // Server-side server tear down
         //==================================
-        boolean serverReloadRequired = false;
         if (!executeReadAttributeOpReturnResult(serverSideMCC, getHttpConnectorAddress("http-remoting-connector"), SASL_AUTHENTICATION_FACTORY)
                 .equals("application-sasl-authentication")) {
             applyUpdate(serverSideMCC, Util.getWriteAttributeOperation(getHttpConnectorAddress("http-remoting-connector"),
                     SASL_AUTHENTICATION_FACTORY, "application-sasl-authentication"));
-            serverReloadRequired = true;
         }
-        String securityRealm = executeReadAttributeOpReturnResult(serverSideMCC, getDefaultHttpsListenerAddress(), SECURITY_REALM);
-        if (securityRealm == null || securityRealm.isEmpty()) {
-            applyUpdate(serverSideMCC, Util.getWriteAttributeOperation(getDefaultHttpsListenerAddress(), SECURITY_REALM, "ApplicationRealm"));
-            serverReloadRequired = true;
-        }
+        Operations.CompositeOperationBuilder compositeBuilder = Operations.CompositeOperationBuilder.create();
+
         String defaultHttpsListenerSSLContext = executeReadAttributeOpReturnResult(serverSideMCC, getDefaultHttpsListenerAddress(), SSL_CONTEXT);
         if (!(defaultHttpsListenerSSLContext == null) && !defaultHttpsListenerSSLContext.isEmpty()) {
-            applyUpdate(serverSideMCC, Util.getUndefineAttributeOperation(getDefaultHttpsListenerAddress(), SSL_CONTEXT));
-            serverReloadRequired = true;
+            ModelNode update = Util.getUndefineAttributeOperation(getDefaultHttpsListenerAddress(), SSL_CONTEXT);
+            update.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            compositeBuilder.addStep(update);
         }
+
+        ModelNode update = Util.getWriteAttributeOperation(getDefaultHttpsListenerAddress(), SECURITY_REALM, "ApplicationRealm");
+        update.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        compositeBuilder.addStep(update);
+
+        applyUpdate(serverSideMCC, compositeBuilder.build().getOperation());
+
         removeIfExists(serverSideMCC, getConnectorAddress(CONNECTOR));
         removeIfExists(serverSideMCC, getHttpConnectorAddress(CONNECTOR));
-        removeIfExists(serverSideMCC, getServerSSLContextAddress(SERVER_SSL_CONTEXT), !serverReloadRequired);
-        removeIfExists(serverSideMCC, getTrustManagerAddress(SERVER_TRUST_MANAGER), !serverReloadRequired);
-        removeIfExists(serverSideMCC, getKeyStoreAddress(SERVER_TRUST_STORE), !serverReloadRequired);
-        removeIfExists(serverSideMCC, getKeyManagerAddress(SERVER_KEY_MANAGER), !serverReloadRequired);
-        removeIfExists(serverSideMCC, getKeyStoreAddress(SERVER_KEY_STORE), !serverReloadRequired);
-        removeIfExists(serverSideMCC, getSocketBindingAddress(INBOUND_SOCKET_BINDING), !serverReloadRequired);
-        removeIfExists(serverSideMCC, getEjbApplicationSecurityDomainAddress(APPLICATION_SECURITY_DOMAIN), !serverReloadRequired);
-        removeIfExists(serverSideMCC, getSaslAuthenticationFactoryAddress(AUTHENTICATION_FACTORY), !serverReloadRequired);
-        removeIfExists(serverSideMCC, getElytronSecurityDomainAddress(SECURITY_DOMAIN), !serverReloadRequired);
-        removeIfExists(serverSideMCC, getPropertiesRealmAddress(PROPERTIES_REALM), !serverReloadRequired);
-        if (serverReloadRequired) {
-            executeBlockingReloadServerSide(serverSideMCC);
-        }
+        removeIfExists(serverSideMCC, getServerSSLContextAddress(SERVER_SSL_CONTEXT), false);
+        removeIfExists(serverSideMCC, getTrustManagerAddress(SERVER_TRUST_MANAGER));
+        removeIfExists(serverSideMCC, getKeyStoreAddress(SERVER_TRUST_STORE));
+        removeIfExists(serverSideMCC, getKeyManagerAddress(SERVER_KEY_MANAGER));
+        removeIfExists(serverSideMCC, getKeyStoreAddress(SERVER_KEY_STORE));
+        removeIfExists(serverSideMCC, getSocketBindingAddress(INBOUND_SOCKET_BINDING));
+        removeIfExists(serverSideMCC, getEjbApplicationSecurityDomainAddress(APPLICATION_SECURITY_DOMAIN));
+        removeIfExists(serverSideMCC, getSaslAuthenticationFactoryAddress(AUTHENTICATION_FACTORY));
+        removeIfExists(serverSideMCC, getElytronSecurityDomainAddress(SECURITY_DOMAIN));
+        removeIfExists(serverSideMCC, getPropertiesRealmAddress(PROPERTIES_REALM));
+
+        ServerReload.reloadIfRequired(serverSideMCC);
 
         try {
             clientSideMCC.close();
@@ -1138,8 +1139,12 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(serverSideMCC, getAddKeyStoreOp(SERVER_TRUST_STORE, SERVER_TRUST_STORE_PATH, KEY_STORE_KEYPASS));
         applyUpdate(serverSideMCC, getAddTrustManagerOp(SERVER_TRUST_MANAGER, SERVER_TRUST_STORE));
         applyUpdate(serverSideMCC, getAddServerSSLContextOp(SERVER_SSL_CONTEXT, SERVER_KEY_MANAGER, SERVER_TRUST_MANAGER));
-        applyUpdate(serverSideMCC, Util.getUndefineAttributeOperation(getDefaultHttpsListenerAddress(), SECURITY_REALM));
-        applyUpdate(serverSideMCC, Util.getWriteAttributeOperation(getDefaultHttpsListenerAddress(), SSL_CONTEXT, SERVER_SSL_CONTEXT));
+        applyUpdate(serverSideMCC,
+                Operations.CompositeOperationBuilder.create()
+                .addStep(Util.getUndefineAttributeOperation(getDefaultHttpsListenerAddress(), SECURITY_REALM))
+                .addStep(Util.getWriteAttributeOperation(getDefaultHttpsListenerAddress(), SSL_CONTEXT, SERVER_SSL_CONTEXT))
+                .build().getOperation()
+        );
         applyUpdate(serverSideMCC, getAddHttpConnectorOp(CONNECTOR, "https", AUTHENTICATION_FACTORY));
         executeBlockingReloadServerSide(serverSideMCC);
     }
@@ -1163,7 +1168,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         if (allowReload) {
             update.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         }
-        log.info("Executing operation:\n" + update.toString());
+        log.trace("Executing operation:\n" + update.toString());
         ModelNode result;
         try {
             result = client.execute(new OperationBuilder(update).build());
@@ -1171,7 +1176,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
             throw new RuntimeException(ex);
         }
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-            log.info("Operation result:\n" + result.toString());
+            log.trace("Operation result:\n" + result.toString());
         } else if (result.hasDefined("failure-description")) {
             throw new RuntimeException(result.toString());
         } else {
@@ -1189,7 +1194,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
             throw new RuntimeException(ex);
         }
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-            log.info("Operation result:\n" + result.toString());
+            log.trace("Operation result:\n" + result.toString());
             return result.get("result").asString();
         } else if (result.hasDefined("failure-description")) {
             throw new RuntimeException(result.toString());
@@ -1209,7 +1214,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        log.info("Executing reload on client side server with container state: [ " + state + " ]");
+        log.trace("Executing reload on client side server with container state: [ " + state + " ]");
         ServerReload.executeReloadAndWaitForCompletion(serverSideMCC, ServerReload.TIMEOUT, false,
                 TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort());
         try {
@@ -1217,7 +1222,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        log.info("Container state after reload on client side server: [ " + state + " ]");
+        log.trace("Container state after reload on client side server: [ " + state + " ]");
     }
 
     private static void executeBlockingReloadClientServer(final ModelControllerClient clientSideMCC) {
@@ -1227,7 +1232,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        log.info("Executing reload on client side server with container state: [ " + state + " ]");
+        log.trace("Executing reload on client side server with container state: [ " + state + " ]");
         ServerReload.executeReloadAndWaitForCompletion(clientSideMCC, ServerReload.TIMEOUT, false,
                 TestSuiteEnvironment.getServerAddressNode1(), 10090);
         try {
@@ -1235,7 +1240,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        log.info("Container state after reload on client side server: [ " + state + " ]");
+        log.trace("Container state after reload on client side server: [ " + state + " ]");
     }
 
     private String callIntermediateWhoAmI() {
