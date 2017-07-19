@@ -116,6 +116,8 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
 import org.wildfly.extension.undertow.security.sso.DistributableSecurityDomainSingleSignOnManagerBuilderProvider;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
+import org.wildfly.security.auth.server.RealmIdentity;
+import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.authz.AuthorizationFailureException;
@@ -735,10 +737,14 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                         newIdentity = newIdentity.createRunAsAnonymous(false);
                     }
                 } else {
-                    try {
-                        newIdentity = newIdentity.createRunAsIdentity(runAsPrincipal);
-                    } catch (AuthorizationFailureException ex) {
-                        newIdentity = newIdentity.createRunAsIdentity(runAsPrincipal, false);
+                    if (! runAsPrincipalExists(securityDomain, runAsPrincipal)) {
+                        newIdentity = securityDomain.createAdHocIdentity(runAsPrincipal);
+                    } else {
+                        try {
+                            newIdentity = newIdentity.createRunAsIdentity(runAsPrincipal);
+                        } catch (AuthorizationFailureException ex) {
+                            newIdentity = newIdentity.createRunAsIdentity(runAsPrincipal, false);
+                        }
                     }
                 }
 
@@ -758,6 +764,20 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             }
 
             return securityIdentity;
+        }
+
+        private boolean runAsPrincipalExists(final SecurityDomain securityDomain, final String runAsPrincipal) {
+            RealmIdentity realmIdentity = null;
+            try {
+                realmIdentity = securityDomain.getIdentity(runAsPrincipal);
+                return realmIdentity.exists();
+            } catch (RealmUnavailableException e) {
+                throw UndertowLogger.ROOT_LOGGER.unableToObtainIdentity(runAsPrincipal, e);
+            } finally {
+                if (realmIdentity != null) {
+                    realmIdentity.dispose();
+                }
+            }
         }
 
         private AuthorizationManager createElytronAuthorizationManager() {

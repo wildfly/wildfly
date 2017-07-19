@@ -391,4 +391,6 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 95, value = "the path ['%s'] doesn't exist on file system")
     String unableAddHandlerForPath(String path);
 
+    @Message(id = 96, value = "Unable to obtain identity for name %s")
+    IllegalStateException unableToObtainIdentity(String name, @Cause Throwable cause);
 }
