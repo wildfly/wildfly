@@ -44,7 +44,7 @@ public class Capabilities {
      * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/messaging/activemq/server/capability.adoc">Capability documentation</a>
      */
     static final RuntimeCapability<Void> ACTIVEMQ_SERVER_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.server", true)
-            .addOptionalRequirements(JMX_CAPABILITY)
+            //.addRuntimeOnlyRequirements(JMX_CAPABILITY) -- has no function so don't use it
             .build();
 
     /**
