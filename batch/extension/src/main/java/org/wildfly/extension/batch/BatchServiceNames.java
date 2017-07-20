@@ -38,6 +38,17 @@ public class BatchServiceNames {
     }
 
     /**
+     * Creates a service name for the {@linkplain org.jberet.spi.ArtifactFactory artifact factory} service.
+     *
+     * @param deploymentUnit the deployment unit to create the service name for
+     *
+     * @return the service name
+     */
+    public static ServiceName batchArtifactFactoryServiceName(final DeploymentUnit deploymentUnit) {
+        return deploymentUnit.getServiceName().append("batch").append("artifact").append("factory");
+    }
+
+    /**
      * Creates the service name used for the bean manager on the deployment.
      *
      * @param deploymentUnit the deployment unit to create the service name for

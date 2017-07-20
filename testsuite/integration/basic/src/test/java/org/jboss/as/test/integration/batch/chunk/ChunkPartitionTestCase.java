@@ -22,10 +22,11 @@
 
 package org.jboss.as.test.integration.batch.chunk;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.net.URL;
 import java.util.Properties;
 import java.util.PropertyPermission;
-import java.util.concurrent.TimeUnit;
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.BatchRuntime;
@@ -43,15 +44,12 @@ import org.jboss.as.test.integration.batch.common.AbstractBatchTestCase;
 import org.jboss.as.test.integration.batch.common.CountingItemWriter;
 import org.jboss.as.test.integration.batch.common.JobExecutionMarshaller;
 import org.jboss.as.test.integration.batch.common.StartBatchServlet;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -153,31 +151,6 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
             Assert.assertEquals(20, countingItemWriter.getWrittenItemSize());
         } finally {
             managementClient.getControllerClient().execute(Operations.createOperation("resume"));
-        }
-    }
-
-    private static void waitForTermination(final JobExecution jobExecution, final int timeout) {
-        long waitTimeout = TimeoutUtil.adjust(timeout * 1000);
-        long sleep = 100L;
-        while (true) {
-            switch (jobExecution.getBatchStatus()) {
-                case STARTED:
-                case STARTING:
-                case STOPPING:
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(sleep);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    waitTimeout -= sleep;
-                    sleep = Math.max(sleep / 2, 100L);
-                    break;
-                default:
-                    return;
-            }
-            if (waitTimeout <= 0) {
-                throw new IllegalStateException("Batch job did not complete within allotted time.");
-            }
         }
     }
 

@@ -35,6 +35,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import javax.batch.runtime.JobExecution;
+
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -122,6 +124,31 @@ public abstract class AbstractBatchTestCase {
                 "    </step>\n" +
                 "</job>";
         return new StringAsset(xml);
+    }
+
+    protected static void waitForTermination(final JobExecution jobExecution, final int timeout) {
+        long waitTimeout = TimeoutUtil.adjust(timeout * 1000);
+        long sleep = 100L;
+        while (true) {
+            switch (jobExecution.getBatchStatus()) {
+                case STARTED:
+                case STARTING:
+                case STOPPING:
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(sleep);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    waitTimeout -= sleep;
+                    sleep = Math.max(sleep / 2, 100L);
+                    break;
+                default:
+                    return;
+            }
+            if (waitTimeout <= 0) {
+                throw new IllegalStateException("Batch job did not complete within allotted time.");
+            }
+        }
     }
 
     public static class UrlBuilder {
