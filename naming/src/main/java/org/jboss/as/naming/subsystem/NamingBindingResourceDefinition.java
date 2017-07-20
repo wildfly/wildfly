@@ -48,6 +48,7 @@ import org.jboss.msc.service.ServiceController;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -128,7 +129,10 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
         SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(NamingSubsystemModel.REBIND, getResourceDescriptionResolver())
-                .addParameter(BINDING_TYPE)
+                // disallow rebind op for external-context
+                .addParameter(SimpleAttributeDefinitionBuilder.create(BINDING_TYPE)
+                        .setValidator(new EnumValidator<>(BindingType.class, EnumSet.complementOf(EnumSet.of(BindingType.EXTERNAL_CONTEXT))))
+                        .build())
                 .addParameter(TYPE)
                 .addParameter(VALUE)
                 .addParameter(CLASS)
