@@ -32,8 +32,10 @@ import static org.jboss.as.test.integration.ejb.transaction.exception.TestConfig
 import static org.jboss.as.test.integration.ejb.transaction.exception.TestConfig.TxManagerException.NONE;
 import static org.jboss.as.test.integration.ejb.transaction.exception.TestConfig.TxManagerException.ROLLBACK_CAUSED_BY_RM_SPECIFIC_XA_EXCEPTION;
 import static org.jboss.as.test.integration.ejb.transaction.exception.TestConfig.TxManagerException.ROLLBACK_CAUSED_BY_XA_EXCEPTION;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.rmi.RemoteException;
+import java.security.AllPermission;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
@@ -67,6 +69,8 @@ public abstract class TxExceptionBaseTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackages(true, TxExceptionBaseTestCase.class.getPackage());
         jar.addPackages(true, "javassist");
+        // this test needs to create a new public class thru javassist so AllPermission is needed here
+        ear.addAsManifestResource(createPermissionsXmlAsset(new AllPermission()), "permissions.xml");
         ear.addAsModule(jar);
         return ear;
     }
