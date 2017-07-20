@@ -61,8 +61,12 @@ public class JdbcJobRepositoryDefinition extends SimpleResourceDefinition {
             .build();
 
     public JdbcJobRepositoryDefinition() {
-        super(PATH, BatchResourceDescriptionResolver.getResourceDescriptionResolver(NAME), new JdbcRepositoryAddHandler(),
-                new ReloadRequiredRemoveStepHandler(Capabilities.JOB_REPOSITORY_CAPABILITY));
+        super(
+                new Parameters(PATH, BatchResourceDescriptionResolver.getResourceDescriptionResolver(NAME))
+                        .setAddHandler(new JdbcRepositoryAddHandler())
+                        .setRemoveHandler(new ReloadRequiredRemoveStepHandler(Capabilities.JOB_REPOSITORY_CAPABILITY))
+                        .setCapabilities(Capabilities.JOB_REPOSITORY_CAPABILITY)
+        );
     }
 
     @Override
