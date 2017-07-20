@@ -47,12 +47,12 @@
         <subsystem>jaxrs.xml</subsystem>
         <subsystem>jca.xml</subsystem>
         <subsystem>jdr.xml</subsystem>
-        <subsystem>jgroups.xml</subsystem>
+        <subsystem supplement="${jgroups.supplement}">jgroups.xml</subsystem>
         <subsystem supplement="domain">jmx.xml</subsystem>
         <subsystem>jpa.xml</subsystem>
         <subsystem>jsf.xml</subsystem>
         <subsystem>mail.xml</subsystem>
-        <subsystem>mod_cluster.xml</subsystem>
+        <subsystem supplement="${mod_cluster.supplement}">mod_cluster.xml</subsystem>
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>
         <subsystem>remoting.xml</subsystem>
@@ -118,14 +118,14 @@
         <subsystem>jaxrs.xml</subsystem>
         <subsystem>jca.xml</subsystem>
         <subsystem>jdr.xml</subsystem>
-        <subsystem>jgroups.xml</subsystem>
+        <subsystem supplement="${jgroups.supplement}">jgroups.xml</subsystem>
         <subsystem supplement="domain">jmx.xml</subsystem>
         <subsystem>jpa.xml</subsystem>
         <subsystem>jsf.xml</subsystem>
         <subsystem>jsr77.xml</subsystem>
         <subsystem>mail.xml</subsystem>
         <subsystem supplement="ha">messaging-activemq.xml</subsystem>
-        <subsystem>mod_cluster.xml</subsystem>
+        <subsystem supplement="${mod_cluster.supplement}">mod_cluster.xml</subsystem>
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>
         <subsystem>remoting.xml</subsystem>
