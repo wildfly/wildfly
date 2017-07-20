@@ -189,7 +189,7 @@
                 <property name="jbossHome">${basedir}/target/jbossas-dwm-1</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-dwm-1 -Djboss.node.name=node-1 -Djboss.socket.binding.port-offset=300</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
-                <property name="jbossArguments">${jboss.args}</property>
+                <property name="jbossArguments">-b=${node1} -bmanagement=${node1} -bprivate=${node1} -bunsecure=${node1} ${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node1:127.0.0.1}</property>
                 <property name="managementPort">${as.managementPort.node1:10290}</property>
