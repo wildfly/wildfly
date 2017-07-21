@@ -284,9 +284,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                     if (jgroupFactories.containsKey(key)) {
                         ChannelFactory channelFactory = jgroupFactories.get(key);
                         String channelName = jgroupsChannels.get(key);
-                        JChannel channel = (JChannel) channelFactory.createChannel(channelName);
-                        channels.put(channelName, channel);
-                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, channel, channelName));
+                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, channelFactory, channelName));
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {
@@ -304,16 +302,11 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                 for(final Map.Entry<String, DiscoveryGroupConfiguration> entry : discoveryGroups.entrySet()) {
                     final String name = entry.getKey();
                     final String key = "discovery" + name;
-                    DiscoveryGroupConfiguration config = null;
+                    final DiscoveryGroupConfiguration config;
                     if (jgroupFactories.containsKey(key)) {
                         ChannelFactory channelFactory = jgroupFactories.get(key);
                         String channelName = jgroupsChannels.get(key);
-                        JChannel channel = channels.get(channelName);
-                        if (channel == null) {
-                            channel = (JChannel) channelFactory.createChannel(channelName);
-                            channels.put(channelName, channel);
-                        }
-                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), channel, channelName);
+                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), channelFactory, channelName, channels);
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {
