@@ -22,6 +22,9 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.wildfly.extension.undertow.HostDefinition.HOST_CAPABILITY;
+import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -54,6 +57,15 @@ class HostAdd extends AbstractAddStepHandler {
 
     private HostAdd() {
         super(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE, HostDefinition.DISABLE_CONSOLE_REDIRECT);
+    }
+
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.recordCapabilitiesAndRequirements(context, operation, resource);
+
+        String ourCap = HOST_CAPABILITY.getDynamicName(context.getCurrentAddress());
+        String serverCap = SERVER_CAPABILITY.getDynamicName(context.getCurrentAddress().getParent());
+        context.registerAdditionalCapabilityRequirement(serverCap, ourCap, null);
     }
 
     @Override

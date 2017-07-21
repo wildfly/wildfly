@@ -25,6 +25,12 @@ package org.wildfly.extension.undertow;
 import static org.wildfly.extension.undertow.Capabilities.REF_BUFFER_POOL;
 import static org.wildfly.extension.undertow.Capabilities.REF_IO_WORKER;
 import static org.wildfly.extension.undertow.Capabilities.REF_SOCKET_BINDING;
+import static org.wildfly.extension.undertow.ListenerResourceDefinition.LISTENER_CAPABILITY;
+import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import io.undertow.server.handlers.DisallowedMethodsHandler;
 import io.undertow.server.handlers.PeerNameResolvingHandler;
@@ -35,6 +41,7 @@ import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
@@ -43,10 +50,6 @@ import org.xnio.OptionMap;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
@@ -54,6 +57,15 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
 
     ListenerAdd(ListenerResourceDefinition definition) {
         super(definition.getAttributes());
+    }
+
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.recordCapabilitiesAndRequirements(context, operation, resource);
+
+        String ourCap = LISTENER_CAPABILITY.getDynamicName(context.getCurrentAddress());
+        String serverCap = SERVER_CAPABILITY.getDynamicName(context.getCurrentAddress().getParent());
+        context.registerAdditionalCapabilityRequirement(serverCap, ourCap, null);
     }
 
     @Override
