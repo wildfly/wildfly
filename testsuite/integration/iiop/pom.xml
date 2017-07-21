@@ -112,7 +112,7 @@
                             <argLine>
                                 ${modular.jdk.args} ${iiop.endorsed.argline}
                                 -Dcom.sun.CORBA.ORBUseDynamicStub=true
-                                -Dcom.arjuna.ats.arjuna.common.propertiesFile=jbossts-properties.xml
+                                -Dcom.arjuna.ats.arjuna.common.propertiesFile=jbossts-properties.xml ${surefire.jacoco.args}
                             </argLine>
                         </configuration>
                         <executions combine.children="append">
