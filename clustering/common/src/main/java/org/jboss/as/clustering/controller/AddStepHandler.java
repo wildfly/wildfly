@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
@@ -94,13 +95,16 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
                     return;
                 }
             }
-            Optional<PathElement> singletonPathResult = parentDescriptor.getRequiredSingletonChildren().stream().filter(requiredPath -> requiredPath.getKey().equals(path.getKey()) && !requiredPath.getValue().equals(path.getValue())).findFirst();
+            Optional<PathElement> singletonPathResult = parentDescriptor.getRequiredSingletonChildren().stream().filter(requiredPath -> requiredPath.getKey().equals(path.getKey())).findFirst();
             if (singletonPathResult.isPresent()) {
                 PathElement singletonPath = singletonPathResult.get();
-                if (context.readResourceFromRoot(parentAddress, false).hasChild(singletonPath)) {
+                Set<String> childrenNames = context.readResourceFromRoot(parentAddress, false).getChildrenNames(singletonPath.getKey());
+                if (!childrenNames.isEmpty()) {
                     // If there is a required singleton sibling resource, we need to remove it first
-                    PathAddress singletonAddress = parentAddress.append(singletonPath);
-                    context.addStep(Util.createRemoveOperation(singletonAddress), context.getRootResourceRegistration().getOperationHandler(singletonAddress, ModelDescriptionConstants.REMOVE), OperationContext.Stage.MODEL);
+                    childrenNames.forEach(childName -> {
+                        PathAddress singletonAddress = parentAddress.append(singletonPath.getKey(), childName);
+                        context.addStep(Util.createRemoveOperation(singletonAddress), context.getRootResourceRegistration().getOperationHandler(singletonAddress, ModelDescriptionConstants.REMOVE), OperationContext.Stage.MODEL);
+                    });
                     context.addStep(operation, this, OperationContext.Stage.MODEL);
                     return;
                 }
