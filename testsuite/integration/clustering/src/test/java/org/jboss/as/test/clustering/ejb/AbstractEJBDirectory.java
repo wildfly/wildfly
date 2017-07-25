@@ -101,7 +101,7 @@ public abstract class AbstractEJBDirectory implements EJBDirectory {
 
     protected abstract <T> String createJndiName(String beanName, Class<T> beanInterface, Type type);
 
-    protected <T> T lookup(String name, Class<T> beanInterface) throws NamingException {
-        return beanInterface.cast(this.context.lookup(name));
+    protected <T> T lookup(String name, Class<T> targetClass) throws NamingException {
+        return targetClass.cast(this.context.lookup(name));
     }
 }

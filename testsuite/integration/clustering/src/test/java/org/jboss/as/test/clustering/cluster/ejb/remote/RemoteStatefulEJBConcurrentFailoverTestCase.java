@@ -46,9 +46,6 @@ import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
-import org.jboss.ejb.client.ClusterAffinity;
-import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.legacy.JBossEJBProperties;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -64,7 +61,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstractTestCase {
     private static final String MODULE_NAME = "remote-stateful-ejb-concurrent-failover-test";
-    private static final String CLIENT_PROPERTIES = "org/jboss/as/test/clustering/cluster/ejb/remote/jboss-ejb-client.properties";
 
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
     private static final long INVOCATION_WAIT = TimeoutUtil.adjust(10);
@@ -95,55 +91,51 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
     }
 
     public void test(Lifecycle lifecycle) throws Exception {
-        JBossEJBProperties.fromClassPath(this.getClass().getClassLoader(), CLIENT_PROPERTIES).runCallable(() -> {
-            try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
-                Incrementor bean = directory.lookupStateful(SlowToDestroyStatefulIncrementorBean.class, Incrementor.class);
-                EJBClient.setStrongAffinity(bean, new ClusterAffinity("ejb"));
+        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
+            Incrementor bean = directory.lookupStateful(SlowToDestroyStatefulIncrementorBean.class, Incrementor.class);
 
-                AtomicInteger count = new AtomicInteger();
+            AtomicInteger count = new AtomicInteger();
 
-                // Allow sufficient time for client to receive full topology
-                Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            // Allow sufficient time for client to receive full topology
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
 
-                String target = bean.increment().getNode();
-                count.incrementAndGet();
-                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            String target = bean.increment().getNode();
+            count.incrementAndGet();
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            try {
+                CountDownLatch latch = new CountDownLatch(1);
+                Future<?> future = executor.scheduleWithFixedDelay(new IncrementTask(bean, count, latch), 0, INVOCATION_WAIT, TimeUnit.MILLISECONDS);
+                latch.await();
+
+                lifecycle.stop(target);
+
+                future.cancel(false);
                 try {
-                    CountDownLatch latch = new CountDownLatch(1);
-                    Future<?> future = executor.scheduleWithFixedDelay(new IncrementTask(bean, count, latch), 0, INVOCATION_WAIT, TimeUnit.MILLISECONDS);
-                    latch.await();
-
-                    lifecycle.stop(target);
-
-                    future.cancel(false);
-                    try {
-                        future.get();
-                    } catch (CancellationException e) {
-                        // Ignore
-                    }
-
-                    lifecycle.start(target);
-
-                    latch = new CountDownLatch(1);
-                    future = executor.scheduleWithFixedDelay(new LookupTask(directory, SlowToDestroyStatefulIncrementorBean.class, latch), 0, INVOCATION_WAIT, TimeUnit.MILLISECONDS);
-                    latch.await();
-
-                    lifecycle.stop(target);
-
-                    future.cancel(false);
-                    try {
-                        future.get();
-                    } catch (CancellationException e) {
-                        // Ignore
-                    }
-
-                    lifecycle.start(target);
-                } finally {
-                    executor.shutdownNow();
+                    future.get();
+                } catch (CancellationException e) {
+                    // Ignore
                 }
+
+                lifecycle.start(target);
+
+                latch = new CountDownLatch(1);
+                future = executor.scheduleWithFixedDelay(new LookupTask(directory, SlowToDestroyStatefulIncrementorBean.class, latch), 0, INVOCATION_WAIT, TimeUnit.MILLISECONDS);
+                latch.await();
+
+                lifecycle.stop(target);
+
+                future.cancel(false);
+                try {
+                    future.get();
+                } catch (CancellationException e) {
+                    // Ignore
+                }
+
+                lifecycle.start(target);
+            } finally {
+                executor.shutdownNow();
             }
-            return null;
-        });
+        }
     }
 
     private class IncrementTask implements Runnable {

@@ -24,6 +24,7 @@ package org.jboss.as.test.clustering.cluster.ejb.remote;
 
 import java.util.PropertyPermission;
 
+import javax.ejb.NoSuchEJBException;
 import javax.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -38,9 +39,7 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatefulIncrementorB
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
-import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.legacy.JBossEJBProperties;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -56,7 +55,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class TransactionalRemoteStatefulEJBFailoverTestCase extends ClusterAbstractTestCase {
     private static final String MODULE_NAME = "transactional-remote-stateful-ejb-failover-test";
-    private static final String CLIENT_PROPERTIES = "org/jboss/as/test/clustering/cluster/ejb/remote/jboss-ejb-client.properties";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -80,53 +78,48 @@ public class TransactionalRemoteStatefulEJBFailoverTestCase extends ClusterAbstr
 
     @Test
     public void test() throws Exception {
-        JBossEJBProperties.fromClassPath(this.getClass().getClassLoader(), CLIENT_PROPERTIES).runCallable(() -> {
-            try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
-                Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
-                EJBClient.setStrongAffinity(bean, new ClusterAffinity("ejb"));
+        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
+            Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
 
-                Result<Integer> result = bean.increment();
-                // Bean should retain weak affinity for this node
-                String target = result.getNode();
-                int count = 1;
+            Result<Integer> result = bean.increment();
+            // Bean should retain weak affinity for this node
+            String target = result.getNode();
+            int count = 1;
 
-                Assert.assertEquals(count++, result.getValue().intValue());
+            Assert.assertEquals(count++, result.getValue().intValue());
 
-                // Validate that multi-invocations function correctly within a tx
-                UserTransaction tx = EJBClient.getUserTransaction(target);
-                tx.begin();
+            // Validate that multi-invocations function correctly within a tx
+            UserTransaction tx = EJBClient.getUserTransaction(target);
+            tx.begin();
 
+            result = bean.increment();
+            Assert.assertEquals(count++, result.getValue().intValue());
+            Assert.assertEquals(target, result.getNode());
+
+            result = bean.increment();
+            Assert.assertEquals(count++, result.getValue().intValue());
+            Assert.assertEquals(target, result.getNode());
+
+            tx.commit();
+
+            // Validate that second invocation fails if target node is undeployed in middle of tx
+            tx.begin();
+
+            result = bean.increment();
+            Assert.assertEquals(count++, result.getValue().intValue());
+            Assert.assertEquals(target, result.getNode());
+
+            undeploy(this.findDeployment(target));
+
+            try {
                 result = bean.increment();
-                Assert.assertEquals(count++, result.getValue().intValue());
-                Assert.assertEquals(target, result.getNode());
 
-                result = bean.increment();
-                Assert.assertEquals(count++, result.getValue().intValue());
-                Assert.assertEquals(target, result.getNode());
-
-                tx.commit();
-/*              This currently fails due to EJBCLIENT-247
-                // Validate that second invocation fails if target node is undeployed in middle of tx
-                tx.begin();
-
-                result = bean.increment();
-                Assert.assertEquals(count++, result.getValue().intValue());
-                Assert.assertEquals(target, result.getNode());
-
-                undeploy(this.findDeployment(target));
-
-                try {
-                    result = bean.increment();
-
-                    Assert.fail("Expected an ISE");
-                } catch (IllegalStateException e) {
-                    // Expected
-                } finally {
-                    tx.rollback();
-                }
-*/
-                return null;
+                Assert.fail("Expected a NoSuchEJBException");
+            } catch (NoSuchEJBException e) {
+                // Expected
+            } finally {
+                tx.rollback();
             }
-        });
+        }
     }
 }

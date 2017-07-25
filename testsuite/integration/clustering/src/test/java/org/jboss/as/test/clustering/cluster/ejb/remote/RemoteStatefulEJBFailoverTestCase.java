@@ -37,9 +37,6 @@ import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
-import org.jboss.ejb.client.ClusterAffinity;
-import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.legacy.JBossEJBProperties;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -55,7 +52,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class RemoteStatefulEJBFailoverTestCase extends ClusterAbstractTestCase {
     private static final String MODULE_NAME = "remote-stateful-ejb-failover-test";
-    private static final String CLIENT_PROPERTIES = "org/jboss/as/test/clustering/cluster/ejb/remote/jboss-ejb-client.properties";
 
     private static final int COUNT = 20;
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
@@ -82,91 +78,87 @@ public class RemoteStatefulEJBFailoverTestCase extends ClusterAbstractTestCase {
 
     @Test
     public void test() throws Exception {
-        JBossEJBProperties.fromClassPath(this.getClass().getClassLoader(), CLIENT_PROPERTIES).runCallable(() -> {
-            try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
-                Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
-                EJBClient.setStrongAffinity(bean, new ClusterAffinity("ejb"));
+        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
+            Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
 
-                Result<Integer> result = bean.increment();
-                String target = result.getNode();
-                int count = 1;
+            Result<Integer> result = bean.increment();
+            String target = result.getNode();
+            int count = 1;
 
-                Assert.assertEquals(count++, result.getValue().intValue());
+            Assert.assertEquals(count++, result.getValue().intValue());
 
-                // Bean should retain weak affinity for this node
-                for (int i = 0; i < COUNT; ++i) {
-                    result = bean.increment();
-                    Assert.assertEquals(count++, result.getValue().intValue());
-                    Assert.assertEquals(String.valueOf(i), target, result.getNode());
-                }
-
-                undeploy(this.findDeployment(target));
-
-                Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
-
+            // Bean should retain weak affinity for this node
+            for (int i = 0; i < COUNT; ++i) {
                 result = bean.increment();
-                // Bean should failover to other node
-                String failoverTarget = result.getNode();
-
                 Assert.assertEquals(count++, result.getValue().intValue());
-                Assert.assertNotEquals(target, failoverTarget);
-
-                deploy(this.findDeployment(target));
-
-                // Allow sufficient time for client to receive new topology
-                Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
-
-                result = bean.increment();
-                String failbackTarget = result.getNode();
-                Assert.assertEquals(count++, result.getValue().intValue());
-                // Bean should retain weak affinity for this node
-                Assert.assertEquals(failoverTarget, failbackTarget);
-
-                result = bean.increment();
-                // Bean may have acquired new weak affinity
-                target = result.getNode();
-                Assert.assertEquals(count++, result.getValue().intValue());
-
-                // Bean should retain weak affinity for this node
-                for (int i = 0; i < COUNT; ++i) {
-                    result = bean.increment();
-                    Assert.assertEquals(count++, result.getValue().intValue());
-                    Assert.assertEquals(String.valueOf(i), target, result.getNode());
-                }
-
-                stop(this.findContainer(target));
-
-                result = bean.increment();
-                // Bean should failover to other node
-                failoverTarget = result.getNode();
-
-                Assert.assertEquals(count++, result.getValue().intValue());
-                Assert.assertNotEquals(target, failoverTarget);
-
-                start(this.findContainer(target));
-
-                // Allow sufficient time for client to receive new topology
-                Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
-
-                result = bean.increment();
-                failbackTarget = result.getNode();
-                Assert.assertEquals(count++, result.getValue().intValue());
-                // Bean should retain weak affinity for this node
-                Assert.assertEquals(failoverTarget, failbackTarget);
-
-                result = bean.increment();
-                // Bean may have acquired new weak affinity
-                target = result.getNode();
-                Assert.assertEquals(count++, result.getValue().intValue());
-
-                // Bean should retain weak affinity for this node
-                for (int i = 0; i < COUNT; ++i) {
-                    result = bean.increment();
-                    Assert.assertEquals(count++, result.getValue().intValue());
-                    Assert.assertEquals(String.valueOf(i), target, result.getNode());
-                }
+                Assert.assertEquals(String.valueOf(i), target, result.getNode());
             }
-            return null;
-        });
+
+            undeploy(this.findDeployment(target));
+
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+
+            result = bean.increment();
+            // Bean should failover to other node
+            String failoverTarget = result.getNode();
+
+            Assert.assertEquals(count++, result.getValue().intValue());
+            Assert.assertNotEquals(target, failoverTarget);
+
+            deploy(this.findDeployment(target));
+
+            // Allow sufficient time for client to receive new topology
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+
+            result = bean.increment();
+            String failbackTarget = result.getNode();
+            Assert.assertEquals(count++, result.getValue().intValue());
+            // Bean should retain weak affinity for this node
+            Assert.assertEquals(failoverTarget, failbackTarget);
+
+            result = bean.increment();
+            // Bean may have acquired new weak affinity
+            target = result.getNode();
+            Assert.assertEquals(count++, result.getValue().intValue());
+
+            // Bean should retain weak affinity for this node
+            for (int i = 0; i < COUNT; ++i) {
+                result = bean.increment();
+                Assert.assertEquals(count++, result.getValue().intValue());
+                Assert.assertEquals(String.valueOf(i), target, result.getNode());
+            }
+
+            stop(this.findContainer(target));
+
+            result = bean.increment();
+            // Bean should failover to other node
+            failoverTarget = result.getNode();
+
+            Assert.assertEquals(count++, result.getValue().intValue());
+            Assert.assertNotEquals(target, failoverTarget);
+
+            start(this.findContainer(target));
+
+            // Allow sufficient time for client to receive new topology
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+
+            result = bean.increment();
+            failbackTarget = result.getNode();
+            Assert.assertEquals(count++, result.getValue().intValue());
+            // Bean should retain weak affinity for this node
+            Assert.assertEquals(failoverTarget, failbackTarget);
+
+            result = bean.increment();
+            // Bean may have acquired new weak affinity
+            target = result.getNode();
+            Assert.assertEquals(count++, result.getValue().intValue());
+
+            // Bean should retain weak affinity for this node
+            for (int i = 0; i < COUNT; ++i) {
+                result = bean.increment();
+                Assert.assertEquals(count++, result.getValue().intValue());
+                Assert.assertEquals(String.valueOf(i), target, result.getNode());
+            }
+        }
     }
 }

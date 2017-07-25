@@ -23,7 +23,6 @@
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.PropertyPermission;
@@ -42,9 +41,6 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
-import org.jboss.ejb.client.ClusterAffinity;
-import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.legacy.JBossEJBProperties;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -60,7 +56,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class ClientExceptionRemoteEJBTestCase extends ClusterAbstractTestCase {
     private static final String MODULE_NAME = "client-exception-remote-ejb-test";
-    private static final String CLIENT_PROPERTIES = "org/jboss/as/test/clustering/cluster/ejb/remote/jboss-ejb-client.properties";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -85,19 +80,14 @@ public class ClientExceptionRemoteEJBTestCase extends ClusterAbstractTestCase {
 
     @Test
     public void test() throws Exception {
-        JBossEJBProperties.fromClassPath(this.getClass().getClassLoader(), CLIENT_PROPERTIES).runCallable(() -> {
-            try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
-                Incrementor bean = directory.lookupStateful(InfinispanExceptionThrowingIncrementorBean.class, Incrementor.class);
-                EJBClient.setStrongAffinity(bean, new ClusterAffinity("ejb"));
+        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
+            Incrementor bean = directory.lookupStateful(InfinispanExceptionThrowingIncrementorBean.class, Incrementor.class);
 
-                bean.increment();
-            } catch (Exception ejbException) {
-                assertTrue("Expected exception wrapped in EJBException, got " + ejbException.getClass(), ejbException instanceof EJBException);
-                assertNull("Cause of EJBException has not been removed", ejbException.getCause());
-                return null;
-            }
+            bean.increment();
+
             fail("Expected EJBException but didn't catch it");
-            return null;
-        });
+        } catch (EJBException e) {
+            assertNull("Cause of EJBException has not been removed", e.getCause());
+        }
     }
 }

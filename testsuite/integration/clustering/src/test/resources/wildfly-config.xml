@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <jboss-ejb-client xmlns="urn:jboss:wildfly-client-ejb:3.0">
+        <connections>
+            <connection uri="remote+http://${node0.escaped:localhost}:8080"/>
+            <!-- node1 should be auto-discovered -->
+        </connections>
+    </jboss-ejb-client>
+</configuration>
