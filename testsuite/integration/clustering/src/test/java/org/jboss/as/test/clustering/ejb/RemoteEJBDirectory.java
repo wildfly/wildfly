@@ -36,16 +36,20 @@ import org.jboss.ejb.client.EJBClient;
  */
 public class RemoteEJBDirectory extends AbstractEJBDirectory {
 
+    private static final String TX_CONTEXT_NAME = "txn:UserTransaction";
+
     private static Properties createEnvironment() {
         Properties env = new Properties();
         env.setProperty(Context.INITIAL_CONTEXT_FACTORY, org.wildfly.naming.client.WildFlyInitialContextFactory.class.getName());
+        // TODO UserTransaction lookup currently requires environment to be configured with provider URLs.
+        // env.setProperty(Context.PROVIDER_URL, String.join(",", EJBClientContext.getCurrent().getConfiguredConnections().stream().map(EJBClientConnection::getDestination).map(URI::toString).collect(Collectors.toList())));
         return env;
     }
 
     private final String module;
 
     public RemoteEJBDirectory(String module) throws NamingException {
-        super(createEnvironment());
+        super(TX_CONTEXT_NAME, createEnvironment());
         this.module = module;
     }
 

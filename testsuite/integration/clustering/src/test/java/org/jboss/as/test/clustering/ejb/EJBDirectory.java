@@ -25,6 +25,7 @@ package org.jboss.as.test.clustering.ejb;
 import javax.ejb.EJBHome;
 import javax.ejb.SessionBean;
 import javax.naming.NamingException;
+import javax.transaction.UserTransaction;
 
 /**
  * EJB lookup helper
@@ -47,6 +48,8 @@ public interface EJBDirectory extends AutoCloseable {
     <T extends EJBHome> T lookupHome(String beanName, Class<T> homeInterface) throws NamingException;
 
     <T extends EJBHome> T lookupHome(Class<? extends SessionBean> beanClass, Class<T> homeInterface) throws NamingException;
+
+    UserTransaction lookupUserTransaction() throws NamingException;
 
     @Override
     void close() throws NamingException;

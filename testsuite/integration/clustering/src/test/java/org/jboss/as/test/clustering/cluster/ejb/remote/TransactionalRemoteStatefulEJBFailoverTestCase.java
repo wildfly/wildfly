@@ -90,6 +90,8 @@ public class TransactionalRemoteStatefulEJBFailoverTestCase extends ClusterAbstr
 
             // Validate that multi-invocations function correctly within a tx
             UserTransaction tx = EJBClient.getUserTransaction(target);
+            // TODO Currently requires environment to be configured with provider URLs.
+            // UserTransaction tx = directory.lookupUserTransaction();
             tx.begin();
 
             result = bean.increment();
