@@ -22,6 +22,10 @@
 
 package org.jboss.as.security;
 
+import static org.jboss.as.security.Constants.MODULE;
+import static org.jboss.as.security.MappingProviderModuleDefinition.PATH_PROVIDER_MODULE;
+import static org.jboss.as.security.SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
@@ -30,6 +34,7 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Tomaz Cerar (c) 2017 Red Hat Inc.
@@ -42,7 +47,7 @@ public class SecurityTransformers implements ExtensionTransformerRegistration {
 
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
-// only register transformers for model version 1.3.0 (EAP 6.2+).
+        // only register transformers for model version 1.3.0 (EAP 6.2+).
         registerTransformers_1_3_0(subsystemRegistration);
     }
 
@@ -53,12 +58,18 @@ public class SecurityTransformers implements ExtensionTransformerRegistration {
         builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_TRUST_STORE));
         builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_KEY_MANAGER));
         builder.rejectChildResource(PathElement.pathElement(Constants.ELYTRON_TRUST_MANAGER));
-        builder.addChildResource(PathElement.pathElement(Constants.SECURITY_MANAGEMENT))
-                .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, SecuritySubsystemRootResourceDefinition.INITIALIZE_JACC);
+        builder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(INITIALIZE_JACC.getDefaultValue()), INITIALIZE_JACC)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, INITIALIZE_JACC);
 
-        SecurityDomainResourceDefinition.registerTransformers_1_3_0(builder);
+
+        builder
+                .addChildResource(SecurityExtension.SECURITY_DOMAIN_PATH)
+                .addChildResource(SecurityExtension.PATH_AUDIT_CLASSIC)
+                .addChildResource(PATH_PROVIDER_MODULE)
+                .getAttributeBuilder()
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(ModuleName.PICKETBOX.getName())), MODULE)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, MODULE).end();
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 3, 0));
     }

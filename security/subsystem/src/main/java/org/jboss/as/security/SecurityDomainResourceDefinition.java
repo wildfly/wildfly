@@ -48,7 +48,6 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
@@ -228,11 +227,6 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
         if (controller.getState() != ServiceController.State.UP) {
             throw SecurityLogger.ROOT_LOGGER.requiredSecurityDomainServiceNotAvailable(controller.getName().getSimpleName());
         }
-    }
-
-    static void registerTransformers_1_3_0(ResourceTransformationDescriptionBuilder parentBuilder) {
-        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(SecurityExtension.SECURITY_DOMAIN_PATH);
-        AuditResourceDefinition.registerTransformers_1_3_0(builder);
     }
 
 }
