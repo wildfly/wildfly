@@ -60,9 +60,9 @@ public class AuthMethodParser {
                     for (Map.Entry<String, Deque<String>> entry : props.entrySet()) {
                         Deque<String> val = entry.getValue();
                         if (val.isEmpty()) {
-                            authMethodConfig.getProperties().put(URLDecoder.decode(entry.getKey(), UTF_8), "");
+                            authMethodConfig.getProperties().put(entry.getKey(), "");
                         } else {
-                            authMethodConfig.getProperties().put(URLDecoder.decode(entry.getKey(), UTF_8), URLDecoder.decode(val.getFirst(), UTF_8));
+                            authMethodConfig.getProperties().put(entry.getKey(), val.getFirst());
                         }
                     }
                     ret.add(authMethodConfig);
