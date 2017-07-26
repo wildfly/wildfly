@@ -68,7 +68,8 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition CALL_FAILOVER_TIMEOUT = create("call-failover-timeout", LONG)
             // ActiveMQClient.DEFAULT_CALL_FAILOVER_TIMEOUT was changed from -1 to 30000 in ARTEMIS-255
-            .setDefaultValue(new ModelNode(30000L))
+            // we set it to 60s to leave more time for WildFly to failover
+            .setDefaultValue(new ModelNode(60000L))
             .setRequired(false)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)

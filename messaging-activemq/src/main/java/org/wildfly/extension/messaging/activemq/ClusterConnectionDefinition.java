@@ -79,6 +79,12 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final SimpleAttributeDefinition CALL_FAILOVER_TIMEOUT = create(CommonAttributes.CALL_FAILOVER_TIMEOUT)
+            // cluster connection will wait forever during failover for a non-blocking call
+            .setDefaultValue(new ModelNode(-1L))
+            .setRestartAllServices()
+            .build();
+
     public static final SimpleAttributeDefinition CHECK_PERIOD = create("check-period", LONG)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterFailureCheckPeriod()))
             .setRequired(false)
@@ -204,7 +210,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             CONNECTION_TTL,
             CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
             CommonAttributes.CALL_TIMEOUT,
-            CommonAttributes.CALL_FAILOVER_TIMEOUT,
+            CALL_FAILOVER_TIMEOUT,
             RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER, MAX_RETRY_INTERVAL,
             INITIAL_CONNECT_ATTEMPTS,
             RECONNECT_ATTEMPTS, USE_DUPLICATE_DETECTION,
