@@ -183,15 +183,15 @@ public class AddressControlManagementTestCase {
         ModelNode response = managementClient.getControllerClient().execute(op);
         final String outcome = response.get("outcome").asString();
         if (expectSuccess) {
-            if (!"success".equals(outcome)) {
+            /*if (!"success".equals(outcome)) {
                 System.out.println(response);
-            }
+            }*/
             Assert.assertEquals("success", outcome);
             return response.get("result");
         } else {
-            if ("success".equals(outcome)) {
-                System.out.println(response);
-            }
+            /*if ("success".equals(outcome)) {
+               System.out.println(response);
+            }*/
             Assert.assertEquals("failed", outcome);
             return response.get("failure-description");
         }

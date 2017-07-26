@@ -74,7 +74,6 @@ public class LocalTransactionTestCase {
     private void callServlet(boolean allowLocalTransactions) throws Exception {
         URL url = new URL(this.url.toExternalForm() + "LocalTransactionTestCase?allowLocalTransactions=" + allowLocalTransactions);
         String reply  = HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
-        System.out.println(">>> reply = " + reply);
         assertNotNull(reply);
         assertEquals(allowLocalTransactions, Boolean.valueOf(reply));
     }

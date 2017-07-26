@@ -84,8 +84,6 @@ public class TransactionInflowTestCase {
                     new PropertyPermission("ts.timeout.factor", "read"))
                     , "jboss-permissions.xml")
             .addAsLibrary(jar);
-
-        System.out.println(rar.toString(true));
         return rar;
     }
 

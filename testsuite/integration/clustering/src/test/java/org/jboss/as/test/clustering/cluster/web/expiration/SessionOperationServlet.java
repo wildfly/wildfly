@@ -107,7 +107,7 @@ public class SessionOperationServlet extends HttpServlet {
         String operation = getRequiredParameter(req, OPERATION);
         HttpSession session = req.getSession(true);
         resp.addHeader(SESSION_ID, session.getId());
-        System.out.println(String.format("%s?%s;jsessionid=%s", req.getRequestURL(), req.getQueryString(), session.getId()));
+        //System.out.println(String.format("%s?%s;jsessionid=%s", req.getRequestURL(), req.getQueryString(), session.getId()));
         if (operation.equals(SET)) {
             String name = getRequiredParameter(req, NAME);
             String[] values = req.getParameterValues(VALUE);
