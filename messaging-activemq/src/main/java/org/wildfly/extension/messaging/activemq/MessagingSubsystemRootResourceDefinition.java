@@ -144,7 +144,6 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
         ResourceTransformationDescriptionBuilder clusterConnection = server.addChildResource(MessagingExtension.CLUSTER_CONNECTION_PATH);
         // reject producer-window-size introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(clusterConnection, ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE);
-        defaultValueAttributeConverter(clusterConnection, CommonAttributes.CALL_FAILOVER_TIMEOUT);
         ResourceTransformationDescriptionBuilder connectionFactory = server.addChildResource(MessagingExtension.CONNECTION_FACTORY_PATH);
         rejectDefinedAttributeWithDefaultValue(connectionFactory, ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                 ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST);

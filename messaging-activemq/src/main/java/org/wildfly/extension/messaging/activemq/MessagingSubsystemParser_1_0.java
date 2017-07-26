@@ -350,7 +350,7 @@ public class MessagingSubsystemParser_1_0 extends PersistentResourceXMLParser {
                                                                 ClusterConnectionDefinition.CONNECTION_TTL,
                                                                 CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
                                                                 CommonAttributes.CALL_TIMEOUT,
-                                                                CommonAttributes.CALL_FAILOVER_TIMEOUT,
+                                                                ClusterConnectionDefinition.CALL_FAILOVER_TIMEOUT,
                                                                 ClusterConnectionDefinition.RETRY_INTERVAL,
                                                                 ClusterConnectionDefinition.RETRY_INTERVAL_MULTIPLIER,
                                                                 ClusterConnectionDefinition.MAX_RETRY_INTERVAL,
