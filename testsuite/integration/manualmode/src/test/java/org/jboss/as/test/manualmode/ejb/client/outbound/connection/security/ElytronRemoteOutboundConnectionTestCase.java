@@ -1057,7 +1057,6 @@ public class ElytronRemoteOutboundConnectionTestCase {
         ModelNode credentialReference = new ModelNode();
         credentialReference.get("clear-text").set(keyPass);
         addKeyStoreOp.get("credential-reference").set(credentialReference);
-        addKeyStoreOp.get("algorithm").set("SunX509");
         return addKeyStoreOp;
     }
 
@@ -1070,7 +1069,6 @@ public class ElytronRemoteOutboundConnectionTestCase {
     private static ModelNode getAddTrustManagerOp(String trustManagerName, String keyStoreName) {
         ModelNode addKeyStoreOp = Util.createAddOperation(getTrustManagerAddress(trustManagerName));
         addKeyStoreOp.get("key-store").set(keyStoreName);
-        addKeyStoreOp.get("algorithm").set("SunX509");
         return addKeyStoreOp;
     }
 
