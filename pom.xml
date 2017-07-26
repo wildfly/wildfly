@@ -177,26 +177,26 @@
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0-alpha-10</version.org.jboss.shrinkwrap.descriptors>
         <!-- Include the artifactId for org.jboss.spec project versions because artifactId contains the API spec version -->
-        <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>1.0.0.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>
+        <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>1.0.1.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>
         <version.org.jboss.spec.javax.batch.jboss-batch-api_1.0_spec>1.0.0.Final</version.org.jboss.spec.javax.batch.jboss-batch-api_1.0_spec>
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
-        <version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>1.0.9.Final</version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>
+        <version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>1.0.10.Final</version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>
         <version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>1.0.0.Final</version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>
         <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>2.2.13</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>1.0.1.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>1.0.0.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>
         <version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>1.0.5.Final</version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>
-        <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.1_spec>
-        <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
-        <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>1.0.1.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>
+        <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.1_spec>
+        <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.1.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
+        <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>1.0.2.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>1.0.1.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>
         <version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec>1.0.0.Final</version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec>
         <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>1.0.4.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>
         <version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.4.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
         <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>2.0.4.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>
-        <version.org.jboss.spec.javax.websockets>1.1.1.Final</version.org.jboss.spec.javax.websockets>
+        <version.org.jboss.spec.javax.websockets>1.1.2.Final</version.org.jboss.spec.javax.websockets>
         <version.org.jboss.weld.weld>2.4.5.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>2.4.SP1</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.3.Final</version.org.jboss.ws.api>
