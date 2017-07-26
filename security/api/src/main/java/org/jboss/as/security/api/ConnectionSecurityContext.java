@@ -33,6 +33,7 @@ import javax.security.auth.Subject;
 import org.jboss.as.core.security.RealmGroup;
 import org.jboss.as.core.security.RealmRole;
 import org.jboss.as.core.security.RealmUser;
+import org.jboss.as.core.security.api.RealmPrincipal;
 import org.jboss.as.security.remoting.RemoteConnection;
 import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.security.SecurityContext;
@@ -70,7 +71,9 @@ public class ConnectionSecurityContext {
             Collection<Principal> principals = new HashSet<>();
             SecurityIdentity localIdentity = con.getSecurityIdentity();
             if (localIdentity != null) {
-                principals.add(new RealmUser(localIdentity.getPrincipal().getName()));
+                final Principal principal = localIdentity.getPrincipal();
+                final String realm = principal instanceof RealmPrincipal ? ((RealmPrincipal) principal).getRealm() : null;
+                principals.add(new RealmUser(realm, principal.getName()));
                 StreamSupport.stream(localIdentity.getRoles().spliterator(), true).forEach((String role) -> {
                     principals.add(new RealmGroup(role));
                     principals.add(new RealmRole(role));
