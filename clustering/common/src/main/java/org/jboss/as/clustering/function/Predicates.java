@@ -41,4 +41,8 @@ public class Predicates {
     public static <T> Predicate<T> when(boolean condition) {
         return test -> condition;
     }
+
+    public static <T> Predicate<T> same(T object) {
+        return test -> test == object;
+    }
 }
