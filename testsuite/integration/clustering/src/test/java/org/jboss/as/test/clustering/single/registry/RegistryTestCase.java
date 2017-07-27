@@ -35,7 +35,6 @@ import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetriever;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.ejb.client.legacy.JBossEJBProperties;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -50,7 +49,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class RegistryTestCase {
     private static final String MODULE_NAME = "registry";
-    private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
 
     @Deployment
     public static Archive<?> createDeployment() {
@@ -64,15 +62,11 @@ public class RegistryTestCase {
 
     @Test
     public void test() throws Exception {
-        JBossEJBProperties properties = JBossEJBProperties.fromClassPath(RegistryTestCase.class.getClassLoader(), CLIENT_PROPERTIES);
-        properties.runCallable(() -> {
-            try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
-                RegistryRetriever bean = context.lookupStateless(RegistryRetrieverBean.class, RegistryRetriever.class);
-                Collection<String> names = bean.getNodes();
-                assertEquals(1, names.size());
-                assertTrue(names.toString(), names.contains(NODE_1));
-            }
-            return null;
-        });
+        try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
+            RegistryRetriever bean = context.lookupStateless(RegistryRetrieverBean.class, RegistryRetriever.class);
+            Collection<String> names = bean.getNodes();
+            assertEquals(1, names.size());
+            assertTrue(names.toString(), names.contains(NODE_1));
+        }
     }
 }

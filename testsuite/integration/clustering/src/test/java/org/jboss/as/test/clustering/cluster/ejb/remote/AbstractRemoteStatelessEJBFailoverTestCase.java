@@ -38,9 +38,6 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.ejb.client.ClusterAffinity;
-import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.legacy.JBossEJBProperties;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,8 +49,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends ClusterAbstractTestCase {
-
-    private static final String CLIENT_PROPERTIES = "org/jboss/as/test/clustering/cluster/ejb/remote/jboss-ejb-client.properties";
 
     private static final int COUNT = 20;
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
@@ -71,10 +66,9 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Cluster
 
     @Test
     public void test() throws Exception {
-        JBossEJBProperties.fromClassPath(this.getClass().getClassLoader(), CLIENT_PROPERTIES).runCallable(this.configurator.apply(() -> {
+        this.configurator.apply(() -> {
             try (EJBDirectory directory = new RemoteEJBDirectory(this.module)) {
                 Incrementor bean = directory.lookupStateless(this.beanClass, Incrementor.class);
-                EJBClient.setStrongAffinity(bean, new ClusterAffinity("ejb"));
 
                 // Allow sufficient time for client to receive full topology
                 Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
@@ -146,6 +140,6 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Cluster
                 }
             }
             return null;
-        }));
+        });
     }
 }

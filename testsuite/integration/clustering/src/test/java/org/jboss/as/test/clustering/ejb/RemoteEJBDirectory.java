@@ -27,27 +27,54 @@ import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import org.wildfly.naming.client.WildFlyInitialContextFactory;
+import org.jboss.ejb.client.Affinity;
+import org.jboss.ejb.client.ClusterAffinity;
+import org.jboss.ejb.client.EJBClient;
 
 /**
  * @author Paul Ferraro
  */
 public class RemoteEJBDirectory extends AbstractEJBDirectory {
-    private static final Properties env = new Properties();
 
-    static {
-        env.setProperty(Context.INITIAL_CONTEXT_FACTORY, WildFlyInitialContextFactory.class.getName());
+    private static final String TX_CONTEXT_NAME = "txn:UserTransaction";
+
+    private static Properties createEnvironment() {
+        Properties env = new Properties();
+        env.setProperty(Context.INITIAL_CONTEXT_FACTORY, org.wildfly.naming.client.WildFlyInitialContextFactory.class.getName());
+        // TODO UserTransaction lookup currently requires environment to be configured with provider URLs.
+        // env.setProperty(Context.PROVIDER_URL, String.join(",", EJBClientContext.getCurrent().getConfiguredConnections().stream().map(EJBClientConnection::getDestination).map(URI::toString).collect(Collectors.toList())));
+        return env;
     }
 
     private final String module;
 
     public RemoteEJBDirectory(String module) throws NamingException {
-        super(env);
+        super(TX_CONTEXT_NAME, createEnvironment());
         this.module = module;
     }
 
     @Override
     protected <T> String createJndiName(String beanName, Class<T> beanInterface, Type type) {
         return String.format("ejb:/%s/%s!%s%s", this.module, beanName, beanInterface.getName(), (type == Type.STATEFUL) ? "?stateful" : "");
+    }
+
+    @Override
+    protected <T> T lookup(String beanName, Class<T> beanInterface, Type type) throws NamingException {
+        T bean = super.lookup(beanName, beanInterface, type);
+        Affinity affinity = new ClusterAffinity("ejb");
+        switch (type) {
+            case STATEFUL: {
+                EJBClient.setStrongAffinity(bean, affinity);
+                break;
+            }
+            case STATELESS: {
+                EJBClient.setWeakAffinity(bean, affinity);
+                break;
+            }
+            default: {
+                // No need to set initial affinity
+            }
+        }
+        return bean;
     }
 }

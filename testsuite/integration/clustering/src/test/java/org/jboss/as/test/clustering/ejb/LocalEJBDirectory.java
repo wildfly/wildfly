@@ -31,15 +31,17 @@ import javax.naming.NamingException;
  * @author Paul Ferraro
  */
 public class LocalEJBDirectory extends AbstractEJBDirectory {
+    private static final String TX_CONTEXT_NAME = "java:comp/UserTransaction";
+
     private final String module;
 
     public LocalEJBDirectory(String module) throws NamingException {
-        super(new Properties());
+        super(TX_CONTEXT_NAME, new Properties());
         this.module = module;
     }
 
     public LocalEJBDirectory(String module, InitialContext context) {
-        super(context);
+        super(TX_CONTEXT_NAME, context);
         this.module = module;
     }
 

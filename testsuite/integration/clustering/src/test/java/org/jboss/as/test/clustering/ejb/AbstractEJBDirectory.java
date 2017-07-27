@@ -29,6 +29,7 @@ import javax.ejb.SessionBean;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.transaction.UserTransaction;
 
 
 /**
@@ -37,17 +38,19 @@ import javax.naming.NamingException;
  */
 public abstract class AbstractEJBDirectory implements EJBDirectory {
     private final Context context;
+    private final String txContextName;
 
     protected enum Type {
         STATEFUL, STATELESS, SINGLETON, HOME
     }
 
-    protected AbstractEJBDirectory(Properties env) throws NamingException {
-        this(new InitialContext(env));
+    protected AbstractEJBDirectory(String txContextName, Properties env) throws NamingException {
+        this(txContextName, new InitialContext(env));
     }
 
-    protected AbstractEJBDirectory(InitialContext context) {
+    protected AbstractEJBDirectory(String txContextName, InitialContext context) {
         this.context = context;
+        this.txContextName = txContextName;
     }
 
     @Override
@@ -95,13 +98,18 @@ public abstract class AbstractEJBDirectory implements EJBDirectory {
         return this.lookup(beanName, homeInterface, Type.HOME);
     }
 
+    @Override
+    public UserTransaction lookupUserTransaction() throws NamingException {
+        return this.lookup(this.txContextName, UserTransaction.class);
+    }
+
     protected <T> T lookup(String beanName, Class<T> beanInterface, Type type) throws NamingException {
         return this.lookup(this.createJndiName(beanName, beanInterface, type), beanInterface);
     }
 
     protected abstract <T> String createJndiName(String beanName, Class<T> beanInterface, Type type);
 
-    protected <T> T lookup(String name, Class<T> beanInterface) throws NamingException {
-        return beanInterface.cast(this.context.lookup(name));
+    protected <T> T lookup(String name, Class<T> targetClass) throws NamingException {
+        return targetClass.cast(this.context.lookup(name));
     }
 }

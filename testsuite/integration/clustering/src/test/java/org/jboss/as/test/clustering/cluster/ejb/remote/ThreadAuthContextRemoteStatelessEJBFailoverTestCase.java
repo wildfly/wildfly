@@ -26,7 +26,6 @@ package org.jboss.as.test.clustering.cluster.ejb.remote;
  * Validates failover behavior of a remotely accessed secure @Stateless EJB using a thread authentication context.
  * @author Paul Ferraro
  */
-@org.junit.Ignore("WFLY-9050")
 public class ThreadAuthContextRemoteStatelessEJBFailoverTestCase extends AuthContextRemoteStatelessEJBFailoverTestCase {
 
     public ThreadAuthContextRemoteStatelessEJBFailoverTestCase() {

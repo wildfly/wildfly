@@ -35,7 +35,6 @@ import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetriev
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.ejb.client.legacy.JBossEJBProperties;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -50,7 +49,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class ServiceProviderRegistrationTestCase {
     private static final String MODULE_NAME = "service-provider-registration";
-    private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
 
     @Deployment
     public static Archive<?> createDeployment() {
@@ -64,15 +62,11 @@ public class ServiceProviderRegistrationTestCase {
 
     @Test
     public void test() throws Exception {
-        JBossEJBProperties properties = JBossEJBProperties.fromClassPath(ServiceProviderRegistrationTestCase.class.getClassLoader(), CLIENT_PROPERTIES);
-        properties.runCallable(() -> {
-            try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
-                ServiceProviderRetriever bean = directory.lookupStateless(ServiceProviderRetrieverBean.class, ServiceProviderRetriever.class);
-                Collection<String> names = bean.getProviders();
-                assertEquals(1, names.size());
-                assertTrue(names.toString(), names.contains(NODE_1));
-            }
-            return null;
-        });
+        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
+            ServiceProviderRetriever bean = directory.lookupStateless(ServiceProviderRetrieverBean.class, ServiceProviderRetriever.class);
+            Collection<String> names = bean.getProviders();
+            assertEquals(1, names.size());
+            assertTrue(names.toString(), names.contains(NODE_1));
+        }
     }
 }
