@@ -3152,4 +3152,7 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 495, value = "Ignoring the persisted start or end date for scheduled expression of timer ID:%s as it is not valid : %s.")
     void scheduleExpressionDateFromTimerPersistenceInvalid(String timerId, String parserMessage);
+
+    @Message(id = 496, value = "Could not create an instance of EJB client interceptor %s")
+    DeploymentUnitProcessingException failedToCreateEJBClientInterceptor(@Cause Exception e, String ejbClientInterceptorClassName);
 }

@@ -55,7 +55,6 @@ import org.jboss.resteasy.plugins.server.embedded.SimplePrincipal;
 import org.jboss.security.ClientLoginModule;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -135,8 +134,6 @@ public class SwitchIdentityTestCase {
         jar.addClasses(GuestDelegationLoginModule.class, EJBUtil.class, Manage.class, BridgeBean.class, TargetBean.class,
                 CurrentUserCredential.class, ServerSecurityInterceptor.class, ClientSecurityInterceptor.class);
         jar.addAsManifestResource(SwitchIdentityTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
-        jar.addAsManifestResource(new StringAsset(ClientSecurityInterceptor.class.getName()),
-                "services/org.jboss.ejb.client.EJBClientInterceptor");
         jar.addAsManifestResource(ClientSecurityInterceptor.class.getPackage(), "permissions.xml", "permissions.xml");
         jar.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.as.security-api", "org.jboss.as.core-security-api"), "jboss-deployment-structure.xml");
         return jar;

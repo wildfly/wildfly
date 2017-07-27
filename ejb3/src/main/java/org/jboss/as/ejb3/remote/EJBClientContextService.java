@@ -38,6 +38,7 @@ import org.jboss.ejb.client.DeploymentNodeSelector;
 import org.jboss.ejb.client.EJBClientCluster;
 import org.jboss.ejb.client.EJBClientConnection;
 import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBClientInterceptor;
 import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.ejb.client.legacy.JBossEJBProperties;
 import org.jboss.ejb.client.legacy.LegacyPropertiesConfiguration;
@@ -82,6 +83,7 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
     private DeploymentNodeSelector deploymentNodeSelector;
     private List<EJBClientCluster> clientClusters = null;
     private AuthenticationContext clustersAuthenticationContext = null;
+    private List<EJBClientInterceptor> clientInterceptors = null;
 
     public EJBClientContextService(final boolean makeGlobal) {
         this.makeGlobal = makeGlobal;
@@ -131,6 +133,12 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
         if(appClientEjbProperties.getOptionalValue() != null) {
             setupEjbClientProps(appClientEjbProperties.getOptionalValue());
             LegacyPropertiesConfiguration.configure(builder);
+        }
+
+        if (clientInterceptors != null) {
+            for (EJBClientInterceptor clientInterceptor : clientInterceptors) {
+                builder.addInterceptor(clientInterceptor);
+            }
         }
 
         clientContext = builder.build();
@@ -228,6 +236,10 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
 
     public void setClustersAuthenticationContext(final AuthenticationContext clustersAuthenticationContext) {
         this.clustersAuthenticationContext = clustersAuthenticationContext;
+    }
+
+    public void setClientInterceptors(final List<EJBClientInterceptor> clientInterceptors) {
+        this.clientInterceptors = clientInterceptors;
     }
 
     public AuthenticationContext getClustersAuthenticationContext() {
