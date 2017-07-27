@@ -63,6 +63,8 @@ public final class UndertowAttachments {
 
     public static final AttachmentKey<AttachmentList<Predicate>> ALLOW_REQUEST_WHEN_SUSPENDED = AttachmentKey.createList(Predicate.class);
 
+    public static final AttachmentKey<String> DEFAULT_SECURITY_DOMAIN = AttachmentKey.create(String.class);
+
     private UndertowAttachments() {
     }
 
