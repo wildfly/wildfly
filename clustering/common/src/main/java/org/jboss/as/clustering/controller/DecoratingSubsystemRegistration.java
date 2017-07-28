@@ -55,6 +55,7 @@ public class DecoratingSubsystemRegistration<R extends ManagementResourceRegistr
         this.registration.setHostCapable();
     }
 
+    @Deprecated
     @Override
     public void registerXMLElementWriter(XMLElementWriter<SubsystemMarshallingContext> writer) {
         this.registration.registerXMLElementWriter(writer);

@@ -47,7 +47,7 @@ public class SingletonExtension implements Extension {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, SingletonModel.CURRENT.getVersion());
 
         new SingletonResourceDefinition().register(registration);
-        registration.registerXMLElementWriter(new SingletonXMLWriter());
+        registration.registerXMLElementWriter(() -> new SingletonXMLWriter());
     }
 
     @Override

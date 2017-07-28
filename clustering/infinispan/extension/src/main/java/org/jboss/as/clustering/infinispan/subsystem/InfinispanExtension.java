@@ -49,7 +49,7 @@ public class InfinispanExtension implements Extension {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, InfinispanModel.CURRENT.getVersion());
 
         new InfinispanSubsystemResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));
-        registration.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
+        registration.registerXMLElementWriter(() -> new InfinispanSubsystemXMLWriter());
     }
 
     @Override

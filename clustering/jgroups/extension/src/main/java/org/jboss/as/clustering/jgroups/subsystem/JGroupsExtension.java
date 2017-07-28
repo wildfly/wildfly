@@ -56,7 +56,7 @@ public class JGroupsExtension implements Extension {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, JGroupsModel.CURRENT.getVersion());
 
         new JGroupsSubsystemResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));
-        registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
+        registration.registerXMLElementWriter(() -> new JGroupsSubsystemXMLWriter());
     }
 
     @Override
