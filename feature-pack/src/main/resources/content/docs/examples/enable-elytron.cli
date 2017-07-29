@@ -120,7 +120,7 @@ embed-host-controller
 /profile=ha/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
 /profile=ha/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
 
-/core-service=management/access=identity:add(security-domain=ManagementDomain)
+/host=master/core-service=management/access=identity:add(security-domain=ManagementDomain)
 /host=master/core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade,value={enabled=true, sasl-authentication-factory=management-sasl-authentication})
 /host=master/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory,value=management-http-authentication)
 /host=master/core-service=management/management-interface=http-interface:undefine-attribute(name=security-realm)
