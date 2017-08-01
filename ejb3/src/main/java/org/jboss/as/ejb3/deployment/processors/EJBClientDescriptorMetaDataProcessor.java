@@ -128,16 +128,16 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         // add the service
         final ServiceBuilder<EJBClientContextService> serviceBuilder = serviceTarget.addService(ejbClientContextServiceName, service);
 
+        if (appclient) {
+            serviceBuilder.addDependency(EJBClientContextService.APP_CLIENT_URI_SERVICE_NAME, URI.class, service.getAppClientUri());
+            serviceBuilder.addDependency(EJBClientContextService.APP_CLIENT_EJB_PROPERTIES_SERVICE_NAME, String.class, service.getAppClientEjbProperties());
+        }
+
+        serviceBuilder.addDependency(EJBClientConfiguratorService.SERVICE_NAME, EJBClientConfiguratorService.class, service.getConfiguratorServiceInjector());
+
         if (ejbClientDescriptorMetaData != null) {
             // profile and remoting-ejb-receivers cannot be used together
             checkDescriptorConfiguration(ejbClientDescriptorMetaData);
-
-            if (appclient) {
-                serviceBuilder.addDependency(EJBClientContextService.APP_CLIENT_URI_SERVICE_NAME, URI.class, service.getAppClientUri());
-                serviceBuilder.addDependency(EJBClientContextService.APP_CLIENT_EJB_PROPERTIES_SERVICE_NAME, String.class, service.getAppClientEjbProperties());
-            }
-
-            serviceBuilder.addDependency(EJBClientConfiguratorService.SERVICE_NAME, EJBClientConfiguratorService.class, service.getConfiguratorServiceInjector());
 
             final Injector<RemotingProfileService> profileServiceInjector = new Injector<RemotingProfileService>() {
                 final Injector<EJBTransportProvider> injector = service.getLocalProviderInjector();
