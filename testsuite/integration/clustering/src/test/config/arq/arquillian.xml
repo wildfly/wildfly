@@ -38,6 +38,55 @@
         </configuration>
     </container>
 
+    <group qualifier="clustering-balancer">
+        <container qualifier="balancer" mode="custom" managed="false" default="false">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly-${cacheMode}-${stack}-0</property>
+                <!-- AS7-2493 different jboss.node.name must be specified -->
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${cacheMode}-${stack}-0 -Djboss.node.name=balancer</property>
+                <property name="serverConfig">${jboss.server.config.file.standalone}</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="managementAddress">${node0}</property>
+                <property name="managementPort">9990</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">9990</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+
+        <container qualifier="con-1" mode="custom" managed="false" default="false">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly-${cacheMode}-${stack}-1</property>
+                <!-- AS7-2493 different jboss.node.name must be specified -->
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${cacheMode}-${stack}-1 -Djboss.node.name=node-1 -Djboss.mod_cluster.jvmRoute=worker-1 -Djboss.port.offset=100</property>
+                <property name="serverConfig">${jboss.server.config.file.standalone-ha}</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="managementAddress">${node1}</property>
+                <property name="managementPort">10090</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">10090</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+
+        <container qualifier="con-2" mode="custom" managed="false">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly-${cacheMode}-${stack}-2</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${cacheMode}-${stack}-2 -Djboss.node.name=node-2 -Djboss.mod_cluster.jvmRoute=worker-2 -Djboss.port.offset=200</property>
+                <property name="serverConfig">${jboss.server.config.file.standalone-ha}</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="managementAddress">${node2}</property>
+                <property name="managementPort">10190</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">10190</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+    </group>
+
     <group qualifier="clustering-all">
 
         <container qualifier="container-0" mode="custom" managed="false" default="true">

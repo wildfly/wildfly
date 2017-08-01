@@ -698,6 +698,92 @@
             </build>
         </profile>
 
+        <profile>
+            <id>clustering.integration.tests.modcluster</id>
+            <activation><property><name>!ts.noClustering</name></property></activation>
+            <!--
+                Server configuration executions.
+            -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>ts.config-as.clustering.balancer</id>
+                                <phase>process-test-resources</phase>
+                                <goals><goal>run</goal></goals>
+                                <configuration>
+                                    <target>
+                                        <echo>In Maven: node0: ${node0}</echo>
+                                        <echo>In Maven: node1: ${node1}</echo>
+                                        <echo>In Maven: node0: ${node2}</echo>
+                                        <echo>In Maven: mcast: ${mcast}</echo>
+                                        <echo>In Maven: mcast.ttl: ${mcast.ttl}</echo>
+                                        <!-- Build the TCP server configs in target/ . -->
+                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
+                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
+                                            <property name="node1" value="${node1}"/>
+                                            <property name="node2" value="${node2}"/> <!-- balancer -->
+                                            <property name="mcast" value="${mcast}"/>
+                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
+                                            <property name="cacheLoader" value="binary-keyed" />
+                                            <property name="cacheType" value="replicated" />
+                                            <property name="mode" value="${cacheMode}" />
+                                            <target name="build-clustering-balancer"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!--
+                       Surefire test executions.
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${version.surefire.plugin}</version>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals><goal>test</goal></goals>
+                                <phase>none</phase>
+                            </execution>
+
+                            <!-- Worker failover test with custom containers with manual deployments. -->
+                            <execution>
+                                <id>ts.surefire.clustering.balancer</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/modcluster/WorkerFailoverTestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables combine.children="append">
+                                        <arquillian.launch>clustering-balancer</arquillian.launch>
+                                        <!-- <arquillian.launch>clustering-all</arquillian.launch> -->
+                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
+                                        <jboss.server.config.file.standalone>standalone.xml</jboss.server.config.file.standalone>
+                                        <jboss.server.config.file.standalone-ha>standalone-ha.xml</jboss.server.config.file.standalone-ha>
+                                        <cacheMode>SYNC</cacheMode>
+                                        <stack>tcp</stack>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- Enable using -Dts.noClustering. -->
         <profile>
             <id>ts.clustering.do-nothing.profile</id>
