@@ -29,8 +29,10 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
+import org.wildfly.naming.client.WildFlyInitialContextFactory;
 
 /**
  * The same bundle of tests as runs at {@link ExceptionTestCase} but these ones
@@ -46,7 +48,8 @@ public class ExceptionEjbClientTestCase extends ExceptionTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         final Properties props = new Properties();
-        props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+        props.put(Context.INITIAL_CONTEXT_FACTORY, WildFlyInitialContextFactory.class.getName());
+        props.put(Context.PROVIDER_URL, "remote+http://" + TestSuiteEnvironment.getServerAddress() + ":" + 8080);
         context = new InitialContext(props);
     }
 
