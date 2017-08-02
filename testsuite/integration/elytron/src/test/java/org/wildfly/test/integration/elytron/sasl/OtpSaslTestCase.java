@@ -25,7 +25,6 @@ package org.wildfly.test.integration.elytron.sasl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Base64.Encoder;
@@ -74,8 +73,6 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.ConstantPermissionMapper;
 import org.wildfly.test.security.common.elytron.MechanismConfiguration;
 import org.wildfly.test.security.common.elytron.PermissionRef;
-import org.wildfly.test.security.common.elytron.SaslFilter;
-import org.wildfly.test.security.common.elytron.SimpleConfigurableSaslServerFactory;
 import org.wildfly.test.security.common.elytron.SimpleSaslAuthenticationFactory;
 import org.wildfly.test.security.common.elytron.SimpleSecurityDomain;
 import org.wildfly.test.security.common.elytron.SimpleSecurityDomain.SecurityDomainRealm;
@@ -98,7 +95,7 @@ public class OtpSaslTestCase extends AbstractSaslTestBase {
     private static final String OTP = "OTP";
     private static final String OTP_ALGORITHM = "otp-sha1";
     private static final String OTP_PASSPHRASE = "This is a test.";
-    private static final String OTP_SEED = "TeSt";
+
     // https://www.ocf.berkeley.edu/~jjlin/jsotp/
     // http://tomeko.net/online_tools/hex_to_base64.php?lang=en
     private static final byte[] OTP_HASH_99 = DatatypeConverter.parseHexBinary("87FEC7768B73CCF9");
@@ -184,9 +181,7 @@ public class OtpSaslTestCase extends AbstractSaslTestBase {
 
             elements.add(MessagingElytronDomainConfigurator.builder().withElytronDomain(OTP).build());
 
-            elements.add(SimpleConfigurableSaslServerFactory.builder().withName(OTP).withSaslServerFactory("elytron")
-                    .addFilter(SaslFilter.builder().withPatternFilter(OTP).build()).build());
-            elements.add(SimpleSaslAuthenticationFactory.builder().withName(OTP).withSaslServerFactory(OTP)
+            elements.add(SimpleSaslAuthenticationFactory.builder().withName(OTP).withSaslServerFactory("elytron")
                     .withSecurityDomain(OTP)
                     .addMechanismConfiguration(MechanismConfiguration.builder().withMechanismName(OTP).build()).build());
 
@@ -233,10 +228,10 @@ public class OtpSaslTestCase extends AbstractSaslTestBase {
                                 + "objectclass: person\n" //
                                 + "objectclass: organizationalPerson\n" //
                                 + "cn: jduke\n" //
-                                + "street: guest\n" // role ;)
-                                + "sn: " + OTP_ALGORITHM + "\n" // algorithm
+                                + "sn: guest\n" // role ;)
+                                + "street: " + OTP_ALGORITHM + "\n" // algorithm
                                 + "title: " + b64e.encodeToString(OTP_HASH_99) + "\n" // stored hash
-                                + "description: " + b64e.encodeToString(OTP_SEED.getBytes(StandardCharsets.US_ASCII)) + "\n" // seed
+                                + "description: TeSt\n" // seed
                                 + "telephoneNumber: 99\n" // sequence
                 );
                 final ManagedCreateLdapServer createLdapServer = new ManagedCreateLdapServer(
@@ -250,8 +245,8 @@ public class OtpSaslTestCase extends AbstractSaslTestBase {
                         OTP, LDAP_URL));
                 cli.sendLine(String
                         .format("/subsystem=elytron/ldap-realm=%s:add(dir-context=%s,identity-mapping={rdn-identifier=cn,search-base-dn=\"dc=wildfly,dc=org\","
-                                + "otp-credential-mapper={algorithm-from=sn, hash-from=title, seed-from=description, sequence-from=telephoneNumber},"
-                                + "attribute-mapping=[{from=street,to=groups}]})", OTP, OTP));
+                                + "otp-credential-mapper={algorithm-from=street, hash-from=title, seed-from=description, sequence-from=telephoneNumber},"
+                                + "attribute-mapping=[{from=sn,to=groups}]})", OTP, OTP));
             }
 
             @Override
