@@ -90,7 +90,7 @@ final class AssociationImpl implements Association, AutoCloseable {
 
     AssociationImpl(final DeploymentRepository deploymentRepository, final Registry<String, List<ClientMapping>> clientMappingRegistry) {
         this.deploymentRepository = deploymentRepository;
-        this.clusterTopologyRegistrar = (clientMappingRegistry != null) ? new ClusterTopologyRegistrar(clientMappingRegistry) : null;
+        this.clusterTopologyRegistrar = (clientMappingRegistry != null && clientMappingRegistry.getGroup().getLocalNode().getSocketAddress() != null) ? new ClusterTopologyRegistrar(clientMappingRegistry) : null;
     }
 
     @Override
