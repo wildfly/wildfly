@@ -92,9 +92,9 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         new ClientMappingsRegistryBuilder(clientMappingsClusterName).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         // Handle case where no infinispan subsystem exists or does not define an ejb cache-container
-        Resource rootResource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
         PathElement infinispanPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan");
-        if (!rootResource.hasChild(infinispanPath) || !rootResource.getChild(infinispanPath).hasChild(PathElement.pathElement("cache-container", clientMappingsClusterName))) {
+        Resource infinispanResource = safeGetResource(context, infinispanPath);
+        if (infinispanResource == null || !infinispanResource.hasChild(PathElement.pathElement("cache-container", clientMappingsClusterName))) {
             // Install services that would normally be installed by this container/cache
             CapabilityServiceSupport support = context.getCapabilityServiceSupport();
             for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
@@ -166,5 +166,14 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
             return Options.class.getName();
         }
         throw EjbLogger.ROOT_LOGGER.unknownChannelCreationOptionType(optionType);
+    }
+
+    private static Resource safeGetResource(OperationContext context, PathElement path) {
+        try {
+            return context.readResourceFromRoot(PathAddress.pathAddress(path), false);
+        } catch (RuntimeException e) {
+            // No such resource
+            return null;
+        }
     }
 }
