@@ -117,7 +117,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         String discoveryGroupName = getDiscoveryGroup(resolvedModel);
         String jgroupsChannelName = null;
         if (discoveryGroupName != null) {
-            Resource dgResource = context.readResourceFromRoot(MessagingServices.getActiveMQServerPathAddress(address).append(CommonAttributes.DISCOVERY_GROUP, discoveryGroupName));
+            Resource dgResource = context.readResourceFromRoot(MessagingServices.getActiveMQServerPathAddress(address).append(CommonAttributes.DISCOVERY_GROUP, discoveryGroupName), false);
             ModelNode dgModel = dgResource.getModel();
             jgroupsChannelName = JGROUPS_CHANNEL.resolveModelAttribute(context, dgModel).asString();
         }
