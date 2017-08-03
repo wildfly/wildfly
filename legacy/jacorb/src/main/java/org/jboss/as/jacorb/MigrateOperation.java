@@ -123,13 +123,13 @@ public class MigrateOperation implements OperationStepHandler {
 
         final PathAddress subsystemsAddress = context.getCurrentAddress().getParent();
 
-        if (context.readResourceFromRoot(subsystemsAddress).hasChild(OPENJDK_SUBSYSTEM_ELEMENT)) {
+        if (context.readResourceFromRoot(subsystemsAddress, false).hasChild(OPENJDK_SUBSYSTEM_ELEMENT)) {
             throw new OperationFailedException("can not migrate: the new iiop-openjdk subsystem is already defined");
         }
 
         final Map<PathAddress, ModelNode> migrateOperations = new LinkedHashMap<>();
 
-        if (!context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS).hasChild(OPENJDK_EXTENSION_ELEMENT)) {
+        if (!context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false).hasChild(OPENJDK_EXTENSION_ELEMENT)) {
             addOpenjdkExtension(context, migrateOperations);
         }
 

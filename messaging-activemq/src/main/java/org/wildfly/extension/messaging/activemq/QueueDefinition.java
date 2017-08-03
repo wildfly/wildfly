@@ -42,7 +42,6 @@ import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -165,9 +164,7 @@ public class QueueDefinition extends PersistentResourceDefinition {
         String queueName = address.getLastElement().getValue();
 
         PathAddress activeMQPathAddress = MessagingServices.getActiveMQServerPathAddress(address);
-        Resource serverResource = context.readResourceFromRoot(activeMQPathAddress);
-        boolean hasChild = serverResource.hasChild(address.getLastElement());
-        if (hasChild) {
+        if (context.readResourceFromRoot(activeMQPathAddress, false).hasChild(address.getLastElement())) {
             return false;
         } else {
             // there is no registered queue resource, forward to the runtime-queue address instead

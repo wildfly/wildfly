@@ -233,11 +233,11 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         boolean jts = model.hasDefined(JTS) && model.get(JTS).asBoolean();
 
-        final Resource subsystemResource = context.readResourceFromRoot(PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH));
+        final Resource subsystemResource = context.readResourceFromRoot(PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH), false);
         final List<ServiceName> deps = new LinkedList<>();
 
-        for (Resource.ResourceEntry re : subsystemResource.getChildren(CM_RESOURCE)) {
-            deps.add(TxnServices.JBOSS_TXN_CMR.append(re.getName()));
+        for (String name : subsystemResource.getChildrenNames(CM_RESOURCE)) {
+            deps.add(TxnServices.JBOSS_TXN_CMR.append(name));
         }
 
         //recovery environment

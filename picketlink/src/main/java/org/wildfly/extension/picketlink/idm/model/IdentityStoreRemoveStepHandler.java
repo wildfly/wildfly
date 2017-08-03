@@ -22,19 +22,18 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
-
-import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author Pedro Silva
@@ -80,9 +79,8 @@ public class IdentityStoreRemoveStepHandler extends RestartParentResourceRemoveH
 
     private void checkIfLastIdentityStore(OperationContext context) throws OperationFailedException {
         PathAddress parentAddress = Util.getParentAddressByKey(context.getCurrentAddress(), ModelElement.IDENTITY_CONFIGURATION.getName());
-        Resource resource = context.readResourceFromRoot(parentAddress);
 
-        if (resource.getChildTypes().size() == 1) {
+        if (context.readResourceFromRoot(parentAddress, false).getChildTypes().size() == 1) {
             throw ROOT_LOGGER.idmNoIdentityStoreProvided(parentAddress.getLastElement().getValue());
         }
     }

@@ -136,7 +136,7 @@ public class BroadcastGroupDefinition extends ModelOnlyResourceDefinition {
 
     private static Set<String> getAvailableConnectors(final OperationContext context,final ModelNode operation) throws OperationFailedException{
         PathAddress hornetqServer = context.getCurrentAddress().getParent();
-        Resource hornetQServerResource = context.readResourceFromRoot(hornetqServer);
+        Resource hornetQServerResource = context.readResourceFromRoot(hornetqServer, false);
         Set<String> availableConnectors = new HashSet<String>();
         availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.HTTP_CONNECTOR));
         availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.IN_VM_CONNECTOR));

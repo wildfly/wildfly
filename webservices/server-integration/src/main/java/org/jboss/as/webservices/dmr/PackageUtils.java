@@ -32,7 +32,6 @@ import java.util.List;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.msc.service.ServiceName;
 
@@ -72,10 +71,10 @@ final class PackageUtils {
 
     static List<ServiceName> getServiceNameDependencies(final OperationContext context, final ServiceName baseServiceName, final PathAddress address, final String childType) {
         final List<ServiceName> childrenServiceNames = new LinkedList<ServiceName>();
-        final Resource resource = context.readResourceFromRoot(address);
+        final Resource resource = context.readResourceFromRoot(address, false);
         final ServiceName sn = baseServiceName.append(childType);
-        for (ResourceEntry re : resource.getChildren(childType)) {
-            childrenServiceNames.add(sn.append(re.getName()));
+        for (String name : resource.getChildrenNames(childType)) {
+            childrenServiceNames.add(sn.append(name));
         }
         return childrenServiceNames;
     }

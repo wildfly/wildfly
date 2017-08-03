@@ -55,8 +55,7 @@ public abstract class UniqueTypeValidationStepHandler implements ModelValidation
         ModelNode typeNode = context.readResource(EMPTY_ADDRESS, false).getModel();
         String type = getType(context, typeNode);
         PathAddress parentAddress = pathAddress.getParent();
-        Resource parentResource = context.readResourceFromRoot(parentAddress);
-        Set<Resource.ResourceEntry> children = parentResource.getChildren(this.element.getName());
+        Set<Resource.ResourceEntry> children = context.readResourceFromRoot(parentAddress, true).getChildren(this.element.getName());
 
         for (Resource.ResourceEntry child : children) {
             String existingResourceName = child.getName();

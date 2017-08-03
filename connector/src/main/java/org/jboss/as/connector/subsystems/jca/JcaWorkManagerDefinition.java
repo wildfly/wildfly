@@ -139,9 +139,9 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
     private static void checkThreadPool(final OperationContext context, final ModelNode operation, final String type) throws OperationFailedException {
         PathAddress threadPoolPath = context.getCurrentAddress();
         PathAddress workManagerPath = threadPoolPath.getParent();
-        Set<Resource.ResourceEntry> entrySet = context.readResourceFromRoot(workManagerPath).getChildren(type);
+        Set<String> entrySet = context.readResourceFromRoot(workManagerPath, false).getChildrenNames(type);
         if (entrySet.size() > 0
-                && !entrySet.iterator().next().getName().equals(threadPoolPath.getLastElement().getValue())) {
+                && !entrySet.iterator().next().equals(threadPoolPath.getLastElement().getValue())) {
             throw ConnectorLogger.ROOT_LOGGER.oneThreadPoolWorkManager(threadPoolPath.getLastElement().getValue(), type, workManagerPath.getLastElement().getValue());
         }
     }
