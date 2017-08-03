@@ -35,7 +35,7 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
-class JGroupsBroadcastEndpointFactory implements BroadcastEndpointFactory {
+public class JGroupsBroadcastEndpointFactory implements BroadcastEndpointFactory {
     private final String channelName;
     private final ChannelFactory channelFactory;
     // can be null
@@ -48,10 +48,6 @@ class JGroupsBroadcastEndpointFactory implements BroadcastEndpointFactory {
         this.channelName = channelName;
         this.channelFactory = channelFactory;
         this.channels = channels;
-    }
-
-    public JGroupsBroadcastEndpointFactory(String channelName, ChannelFactory channelFactory) {
-        this(channelName, channelFactory, null);
     }
 
     @Override
