@@ -55,6 +55,7 @@
     </developers>
 
     <modules>
+        <module>wildfly-with-tools</module>
         <module>wildfly-javaee7</module>
         <module>wildfly-javaee7-with-tools</module>
     </modules>

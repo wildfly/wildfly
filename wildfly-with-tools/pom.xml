@@ -23,13 +23,13 @@
     <parent>
         <groupId>org.wildfly.bom</groupId>
         <artifactId>wildfly</artifactId>
-        <version>11.0.0.Alpha1-SNAPSHOT</version>
+        <version>11.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-with-tools</artifactId>
     <packaging>pom</packaging>
 
-    <name>WildFly Java EE 7 Specification APIs with Tools BOM</name>
+    <name>WildFly APIs with Tools BOM</name>
     <description>Dependency Management for Java EE 7 Specification APIs with Deployment and Testing Tools</description>
 
     <licenses>
