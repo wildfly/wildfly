@@ -284,7 +284,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                     if (jgroupFactories.containsKey(key)) {
                         ChannelFactory channelFactory = jgroupFactories.get(key);
                         String channelName = jgroupsChannels.get(key);
-                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, channelFactory, channelName));
+                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, channelFactory, channelName, channels));
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {
