@@ -248,7 +248,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
         final String queueName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         final ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-        ServiceController<?> activeMQService = context.getServiceRegistry(false).getService(activeMQServiceName);
+        ServiceController<?> activeMQService = context.getServiceRegistry(!checkReadOnlyOperation(operationName)).getService(activeMQServiceName);
         ActiveMQServer server = ActiveMQServer.class.cast(activeMQService.getValue());
         final DelegatingQueueControl<T> control = getQueueControl(server, queueName);
 
@@ -404,6 +404,16 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
     protected final void throwUnimplementedOperationException(final String operationName) {
         // Bug
         throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
+    }
+
+    protected boolean checkReadOnlyOperation(String name){
+        if (LIST_MESSAGES.equals(name)||LIST_MESSAGES_AS_JSON.equals(name)||COUNT_MESSAGES.equals(name)||LIST_MESSAGE_COUNTER_AS_JSON.equals(name)
+                ||LIST_MESSAGE_COUNTER_AS_HTML.equals(name)||LIST_MESSAGE_COUNTER_HISTORY_AS_JSON.equals(name)||LIST_MESSAGE_COUNTER_HISTORY_AS_HTML.equals(name)
+                ||LIST_CONSUMERS_AS_JSON.equals(name)||LIST_DELIVERING_MESSAGES.equals(name)||LIST_DELIVERING_MESSAGES_AS_JSON.equals(name)||LIST_SCHEDULED_MESSAGES.equals(name)
+                ||LIST_SCHEDULED_MESSAGES_AS_JSON.equals(name))
+            return true;
+        else
+            return false;
     }
 
     /**
