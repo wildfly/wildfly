@@ -128,14 +128,14 @@ public interface PojoLogger extends BasicLogger {
     @Message(id = 8, value = "Failed to parse POJO xml [ %s ]")
     DeploymentUnitProcessingException failedToParse(VirtualFile file);
 
-    /**
-     * Cannot instantiate new instance
-     *
-     * @param cause the cause
-     * @return a {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 9, value = "Cannot instantiate new instance.")
-    IllegalArgumentException cannotInstantiate(@Cause Throwable cause);
+//    /**
+//     * Cannot instantiate new instance
+//     *
+//     * @param cause the cause
+//     * @return a {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 9, value = "Cannot instantiate new instance.")
+//    IllegalArgumentException cannotInstantiate(@Cause Throwable cause);
 
     /**
      * Cannot instantiate new collection instance

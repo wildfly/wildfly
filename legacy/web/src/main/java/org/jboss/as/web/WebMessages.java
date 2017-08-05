@@ -224,11 +224,11 @@ public interface WebMessages {
 
     @Message(id = 18100, value = "Timeout context service activation: %s")
     TimeoutException timeoutContextActivation(ServiceName service);
-*/
+
     @Message(id = 18101, value = "Version 1.1.0 of the web subsystem had a bug meaning referencing virtual-server from connector is not supported. See https://issues.jboss.org/browse/JBPAPP-9314")
     String transformationVersion_1_1_0_JBPAPP_9314();
 
-  /*  @Message(id = 18102, value = "Error loading SCI from module: %s")
+    @Message(id = 18102, value = "Error loading SCI from module: %s")
     DeploymentUnitProcessingException errorLoadingSCIFromModule(ModuleIdentifier identifier, @Cause Exception e);
 
     @Message(id = 18103, value = "Unable to resolve annotation index for deployment unit: %s")
@@ -243,6 +243,6 @@ public interface WebMessages {
     @Message(id = 18106, value = "Param-name and param-value are required to add parameter")
     String paramNameAndParamValueRequiredForAddParam();
 
-    @Message(id = 18107, value = "Param-name is required to remove parameter")
-    String paramNameRequiredForRemoveParam();
+//    @Message(id = 18107, value = "Param-name is required to remove parameter")
+//    String paramNameRequiredForRemoveParam();
 }

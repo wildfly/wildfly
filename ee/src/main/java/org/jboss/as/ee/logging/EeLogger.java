@@ -69,16 +69,16 @@ public interface EeLogger extends BasicLogger {
      */
     EeLogger ROOT_LOGGER = Logger.getMessageLogger(EeLogger.class, "org.jboss.as.ee");
 
-    /**
-     * Logs a warning message indicating the transaction datasource, represented by the {@code className} parameter,
-     * could not be proxied and will not be enlisted in the transactions automatically.
-     *
-     * @param cause     the cause of the error.
-     * @param className the datasource class name.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 1, value = "Transactional datasource %s could not be proxied and will not be enlisted in transactions automatically")
-    void cannotProxyTransactionalDatasource(@Cause Throwable cause, String className);
+//    /**
+//     * Logs a warning message indicating the transaction datasource, represented by the {@code className} parameter,
+//     * could not be proxied and will not be enlisted in the transactions automatically.
+//     *
+//     * @param cause     the cause of the error.
+//     * @param className the datasource class name.
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 1, value = "Transactional datasource %s could not be proxied and will not be enlisted in transactions automatically")
+//    void cannotProxyTransactionalDatasource(@Cause Throwable cause, String className);
 
     /**
      * Logs a warning message indicating the resource-env-ref could not be resolved.
@@ -90,36 +90,36 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 2, value = "Could not resolve %s %s")
     void cannotResolve(String elementName, String name);
 
-    /**
-     * Logs a warning message indicating the class path entry, represented by the {@code entry} parameter, was not found
-     * in the file.
-     *
-     * @param entry the class path entry.
-     * @param file  the file.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 3, value = "Class Path entry %s in %s does not point to a valid jar for a Class-Path reference.")
-    void classPathEntryNotAJar(String entry, VirtualFile file);
+//    /**
+//     * Logs a warning message indicating the class path entry, represented by the {@code entry} parameter, was not found
+//     * in the file.
+//     *
+//     * @param entry the class path entry.
+//     * @param file  the file.
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 3, value = "Class Path entry %s in %s does not point to a valid jar for a Class-Path reference.")
+//    void classPathEntryNotAJar(String entry, VirtualFile file);
 
-    /**
-     * Logs a warning message indicating the class path entry in file may not point to a sub deployment.
-     *
-     * @param file the file.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 4, value = "Class Path entry in %s may not point to a sub deployment.")
-    void classPathEntryASubDeployment(VirtualFile file);
+//    /**
+//     * Logs a warning message indicating the class path entry in file may not point to a sub deployment.
+//     *
+//     * @param file the file.
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 4, value = "Class Path entry in %s may not point to a sub deployment.")
+//    void classPathEntryASubDeployment(VirtualFile file);
 
-    /**
-     * Logs a warning message indicating the class path entry, represented by the {@code entry} parameter, was not found
-     * in the file.
-     *
-     * @param entry the class path entry.
-     * @param file  the file.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 5, value = "Class Path entry %s in %s not found.")
-    void classPathEntryNotFound(String entry, VirtualFile file);
+//    /**
+//     * Logs a warning message indicating the class path entry, represented by the {@code entry} parameter, was not found
+//     * in the file.
+//     *
+//     * @param entry the class path entry.
+//     * @param file  the file.
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 5, value = "Class Path entry %s in %s not found.")
+//    void classPathEntryNotFound(String entry, VirtualFile file);
 
     /**
      * Logs a warning message indicating a failure to destroy the component instance.
@@ -140,18 +140,18 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 7, value = "Not installing optional component %s due to an exception (enable DEBUG log level to see the cause)")
     void componentInstallationFailure(String name);
 
-    /**
-     * Logs a warning message indicating the property, represented by the {@code name} parameter, is be ignored due to
-     * missing on the setter method on the datasource class.
-     *
-     * @param name          the name of the property.
-     * @param methodName    the name of the method.
-     * @param parameterType the name of the parameter type.
-     * @param className     the name of the datasource class.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 8, value = "Ignoring property %s due to missing setter method: %s(%s) on datasource class: %s")
-    void ignoringProperty(String name, String methodName, String parameterType, String className);
+//    /**
+//     * Logs a warning message indicating the property, represented by the {@code name} parameter, is be ignored due to
+//     * missing on the setter method on the datasource class.
+//     *
+//     * @param name          the name of the property.
+//     * @param methodName    the name of the method.
+//     * @param parameterType the name of the parameter type.
+//     * @param className     the name of the datasource class.
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 8, value = "Ignoring property %s due to missing setter method: %s(%s) on datasource class: %s")
+//    void ignoringProperty(String name, String methodName, String parameterType, String className);
 
     /**
      * Logs a warning message indicating the managed bean implementation class MUST NOT be an interface.
@@ -186,15 +186,15 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 11, value = "Exception while invoking pre-destroy interceptor for component class: %s")
     void preDestroyInterceptorFailure(@Cause Throwable cause, Class<?> component);
 
-    /**
-     * Logs a warning message indicating the transaction datasource, represented by the {@code className} parameter,
-     * will not be enlisted in the transaction as the transaction subsystem is not available.
-     *
-     * @param className the name of the datasource class.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 12, value = "Transactional datasource %s will not be enlisted in the transaction as the transaction subsystem is not available")
-    void transactionSubsystemNotAvailable(String className);
+//    /**
+//     * Logs a warning message indicating the transaction datasource, represented by the {@code className} parameter,
+//     * will not be enlisted in the transaction as the transaction subsystem is not available.
+//     *
+//     * @param className the name of the datasource class.
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 12, value = "Transactional datasource %s will not be enlisted in the transaction as the transaction subsystem is not available")
+//    void transactionSubsystemNotAvailable(String className);
 
     //@Message(id = 13, value = "Injection for a member with static modifier is only acceptable on application clients, ignoring injection for target %s")
     //void ignoringStaticInjectionTarget(InjectionTarget injectionTarget);
@@ -405,18 +405,18 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 34, value = "Could not resolve method %s on class %s with annotations %s")
     RuntimeException cannotResolveMethod(MethodIdentifier method, Class<?> component, Collection<?> annotations);
 
-    /**
-     * Creates an exception indicating the property, represented by the {@code name} parameter, could not be set on the
-     * datasource class, represented by the {@code className} parameter.
-     *
-     * @param cause     the cause of the error.
-     * @param name      the name of the property.
-     * @param className the datasource class name.
-     *
-     * @return a {@link RuntimeException} for the error.
-     */
-    @Message(id = 35, value = "Could not set property %s on datasource class %s")
-    RuntimeException cannotSetProperty(@Cause Throwable cause, String name, String className);
+//    /**
+//     * Creates an exception indicating the property, represented by the {@code name} parameter, could not be set on the
+//     * datasource class, represented by the {@code className} parameter.
+//     *
+//     * @param cause     the cause of the error.
+//     * @param name      the name of the property.
+//     * @param className the datasource class name.
+//     *
+//     * @return a {@link RuntimeException} for the error.
+//     */
+//    @Message(id = 35, value = "Could not set property %s on datasource class %s")
+//    RuntimeException cannotSetProperty(@Cause Throwable cause, String name, String className);
 
     /**
      * Creates an exception indicating both the {@code element1} and {@code element2} cannot be specified in an
@@ -451,15 +451,15 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 38, value = "%s annotation is only allowed on a class. %s is not a class.")
     DeploymentUnitProcessingException classOnlyAnnotation(String annotation, AnnotationTarget target);
 
-    /**
-     * Creates an exception indicating the annotation is only allowed on method or class targets.
-     *
-     * @param annotation the annotation.
-     *
-     * @return an {@link DeploymentUnitProcessingException} for the error.
-     */
-    @Message(id = 39, value = "@%s annotation is only allowed on methods and classes")
-    DeploymentUnitProcessingException classOrMethodOnlyAnnotation(DotName annotation);
+//    /**
+//     * Creates an exception indicating the annotation is only allowed on method or class targets.
+//     *
+//     * @param annotation the annotation.
+//     *
+//     * @return an {@link DeploymentUnitProcessingException} for the error.
+//     */
+//    @Message(id = 39, value = "@%s annotation is only allowed on methods and classes")
+//    DeploymentUnitProcessingException classOrMethodOnlyAnnotation(DotName annotation);
 
     /**
      * Creates an exception indicating a component, represented by the {@code name} parameter, is already defined in
@@ -553,17 +553,17 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 48, value = "Could not find default constructor for %s")
     DeploymentUnitProcessingException defaultConstructorNotFound(Class<?> clazz);
 
-    /**
-     * Creates an exception indicating the default constructor for the class, represented by the {@code className}
-     * parameter, could not be found.
-     *
-     * @param annotation the annotation.
-     * @param className  the name of the class.
-     *
-     * @return a {@link DeploymentUnitProcessingException} for the error.
-     */
-    @Message(id = 49, value = "Could not find default constructor for %s class %s")
-    DeploymentUnitProcessingException defaultConstructorNotFound(String annotation, String className);
+//    /**
+//     * Creates an exception indicating the default constructor for the class, represented by the {@code className}
+//     * parameter, could not be found.
+//     *
+//     * @param annotation the annotation.
+//     * @param className  the name of the class.
+//     *
+//     * @return a {@link DeploymentUnitProcessingException} for the error.
+//     */
+//    @Message(id = 49, value = "Could not find default constructor for %s class %s")
+//    DeploymentUnitProcessingException defaultConstructorNotFound(String annotation, String className);
 
     /**
      * Creates an exception indicating the default constructor for the class, represented by the {@code className}
@@ -891,23 +891,23 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 79, value = "Can't add %s, priority 0x%s is already taken by %s")
     IllegalArgumentException priorityAlreadyExists(Object item, String hexPriority, Object current);
 
-    /**
-     * Creates an exception indicating the ResourceDescriptionResolver variant should be used.
-     *
-     * @return an {@link UnsupportedOperationException} for the error.
-     */
-    @Message(id = 80, value = "Use the ResourceDescriptionResolver variant")
-    UnsupportedOperationException resourceDescriptionResolverError();
+//    /**
+//     * Creates an exception indicating the ResourceDescriptionResolver variant should be used.
+//     *
+//     * @return an {@link UnsupportedOperationException} for the error.
+//     */
+//    @Message(id = 80, value = "Use the ResourceDescriptionResolver variant")
+//    UnsupportedOperationException resourceDescriptionResolverError();
 
-    /**
-     * Creates an exception indicating the resource reference for the {@code type} is not registered.
-     *
-     * @param type the resource reference type.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 81, value = "Resource reference for type: %s is not registered. Cannot unregister")
-    IllegalArgumentException resourceReferenceNotRegistered(String type);
+//    /**
+//     * Creates an exception indicating the resource reference for the {@code type} is not registered.
+//     *
+//     * @param type the resource reference type.
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 81, value = "Resource reference for type: %s is not registered. Cannot unregister")
+//    IllegalArgumentException resourceReferenceNotRegistered(String type);
 
     /**
      * Creates an exception indicating the service is not started.
@@ -964,8 +964,8 @@ public interface EeLogger extends BasicLogger {
     IllegalArgumentException viewMethodNotFound(String name, String descriptor, Class<?> viewClass, Class<?> component);
 
 
-    @Message(id = 87, value = "Could not load component class %s")
-    DeploymentUnitProcessingException couldNotLoadComponentClass(@Cause Throwable cause, final String className);
+//    @Message(id = 87, value = "Could not load component class %s")
+//    DeploymentUnitProcessingException couldNotLoadComponentClass(@Cause Throwable cause, final String className);
 
     /**
      * Creates an exception indicating an unexpected element, represented by the {@code name} parameter, was
@@ -1037,8 +1037,8 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 98, value = "ManagedReference was null and injection is not optional for injection into field %s")
     RuntimeException managedReferenceWasNull(Field field);
 
-    @Message(id = 99, value = "Only 'true' is allowed for 'jboss-descriptor-property-replacement' due to AS7-4892")
-    String onlyTrueAllowedForJBossDescriptorPropertyReplacement_AS7_4892();
+//    @Message(id = 99, value = "Only 'true' is allowed for 'jboss-descriptor-property-replacement' due to AS7-4892")
+//    String onlyTrueAllowedForJBossDescriptorPropertyReplacement_AS7_4892();
 
     @Message(id = 100, value = "Global modules may not specify 'annotations', 'meta-inf' or 'services'.")
     String propertiesNotAllowedOnGlobalModules();

@@ -46,47 +46,47 @@ public interface JdrLogger extends BasicLogger {
      */
     JdrLogger ROOT_LOGGER = Logger.getMessageLogger(JdrLogger.class, "org.jboss.as.jdr");
 
-    /**
-     * Indicates that a JDR report has been initiated.
-     */
-    @LogMessage(level = INFO)
-    @Message(id = 1, value = "Starting creation of a JBoss Diagnostic Report (JDR).")
-    void startingCollection();
-
-    /**
-     * Indicates that a JDR report has completed
-     */
-    @LogMessage(level = INFO)
-    @Message(id = 2, value = "Completed creation of a JBoss Diagnostic Report (JDR).")
-    void endingCollection();
-
-    /**
-     * Indicates that the JBoss home directory was not set.
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 3, value = "Unable to create JDR report, JBoss Home directory cannot be determined.")
-    void jbossHomeNotSet();
-
-    /**
-     * The sosreport python library threw an exception
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 4, value = "JDR python interpreter encountered an exception.")
-    void pythonExceptionEncountered(@Cause Throwable cause);
-
-    /**
-     * JDR was unable to decode a path URL for standardization across platforms.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 5, value = "Unable to decode a url while creating JDR report.")
-    void urlDecodeExceptionEncountered(@Cause Throwable cause);
-
-    /**
-     * JDR plugin location is not a directory as expected.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 6, value = "Plugin contrib location is not a directory.  Ignoring.")
-    void contribNotADirectory();
+//    /**
+//     * Indicates that a JDR report has been initiated.
+//     */
+//    @LogMessage(level = INFO)
+//    @Message(id = 1, value = "Starting creation of a JBoss Diagnostic Report (JDR).")
+//    void startingCollection();
+//
+//    /**
+//     * Indicates that a JDR report has completed
+//     */
+//    @LogMessage(level = INFO)
+//    @Message(id = 2, value = "Completed creation of a JBoss Diagnostic Report (JDR).")
+//    void endingCollection();
+//
+//    /**
+//     * Indicates that the JBoss home directory was not set.
+//     */
+//    @LogMessage(level = ERROR)
+//    @Message(id = 3, value = "Unable to create JDR report, JBoss Home directory cannot be determined.")
+//    void jbossHomeNotSet();
+//
+//    /**
+//     * The sosreport python library threw an exception
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 4, value = "JDR python interpreter encountered an exception.")
+//    void pythonExceptionEncountered(@Cause Throwable cause);
+//
+//    /**
+//     * JDR was unable to decode a path URL for standardization across platforms.
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 5, value = "Unable to decode a url while creating JDR report.")
+//    void urlDecodeExceptionEncountered(@Cause Throwable cause);
+//
+//    /**
+//     * JDR plugin location is not a directory as expected.
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 6, value = "Plugin contrib location is not a directory.  Ignoring.")
+//    void contribNotADirectory();
 
     /**
      * JDR could not create a zipfile to store the report.
@@ -106,15 +106,15 @@ public interface JdrLogger extends BasicLogger {
     @Message(id = 9, value = "No JDR commands were loaded. Be sure that a valid Plugin class is specified in plugins.properties.")
     String noCommandsToRun();
 
-    /**
-     * Indicates an invalid, <code>null</code> argument was
-     * passed into a method.
-     *
-     * @param var method variable that was <code>null</code>
-     * @return Exception describing the invalid parameter.
-     */
-    @Message(id = 10, value = "Parameter %s may not be null.")
-    IllegalArgumentException varNull(String var);
+//    /**
+//     * Indicates an invalid, <code>null</code> argument was
+//     * passed into a method.
+//     *
+//     * @param var method variable that was <code>null</code>
+//     * @return Exception describing the invalid parameter.
+//     */
+//    @Message(id = 10, value = "Parameter %s may not be null.")
+//    IllegalArgumentException varNull(String var);
 
     /**
      * Standalone property directory could not be located which is needed to find/create the JDR properties file.

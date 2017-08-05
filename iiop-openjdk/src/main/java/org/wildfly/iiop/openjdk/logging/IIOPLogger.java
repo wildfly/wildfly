@@ -390,8 +390,8 @@ public interface IIOPLogger extends BasicLogger {
     String inconsistentRequiredTransportConfig(final String requiredAttributeName, final String transportAttributeName);
 
 
-    @Message(id = 108, value = "Security attribute server-requires-ssl is not supported in previous iiop-openjdk versions and can't be converted")
-    String serverRequiresSslNotSupportedInPreviousVersions();
+//    @Message(id = 108, value = "Security attribute server-requires-ssl is not supported in previous iiop-openjdk versions and can't be converted")
+//    String serverRequiresSslNotSupportedInPreviousVersions();
 
     @LogMessage(level = WARN)
     @Message(id = 109, value = "SSL socket is required by server but secure connections have not been configured")
@@ -403,8 +403,8 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 111, value = "SSL has not been configured but ssl-port property has been specified - the connection will use clear-text protocol")
     String sslPortWithoutSslConfiguration();
 
-    @Message(id = 112, value = "Security initializer was set to 'elytron' but no authentication-context has been specified")
-    OperationFailedException elytronInitializerMissingAuthContext();
+//    @Message(id = 112, value = "Security initializer was set to 'elytron' but no authentication-context has been specified")
+//    OperationFailedException elytronInitializerMissingAuthContext();
 
     @Message(id = 113, value = "Authentication context has been defined but it is ineffective because the security initializer is not set to 'elytron'")
     OperationFailedException ineffectiveAuthenticationContextConfiguration();
