@@ -117,16 +117,19 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
                 .setParameters(FILTER)
                 .setReplyType(LIST)
                 .setReplyParameters(getReplyMessageParameterDefinitions())
+                .setReadOnly()
                 .build(),
                 this);
         registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_MESSAGES_AS_JSON, RESOLVER)
                 .setParameters(FILTER)
                 .setReplyType(STRING)
+                .setReadOnly()
                 .build(),
                 this);
         registry.registerOperationHandler(runtimeReadOnlyOperation(COUNT_MESSAGES, RESOLVER)
                 .setParameters(FILTER)
                 .setReplyType(LONG)
+                .setReadOnly()
                 .build(),
                 this);
         registry.registerOperationHandler(runtimeOnlyOperation(REMOVE_MESSAGE, RESOLVER)
@@ -184,10 +187,12 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
         registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_MESSAGE_COUNTER_AS_JSON, RESOLVER)
                 .setReplyType(STRING)
+                .setReadOnly()
                 .build(),
                 this);
         registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_MESSAGE_COUNTER_AS_HTML, RESOLVER)
                 .setReplyType(STRING)
+                .setReadOnly()
                 .build(),
                 this);
         registry.registerOperationHandler(runtimeOnlyOperation(RESET_MESSAGE_COUNTER, RESOLVER)
@@ -198,10 +203,12 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
         registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_MESSAGE_COUNTER_HISTORY_AS_JSON, RESOLVER)
                 .setReplyType(STRING)
+                .setReadOnly()
                 .build(),
                 this);
         registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_MESSAGE_COUNTER_HISTORY_AS_HTML, RESOLVER)
                 .setReplyType(STRING)
+                .setReadOnly()
                 .build(),
                 this);
         registry.registerOperationHandler(runtimeOnlyOperation(PAUSE, RESOLVER)
@@ -215,25 +222,30 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
         registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_CONSUMERS_AS_JSON, RESOLVER)
                 .setReplyType(STRING)
+                .setReadOnly()
                 .build(),
                 this);
 
         registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_DELIVERING_MESSAGES, resolver)
                 .setReplyType(LIST)
                 .setReplyParameters(getReplyMapConsumerMessageParameterDefinition())
+                .setReadOnly()
                 .build(),
                 this);
         registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_DELIVERING_MESSAGES_AS_JSON, resolver)
                 .setReplyType(STRING)
+                .setReadOnly()
                 .build(),
                 this);
         registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_SCHEDULED_MESSAGES, resolver)
                 .setReplyType(LIST)
                 .setReplyParameters(getReplyMessageParameterDefinitions())
+                .setReadOnly()
                 .build(),
                 this);
         registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_SCHEDULED_MESSAGES_AS_JSON, resolver)
                 .setReplyType(STRING)
+                .setReadOnly()
                 .build(),
                 this);
     }
