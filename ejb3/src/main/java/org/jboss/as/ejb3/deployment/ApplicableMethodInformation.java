@@ -190,17 +190,18 @@ public class ApplicableMethodInformation<T> {
                     return method.getDeclaringClass().getDeclaredMethods();
                 }
             });
+            methodLoop:
             for (Method m : declaredMethods) {
                 if (m.getName().equals(method.getName())
                         && m.getParameterTypes().length == method.getParameterTypes().length
                         && !m.isBridge()
                         && !m.isSynthetic()) {
                     if(!method.getReturnType().isAssignableFrom(m.getReturnType())) {
-                        continue;
+                        continue methodLoop;
                     }
                     for(int i = 0; i < method.getParameterTypes().length; ++i) {
                         if(!method.getParameterTypes()[i].isAssignableFrom(m.getParameterTypes()[i])) {
-                            continue;
+                            continue methodLoop;
                         }
                     }
                     return m;
