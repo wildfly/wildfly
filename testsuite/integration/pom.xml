@@ -346,6 +346,7 @@
                     <!-- System properties passed to test cases -->
                     <systemPropertyVariables combine.children="append">
                         <node0>${node0}</node0>
+                        <node0.escaped>${node0.escaped}</node0.escaped>
                         <node1>${node1}</node1>
                         <mcast>${mcast}</mcast>
                         <mcast.ttl>${mcast.ttl}</mcast.ttl>
