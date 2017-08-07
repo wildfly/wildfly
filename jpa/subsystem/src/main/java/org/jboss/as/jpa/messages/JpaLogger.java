@@ -26,18 +26,18 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
-
 import javax.ejb.EJBException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.persistence.TransactionRequiredException;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.vfs.VirtualFile;
@@ -100,15 +100,15 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 4, value = "Stopping %s Service '%s'")
     void stoppingService(String serviceName, String name);
 
-    /**
-     * Logs an error message indicating an exception occurred while preloading the default persistence provider adapter module.
-     * Initialization continues after logging the error.
-     *
-     * @param cause the cause of the error.
-     */
-    //@LogMessage(level = ERROR)
-    //@Message(id = 5, value = "Could not load default persistence provider adaptor module.  Management attributes will not be registered for the adaptor")
-    //void errorPreloadingDefaultProviderAdaptor(@Cause Throwable cause);
+//    /**
+//     * Logs an error message indicating an exception occurred while preloading the default persistence provider adapter module.
+//     * Initialization continues after logging the error.
+//     *
+//     * @param cause the cause of the error.
+//     */
+//    @LogMessage(level = ERROR)
+//    @Message(id = 5, value = "Could not load default persistence provider adaptor module.  Management attributes will not be registered for the adaptor")
+//    void errorPreloadingDefaultProviderAdaptor(@Cause Throwable cause);
 
     /**
      * Logs an error message indicating an exception occurred while preloading the default persistence provider module.
@@ -135,19 +135,18 @@ public interface JpaLogger extends BasicLogger {
      * {@code deploymentUnit} parameter.
      *
      * @param deploymentUnit the deployment unit that failed.
-     * @return a {@link org.jboss.as.server.deployment.DeploymentUnitProcessingException} for the error.
      */
     @LogMessage(level = WARN)
     @Message(id = 8, value = "Failed to get module attachment for %s")
     void failedToGetModuleAttachment(DeploymentUnit deploymentUnit);
 
-    /**
-     * warn that the entity class could not be loaded with the
-     * {@link javax.persistence.spi.PersistenceUnitInfo#getClassLoader()}.
-     *
-     * @param cause     the cause of the error.
-     * @param className the entity class name.
-     */
+//    /**
+//     * warn that the entity class could not be loaded with the
+//     * {@link javax.persistence.spi.PersistenceUnitInfo#getClassLoader()}.
+//     *
+//     * @param cause     the cause of the error.
+//     * @param className the entity class name.
+//     */
     //@LogMessage(level = WARN)
     //@Message(id = 9, value = "Could not load entity class '%s', ignoring this error and continuing with application deployment")
     //void cannotLoadEntityClass(@Cause Throwable cause, String className);
@@ -181,22 +180,22 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 12, value = "Unexpected problem gathering statistics")
     void unexpectedStatisticsProblem(@Cause IllegalStateException cause);
 
-    /**
-     * Creates an exception indicating the inability ot add the integration, represented by the {@code name} parameter,
-     * module to the deployment.
-     *
-     * @param cause the cause of the error.
-     * @param name  the name of the integration.
-     * @return a {@link RuntimeException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the inability ot add the integration, represented by the {@code name} parameter,
+//     * module to the deployment.
+//     *
+//     * @param cause the cause of the error.
+//     * @param name  the name of the integration.
+//     * @return a {@link RuntimeException} for the error.
+//     */
     //@Message(id = 13, value = "Could not add %s integration module to deployment")
     // RuntimeException cannotAddIntegration(@Cause Throwable cause, String name);
 
-    /**
-     * Creates an exception indicating the input stream reference cannot be changed.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the input stream reference cannot be changed.
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
     //@Message(id = 14, value = "Cannot change input stream reference.")
     //IllegalArgumentException cannotChangeInputStream();
 
@@ -209,12 +208,12 @@ public interface JpaLogger extends BasicLogger {
         "(will happen when @remove method is invoked on containing SFSB)")
     IllegalStateException cannotCloseContainerManagedEntityManager();
 
-    /**
-     * Creates an exception indicating only ExtendedEntityMangers can be closed.
-     *
-     * @param entityManagerTypeName the entity manager type name.
-     * @return a {@link RuntimeException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating only ExtendedEntityMangers can be closed.
+//     *
+//     * @param entityManagerTypeName the entity manager type name.
+//     * @return a {@link RuntimeException} for the error.
+//     */
     //@Message(id = 16, value = "Can only close SFSB XPC entity manager that are instances of ExtendedEntityManager %s")
     //RuntimeException cannotCloseNonExtendedEntityManager(String entityManagerTypeName);
 
@@ -269,37 +268,37 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 21, value = "Cannot inject RESOURCE_LOCAL container managed EntityManagers using @PersistenceContext")
     String cannotInjectResourceLocalEntityManager();
 
-    /**
-     * Creates an exception indicating the inability to inject a
-     * {@link javax.persistence.spi.PersistenceUnitTransactionType#RESOURCE_LOCAL} entity manager, represented by the
-     * {@code unitName} parameter, using the {@code <persistence-context-ref>}.
-     *
-     * @param unitName the unit name.
-     * @return a {@link DeploymentUnitProcessingException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the inability to inject a
+//     * {@link javax.persistence.spi.PersistenceUnitTransactionType#RESOURCE_LOCAL} entity manager, represented by the
+//     * {@code unitName} parameter, using the {@code <persistence-context-ref>}.
+//     *
+//     * @param unitName the unit name.
+//     * @return a {@link DeploymentUnitProcessingException} for the error.
+//     */
     //@Message(id = 22, value = "Cannot inject RESOURCE_LOCAL entity manager %s using <persistence-context-ref>")
     //DeploymentUnitProcessingException cannotInjectResourceLocalEntityManager(String unitName);
 
-    /**
-     * Creates an exception indicating the persistence provider adapter module, represented by the {@code adapterModule}
-     * parameter, had an error loading.
-     *
-     * @param cause                    the cause of the error.
-     * @param adapterModule            the name of the adapter module.
-     * @param persistenceProviderClass the persistence provider class.
-     * @return a {@link DeploymentUnitProcessingException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the persistence provider adapter module, represented by the {@code adapterModule}
+//     * parameter, had an error loading.
+//     *
+//     * @param cause                    the cause of the error.
+//     * @param adapterModule            the name of the adapter module.
+//     * @param persistenceProviderClass the persistence provider class.
+//     * @return a {@link DeploymentUnitProcessingException} for the error.
+//     */
     //@Message(id = 23, value = "Persistence provider adapter module (%s) load error (class %s)")
     //DeploymentUnitProcessingException cannotLoadAdapterModule(@Cause Throwable cause, String adapterModule, String persistenceProviderClass);
 
-    /**
-     * Creates an exception indicating the entity class could not be loaded with the
-     * {@link javax.persistence.spi.PersistenceUnitInfo#getClassLoader()}.
-     *
-     * @param cause     the cause of the error.
-     * @param className the entity class name.
-     * @return a {@link RuntimeException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the entity class could not be loaded with the
+//     * {@link javax.persistence.spi.PersistenceUnitInfo#getClassLoader()}.
+//     *
+//     * @param cause     the cause of the error.
+//     * @param className the entity class name.
+//     * @return a {@link RuntimeException} for the error.
+//     */
     //@Message(id = 24, value = "Could not load entity class '%s' with PersistenceUnitInfo.getClassLoader()")
     //RuntimeException cannotLoadEntityClass(@Cause Throwable cause, String className);
 
@@ -314,15 +313,15 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 25, value = "Couldn't load %s from JPA modules classloader")
     RuntimeException cannotLoadFromJpa(@Cause Throwable cause, String injectionTypeName);
 
-    /**
-     * Creates an exception indicating the module, represented by the {@code moduleId} parameter, could not be loaded
-     * for the adapter, represented by the {@code name} parameter.
-     *
-     * @param cause    the cause of the error.
-     * @param moduleId the module id that was attempting to be loaded.
-     * @param name     the name of the adapter.
-     * @return a {@link RuntimeException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the module, represented by the {@code moduleId} parameter, could not be loaded
+//     * for the adapter, represented by the {@code name} parameter.
+//     *
+//     * @param cause    the cause of the error.
+//     * @param moduleId the module id that was attempting to be loaded.
+//     * @param name     the name of the adapter.
+//     * @return a {@link RuntimeException} for the error.
+//     */
     //@Message(id = 26, value = "Could not load module %s to add %s adapter to deployment")
     //RuntimeException cannotLoadModule(@Cause Throwable cause, ModuleIdentifier moduleId, String name);
 
@@ -338,11 +337,11 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 27, value = "Persistence provider module load error %s (class %s)")
     DeploymentUnitProcessingException cannotLoadPersistenceProviderModule(@Cause Throwable cause, String persistenceProviderModule, String persistenceProviderClass);
 
-    /**
-     * Creates an exception indicating the top of the stack could not be replaced because the stack is {@code null}.
-     *
-     * @return a {@link RuntimeException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the top of the stack could not be replaced because the stack is {@code null}.
+//     *
+//     * @return a {@link RuntimeException} for the error.
+//     */
     //@Message(id = 28, value = "Internal error: Cannot replace top of stack as stack is null (same as being empty).")
     //RuntimeException cannotReplaceStack();
 
@@ -420,12 +419,12 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 34, value = "Can't find a persistence unit named %s#%s at %s")
     IllegalArgumentException persistenceUnitNotFound(String path, String puName, DeploymentUnit deploymentUnit);
 
-    /**
-     * Creates an exception indicating the parameter, likely a collection, is empty.
-     *
-     * @param parameterName the parameter name.
-     * @return an {@link IllegalArgumentException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the parameter, likely a collection, is empty.
+//     *
+//     * @param parameterName the parameter name.
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
     //@Message(id = 35, value = "Parameter %s is empty")
     //IllegalArgumentException emptyParameter(String parameterName);
 
@@ -458,13 +457,13 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 38, value = "Failed to add persistence unit service for %s")
     DeploymentUnitProcessingException failedToAddPersistenceUnit(@Cause Throwable cause, String puName);
 
-    /**
-     * Creates an exception indicating a failure to get the module for the deployment unit represented by the
-     * {@code deploymentUnit} parameter.
-     *
-     * @param deploymentUnit the deployment unit that failed.
-     * @return a {@link DeploymentUnitProcessingException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating a failure to get the module for the deployment unit represented by the
+//     * {@code deploymentUnit} parameter.
+//     *
+//     * @param deploymentUnit the deployment unit that failed.
+//     * @return a {@link DeploymentUnitProcessingException} for the error.
+//     */
     //@Message(id = 39, value = "Failed to get module attachment for %s")
     //DeploymentUnitProcessingException failedToGetModuleAttachment(DeploymentUnit deploymentUnit);
 
@@ -485,11 +484,11 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 41, value = "Can only inject from a Hibernate EntityManagerFactoryImpl")
     RuntimeException hibernateOnlyEntityManagerFactory();
 
-    /**
-     * Creates an exception indicating the entity manager factory implementation can only be a Hibernate version.
-     *
-     * @return a {@link RuntimeException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the entity manager factory implementation can only be a Hibernate version.
+//     *
+//     * @return a {@link RuntimeException} for the error.
+//     */
     //@Message(id = 42, value = "File %s not found")
     //RuntimeException fileNotFound(File file);
 
@@ -511,25 +510,25 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 44, value = "jboss.as.jpa.scopedname hint (%s) contains illegal '%s' character")
     IllegalArgumentException invalidScopedName(String persistenceUnitName, char c);
 
-    /**
-     * Creates an exception indicating the inability to integrate the module, represented by the {@code integrationName}
-     * parameter, to the deployment as it expected a {@link java.net.JarURLConnection}.
-     *
-     * @param integrationName the name of the integration that could not be integrated.
-     * @param connection      the invalid connection.
-     * @return a {@link RuntimeException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the inability to integrate the module, represented by the {@code integrationName}
+//     * parameter, to the deployment as it expected a {@link java.net.JarURLConnection}.
+//     *
+//     * @param integrationName the name of the integration that could not be integrated.
+//     * @param connection      the invalid connection.
+//     * @return a {@link RuntimeException} for the error.
+//     */
     //@Message(id = 45, value = "Could not add %s integration module to deployment, did not get expected JarUrlConnection, got %s")
     //RuntimeException invalidUrlConnection(String integrationName, URLConnection connection);
 
     //@Message(id = 46, value = "Could not load %s")
     //XMLStreamException errorLoadingJBossJPAFile(@Cause Throwable cause, String path);
 
-    /**
-     * Creates an exception indicating the persistence unit metadata likely because thread local was not set.
-     *
-     * @return a {@link RuntimeException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the persistence unit metadata likely because thread local was not set.
+//     *
+//     * @return a {@link RuntimeException} for the error.
+//     */
     //@Message(id = 47, value = "Missing PersistenceUnitMetadata (thread local wasn't set)")
     //RuntimeException missingPersistenceUnitMetadata();
 
@@ -543,39 +542,39 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 48, value = "Persistence provider adapter module (%s) has more than one adapter")
     RuntimeException multipleAdapters(String adapterModule);
 
-    /**
-     * Creates an exception indicating more than one thread is invoking the stateful session bean at the same time.
-     *
-     * @param sessionBean the stateful session bean.
-     * @return a {@link RuntimeException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating more than one thread is invoking the stateful session bean at the same time.
+//     *
+//     * @param sessionBean the stateful session bean.
+//     * @return a {@link RuntimeException} for the error.
+//     */
     //@Message(id = 49, value = "More than one thread is invoking stateful session bean '%s' at the same time")
     //RuntimeException multipleThreadsInvokingSfsb(Object sessionBean);
 
-    /**
-     * Creates an exception indicating more than one thread is using the entity manager instance at the same time.
-     *
-     * @param entityManager the entity manager.
-     * @return a {@link RuntimeException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating more than one thread is using the entity manager instance at the same time.
+//     *
+//     * @param entityManager the entity manager.
+//     * @return a {@link RuntimeException} for the error.
+//     */
     //@Message(id = 50, value = "More than one thread is using EntityManager instance '%s' at the same time")
     //RuntimeException multipleThreadsUsingEntityManager(EntityManager entityManager);
 
-    /**
-     * Creates an exception indicating the {@code name} was not set in the {@link org.jboss.invocation.InterceptorContext}.
-     *
-     * @param name    the name of the field not set.
-     * @param context the context.
-     * @return an {@link IllegalArgumentException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the {@code name} was not set in the {@link org.jboss.invocation.InterceptorContext}.
+//     *
+//     * @param name    the name of the field not set.
+//     * @param context the context.
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
     //@Message(id = 51, value = "%s not set in InterceptorContext: %s")
     //IllegalArgumentException notSetInInterceptorContext(String name, InterceptorContext context);
 
-    /**
-     * Creates an exception indicating the method is not yet implemented.
-     *
-     * @return a {@link RuntimeException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the method is not yet implemented.
+//     *
+//     * @return a {@link RuntimeException} for the error.
+//     */
     //@Message(id = 52, value = "Not yet implemented")
     //RuntimeException notYetImplemented();
 
@@ -589,31 +588,31 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 53, value = "Internal %s error, null %s passed in")
     RuntimeException nullParameter(String description, String parameterName);
 
-    /**
-     * Creates an exception indicating the variable is {@code null}.
-     *
-     * @param varName the variable name.
-     * @return an {@link IllegalArgumentException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the variable is {@code null}.
+//     *
+//     * @param varName the variable name.
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
     //@Message(id = 54, value = "Parameter %s is null")
     //IllegalArgumentException nullVar(String varName);
 
-    /**
-     * A message indicating the object for the class ({@code cls} has been defined and is not {@code null}.
-     *
-     * @param cls      the class for the object.
-     * @param previous the previously defined object.
-     * @return the message.
-     */
+//    /**
+//     * A message indicating the object for the class ({@code cls} has been defined and is not {@code null}.
+//     *
+//     * @param cls      the class for the object.
+//     * @param previous the previously defined object.
+//     * @return the message.
+//     */
     //@Message(id = 55, value = "Previous object for class %s is %s instead of null")
     //String objectAlreadyDefined(Class<?> cls, Object previous);
 
-    /**
-     * Creates an exception indicating the parameter must be an ExtendedEntityManager
-     *
-     * @param gotClass
-     * @return a {@link RuntimeException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating the parameter must be an ExtendedEntityManager
+//     *
+//     * @param gotClass
+//     * @return a {@link RuntimeException} for the error.
+//     */
     //@Message(id = 56, value = "Internal error, expected parameter of type ExtendedEntityManager but instead got %s")
     //RuntimeException parameterMustBeExtendedEntityManager(String gotClass);
 
@@ -674,7 +673,7 @@ public interface JpaLogger extends BasicLogger {
      * Creates an exception indicating the persistence provider could not be instantiated ,
      *
      * @param cause the cause of the error.
-     * @param providerClassName
+     * @param providerClassName name of the provider class
      *
      * @return a {@link RuntimeException} for the error.
      */
@@ -715,27 +714,27 @@ public interface JpaLogger extends BasicLogger {
     /**
      * Only one persistence provider adapter per (persistence provider or application) classloader is allowed
      *
-     * @param classloader
+     * @param classloader offending classloader
      * @return a {@link RuntimeException} for the error.
      */
     @Message(id = 67, value = "Classloader '%s' has more than one Persistence provider adapter")
     RuntimeException classloaderHasMultipleAdapters(String classloader);
 
-    /**
-     * Likely cause is that the application deployment did not complete successfully
-     *
-     * @param scopedPuName
-     * @return
-     */
-    @Message(id = 68, value = "Persistence unit '%s' is not available")
-    IllegalStateException PersistenceUnitNotAvailable(String scopedPuName);
+//    /**
+//     * Likely cause is that the application deployment did not complete successfully
+//     *
+//     * @param scopedPuName
+//     * @return
+//     */
+//    @Message(id = 68, value = "Persistence unit '%s' is not available")
+//    IllegalStateException PersistenceUnitNotAvailable(String scopedPuName);
 
     /**
      * persistence provider adaptor module load error
      *
      * @param cause the cause of the error.
      * @param adaptorModule name of persistence provider adaptor module that couldn't be loaded.
-     * @return
+     * @return the exception
      */
     @Message(id = 69, value =  "Persistence provider adapter module load error %s")
     DeploymentUnitProcessingException persistenceProviderAdaptorModuleLoadError(@Cause Throwable cause, String adaptorModule);
@@ -743,8 +742,8 @@ public interface JpaLogger extends BasicLogger {
     /**
      * extended persistence context can only be used within a stateful session bean. WFLY-69
      *
-     * @param scopedPuName
-     * @return
+     * @param scopedPuName name of the persistence unit
+     * @return the exception
      */
     @Message(id = 70, value = "A container-managed extended persistence context can only be initiated within the scope of a stateful session bean (persistence unit '%s').")
     IllegalStateException xpcOnlyFromSFSB(String scopedPuName);

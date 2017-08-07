@@ -145,11 +145,11 @@ public interface JGroupsLogger extends BasicLogger {
     @Message(id = 25, value = "Configured credential source does not reference a clear-text password credential")
     IllegalArgumentException unexpectedCredentialSource();
 
-    @Message(id = 26, value = "No %s operation registered at %s")
-    OperationFailedException operationNotDefined(String operation, String address);
+//    @Message(id = 26, value = "No %s operation registered at %s")
+//    OperationFailedException operationNotDefined(String operation, String address);
 
-    @Message(id = 27, value = "Failed to synthesize key-store add operation due to missing %s property")
-    OperationFailedException missingKeyStoreProperty(String propertyName);
+//    @Message(id = 27, value = "Failed to synthesize key-store add operation due to missing %s property")
+//    OperationFailedException missingKeyStoreProperty(String propertyName);
 
     @Message(id = 28, value = "Could not resolve destination address for outbound socket binding named '%s'")
     IllegalArgumentException failedToResolveSocketBinding(@Cause UnknownHostException cause, OutboundSocketBinding binding);

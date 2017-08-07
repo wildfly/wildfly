@@ -24,7 +24,6 @@ package org.jboss.as.weld.logging;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -50,6 +49,7 @@ import org.jboss.weld.resources.spi.ClassFileInfoException;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@SuppressWarnings("deprecation")
 @MessageLogger(projectCode = "WFLYWELD", length = 4)
 public interface WeldLogger extends BasicLogger {
 
@@ -76,9 +76,9 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 3, value = "Processing weld deployment %s")
     void processingWeldDeployment(String deployment);
 
-    @LogMessage(level = Logger.Level.WARN)
-    @Message(id = 4, value = "Found beans.xml file in non-standard location: %s, war deployments should place beans.xml files into WEB-INF/beans.xml")
-    void beansXmlInNonStandardLocation(String location);
+//    @LogMessage(level = Logger.Level.WARN)
+//    @Message(id = 4, value = "Found beans.xml file in non-standard location: %s, war deployments should place beans.xml files into WEB-INF/beans.xml")
+//    void beansXmlInNonStandardLocation(String location);
 
     @LogMessage(level = Logger.Level.ERROR)
     @Message(id = 5, value = "Could not find BeanManager for deployment %s")
@@ -120,9 +120,9 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 14, value = "Exception tearing down thread state")
     void exceptionClearingThreadState(@Cause Exception e);
 
-    @LogMessage(level = Logger.Level.ERROR)
-    @Message(id = 15, value = "Error loading file %s")
-    void errorLoadingFile(String newPath);
+//    @LogMessage(level = Logger.Level.ERROR)
+//    @Message(id = 15, value = "Error loading file %s")
+//    void errorLoadingFile(String newPath);
 
     @LogMessage(level = Logger.Level.ERROR)
     @Message(id = 16, value = "Could not read entries")
@@ -151,23 +151,23 @@ public interface WeldLogger extends BasicLogger {
     // @Message(id = 23, value = "EJB has been removed")
     // NoSuchEJBException ejbHashBeenRemoved();
 
-    @Message(id = 24, value = "Failed to perform CDI injection of field: %s on %s")
-    RuntimeException couldNotInjectField(Field field, Class<?> beanClass, @Cause Throwable cause);
-
-    @Message(id = 25, value = "Failed to perform CDI injection of method: %s on %s")
-    RuntimeException couldNotInjectMethod(Method method, Class<?> beanClass, @Cause Throwable cause);
-
-    @Message(id = 26, value = "Class %s has more that one constructor annotated with @Inject")
-    RuntimeException moreThanOneBeanConstructor(Class<?> beanClass);
-
-    @Message(id = 27, value = "Component %s is attempting to inject the InjectionPoint into a field: %s")
-    RuntimeException attemptingToInjectInjectionPointIntoField(Class<?> clazz, Field field);
-
-    @Message(id = 28, value = "Could not resolve CDI bean for injection point %s with qualifiers %s")
-    RuntimeException couldNotResolveInjectionPoint(String injectionPoint, Set<Annotation> qualifier);
-
-    @Message(id = 29, value = "Component %s is attempting to inject the InjectionPoint into a method on a component that is not a CDI bean %s")
-    RuntimeException attemptingToInjectInjectionPointIntoNonBean(Class<?> componentClass, Method injectionPoint);
+//    @Message(id = 24, value = "Failed to perform CDI injection of field: %s on %s")
+//    RuntimeException couldNotInjectField(Field field, Class<?> beanClass, @Cause Throwable cause);
+//
+//    @Message(id = 25, value = "Failed to perform CDI injection of method: %s on %s")
+//    RuntimeException couldNotInjectMethod(Method method, Class<?> beanClass, @Cause Throwable cause);
+//
+//    @Message(id = 26, value = "Class %s has more that one constructor annotated with @Inject")
+//    RuntimeException moreThanOneBeanConstructor(Class<?> beanClass);
+//
+//    @Message(id = 27, value = "Component %s is attempting to inject the InjectionPoint into a field: %s")
+//    RuntimeException attemptingToInjectInjectionPointIntoField(Class<?> clazz, Field field);
+//
+//    @Message(id = 28, value = "Could not resolve CDI bean for injection point %s with qualifiers %s")
+//    RuntimeException couldNotResolveInjectionPoint(String injectionPoint, Set<Annotation> qualifier);
+//
+//    @Message(id = 29, value = "Component %s is attempting to inject the InjectionPoint into a method on a component that is not a CDI bean %s")
+//    RuntimeException attemptingToInjectInjectionPointIntoNonBean(Class<?> componentClass, Method injectionPoint);
 
     @Message(id = 30, value = "Unknown interceptor class for CDI injection %s")
     IllegalArgumentException unknownInterceptorClassForCDIInjection(Class<?> interceptorClass);

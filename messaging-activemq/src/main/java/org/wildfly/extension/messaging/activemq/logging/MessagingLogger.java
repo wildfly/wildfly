@@ -26,16 +26,13 @@ import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
-import static org.jboss.logging.annotations.Message.INHERIT;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import javax.jms.IllegalStateRuntimeException;
-import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -155,25 +152,25 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 8, value = "Failed to unbind messaging object bound to jndi name %s in %d %s")
     void failedToUnbindJndiName(String jndiName, long timeout, String timeUnit);
 
-    /**
-     * Logs a warning message indicating the XML element with the given {@code name}
-     * is deprecated and will not be used anymore.
-     *
-     * @param name the name of the deprecated XML element
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 9, value = "Element %s is deprecated and will not be taken into account")
-    void deprecatedXMLElement(String name);
-
-    /**
-     * Logs a warning message indicating the XML attribute with the given {@code name}
-     * is deprecated and will not be used anymore.
-     *
-     * @param name the name of the deprecated XML attribute
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 10, value = "Attribute %s is deprecated and will not be taken into account")
-    void deprecatedXMLAttribute(String name);
+//    /**
+//     * Logs a warning message indicating the XML element with the given {@code name}
+//     * is deprecated and will not be used anymore.
+//     *
+//     * @param name the name of the deprecated XML element
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 9, value = "Element %s is deprecated and will not be taken into account")
+//    void deprecatedXMLElement(String name);
+//
+//    /**
+//     * Logs a warning message indicating the XML attribute with the given {@code name}
+//     * is deprecated and will not be used anymore.
+//     *
+//     * @param name the name of the deprecated XML attribute
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 10, value = "Attribute %s is deprecated and will not be taken into account")
+//    void deprecatedXMLAttribute(String name);
 
     /**
      * Logs an info message when a service for the given {@code type} and {@code name} is <em>started</em>.
@@ -195,18 +192,18 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 12, value = "Stopped %s %s")
     void stoppedService(String type, String name);
 
-    /**
-     * Logs a warning message indicating the management attribute with the given {@code name}
-     * is deprecated and will not be used anymore.
-     *
-     * @param name the name of the deprecated XML attribute
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 13, value = "Attribute %s of the resource at %s is deprecated and setting its value will not be taken into account")
-    void deprecatedAttribute(String name, PathAddress address);
-
-    @Message(id = 14, value = "Can not change the clustered attribute to false: The server resource at %s has cluster-connection children resources and will remain clustered.")
-    String canNotChangeClusteredAttribute(PathAddress address);
+//    /**
+//     * Logs a warning message indicating the management attribute with the given {@code name}
+//     * is deprecated and will not be used anymore.
+//     *
+//     * @param name the name of the deprecated XML attribute
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 13, value = "Attribute %s of the resource at %s is deprecated and setting its value will not be taken into account")
+//    void deprecatedAttribute(String name, PathAddress address);
+//
+//    @Message(id = 14, value = "Can not change the clustered attribute to false: The server resource at %s has cluster-connection children resources and will remain clustered.")
+//    String canNotChangeClusteredAttribute(PathAddress address);
 
     @LogMessage(level = WARN)
     @Message(id = 15, value = "Ignoring %s property that is not a known property for pooled connection factory.")
@@ -221,15 +218,15 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 16, value = "Registered HTTP upgrade for %s protocol handled by %s acceptor")
     void registeredHTTPUpgradeHandler(String name, String acceptor);
 
-    /**
-     * Logs a warning message indicating the XML element with the given {@code name}
-     * is deprecated and instead a different attribute will be used.
-     *
-     * @param name the name of the deprecated XML element
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 17, value = "Element %s is deprecated and %s will be used in its place")
-    void deprecatedXMLElement(String name, String replacement);
+//    /**
+//     * Logs a warning message indicating the XML element with the given {@code name}
+//     * is deprecated and instead a different attribute will be used.
+//     *
+//     * @param name the name of the deprecated XML element
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 17, value = "Element %s is deprecated and %s will be used in its place")
+//    void deprecatedXMLElement(String name, String replacement);
 
     /**
      * Logs a warn message when no connectors were specified for a connection factory definition
@@ -242,36 +239,36 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 18, value = "No connectors were explicitly defined for the pooled connection factory %s. Using %s as the connector.")
     void connectorForPooledConnectionFactory(String name, String connectorName);
 
-    /**
-     * A message indicating the alternative attribute represented by the {@code name} parameter is already defined.
-     *
-     * @param name the attribute name.
-     *
-     * @return the message.
-     */
-    @Message(id = 19, value = "Alternative attribute of (%s) is already defined.")
-    String altAttributeAlreadyDefined(String name);
+//    /**
+//     * A message indicating the alternative attribute represented by the {@code name} parameter is already defined.
+//     *
+//     * @param name the attribute name.
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 19, value = "Alternative attribute of (%s) is already defined.")
+//    String altAttributeAlreadyDefined(String name);
 
-    /**
-     * Creates an exception indicating that all attribute definitions must have the same XML name.
-     *
-     * @param nameFound    the name found.
-     * @param nameRequired the name that is required.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 20, value = "All attribute definitions must have the same xml name -- found %s but already had %s")
-    IllegalArgumentException attributeDefinitionsMustMatch(String nameFound, String nameRequired);
-
-    /**
-     * Creates an exception indicating that all attribute definitions must have unique names.
-     *
-     * @param nameFound the name found.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 21, value = "All attribute definitions must have unique names -- already found %s")
-    IllegalArgumentException attributeDefinitionsNotUnique(String nameFound);
+//    /**
+//     * Creates an exception indicating that all attribute definitions must have the same XML name.
+//     *
+//     * @param nameFound    the name found.
+//     * @param nameRequired the name that is required.
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 20, value = "All attribute definitions must have the same xml name -- found %s but already had %s")
+//    IllegalArgumentException attributeDefinitionsMustMatch(String nameFound, String nameRequired);
+//
+//    /**
+//     * Creates an exception indicating that all attribute definitions must have unique names.
+//     *
+//     * @param nameFound the name found.
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 21, value = "All attribute definitions must have unique names -- already found %s")
+//    IllegalArgumentException attributeDefinitionsNotUnique(String nameFound);
 
     /**
      * Creates an exception indicating a {@code null} or empty JNDI name cannot be bound.
@@ -281,28 +278,28 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 22, value = "Cannot bind a null or empty string as jndi name")
     IllegalArgumentException cannotBindJndiName();
 
-    /**
-     * A message indicating the operation cannot include the parameter represented by {@code paramName1} and the
-     * parameter represented by the {@code paramName2} parameter.
-     *
-     * @param paramName1 the name of the parameter.
-     * @param paramName2 the name of the parameter.
-     *
-     * @return the message.
-     */
-    @Message(id = 23, value = "Operation cannot include both parameter %s and parameter %s")
-    String cannotIncludeOperationParameters(String paramName1, String paramName2);
-
-    /**
-     * Creates an exception indicating the attribute, represented by the {@code name} parameter, cannot be marshalled
-     * and to use the {@code marshalAsElement} method.
-     *
-     * @param name the name of the attribute.
-     *
-     * @return an {@link UnsupportedOperationException} for the error.
-     */
-    @Message(id = 24, value = "%s cannot be marshalled as an attribute; use marshallAsElement")
-    UnsupportedOperationException cannotMarshalAttribute(String name);
+//    /**
+//     * A message indicating the operation cannot include the parameter represented by {@code paramName1} and the
+//     * parameter represented by the {@code paramName2} parameter.
+//     *
+//     * @param paramName1 the name of the parameter.
+//     * @param paramName2 the name of the parameter.
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 23, value = "Operation cannot include both parameter %s and parameter %s")
+//    String cannotIncludeOperationParameters(String paramName1, String paramName2);
+//
+//    /**
+//     * Creates an exception indicating the attribute, represented by the {@code name} parameter, cannot be marshalled
+//     * and to use the {@code marshalAsElement} method.
+//     *
+//     * @param name the name of the attribute.
+//     *
+//     * @return an {@link UnsupportedOperationException} for the error.
+//     */
+//    @Message(id = 24, value = "%s cannot be marshalled as an attribute; use marshallAsElement")
+//    UnsupportedOperationException cannotMarshalAttribute(String name);
 
     /**
      * Creates an exception indicating a {@code null} or empty JNDI name cannot be unbound.
@@ -395,28 +392,28 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 33, value = "Failed to start service")
     StartException failedToStartService(@Cause Throwable cause);
 
-    /**
-     * Creates an exception indicating an unhandled element is being ignored.
-     *
-     * @param element  the element that's being ignored.
-     * @param location the location of the element.
-     *
-     * @return a {@link XMLStreamException} for the error.
-     */
-    @Message(id = 34, value = "Ignoring unhandled element: %s, at: %s")
-    XMLStreamException ignoringUnhandledElement(String element, String location);
-
-    /**
-     * A message indicating an illegal element, represented by the {@code illegalElement} parameter, cannot be used
-     * when the element, represented by the {@code element} parameter, is used.
-     *
-     * @param illegalElement the illegal element.
-     * @param element        the element the {@code illegalElement} cannot be used with.
-     *
-     * @return the message.
-     */
-    @Message(id = 35, value = "Illegal element %s: cannot be used when %s is used")
-    String illegalElement(String illegalElement, String element);
+//    /**
+//     * Creates an exception indicating an unhandled element is being ignored.
+//     *
+//     * @param element  the element that's being ignored.
+//     * @param location the location of the element.
+//     *
+//     * @return a {@link XMLStreamException} for the error.
+//     */
+//    @Message(id = 34, value = "Ignoring unhandled element: %s, at: %s")
+//    XMLStreamException ignoringUnhandledElement(String element, String location);
+//
+//    /**
+//     * A message indicating an illegal element, represented by the {@code illegalElement} parameter, cannot be used
+//     * when the element, represented by the {@code element} parameter, is used.
+//     *
+//     * @param illegalElement the illegal element.
+//     * @param element        the element the {@code illegalElement} cannot be used with.
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 35, value = "Illegal element %s: cannot be used when %s is used")
+//    String illegalElement(String illegalElement, String element);
 
     /**
      * A message indicating an illegal value, represented by the {@code value} parameter, for the element, represented
@@ -430,19 +427,19 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 36, value = "Illegal value %s for element %s")
     String illegalValue(Object value, String element);
 
-    /**
-     * A message indicating an illegal value, represented by the {@code value} parameter, for the element, represented
-     * by the {@code element} parameter, as it could not be converted to the required type, represented by the
-     * {@code expectedType} parameter.
-     *
-     * @param value        the illegal value.
-     * @param element      the element.
-     * @param expectedType the required type.
-     *
-     * @return the message.
-     */
-    @Message(id = INHERIT, value = "Illegal value %s for element %s as it could not be converted to required type %s")
-    String illegalValue(Object value, String element, ModelType expectedType);
+//    /**
+//     * A message indicating an illegal value, represented by the {@code value} parameter, for the element, represented
+//     * by the {@code element} parameter, as it could not be converted to the required type, represented by the
+//     * {@code expectedType} parameter.
+//     *
+//     * @param value        the illegal value.
+//     * @param element      the element.
+//     * @param expectedType the required type.
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = INHERIT, value = "Illegal value %s for element %s as it could not be converted to required type %s")
+//    String illegalValue(Object value, String element, ModelType expectedType);
 
     /**
      * Creates an exception indicating a resource is immutable.
@@ -474,31 +471,31 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 39, value = "Attribute %s has unexpected type %s")
     IllegalStateException invalidAttributeType(String name, ModelType type);
 
-    /**
-     * A message indicating the operation must include the parameter represented by {@code paramName1} or the parameter
-     * represented by the {@code paramName2} parameter.
-     *
-     * @param paramName1 the name of the parameter.
-     * @param paramName2 the name of the parameter.
-     *
-     * @return the message.
-     */
-    @Message(id = 40, value = "Operation must include parameter %s or parameter %s")
-    String invalidOperationParameters(String paramName1, String paramName2);
+//    /**
+//     * A message indicating the operation must include the parameter represented by {@code paramName1} or the parameter
+//     * represented by the {@code paramName2} parameter.
+//     *
+//     * @param paramName1 the name of the parameter.
+//     * @param paramName2 the name of the parameter.
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 40, value = "Operation must include parameter %s or parameter %s")
+//    String invalidOperationParameters(String paramName1, String paramName2);
 
-    /**
-     * A message indicating the value, represented by the {@code value} parameter, is invalid for the parameter,
-     * represented by the {@code name} parameter. The value must must be one of the values defined in the
-     * {@code allowedValues} parameter.
-     *
-     * @param value         the invalid value.
-     * @param name          the name of the parameter.
-     * @param allowedValues the values that are allowed.
-     *
-     * @return the message.
-     */
-    @Message(id = 41, value = "%s is an invalid value for parameter %s. Values must be one of: %s")
-    String invalidParameterValue(Object value, String name, Collection<?> allowedValues);
+//    /**
+//     * A message indicating the value, represented by the {@code value} parameter, is invalid for the parameter,
+//     * represented by the {@code name} parameter. The value must must be one of the values defined in the
+//     * {@code allowedValues} parameter.
+//     *
+//     * @param value         the invalid value.
+//     * @param name          the name of the parameter.
+//     * @param allowedValues the values that are allowed.
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 41, value = "%s is an invalid value for parameter %s. Values must be one of: %s")
+//    String invalidParameterValue(Object value, String name, Collection<?> allowedValues);
 
     /**
      * Creates an exception indicating the service, represented by the {@code service} parameter, is in an invalid
@@ -523,16 +520,16 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 43, value = "JNDI name %s is already registered")
     String jndiNameAlreadyRegistered(String jndiName);
 
-    /**
-     * Creates an exception indicating multiple children, represented by the {@code element} parameter, were found, but
-     * not allowed.
-     *
-     * @param element the element
-     *
-     * @return an {@link IllegalStateException} for the error.
-     */
-    @Message(id = 44, value = "Multiple %s children found; only one is allowed")
-    IllegalStateException multipleChildrenFound(String element);
+//    /**
+//     * Creates an exception indicating multiple children, represented by the {@code element} parameter, were found, but
+//     * not allowed.
+//     *
+//     * @param element the element
+//     *
+//     * @return an {@link IllegalStateException} for the error.
+//     */
+//    @Message(id = 44, value = "Multiple %s children found; only one is allowed")
+//    IllegalStateException multipleChildrenFound(String element);
 
     /**
      * A message the object, represented by the {@code obj} parameter, is required.
@@ -565,25 +562,25 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 47, value = "%s is null")
     IllegalArgumentException nullVar(String varName);
 
-    /**
-     * A message indicating the parameter, represented by the {@code parameter} parameter, is not defined.
-     *
-     * @param parameter the parameter.
-     *
-     * @return the message.
-     */
-    @Message(id = 48, value = "Parameter not defined: %s")
-    String parameterNotDefined(Object parameter);
-
-    /**
-     * A message indicating there is no such attribute.
-     *
-     * @param name the name of the attribute.
-     *
-     * @return the message.
-     */
-    @Message(id = 49, value = "No such attribute (%s)")
-    String unknownAttribute(String name);
+//    /**
+//     * A message indicating the parameter, represented by the {@code parameter} parameter, is not defined.
+//     *
+//     * @param parameter the parameter.
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 48, value = "Parameter not defined: %s")
+//    String parameterNotDefined(Object parameter);
+//
+//    /**
+//     * A message indicating there is no such attribute.
+//     *
+//     * @param name the name of the attribute.
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 49, value = "No such attribute (%s)")
+//    String unknownAttribute(String name);
 
     /**
      * Creates an exception indicating the read support for the attribute represented by the {@code name} parameter was
@@ -596,16 +593,16 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 50, value = "Read support for attribute %s was not properly implemented")
     IllegalStateException unsupportedAttribute(String name);
 
-    /**
-     * Creates an exception indicating that no support for the element, represented by the {@code name} parameter, has
-     * been implemented.
-     *
-     * @param name the name of the element.
-     *
-     * @return an {@link UnsupportedOperationException} for the error.
-     */
-    @Message(id = 51, value = "Implement support for element %s")
-    UnsupportedOperationException unsupportedElement(String name);
+//    /**
+//     * Creates an exception indicating that no support for the element, represented by the {@code name} parameter, has
+//     * been implemented.
+//     *
+//     * @param name the name of the element.
+//     *
+//     * @return an {@link UnsupportedOperationException} for the error.
+//     */
+//    @Message(id = 51, value = "Implement support for element %s")
+//    UnsupportedOperationException unsupportedElement(String name);
 
     /**
      * Creates an exception indicating the read support for the operation represented by the {@code name} parameter was
@@ -653,16 +650,16 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 58, value = "SecurityDomainContext has not been set")
     IllegalStateException securityDomainContextNotSet();
 
-    /**
-     * A message indicating only of of {@code obj1} or {@code obj2} is allowed.
-     *
-     * @param obj1 the first option.
-     * @param obj2 the second option.
-     *
-     * @return the message.
-     */
-    @Message(id = 59, value = "Only one of %s or %s is required")
-    String onlyOneRequired(Object obj1, Object obj2);
+//    /**
+//     * A message indicating only of of {@code obj1} or {@code obj2} is allowed.
+//     *
+//     * @param obj1 the first option.
+//     * @param obj2 the second option.
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 59, value = "Only one of %s or %s is required")
+//    String onlyOneRequired(Object obj1, Object obj2);
 
 
     /**
@@ -677,24 +674,24 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 60, value = "Failed to recover %s")
     OperationFailedException failedToRecover(@Cause Throwable cause, String name);
 
-    /**
-     * Create a failure description message indicating that an attribute is not supported by a given model version.
-     *
-     * @param attributes the name(s) of the unsupported attribute(s)
-     * @param version the model version that does not support the attribute
-     *
-     * @return the message.
-     */
-    @Message(id = 61, value = "Attribute(s) %s are not supported by messaging management model %s")
-    String unsupportedAttributeInVersion(String attributes, ModelVersion version);
-
-    /**
-     * Create a failure description message indicating that the clustered attribute is deprecated.
-     *
-     * @return an {@link UnsupportedOperationException} for the error.
-     */
-    @Message(id = 62, value = "The clustered attribute is deprecated. To create a clustered ActiveMQ server, define at least one cluster-connection")
-    UnsupportedOperationException canNotWriteClusteredAttribute();
+//    /**
+//     * Create a failure description message indicating that an attribute is not supported by a given model version.
+//     *
+//     * @param attributes the name(s) of the unsupported attribute(s)
+//     * @param version the model version that does not support the attribute
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 61, value = "Attribute(s) %s are not supported by messaging management model %s")
+//    String unsupportedAttributeInVersion(String attributes, ModelVersion version);
+//
+//    /**
+//     * Create a failure description message indicating that the clustered attribute is deprecated.
+//     *
+//     * @return an {@link UnsupportedOperationException} for the error.
+//     */
+//    @Message(id = 62, value = "The clustered attribute is deprecated. To create a clustered ActiveMQ server, define at least one cluster-connection")
+//    UnsupportedOperationException canNotWriteClusteredAttribute();
 
     /**
      * Create a failure description message indicating that the resource of given type can not be registered.
@@ -732,19 +729,19 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 68, value = "It is not permitted to call this method on injected JMSContext (see JMS 2.0 spec, §12.4.5).")
     IllegalStateRuntimeException callNotPermittedOnInjectedJMSContext();
 
-    /**
-     * A message indicating the alternative attribute represented by the {@code name} parameter can not be undefined as the resource
-     * has not defined any other alternative .
-     *
-     * @param name the attribute name.
-     *
-     * @return the message.
-     */
-    @Message(id = 69, value = "Attribute (%s) can not been undefined as the resource does not define any alternative to this attribute.")
-    String undefineAttributeWithoutAlternative(String name);
-
-    @Message(id = 70, value = "Attributes %s is an alias for attribute %s; both cannot be set with conflicting values.")
-    OperationFailedException inconsistentStatisticsSettings(String attrOne, String attrTwo);
+//    /**
+//     * A message indicating the alternative attribute represented by the {@code name} parameter can not be undefined as the resource
+//     * has not defined any other alternative .
+//     *
+//     * @param name the attribute name.
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 69, value = "Attribute (%s) can not been undefined as the resource does not define any alternative to this attribute.")
+//    String undefineAttributeWithoutAlternative(String name);
+//
+//    @Message(id = 70, value = "Attributes %s is an alias for attribute %s; both cannot be set with conflicting values.")
+//    OperationFailedException inconsistentStatisticsSettings(String attrOne, String attrTwo);
 
     /**
      * Logs a warn message when there is no resource matching the address-settings' expiry-address.
@@ -776,8 +773,8 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 73, value = "Can not remove JNDI name %s. The resource must have at least one JNDI name")
     String canNotRemoveLastJNDIName(String jndiName);
 
-    @Message(id = 74, value = "Invalid parameter key: %s, the allowed keys are %s.")
-    OperationFailedException invalidParameterName(String parameterName, Set<String> allowedKeys);
+//    @Message(id = 74, value = "Invalid parameter key: %s, the allowed keys are %s.")
+//    OperationFailedException invalidParameterName(String parameterName, Set<String> allowedKeys);
 
     /**
      * Logs a INFO message indicating AIO was not found, ask to install LibAIO to enable the AIO on Linux systems to achieve optimal performance.

@@ -22,39 +22,39 @@
 
 package org.jboss.as.naming.logging;
 
-import java.io.IOException;
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import java.security.Permission;
 
+import javax.annotation.Resource;
 import javax.naming.Context;
 import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
+import javax.naming.spi.ObjectFactory;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.naming.subsystem.BindingType;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.Logger;
-import static org.jboss.logging.Logger.Level.ERROR;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.DEBUG;
-import static org.jboss.logging.Logger.Level.WARN;
-
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.remoting3.Channel;
 
 /**
  * Date: 17.06.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@SuppressWarnings("deprecation")
 @MessageLogger(projectCode = "WFLYNAM", length = 4)
 public interface NamingLogger extends BasicLogger {
     /**
@@ -86,42 +86,42 @@ public interface NamingLogger extends BasicLogger {
     @Message(id = 3, value = "Starting Naming Service")
     void startingService();
 
-    @LogMessage(level = ERROR)
-    @Message(id = 4, value = "Unable to send header, closing channel")
-    void failedToSendHeader(@Cause IOException exception);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 5, value = "Error determining version selected by client.")
-    void failedToDetermineClientVersion(@Cause IOException exception);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 6, value = "Closing channel %s due to an error")
-    void closingChannel(Channel channel, @Cause Throwable t);
-
-    @LogMessage(level = DEBUG)
-    @Message(id = 7, value = "Channel end notification received, closing channel %s")
-    void closingChannelOnChannelEnd(Channel channel);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 8, value = "Unexpected internal error")
-    void unexpectedError(@Cause Throwable t);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 9, value = "Null correlationId so error not sent to client")
-    void nullCorrelationId(@Cause Throwable t);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 10, value = "Failed to send exception response to client")
-    void failedToSendExceptionResponse(@Cause IOException ioe);
-
-
-    @LogMessage(level = ERROR)
-    @Message(id = 11, value = "Unexpected parameter type - expected: %d  received: %d")
-    void unexpectedParameterType(byte expected, byte actual);
+//    @LogMessage(level = ERROR)
+//    @Message(id = 4, value = "Unable to send header, closing channel")
+//    void failedToSendHeader(@Cause IOException exception);
+//
+//    @LogMessage(level = ERROR)
+//    @Message(id = 5, value = "Error determining version selected by client.")
+//    void failedToDetermineClientVersion(@Cause IOException exception);
+//
+//    @LogMessage(level = ERROR)
+//    @Message(id = 6, value = "Closing channel %s due to an error")
+//    void closingChannel(Channel channel, @Cause Throwable t);
+//
+//    @LogMessage(level = DEBUG)
+//    @Message(id = 7, value = "Channel end notification received, closing channel %s")
+//    void closingChannelOnChannelEnd(Channel channel);
+//
+//    @LogMessage(level = ERROR)
+//    @Message(id = 8, value = "Unexpected internal error")
+//    void unexpectedError(@Cause Throwable t);
+//
+//    @LogMessage(level = ERROR)
+//    @Message(id = 9, value = "Null correlationId so error not sent to client")
+//    void nullCorrelationId(@Cause Throwable t);
+//
+//    @LogMessage(level = ERROR)
+//    @Message(id = 10, value = "Failed to send exception response to client")
+//    void failedToSendExceptionResponse(@Cause IOException ioe);
+//
+//
+//    @LogMessage(level = ERROR)
+//    @Message(id = 11, value = "Unexpected parameter type - expected: %d  received: %d")
+//    void unexpectedParameterType(byte expected, byte actual);
 
     /**
      * Creates an exception indicating that a class is not an {@link ObjectFactory} instance, from the specified module.
-     * @param cause
+     * @param cause the cause
      */
     @LogMessage(level = ERROR)
     @Message(id = 12, value = "Failed to release binder service, used for a runtime made JNDI binding")
@@ -183,16 +183,16 @@ public interface NamingLogger extends BasicLogger {
     @Message(id = 18, value = "Could not lookup link")
     String cannotLookupLink();
 
-    /**
-     * Creates an exception indicating the {@code name} could not be obtained.
-     *
-     * @param cause the cause of the error.
-     * @param name  the name of the object.
-     *
-     * @return an {@link IllegalStateException} for the error.
-     */
-    @Message(id = 19, value = "Cannot obtain %s")
-    IllegalStateException cannotObtain(@Cause Throwable cause, String name);
+//    /**
+//     * Creates an exception indicating the {@code name} could not be obtained.
+//     *
+//     * @param cause the cause of the error.
+//     * @param name  the name of the object.
+//     *
+//     * @return an {@link IllegalStateException} for the error.
+//     */
+//    @Message(id = 19, value = "Cannot obtain %s")
+//    IllegalStateException cannotObtain(@Cause Throwable cause, String name);
 
     /**
      * Creates an exception indicating the service name could not be resolved.
@@ -313,13 +313,13 @@ public interface NamingLogger extends BasicLogger {
     @Message(id = 30, value = "Illegal context in name: %s")
     RuntimeException illegalContextInName(String jndiName);
 
-    /**
-     * Creates an exception indicating the actions mask is invalid.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 31, value = "invalid actions mask")
-    IllegalArgumentException invalidActionMask();
+//    /**
+//     * Creates an exception indicating the actions mask is invalid.
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 31, value = "invalid actions mask")
+//    IllegalArgumentException invalidActionMask();
 
     /**
      * Creates an exception indicating the context reference is invalid.
@@ -396,13 +396,13 @@ public interface NamingLogger extends BasicLogger {
     @Message(id = 39, value = "Name '%s' not found in context '%s'")
     NameNotFoundException nameNotFoundInContext(String name, Name contextName);
 
-    /**
-     * Creates an exception indicating there is nothing available to bind to.
-     *
-     * @return an {@link IllegalStateException} for the error.
-     */
-    @Message(id = 40, value = "Nothing available to bind to.")
-    IllegalStateException noBindingsAvailable();
+//    /**
+//     * Creates an exception indicating there is nothing available to bind to.
+//     *
+//     * @return an {@link IllegalStateException} for the error.
+//     */
+//    @Message(id = 40, value = "Nothing available to bind to.")
+//    IllegalStateException noBindingsAvailable();
 
     /**
      * Creates an exception indicating the variable is {@code null}.
@@ -469,7 +469,7 @@ public interface NamingLogger extends BasicLogger {
     /**
      * Creates an exception indicating that the type for the binding to add is not known.
      * @param type the unknown type
-     * @return
+     * @return the exception
      */
     @Message(id = 49, value = "Unknown binding type %s")
     OperationFailedException unknownBindingType(String type);
@@ -477,7 +477,7 @@ public interface NamingLogger extends BasicLogger {
     /**
      * Creates an exception indicating that the type for the simple binding to add is not supported.
      * @param type the unsupported type
-     * @return
+     * @return the exception
      */
     @Message(id = 50, value = "Unsupported simple binding type %s")
     OperationFailedException unsupportedSimpleBindingType(String type);
@@ -486,7 +486,7 @@ public interface NamingLogger extends BasicLogger {
      * Creates an exception indicating that the string value for the simple URL binding failed to transform.
      * @param value the URL value as string
      * @param cause the original cause of failure
-     * @return
+     * @return  the exception
      */
     @Message(id = 51, value = "Unable to transform URL binding value %s")
     OperationFailedException unableToTransformURLBindingValue(String value, @Cause Throwable cause);
@@ -494,7 +494,7 @@ public interface NamingLogger extends BasicLogger {
     /**
      * Creates an exception indicating that a module could not be loaded.
      * @param moduleID the module not loaded
-     * @return
+     * @return the exception
      */
     @Message(id = 52, value = "Could not load module %s")
     OperationFailedException couldNotLoadModule(ModuleIdentifier moduleID);
@@ -503,7 +503,7 @@ public interface NamingLogger extends BasicLogger {
      * Creates an exception indicating that a class could not be loaded from a module.
      * @param className the name of the class not loaded
      * @param moduleID the module
-     * @return
+     * @return the exception
      */
     @Message(id = 53, value = "Could not load class %s from module %s")
     OperationFailedException couldNotLoadClassFromModule(String className, ModuleIdentifier moduleID);
@@ -512,7 +512,7 @@ public interface NamingLogger extends BasicLogger {
      * Creates an exception indicating that a class instance could not be instantiate, from the specified module.
      * @param className the name of the class not loaded
      * @param moduleID the module
-     * @return
+     * @return the exception
      */
     @Message(id = 54, value = "Could not instantiate instance of class %s from module %s")
     OperationFailedException couldNotInstantiateClassInstanceFromModule(String className, ModuleIdentifier moduleID);
@@ -521,34 +521,34 @@ public interface NamingLogger extends BasicLogger {
      * Creates an exception indicating that a class is not an {@link javax.naming.spi.ObjectFactory} instance, from the specified module.
      * @param className the name of the class
      * @param moduleID the module id
-     * @return
+     * @return the exception
      */
     @Message(id = 55, value = "Class %s from module %s is not an instance of ObjectFactory")
     OperationFailedException notAnInstanceOfObjectFactory(String className, ModuleIdentifier moduleID);
 
-    /**
-     * A "simple URL" binding add operation was failed by the operation transformer.
-     * @param modelVersion the model version related with the transformer.
-     * @return
-     */
-    @Message(id = 56, value = "Binding add operation for Simple URL not supported in Naming Subsystem model version %s")
-    String failedToTransformSimpleURLNameBindingAddOperation(String modelVersion);
-
-    /**
-     * A "Object Factory With Environment" binding add operation was failed by the operation transformer.
-     * @param modelVersion the model version related with the transformer.
-     * @return
-     */
-    @Message(id = 57, value = "Binding add operation for Object Factory With Environment not supported in Naming Subsystem model version %s")
-    String failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation(String modelVersion);
-
-    /**
-     * An external context binding add operation was failed by the operation transformer.
-     * @param modelVersion the model version related with the transformer.
-     * @return
-     */
-    @Message(id = 58, value = "Binding add operation for external context not supported in Naming Subsystem model version %s")
-    String failedToTransformExternalContext(String modelVersion);
+//    /**
+//     * A "simple URL" binding add operation was failed by the operation transformer.
+//     * @param modelVersion the model version related with the transformer.
+//     * @return
+//     */
+//    @Message(id = 56, value = "Binding add operation for Simple URL not supported in Naming Subsystem model version %s")
+//    String failedToTransformSimpleURLNameBindingAddOperation(String modelVersion);
+//
+//    /**
+//     * A "Object Factory With Environment" binding add operation was failed by the operation transformer.
+//     * @param modelVersion the model version related with the transformer.
+//     * @return
+//     */
+//    @Message(id = 57, value = "Binding add operation for Object Factory With Environment not supported in Naming Subsystem model version %s")
+//    String failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation(String modelVersion);
+//
+//    /**
+//     * An external context binding add operation was failed by the operation transformer.
+//     * @param modelVersion the model version related with the transformer.
+//     * @return
+//     */
+//    @Message(id = 58, value = "Binding add operation for external context not supported in Naming Subsystem model version %s")
+//    String failedToTransformExternalContext(String modelVersion);
 
     /**
      * Creates an exception indicating a lookup failed, wrt {@link Resource} injection.
@@ -562,9 +562,9 @@ public interface NamingLogger extends BasicLogger {
 
     /**
      * Creates an exception indicating that a required attribute is not defined.
-     * @param bindingType
-     * @param attributeName
-     * @return
+     * @param bindingType binding type
+     * @param attributeName missing attribute
+     * @return the exception
      */
     @Message(id = 60, value = "Binding type %s requires attribute named %s defined")
     OperationFailedException bindingTypeRequiresAttributeDefined(BindingType bindingType, String attributeName);
@@ -585,8 +585,7 @@ public interface NamingLogger extends BasicLogger {
 
     /**
      * Indicates that a service is not started as expected.
-     * @param serviceName
-     * @return
+     * @return  the exception
      */
     @Message(id = 63, value = "%s service not started")
     IllegalStateException serviceNotStarted(ServiceName serviceName);

@@ -143,8 +143,8 @@ public interface TransactionLogger extends BasicLogger {
     @Message(id = 10, value = "MBean Server service not installed, this functionality is not available if the JMX subsystem has not been installed.")
     RuntimeException jmxSubsystemNotInstalled();
 
-    @Message(id = 11, value = "'journal-store-enable-async-io' must be true.")
-    String transformJournalStoreEnableAsyncIoMustBeTrue();
+//    @Message(id = 11, value = "'journal-store-enable-async-io' must be true.")
+//    String transformJournalStoreEnableAsyncIoMustBeTrue();
 
     @Message(id = 12, value = "Attributes %s and %s are alternatives; both cannot be set with conflicting values.")
     OperationFailedException inconsistentStatisticsSettings(String attrOne, String attrTwo);
@@ -157,13 +157,13 @@ public interface TransactionLogger extends BasicLogger {
             + "multiple servers. Please make sure the attribute value is unique.")
     void nodeIdentifierIsSetToDefault(String attributeName, String subsystemAddress);
 
-    /**
-     * A message indicating that jndi-name is missing and it's a required attribute
-     *
-     * @return the message.
-     */
-    @Message(id = 14, value = "Jndi name is required")
-    OperationFailedException jndiNameRequired();
+//    /**
+//     * A message indicating that jndi-name is missing and it's a required attribute
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 14, value = "Jndi name is required")
+//    OperationFailedException jndiNameRequired();
 
     /**
      * A message indicating that jndi-name has an invalid format
@@ -195,8 +195,8 @@ public interface TransactionLogger extends BasicLogger {
     @Message(id = 21, value = "EE Concurrent's TransactionSetupProviderService not started.")
     IllegalStateException transactionSetupProviderServiceNotStarted();
 
-    @Message(id = 22, value = "EE Concurrent's TransactionSetupProviderService not installed.")
-    IllegalStateException transactionSetupProviderServiceNotInstalled();
+//    @Message(id = 22, value = "EE Concurrent's TransactionSetupProviderService not installed.")
+//    IllegalStateException transactionSetupProviderServiceNotInstalled();
 
     @Message(id = 23, value = "%s must be undefined if %s is 'true'.")
     OperationFailedException mustBeUndefinedIfTrue(String attrOne, String attrTwo);
