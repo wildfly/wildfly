@@ -31,8 +31,6 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -42,7 +40,6 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
@@ -81,13 +78,7 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
         super(MessagingExtension.SUBSYSTEM_PATH,
                 MessagingExtension.getResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME),
                 MessagingSubsystemAdd.INSTANCE,
-                new ReloadRequiredRemoveStepHandler() {
-                    @Override
-                    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-                        super.performRuntime(context, operation, model);
-                        context.removeService(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);
-                    }
-                });
+                new ReloadRequiredRemoveStepHandler());
     }
 
     @Override
