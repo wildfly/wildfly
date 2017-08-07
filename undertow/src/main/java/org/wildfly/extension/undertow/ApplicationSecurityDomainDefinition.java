@@ -667,7 +667,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
                 @Override
                 public boolean supportsAttachments() {
-                    return exists();
+                    return true;
                 }
 
                 @Override
@@ -684,7 +684,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
                 @Override
                 public boolean supportsInvalidation() {
-                    return exists();
+                    return true;
                 }
 
                 @Override
@@ -703,7 +703,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
                 @Override
                 public boolean supportsNotifications() {
-                    return exists();
+                    return true;
                 }
 
                 @Override
