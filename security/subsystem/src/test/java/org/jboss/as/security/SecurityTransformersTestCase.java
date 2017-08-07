@@ -57,7 +57,10 @@ public class SecurityTransformersTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities("org.wildfly.clustering.infinispan.default-cache-configuration.security");
+        return AdditionalInitialization.withCapabilities(
+                "org.wildfly.clustering.infinispan.cache-container.security",
+                "org.wildfly.clustering.infinispan.default-cache-configuration.security"
+                );
     }
 
     @Test

@@ -884,4 +884,8 @@ public interface SecurityLogger extends BasicLogger {
      */
     @Message(id = 103, value = "Unable to create AuthorizationIdentity: no authenticated Subject was found")
     IllegalStateException unableToCreateAuthorizationIdentity();
+
+    @LogMessage(level = Level.WARN)
+    @Message(id = 104, value = "Default %s cache capability missing.  Assuming %s as default-cache.")
+    void defaultCacheRequirementMissing(String containerName, String legacyCacheName);
 }
