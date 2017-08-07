@@ -55,7 +55,7 @@ class AddressSettingsValidator {
             String addressSetting = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
 
             PathAddress address = pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-            Resource activeMQServer = context.readResourceFromRoot(MessagingServices.getActiveMQServerPathAddress(address), true);
+            Resource activeMQServer = context.readResourceFromRoot(MessagingServices.getActiveMQServerPathAddress(address), false);
 
             checkExpiryAddress(context, operation, activeMQServer, addressSetting);
             checkDeadLetterAddress(context, operation, activeMQServer, addressSetting);

@@ -85,7 +85,7 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
         final String raName = path.getParent().getLastElement().getValue();
 
         final String archiveOrModuleName;
-        ModelNode raModel = context.readResourceFromRoot(path.getParent()).getModel();
+        ModelNode raModel = context.readResourceFromRoot(path.getParent(), false).getModel();
         final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, raModel).asBoolean();
 
         if (!raModel.hasDefined(ARCHIVE.getName()) && !raModel.hasDefined(MODULE.getName())) {

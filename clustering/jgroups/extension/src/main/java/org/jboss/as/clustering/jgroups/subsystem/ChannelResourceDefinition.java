@@ -229,7 +229,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
                 .setAddOperationTransformation(handler -> (context, operation) -> {
                     // Handle recipe for version < 4.0 where stack was not required and the stack attribute would use default-stack for a default value
                     if (!operation.hasDefined(Attribute.STACK.getName())) {
-                        ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent()).getModel();
+                        ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent(), false).getModel();
                         // If default-stack is not defined either, then recipe must be for version >= 4.0 and so this really is an invalid operation
                         if (parentModel.hasDefined(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName())) {
                             operation.get(Attribute.STACK.getName()).set(parentModel.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_STACK.getName()));

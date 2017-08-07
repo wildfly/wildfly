@@ -22,12 +22,11 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_PATH_REWRITE_RULE;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_URI_SCHEME;
-import static org.jboss.as.webservices.dmr.Constants.WSDL_PATH_REWRITE_RULE;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -41,13 +40,12 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.jmx.JMXExtension;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.web.host.CommonWebServer;
-import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.config.ServerConfigImpl;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.service.XTSClientIntegrationService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
@@ -129,7 +127,7 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
      */
     private static List<ServiceName> getServerConfigDependencies(OperationContext context, boolean appclient) {
         final List<ServiceName> serviceNames = new ArrayList<ServiceName>();
-        final Resource subsystemResource = context.readResourceFromRoot(PathAddress.pathAddress(WSExtension.SUBSYSTEM_PATH));
+        final Resource subsystemResource = context.readResourceFromRoot(PathAddress.pathAddress(WSExtension.SUBSYSTEM_PATH), false);
         readConfigServiceNames(serviceNames, subsystemResource, Constants.CLIENT_CONFIG);
         readConfigServiceNames(serviceNames, subsystemResource, Constants.ENDPOINT_CONFIG);
         if (!appclient) {
@@ -139,9 +137,9 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     private static void readConfigServiceNames(List<ServiceName> serviceNames, Resource subsystemResource, String configType) {
-        for (ResourceEntry re : subsystemResource.getChildren(configType)) {
+        for (String name : subsystemResource.getChildrenNames(configType)) {
             ServiceName configServiceName = Constants.CLIENT_CONFIG.equals(configType) ? PackageUtils
-                    .getClientConfigServiceName(re.getName()) : PackageUtils.getEndpointConfigServiceName(re.getName());
+                    .getClientConfigServiceName(name) : PackageUtils.getEndpointConfigServiceName(name);
             serviceNames.add(configServiceName);
         }
     }

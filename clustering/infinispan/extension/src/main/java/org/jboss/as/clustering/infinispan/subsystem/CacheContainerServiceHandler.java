@@ -67,9 +67,9 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         // Handle case where ejb subsystem has already installed services for this cache-container
         // This can happen if the ejb cache-container is added to a running server
         if (context.getProcessType().isServer() && !context.isBooting() && name.equals("ejb")) {
-            Resource rootResource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
             PathElement ejbPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "ejb3");
-            if (rootResource.hasChild(ejbPath) && rootResource.getChild(ejbPath).hasChild(PathElement.pathElement("service", "remote"))) {
+            Resource ejbResource = safeGetResource(context, ejbPath);
+            if (ejbResource != null && ejbResource.hasChild(PathElement.pathElement("service", "remote"))) {
                 // Following restart, these services will be installed by this handler, rather than the ejb remote handler
                 context.addStep(new OperationStepHandler() {
                     @Override
@@ -138,5 +138,14 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         context.removeService(CacheContainerComponent.MODULE.getServiceName(address));
 
         EnumSet.allOf(CacheContainerResourceDefinition.Capability.class).stream().map(component -> component.getServiceName(address)).forEach(serviceName -> context.removeService(serviceName));
+    }
+
+    private static Resource safeGetResource(OperationContext context, PathElement path) {
+        try {
+            return context.readResourceFromRoot(PathAddress.pathAddress(path), false);
+        } catch (RuntimeException e) {
+            // No such resource
+            return null;
+        }
     }
 }
