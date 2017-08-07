@@ -180,8 +180,8 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
                 if (this.legacy.test(operation)) {
                     PathElement path = context.getCurrentAddress().getLastElement();
                     // This is a legacy add operation - process it using the generic handler
-                    Operations.setPathAddress(operation, context.getCurrentAddress().getParent().append(GenericProtocolResourceDefinition.pathElement(path.getValue())));
                     OperationStepHandler genericHandler = context.getResourceRegistration().getParent().getOperationHandler(PathAddress.pathAddress(ProtocolResourceDefinition.WILDCARD_PATH), ModelDescriptionConstants.ADD);
+                    Operations.setPathAddress(operation, context.getCurrentAddress().getParent().append(GenericProtocolResourceDefinition.pathElement(path.getValue())));
                     // Process this step first to preserve protocol order
                     context.addStep(operation, genericHandler, OperationContext.Stage.MODEL, true);
                 } else {
