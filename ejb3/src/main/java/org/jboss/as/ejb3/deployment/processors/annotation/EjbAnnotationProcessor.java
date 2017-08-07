@@ -78,6 +78,7 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
         factories.add(new RunAsAnnotationInformationFactory());
         factories.add(new RunAsPrincipalAnnotationInformationFactory());
         factories.add(new SecurityDomainAnnotationInformationFactory());
+        factories.add(new LegacySecurityDomainAnnotationInformationFactory());
         factories.add(new DeclareRolesAnnotationInformationFactory());
         factories.add(new RolesAllowedAnnotationInformationFactory());
         factories.add(new BooleanAnnotationInformationFactory<DenyAll>(DenyAll.class));
