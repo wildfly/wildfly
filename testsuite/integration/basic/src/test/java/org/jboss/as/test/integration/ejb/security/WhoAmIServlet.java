@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
 
 import javax.annotation.security.DeclareRoles;
 import javax.ejb.EJB;
-import javax.ejb.EJBAccessException;
+import javax.ejb.EJBException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
@@ -76,7 +76,7 @@ public class WhoAmIServlet extends HttpServlet {
                 } else {
                     response = bean.doubleWhoAmI();
                 }
-            } catch (EJBAccessException e) {
+            } catch (EJBException e) {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.toString());
                 return;
             } catch (Exception e) {
