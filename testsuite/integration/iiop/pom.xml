@@ -183,13 +183,6 @@
                                 </goals>
                                 <configuration>
                                     <keystore>${basedir}/target/iiop-test.keystore</keystore>
-                                    <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
-                                    <keypass>password</keypass>
-                                    <storepass>password</storepass>
-                                    <alias>test</alias>
-                                    <keyalg>RSA</keyalg>
-                                    <keysize>2048</keysize>
-                                    <validity>365</validity>
                                 </configuration>
                             </execution>
                             <execution>
@@ -224,6 +217,7 @@
                                     <validity>365</validity>
                                     <keyalg>RSA</keyalg>
                                     <keysize>1024</keysize>
+                                    <skipIfExist>true</skipIfExist>
                                 </configuration>
                             </execution>
                             <execution>
@@ -241,6 +235,7 @@
                                     <validity>365</validity>
                                     <keyalg>RSA</keyalg>
                                     <keysize>1024</keysize>
+                                    <skipIfExist>true</skipIfExist>
                                 </configuration>
                             </execution>
                             <execution>
@@ -253,7 +248,6 @@
                                     <keystore>${wildfly.config.dir}/server.keystore.jks</keystore>
                                     <storepass>secret</storepass>
                                     <alias>localhost</alias>
-                                    <keypass>secret</keypass>
                                     <file>${wildfly.config.dir}/server.cer</file>
                                 </configuration>
                             </execution>
@@ -267,7 +261,6 @@
                                     <keystore>${wildfly.config.dir}/client.keystore.jks</keystore>
                                     <storepass>secret</storepass>
                                     <alias>client</alias>
-                                    <keypass>secret</keypass>
                                     <file>${wildfly.config.dir}/client.cer</file>
                                 </configuration>
                             </execution>
@@ -284,6 +277,7 @@
                                     <file>${wildfly.config.dir}/client.cer</file>
                                     <trustcacerts>true</trustcacerts>
                                     <noprompt>true</noprompt>
+                                    <skipIfExist>true</skipIfExist>
                                 </configuration>
                             </execution>
                             <execution>
@@ -299,6 +293,7 @@
                                     <file>${wildfly.config.dir}/server.cer</file>
                                     <trustcacerts>true</trustcacerts>
                                     <noprompt>true</noprompt>
+                                    <skipIfExist>true</skipIfExist>
                                 </configuration>
                             </execution>
                             <execution>
@@ -314,6 +309,7 @@
                                     <file>${wildfly.config.dir}/server.cer</file>
                                     <trustcacerts>true</trustcacerts>
                                     <noprompt>true</noprompt>
+                                    <skipIfExist>true</skipIfExist>
                                 </configuration>
                             </execution>
                             <execution>
@@ -329,6 +325,7 @@
                                     <file>${wildfly.config.dir}/client.cer</file>
                                     <trustcacerts>true</trustcacerts>
                                     <noprompt>true</noprompt>
+                                    <skipIfExist>true</skipIfExist>
                                 </configuration>
                             </execution>
                         </executions>
