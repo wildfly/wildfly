@@ -109,6 +109,7 @@ import org.jboss.security.config.MappingInfo;
 import org.jboss.security.identitytrust.config.IdentityTrustModuleEntry;
 import org.jboss.security.mapping.MappingType;
 import org.jboss.security.mapping.config.MappingModuleEntry;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 
@@ -122,6 +123,7 @@ import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 class SecurityDomainAdd extends AbstractAddStepHandler {
 
     private static final String DEFAULT_MODULE = "org.picketbox";
+    private static final String LEGACY_CACHE_NAME = "auth-cache";
 
     static final SecurityDomainAdd INSTANCE = new SecurityDomainAdd();
 
@@ -154,7 +156,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         super.recordCapabilitiesAndRequirements(context, operation, resource);
         String cacheType = getAuthenticationCacheType(resource.getModel());
         if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {
-            context.registerAdditionalCapabilityRequirement(InfinispanDefaultCacheRequirement.CONFIGURATION.resolve(CACHE_CONTAINER_NAME),
+            context.registerAdditionalCapabilityRequirement(InfinispanRequirement.CONTAINER.resolve(CACHE_CONTAINER_NAME),
                     LEGACY_SECURITY_DOMAIN.getDynamicName(context.getCurrentAddressValue()),
                     SecurityDomainResourceDefinition.CACHE_TYPE.getName());
         }
@@ -177,9 +179,21 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                         securityDomainService.getConfigurationInjector());
 
         if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {
-            builder.addDependency(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), CACHE_CONTAINER_NAME),
-                    Object.class, securityDomainService.getCacheManagerInjector());
-            builder.addDependency(InfinispanDefaultCacheRequirement.CONFIGURATION.getServiceName(context, CACHE_CONTAINER_NAME));
+            builder.addDependency(InfinispanRequirement.CONTAINER.getServiceName(context, CACHE_CONTAINER_NAME), Object.class, securityDomainService.getCacheManagerInjector());
+
+            String defaultCacheRequirementName = InfinispanDefaultCacheRequirement.CONFIGURATION.resolve(CACHE_CONTAINER_NAME);
+            String legacyCacheRequirementName = InfinispanCacheRequirement.CONFIGURATION.resolve(CACHE_CONTAINER_NAME, LEGACY_CACHE_NAME);
+            String capabilityName = LEGACY_SECURITY_DOMAIN.getDynamicName(context.getCurrentAddressValue());
+            String cacheTypeAttributeName = SecurityDomainResourceDefinition.CACHE_TYPE.getName();
+
+            if (!context.hasOptionalCapability(defaultCacheRequirementName, capabilityName, cacheTypeAttributeName) && context.hasOptionalCapability(legacyCacheRequirementName, capabilityName, cacheTypeAttributeName)) {
+                SecurityLogger.ROOT_LOGGER.defaultCacheRequirementMissing(CACHE_CONTAINER_NAME, LEGACY_CACHE_NAME);
+                context.requireOptionalCapability(legacyCacheRequirementName, capabilityName, cacheTypeAttributeName);
+                builder.addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(context, CACHE_CONTAINER_NAME, LEGACY_CACHE_NAME));
+            } else {
+                context.requireOptionalCapability(defaultCacheRequirementName, capabilityName, cacheTypeAttributeName);
+                builder.addDependency(InfinispanDefaultCacheRequirement.CONFIGURATION.getServiceName(context, CACHE_CONTAINER_NAME));
+            }
         }
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
