@@ -183,13 +183,6 @@
                                 </goals>
                                 <configuration>
                                     <keystore>${basedir}/target/iiop-test.keystore</keystore>
-                                    <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
-                                    <keypass>password</keypass>
-                                    <storepass>password</storepass>
-                                    <alias>test</alias>
-                                    <keyalg>RSA</keyalg>
-                                    <keysize>2048</keysize>
-                                    <validity>365</validity>
                                 </configuration>
                             </execution>
                             <execution>
@@ -210,11 +203,31 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>cleanServerKeystore</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <keystore>${wildfly.config.dir}/server.keystore.jks</keystore>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>cleanServerTruststore</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <keystore>${wildfly.config.dir}/server.truststore.jks</keystore>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>generateServerKeyPair</id>
+                                <phase>generate-test-resources</phase>
                                 <goals>
                                     <goal>generateKeyPair</goal>
                                 </goals>
-                                <phase>generate-test-resources</phase>
                                 <configuration>
                                     <keystore>${wildfly.config.dir}/server.keystore.jks</keystore>
                                     <storepass>secret</storepass>
@@ -227,11 +240,31 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>cleanClientKeystore</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <keystore>${wildfly.config.dir}/client.keystore.jks</keystore>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>cleanClientTruststore</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <keystore>${wildfly.config.dir}/client.truststore.jks</keystore>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>generateClientKeyPair</id>
+                                <phase>generate-test-resources</phase>
                                 <goals>
                                     <goal>generateKeyPair</goal>
                                 </goals>
-                                <phase>generate-test-resources</phase>
                                 <configuration>
                                     <keystore>${wildfly.config.dir}/client.keystore.jks</keystore>
                                     <storepass>secret</storepass>
@@ -253,7 +286,6 @@
                                     <keystore>${wildfly.config.dir}/server.keystore.jks</keystore>
                                     <storepass>secret</storepass>
                                     <alias>localhost</alias>
-                                    <keypass>secret</keypass>
                                     <file>${wildfly.config.dir}/server.cer</file>
                                 </configuration>
                             </execution>
@@ -267,7 +299,6 @@
                                     <keystore>${wildfly.config.dir}/client.keystore.jks</keystore>
                                     <storepass>secret</storepass>
                                     <alias>client</alias>
-                                    <keypass>secret</keypass>
                                     <file>${wildfly.config.dir}/client.cer</file>
                                 </configuration>
                             </execution>
