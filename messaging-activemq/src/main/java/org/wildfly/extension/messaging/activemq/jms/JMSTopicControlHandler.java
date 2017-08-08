@@ -51,6 +51,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
@@ -119,7 +120,8 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
 
         final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
         final String topicName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-        ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
+        boolean readOnly = context.getResourceRegistration().getOperationFlags(PathAddress.EMPTY_ADDRESS, operationName).contains(OperationEntry.Flag.READ_ONLY);
+        ServiceController<?> service = context.getServiceRegistry(!readOnly).getService(serviceName);
         ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
         TopicControl control = TopicControl.class.cast(server.getManagementService().getResource(ResourceNames.JMS_TOPIC + topicName));
 
