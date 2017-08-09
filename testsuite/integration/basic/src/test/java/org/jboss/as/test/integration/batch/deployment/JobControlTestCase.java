@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.batch.deployment;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.io.FilePermission;
 import java.io.IOException;
 import java.util.PropertyPermission;
 import javax.batch.operations.JobOperator;
@@ -80,7 +81,8 @@ public class JobControlTestCase extends AbstractBatchTestCase {
                 .addAsManifestResource(createPermissionsXmlAsset(
                         new RemotingPermission("createEndpoint"),
                         new RemotingPermission("connect"),
-                        new PropertyPermission("ts.timeout.factor", "read")
+                        new PropertyPermission("ts.timeout.factor", "read"),
+                        new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
                 ), "permissions.xml");
     }
 
