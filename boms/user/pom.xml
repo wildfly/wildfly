@@ -16,7 +16,8 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -45,6 +46,12 @@
         </license>
     </licenses>
 
+    <scm>
+        <connection>scm:git:https://github.com/wildfly/boms.git</connection>
+        <developerConnection>scm:git:https://github.com/wildfly/boms.git</developerConnection>
+        <url>http://github.com/wildfly/boms</url>
+    </scm>
+
     <developers>
         <developer>
             <id>wildfly.org</id>
@@ -54,18 +61,6 @@
         </developer>
     </developers>
 
-    <modules>
-        <module>wildfly-with-tools</module>
-        <module>wildfly-javaee7</module>
-        <module>wildfly-javaee7-with-tools</module>
-    </modules>
-
-    <scm>
-        <connection>scm:git:https://github.com/wildfly/boms.git</connection>
-        <developerConnection>scm:git:https://github.com/wildfly/boms.git</developerConnection>
-        <tag>HEAD</tag>
-        <url>http://github.com/wildfly/boms</url>
-    </scm>
     <issueManagement>
         <system>JIRA</system>
         <url>https://issues.jboss.org/</url>
@@ -73,22 +68,14 @@
 
     <properties>
         <version.org.wildfly>11.0.0.Beta1</version.org.wildfly>
+
+        <!-- Versions of JBoss projects -->
+
         <version.io.undertow>1.4.18.Final</version.io.undertow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
 
-        <!-- Versions of projects not directly under JBoss umbrella -->
-        <version.junit>4.12</version.junit>
-        <version.log4j>1.2.17</version.log4j>
-
         <version.org.apache.cxf>3.1.12</version.org.apache.cxf>
         <version.org.jboss.ws.cxf>5.1.9.Final</version.org.jboss.ws.cxf>
-        <!-- Version of Hibernate projects -->
-        <version.org.hibernate>5.1.9.Final</version.org.hibernate>
-        <version.org.hibernate-jpamodelgen>${version.org.hibernate}</version.org.hibernate-jpamodelgen>
-        <version.org.hibernate.search>5.5.5.Final</version.org.hibernate.search>
-        <version.org.hibernate.validator>5.3.5.Final</version.org.hibernate.validator>
-
-        <!-- Versions of JBoss projects -->
         <version.org.infinispan>8.2.8.Final</version.org.infinispan>
         <version.org.jboss.arquillian>1.1.13.Final</version.org.jboss.arquillian>
         <version.org.jboss.arquillian.extension.drone>2.3.1</version.org.jboss.arquillian.extension.drone>
@@ -99,22 +86,37 @@
         <version.org.jboss.logging.jboss-logging-tools>2.1.0.Final</version.org.jboss.logging.jboss-logging-tools>
         <version.org.jboss.narayana>5.5.29.Final</version.org.jboss.narayana>
         <version.org.jboss.resteasy>3.0.24.Final</version.org.jboss.resteasy>
-        <version.org.jboss.security.negotiation>3.0.4.Final</version.org.jboss.security.negotiation>
-        <version.org.jboss.shrinkwrap.resolver>2.2.4</version.org.jboss.shrinkwrap.resolver>
-        <version.org.jboss.spec.jboss.javaee.7>1.1.0.Final</version.org.jboss.spec.jboss.javaee.7>
+        <version.org.jboss.security.jboss-negotiation>3.0.4.Final</version.org.jboss.security.jboss-negotiation>
+        <version.org.jboss.security.jbossxacml>2.0.8.Final-redhat-8</version.org.jboss.security.jbossxacml>
+        <version.org.jboss.spec.jboss.javaee7>1.1.0.Final</version.org.jboss.spec.jboss.javaee7>
+        <version.org.jboss.shrinkwrap.resolver>2.2.6</version.org.jboss.shrinkwrap.resolver>
+        <version.org.jboss.ws.cxf>5.1.9.Final-redhat-1</version.org.jboss.ws.cxf>
+        <version.org.picketbox.picketbox-commons>1.0.0.final-redhat-5</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP7</version.org.picketlink>
+        <version.org.wildfly.security.elytron>1.1.0.CR5</version.org.wildfly.security.elytron>
+        <version.org.wildfly.client.config>1.0.0.CR3</version.org.wildfly.client.config>
+        <version.org.wildfly.common>1.2.0.CR1</version.org.wildfly.common>
+        <version.org.wildfly.discovery>1.0.0.CR1</version.org.wildfly.discovery>
+
+        <!-- Version of Hibernate projects -->
+        <version.org.hibernate>5.1.9.Final</version.org.hibernate>
+        <version.org.hibernate.commons-annotations>5.0.1.Final</version.org.hibernate.commons-annotations>
+        <version.org.hibernate-jpamodelgen>${version.org.hibernate}</version.org.hibernate-jpamodelgen>
+        <version.org.hibernate.validator>5.3.5.Final</version.org.hibernate.validator>
+        <version.org.hibernate.search>5.5.5.Final</version.org.hibernate.search>
+
+        <!-- Versions of projects not directly under JBoss umbrella -->
+        <version.junit>4.12</version.junit>
+        <version.log4j>1.2.17</version.log4j>
         <version.org.slf4j>1.7.7</version.org.slf4j>
         <version.org.testng>6.9.10</version.org.testng>
-        <version.org.wildfly.common>1.2.0.CR1</version.org.wildfly.common>
-        <version.org.wildfly.security.elytron>1.1.0.CR4</version.org.wildfly.security.elytron>
-
-        <version.org.wildfly.arquillian.container>2.1.0.Beta1</version.org.wildfly.arquillian.container>
-        <version.org.wildfly.plugins.maven.plugin>1.2.0.Beta1</version.org.wildfly.plugins.maven.plugin>
-
-        <!-- Versions of Maven plugins, user must setup them by his/her own -->
-        <version.surefire.plugin>2.19.1</version.surefire.plugin>
     </properties>
 
+    <modules>
+        <module>wildfly-with-tools</module>
+        <module>wildfly-javaee7</module>
+        <module>wildfly-javaee7-with-tools</module>
+    </modules>
     <dependencyManagement>
         <dependencies>
 
@@ -131,78 +133,6 @@
                 <version>${version.org.wildfly}</version>
                 <type>pom</type>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-security-api</artifactId>
-                <version>${version.org.wildfly}</version>
-                <scope>provided</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.wildfly.core</groupId>
-                        <artifactId>wildfly-domain-management</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly.core</groupId>
-                        <artifactId>wildfly-server</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly.core</groupId>
-                        <artifactId>wildfly-controller</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-naming</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-clustering-infinispan-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-transactions</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-ee</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.msc</groupId>
-                        <artifactId>jboss-msc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.security</groupId>
-                        <artifactId>jboss-negotiation-extras</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.security</groupId>
-                        <artifactId>jboss-negotiation-spnego</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketbox</groupId>
-                        <artifactId>picketbox-infinispan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.security.jacc</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-cli</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly.checkstyle</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly.security</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -228,7 +158,6 @@
                 <groupId>io.undertow</groupId>
                 <artifactId>undertow-core</artifactId>
                 <version>${version.io.undertow}</version>
-                <scope>provided</scope>
                 <exclusions>
                     <exclusion>
                         <artifactId>undertow-build-config</artifactId>
@@ -278,18 +207,25 @@
                 <groupId>org.wildfly.security</groupId>
                 <artifactId>wildfly-elytron</artifactId>
                 <version>${version.org.wildfly.security.elytron}</version>
-                <scope>provided</scope>
             </dependency>
+
+
+            <dependency>
+                <groupId>org.wildfly.discovery</groupId>
+                <artifactId>wildfly-discovery-client</artifactId>
+                <version>${version.org.wildfly.discovery}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.client</groupId>
+                <artifactId>wildfly-client-config</artifactId>
+                <version>${version.org.wildfly.client.config}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.wildfly.common</groupId>
                 <artifactId>wildfly-common</artifactId>
                 <version>${version.org.wildfly.common}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.wildfly.security</groupId>
-                        <artifactId>wildfly-security-manager</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
 
@@ -459,8 +395,7 @@
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
-                <version>${version.org.jboss.logging}</version>
-                <scope>provided</scope>
+                <version>${version.org.jboss.logging.jboss-logging}</version>
             </dependency>
 
             <!--  These dependencies are the jboss-logging tools magic -->
@@ -709,7 +644,7 @@
                 <version>${version.org.jboss.security.negotiation}</version>
                 <scope>provided</scope>
             </dependency>
-           
+
             <dependency>
                 <groupId>org.picketlink</groupId>
                 <artifactId>picketlink-api</artifactId>
@@ -744,26 +679,5 @@
 
         </dependencies>
     </dependencyManagement>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <!-- The Maven Surefire plugin tests your application. Here
-                    we ensure we are using a version compatible with Arquillian -->
-                <plugin>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${version.surefire.plugin}</version>
-                </plugin>
-                <!-- The WildFly plugin deploys your war to a local WildFly container -->
-                <!-- To use, set the JBOSS_HOME environment variable and
-                    run: mvn package wildfly:deploy -->
-                <plugin>
-                    <groupId>org.wildfly.plugins</groupId>
-                    <artifactId>wildfly-maven-plugin</artifactId>
-                    <version>${version.org.wildfly.plugins.maven.plugin}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
 
 </project>
