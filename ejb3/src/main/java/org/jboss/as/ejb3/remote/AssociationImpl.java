@@ -398,7 +398,7 @@ final class AssociationImpl implements Association, AutoCloseable {
             // Synchronize on the listener to ensure that the initial topology is set before processing any changes from the registry listener
             synchronized (listener) {
                 this.clusterTopologyListeners.add(listener);
-                listener.clusterTopology(Collections.singletonList(getClusterInfo(this.clientMappingRegistry.getEntries())));
+                listener.clusterTopology(!this.clientMappingRegistry.getGroup().isLocal() ? Collections.singletonList(getClusterInfo(this.clientMappingRegistry.getEntries())) : Collections.emptyList());
             }
             return () -> this.clusterTopologyListeners.remove(listener);
         }
