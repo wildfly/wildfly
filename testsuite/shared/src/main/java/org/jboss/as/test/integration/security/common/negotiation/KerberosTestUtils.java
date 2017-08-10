@@ -39,6 +39,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.util.ASN1Dump;
+import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.logging.Logger;
 import org.junit.AssumptionViolatedException;
 
@@ -84,12 +85,12 @@ public final class KerberosTestUtils {
     }
 
     /**
-     * Returns true if provided hostname is an IPv6 address.
+     * Returns true if the server bind address is an IPv6 address without canonical hostname.
      *
      * @return
      */
     private static boolean isIPV6() {
-        return System.getProperty("ipv6") != null;
+        return Utils.getDefaultHost(true).indexOf(':')>=0;
     }
 
     /**

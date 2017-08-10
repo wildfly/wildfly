@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Josef Cacek
  */
-public class AbstractMechanismConfiguration {
+public class AbstractMechanismConfiguration implements ModelNodeConvertable {
 
     private final String preRealmPrincipalTransformer;
     private final String postRealmPrincipalTransformer;
@@ -61,7 +61,7 @@ public class AbstractMechanismConfiguration {
         return realmMapper;
     }
 
-    protected ModelNode toModelNode() {
+    public ModelNode toModelNode() {
         final ModelNode node= new ModelNode();
         setIfNotNull(node, "pre-realm-principal-transformer", preRealmPrincipalTransformer);
         setIfNotNull(node, "post-realm-principal-transformer", postRealmPrincipalTransformer);

@@ -1,0 +1,77 @@
+version: 1
+
+dn: dc=wildfly,dc=org
+dc: wildfly
+objectClass: top
+objectClass: domain
+
+dn: ou=Users,dc=wildfly,dc=org
+objectClass: organizationalUnit
+objectClass: top
+ou: Users
+
+dn: uid=krbtgt,ou=Users,dc=wildfly,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: KDC Service
+sn: Service
+uid: krbtgt
+userPassword: secret
+krb5PrincipalName: krbtgt/JBOSS.ORG@JBOSS.ORG
+krb5KeyVersionNumber: 0
+
+dn: uid=ldap,ou=Users,dc=wildfly,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: LDAP
+sn: Service
+uid: ldap
+userPassword: randall
+krb5PrincipalName: ldap/${ldaphost}@JBOSS.ORG
+krb5KeyVersionNumber: 0
+
+dn: uid=remote,ou=Users,dc=wildfly,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: JBoss Remoting
+sn: Service
+uid: remote
+userPassword: zelvicka
+krb5PrincipalName: remote/${hostname}@JBOSS.ORG
+krb5KeyVersionNumber: 0
+
+dn: uid=hnelson,ou=Users,dc=wildfly,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: Horatio Nelson
+sn: Nelson
+uid: hnelson
+userPassword: secret
+krb5PrincipalName: hnelson@JBOSS.ORG
+krb5KeyVersionNumber: 0
+
+dn: uid=jduke,ou=Users,dc=wildfly,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: Java Duke
+mail: jduke@JBOSS.ORG
+sn: duke
+uid: jduke
+userPassword: theduke
+krb5PrincipalName: jduke@JBOSS.ORG
+krb5KeyVersionNumber: 0
