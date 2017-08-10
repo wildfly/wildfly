@@ -25,10 +25,13 @@ package org.jboss.as.test.xts.suspend.wsat;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.as.test.xts.suspend.AbstractTestCase;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 
+import java.net.SocketPermission;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,17 +43,26 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Arquillian.class)
 public class AtomicTransactionSuspendTestCase extends AbstractTestCase {
 
+    static final String serverHostPort = TestSuiteEnvironment.getServerAddress() + ":"
+            + TestSuiteEnvironment.getHttpPort();
+
     @TargetsContainer(EXECUTOR_SERVICE_CONTAINER)
     @Deployment(name = EXECUTOR_SERVICE_ARCHIVE_NAME, testable = false)
     public static WebArchive getExecutorServiceArchive() {
         return getExecutorServiceArchiveBase().addClasses(AtomicTransactionExecutionService.class,
-                AtomicTransactionRemoteService.class, TransactionParticipant.class);
+                AtomicTransactionRemoteService.class, TransactionParticipant.class)
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                        new SocketPermission(serverHostPort, "connect, resolve")
+                ), "permissions.xml");
     }
 
     @TargetsContainer(REMOTE_SERVICE_CONTAINER)
     @Deployment(name = REMOTE_SERVICE_ARCHIVE_NAME, testable = false)
     public static WebArchive getRemoteServiceArchive() {
-        return getRemoteServiceArchiveBase().addClasses(AtomicTransactionRemoteService.class, TransactionParticipant.class);
+        return getRemoteServiceArchiveBase().addClasses(AtomicTransactionRemoteService.class, TransactionParticipant.class)
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                        new SocketPermission(serverHostPort, "connect, resolve")
+                ), "permissions.xml");
     }
 
     protected void assertParticipantInvocations(List<String> invocations) {
