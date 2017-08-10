@@ -90,13 +90,13 @@
 
         <!-- Versions of JBoss projects -->
         <version.org.infinispan>8.2.8.Final</version.org.infinispan>
-        <version.org.jboss.arquillian>1.1.11.Final</version.org.jboss.arquillian>
+        <version.org.jboss.arquillian>1.1.13.Final</version.org.jboss.arquillian>
         <version.org.jboss.arquillian.extension.drone>2.3.1</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.arquillian.graphene>2.3.1</version.org.jboss.arquillian.graphene>
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.jboss-dmr>1.4.1.Final</version.org.jboss.jboss-dmr>
         <version.org.jboss.logging>3.3.1.Final</version.org.jboss.logging>
-        <version.org.jboss.logging.jboss-logging-tools>2.1.0.Alpha2</version.org.jboss.logging.jboss-logging-tools>
+        <version.org.jboss.logging.jboss-logging-tools>2.1.0.Final</version.org.jboss.logging.jboss-logging-tools>
         <version.org.jboss.narayana>5.5.29.Final</version.org.jboss.narayana>
         <version.org.jboss.resteasy>3.0.24.Final</version.org.jboss.resteasy>
         <version.org.jboss.security.negotiation>3.0.4.Final</version.org.jboss.security.negotiation>
@@ -108,8 +108,8 @@
         <version.org.wildfly.common>1.2.0.CR1</version.org.wildfly.common>
         <version.org.wildfly.security.elytron>1.1.0.CR4</version.org.wildfly.security.elytron>
 
-        <version.org.wildfly.arquillian.container>2.1.0.Alpha3</version.org.wildfly.arquillian.container>
-        <version.org.wildfly.plugins.maven.plugin>1.2.0.Alpha6</version.org.wildfly.plugins.maven.plugin>
+        <version.org.wildfly.arquillian.container>2.1.0.Beta1</version.org.wildfly.arquillian.container>
+        <version.org.wildfly.plugins.maven.plugin>1.2.0.Beta1</version.org.wildfly.plugins.maven.plugin>
 
         <!-- Versions of Maven plugins, user must setup them by his/her own -->
         <version.surefire.plugin>2.19.1</version.surefire.plugin>
