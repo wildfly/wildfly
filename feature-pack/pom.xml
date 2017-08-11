@@ -1148,6 +1148,11 @@
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-wadl</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-yaml-provider</artifactId>
         </dependency>
 
