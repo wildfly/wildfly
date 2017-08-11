@@ -23,6 +23,8 @@ package org.jboss.as.test.integration.ejb.container.interceptor;
 
 import static org.junit.Assert.fail;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -30,8 +32,6 @@ import java.util.Map;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import org.jboss.arquillian.container.test.api.Deployer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -88,10 +88,9 @@ public class ContainerInterceptorsTestCase {
             deployer.deploy("incorrect-deployment");
             fail("Deployment should fail");
         } catch (Exception ex) {
-            assertThat(ex.getCause(), is(notNullValue()));
-            assertThat(ex.getCause().getCause(), is(notNullValue()));
-            assertThat(ex.getCause().getCause(), is(notNullValue()));
-            assertThat(ex.getCause().getCause().getCause().getMessage(), containsString("WFLYEE0109"));
+            final StringWriter sw = new StringWriter();
+            ex.printStackTrace(new PrintWriter(sw));
+            assertThat(sw.toString(), containsString("WFLYEE0109"));
     }
 }
 
