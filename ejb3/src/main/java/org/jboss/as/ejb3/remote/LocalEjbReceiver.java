@@ -210,7 +210,8 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         }
 
         final ClonerConfiguration config = new ClonerConfiguration();
-        config.setClassCloner(new LocalInvocationClassCloner(WildFlySecurityManager.getClassLoaderPrivileged(invocation.getInvokedProxy().getClass())));
+        // WFLY-8907 Use the context class loader instead of the invoked interface's class loader
+        config.setClassCloner(new ClassLoaderClassCloner(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged()));
         final ObjectCloner resultCloner = createCloner(config);
         if (async) {
             if (ejbComponent instanceof SessionBeanComponent) {
