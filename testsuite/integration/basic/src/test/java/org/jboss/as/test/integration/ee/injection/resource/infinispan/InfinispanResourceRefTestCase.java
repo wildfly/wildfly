@@ -60,6 +60,7 @@ public class InfinispanResourceRefTestCase {
         war.addAsManifestResource(createPermissionsXmlAsset(
                 new MBeanPermission("-#-[-]", "queryNames"),
                 new MBeanPermission("org.infinispan.*[jboss.infinispan:*,type=Cache]", "registerMBean"),
+                new MBeanPermission("org.infinispan.*[org.wildfly.clustering.infinispan:*,type=Cache]", "registerMBean"),
                 new ReflectPermission("suppressAccessChecks"),
                 new RuntimePermission("accessDeclaredMembers"),
                 new RuntimePermission("getClassLoader")
