@@ -18,17 +18,6 @@
                     <transaction mode="BATCH"/>
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
-                <!-- Alternate configuration which always persists HttpSession state to disk -->
-                <!--local-cache name="persistent">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
-                    <file-store passivation="false" purge="false"/>
-                </local-cache-->
-                <!-- Alternate configuration to reduce lock contention for applications that make use of concurrent access to a web session -->
-                <!-- Web sessions will be locked more frequently, but for shorter periods of time -->
-                <!--local-cache name="concurrent">
-                    <file-store passivation="true" purge="false"/>
-                </local-cache-->
             </cache-container>
             <cache-container name="ejb" aliases="sfsb" default-cache="passivation" module="org.wildfly.clustering.ejb.infinispan">
                 <local-cache name="passivation">
@@ -36,12 +25,6 @@
                     <transaction mode="BATCH"/>
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
-                <!-- Alternate configuration which always persists SFSB state to disk -->
-                <!--local-cache name="persistent">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
-                    <file-store passivation="false" purge="false"/>
-                </local-cache-->
             </cache-container>
             <cache-container name="hibernate" module="org.hibernate.infinispan">
                 <local-cache name="entity">
@@ -72,11 +55,6 @@
                     <transaction mode="BATCH"/>
                     <file-store/>
                 </distributed-cache>
-                <!-- Alternate configuration to reduce lock contention for applications that make use of concurrent access to a web session -->
-                <!-- Web sessions will be locked more frequently, but for shorter periods of time -->
-                <!--distributed-cache name="concurrent">
-                    <file-store/>
-                </distributed-cache-->
             </cache-container>
             <cache-container name="ejb" aliases="sfsb" default-cache="dist" module="org.wildfly.clustering.ejb.infinispan">
                 <transport lock-timeout="60000"/>
