@@ -165,6 +165,11 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             }
 
             serviceBuilder.install();
+
+            if (!context.isBooting()) {
+                context.reloadRequired();
+                context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
+            }
         }
     }
 
