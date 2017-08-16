@@ -59,6 +59,17 @@
     	Compile-time dependencies upon anything in the WildFly runtime are allowed in this section.
     -->
     <dependencies>
+            
+         <dependency>
+            <!-- FIXME: 
+                This library is added to give access to import javax.enterprise.event.Event
+                The appropriate dependency to use for this that is already managed in a parent pom is no known so for now we put this.
+               -->
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <scope>provided</scope>
+            <version>7.0</version>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
