@@ -1,5 +1,6 @@
 package org.jboss.as.test.integration.naming.remote.multiple;
 
+import java.io.FilePermission;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.util.PropertyPermission;
@@ -51,7 +52,8 @@ public class MultipleClientRemoteJndiTestCase {
                         // RunRmiServlet looks up for MyObject using connection through http-remoting Endpoint
                         new RemotingPermission("connect"),
                         new SocketPermission(Utils.getDefaultHost(true), "accept,connect,listen,resolve"),
-                        new RuntimePermission("getClassLoader")),
+                        new RuntimePermission("getClassLoader"),
+                        new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")),
                         "permissions.xml");
     }
 
