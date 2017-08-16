@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.jca.flushing;
 
+import java.io.FilePermission;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ReflectPermission;
@@ -95,7 +96,8 @@ public class FlushOperationsTestCase {
                 new RemotingPermission("connect"),
                 // flushInvalidConnectionsInPool needs the following
                 new RuntimePermission("accessDeclaredMembers"),
-                new ReflectPermission("suppressAccessChecks")
+                new ReflectPermission("suppressAccessChecks"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
         ), "permissions.xml");
         return archive;
     }

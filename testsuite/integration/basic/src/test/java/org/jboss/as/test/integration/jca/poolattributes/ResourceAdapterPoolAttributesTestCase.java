@@ -26,6 +26,7 @@ package org.jboss.as.test.integration.jca.poolattributes;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.io.FilePermission;
 import java.lang.reflect.ReflectPermission;
 import java.util.List;
 
@@ -123,7 +124,8 @@ public class ResourceAdapterPoolAttributesTestCase extends JcaMgmtBase {
                 new RemotingPermission("createEndpoint"),
                 new RemotingPermission("connect"),
                 new RuntimePermission("accessDeclaredMembers"),
-                new ReflectPermission("suppressAccessChecks")
+                new ReflectPermission("suppressAccessChecks"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
         ), "permissions.xml");
 
         rar.addAsLibrary(jar);

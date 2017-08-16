@@ -28,6 +28,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.io.FilePermission;
+
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
@@ -75,7 +77,8 @@ public class EEConcurrentManagementTestCase {
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller, org.jboss.as.ee, org.jboss.remoting3\n"), "MANIFEST.MF")
                 .addAsManifestResource(createPermissionsXmlAsset(
                         new RemotingPermission("createEndpoint"),
-                        new RemotingPermission("connect")
+                        new RemotingPermission("connect"),
+                        new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
                 ), "permissions.xml");
     }
 
