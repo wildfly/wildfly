@@ -89,6 +89,11 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
     }
 
     @Override
+    public C getContext() {
+        return this.localDispatcher.getContext();
+    }
+
+    @Override
     public void close() {
         this.closeTask.run();
     }

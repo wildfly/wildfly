@@ -35,6 +35,12 @@ import org.wildfly.clustering.group.Node;
 public interface CommandDispatcher<C> extends AutoCloseable {
 
     /**
+     * Returns the context with which this dispatcher was created.
+     * @return a command execution context
+     */
+    C getContext();
+
+    /**
      * Execute the specified command on the specified node.
      *
      * @param <R>     the return value type
