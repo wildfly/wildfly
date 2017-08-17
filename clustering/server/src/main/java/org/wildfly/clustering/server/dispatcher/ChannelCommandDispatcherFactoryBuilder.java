@@ -115,7 +115,7 @@ public class ChannelCommandDispatcherFactoryBuilder implements CapabilityService
 
     @Override
     public ServiceBuilder<CommandDispatcherFactory> build(ServiceTarget target) {
-        Supplier<ChannelCommandDispatcherFactory> supplier = () -> new ChannelCommandDispatcherFactory(this);
+        Supplier<AutoCloseableCommandDispatcherFactory> supplier = () -> new ManagedCommandDispatcherFactory(new ChannelCommandDispatcherFactory(this));
         Service<CommandDispatcherFactory> service = new SuppliedValueService<>(Functions.identity(), supplier, Consumers.close());
         ServiceBuilder<CommandDispatcherFactory> builder = new AsynchronousServiceBuilder<>(this.name, service).build(target)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
