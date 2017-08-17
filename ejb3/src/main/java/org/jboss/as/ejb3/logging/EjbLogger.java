@@ -3128,4 +3128,8 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 496, value = "Could not create an instance of EJB client interceptor %s")
     DeploymentUnitProcessingException failedToCreateEJBClientInterceptor(@Cause Exception e, String ejbClientInterceptorClassName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 497, value = "Failed to persist timer %s on startup. This is likely due to another cluster member making the same change, and should not affect operation.")
+    void failedToPersistTimerOnStartup(TimerImpl activeTimer, @Cause  Exception e);
 }
