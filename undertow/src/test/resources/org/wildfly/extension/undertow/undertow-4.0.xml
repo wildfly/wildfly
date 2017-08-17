@@ -30,7 +30,7 @@
       <http-listener max-cookies="100" max-headers="30" max-parameters="30" max-post-size="100000" name="no-redirect" socket-binding="http-3" url-charset="windows-1250" worker="non-default"/>
       <https-listener disallowed-methods="" max-buffered-request-size="50000" max-connections="100" name="https" record-request-start-time="true" require-host-http11="true" resolve-peer-address="true" security-realm="UndertowRealm" socket-binding="https-non-default" verify-client="REQUESTED"/>
       <https-listener certificate-forwarding="true" enabled-cipher-suites="ALL:!MD5:!DHA" enabled-protocols="SSLv3, TLSv1.2" name="https-2" proxy-address-forwarding="true" read-timeout="-1" security-realm="UndertowRealm" socket-binding="https-2" write-timeout="-1"/>
-      <https-listener disallowed-methods="" max-buffered-request-size="50000" max-connections="100" name="https-3" record-request-start-time="true" resolve-peer-address="true" socket-binding="https-3" ssl-context="TestContext"/>
+      <https-listener disallowed-methods="" max-buffered-request-size="50000" max-connections="100" name="https-3" record-request-start-time="true" resolve-peer-address="true" socket-binding="https-3" ssl-context="TestContext" rfc6265-cookie-validation="true"/>
       <!--<https-listener disallowed-methods="" max-buffered-request-size="50000" max-connections="100" name="https-4" record-request-start-time="true" resolve-peer-address="true" socket-binding="https-4" />--> <!-- this one must fail-->
       <host alias="localhost,some.host" default-response-code="503" default-web-module="something.war" name="default-virtual-host">
          <location handler="welcome-content" name="/">

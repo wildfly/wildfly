@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import static org.wildfly.extension.undertow.HttpsListenerResourceDefinition.SSL_CONTEXT;
+import static org.wildfly.extension.undertow.ListenerResourceDefinition.RFC6265_COOKIE_VALIDATION;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -65,36 +66,46 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
         // Version 4.0.0 adds the new SSL_CONTEXT attribute, however it is mutually exclusive to the SECURITY_REALM attribute, both of which can
         // now be set to 'undefined' so instead of rejecting a defined SSL_CONTEXT, reject an undefined SECURITY_REALM as that covers the
         // two new combinations.
+        DiscardAttributeChecker.DiscardAttributeValueChecker falseDiscardChecker = new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false));
         AttributeTransformationDescriptionBuilder https =
                 serverBuilder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH)
                         .getAttributeBuilder()
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, RFC6265_COOKIE_VALIDATION)
+                        .setDiscard(falseDiscardChecker, RFC6265_COOKIE_VALIDATION)
                         .addRejectCheck(RejectAttributeChecker.DEFINED, SSL_CONTEXT)
                         .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.SECURITY_REALM)
                         .setDiscard(DiscardAttributeChecker.UNDEFINED, SSL_CONTEXT)
-                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.CERTIFICATE_FORWARDING)
+                        .setDiscard(falseDiscardChecker, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING)
                         .addRejectCheck(RejectAttributeChecker.DEFINED, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING)
-                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING)
+                        .setDiscard(falseDiscardChecker, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING)
                         .addRejectCheck(RejectAttributeChecker.DEFINED, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING);
         addCommonListenerRules(https).end();
 
         AttributeTransformationDescriptionBuilder http = serverBuilder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH)
                 .getAttributeBuilder()
-                ;
+                .addRejectCheck(RejectAttributeChecker.DEFINED, RFC6265_COOKIE_VALIDATION)
+                .setDiscard(falseDiscardChecker, RFC6265_COOKIE_VALIDATION);
         addCommonListenerRules(http).end();
+
+        serverBuilder.addChildResource(UndertowExtension.AJP_LISTENER_PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, RFC6265_COOKIE_VALIDATION)
+                .setDiscard(falseDiscardChecker, RFC6265_COOKIE_VALIDATION)
+        .end();
 
 
         subsystemBuilder
                 .addChildResource(UndertowExtension.PATH_SERVLET_CONTAINER)
                 .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
+                .setDiscard(falseDiscardChecker, ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), ServletContainerDefinition.DISABLE_SESSION_ID_REUSE)
+                .setDiscard(falseDiscardChecker, ServletContainerDefinition.DISABLE_SESSION_ID_REUSE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DISABLE_SESSION_ID_REUSE)
                 .end()
                 .addChildResource(UndertowExtension.PATH_WEBSOCKETS)
                 .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.PER_MESSAGE_DEFLATE, Constants.DEFLATER_LEVEL)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), WebsocketsDefinition.PER_MESSAGE_DEFLATE)
+                .setDiscard(falseDiscardChecker, WebsocketsDefinition.PER_MESSAGE_DEFLATE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(0)), WebsocketsDefinition.DEFLATER_LEVEL)
 
                 .end();
