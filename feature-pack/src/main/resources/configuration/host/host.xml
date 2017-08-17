@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<host name="master" xmlns="urn:jboss:domain:5.0">
+<host xmlns="urn:jboss:domain:5.0" name="master">
 
     <extensions>
         <?EXTENSIONS?>
@@ -103,16 +103,16 @@
            -->
         </server>
         <server name="server-two" group="main-server-group" auto-start="true">
+            <jvm name="default" />
             <!-- server-two avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
             <socket-bindings port-offset="150"/>
-            <jvm name="default" />
         </server>
         <server name="server-three" group="other-server-group" auto-start="false">
+            <jvm name="default" />
             <!-- server-three avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
             <socket-bindings port-offset="250"/>
-            <jvm name="default" />
         </server>
     </servers>
 
