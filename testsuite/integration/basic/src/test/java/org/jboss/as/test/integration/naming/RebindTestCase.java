@@ -42,6 +42,7 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.io.FilePermission;
 import java.net.URL;
 
 import javax.ejb.EJB;
@@ -88,7 +89,8 @@ public class RebindTestCase {
 
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 new RemotingPermission("connect"),
-                new RemotingPermission("createEndpoint")
+                new RemotingPermission("createEndpoint"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
         ), "permissions.xml");
 
         return jar;

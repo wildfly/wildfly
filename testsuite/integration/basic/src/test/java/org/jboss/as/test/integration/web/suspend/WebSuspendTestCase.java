@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.web.suspend;
 
+import java.io.FilePermission;
 import java.net.HttpURLConnection;
 import java.net.SocketPermission;
 import java.net.URL;
@@ -80,7 +81,8 @@ public class WebSuspendTestCase {
                 new RemotingPermission("createEndpoint"),
                 new RemotingPermission("connect"),
                 // HttpClient needs the following permission
-                new SocketPermission(TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")
+                new SocketPermission(TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
         ), "permissions.xml");
         return war;
     }
