@@ -5,8 +5,8 @@ import javax.ejb.TransactionAttributeType;
 
 public interface AnnotatedTx {
     @TransactionAttribute(TransactionAttributeType.NEVER)
-    public int getActiveTransaction();
+    int getActiveTransaction();
 
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
-    public int getNonActiveTransaction();
+    int getNonActiveTransaction();
 }
