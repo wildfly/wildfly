@@ -735,7 +735,11 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     // timers of other nodes in the cluster
                     activeTimer.setTimerState(TimerState.ACTIVE);
                 }
-                this.persistTimer(activeTimer, false);
+                try {
+                    this.persistTimer(activeTimer, false);
+                } catch (Exception e) {
+                    EJB3_TIMER_LOGGER.failedToPersistTimerOnStartup(activeTimer, e);
+                }
                 if (found) {
                     startTimer(activeTimer);
                     EJB3_TIMER_LOGGER.debugv("Started timer: {0}", activeTimer);
