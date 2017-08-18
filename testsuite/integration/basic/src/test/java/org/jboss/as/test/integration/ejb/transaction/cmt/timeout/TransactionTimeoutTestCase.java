@@ -71,7 +71,7 @@ public class TransactionTimeoutTestCase {
         timeoutValue = (long) remoteView.getRemoteMethodTimeout();
         Assert.assertEquals("Remote-method timeout failed", 7L, timeoutValue);
         timeoutValue = (long) localView.getLocalViewTimeout();
-        Assert.assertEquals("Local-view timeout failed", 8L, timeoutValue);
+        Assert.assertEquals("Local-view timeout failed", 5L, timeoutValue);
     }
 
     @Test
