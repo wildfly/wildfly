@@ -102,14 +102,22 @@ public class CorbaORBService implements Service<ORB> {
             properties.setProperty(ORBConstants.IOR_TO_SOCKET_INFO_CLASS_PROPERTY, CSIV2IORToSocketInfo.class.getName());
 
             // set the IIOP and IIOP/SSL ports from the respective socket bindings.
-            if (this.iiopSocketBindingInjector.getValue()!= null) {
+            final SocketBinding socketBinding = iiopSocketBindingInjector.getOptionalValue();
+            final SocketBinding sslSocketBinding = this.iiopSSLSocketBindingInjector.getOptionalValue();
+
+            if (socketBinding == null && sslSocketBinding == null) {
+                throw IIOPLogger.ROOT_LOGGER.noSocketBindingsConfigured();
+            }
+
+            if (socketBinding != null) {
                 InetSocketAddress address = this.iiopSocketBindingInjector.getValue().getSocketAddress();
                 properties.setProperty(ORBConstants.SERVER_HOST_PROPERTY, address.getAddress().getHostAddress());
                 properties.setProperty(ORBConstants.SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
                 properties.setProperty(ORBConstants.PERSISTENT_SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
             }
-            if (this.iiopSSLSocketBindingInjector.getOptionalValue() != null) {
+            if (sslSocketBinding != null) {
                 InetSocketAddress address = this.iiopSSLSocketBindingInjector.getValue().getSocketAddress();
+                properties.setProperty(ORBConstants.SERVER_HOST_PROPERTY, address.getAddress().getHostAddress());
                 properties.setProperty(Constants.ORB_SSL_PORT, String.valueOf(address.getPort()));
                 final String sslSocket = new StringBuilder().append(Constants.SSL_SOCKET_TYPE).append(':')
                         .append(String.valueOf(address.getPort())).toString();
