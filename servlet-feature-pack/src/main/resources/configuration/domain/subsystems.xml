@@ -5,11 +5,11 @@
         <subsystem supplement="no-console">logging.xml</subsystem>
         <subsystem>core-management.xml</subsystem>
         <subsystem supplement="web-build">ee.xml</subsystem>
+        <subsystem supplement="domain">elytron.xml</subsystem>
         <subsystem>io.xml</subsystem>
         <subsystem>jmx.xml</subsystem>
         <subsystem supplement="web-build">naming.xml</subsystem>
         <subsystem>request-controller.xml</subsystem>
-        <subsystem supplement="domain">elytron.xml</subsystem>
         <subsystem supplement="web-build">security.xml</subsystem>
         <subsystem>undertow.xml</subsystem>
     </subsystems>
