@@ -15,6 +15,7 @@ run-batch
 /subsystem=iiop-openjdk:write-attribute(name=client-requires-ssl,value=false)
 /subsystem=iiop-openjdk:write-attribute(name=server-requires-ssl,value=true)
 /subsystem=iiop-openjdk:write-attribute(name=support-ssl,value=true)
+/subsystem=iiop-openjdk:write-attribute(name=server-requires-ssl,value=true)
 /subsystem=iiop-openjdk:write-attribute(name=ssl-socket-binding,value=iiop-ssl)
 
 stop-embedded-server

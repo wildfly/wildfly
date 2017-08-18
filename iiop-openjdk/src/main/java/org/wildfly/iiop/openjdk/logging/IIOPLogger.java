@@ -411,4 +411,7 @@ public interface IIOPLogger extends BasicLogger {
 
     @Message(id = 114, value = "Elytron security initializer not supported in previous iiop-openjdk versions and can't be converted")
     String elytronInitializerNotSupportedInPreviousVersions();
+
+    @Message(id = 115, value = "No IIOP socket bindings have been configured")
+    IllegalStateException noSocketBindingsConfigured();
 }

@@ -196,10 +196,14 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
             builder.addDependency(authContextServiceName);
         }
 
+        final boolean serverRequiresSsl = IIOPRootDefinition.SERVER_REQUIRES_SSL.resolveModelAttribute(context, model).asBoolean();
+
         // inject the socket bindings that specify IIOP and IIOP/SSL ports.
-        String socketBinding = props.getProperty(Constants.ORB_SOCKET_BINDING);
-        builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBinding), SocketBinding.class,
-                orbService.getIIOPSocketBindingInjector());
+        if (!serverRequiresSsl) {
+            String socketBinding = props.getProperty(Constants.ORB_SOCKET_BINDING);
+            builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBinding), SocketBinding.class,
+                    orbService.getIIOPSocketBindingInjector());
+        }
 
         String sslSocketBinding = props.getProperty(Constants.ORB_SSL_SOCKET_BINDING);
         if(sslSocketBinding != null) {
@@ -209,7 +213,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // create the IOR security config metadata service.
         final IORSecurityConfigMetaData securityConfigMetaData = this.createIORSecurityConfigMetaData(context,
-                model, sslConfigured);
+                model, sslConfigured, serverRequiresSsl);
         final IORSecConfigMetaDataService securityConfigMetaDataService = new IORSecConfigMetaDataService(securityConfigMetaData);
         context.getServiceTarget()
                 .addService(IORSecConfigMetaDataService.SERVICE_NAME, securityConfigMetaDataService)
@@ -221,13 +225,13 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         // create the service the initializes the Root POA.
-        CorbaPOAService rootPOAService = new CorbaPOAService("RootPOA", "poa");
+        CorbaPOAService rootPOAService = new CorbaPOAService("RootPOA", "poa", serverRequiresSsl);
         context.getServiceTarget().addService(CorbaPOAService.ROOT_SERVICE_NAME, rootPOAService)
                 .addDependency(CorbaORBService.SERVICE_NAME, ORB.class, rootPOAService.getORBInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         // create the service the initializes the interface repository POA.
-        final CorbaPOAService irPOAService = new CorbaPOAService("IRPOA", "irpoa", IdAssignmentPolicyValue.USER_ID, null, null,
+        final CorbaPOAService irPOAService = new CorbaPOAService("IRPOA", "irpoa", serverRequiresSsl, IdAssignmentPolicyValue.USER_ID, null, null,
                 LifespanPolicyValue.PERSISTENT, null, null, null);
         context.getServiceTarget()
                 .addService(CorbaPOAService.INTERFACE_REPOSITORY_SERVICE_NAME, irPOAService)
@@ -235,7 +239,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         // create the service that initializes the naming service POA.
-        final CorbaPOAService namingPOAService = new CorbaPOAService("Naming", null, IdAssignmentPolicyValue.USER_ID, null,
+        final CorbaPOAService namingPOAService = new CorbaPOAService("Naming", null, serverRequiresSsl, IdAssignmentPolicyValue.USER_ID, null,
                 null, LifespanPolicyValue.PERSISTENT, null, null, null);
         context.getServiceTarget()
                 .addService(CorbaPOAService.SERVICE_NAME.append("namingpoa"), namingPOAService)
@@ -387,7 +391,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         return sslConfigured;
     }
 
-    private IORSecurityConfigMetaData createIORSecurityConfigMetaData(final OperationContext context, final ModelNode resourceModel, final boolean sslConfigured)
+    private IORSecurityConfigMetaData createIORSecurityConfigMetaData(final OperationContext context, final ModelNode resourceModel, final boolean sslConfigured, final boolean serverRequiresSsl)
             throws OperationFailedException {
         final IORSecurityConfigMetaData securityConfigMetaData = new IORSecurityConfigMetaData();
 
@@ -402,8 +406,6 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
         asContextMetaData.setRequired(IIOPRootDefinition.REQUIRED.resolveModelAttribute(context, resourceModel).asBoolean());
         securityConfigMetaData.setAsContext(asContextMetaData);
-
-        final boolean serverRequiresSsl = IIOPRootDefinition.SERVER_REQUIRES_SSL.resolveModelAttribute(context, resourceModel).asBoolean();
 
         final IORTransportConfigMetaData transportConfigMetaData = new IORTransportConfigMetaData();
         final ModelNode integrityNode = IIOPRootDefinition.INTEGRITY.resolveModelAttribute(context, resourceModel);
