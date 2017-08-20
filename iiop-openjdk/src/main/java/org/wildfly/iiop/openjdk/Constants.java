@@ -60,6 +60,7 @@ public final class Constants {
     public static final String NAMING = "naming";
     public static final String NAMING_EXPORT_CORBALOC = "export-corbaloc";
     public static final String NAMING_ROOT_CONTEXT = "root-context";
+    public static final String NAMING_IOR_FILEPATH = "ior-filepath";
     public static final String NONE = "none";
     public static final String IDENTITY = "identity";
     public static final String SECURITY = "security";

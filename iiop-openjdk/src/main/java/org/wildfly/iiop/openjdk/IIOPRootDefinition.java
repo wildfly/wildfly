@@ -135,6 +135,13 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    protected static final AttributeDefinition IOR_FILEPATH = new SimpleAttributeDefinitionBuilder(
+            Constants.NAMING_IOR_FILEPATH, ModelType.STRING, true)
+            .setAttributeGroup(Constants.NAMING)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .build();
+
     //Security attributes
     public static final AttributeDefinition SUPPORT_SSL = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_SUPPORT_SSL, ModelType.BOOLEAN, true)
@@ -379,7 +386,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     static final List<AttributeDefinition> INITIALIZERS_ATTRIBUTES = Arrays.asList(SECURITY, AUTHENTICATION_CONTEXT, TRANSACTIONS);
 
     // list that contains naming attributes definitions
-    static final List<AttributeDefinition> NAMING_ATTRIBUTES = Arrays.asList(ROOT_CONTEXT, EXPORT_CORBALOC);
+    static final List<AttributeDefinition> NAMING_ATTRIBUTES = Arrays.asList(ROOT_CONTEXT, EXPORT_CORBALOC, IOR_FILEPATH);
 
     // list that contains security attributes definitions
     static final List<AttributeDefinition> SECURITY_ATTRIBUTES = Arrays.asList(SUPPORT_SSL, SECURITY_DOMAIN,
