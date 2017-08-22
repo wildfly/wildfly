@@ -4,6 +4,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
+import java.io.FilePermission;
 import java.net.URL;
 import java.util.PropertyPermission;
 
@@ -48,7 +49,8 @@ public class NestedRemoteContextTestCase {
                 .addAsManifestResource(thisPackage, "ear-jboss-deployment-structure.xml", "jboss-deployment-structure.xml")
                 .addAsManifestResource(createPermissionsXmlAsset(
                         // CallEjbServlet reads node0 system property
-                        new PropertyPermission("node0", "read")),
+                        new PropertyPermission("node0", "read"),
+                        new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")),
                         "permissions.xml");
         return ear;
     }
