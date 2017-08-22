@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.infinispan.Cache;
 import org.infinispan.distribution.DistributionManager;
@@ -51,12 +52,8 @@ public class InfinispanRouteLocator implements RouteLocator {
 
     @Override
     public String locate(String sessionId) {
-        Map.Entry<String, Void> entry = null;
-        Address location = this.locatePrimaryOwner(sessionId);
-        if (location != null) {
-            Node node = this.factory.createNode(location);
-            entry = this.registry.getEntry(node);
-        }
+        Node node = Optional.ofNullable(this.locatePrimaryOwner(sessionId)).map(address -> this.factory.createNode(address)).orElse(this.registry.getGroup().getLocalNode());
+        Map.Entry<String, Void> entry = this.registry.getEntry(node);
         return (entry != null) ? entry.getKey() : null;
     }
 
