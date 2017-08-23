@@ -146,12 +146,13 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                        validateResourceModel(operation, false);
                         Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
                         ModelNode model = resource.getModel();
                         for (AttributeDefinition attr : ATTRIBUTES) {
                             attr.validateAndSet(operation, model);
                         }
+
+                        context.addStep(NamingBindingResourceDefinition.VALIDATE_RESOURCE_MODEL_OPERATION_STEP_HANDLER, OperationContext.Stage.MODEL);
 
                         context.addStep(new OperationStepHandler() {
                             @Override
