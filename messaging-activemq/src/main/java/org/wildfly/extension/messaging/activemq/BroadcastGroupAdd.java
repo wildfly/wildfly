@@ -30,7 +30,6 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
@@ -52,7 +51,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
@@ -177,12 +175,12 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
                 .setEndpointFactory(endpointFactory);
     }
 
-    static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final String name, final BroadcastGroupConfiguration config, final ChannelFactory channelFactory, final String channelName, Map<String, JChannel> channels) throws Exception {
+    static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final String name, final BroadcastGroupConfiguration config, final ChannelFactory channelFactory, final String channelName) throws Exception {
 
         final long broadcastPeriod = config.getBroadcastPeriod();
         final List<String> connectorRefs = config.getConnectorInfos();
 
-        final BroadcastEndpointFactory endpointFactory = new JGroupsBroadcastEndpointFactory(channelName, channelFactory, channels);
+        final BroadcastEndpointFactory endpointFactory = new JGroupsBroadcastEndpointFactory(channelFactory, channelName);
 
         return new BroadcastGroupConfiguration()
                 .setName(name)

@@ -22,32 +22,27 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import java.util.Map;
-
 import org.apache.activemq.artemis.api.core.BroadcastEndpoint;
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.apache.activemq.artemis.api.core.JGroupsBroadcastEndpoint;
 import org.apache.activemq.artemis.api.core.jgroups.JChannelManager;
-import org.apache.activemq.artemis.api.core.jgroups.JChannelWrapper;
 import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
+@SuppressWarnings("serial")
 public class JGroupsBroadcastEndpointFactory implements BroadcastEndpointFactory {
-    private final String channelName;
     private final ChannelFactory channelFactory;
-    // can be null
-    private Map<String, JChannel> channels;
+    private final String channelName;
 
     /**
      * @param channels a Map of &lt;channel names, JChannel&gt; can will be filled with channels created from the broadcast endpoints
      */
-    public JGroupsBroadcastEndpointFactory(String channelName, ChannelFactory channelFactory, Map<String, JChannel> channels) {
-        this.channelName = channelName;
+    public JGroupsBroadcastEndpointFactory(ChannelFactory channelFactory, String channelName) {
         this.channelFactory = channelFactory;
-        this.channels = channels;
+        this.channelName = channelName;
     }
 
     @Override
@@ -55,21 +50,9 @@ public class JGroupsBroadcastEndpointFactory implements BroadcastEndpointFactory
         JGroupsBroadcastEndpoint endpoint = new JGroupsBroadcastEndpoint(JChannelManager.getInstance(), channelName) {
             @Override
             public JChannel createChannel() throws Exception {
-                JChannel channel = (JChannel) channelFactory.createChannel(channelName);
-                if (channels != null) {
-                    channels.put(channelName, channel);
-                }
-                return channel;
-            }
-
-            @Override
-            protected void internalCloseChannel(JChannelWrapper channel) {
-                if (channels != null) {
-                    channels.remove(channelName);
-                }
-                super.internalCloseChannel(channel);
+                return (JChannel) channelFactory.createChannel(channelName);
             }
         };
-        return  endpoint.initChannel();
+        return endpoint.initChannel();
     }
 }

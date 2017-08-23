@@ -68,7 +68,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
@@ -110,11 +109,8 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     private final PathConfig pathConfig;
     // mapping between the {broadcast|discovery}-groups and the *names* of the JGroups channel they use
     private final Map<String, String> jgroupsChannels = new HashMap<String, String>();
-    // mapping between the {broadcast|discovery}-groups and the JGroups channel factory for the *stack* they use
-    private Map<String, ChannelFactory> jgroupFactories = new HashMap<String, ChannelFactory>();
-
-    // broadcast-group and discovery-groups configured with JGroups must share the same channel
-    private final Map<String, JChannel> channels = new HashMap<String, JChannel>();
+    // mapping between the {broadcast|discovery}-groups and the JGroups channel factory for the ChannelFactory they use
+    private final Map<String, ChannelFactory> jgroupFactories = new HashMap<String, ChannelFactory>();
 
     private final List<Interceptor> incomingInterceptors = new ArrayList<>();
     private final List<Interceptor> outgoingInterceptors = new ArrayList<>();
@@ -141,6 +137,10 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         return new MapInjector<String, SocketBinding>(socketBindings, name);
     }
 
+    ChannelFactory getChannelFactory(String name) {
+        return this.jgroupFactories.get(name);
+    }
+
     Injector<ChannelFactory> getJGroupsInjector(String name) {
         return new MapInjector<String, ChannelFactory>(jgroupFactories, name);
     }
@@ -159,10 +159,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
 
     InjectedValue<DataSource> getDataSource() {
         return dataSource;
-    }
-
-    Map<String, JChannel> getChannels() {
-        return channels;
     }
 
     protected List<Interceptor> getIncomingInterceptors() {
@@ -284,7 +280,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                     if (jgroupFactories.containsKey(key)) {
                         ChannelFactory channelFactory = jgroupFactories.get(key);
                         String channelName = jgroupsChannels.get(key);
-                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, channelFactory, channelName, channels));
+                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, channelFactory, channelName));
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {
@@ -306,7 +302,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                     if (jgroupFactories.containsKey(key)) {
                         ChannelFactory channelFactory = jgroupFactories.get(key);
                         String channelName = jgroupsChannels.get(key);
-                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), channelFactory, channelName, channels);
+                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), channelFactory, channelName);
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {
