@@ -68,7 +68,7 @@
                 <socket interface="management" port="9999"/>
             </native-interface>
             <http-interface security-realm="ManagementRealm">
-                <http-upgrade enabled="true" />
+                <http-upgrade enabled="true"/>
                 <socket interface="management" port="9990"/>
             </http-interface>
         </management-interfaces>

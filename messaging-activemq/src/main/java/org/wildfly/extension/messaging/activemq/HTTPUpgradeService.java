@@ -236,7 +236,8 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
      * Service to handle HTTP upgrade for legacy (HornetQ) clients.
      *
      * Legacy clients use different protocol and security key and accept headers during the HTTP Upgrade handshake.
-     */static class LegacyHttpUpgradeService extends HTTPUpgradeService {
+     */
+    static class LegacyHttpUpgradeService extends HTTPUpgradeService {
 
         public static void installService(final ServiceTarget serviceTarget, String activeMQServerName, final String acceptorName, final String httpListenerName) {
 

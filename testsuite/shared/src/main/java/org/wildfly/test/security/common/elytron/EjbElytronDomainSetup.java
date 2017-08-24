@@ -208,7 +208,7 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         steps.add(addUndertowDomain);
 
         applyUpdate(managementClient.getControllerClient(), compositeOp, false);
-        // TODO: add {"allow-resource-service-restart" => true} to ejbRemoteAddress write-attribute operation once WFLY-8793 is fixed
+        // TODO: add {"allow-resource-service-restart" => true} to ejbRemoteAddress write-attribute operation once WFLY-8793 / JBEAP-10955 is fixed
         //       and remove this reload
         ServerReload.reloadIfRequired(managementClient.getControllerClient());
     }
@@ -220,7 +220,7 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        // TODO: add {"allow-resource-service-restart" => true} to ejbRemoteAddress write-attribute operation once WFLY-8793 is fixed
+        // TODO: add {"allow-resource-service-restart" => true} to ejbRemoteAddress write-attribute operation once WFLY-8793 / JBEAP-10955 is fixed
         //       and remove this reload
         try {
             ServerReload.reloadIfRequired(managementClient.getControllerClient());
@@ -233,7 +233,7 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         applyRemoveAllowReload(managementClient.getControllerClient(), undertowDomainAddress, false);
         applyRemoveAllowReload(managementClient.getControllerClient(), httpAuthenticationAddress, false);
         applyRemoveAllowReload(managementClient.getControllerClient(), ejbDomainAddress, false);
-        // TODO: remove this reload once WFLY-8821 is fixed
+        // TODO: remove this reload once WFLY-8821 / JBEAP-11074 is fixed
         try {
             ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         } catch (Exception e) {

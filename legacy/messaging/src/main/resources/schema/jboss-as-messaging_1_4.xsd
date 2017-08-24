@@ -108,6 +108,13 @@
                   </xs:documentation>
               </xs:annotation>
           </xs:element>
+          <xs:element maxOccurs="1" minOccurs="0" name="override-in-vm-security" type="xs:boolean">
+              <xs:annotation>
+                  <xs:documentation>
+                      Whether the HornetQ server will override security credentials for in-vm connections (true by default).
+                  </xs:documentation>
+              </xs:annotation>
+          </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="wild-card-routing-enabled" type="xs:boolean">
                <xs:annotation>
                    <xs:documentation>
@@ -1536,6 +1543,27 @@
                   </xs:documentation>
               </xs:annotation>
           </xs:element>
+           <xs:element maxOccurs="1" minOccurs="0" name="slow-consumer-check-period" type="xs:long">
+               <xs:annotation>
+                   <xs:documentation>
+                       How often (in minutes) to check for slow consumers on a particular queue.
+                   </xs:documentation>
+               </xs:annotation>
+           </xs:element>
+           <xs:element maxOccurs="1" minOccurs="0" name="slow-consumer-policy" type="xs:string">
+               <xs:annotation>
+                   <xs:documentation>
+                       Determine what happens when a slow consumer is identified (accepted values: KILL, NOTIFY).
+                   </xs:documentation>
+               </xs:annotation>
+           </xs:element>
+           <xs:element maxOccurs="1" minOccurs="0" name="slow-consumer-threshold" type="xs:long">
+               <xs:annotation>
+                   <xs:documentation>
+                       The minimum rate of message consumption allowed before a consumer is considered slow.
+                   </xs:documentation>
+               </xs:annotation>
+           </xs:element>
        </xs:all>
        <xs:attribute name="match" type="xs:string" use="required">
            <xs:annotation>
