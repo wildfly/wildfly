@@ -37,6 +37,7 @@ import javax.management.MBeanServer;
 import javax.sql.DataSource;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
+import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.Interceptor;
@@ -161,8 +162,27 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         return dataSource;
     }
 
-    Map<String, JChannel> getChannels() {
-        return channels;
+    synchronized BroadcastEndpointFactory getBroadcastEndpointFactory(String name) throws Exception {
+        for (Map.Entry<String, String> entry : jgroupsChannels.entrySet()) {
+            if (name.equals(entry.getValue())) {
+                String groupName = entry.getKey();
+                final String group;
+                if (groupName.startsWith("discovery") || groupName.startsWith("broadcast")) {
+                    group = groupName.substring(9);
+                } else {
+                    group = groupName;
+                }
+                if (configuration.getDiscoveryGroupConfigurations().containsKey(group)) {
+                    return configuration.getDiscoveryGroupConfigurations().get(group).getBroadcastEndpointFactory();
+                }
+                for (BroadcastGroupConfiguration config : configuration.getBroadcastGroupConfigurations()) {
+                    if (group.equals(config.getName())) {
+                        return config.getEndpointFactory();
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     protected List<Interceptor> getIncomingInterceptors() {
@@ -382,6 +402,8 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
 
                 // the server is actually stopped by the JMS Service
             }
+            channels.values().forEach(channel -> channel.close());
+            channels.clear();
             pathConfig.closeCallbacks(pathManager.getValue());
         } catch (Exception e) {
             throw MessagingLogger.ROOT_LOGGER.failedToShutdownServer(e, "Artemis");
