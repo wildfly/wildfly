@@ -71,6 +71,9 @@
             <xsl:when test="$name = 'GNU General Public License v2.0 only, with Classpath exception'">
                 <xsl:text>gnu general public license v2.0 only, with classpath exception.html</xsl:text>
             </xsl:when>
+            <xsl:when test="$name = 'GNU Lesser General Public License v2.1 or later'">
+                <xsl:text>gnu lesser general public license v2.1 or later.html</xsl:text>
+            </xsl:when>
             <xsl:when test="$name = 'ICU License'">
                 <xsl:text>icu license.html</xsl:text>
             </xsl:when>

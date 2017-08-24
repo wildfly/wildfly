@@ -40,7 +40,7 @@
 
     <licenses>
         <license>
-            <name>GNU Lesser General Public License v2.1 only</name>
+            <name>GNU Lesser General Public License v2.1 or later</name>
             <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
             <distribution>repo</distribution>
         </license>
