@@ -138,8 +138,8 @@
       <artifactId>relaxngDatatype</artifactId>
       <licenses>
         <license>
-          <name>The BSD License</name>
-          <url>http://repository.jboss.org/licenses/bsd.txt</url>
+          <name>BSD 3-clause "New" or "Revised" License</name>
+          <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -409,8 +409,8 @@
       <artifactId>dom4j</artifactId>
       <licenses>
         <license>
-          <name>The Dom4j License</name>
-          <url>https://raw.githubusercontent.com/dom4j/dom4j/master/LICENSE</url>
+          <name>Plexus Classworlds License</name>
+          <url>https://fedoraproject.org/wiki/Licensing/Plexus_Classworlds_License</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -469,8 +469,8 @@
       <artifactId>jaxen</artifactId>
       <licenses>
         <license>
-          <name>The Jaxen License</name>
-          <url>http://www.jaxen.org/license.html</url>
+          <name>BSD 3-clause "New" or "Revised" License</name>
+          <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -520,17 +520,6 @@
         <license>
           <name>The BSD License</name>
           <url>http://repository.jboss.org/licenses/bsd.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.activemq</groupId>
-      <artifactId>artemis-amqp-protocol</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -701,33 +690,12 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.apache.activemq</groupId>
-      <artifactId>artemis-stomp-protocol</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>FSF All Permissive License</name>
-          <url>http://www.gnu.org/prep/maintain/html_node/License-Notices-for-Other-Files.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>MIT License</name>
-          <url>http://www.opensource.org/licenses/MIT</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1298,28 +1266,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.apache.qpid</groupId>
-      <artifactId>proton-j</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.qpid</groupId>
-      <artifactId>proton-jms</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.apache.santuario</groupId>
       <artifactId>xmlsec</artifactId>
       <licenses>
@@ -1374,7 +1320,7 @@
         </license>
         <license>
           <name>BSD 3-clause Clear License</name>
-          <url>https://spdx.org/licenses/BSD-3-Clause-Clear.html#licenseText</url>
+          <url>http://labs.metacarta.com/license-explanation.html#license</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1810,7 +1756,7 @@
         </license>
         <license>
           <name>Eclipse Public License 1.0</name>
-          <url>http://repository.jboss.org/licenses/epl-1.0.txt</url>
+          <url>http://www.eclipse.org/legal/epl-v10.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1836,7 +1782,6 @@
         </license>
         <license>
           <name>Public Domain</name>
-          <url>https://spdx.org/licenses/public domain.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1862,7 +1807,6 @@
         </license>
         <license>
           <name>Public Domain</name>
-          <url>https://spdx.org/licenses/public domain.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1888,7 +1832,6 @@
         </license>
         <license>
           <name>Public Domain</name>
-          <url>https://spdx.org/licenses/public domain.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1914,7 +1857,6 @@
         </license>
         <license>
           <name>Public Domain</name>
-          <url>https://spdx.org/licenses/public domain.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1940,7 +1882,6 @@
         </license>
         <license>
           <name>Public Domain</name>
-          <url>https://spdx.org/licenses/public domain.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -3123,17 +3064,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.migration</groupId>
-      <artifactId>jboss-server-migration-eap7.1-feature-pack</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.mod_cluster</groupId>
       <artifactId>mod_cluster-container-spi</artifactId>
       <licenses>
@@ -3751,11 +3681,6 @@
       <artifactId>jbossws-cxf-client</artifactId>
       <licenses>
         <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
           <name>GNU Lesser General Public License v2.1 only</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
@@ -3766,11 +3691,6 @@
       <groupId>org.jboss.ws.cxf</groupId>
       <artifactId>jbossws-cxf-factories</artifactId>
       <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
@@ -3783,11 +3703,6 @@
       <artifactId>jbossws-cxf-jaspi</artifactId>
       <licenses>
         <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
           <name>GNU Lesser General Public License v2.1 only</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
@@ -3798,11 +3713,6 @@
       <groupId>org.jboss.ws.cxf</groupId>
       <artifactId>jbossws-cxf-resources</artifactId>
       <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
@@ -3815,11 +3725,6 @@
       <artifactId>jbossws-cxf-server</artifactId>
       <licenses>
         <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
           <name>GNU Lesser General Public License v2.1 only</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
@@ -3831,11 +3736,6 @@
       <artifactId>jbossws-cxf-transports-udp</artifactId>
       <licenses>
         <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
           <name>GNU Lesser General Public License v2.1 only</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
@@ -3846,11 +3746,6 @@
       <groupId>org.jboss.ws.cxf</groupId>
       <artifactId>jbossws-cxf-transports-undertow</artifactId>
       <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
@@ -4198,8 +4093,13 @@
       <artifactId>wildfly-cli</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
+          <name>GNU Lesser General Public License v2.1 or later</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -4209,8 +4109,13 @@
       <artifactId>wildfly-version</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
+          <name>GNU Lesser General Public License v2.1 or later</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
       </licenses>

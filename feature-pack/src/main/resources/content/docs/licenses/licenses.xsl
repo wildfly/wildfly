@@ -75,6 +75,7 @@
             <xsl:when test="$name = 'BSD 3-Clause No Nuclear License'">
                 <xsl:text>bsd 3-clause no nuclear license.html</xsl:text>
             </xsl:when>
+
             <xsl:when test="$name = 'Creative Commons Attribution 2.5'">
                 <xsl:text>creative commons attribution 2.5.html</xsl:text>
             </xsl:when>
@@ -91,6 +92,9 @@
             </xsl:when>
             <xsl:when test="$name = 'GNU General Public License v2.0 only'">
                 <xsl:text>gnu general public license v2.0 only.html</xsl:text>
+            </xsl:when>
+            <xsl:when test="$name = 'GNU Lesser General Public License v2.1 or later'">
+                <xsl:text>gnu lesser general public license v2.1 or later.html</xsl:text>
             </xsl:when>
 <!--
             <xsl:when test="$name = 'GNU General Public License v2.0 only, with Classpath exception'">
@@ -109,11 +113,14 @@
             <xsl:when test="$name = 'Mozilla Public License 2.0'">
                 <xsl:text>mozilla public license 2.0.html</xsl:text>
             </xsl:when>
-            <xsl:when test="$name = 'The JSoup MIT License'">
-                <xsl:text>the jsoup mit license.html</xsl:text>
+            <xsl:when test="$name = 'Plexus Classworlds License'">
+                <xsl:text>plexus classworlds license.html</xsl:text>
             </xsl:when>
             <xsl:when test="$name = 'Sax Public Domain Notice'">
                 <xsl:text>sax public domain notice.html</xsl:text>
+            </xsl:when>
+            <xsl:when test="$name = 'The JSoup MIT License'">
+                <xsl:text>the jsoup mit license.html</xsl:text>
             </xsl:when>
             <xsl:when test="$name = 'W3C Document License'">
                 <xsl:text>w3c document license.html</xsl:text>
