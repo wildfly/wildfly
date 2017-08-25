@@ -113,8 +113,8 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         // Install the EJB remoting connector service which will listen for client connections on the remoting channel
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
         final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService(channelCreationOptions);
-        ServiceBuilder<EJBRemoteConnectorService> builder = target.addService(EJBRemoteConnectorService.SERVICE_NAME, ejbRemoteConnectorService);
-        builder
+        ServiceBuilder<EJBRemoteConnectorService> builder = context.getCapabilityServiceTarget().addCapability(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY, ejbRemoteConnectorService)
+                .addAliases(EJBRemoteConnectorService.SERVICE_NAME)
                 // add dependency on the Remoting subsystem endpoint
                 .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector())
                 // add rest of the dependencies

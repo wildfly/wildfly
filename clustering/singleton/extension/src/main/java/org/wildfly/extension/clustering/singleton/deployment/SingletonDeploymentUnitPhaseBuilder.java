@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.clustering.singleton.deployment;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.DeploymentUnitPhaseBuilder;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -35,15 +36,22 @@ import org.wildfly.clustering.singleton.SingletonPolicy;
  * @author Paul Ferraro
  */
 public class SingletonDeploymentUnitPhaseBuilder implements DeploymentUnitPhaseBuilder {
+    private static final String EJB_REMOTE_CAPABILITY = "org.wildfly.ejb.remote";
 
+    private final CapabilityServiceSupport support;
     private final SingletonPolicy policy;
 
-    public SingletonDeploymentUnitPhaseBuilder(SingletonPolicy policy) {
+    public SingletonDeploymentUnitPhaseBuilder(CapabilityServiceSupport support, SingletonPolicy policy) {
+        this.support = support;
         this.policy = policy;
     }
 
     @Override
     public <T> ServiceBuilder<T> build(ServiceTarget target, ServiceName name, Service<T> service) {
-        return this.policy.createSingletonServiceBuilder(name, service).build(target).setInitialMode(ServiceController.Mode.ACTIVE);
+        ServiceBuilder<T> builder = this.policy.createSingletonServiceBuilder(name, service).build(target).setInitialMode(ServiceController.Mode.ACTIVE);
+        if (this.support.hasCapability(EJB_REMOTE_CAPABILITY)) {
+            builder.addDependency(this.support.getCapabilityServiceName(EJB_REMOTE_CAPABILITY));
+        }
+        return builder;
     }
 }
