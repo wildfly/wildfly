@@ -2122,7 +2122,7 @@
       <artifactId>jipijapa-eclipselink</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
+          <name>GNU Lesser General Public License v2.1 or later</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
@@ -2133,7 +2133,7 @@
       <artifactId>jipijapa-hibernate4-1</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
+          <name>GNU Lesser General Public License v2.1 or later</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
@@ -2144,7 +2144,7 @@
       <artifactId>jipijapa-hibernate4-3</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
+          <name>GNU Lesser General Public License v2.1 or later</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
@@ -2155,7 +2155,7 @@
       <artifactId>jipijapa-hibernate5</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
+          <name>GNU Lesser General Public License v2.1 or later</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
@@ -2166,7 +2166,7 @@
       <artifactId>jipijapa-openjpa</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
+          <name>GNU Lesser General Public License v2.1 or later</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
@@ -2177,7 +2177,7 @@
       <artifactId>jipijapa-spi</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
+          <name>GNU Lesser General Public License v2.1 or later</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
