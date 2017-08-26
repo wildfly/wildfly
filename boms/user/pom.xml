@@ -28,7 +28,7 @@
 
     <groupId>org.wildfly.bom</groupId>
     <artifactId>wildfly</artifactId>
-    <version>11.0.0.CR1</version>
+    <version>11.0.0.CR2-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -67,7 +67,7 @@
     </issueManagement>
 
     <properties>
-        <version.org.wildfly>11.0.0.CR1</version.org.wildfly>
+        <version.org.wildfly>11.0.0.CR2-SNAPSHOT</version.org.wildfly>
 
         <!-- Versions of JBoss projects -->
 
