@@ -55,7 +55,7 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
-import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
@@ -201,7 +201,7 @@ public class MessagingActiveMQSubsystem_2_0_TestCase extends AbstractSubsystemBa
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities(JGroupsRequirement.CHANNEL_FACTORY.resolve("udp"),
+        return AdditionalInitialization.withCapabilities(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.resolve("udp"),
                 Capabilities.ELYTRON_DOMAIN_CAPABILITY,
                 Capabilities.ELYTRON_DOMAIN_CAPABILITY + ".elytronDomain",
                 CredentialReference.CREDENTIAL_STORE_CAPABILITY + ".cs1");
