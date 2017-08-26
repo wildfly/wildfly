@@ -149,9 +149,9 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
-import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.jms.JMSService;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
@@ -351,11 +351,11 @@ class ServerAdd extends AbstractAddStepHandler {
                         ModelNode broadcastGroupModel = model.get(BROADCAST_GROUP, name);
 
                         if (broadcastGroupModel.hasDefined(JGROUPS_CHANNEL.getName())) {
-                            ModelNode channelFactory = BroadcastGroupDefinition.JGROUPS_STACK.resolveModelAttribute(context, broadcastGroupModel);
-                            ServiceName channelFactoryServiceName = channelFactory.isDefined() ? JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, channelFactory.asString()) : JGroupsDefaultRequirement.CHANNEL_FACTORY.getServiceName(context);
-                            String channelName = JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel).asString();
-                            serviceBuilder.addDependency(channelFactoryServiceName, ChannelFactory.class, serverService.getJGroupsInjector(key));
-                            serverService.getJGroupsChannels().put(key, channelName);
+                            ModelNode channel = BroadcastGroupDefinition.JGROUPS_STACK.resolveModelAttribute(context, broadcastGroupModel);
+                            ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
+                            String clusterName = JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel).asString();
+                            serviceBuilder.addDependency(commandDispatcherFactoryServiceName, CommandDispatcherFactory.class, serverService.getCommandDispatcherFactoryInjector(key));
+                            serverService.getClusterNames().put(key, clusterName);
                         } else {
                             final ServiceName groupBinding = GroupBindingService.getBroadcastBaseServiceName(activeMQServiceName).append(name);
                             serviceBuilder.addDependency(groupBinding, SocketBinding.class, serverService.getGroupBindingInjector(key));
@@ -368,11 +368,11 @@ class ServerAdd extends AbstractAddStepHandler {
                         final String key = "discovery" + name;
                         ModelNode discoveryGroupModel = model.get(DISCOVERY_GROUP, name);
                         if (discoveryGroupModel.hasDefined(JGROUPS_CHANNEL.getName())) {
-                            ModelNode channelFactory = DiscoveryGroupDefinition.JGROUPS_STACK.resolveModelAttribute(context, discoveryGroupModel);
-                            ServiceName channelFactoryServiceName = channelFactory.isDefined() ? JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, channelFactory.asString()) : JGroupsDefaultRequirement.CHANNEL_FACTORY.getServiceName(context);
-                            String channelName = JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel).asString();
-                            serviceBuilder.addDependency(channelFactoryServiceName, ChannelFactory.class, serverService.getJGroupsInjector(key));
-                            serverService.getJGroupsChannels().put(key, channelName);
+                            ModelNode channel = DiscoveryGroupDefinition.JGROUPS_STACK.resolveModelAttribute(context, discoveryGroupModel);
+                            ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
+                            String clusterName = JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel).asString();
+                            serviceBuilder.addDependency(commandDispatcherFactoryServiceName, CommandDispatcherFactory.class, serverService.getCommandDispatcherFactoryInjector(key));
+                            serverService.getClusterNames().put(key, clusterName);
                         } else {
                             final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(activeMQServiceName).append(name);
                             serviceBuilder.addDependency(groupBinding, SocketBinding.class, serverService.getGroupBindingInjector(key));

@@ -68,7 +68,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.security.auth.server.SecurityDomain;
@@ -107,10 +107,10 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final InjectedValue<SecurityDomain> elytronSecurityDomain = new InjectedValue<>();
     private final PathConfig pathConfig;
-    // mapping between the {broadcast|discovery}-groups and the *names* of the JGroups channel they use
-    private final Map<String, String> jgroupsChannels = new HashMap<String, String>();
-    // mapping between the {broadcast|discovery}-groups and the JGroups channel factory for the ChannelFactory they use
-    private final Map<String, ChannelFactory> jgroupFactories = new HashMap<String, ChannelFactory>();
+    // mapping between the {broadcast|discovery}-groups and the cluster names they use
+    private final Map<String, String> clusterNames = new HashMap<>();
+    // mapping between the {broadcast|discovery}-groups and the command dispatcher factory they use
+    private final Map<String, CommandDispatcherFactory> commandDispatcherFactories = new HashMap<>();
 
     private final List<Interceptor> incomingInterceptors = new ArrayList<>();
     private final List<Interceptor> outgoingInterceptors = new ArrayList<>();
@@ -137,12 +137,12 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         return new MapInjector<String, SocketBinding>(socketBindings, name);
     }
 
-    ChannelFactory getChannelFactory(String name) {
-        return this.jgroupFactories.get(name);
+    CommandDispatcherFactory getCommandDispatcherFactory(String name) {
+        return this.commandDispatcherFactories.get(name);
     }
 
-    Injector<ChannelFactory> getJGroupsInjector(String name) {
-        return new MapInjector<String, ChannelFactory>(jgroupFactories, name);
+    Injector<CommandDispatcherFactory> getCommandDispatcherFactoryInjector(String name) {
+        return new MapInjector<>(this.commandDispatcherFactories, name);
     }
 
     Injector<OutboundSocketBinding> getOutboundSocketBindingInjector(String name) {
@@ -277,10 +277,10 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                 for(final BroadcastGroupConfiguration config : broadcastGroups) {
                     final String name = config.getName();
                     final String key = "broadcast" + name;
-                    if (jgroupFactories.containsKey(key)) {
-                        ChannelFactory channelFactory = jgroupFactories.get(key);
-                        String channelName = jgroupsChannels.get(key);
-                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, channelFactory, channelName));
+                    if (commandDispatcherFactories.containsKey(key)) {
+                        CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key);
+                        String clusterName = clusterNames.get(key);
+                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, commandDispatcherFactory, clusterName));
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {
@@ -299,10 +299,10 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                     final String name = entry.getKey();
                     final String key = "discovery" + name;
                     final DiscoveryGroupConfiguration config;
-                    if (jgroupFactories.containsKey(key)) {
-                        ChannelFactory channelFactory = jgroupFactories.get(key);
-                        String channelName = jgroupsChannels.get(key);
-                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), channelFactory, channelName);
+                    if (commandDispatcherFactories.containsKey(key)) {
+                        CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key);
+                        String clusterName = clusterNames.get(key);
+                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), commandDispatcherFactory, clusterName);
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {
@@ -400,8 +400,8 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         return this.elytronSecurityDomain;
     }
 
-    public Map<String, String> getJGroupsChannels() {
-        return jgroupsChannels;
+    public Map<String, String> getClusterNames() {
+        return clusterNames;
     }
 
     /**

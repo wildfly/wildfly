@@ -41,7 +41,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
@@ -51,8 +50,9 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
+import org.wildfly.extension.messaging.activemq.broadcast.CommandDispatcherBroadcastEndpointFactory;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
@@ -70,16 +70,13 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
 
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        //super.recordCapabilitiesAndRequirements(context, operation, resource);
-        String broadcastGroupName = context.getCurrentAddressValue();
-        String serverName = context.getCurrentAddress().getParent().getLastElement().getValue();
-        String compositeName = serverName + "." + broadcastGroupName;
+        PathAddress address = context.getCurrentAddress();
 
-        context.registerCapability(BroadcastGroupDefinition.CHANNEL_FACTORY_CAPABILITY.fromBaseCapability(compositeName));
+        context.registerCapability(BroadcastGroupDefinition.COMMAND_DISPATCHER_FACTORY_CAPABILITY.fromBaseCapability(address));
 
         ModelNode model = resource.getModel();
         if (CommonAttributes.JGROUPS_CHANNEL.resolveModelAttribute(context, model).isDefined() && !BroadcastGroupDefinition.JGROUPS_STACK.resolveModelAttribute(context, model).isDefined()) {
-            context.registerAdditionalCapabilityRequirement(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName(), RuntimeCapability.buildDynamicCapabilityName(BroadcastGroupDefinition.CHANNEL_FACTORY_CAPABILITY.getName(), compositeName), BroadcastGroupDefinition.JGROUPS_STACK.getName());
+            context.registerAdditionalCapabilityRequirement(ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName(), BroadcastGroupDefinition.COMMAND_DISPATCHER_FACTORY_CAPABILITY.getDynamicName(address), BroadcastGroupDefinition.JGROUPS_STACK.getName());
         }
     }
 
@@ -175,12 +172,12 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
                 .setEndpointFactory(endpointFactory);
     }
 
-    static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final String name, final BroadcastGroupConfiguration config, final ChannelFactory channelFactory, final String channelName) throws Exception {
+    static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final String name, final BroadcastGroupConfiguration config, final CommandDispatcherFactory commandDispatcherFactory, final String channelName) throws Exception {
 
         final long broadcastPeriod = config.getBroadcastPeriod();
         final List<String> connectorRefs = config.getConnectorInfos();
 
-        final BroadcastEndpointFactory endpointFactory = new JGroupsBroadcastEndpointFactory(channelFactory, channelName);
+        final BroadcastEndpointFactory endpointFactory = new CommandDispatcherBroadcastEndpointFactory(commandDispatcherFactory, channelName);
 
         return new BroadcastGroupConfiguration()
                 .setName(name)

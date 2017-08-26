@@ -28,6 +28,7 @@ import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.apache.activemq.artemis.ra.ConnectionFactoryProperties;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
+import org.wildfly.extension.messaging.activemq.broadcast.CommandDispatcherBroadcastEndpointFactory;
 
 /**
  * Custom resource adapter that returns an appropriate BroadcastEndpointFactory if discovery is configured using JGroups.
@@ -38,16 +39,16 @@ public class ActiveMQResourceAdapter extends org.apache.activemq.artemis.ra.Acti
 
     @Override
     protected BroadcastEndpointFactory createBroadcastEndpointFactory(ConnectionFactoryProperties overrideProperties) {
-        String channelName = overrideProperties.getJgroupsChannelName() != null ? overrideProperties.getJgroupsChannelName() : getJgroupsChannelName();
-        if (channelName != null) {
+        String clusterName = overrideProperties.getJgroupsChannelName() != null ? overrideProperties.getJgroupsChannelName() : getJgroupsChannelName();
+        if (clusterName != null) {
             String channelRefName = this.getProperties().getJgroupsChannelRefName();
 
             String[] split = channelRefName.split("/");
             String serverName = split[0];
-            String channelFactoryName = split[1];
+            String key = split[1];
 
             ActiveMQServerService service = (ActiveMQServerService) currentServiceContainer().getService(MessagingServices.getActiveMQServiceName(serverName)).getService();
-            return new JGroupsBroadcastEndpointFactory(service.getChannelFactory(channelFactoryName), channelName);
+            return new CommandDispatcherBroadcastEndpointFactory(service.getCommandDispatcherFactory(key), clusterName);
         }
         return super.createBroadcastEndpointFactory(overrideProperties);
     }
