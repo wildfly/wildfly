@@ -105,7 +105,7 @@ public class ModelControllerMBeanTestCase {
         String urlString = System
                 .getProperty("jmx.service.url", "service:jmx:http-remoting-jmx://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort());
         JMXServiceURL serviceURL = new JMXServiceURL(urlString);
-        connector = JMXConnectorFactory.connect(serviceURL,DefaultConfiguration.credentials());
+        connector = JMXConnectorFactory.connect(serviceURL, DefaultConfiguration.credentials());
         return connector.getMBeanServerConnection();
     }
 

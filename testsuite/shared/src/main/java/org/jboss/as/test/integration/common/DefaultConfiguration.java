@@ -32,7 +32,7 @@ import java.util.Properties;
 
 /**
  * Created by fspolti on 10/20/16.
- * WFLY-7309
+ * WFLY-7309 / JBEAP-6424
  */
 public class DefaultConfiguration {
     private static final boolean isRemote = Boolean.parseBoolean(System.getProperty("org.jboss.as.test.integration.remote", "false"));

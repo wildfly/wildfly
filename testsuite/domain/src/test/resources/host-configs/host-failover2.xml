@@ -49,7 +49,7 @@
                 <socket interface="public" port="9989"/>
             </native-interface>
             <http-interface security-realm="ManagementRealm">
-                <http-upgrade enabled="true" />
+                <http-upgrade enabled="true"/>
                 <socket interface="public" port="9980"/>
             </http-interface>
         </management-interfaces>
