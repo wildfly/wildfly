@@ -52,6 +52,7 @@
             <xs:element name="initializers" minOccurs="0" maxOccurs="1" type="initializersConfigType"/>
             <xs:element name="naming" minOccurs="0" maxOccurs="1" type="namingConfigType"/>
             <xs:element name="security" minOccurs="0" maxOccurs="1" type="securityConfigType"/>
+            <xs:element name="interop" minOccurs="0" maxOccurs="1" type="interopConfigType"/>
             <xs:element name="transport-config" type="iorTransportConfigType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="as-context" minOccurs="0" maxOccurs="1" type="iorASContextType"/>
             <xs:element name="sas-context" minOccurs="0" maxOccurs="1" type="iorSASContextType"/>
@@ -173,6 +174,19 @@
         <xs:attribute name="add-component-via-interceptor" type="trueFalseType" use="optional" default="true"/>
         <xs:attribute name="server-requires-ssl" type="xs:boolean" use="optional" default="false"/>
         <xs:attribute name="client-requires-ssl" type="xs:boolean" use="optional" default="false"/>
+    </xs:complexType>
+
+    <xs:complexType name="interopConfigType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                The interopConfigType specifies the attributes used to configure the ORB interoperability features.
+
+                * iona: indicates wheter interoperability with IONA's ASP is enabled.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="iona" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="genericPropertiesType">
