@@ -22,7 +22,6 @@
 
 package org.jipijapa.eclipselink;
 
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.TransactionManager;
 
@@ -31,10 +30,11 @@ import org.eclipse.persistence.sessions.DatabaseSession;
 import org.eclipse.persistence.transaction.jboss.JBossTransactionController;
 
 /**
- * The fully qualified name of WildFlyServerPlatform must be set as the value
- * of the eclipselink.target-server property on EclipseLink version 2.3.2 and
- * older. In newer versions where bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=365704
- * has been fixed, setting eclipselink.target-server to "jboss" is sufficient.
+ * The fully qualified name of WildFlyServerPlatform must be set as the value of
+ * the eclipselink.target-server property on EclipseLink version 2.3.2 and
+ * older. In newer versions where bug
+ * https://bugs.eclipse.org/bugs/show_bug.cgi?id=365704 has been fixed, setting
+ * eclipselink.target-server to "jboss" is sufficient.
  *
  * @author Craig Ringer <ringerc@ringerc.id.au>
  *
@@ -47,17 +47,27 @@ public class WildFlyServerPlatform extends JBossPlatform {
 
     @Override
     public Class<?> getExternalTransactionControllerClass() {
-        return JBossAS7TransactionController.class;
+        return org.jipijapa.eclipselink.JBossAS7TransactionController.class;
     }
 
+    /**
+     * This class is not to be used because it will register the eclipselink
+     * transaction listener using the wrong approach for wildfly.
+     *
+     * @deprecated See
+     *             <a href="https://issues.jboss.org/browse/WFLY-8954">Wildfly
+     *             10 with eclipselink Onscucess observer gets stale entity</a>
+     *             The
+     *             {@link org.jipijapa.eclipselink.JBossAS7TransactionController}
+     *             should be used instead
+     */
+    @Deprecated
     public static class JBossAS7TransactionController extends JBossTransactionController {
-
-        private static final String JBOSS_TRANSACTION_MANAGER = "java:jboss/TransactionManager";
 
         @Override
         protected TransactionManager acquireTransactionManager() throws Exception {
             try {
-                return InitialContext.doLookup(JBOSS_TRANSACTION_MANAGER);
+                return JndiUtil.SINGLETON.acquireTransactionManager();
             } catch (NamingException ex) {
                 return super.acquireTransactionManager();
             }
