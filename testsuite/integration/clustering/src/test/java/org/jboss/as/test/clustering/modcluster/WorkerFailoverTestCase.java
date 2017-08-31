@@ -199,7 +199,7 @@ public class WorkerFailoverTestCase {
             Assert.assertEquals("Worker's configuration failed!\n" + response.toString(), SUCCESS, response.get("outcome").asString());
 
             op = createOpNode("socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=proxy1", "add");
-            op.get("host").set(TestSuiteEnvironment.getServerAddress(cliAddress));
+            op.get("host").set(TestSuiteEnvironment.getServerAddress("node0"));
             op.get("port").set("8080");
             response = client.execute(op);
             Assert.assertEquals("Worker's configuration failed!\n" + response.toString(), SUCCESS, response.get("outcome").asString());
@@ -256,7 +256,8 @@ public class WorkerFailoverTestCase {
                 checkWorker2 = createOpNode("subsystem=undertow/configuration=filter/mod-cluster=modcluster/balancer=mycluster/node=node-2", "read-children-names");
                 checkWorker2.get("child-type").set("context");
             } catch (Exception e) {
-                Assert.assertTrue(false);
+                LOGGER.error("Not able to create OpNodes", e);
+                Assert.fail("Not able to create OpNodes. For more information look into log file.");
             }
 
             int iteration = 0;
@@ -277,16 +278,18 @@ public class WorkerFailoverTestCase {
 
                     TimeUnit.SECONDS.sleep(1);
                 } catch (Exception e) {
-                    Assert.assertTrue(false);
+                    LOGGER.error("Not able to execute OpNode and check the result", e);
+                    Assert.fail("Not able to execute OpNode and check the result. For more information look into log file.");
                 }
             } while (iteration < TIMEOUT);
 
             /* In case any worker is not ready (after timeout) then test fails */
-            Assert.assertEquals("TIMEOUT ELAPSED: Balancer didn't see both workers!\n", SUCCESS, response1.get("outcome").asString());
-            Assert.assertEquals("TIMEOUT ELAPSED: Balancer didn't see both workers!\n", SUCCESS, response2.get("outcome").asString());
+            Assert.assertTrue("TIMEOUT ELAPSED: Balancer is not able to see both workers!\n", result1);
+            Assert.assertTrue("TIMEOUT ELAPSED: Balancer is not able to see both workers!\n", result2);
 
         } catch (IOException e) {
-            Assert.assertTrue(false);
+            LOGGER.error("InfrastructureCheck failed", e);
+            Assert.fail("IOException: For more information look into log file.");
         }
     }
 
