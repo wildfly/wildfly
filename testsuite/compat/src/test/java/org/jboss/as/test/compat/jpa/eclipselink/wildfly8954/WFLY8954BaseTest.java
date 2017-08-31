@@ -54,21 +54,6 @@ public class WFLY8954BaseTest {
 
     private static final String ARCHIVE_NAME = "toplink_module_test";
 
-    private static final String persistence_xml =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-            "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"hibernate3_pc\">" +
-            "<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>" +
-            "    <description>TopLink Persistence Unit." +
-            "    </description>" +
-            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-            "  <properties>" +
-            "  <property name=\"jboss.as.jpa.providerModule\" value=\"org.eclipse.persistence:test\"/>" +
-            "  <property name=\"eclipselink.ddl-generation\" value=\"drop-and-create-tables\"/>" +
-            "  </properties>" +
-            "  </persistence-unit>" +
-            "</persistence>";
-
     @ArquillianResource
     private static InitialContext iniCtx;
 
@@ -84,7 +69,8 @@ public class WFLY8954BaseTest {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
-        // NOTE: PersistenceXmlHelper - should not beed be deployed - but it is a test class dependency for test preparation
+        // NOTE: PersistenceXmlHelper - should not beed be deployed - but it is a test class dependency for test
+        // preparation
         lib.addClass(PersistenceXmlHelper.class);
         lib.addClasses(BasicJndiUtil.class);
 
@@ -104,7 +90,8 @@ public class WFLY8954BaseTest {
         lib.addClasses(Employee.class);
 
         // lib.addAsManifestResource(new StringAsset(persistence_xml), "persistence.xml");
-        lib.addAsManifestResource(new StringAsset(PersistenceXmlHelper.SINGLETON.getWFLY8954BaseTestPersistenceXml()), "persistence.xml");
+        lib.addAsManifestResource(new StringAsset(PersistenceXmlHelper.SINGLETON.getWFLY8954BaseTestPersistenceXml()),
+                "persistence.xml");
         ear.addAsLibraries(lib);
 
         final WebArchive main = ShrinkWrap.create(WebArchive.class, "main.war");
@@ -124,7 +111,8 @@ public class WFLY8954BaseTest {
         sfsb1.createEmployee("Kelly Smith", "Initial Address Value. ", employeePrimaryKey);
 
         // (b) Execute the bug step
-        // This consists on modifying an entity, making it be observed, and verify if the enityt on th observes reflects the
+        // This consists on modifying an entity, making it be observed, and verify if the enityt on th observes reflects
+        // the
         // committed state
         EjbThatModifiesEntityAndFiresEventLocalFacade ejbThatWillModifyAndFireEvent = jndiLookupEjbThatModifiesEntityAndFiresEventLocalFacade();
         ejbThatWillModifyAndFireEvent.modifyEmployeedAddressAndFireAChangeEvent(employeePrimaryKey);
@@ -132,16 +120,22 @@ public class WFLY8954BaseTest {
         // (c) Now we check the results of the test
         // either the observer get a stale entity or an entity that reflects the db changes
         SomeEntityChangeEventObserverFacade singletonObserver = jndiLookupSomeEntityChangeEventObserverFacade();
-        String lastProcessedEntityAddressBeforeExecutingRefresh = singletonObserver.getLastProcessedEntityAddressBeforeExecutingRefresh();
-        String lastProcessedEntityAddressAfterExecutingRefresh = singletonObserver.getLastProcessedEntityAddressAfterExecutingRefresh();
+        String lastProcessedEntityAddressBeforeExecutingRefresh = singletonObserver
+                .getLastProcessedEntityAddressBeforeExecutingRefresh();
+        String lastProcessedEntityAddressAfterExecutingRefresh = singletonObserver
+                .getLastProcessedEntityAddressAfterExecutingRefresh();
         SomeEntityChangeEvent changeEvent = singletonObserver.getLastProcessedSomeEntityChangeEvent();
         boolean isBugDetected = singletonObserver.isBugDetected();
         if (isBugDetected) {
-            String arrsetionError = String.format("The observer bug has been tected. The context is: %n "
-                + "EVENT OBSERVED: %1$s %n"
-                + "lastProcessedEntityAddressBeforeExecutingRefresh: %2$s "
-                + "lastProcessedEntityAddressAfterExecutingRefresh: %3$s ", changeEvent, lastProcessedEntityAddressBeforeExecutingRefresh,
-                lastProcessedEntityAddressAfterExecutingRefresh);
+            String arrsetionError = String.format(
+                    "The observer bug has been detected.%n" + "The context is: %n " + "EVENT OBSERVED: %1$s %n"
+                            + "lastProcessedEntityAddressBeforeExecutingRefresh: %2$s %n"
+                            + "lastProcessedEntityAddressAfterExecutingRefresh: %3$s %n"
+                            + " If the bug was not present, we would expect that refreshing the entity would have no effect. %n"
+                            + " When the bug is present, refreshing the entity has an effect because the unit of work cache has not yet been merged to the session cache"
+                            + " but the changes have already been committed to the database. ",
+                    changeEvent, lastProcessedEntityAddressBeforeExecutingRefresh,
+                    lastProcessedEntityAddressAfterExecutingRefresh);
             Assert.fail(arrsetionError);
         }
     }
@@ -151,7 +145,8 @@ public class WFLY8954BaseTest {
      * @return A stateless ejb that can help us create entities
      */
     protected SFSB1 jndiLookupSFB1() {
-        return BasicJndiUtil.SINGLETON.lookupEjbWithinEar(iniCtx, ARCHIVE_NAME, SFSB1.class.getSimpleName(), SFSB1.class);
+        return BasicJndiUtil.SINGLETON.lookupEjbWithinEar(iniCtx, ARCHIVE_NAME, SFSB1.class.getSimpleName(),
+                SFSB1.class);
     }
 
     /**
@@ -159,13 +154,14 @@ public class WFLY8954BaseTest {
      * @return A stateless ejb that can help us reproduce the issue of we are trying to validate
      */
     protected EjbThatModifiesEntityAndFiresEventLocalFacade jndiLookupEjbThatModifiesEntityAndFiresEventLocalFacade() {
-        return BasicJndiUtil.SINGLETON.lookupEjbWithinEar(iniCtx, ARCHIVE_NAME, EjbThatModifiesEntityAndFiresEventLocalFacade.class.getSimpleName(),
-            EjbThatModifiesEntityAndFiresEventLocalFacade.class);
+        return BasicJndiUtil.SINGLETON.lookupEjbWithinEar(iniCtx, ARCHIVE_NAME,
+                EjbThatModifiesEntityAndFiresEventLocalFacade.class.getSimpleName(),
+                EjbThatModifiesEntityAndFiresEventLocalFacade.class);
     }
 
     protected SomeEntityChangeEventObserverFacade jndiLookupSomeEntityChangeEventObserverFacade() {
-        return BasicJndiUtil.SINGLETON.lookupEjbWithinEar(iniCtx, ARCHIVE_NAME, SomeEntityChangeEventObserverFacade.class.getSimpleName(),
-            SomeEntityChangeEventObserverFacade.class);
+        return BasicJndiUtil.SINGLETON.lookupEjbWithinEar(iniCtx, ARCHIVE_NAME,
+                SomeEntityChangeEventObserverFacade.class.getSimpleName(), SomeEntityChangeEventObserverFacade.class);
     }
 
 }

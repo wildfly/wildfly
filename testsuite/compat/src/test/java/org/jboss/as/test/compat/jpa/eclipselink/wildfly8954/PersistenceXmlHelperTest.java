@@ -31,9 +31,9 @@ import org.slf4j.LoggerFactory;
  * This base class is based on the {@link EclipseLinkSharedModuleProviderTestCase}
  *
  */
-public class DeleteMeTest {
+public class PersistenceXmlHelperTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeleteMeTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PersistenceXmlHelperTest.class);
 
     @Test
     public void dummyTest() throws Exception {
