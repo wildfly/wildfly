@@ -35,14 +35,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.io.File;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,8 +47,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.codehaus.plexus.util.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -71,7 +61,6 @@ import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.integration.management.ServerManager;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
-import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.config.realm.RealmKeystore;
 import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
 import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
@@ -93,8 +82,6 @@ import org.wildfly.test.security.common.elytron.Path;
 import org.wildfly.test.security.common.elytron.SimpleKeyManager;
 import org.wildfly.test.security.common.elytron.SimpleKeyStore;
 import org.wildfly.test.security.common.elytron.SimpleServerSslContext;
-import org.wildfly.test.security.common.other.KeyStoreUtils;
-import org.wildfly.test.security.common.other.KeyUtils;
 import org.wildfly.test.security.common.other.SimpleSocketBinding;
 import org.wildfly.test.undertow.common.elytron.SimpleHttpsListener;
 
@@ -174,7 +161,6 @@ public class TransportGuaranteeTestCase {
      * @throws Exception
      */
     private boolean checkGetURL(String url, String responseSubstring, String user, String pass) throws Exception {
-
         log.trace("Checking URL=" + url);
 
         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
@@ -267,9 +253,10 @@ public class TransportGuaranteeTestCase {
         private static final Logger log = Logger.getLogger(ListenerSetup.class);
 
         private static final String NAME = TransportGuaranteeTestCase.class.getSimpleName();
-        private static final File WORK_DIR = new File("target" + File.separatorChar + NAME);
-        private static final File SERVER_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.SERVER_KEYSTORE);
-        private static final String PASSWORD = SecurityTestConstants.KEYSTORE_PASSWORD;
+        private static final File WORK_DIR = new File("..", "jbossas" + File.separator + "standalone" + File
+                .separator + "configuration");
+        private static final File SERVER_KEYSTORE_FILE = new File(WORK_DIR, "application.keystore");
+        private static final String PASSWORD = "password";
 
         public static final int HTTPS_PORT = 8343;
 
@@ -282,7 +269,6 @@ public class TransportGuaranteeTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            keyMaterialSetup(WORK_DIR);
             if (WebSecurityCommon.isElytron()) {
                 cli = new CLIWrapper(true);
                 setElytronBased(managementClient);
@@ -294,8 +280,6 @@ public class TransportGuaranteeTestCase {
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            FileUtils.deleteDirectory(WORK_DIR);
-
             if (WebSecurityCommon.isElytron()) {
                 cli = new CLIWrapper(true);
                 simpleHttpsListener.remove(cli);
@@ -393,13 +377,13 @@ public class TransportGuaranteeTestCase {
                 Exception {
             log.debug("start of the creation of the https-listener with ssl-context");
 
-            simpleKeystore = SimpleKeyStore.builder().withName(NAME + SecurityTestConstants.SERVER_KEYSTORE)
+            simpleKeystore = SimpleKeyStore.builder().withName(NAME)
                     .withPath(Path.builder().withPath(SERVER_KEYSTORE_FILE.getAbsolutePath()).build())
                     .withCredentialReference(CredentialReference.builder().withClearText(PASSWORD).build())
                     .build();
             simpleKeystore.create(cli);
             simpleKeyManager = SimpleKeyManager.builder().withName(NAME)
-                    .withKeyStore(NAME + SecurityTestConstants.SERVER_KEYSTORE)
+                    .withKeyStore(NAME)
                     .withCredentialReference(CredentialReference.builder().withClearText(PASSWORD).build())
                     .build();
             simpleKeyManager.create(cli);
@@ -444,30 +428,6 @@ public class TransportGuaranteeTestCase {
             } else {
                 throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
             }
-        }
-
-        protected static void keyMaterialSetup(File workDir) throws Exception {
-            FileUtils.deleteDirectory(workDir);
-            workDir.mkdirs();
-            Assert.assertTrue(workDir.exists());
-            Assert.assertTrue(workDir.isDirectory());
-            generateCertificatesAndKeystores(PASSWORD, SERVER_KEYSTORE_FILE);
-        }
-
-        private static void generateCertificatesAndKeystores(String keystorePassword, File serverKeystoreFile) throws
-                NoSuchAlgorithmException, CertificateException, KeyStoreException, IOException,
-                OperatorCreationException, SignatureException, InvalidKeyException {
-            KeyPair server = KeyUtils.generateKeyPair();
-
-            String serverName = "server";
-            X509Certificate serverCert = KeyUtils.generateX509Certificate(serverName, server);
-
-            KeyStoreUtils.KeyEntry[] keys = new KeyStoreUtils.KeyEntry[]{
-                    new KeyStoreUtils.KeyEntry(serverName, server, serverCert),
-            };
-            KeyStore serverKeystore = KeyStoreUtils.generateKeystore(keys, null, keystorePassword);
-
-            KeyStoreUtils.saveKeystore(serverKeystore, keystorePassword, serverKeystoreFile);
         }
     }
 }

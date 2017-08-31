@@ -67,6 +67,30 @@
                     </additionalClasspathElements>
                 </configuration>
             </plugin>
+            <!-- Resources plugin. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions combine.children="append">
+                    <!-- Copy keystores from common resources. -->
+                    <execution>
+                        <id>ts.integ.web.copy-keystores</id>
+                        <phase>generate-test-resources</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <inherited>true</inherited>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/jbossas/standalone/configuration</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>../../shared/target/shared-keystores</directory>
+                                    <includes><include>application.keystore</include></includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <!-- WFLY-5588 DefaultContextServiceServletTestCase fails on IBM jdk -->
