@@ -80,7 +80,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     @SuppressWarnings({ "unchecked" })
     public synchronized <S> S getBusinessObject(Class<S> businessInterfaceType) {
         if (isRemoved()) {
-            WeldEjbLogger.ROOT_LOGGER.ejbHashBeenRemoved(ejbComponent);
+            throw WeldEjbLogger.ROOT_LOGGER.ejbHashBeenRemoved(ejbComponent);
         }
 
         final String businessInterfaceName = businessInterfaceType.getName();
