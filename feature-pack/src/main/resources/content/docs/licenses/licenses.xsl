@@ -14,7 +14,7 @@
                 <link rel="stylesheet" type="text/css" href="licenses.css"/>
             </head>
             <body>
-                <h2>WildFly <xsl:value-of select="substring-before($version, '-')"/></h2>
+                <h2>WildFly <xsl:value-of select="substring-before($version, '-')"/> - Feature Pack</h2>
                 <p>The following material has been provided for informational purposes only, and should not be relied upon or construed as a legal opinion or legal advice.</p>
                 <!-- Read matching templates -->
                 <table>
