@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.suspend;
 
+import java.io.FilePermission;
 import java.io.IOException;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
@@ -61,7 +62,8 @@ public class TimerServiceSuspendTestCase {
         war.addAsManifestResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller-client, org.jboss.remoting3\n"), "MANIFEST.MF");
         war.addAsManifestResource(createPermissionsXmlAsset(
                 new RemotingPermission("createEndpoint"),
-                new RemotingPermission("connect")
+                new RemotingPermission("connect"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
         ), "permissions.xml");
         return war;
     }
