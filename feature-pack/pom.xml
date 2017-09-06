@@ -1844,11 +1844,6 @@
 
         <dependency>
             <groupId>org.apache.qpid</groupId>
-            <artifactId>proton-jms</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.qpid</groupId>
             <artifactId>proton-j</artifactId>
         </dependency>
 
