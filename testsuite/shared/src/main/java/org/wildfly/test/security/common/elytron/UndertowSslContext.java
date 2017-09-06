@@ -29,29 +29,32 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
  *
  * @author Ondrej Kotek
  */
-public class UndertowSslContext  extends AbstractConfigurableElement {
+public class UndertowSslContext extends AbstractConfigurableElement {
+
+    private String httpsListener;
 
     private UndertowSslContext(Builder builder) {
         super(builder);
+        this.httpsListener = builder.httpsListener;
     }
 
     @Override
     public void create(CLIWrapper cli) throws Exception {
         cli.sendLine("batch");
-        cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":undefine-attribute(name=security-realm)");
-        cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":write-attribute(name=ssl-context,value=%s)", name));
+        cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:undefine-attribute" +
+                "(name=security-realm)", httpsListener));
+        cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:write-attribute" +
+                "(name=ssl-context,value=%s)", httpsListener, name));
         cli.sendLine("run-batch");
     }
 
     @Override
     public void remove(CLIWrapper cli) throws Exception {
         cli.sendLine("batch");
-        cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":undefine-attribute(name=ssl-context)");
-        cli.sendLine("/subsystem=undertow/server=default-server/https-listener=https"
-                + ":write-attribute(name=security-realm,value=ApplicationRealm)");
+        cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:undefine-attribute" +
+                "(name=ssl-context)", httpsListener));
+        cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:write-attribute" +
+                "(name=security-realm,value=ApplicationRealm)", httpsListener));
         cli.sendLine("run-batch");
     }
 
@@ -68,8 +71,14 @@ public class UndertowSslContext  extends AbstractConfigurableElement {
      * Builder to build {@link UndertowSslContext}. The name attribute refers to ssl-context capability name.
      */
     public static final class Builder extends AbstractConfigurableElement.Builder<Builder> {
+        private String httpsListener = "https";
 
         private Builder() {
+        }
+
+        public Builder withHttpsListener(String httpsListener) {
+            this.httpsListener = httpsListener;
+            return this;
         }
 
         public UndertowSslContext build() {

@@ -153,7 +153,7 @@ public class WebTestsSecurityDomainSetup extends AbstractSecurityDomainSetup {
                 cli.close();
                 ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException("Cleaning up for Elytron based security domain failed.", e);
             }
         } else {
             super.tearDown(managementClient, containerId);

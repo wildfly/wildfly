@@ -67,7 +67,7 @@ public class BasicAuthnTestCase {
      * Tests access without authentication.
      */
     @Test
-    public void testUnrpotectedAccess(@ArquillianResource URL url) throws Exception {
+    public void testUnprotectedAccess(@ArquillianResource URL url) throws Exception {
         assertEquals("Response body is not correct.", SimpleServlet.RESPONSE_BODY,
                 Utils.makeCall(url.toURI(), SC_OK));
         assertEquals("Response body is not correct.", SimpleServlet.RESPONSE_BODY,

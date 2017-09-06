@@ -120,6 +120,50 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
+            <!-- Use keytool plugin to create server keystore for testing -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>keytool-maven-plugin</artifactId>
+                <version>1.5</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>keytool-api-1.7</artifactId>
+                        <version>1.5</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <phase>process-test-resources</phase>
+                        <id>clean-server-keystore</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <configuration>
+                            <keystore>${basedir}/target/tests-keystores/application.keystore</keystore>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <phase>process-test-resources</phase>
+                        <id>gen-server-keystore</id>
+                        <goals>
+                            <goal>generateKeyPair</goal>
+                        </goals>
+                        <configuration>
+                            <keystore>${basedir}/target/shared-keystores/application.keystore</keystore>
+                            <dname>cn=server, ou=organizationUnit, o=organizationName, c=countryCode</dname>
+                            <storetype>JKS</storetype>
+                            <keypass>password</keypass>
+                            <storepass>password</storepass>
+                            <alias>server</alias>
+                            <keyalg>RSA</keyalg>
+                            <keysize>2048</keysize>
+                            <validity>365</validity>
+                            <verbose>true</verbose>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

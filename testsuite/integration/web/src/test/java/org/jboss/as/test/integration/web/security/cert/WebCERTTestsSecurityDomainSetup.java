@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.web.security;
+package org.jboss.as.test.integration.web.security.cert;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
@@ -71,7 +71,6 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
 
     private static final Logger log = Logger.getLogger(WebCERTTestsSecurityDomainSetup.class);
     private static final String APP_SECURITY_DOMAIN = "cert-test";
-    private static final String JSSE_SECURITY_DOMAIN = "cert";
 
     protected static void applyUpdates(final ModelControllerClient client, final List<ModelNode> updates) {
         for (ModelNode update : updates) {
@@ -83,7 +82,8 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
         }
     }
 
-    protected static void applyUpdate(final ModelControllerClient client, ModelNode update, boolean allowFailure) throws Exception {
+    protected static void applyUpdate(final ModelControllerClient client, ModelNode update, boolean allowFailure)
+            throws Exception {
         ModelNode result = client.execute(new OperationBuilder(update).build());
         if (result.hasDefined("outcome") && (allowFailure || "success".equals(result.get("outcome").asString()))) {
             if (result.hasDefined("result") && log.isTraceEnabled()) {
@@ -102,24 +102,16 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
             super.setup(managementClient, containerId);
             log.debug("start of the domain creation");
 
-            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-            URL keystore = tccl.getResource("security/jsse.keystore");
-            URL roles = getClass().getResource("cert/roles.properties");
+            URL roles = getClass().getResource("roles.properties");
 
             final List<ModelNode> updates = new ArrayList<ModelNode>();
-
-            final ModelNode compositeOp = new ModelNode();
-            compositeOp.get(OP).set(COMPOSITE);
-            compositeOp.get(OP_ADDR).setEmptyList();
-
-            final ModelNode domainSteps = compositeOp.get(STEPS);
             PathAddress address = PathAddress.pathAddress()
                     .append(SUBSYSTEM, "security")
                     .append(SECURITY_DOMAIN, APP_SECURITY_DOMAIN);
 
-            domainSteps.add(Util.createAddOperation(address));
+            updates.add(Util.createAddOperation(address));
             address = address.append(Constants.AUTHENTICATION, Constants.CLASSIC);
-            domainSteps.add(Util.createAddOperation(address));
+            updates.add(Util.createAddOperation(address));
 
             ModelNode loginModule = Util.createAddOperation(address.append(LOGIN_MODULE, "CertificateRoles"));
             loginModule.get(CODE).set("CertificateRoles");
@@ -127,25 +119,27 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
             ModelNode moduleOptions = loginModule.get(MODULE_OPTIONS);
             moduleOptions.add("securityDomain", APP_SECURITY_DOMAIN);
             moduleOptions.add("rolesProperties", roles.getPath());
-            //loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            domainSteps.add(loginModule);
+            loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+
+            updates.add(loginModule);
 
             // Add the JSSE security domain.
-            address = PathAddress.pathAddress().append(SUBSYSTEM, "security").append(SECURITY_DOMAIN, APP_SECURITY_DOMAIN);
+            address = PathAddress.pathAddress().append(SUBSYSTEM, "security").append(SECURITY_DOMAIN,
+                    APP_SECURITY_DOMAIN);
             ModelNode op = Util.createAddOperation(address.append(JSSE, Constants.CLASSIC));
-            op.get(TRUSTSTORE, PASSWORD).set("changeit");
-            op.get(TRUSTSTORE, URL).set(keystore.getPath());
-            //op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            domainSteps.add(op);
+            op.get(TRUSTSTORE, PASSWORD).set(WebCERTTestsSetup.getPassword());
+            op.get(TRUSTSTORE, URL).set(WebCERTTestsSetup.getServerTruststoreFile().getAbsolutePath());
+            op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            updates.add(op);
 
-            updates.add(compositeOp);
             // Add the HTTPS socket binding.
             op = new ModelNode();
             op.get(OP).set(ADD);
             op.get(OP_ADDR).add("socket-binding-group", "standard-sockets");
             op.get(OP_ADDR).add("socket-binding", "https-test");
             op.get("interface").set("public");
-            op.get("port").set(8380);
+            op.get("port").set(WebCERTTestsSetup.HTTPS_PORT);
+            op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             updates.add(op);
 
             // Add the HTTPS connector.
@@ -158,14 +152,11 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
             op.get(OP_ADDR).add("https-listener", "testConnector");
             op.get("socket-binding").set("https-test");
             op.get("enabled").set(true);
-            /*
-             * op.get("protocol").set("HTTP/1.1"); op.get("scheme").set("https");
-             */
-            /* op.get("secure").set(true); */
             op.get("security-realm").set("ssl-cert-realm");
             op.get("verify-client").set("REQUIRED");
             steps.add(op);
 
+            composite.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             updates.add(composite);
 
             applyUpdates(managementClient.getControllerClient(), updates);
@@ -173,9 +164,8 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
             log.debug("end of the domain creation");
 
             ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
-
         } catch (Exception e) {
-            log.error("Failed to setup domain creation.",e);
+            log.error("Failed to setup domain creation.", e);
         }
     }
 
@@ -222,17 +212,14 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
 
     @Override
     protected SecurityRealm[] getSecurityRealms() throws Exception {
-        URL keystoreResource = Thread.currentThread().getContextClassLoader().getResource("security/server.keystore");
-        URL truststoreResource = Thread.currentThread().getContextClassLoader().getResource("security/jsse.keystore");
-
         RealmKeystore keystore = new RealmKeystore.Builder()
-                .keystorePassword("changeit")
-                .keystorePath(keystoreResource.getPath())
+                .keystorePassword(WebCERTTestsSetup.getPassword())
+                .keystorePath(WebCERTTestsSetup.getServerKeystoreFile().getAbsolutePath())
                 .build();
 
         RealmKeystore truststore = new RealmKeystore.Builder()
-                .keystorePassword("changeit")
-                .keystorePath(truststoreResource.getPath())
+                .keystorePassword(WebCERTTestsSetup.getPassword())
+                .keystorePath(WebCERTTestsSetup.getServerTruststoreFile().getAbsolutePath())
                 .build();
         return new SecurityRealm[]{new SecurityRealm.Builder()
                 .name("ssl-cert-realm")

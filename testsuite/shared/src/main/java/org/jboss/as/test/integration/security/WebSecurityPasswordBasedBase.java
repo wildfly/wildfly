@@ -52,7 +52,7 @@ public abstract class WebSecurityPasswordBasedBase {
      * @throws Exception
      */
     @Test
-    public void testPasswordBasedUnsuccessfulAuthz() throws Exception {
+    public void testPasswordBasedUnsuccessfulAuth() throws Exception {
         makeCall("marcus", "marcus", 403);
     }
 

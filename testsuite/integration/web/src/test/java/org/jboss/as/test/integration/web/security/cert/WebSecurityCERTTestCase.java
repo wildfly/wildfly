@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.web.security.cert;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URL;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
@@ -42,6 +43,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -50,7 +52,6 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
-import org.jboss.as.test.integration.web.security.WebCERTTestsSecurityDomainSetup;
 import org.jboss.security.JBossJSSESecurityDomain;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -65,7 +66,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(WebCERTTestsSecurityDomainSetup.class)
+@ServerSetup(WebCERTTestsSetup.class)
 @Category(CommonCriteria.class)
 public class WebSecurityCERTTestCase {
 
@@ -74,14 +75,11 @@ public class WebSecurityCERTTestCase {
 
     @Deployment
     public static WebArchive deployment() {
-
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure-client-cert.war");
         war.addClass(SecuredServlet.class);
 
         war.addAsWebInfResource(WebSecurityCERTTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         war.addAsWebInfResource(WebSecurityCERTTestCase.class.getPackage(), "web.xml", "web.xml");
-
-        war.addAsResource(WebSecurityCERTTestCase.class.getPackage(), "roles.properties", "roles.properties");
 
         return war;
     }
@@ -90,9 +88,8 @@ public class WebSecurityCERTTestCase {
         try {
             SSLContext ctx = SSLContext.getInstance("TLS");
             JBossJSSESecurityDomain jsseSecurityDomain = new JBossJSSESecurityDomain("client-cert");
-            jsseSecurityDomain.setKeyStorePassword("changeit");
-            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-            URL keystore = tccl.getResource("security/client.keystore");
+            jsseSecurityDomain.setKeyStorePassword(WebCERTTestsSetup.getPassword());
+            URL keystore = WebCERTTestsSetup.getClientKeystoreFile().toURI().toURL();
             jsseSecurityDomain.setKeyStoreURL(keystore.getPath());
             jsseSecurityDomain.setClientAlias(alias);
             jsseSecurityDomain.reloadKeyAndTrustStore();
@@ -100,48 +97,42 @@ public class WebSecurityCERTTestCase {
             TrustManager[] trustManagers = jsseSecurityDomain.getTrustManagers();
             ctx.init(keyManagers, trustManagers, null);
             HostnameVerifier verifier = (string, ssls) -> true;
-            SSLConnectionSocketFactory ssf = new SSLConnectionSocketFactory(ctx, verifier);//SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+            SSLConnectionSocketFactory ssf = new SSLConnectionSocketFactory(ctx, verifier);
             Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
                     .register("https", ssf)
                     .build();
 
             HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
 
-            /*SchemeRegistry sr = ccm.getSchemeRegistry();
-            sr.register(new Scheme("https", 8380, ssf));
-            return new DefaultHttpClient(ccm, base.getParams());*/
-
-
             return HttpClientBuilder.create()
                     .setSSLSocketFactory(ssf)
                     .setSSLHostnameVerifier(new NoopHostnameVerifier())
                     .setConnectionManager(ccm)
                     .build();
-
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
+        } catch (Exception e) {
+            throw new RuntimeException("Creating of HTTPS client instance has failed.", e);
         }
     }
 
     @Test
     public void testClientCertSuccessfulAuth() throws Exception {
-        makeCall("test", 200);
+        makeCall("test client", 200);
     }
 
     @Test
     public void testClientCertUnsuccessfulAuth() throws Exception {
-        makeCall("test2", 403);
+        makeCall("test client 2", 403);
     }
 
     protected void makeCall(String alias, int expectedStatusCode) throws Exception {
         try (CloseableHttpClient httpclient = getHttpsClient(alias)) {
-            HttpGet httpget = new HttpGet("https://" + mgmtClient.getMgmtAddress() + ":8380/web-secure-client-cert/secured/");
+            HttpGet httpget = new HttpGet("https://" + mgmtClient.getMgmtAddress() + ":" +
+                    WebCERTTestsSetup.HTTPS_PORT + "/web-secure-client-cert/secured/");
             HttpResponse response = httpclient.execute(httpget);
 
             StatusLine statusLine = response.getStatusLine();
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
+            EntityUtils.consume(response.getEntity());
         }
     }
 }

@@ -72,7 +72,7 @@ public class WebSecurityJBossWebXmlSecurityRolesTestCase extends AbstractWebSecu
      */
     @Override
     @Test
-    public void testPasswordBasedUnsuccessfulAuthz() throws Exception {
+    public void testPasswordBasedUnsuccessfulAuth() throws Exception {
         makeCall("marcus", "marcus", 200);
     }
 
