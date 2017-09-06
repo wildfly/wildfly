@@ -27,7 +27,6 @@ import java.util.Locale;
 
 import org.jboss.as.connector.deployers.Util;
 import org.jboss.as.connector.logging.ConnectorLogger;
-import org.jboss.as.connector.metadata.ironjacamar.IronJacamarParser;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -36,6 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.metadata.ironjacamar.IronJacamarParser;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 

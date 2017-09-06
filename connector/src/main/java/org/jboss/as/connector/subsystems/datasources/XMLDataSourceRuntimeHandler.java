@@ -174,6 +174,8 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
             if (dataSource.getSecurity() == null) {
                 return;
             }
+            // this is a safe assert because DsXmlParser will always create a wildfly DsSecurity metadata
+            assert dataSource.getSecurity() instanceof DsSecurity;
             if (((DsSecurity) dataSource.getSecurity()).isElytronEnabled()) {
                 return;
             }
@@ -182,6 +184,8 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
             if (dataSource.getSecurity() == null) {
                 return;
             }
+            // this is a safe assert because DsXmlParser will always create a wildfly DsSecurity metadata
+            assert dataSource.getSecurity() instanceof DsSecurity;
             if (!((DsSecurity) dataSource.getSecurity()).isElytronEnabled()) {
                 return;
             }
@@ -190,6 +194,8 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
             if (dataSource.getSecurity() == null) {
                 return;
             }
+            // this is a safe assert because DsXmlParser will always create a wildfly DsSecurity metadata
+            assert dataSource.getSecurity() instanceof DsSecurity;
             if (!((DsSecurity) dataSource.getSecurity()).isElytronEnabled()) {
                 return;
             }
