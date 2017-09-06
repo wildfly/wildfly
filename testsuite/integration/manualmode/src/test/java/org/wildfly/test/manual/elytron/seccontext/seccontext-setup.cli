@@ -16,17 +16,26 @@
 /subsystem=elytron/token-realm=JWT:add(jwt={}, principal-claim=aud)
 /subsystem=elytron/constant-realm-mapper=JWT:add(realm-name=JWT)
 
+/subsystem=elytron/simple-permission-mapper=seccontext-server-permissions:add( \
+    permission-mappings=[{principals=[server], permissions=[ \
+      {class-name=org.wildfly.security.auth.permission.LoginPermission}, \
+      {class-name=org.wildfly.security.auth.permission.RunAsPrincipalPermission, target-name="*"} \
+    ]}])
+/subsystem=elytron/logical-permission-mapper=seccontext-allpermissions:add( \
+    logical-operation=or, left=default-permission-mapper, right=seccontext-server-permissions)
+
 /subsystem=elytron/security-domain=SeccontextDomain:add(realms=[ \
     {realm=SeccontextRealm, role-decoder=groups-to-roles}, \
     {realm=JWT, role-decoder=groups-to-roles} ], \
     default-realm=SeccontextRealm, \
-    permission-mapper=default-permission-mapper)
+    permission-mapper=seccontext-allpermissions)
 
 /subsystem=elytron/sasl-authentication-factory=seccontext-sasl-authn-factory:add( \
     sasl-server-factory=elytron, \
     security-domain=SeccontextDomain, \
     mechanism-configurations=[ \
         {mechanism-name=PLAIN}, \
+        {mechanism-name=DIGEST-MD5}, \
         {mechanism-name=OAUTHBEARER, realm-mapper=JWT}])
 /socket-binding-group=standard-sockets/socket-binding=seccontext-remoting-socket:add(port=16444)
 /subsystem=remoting/connector=seccontext-connector:add(socket-binding=seccontext-remoting-socket, \
@@ -37,7 +46,11 @@
 
 /subsystem=elytron/http-authentication-factory=seccontext:add(security-domain=SeccontextDomain, \ 
     http-server-mechanism-factory=global, \
-    mechanism-configurations=[{mechanism-name=BASIC}])
+    mechanism-configurations=[ \
+        {mechanism-name=BASIC}, \
+        {mechanism-name=FORM}, \
+        {mechanism-name=BEARER_TOKEN, mechanism-realm-configurations=[{realm-mapper=JWT, realm-name=JWT-protected}]} \
+    ])
 
 /subsystem=undertow/application-security-domain=seccontext-web:add(http-authentication-factory=seccontext)
 /subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, \
