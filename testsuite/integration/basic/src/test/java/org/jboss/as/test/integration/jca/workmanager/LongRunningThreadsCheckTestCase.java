@@ -47,6 +47,7 @@ import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.jca.rar.MultipleResourceAdapter3;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -57,6 +58,8 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.lang.reflect.ReflectPermission;
 
 /**
  * JBQA-6454 Test case: long running threads pool and short running threads pool
@@ -170,6 +173,10 @@ public class LongRunningThreadsCheckTestCase extends JcaMgmtBase {
 
         EnterpriseArchive ea = ShrinkWrap.create(EnterpriseArchive.class, "wm.ear");
         ea.addAsLibrary(ja).addAsModule(ra1).addAsModule(ra2);
+        ea.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                new RuntimePermission("accessDeclaredMembers"),
+                new ReflectPermission("suppressAccessChecks")
+        ), "permissions.xml");
 
         return ea;
     }
