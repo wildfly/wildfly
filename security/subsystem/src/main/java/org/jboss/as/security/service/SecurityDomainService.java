@@ -67,6 +67,7 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
     private volatile SecurityDomainContext securityDomainContext;
 
     private final String cacheType;
+    private InjectedValue<org.infinispan.configuration.cache.Configuration> cacheConfigurationValue = new InjectedValue<>();
 
     public SecurityDomainService(String name, ApplicationPolicy applicationPolicy, JSSESecurityDomain jsseSecurityDomain,
             String cacheType) {
@@ -88,7 +89,7 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
         final JNDIBasedSecurityManagement securityManagement = (JNDIBasedSecurityManagement) securityManagementValue.getValue();
         AuthenticationCacheFactory cacheFactory = null;
         if ("infinispan".equals(cacheType)) {
-            cacheFactory = new InfinispanAuthenticationCacheFactory(cacheManagerValue.getValue(), name);
+            cacheFactory = new InfinispanAuthenticationCacheFactory(cacheManagerValue.getValue(), name, cacheConfigurationValue.getValue());
         } else if ("default".equals(cacheType)) {
             cacheFactory = new DefaultAuthenticationCacheFactory();
         }
@@ -154,4 +155,7 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
         return cacheManagerValue;
     }
 
+    public Injector<org.infinispan.configuration.cache.Configuration> getCacheConfigurationInjector() {
+        return cacheConfigurationValue;
+    }
 }

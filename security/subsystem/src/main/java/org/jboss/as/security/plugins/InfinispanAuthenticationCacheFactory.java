@@ -22,6 +22,7 @@
 
 package org.jboss.as.security.plugins;
 
+import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
 
@@ -37,15 +38,17 @@ public class InfinispanAuthenticationCacheFactory implements AuthenticationCache
 
     private final EmbeddedCacheManager cacheManager;
     private final String securityDomain;
+    private final Configuration cacheConfiguration;
 
     /**
-     *
-     * @param cacheManager
+     *  @param cacheManager
      * @param securityDomain
+     * @param cacheConfiguration
      */
-    public InfinispanAuthenticationCacheFactory(Object cacheManager, String securityDomain) {
+    public InfinispanAuthenticationCacheFactory(Object cacheManager, String securityDomain, Configuration cacheConfiguration) {
         this.cacheManager = (EmbeddedCacheManager) cacheManager;
         this.securityDomain = securityDomain;
+        this.cacheConfiguration = cacheConfiguration;
     }
 
     /**
@@ -55,7 +58,7 @@ public class InfinispanAuthenticationCacheFactory implements AuthenticationCache
      */
     public ConcurrentMap<Principal, DomainInfo> getCache() {
         // TODO override global settings with security domain specific
-        cacheManager.defineConfiguration(securityDomain, cacheManager.getDefaultCacheConfiguration());
+        cacheManager.defineConfiguration(securityDomain, cacheConfiguration);
         return cacheManager.getCache(securityDomain);
     }
 }
