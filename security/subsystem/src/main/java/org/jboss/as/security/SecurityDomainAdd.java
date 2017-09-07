@@ -189,10 +189,12 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             if (!context.hasOptionalCapability(defaultCacheRequirementName, capabilityName, cacheTypeAttributeName) && context.hasOptionalCapability(legacyCacheRequirementName, capabilityName, cacheTypeAttributeName)) {
                 SecurityLogger.ROOT_LOGGER.defaultCacheRequirementMissing(CACHE_CONTAINER_NAME, LEGACY_CACHE_NAME);
                 context.requireOptionalCapability(legacyCacheRequirementName, capabilityName, cacheTypeAttributeName);
-                builder.addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(context, CACHE_CONTAINER_NAME, LEGACY_CACHE_NAME));
+                builder.addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(context, CACHE_CONTAINER_NAME, LEGACY_CACHE_NAME),
+                        org.infinispan.configuration.cache.Configuration.class, securityDomainService.getCacheConfigurationInjector());
             } else {
                 context.requireOptionalCapability(defaultCacheRequirementName, capabilityName, cacheTypeAttributeName);
-                builder.addDependency(InfinispanDefaultCacheRequirement.CONFIGURATION.getServiceName(context, CACHE_CONTAINER_NAME));
+                builder.addDependency(InfinispanDefaultCacheRequirement.CONFIGURATION.getServiceName(context, CACHE_CONTAINER_NAME),
+                        org.infinispan.configuration.cache.Configuration.class, securityDomainService.getCacheConfigurationInjector());
             }
         }
 
