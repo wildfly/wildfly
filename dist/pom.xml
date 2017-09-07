@@ -64,7 +64,7 @@
     </properties>
 
     <build>
-        <finalName>${server.output.dir.prefix}-${project.version}</finalName>
+        <finalName>${server.output.dir.prefix}-${jboss.as.release.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.wildfly.build</groupId>
@@ -94,7 +94,7 @@
                         <phase>process-classes</phase>
                         <configuration>
                             <overwrite>true</overwrite>
-                            <outputDirectory>${basedir}/target/${server.output.dir.prefix}-${project.version}</outputDirectory>
+                            <outputDirectory>${basedir}/target/${project.build.finalName}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>src/distribution/resources</directory>
@@ -155,7 +155,7 @@
                                         <descriptor>assembly.xml</descriptor>
                                     </descriptors>
                                     <recompressZippedFiles>true</recompressZippedFiles>
-                                    <finalName>${server.output.dir.prefix}-${project.version}</finalName>
+                                    <finalName>${project.build.finalName}</finalName>
                                     <appendAssemblyId>false</appendAssemblyId>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                     <workDirectory>${project.build.directory}/assembly/work</workDirectory>
@@ -172,7 +172,7 @@
                                     <descriptors>
                                         <descriptor>assembly-src.xml</descriptor>
                                     </descriptors>
-                                    <finalName>${server.output.dir.prefix}-${project.version}</finalName>
+                                    <finalName>${project.build.finalName}</finalName>
                                     <appendAssemblyId>true</appendAssemblyId>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                     <workDirectory>${project.build.directory}/assembly-src/work</workDirectory>

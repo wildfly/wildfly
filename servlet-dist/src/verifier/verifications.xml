@@ -28,35 +28,35 @@ limitations under the License.
 -->
   <files>
     <file>
-      <location>target/${server.output.dir.prefix}-servlet-${project.version}/bin/product.conf</location>
+      <location>target/${server.output.dir.prefix}-servlet-${jboss.as.release.version}/bin/product.conf</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-servlet-${project.version}/bin/product.conf</location>
+      <location>target/${server.output.dir.prefix}-servlet-${jboss.as.release.version}/bin/product.conf</location>
       <contains>slot=${verifier.slot.name}</contains>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-servlet-${project.version}/modules/system/layers/base/org/jboss/as/product/${verifier.slot.name}/dir/META-INF/MANIFEST.MF</location>
+      <location>target/${server.output.dir.prefix}-servlet-${jboss.as.release.version}/modules/system/layers/base/org/jboss/as/product/${verifier.slot.name}/dir/META-INF/MANIFEST.MF</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-servlet-${project.version}/modules/system/layers/base/org/jboss/as/product/${verifier.slot.name}/dir/META-INF/MANIFEST.MF</location>
+      <location>target/${server.output.dir.prefix}-servlet-${jboss.as.release.version}/modules/system/layers/base/org/jboss/as/product/${verifier.slot.name}/dir/META-INF/MANIFEST.MF</location>
       <contains>JBoss-Product-Release-Name: ${verifier.product.release.name}</contains>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-servlet-${project.version}/modules/system/layers/base/org/jboss/as/product/${verifier.slot.name}/dir/META-INF/MANIFEST.MF</location>
+      <location>target/${server.output.dir.prefix}-servlet-${jboss.as.release.version}/modules/system/layers/base/org/jboss/as/product/${verifier.slot.name}/dir/META-INF/MANIFEST.MF</location>
       <contains>JBoss-Product-Release-Version: ${verifier.product.release.version}</contains>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-servlet-${project.version}/jboss-modules.jar</location>
+      <location>target/${server.output.dir.prefix}-servlet-${jboss.as.release.version}/jboss-modules.jar</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-servlet-${project.version}/standalone/configuration/standalone.xml</location>
+      <location>target/${server.output.dir.prefix}-servlet-${jboss.as.release.version}/standalone/configuration/standalone.xml</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-servlet-${project.version}/modules/system/layers/base/org/jboss/as/server/main/wildfly-server-${version.org.wildfly.core}.jar</location>
+      <location>target/${server.output.dir.prefix}-servlet-${jboss.as.release.version}/modules/system/layers/base/org/jboss/as/server/main/wildfly-server-${version.org.wildfly.core}.jar</location>
       <exists>true</exists>
     </file>
   </files>
