@@ -14,7 +14,7 @@
                 <link rel="stylesheet" type="text/css" href="licenses.css"/>
             </head>
             <body>
-                <h2>WildFly <xsl:value-of select="substring-before($version, '-')"/> - Feature Pack</h2>
+                <h2>Red Hat JBoss Enterprise Application Platform <xsl:value-of select="substring-before($version, '-')"/></h2>
                 <p>The following material has been provided for informational purposes only, and should not be relied upon or construed as a legal opinion or legal advice.</p>
                 <!-- Read matching templates -->
                 <table>
@@ -27,6 +27,9 @@
                     </tr>
                     <xsl:for-each select="licenseSummary/dependencies/dependency">
                         <xsl:sort select="concat(groupId, '.', artifactId)"/>
+                        <xsl:variable name="GAV" select="concat(groupId, ':', artifactId, ':', version)"/>
+                        <xsl:variable name="countOfPrevious" select="count(preceding-sibling::*[(concat(groupId, ':', artifactId, ':', version) = $GAV)])"/>
+                        <xsl:if test="$countOfPrevious = 0">
                         <tr>
                             <td><xsl:value-of select="groupId"/></td>
                             <td><xsl:value-of select="artifactId"/></td>
@@ -54,6 +57,7 @@
                                 </xsl:for-each>
                             </td>
                         </tr>
+                        </xsl:if>
                     </xsl:for-each>
                 </table>
             </body>

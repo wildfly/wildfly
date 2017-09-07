@@ -184,6 +184,102 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>generate-licenses-html</id>
+            <activation>
+                <property>
+                    <name>!skip-generate-licenses-html</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.7</version>
+                        <executions>
+                            <execution>
+                                <phase>prepare-package</phase>
+                                <configuration>
+                                    <tasks>
+                                        <fileset id="licenses.xml.list" dir="${basedir}/target/${server.output.dir.prefix}-${jboss.as.release.version}/docs/licenses" includes="*licenses.xml"/>
+                                        <!--
+                                        <property name="prop.licenses.xml.list" refid="licenses.xml.list"/>
+                                        <echo>List of licenses.xml in ${basedir}/target/${server.output.dir.prefix}-${jboss.as.release.version}/docs/licenses</echo>
+                                        <echo>${prop.licenses.xml.list}</echo>
+                                        -->
+                                        <pathconvert pathsep="&#xA;" property="license-files-list-items" refid="licenses.xml.list">
+                                            <chainedmapper>
+                                                <mapper type="flatten"/>
+                                                <globmapper from="*" to="&lt;item&gt;*"/>
+                                                <globmapper from="*" to="*&lt;/item&gt;"/>
+                                            </chainedmapper>
+                                        </pathconvert>
+                                        <echo file="${basedir}/target/${server.output.dir.prefix}-${jboss.as.release.version}/docs/licenses/licenses.xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;&#xA;&lt;list&gt;&#xA;</echo>
+                                        <echo file="${basedir}/target/${server.output.dir.prefix}-${jboss.as.release.version}/docs/licenses/licenses.xml" append="true">${license-files-list-items}&#xA;</echo>
+                                        <echo file="${basedir}/target/${server.output.dir.prefix}-${jboss.as.release.version}/docs/licenses/licenses.xml" append="true">&lt;/list&gt;</echo>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>xml-maven-plugin</artifactId>
+                        <version>1.0.1</version>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>generate-licenses-html</id>
+                                <goals>
+                                    <goal>transform</goal>
+                                </goals>
+                                <phase>prepare-package</phase>
+                                <configuration>
+                                    <transformationSets>
+                                        <transformationSet>
+                                            <dir>${basedir}/target/${server.output.dir.prefix}-${jboss.as.release.version}/docs/licenses</dir>
+                                            <includes>
+                                                <include>licenses.xml</include>
+                                            </includes>
+                                            <stylesheet>${basedir}/target/${server.output.dir.prefix}-${jboss.as.release.version}/docs/licenses/licenses-merged.xsl</stylesheet>
+                                            <outputDir>${basedir}/target/${server.output.dir.prefix}-${jboss.as.release.version}/docs/licenses</outputDir>
+                                            <fileMappers>
+                                                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                                                    <targetExtension>.xml</targetExtension>
+                                                </fileMapper>
+                                            </fileMappers>
+                                        </transformationSet>
+                                        <transformationSet>
+                                            <dir>${basedir}/target/${server.output.dir.prefix}-${jboss.as.release.version}/docs/licenses</dir>
+                                            <includes>
+                                                <include>licenses.xml</include>
+                                            </includes>
+                                            <stylesheet>${basedir}/target/${server.output.dir.prefix}-${jboss.as.release.version}/docs/licenses/licenses.xsl</stylesheet>
+                                            <outputDir>${basedir}/target/${server.output.dir.prefix}-${jboss.as.release.version}/docs/licenses</outputDir>
+                                            <fileMappers>
+                                                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                                                    <targetExtension>.html</targetExtension>
+                                                </fileMapper>
+                                            </fileMappers>
+                                            <parameters>
+                                                <parameter>
+                                                    <name>version</name>
+                                                    <value>${project.version}</value>
+                                                </parameter>
+                                            </parameters>
+                                        </transformationSet>
+                                    </transformationSets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>
