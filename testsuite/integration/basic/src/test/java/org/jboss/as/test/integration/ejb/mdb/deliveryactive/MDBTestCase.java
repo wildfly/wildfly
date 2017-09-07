@@ -35,6 +35,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.FilePermission;
 import java.io.IOException;
 import java.util.PropertyPermission;
 
@@ -126,7 +127,8 @@ public class MDBTestCase {
         ejbJar.addAsManifestResource(createPermissionsXmlAsset(
                 new PropertyPermission("ts.timeout.factor", "read"),
                 new RemotingPermission("createEndpoint"),
-                new RemotingPermission("connect")
+                new RemotingPermission("connect"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
         ), "permissions.xml");
         return ejbJar;
     }

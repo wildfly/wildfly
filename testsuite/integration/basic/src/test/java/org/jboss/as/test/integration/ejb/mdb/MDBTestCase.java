@@ -48,6 +48,8 @@ import org.junit.runner.RunWith;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.io.FilePermission;
+
 /**
  * Tests MDB deployments
  *
@@ -113,7 +115,8 @@ public class MDBTestCase {
         ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.jboss.remoting3\n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(createPermissionsXmlAsset(
                 new RemotingPermission("createEndpoint"),
-                new RemotingPermission("connect")
+                new RemotingPermission("connect"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
         ), "permissions.xml");
 
         return ejbJar;
