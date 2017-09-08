@@ -72,6 +72,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.jca.common.api.metadata.Defaults;
+import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.jca.common.api.metadata.ds.DsXaPool;
@@ -169,8 +170,10 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             final String dsName = xads.getJndiName();
                             final PathAddress addr = getDataSourceAddress(dsName, deploymentUnit, true);
                             installManagementModel(xads, deploymentUnit, addr);
+                            final Credential credential = xads.getRecovery() == null? null: xads.getRecovery().getCredential();
                             // TODO why have we been ignoring a configured legacy security domain but no legacy security present?
-                            boolean useLegacySecurity = legacySecurityPresent && isLegacySecurityRequired(xads.getSecurity());
+                            boolean useLegacySecurity = legacySecurityPresent && (isLegacySecurityRequired(xads.getSecurity())
+                                                        || isLegacySecurityRequired(credential));
                             startDataSource(xds, jndiName, xads.getDriver(), serviceTarget,
                                     getRegistration(true, deploymentUnit), getResource(dsName, true, deploymentUnit), dsName, useLegacySecurity, true);
 
@@ -441,10 +444,10 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
         }
     }
 
-    private static boolean isLegacySecurityRequired(org.jboss.jca.common.api.metadata.ds.DsSecurity config) {
-        boolean result = config instanceof SecurityMetadata && !((SecurityMetadata) config).isElytronEnabled();
+    private static boolean isLegacySecurityRequired(org.jboss.jca.common.api.metadata.common.SecurityMetadata config) {
+        boolean result = config != null && config instanceof SecurityMetadata && !((SecurityMetadata) config).isElytronEnabled();
         if (result) {
-            String domain = config.getSecurityDomain();
+            String domain = config.resolveSecurityDomain();
             result = domain != null && domain.trim().length() > 0;
         }
         return result;
