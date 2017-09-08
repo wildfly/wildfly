@@ -62,6 +62,7 @@
         <module name="org.picketbox"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.clustering.infinispan.spi" optional="true"/>
+        <module name="org.wildfly.clustering.service" optional="true"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="sun.jdk"/>
     </dependencies>
