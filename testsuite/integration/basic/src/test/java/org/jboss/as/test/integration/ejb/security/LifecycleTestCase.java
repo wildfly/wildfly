@@ -41,7 +41,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -149,26 +148,6 @@ public class LifecycleTestCase  {
                 log.trace(current + " = " + result.get(current));
             }
             verifyResult(result, BaseBean.DEPENDENCY_INJECTION, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE,
-                    failureMessages);
-            return null;
-        };
-        Util.switchIdentity("user1", "password1", callable);
-
-        if (failureMessages.length() > 0) {
-            fail(failureMessages.toString());
-        }
-    }
-
-    @Test
-    @Ignore("Not compatible with pooling")
-    public void testStatelessBeanLifecyleCallback() throws Exception {
-        StringBuilder failureMessages = new StringBuilder();
-        final Callable<Void> callable = () -> {
-            Map<String, String> result = entryBean.testStatlessBean();
-            for (String current : result.keySet()) {
-                log.trace(current + " = " + result.get(current));
-            }
-            verifyResult(result, BaseBean.LIFECYCLE_CALLBACK, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE,
                     failureMessages);
             return null;
         };

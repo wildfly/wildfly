@@ -35,7 +35,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.junit.Ignore;
 import org.wildfly.test.api.Authentication;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
@@ -108,36 +107,6 @@ public class EjbRemoveUnitTestCase {
         jar.addAsManifestResource(EjbRemoveUnitTestCase.class.getPackage(), "jboss-all.xml", "jboss-all.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment.single.jar, org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         return jar;
-    }
-
-    /**
-     * In this test, pooling is disabled so call to the CountedSession bean should create a new instance,
-     * (ejbCreate()) use it but then throw it away (ejbRemove()) rather than putting it back to the pool.
-     *
-     * For deactivation of the pooling we need to remove whole reference to pool in
-     *    <session-bean>
-     *      <stateless>
-     *       <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
-     *      </stateless>
-     *      ...
-     * the CountedSessionBean1 is not referenced to any specific pool and as a default behaviour the been won't be pooled.
-     */
-    @Test
-    @Ignore("Pooling is on by default")
-    @OperateOnDeployment("beans")
-    public void testEjbRemoveCalledForEveryCall() throws Exception {
-
-        CountedSessionHome countedHome = (CountedSessionHome) ctx.lookup("java:module/CountedSession1!"
-                + CountedSessionHome.class.getName());
-
-        CountedSession counted = countedHome.create();
-        counted.doSomething(1);
-        Assert.assertEquals("createCounter", 1, CounterSingleton.createCounter1.get());
-        Assert.assertEquals("removeCounter", 1, CounterSingleton.removeCounter1.get());
-
-        counted.remove();
-        Assert.assertEquals("createCounter", 2, CounterSingleton.createCounter1.get());
-        Assert.assertEquals("removeCounter", 2, CounterSingleton.removeCounter1.get());
     }
 
     /**
