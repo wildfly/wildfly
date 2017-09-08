@@ -23,6 +23,7 @@
 package org.jboss.as.security.api;
 
 import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -74,7 +75,7 @@ public class ConnectionSecurityContext {
                 final Principal principal = localIdentity.getPrincipal();
                 final String realm = principal instanceof RealmPrincipal ? ((RealmPrincipal) principal).getRealm() : null;
                 principals.add(new RealmUser(realm, principal.getName()));
-                StreamSupport.stream(localIdentity.getRoles().spliterator(), true).forEach((String role) -> {
+                StreamSupport.stream(localIdentity.getRoles().spliterator(), false).forEach((String role) -> {
                     principals.add(new RealmGroup(role));
                     principals.add(new RealmRole(role));
                 });
@@ -96,7 +97,7 @@ public class ConnectionSecurityContext {
      * Note: This method should be called from within a {@link PrivilegedAction}.
      *
      * @param principal - The alternative {@link Principal} to use in verification before the next EJB is called.
-     * @param credential - The credential to verify with the {@linl Principal}
+     * @param credential - The credential to verify with the {@link Principal}
      * @return A {@link ContextStateCache} that can later be used to pop the identity pushed here and restore internal state to it's previous values.
      * @throws Exception If there is a problem associating the new {@link Principal} and Credential pair.
      */
