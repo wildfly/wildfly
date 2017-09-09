@@ -74,9 +74,10 @@ public class UndertowTransformersTestCase extends AbstractSubsystemBaseTest {
 
     private void doRejectTest(ModelTestControllerVersion controllerVersion, ModelVersion targetVersion) throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, targetVersion)
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, targetVersion)
                 .configureReverseControllerCheck(createAdditionalInitialization(), null)
                 //.skipReverseControllerCheck()
+                .addSingleChildFirstClass(DefaultInitialization.class)
                 .addMavenResourceURL(String.format("%s:wildfly-undertow:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
                 .dontPersistXml();
 
