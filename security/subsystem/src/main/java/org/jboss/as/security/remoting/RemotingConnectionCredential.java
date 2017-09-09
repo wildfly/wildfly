@@ -56,7 +56,7 @@ public final class RemotingConnectionCredential {
         Subject subject = new Subject();
         Set<Principal> principals = subject.getPrincipals();
         principals.add(new RealmUser(securityIdentity.getPrincipal().getName()));
-        StreamSupport.stream(securityIdentity.getRoles().spliterator(), true).forEach((String role) -> {
+        StreamSupport.stream(securityIdentity.getRoles().spliterator(), false).forEach((String role) -> {
             principals.add(new RealmGroup(role));
             principals.add(new RealmRole(role));
         });
