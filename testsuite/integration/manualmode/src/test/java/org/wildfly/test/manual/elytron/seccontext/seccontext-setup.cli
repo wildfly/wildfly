@@ -9,14 +9,17 @@
 
 /core-service=management/security-realm=ApplicationRealm:remove
 
-/subsystem=elytron/filesystem-realm=SeccontextFsRealm:add(path=seccontext-users,relative-to=jboss.server.config.dir)
+/subsystem=elytron/properties-realm=SeccontextRealm:add( \
+    groups-properties={path=seccontext.properties, relative-to=jboss.server.config.dir}, \
+    users-properties={path=seccontext.properties, relative-to=jboss.server.config.dir, \
+    digest-realm-name=SecurityContextTests, plain-text=true})
 /subsystem=elytron/token-realm=JWT:add(jwt={}, principal-claim=aud)
 /subsystem=elytron/constant-realm-mapper=JWT:add(realm-name=JWT)
 
 /subsystem=elytron/security-domain=SeccontextDomain:add(realms=[ \
-    {realm=SeccontextFsRealm, role-decoder=groups-to-roles}, \
+    {realm=SeccontextRealm, role-decoder=groups-to-roles}, \
     {realm=JWT, role-decoder=groups-to-roles} ], \
-    default-realm=SeccontextFsRealm, \
+    default-realm=SeccontextRealm, \
     permission-mapper=default-permission-mapper)
 
 /subsystem=elytron/sasl-authentication-factory=seccontext-sasl-authn-factory:add( \
@@ -39,21 +42,3 @@
 /subsystem=undertow/application-security-domain=seccontext-web:add(http-authentication-factory=seccontext)
 /subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, \
     value=seccontext-sasl-authn-factory)
-
-# add test users
-/subsystem=elytron/filesystem-realm=SeccontextFsRealm:add-identity(identity=servlet)
-/subsystem=elytron/filesystem-realm=SeccontextFsRealm:set-password(identity=servlet, clear={password=servlet})
-/subsystem=elytron/filesystem-realm=SeccontextFsRealm:add-identity-attribute(identity=servlet, name=groups, value=["servlet"])
-
-/subsystem=elytron/filesystem-realm=SeccontextFsRealm:add-identity(identity=entry)
-/subsystem=elytron/filesystem-realm=SeccontextFsRealm:set-password(identity=entry, clear={password=entry})
-/subsystem=elytron/filesystem-realm=SeccontextFsRealm:add-identity-attribute(identity=entry, name=groups, value=["entry"])
-
-/subsystem=elytron/filesystem-realm=SeccontextFsRealm:add-identity(identity=whoami)
-/subsystem=elytron/filesystem-realm=SeccontextFsRealm:set-password(identity=whoami, clear={password=whoami})
-/subsystem=elytron/filesystem-realm=SeccontextFsRealm:add-identity-attribute(identity=whoami, name=groups, value=["whoami"])
-
-/subsystem=elytron/filesystem-realm=SeccontextFsRealm:add-identity(identity=admin)
-/subsystem=elytron/filesystem-realm=SeccontextFsRealm:set-password(identity=admin, clear={password=admin})
-/subsystem=elytron/filesystem-realm=SeccontextFsRealm:add-identity-attribute(identity=admin, name=groups, value=["admin"])
-

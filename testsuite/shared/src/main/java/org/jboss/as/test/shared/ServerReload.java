@@ -89,7 +89,9 @@ public class ServerReload {
         operation.get("admin-only").set(adminOnly);
         try {
             ModelNode result = client.execute(operation);
-            Assert.assertEquals("success", result.get(ClientConstants.OUTCOME).asString());
+            if (!"success".equals(result.get(ClientConstants.OUTCOME).asString())) {
+                fail("Reload operation didn't finished successfully: " + result.asString());
+            }
         } catch(IOException e) {
             final Throwable cause = e.getCause();
             if (!(cause instanceof ExecutionException) && !(cause instanceof CancellationException)) {

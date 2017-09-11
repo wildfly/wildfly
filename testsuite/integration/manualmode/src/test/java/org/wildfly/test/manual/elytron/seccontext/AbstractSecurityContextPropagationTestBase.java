@@ -20,15 +20,15 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.startsWith;
-import static org.jboss.as.controller.client.helpers.ClientConstants.SERVER_CONFIG;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.wildfly.test.manual.elytron.seccontext.SeccontextUtil.SERVER1;
 import static org.wildfly.test.manual.elytron.seccontext.SeccontextUtil.SERVER2;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -40,6 +40,8 @@ import java.io.StringWriter;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Base64.Encoder;
 import java.util.List;
@@ -58,6 +60,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
@@ -106,18 +109,18 @@ import org.wildfly.security.sasl.SaslMechanismSelector;
 @RunAsClient
 public abstract class AbstractSecurityContextPropagationTestBase {
 
-    private static ServerHolder server1 = new ServerHolder(SERVER1, TestSuiteEnvironment.getServerAddress(), 0);
-    private static ServerHolder server2 = new ServerHolder(SERVER2, TestSuiteEnvironment.getServerAddressNode1(), 100);
+    private static final ServerHolder server1 = new ServerHolder(SERVER1, TestSuiteEnvironment.getServerAddress(), 0);
+    private static final ServerHolder server2 = new ServerHolder(SERVER2, TestSuiteEnvironment.getServerAddressNode1(), 100);
 
     private static final Encoder B64_ENCODER = Base64.getUrlEncoder().withoutPadding();
     private static final String JWT_HEADER_B64 = B64_ENCODER
             .encodeToString("{\"alg\":\"none\",\"typ\":\"JWT\"}".getBytes(StandardCharsets.UTF_8));
 
     @ArquillianResource
-    private static ContainerController containerController;
+    private static volatile ContainerController containerController;
 
     @ArquillianResource
-    private static Deployer deployer;
+    private static volatile Deployer deployer;
 
     /**
      * Creates deployment with Entry bean - to be placed on the first server.
@@ -131,7 +134,7 @@ public abstract class AbstractSecurityContextPropagationTestBase {
                 .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("authenticate"),
                         new ElytronPermission("getPrivateCredentials"),
                         new ElytronPermission("getSecurityDomain"),
-                        new SocketPermission(TestSuiteEnvironment.getServerAddressNode1()+":8180", "connect,resolve")
+                        new SocketPermission(TestSuiteEnvironment.getServerAddressNode1() + ":8180", "connect,resolve")
                         ),
                         "permissions.xml")
                 .addAsManifestResource(Utils.getJBossEjb3XmlAsset("seccontext-entry"), "jboss-ejb3.xml");
@@ -351,27 +354,6 @@ public abstract class AbstractSecurityContextPropagationTestBase {
     }
 
     /**
-     * Tests security context propagation behavior without isolation. This should be replaced in the future by removing reloads between the tests.
-     */
-    @Test
-    @Ignore("JBEAP-12410")
-    public void scenario1() throws Exception {
-        testOauthbearerPropagationPasses();
-        testSecurityDomainAuthenticateForwardedPasses();
-    }
-
-    /**
-     * Tests security context propagation behavior without isolation. This should be replaced in the future by removing reloads between the tests.
-     */
-    @Test
-    @Ignore("JBEAP-12410")
-    public void scenario2() throws Exception {
-        testSecurityDomainAuthenticateWithoutForwarding();
-        testOauthbearerPropagationPasses();
-        testSecurityDomainAuthenticateForwardedPasses();
-    }
-
-    /**
      * Returns true if the stateful Entry bean variant should be used by the tests. False otherwise.
      */
     protected abstract boolean isEntryStateful();
@@ -423,7 +405,9 @@ public abstract class AbstractSecurityContextPropagationTestBase {
         // different behavior for stateless and stateful beans
         // is reported under https://issues.jboss.org/browse/JBEAP-12439
         return anyOf(startsWith("javax.ejb.NoSuchEJBException: EJBCLIENT000079"),
-                startsWith("javax.naming.CommunicationException: EJBCLIENT000062"));
+                startsWith("javax.naming.CommunicationException: EJBCLIENT000062"),
+                containsString("JBREM000308"),
+                containsString("javax.security.sasl.SaslException: Authentication failed"));
     }
 
     private static org.hamcrest.Matcher<java.lang.String> isEvidenceVerificationError() {
@@ -446,14 +430,14 @@ public abstract class AbstractSecurityContextPropagationTestBase {
     }
 
     private static class ServerHolder {
-        private String name;
-        private String host;
-        private int portOffset;
-        private ModelControllerClient client;
-        private CommandContext commandCtx;
-        private ByteArrayOutputStream consoleOut = new ByteArrayOutputStream();
+        private final String name;
+        private final String host;
+        private final int portOffset;
+        private volatile ModelControllerClient client;
+        private volatile CommandContext commandCtx;
+        private volatile ByteArrayOutputStream consoleOut = new ByteArrayOutputStream();
 
-        private String snapshot;
+        private volatile String snapshot;
 
         public ServerHolder(String name, String host, int portOffset) {
             this.name = name;
@@ -468,23 +452,24 @@ public abstract class AbstractSecurityContextPropagationTestBase {
                 commandCtx = CLITestUtil.getCommandContext(host, getManagementPort(), null, consoleOut, -1);
                 commandCtx.connectController();
                 readSnapshot();
-            }
 
-            if (snapshot == null) {
-                final File cliFIle = File.createTempFile("seccontext-", ".cli");
-                try (FileOutputStream fos = new FileOutputStream(cliFIle)) {
-                    IOUtils.copy(AbstractSecurityContextPropagationTestBase.class.getResourceAsStream("seccontext-setup.cli"),
-                            fos);
+                if (snapshot == null) {
+                    // configure each server just once
+                    createPropertyFile();
+                    final File cliFIle = File.createTempFile("seccontext-", ".cli");
+                    try (FileOutputStream fos = new FileOutputStream(cliFIle)) {
+                        IOUtils.copy(
+                                AbstractSecurityContextPropagationTestBase.class.getResourceAsStream("seccontext-setup.cli"),
+                                fos);
+                    }
+                    runBatch(cliFIle);
+                    cliFIle.delete();
+                    reload();
+                    // deployment name is the same as the container name in this test case
+                    deployer.deploy(name);
+
+                    takeSnapshot();
                 }
-                runBatch(cliFIle);
-                cliFIle.delete();
-                reload();
-                // deployment name is the same as the container name in this test case
-                deployer.deploy(name);
-
-                takeSnapshot();
-            } else {
-                reloadToSnapshot();
             }
         }
 
@@ -571,17 +556,28 @@ public abstract class AbstractSecurityContextPropagationTestBase {
             }
         }
 
-        private void reloadToSnapshot() {
-            ModelNode operation = Util.createOperation("reload", null);
-            operation.get(SERVER_CONFIG).set(snapshot);
-            ServerReload.executeReloadAndWaitForCompletion(client, operation, (int) SECONDS.toMillis(90), host,
-                    getManagementPort());
-        }
-
         private void reload() {
             ModelNode operation = Util.createOperation("reload", null);
-            ServerReload.executeReloadAndWaitForCompletion(client, operation, (int) SECONDS.toMillis(90), host,
-                    getManagementPort());
+            try {
+                ServerReload.executeReloadAndWaitForCompletion(client, operation, (int) SECONDS.toMillis(90), host,
+                        getManagementPort());
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+                throw e;
+            }
+        }
+
+        /**
+         * Create single property file with users and/or roles in standalone server config directory. It will be used for
+         * property-realm configuration (see {@code seccontext-setup.cli} script)
+         */
+        private void createPropertyFile() throws IOException {
+            sendLine("/core-service=platform-mbean/type=runtime:read-attribute(name=system-properties)", false);
+            assertTrue(consoleOut.size() > 0);
+            ModelNode node = ModelNode.fromStream(new ByteArrayInputStream(consoleOut.toByteArray()));
+            String configDirPath = node.get(ModelDescriptionConstants.RESULT).get("jboss.server.config.dir").asString();
+            Files.write(Paths.get(configDirPath, "seccontext.properties"),
+                    Utils.createUsersFromRoles("admin", "servlet", "entry", "whoami").getBytes(StandardCharsets.ISO_8859_1));
         }
     }
 }
