@@ -82,7 +82,6 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
@@ -96,6 +95,7 @@ import org.jboss.as.ejb3.security.SecurityDomainInterceptorFactory;
 import org.jboss.as.ejb3.security.SecurityRolesAddingInterceptor;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainDefinition;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
+import org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
@@ -823,7 +823,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 configuration.getDependencies().add(new DependencyConfigurator<ViewService>() {
                     @Override
                     public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ViewService service) throws DeploymentUnitProcessingException {
-                        serviceBuilder.addDependency(EJBRemoteConnectorService.SERVICE_NAME);
+                        CapabilityServiceSupport support = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
+                        serviceBuilder.addDependency(support.getCapabilityServiceName(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY_NAME));
                     }
                 });
             }

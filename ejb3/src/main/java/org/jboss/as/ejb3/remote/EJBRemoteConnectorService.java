@@ -42,7 +42,7 @@ import org.xnio.OptionMap;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorService> {
+public class EJBRemoteConnectorService implements Service<Void> {
 
     // TODO: Should this be exposed via the management APIs?
     private static final String EJB_CHANNEL_NAME = "jboss.ejb";
@@ -94,13 +94,9 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         registration.close();
     }
 
-    public String getProtocol() {
-        return remotingConnectorInfoInjectedValue.getValue().getProtocol();
-    }
-
     @Override
-    public EJBRemoteConnectorService getValue() {
-        return this;
+    public Void getValue() {
+        return null;
     }
 
     public InjectedValue<Endpoint> getEndpointInjector() {
