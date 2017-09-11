@@ -22,27 +22,19 @@
 
 package org.wildfly.test.integration.elytron.application;
 
-import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.CharBuffer;
-import java.security.KeyStore;
 
-import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
-import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.dmr.ModelNode;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.extension.elytron._private.ElytronSubsystemMessages;
@@ -87,58 +79,6 @@ public class CredentialStoreTestCase extends AbstractCredentialStoreTestCase {
     @Test
     public void testCredentialReference() throws Exception {
         testUnmodifiableInternally(CS_NAME_CRED_REF);
-    }
-
-    /**
-     * Tests credential store with automatically created PKCS12 keystore.
-     */
-    @Test
-    @Ignore
-    public void testCredentialStoreCreating() throws Exception {
-        String storeName = NAME;
-        File tempFolder = Utils.createTemporaryFolder(storeName);
-        String fileName = System.currentTimeMillis() + ".p12";
-        File ksFile = new File(tempFolder, fileName);
-        assertTrue(tempFolder.isDirectory());
-        assertFalse(ksFile.exists());
-        try {
-            try (CLIWrapper cli = new CLIWrapper(true)) {
-                cli.sendLine(String.format("/path=%s:add(path=\"%s\")", storeName, asAbsolutePath(tempFolder)));
-                SimpleCredentialStore storeConfig = SimpleCredentialStore.builder().withName(storeName)
-                        .withKeyStorePath(Path.builder().withPath(fileName).withRelativeTo(storeName).build())
-                        .withCredential(CredentialReference.builder().withClearText("pkcs12pass").build())
-                        .withKeyStoreType("PKCS12").withModifiable(true).withCreate(true).withAlias("elytron", "rocks!")
-                        .build();
-                try {
-                    storeConfig.create(cli);
-
-                    assertContainsAliases(cli, storeName, "elytron");
-
-                    assertTrue(ksFile.exists());
-
-                    cli.sendLine(String.format(
-                            "/subsystem=elytron/credential-store=%s:add-alias(alias=another-secret, secret-value=\"%1$s\")",
-                            storeName));
-
-                    assertCredentialValue(storeName, "elytron", "rocks!");
-                    assertCredentialValue(storeName, "another-secret", storeName);
-                } finally {
-                    // this should remove alias "elytron" from KeyStore file and remove credential {@value NAME} from domain
-                    // model
-                    storeConfig.remove(cli);
-                }
-                // KeyStore file should not be removed after
-                assertTrue(ksFile.exists());
-                KeyStore ks = KeyStore.getInstance("PKCS12");
-                try (FileInputStream fis = new FileInputStream(ksFile)) {
-                    ks.load(fis, "pkcs12pass".toCharArray());
-                    assertEquals(1, ks.size());
-                    assertTrue(ks.aliases().nextElement().contains("another-secret"));
-                }
-            }
-        } finally {
-            FileUtils.deleteQuietly(tempFolder);
-        }
     }
 
     /**
