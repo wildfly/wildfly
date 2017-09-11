@@ -42,7 +42,6 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
@@ -124,7 +123,6 @@ public class ConstantPrincipalDecoderTestCase {
      */
     @Test
     @OperateOnDeployment(SD_NAME_NO_PD)
-    @Ignore("ELY-1046")
     public void testNoPrincipalDecoderI18n(@ArquillianResource URL url) throws Exception {
         assertEquals("Response body is not correct.", CONST_I18N,
                 Utils.makeCallWithBasicAuthn(principalServlet(url), CONST_I18N, CONST_I18N, SC_OK));
@@ -167,7 +165,6 @@ public class ConstantPrincipalDecoderTestCase {
      */
     @Test
     @OperateOnDeployment(PD_NAME_I18N)
-    @Ignore("ELY-1046")
     public void testI18NPrincipalDecoder(@ArquillianResource URL url) throws Exception {
         Utils.makeCallWithBasicAuthn(principalServlet(url), CONST_ADMIN, CONST_ADMIN, SC_UNAUTHORIZED);
         assertEquals("Response body is not correct.", CONST_I18N,
