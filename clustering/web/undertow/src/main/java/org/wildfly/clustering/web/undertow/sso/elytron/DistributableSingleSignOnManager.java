@@ -67,15 +67,20 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
     public SingleSignOn find(String id) {
         Batcher<Batch> batcher = this.manager.getBatcher();
         // Batch will be closed when SSO is closed
-        @SuppressWarnings("resource")
         Batch batch = batcher.createBatch();
+        boolean close = true;
         try {
             SSO<ElytronAuthentication, String, Entry<String, URI>, LocalSSOContext> sso = this.manager.findSSO(id);
-            return (sso != null) ? new DistributableSingleSignOn(sso, batcher, batcher.suspendBatch()) : null;
+            if (sso == null) return null;
+            close = false;
+            return new DistributableSingleSignOn(sso, batcher, batcher.suspendBatch());
         } catch (RuntimeException | Error e) {
             batch.discard();
-            batch.close();
             throw e;
+        } finally {
+            if (close) {
+                batch.close();
+            }
         }
     }
 }
