@@ -45,7 +45,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -107,7 +106,6 @@ public class EarDeploymentTestCase extends ContainerResourceMgmtTestBase {
     }
 
     @Test
-    @Ignore
     public void testConfiguration() throws Throwable {
         assertNotNull("Deployment metadata for ear not found", managementClient.getProtocolMetaData(deploymentName));
 
