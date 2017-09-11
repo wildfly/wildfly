@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -82,7 +83,21 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
         super(new Parameters(SecurityExtension.SECURITY_DOMAIN_PATH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN))
                 .setAddHandler(SecurityDomainAdd.INSTANCE)
-                .setRemoveHandler(new ServiceRemoveStepHandler(SecurityDomainService.SERVICE_NAME, SecurityDomainAdd.INSTANCE))
+                .setRemoveHandler(new ServiceRemoveStepHandler(SecurityDomainService.SERVICE_NAME, SecurityDomainAdd.INSTANCE) {
+                    @Override
+                    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+                        super.performRuntime(context, operation, model);
+                        if (context.isResourceServiceRestartAllowed()) {
+                            String cacheType = SecurityDomainAdd.getAuthenticationCacheType(model);
+                            String securityDomain = context.getCurrentAddressValue();
+                            if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {
+                                for (org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement requirement : EnumSet.allOf(org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement.class)) {
+                                    context.removeService(requirement.getServiceName(context, CACHE_CONTAINER_NAME, securityDomain));
+                                }
+                            }
+                        }
+                    }
+                })
                 .setCapabilities(LEGACY_SECURITY_DOMAIN));
         this.registerRuntimeOnly = registerRuntimeOnly;
         ApplicationTypeConfig atc = new ApplicationTypeConfig(SecurityExtension.SUBSYSTEM_NAME, Constants.SECURITY_DOMAIN);
