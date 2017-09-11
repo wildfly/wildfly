@@ -26,7 +26,6 @@ package org.jboss.as.security.remoting;
 
 import java.security.Principal;
 import java.util.Set;
-import java.util.stream.StreamSupport;
 
 import javax.net.ssl.SSLSession;
 import javax.security.auth.Subject;
@@ -56,10 +55,10 @@ public final class RemotingConnectionCredential {
         Subject subject = new Subject();
         Set<Principal> principals = subject.getPrincipals();
         principals.add(new RealmUser(securityIdentity.getPrincipal().getName()));
-        StreamSupport.stream(securityIdentity.getRoles().spliterator(), true).forEach((String role) -> {
+        for (String role : securityIdentity.getRoles()) {
             principals.add(new RealmGroup(role));
             principals.add(new RealmRole(role));
-        });
+        }
         this.subject = subject;
     }
 
