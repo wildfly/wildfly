@@ -57,7 +57,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -67,7 +66,6 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @ServerSetup(PasswordMaskingTestCase.PasswordMaskingTestCaseSetup.class)
-@Ignore("WFLY-3289")
 public class PasswordMaskingTestCase {
 
    private static Logger LOGGER = Logger.getLogger(PasswordMaskingTestCase.class);
