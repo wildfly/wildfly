@@ -27,7 +27,6 @@ package org.jboss.as.security.vault;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.crypto.KeyGenerator;
@@ -63,7 +62,6 @@ public class VaultToolTestCase extends VaultTest {
   }
 
   @Test
-  @Ignore
   public void testVaultFallback() throws Exception {
     doTestVaultTool(true, true);
   }
