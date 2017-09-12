@@ -32,7 +32,7 @@
         <!--Optional:-->
         <use-strict-min>true</use-strict-min>
         <!--Optional:-->
-        <flush-strategy>Gracefully</flush-strategy>
+        <flush-strategy>EntirePool</flush-strategy>
         <!--Optional:-->
         <allow-multiple-users>true</allow-multiple-users>
         <!--Optional:-->
@@ -148,7 +148,7 @@
         <!--Optional:-->
         <use-strict-min>true</use-strict-min>
         <!--Optional:-->
-        <flush-strategy>Gracefully</flush-strategy>
+        <flush-strategy>EntirePool</flush-strategy>
         <!--Optional:-->
         <allow-multiple-users>true</allow-multiple-users>
         <!--Optional:-->
