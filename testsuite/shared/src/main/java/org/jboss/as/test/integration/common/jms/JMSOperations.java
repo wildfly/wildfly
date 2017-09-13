@@ -25,6 +25,8 @@ package org.jboss.as.test.integration.common.jms;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
+import java.util.Map;
+
 /**
  * Utility to administrate JMS-related resources on the server. An separate implementation should be created for
  * every possible JMS provider to be tested.
@@ -64,6 +66,22 @@ public interface JMSOperations {
     void addCoreQueue(final String queueName, final String queueAddress, boolean durable);
 
     void removeCoreQueue(final String queueName);
+
+    /**
+     * Creates remote acceptor
+     *
+     * @param name          name of the remote acceptor
+     * @param socketBinding name of socket binding
+     * @param params        params
+     */
+    void createRemoteAcceptor(String name, String socketBinding, Map<String, String> params);
+
+    /**
+     * Remove remote acceptor
+     *
+     * @param name          name of the remote acceptor
+     */
+    void removeRemoteAcceptor(String name);
 
     void close();
 

@@ -22,6 +22,13 @@
 
 package org.jboss.as.test.integration.common.jms;
 
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+
+import java.util.Map;
+
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.REMOVE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -31,11 +38,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.integration.common.jms.JMSOperationsProvider.execute;
-
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
  * An implementation of JMSOperations for Apache ActiveMQ 6.
@@ -160,6 +162,25 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
         ModelNode address = getServerAddress()
                 .add("queue", queueName);
         executeOperation(address, REMOVE_OPERATION, null);
+    }
+
+    @Override
+    public void createRemoteAcceptor(String name, String socketBinding, Map<String, String> params) {
+        ModelNode model = getServerAddress().add("remote-acceptor", name);
+        ModelNode attributes = new ModelNode();
+        attributes.get("socket-binding").set(socketBinding);
+        if (params != null) {
+            for (String key : params.keySet()) {
+                model.get("params").add(key, params.get(key));
+            }
+        }
+        executeOperation(model, ADD, attributes);
+    }
+
+    @Override
+    public void removeRemoteAcceptor(String name) {
+        ModelNode model = getServerAddress().add("remote-acceptor", name);
+        executeOperation(model, REMOVE_OPERATION, null);
     }
 
     @Override
