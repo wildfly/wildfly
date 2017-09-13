@@ -45,7 +45,6 @@ import javax.naming.NamingException;
  * @author Martin Gencur
  */
 @RunWith(Arquillian.class)
-@Ignore("https://issues.jboss.org/browse/ISPN-604")
 public class TransactionalJdbcStoreTestCase {
 
     @Deployment
