@@ -29,6 +29,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJ
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -69,7 +70,10 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
         final String driverName = PathAddress.pathAddress(address).getLastElement().getValue();
 
         for (AttributeDefinition attribute : Constants.JDBC_DRIVER_ATTRIBUTES) {
-            attribute.validateAndSet(operation, model);
+            // https://issues.jboss.org/browse/WFLY-9324 skip validation on driver-name
+            if (!attribute.getName().equals(DRIVER_NAME_NAME)) {
+                attribute.validateAndSet(operation, model);
+            }
         }
         model.get(DRIVER_NAME.getName()).set(driverName);//this shouldn't be here anymore
     }
