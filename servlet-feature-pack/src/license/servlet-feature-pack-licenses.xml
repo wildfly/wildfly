@@ -122,7 +122,7 @@
       <licenses>
         <license>
           <name>Eclipse Public License 1.0</name>
-          <url>http://www.eclipse.org/legal/epl-v10.html</url>
+          <url>http://repository.jboss.org/licenses/epl-1.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
