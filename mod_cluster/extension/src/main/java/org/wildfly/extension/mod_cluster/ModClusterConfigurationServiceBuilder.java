@@ -269,7 +269,7 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
             final SocketBinding binding = advertiseSocketDependency.getValue();
             builder.advertise()
                     .setAdvertiseSocketAddress(binding.getMulticastSocketAddress())
-                    .setAdvertiseInterface(binding.getSocketAddress().getAddress())
+                    .setAdvertiseInterface(binding.getNetworkInterfaceBinding().getAddress())
             ;
             if (!isMulticastEnabled(binding.getSocketBindings().getDefaultInterfaceBinding().getNetworkInterfaces())) {
                 ROOT_LOGGER.multicastInterfaceNotAvailable();
