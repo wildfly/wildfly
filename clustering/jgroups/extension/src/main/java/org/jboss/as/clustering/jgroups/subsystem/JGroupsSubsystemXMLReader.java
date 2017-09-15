@@ -600,8 +600,15 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 break;
             }
             case SOCKET_BINDING: {
-                boolean socketProtocol = ProtocolRegistration.ProtocolType.MULTICAST_SOCKET.contains(Operations.getPathAddress(operation).getLastElement().getValue());
-                readAttribute(reader, index, operation, socketProtocol ? SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING : GenericProtocolResourceDefinition.DeprecatedAttribute.SOCKET_BINDING);
+                String protocol = Operations.getPathAddress(operation).getLastElement().getValue();
+                Attribute socketBindingAttribute = GenericProtocolResourceDefinition.DeprecatedAttribute.SOCKET_BINDING;
+                for (ProtocolRegistration.MulticastProtocol multicastProtocol : EnumSet.allOf(ProtocolRegistration.MulticastProtocol.class)) {
+                    if (protocol.equals(multicastProtocol.name())) {
+                        socketBindingAttribute = SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING;
+                        break;
+                    }
+                }
+                readAttribute(reader, index, operation, socketBindingAttribute);
                 break;
             }
             case DATA_SOURCE: {
