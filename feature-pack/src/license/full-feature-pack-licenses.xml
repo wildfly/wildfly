@@ -177,7 +177,7 @@
         </license>
         <license>
           <name>Eclipse Public License 1.0</name>
-          <url>http://www.eclipse.org/legal/epl-v10.html</url>
+          <url>http://repository.jboss.org/licenses/epl-1.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -257,8 +257,8 @@
       <artifactId>javax.mail</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License 1.1</name>
-          <url>https://javaee.github.io/glassfish/LICENSE</url>
+          <name>Common Development and Distribution License 1.0</name>
+          <url>https://opensource.org/licenses/cddl1.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -273,13 +273,8 @@
       <artifactId>rngom</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License 1.1</name>
-          <url>https://javaee.github.io/glassfish/LICENSE</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
+          <name>MIT License</name>
+          <url>http://www.opensource.org/licenses/MIT</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1258,11 +1253,6 @@
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
-        <license>
-          <name>W3C Software Notice and License (2002-12-31)</name>
-          <url>http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231.html</url>
-          <distribution>repo</distribution>
-        </license>
       </licenses>
     </dependency>
     <dependency>
@@ -1316,11 +1306,6 @@
         <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>BSD 3-clause Clear License</name>
-          <url>http://labs.metacarta.com/license-explanation.html#license</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1407,8 +1392,8 @@
       <artifactId>bcmail-jdk15on</artifactId>
       <licenses>
         <license>
-          <name>Bouncy Castle Licence</name>
-          <url>http://www.bouncycastle.org/licence.html</url>
+          <name>MIT License</name>
+          <url>http://www.opensource.org/licenses/MIT</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1418,8 +1403,8 @@
       <artifactId>bcpkix-jdk15on</artifactId>
       <licenses>
         <license>
-          <name>Bouncy Castle Licence</name>
-          <url>http://www.bouncycastle.org/licence.html</url>
+          <name>MIT License</name>
+          <url>http://www.opensource.org/licenses/MIT</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1429,8 +1414,8 @@
       <artifactId>bcprov-jdk15on</artifactId>
       <licenses>
         <license>
-          <name>Bouncy Castle Licence</name>
-          <url>http://www.bouncycastle.org/licence.html</url>
+          <name>MIT License</name>
+          <url>http://www.opensource.org/licenses/MIT</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1756,7 +1741,7 @@
         </license>
         <license>
           <name>Eclipse Public License 1.0</name>
-          <url>http://www.eclipse.org/legal/epl-v10.html</url>
+          <url>http://repository.jboss.org/licenses/epl-1.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1770,20 +1755,6 @@
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>JSON License</name>
-          <url>http://www.json.org/license.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>Public Domain</name>
-          <distribution>repo</distribution>
-        </license>
       </licenses>
     </dependency>
     <dependency>
@@ -1793,20 +1764,6 @@
         <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>JSON License</name>
-          <url>http://www.json.org/license.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>Public Domain</name>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1820,20 +1777,6 @@
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>JSON License</name>
-          <url>http://www.json.org/license.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>Public Domain</name>
-          <distribution>repo</distribution>
-        </license>
       </licenses>
     </dependency>
     <dependency>
@@ -1843,20 +1786,6 @@
         <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>JSON License</name>
-          <url>http://www.json.org/license.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>Public Domain</name>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1870,20 +1799,6 @@
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>JSON License</name>
-          <url>http://www.json.org/license.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>Public Domain</name>
-          <distribution>repo</distribution>
-        </license>
       </licenses>
     </dependency>
     <dependency>
@@ -1891,23 +1806,8 @@
       <artifactId>infinispan-cachestore-jdbc</artifactId>
       <licenses>
         <license>
-          <name>Apache License 1.1</name>
-          <url>http://apache.org/licenses/LICENSE-1.1</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>Common Public License 1.0</name>
-          <url>http://opensource.org/licenses/CPL-1.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1917,23 +1817,8 @@
       <artifactId>infinispan-cachestore-remote</artifactId>
       <licenses>
         <license>
-          <name>Apache License 1.1</name>
-          <url>http://apache.org/licenses/LICENSE-1.1</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>Common Public License 1.0</name>
-          <url>http://opensource.org/licenses/CPL-1.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1943,23 +1828,8 @@
       <artifactId>infinispan-client-hotrod</artifactId>
       <licenses>
         <license>
-          <name>Apache License 1.1</name>
-          <url>http://apache.org/licenses/LICENSE-1.1</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>Common Public License 1.0</name>
-          <url>http://opensource.org/licenses/CPL-1.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1969,23 +1839,8 @@
       <artifactId>infinispan-commons</artifactId>
       <licenses>
         <license>
-          <name>Apache License 1.1</name>
-          <url>http://apache.org/licenses/LICENSE-1.1</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>Common Public License 1.0</name>
-          <url>http://opensource.org/licenses/CPL-1.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1995,23 +1850,8 @@
       <artifactId>infinispan-core</artifactId>
       <licenses>
         <license>
-          <name>Apache License 1.1</name>
-          <url>http://apache.org/licenses/LICENSE-1.1</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>Common Public License 1.0</name>
-          <url>http://opensource.org/licenses/CPL-1.0</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -2054,7 +1894,7 @@
       <licenses>
         <license>
           <name>Eclipse Public License 1.0</name>
-          <url>http://www.eclipse.org/legal/epl-v10.html</url>
+          <url>http://repository.jboss.org/licenses/epl-1.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -3420,8 +3260,8 @@
       <artifactId>jboss-ejb-api_3.2_spec</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License</name>
-          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <name>Common Development and Distribution License 1.0</name>
+          <url>https://opensource.org/licenses/cddl1.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -3522,8 +3362,13 @@
       <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <name>Common Development and Distribution License 1.0</name>
+          <url>https://opensource.org/licenses/cddl1.txt</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -3533,8 +3378,13 @@
       <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
       <licenses>
         <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <name>Common Development and Distribution License 1.1</name>
+          <url>https://javaee.github.io/glassfish/LICENSE</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -3555,8 +3405,8 @@
       <artifactId>jboss-saaj-api_1.3_spec</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License</name>
-          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <name>Common Development and Distribution License 1.0</name>
+          <url>https://opensource.org/licenses/cddl1.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -3571,8 +3421,8 @@
       <artifactId>jboss-jaxws-api_2.2_spec</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License</name>
-          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <name>Common Development and Distribution License 1.0</name>
+          <url>https://opensource.org/licenses/cddl1.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -3663,11 +3513,6 @@
       <groupId>org.jboss.ws</groupId>
       <artifactId>jbossws-common-tools</artifactId>
       <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
           <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
