@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.security.KeyStore;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
@@ -29,7 +30,6 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.jgroups.protocol.EncryptProtocol;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -44,7 +44,7 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
  * Resource definition override for protocols that require an encryption key.
  * @author Paul Ferraro
  */
-public class EncryptProtocolResourceDefinition<P extends Encrypt & EncryptProtocol> extends ProtocolResourceDefinition<P> {
+public class EncryptProtocolResourceDefinition<E extends KeyStore.Entry, P extends Encrypt<E>> extends ProtocolResourceDefinition<P> {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         KEY_CREDENTIAL(CredentialReference.getAttributeBuilder("key-credential-reference", null, false, new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
@@ -75,11 +75,11 @@ public class EncryptProtocolResourceDefinition<P extends Encrypt & EncryptProtoc
         ProtocolResourceDefinition.addTransformations(version, builder);
     }
 
-    public EncryptProtocolResourceDefinition(String name, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+    public EncryptProtocolResourceDefinition(String name, Class<E> entryClass, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
                 .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
                 .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
-                ), address -> new EncryptProtocolConfigurationBuilder<>(address), parentBuilderFactory);
+                ), address -> new EncryptProtocolConfigurationBuilder<>(address, entryClass), parentBuilderFactory);
     }
 }

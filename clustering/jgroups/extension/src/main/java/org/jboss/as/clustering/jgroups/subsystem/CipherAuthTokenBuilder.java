@@ -89,7 +89,7 @@ public class CipherAuthTokenBuilder extends AuthTokenBuilder<CipherAuthToken> {
                 throw JGroupsLogger.ROOT_LOGGER.keyEntryNotFound(alias);
             }
             if (!store.entryInstanceOf(alias, KeyStore.PrivateKeyEntry.class)) {
-                throw JGroupsLogger.ROOT_LOGGER.privateKeyStoreEntryExpected(alias);
+                throw JGroupsLogger.ROOT_LOGGER.unexpectedKeyStoreEntryType(alias, KeyStore.PrivateKeyEntry.class.getSimpleName());
             }
             PasswordCredential credential = this.keyCredentialSource.getValue().getCredential(PasswordCredential.class);
             if (credential == null) {
