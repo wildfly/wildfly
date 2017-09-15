@@ -137,19 +137,29 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
     private static void writeProtocolAttributes(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
         writeGenericProtocolAttributes(writer, property);
 
-        if (ProtocolRegistration.ProtocolType.MULTICAST_SOCKET.contains(property.getName())) {
+        String protocol = property.getName();
+        if (containsName(ProtocolRegistration.MulticastProtocol.class, protocol)) {
             writeAttributes(writer, property.getValue(), SocketBindingProtocolResourceDefinition.Attribute.class);
-        } else if (ProtocolRegistration.ProtocolType.JDBC.contains(property.getName())) {
+        } else if (containsName(ProtocolRegistration.JdbcProtocol.class, protocol)) {
             writeAttributes(writer, property.getValue(), JDBCProtocolResourceDefinition.Attribute.class);
-        } else if (ProtocolRegistration.ProtocolType.ENCRYPT.contains(property.getName())) {
+        } else if (containsName(ProtocolRegistration.EncryptProtocol.class, protocol)) {
             writeAttributes(writer, property.getValue(), EncryptProtocolResourceDefinition.Attribute.class);
-        } else if (ProtocolRegistration.ProtocolType.SOCKET_DISCOVERY.contains(property.getName())) {
+        } else if (containsName(ProtocolRegistration.InitialHostsProtocol.class, protocol)) {
             writeAttributes(writer, property.getValue(), SocketDiscoveryProtocolResourceDefinition.Attribute.class);
-        } else if (ProtocolRegistration.ProtocolType.AUTH.contains(property.getName())) {
+        } else if (containsName(ProtocolRegistration.AuthProtocol.class, protocol)) {
             writeAuthToken(writer, property.getValue().get(AuthTokenResourceDefinition.WILDCARD_PATH.getKey()).asProperty());
         } else {
             writeAttributes(writer, property.getValue(), GenericProtocolResourceDefinition.DeprecatedAttribute.class);
         }
+    }
+
+    private static <E extends Enum<E>> boolean containsName(Class<E> enumClass, String name) {
+        for (E protocol : EnumSet.allOf(enumClass)) {
+            if (name.equals(protocol.name())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void writeAuthToken(XMLExtendedStreamWriter writer, Property token) throws XMLStreamException {
