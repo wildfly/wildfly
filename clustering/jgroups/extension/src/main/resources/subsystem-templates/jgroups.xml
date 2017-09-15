@@ -118,7 +118,7 @@
     <supplement name="gossip" includes="no-multicast gossip-discovery"/>
     <socket-binding name="jgroups-tcp" interface="private" port="7600"/>
     <socket-binding name="jgroups-udp" interface="private" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
-    <socket-binding name="jgroups-mping" interface="private" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
+    <socket-binding name="jgroups-mping" interface="private" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
     <interface name="private">
         <inet-address value="${jboss.bind.address.private:127.0.0.1}"/>
     </interface>

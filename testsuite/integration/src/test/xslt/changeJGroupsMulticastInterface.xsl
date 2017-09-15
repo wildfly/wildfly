@@ -28,7 +28,7 @@
 
       Example:
 
-      <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}"
+      <socket-binding name="jgroups-mping" multicast-address="${jboss.default.multicast.address:230.0.0.4}"
                       multicast-port="45700" interface="multicast"/>
 
     -->
