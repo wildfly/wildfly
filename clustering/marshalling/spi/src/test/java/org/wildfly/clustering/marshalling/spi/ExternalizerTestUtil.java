@@ -31,6 +31,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.function.BiConsumer;
 
+import org.junit.Assert;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
@@ -45,15 +46,28 @@ public class ExternalizerTestUtil {
     public static <T> void test(Externalizer<T> externalizer, T subject, BiConsumer<T, T> assertion) throws IOException, ClassNotFoundException {
         assertTrue(externalizer.getTargetClass().isInstance(subject));
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (ObjectOutputStream output = new ObjectOutputStream(out)) {
+        ByteArrayOutputStream externalizedOutput = new ByteArrayOutputStream();
+        try (ObjectOutputStream output = new ObjectOutputStream(externalizedOutput)) {
             externalizer.writeObject(output, subject);
         }
 
-        try (ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(out.toByteArray()))) {
+        byte[] externalizedBytes = externalizedOutput.toByteArray();
+
+        try (ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(externalizedBytes))) {
             T result = externalizer.readObject(input);
             assertion.accept(subject, result);
             assertTrue(externalizer.getTargetClass().isInstance(result));
+        }
+
+        // If object is serializable, make sure we've actually improved upon default serialization size
+        if (subject instanceof java.io.Serializable) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try (ObjectOutputStream output = new ObjectOutputStream(out)) {
+                output.writeObject(subject);
+            }
+
+            byte[] bytes = out.toByteArray();
+            Assert.assertTrue(externalizedBytes.length < bytes.length);
         }
     }
 }
