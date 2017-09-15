@@ -36,7 +36,6 @@ import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.undertow.IdentifierFactoryAdapter;
 
-import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
@@ -94,13 +93,10 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
         info.addThreadSetupAction(new ThreadSetupHandler() {
             @Override
             public <T, C> Action<T, C> create(Action<T, C> action) {
-                return new Action<T, C>() {
-                    @Override
-                    public T call(HttpServerExchange exchange, C context) throws Exception {
-                        Batch batch = batcher.suspendBatch();
-                        try (BatchContext ctx = batcher.resumeBatch(batch)) {
-                            return action.call(exchange, context);
-                        }
+                return (exchange, context) -> {
+                    Batch batch = batcher.suspendBatch();
+                    try (BatchContext ctx = batcher.resumeBatch(batch)) {
+                        return action.call(exchange, context);
                     }
                 };
             }
