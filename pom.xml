@@ -157,7 +157,7 @@
         <version.org.jboss.activemq.artemis.integration>1.0.2</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.common.jboss-common-beans>2.0.0.Final</version.org.jboss.common.jboss-common-beans>
         <version.org.jboss.hal.release-stream>2.9.14.Final</version.org.jboss.hal.release-stream>
-        <version.org.jboss.ejb-client>4.0.0.Final</version.org.jboss.ejb-client>
+        <version.org.jboss.ejb-client>4.0.1.Final-SNAPSHOT</version.org.jboss.ejb-client>
         <version.org.jboss.ejb-client-legacy>3.0.0.Final</version.org.jboss.ejb-client-legacy>
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>2.0.0.Final</version.org.jboss.genericjms>
@@ -217,12 +217,12 @@
         <version.org.wildfly.arquillian>2.1.0.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.build-tools>1.2.2.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>3.0.2.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>3.0.3.Final-SNAPSHOT</version.org.wildfly.core>
         <version.org.wildfly.plugin>1.2.0.Final</version.org.wildfly.plugin>
-        <version.org.wildfly.http-client>1.0.1.Final</version.org.wildfly.http-client>
+        <version.org.wildfly.http-client>1.0.3.Final-SNAPSHOT</version.org.wildfly.http-client>
         <version.org.wildfly.maven.plugins>1.0.0</version.org.wildfly.maven.plugins>
-        <version.org.wildfly.naming-client>1.0.1.Final</version.org.wildfly.naming-client>
-        <version.org.wildfly.transaction.client>1.0.0.Final</version.org.wildfly.transaction.client>
+        <version.org.wildfly.naming-client>1.0.2.Final-SNAPSHOT</version.org.wildfly.naming-client>
+        <version.org.wildfly.transaction.client>1.0.1.Final-SNAPSHOT</version.org.wildfly.transaction.client>
         <version.org.yaml.snakeyaml>1.17</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.11.jbossorg-1</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
