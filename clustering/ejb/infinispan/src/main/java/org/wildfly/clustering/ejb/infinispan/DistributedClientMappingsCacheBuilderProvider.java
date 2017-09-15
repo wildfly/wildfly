@@ -22,11 +22,14 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.spi.CacheAliasBuilderProvider;
 import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices({ DistributedCacheBuilderProvider.class, CacheAliasBuilderProvider.class })
 public class DistributedClientMappingsCacheBuilderProvider extends ClientMappingsCacheBuilderProvider implements DistributedCacheBuilderProvider {
 
     public DistributedClientMappingsCacheBuilderProvider() {
