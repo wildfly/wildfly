@@ -57,7 +57,6 @@ import org.jboss.security.util.StringPropertyReplacer;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -147,7 +146,6 @@ public class ExternalPasswordCommandsTestCase {
      * method return password.
      */
     @Test
-    @Ignore("BZ-1146006")    // fix for this should be in next PicketBox update
     public void testCustomModuleClassPassword() throws Exception {
 
         createVault("{CLASS@" + ExternalPasswordModuleSetupTask.getModuleName() + "}" + ExternalPassword.class.getName());
@@ -165,7 +163,6 @@ public class ExternalPasswordCommandsTestCase {
      * arguments, which will be used to construct the password.
      */
     @Test
-    @Ignore("BZ-1146006")    // fix for this should be in next PicketBox update
     public void testCustomModuleClassWithArguments() throws Exception {
 
         createVault("{CLASS@" + ExternalPasswordModuleSetupTask.getModuleName() + "}"
@@ -187,7 +184,6 @@ public class ExternalPasswordCommandsTestCase {
      * is stored password.
      */
     @Test
-    @Ignore("BZ-1146006")    // fix for this should be in next PicketBox update
     public void testPicketboxClassPassword() throws Exception {
 
         File tmpPassword = new File(System.getProperty("java.io.tmpdir"), "tmp.password");
