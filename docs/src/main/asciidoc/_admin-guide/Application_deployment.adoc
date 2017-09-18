@@ -1,0 +1,767 @@
+= Application deployment
+
+:toc:
+
+toc::[]
+
+
+[[managed-domain]]
+== Managed Domain
+
+In a managed domain, deployments are associated with a `server-group`
+(see ﻿ link:Core_management_concepts.html[Core management concepts]).
+Any server within the server group will then be provided with that
+deployment.
+
+The domain and host controller components manage the distribution of
+binaries across network boundaries.
+
+[[deployment-commands]]
+=== Deployment Commands
+
+Distributing deployment binaries involves two steps: uploading the
+deployment to the repository the domain controller will use to
+distribute its contents, and then assigning the deployment to one or
+more server groups.
+
+You can do this in one sweep with the CLI:
+
+[source, ruby]
+----
+[domain@localhost:9990 /] deploy ~/Desktop/test-application.war
+Either --all-server-groups or --server-groups must be specified.
+ 
+[domain@localhost:9990 /] deploy ~/Desktop/test-application.war --all-server-groups
+'test-application.war' deployed successfully.
+----
+
+The deployment will be available to the domain controller, assigned to a
+server group, and deployed on all running servers in that group:
+
+[source, ruby]
+----
+[domain@localhost:9990 /] :read-children-names(child-type=deployment)
+{
+   "outcome" => "success",
+   "result" => [
+       "mysql-connector-java-5.1.15.jar",
+       "test-application.war"
+   ]
+}
+ 
+[domain@localhost:9990 /] /server-group=main-server-group/deployment=test-application.war:read-resource(include-runtime)
+{
+   "outcome" => "success",
+   "result" => {
+       "enabled" => true,
+       "name" => "test-application.war",
+       "managed" => true,
+       "runtime-name" => "test-application.war"
+   }
+}
+----
+
+If you only want the deployment deployed on servers in some server
+groups, but not all, use the `--server-groups` parameter instead of
+`-all-server-groups`:
+
+[source, ruby]
+----
+[domain@localhost:9990 /] deploy ~/Desktop/test-application.war --server-groups=main-server-group,another-group
+'test-application.war' deployed successfully.
+----
+
+If you have a new version of the deployment that you want to deploy
+replacing an existing one, use the `--force` parameter:
+
+[source, ruby]
+----
+[domain@localhost:9990 /] deploy ~/Desktop/test-application.war --all-server-groups --force
+'test-application.war' deployed successfully.
+----
+
+You can remove binaries from server groups with the `undeploy` command:
+
+[source, ruby]
+----
+[domain@localhost:9990 /] undeploy test-application.war --all-relevant-server-groups
+Successfully undeployed test-application.war.
+ 
+[domain@localhost:9990 /] /server-group=main-server-group:read-children-names(child-type=deployment)
+{
+   "outcome" => "success",
+   "result" => []
+}
+----
+
+If you only want to undeploy from some server groups but not others, use
+the `-` `server-groups` parameter instead of
+`-all-relevant-server-groups`.
+
+The CLI `deploy` command supports a number of other parameters that can
+control behavior. Use the `--help` parameter to learn more:
+
+[source, ruby]
+----
+[domain@localhost:9990 /] deploy --help
+[...]
+----
+
+[TIP]
+
+Managing deployments through the web interface provides an alternate,
+sometimes simpler approach.
+
+[[exploded-managed-deployments]]
+=== Exploded managed deployments
+
+Managed and unmanaged deployments can be 'exploded', i.e. on the
+filesystem in the form of a directory structure whose structure
+corresponds to an unzipped version of the archive. An exploded
+deployment can be convenient to administer if your administrative
+processes involve inserting or replacing files from a base version in
+order to create a version tailored for a particular use (for example,
+copy in a base deployment and then copy in a jboss-web.xml file to
+tailor a deployment for use in WildFly.) Exploded deployments are also
+nice in some development scenarios, as you can replace static content
+(e.g. .html, .css) files in the deployment and have the new content
+visible immediately without requiring a redeploy.
+
+Since unmanaged deployment content is directly in your charge, the
+following operations only make sense for a managed deployment.
+
+----
+[domain@localhost:9990 /] /deployment=exploded.war:add(content=[{empty=true}])
+----
+
+This will create an empty exploded deployment to which you'll be able to
+add content. The *empty* content parameter is required to check that you
+really intend to create an empty deployment and not just forget to
+define the content.
+
+----
+[domain@localhost:9990 /] /deployment=kitchensink.ear:explode()
+----
+
+This will 'explode' an existing archive deployment to its exploded
+format. This operation is not recursive so you need to explode the
+sub-deployment if you want to be able to manipulate the sub-deployment
+content. You can do this by specifying the sub-deployment archive *path*
+as a parameter to the explode operation.
+
+----
+[domain@localhost:9990 /] /deployment=kitchensink.ear:explode(path=wildfly-kitchensink-ear-web.war)
+----
+
+Now you can add or remove content to your exploded deployment. Note that
+per-default this will overwrite existing contents, you can specify the
+overwrite parameter to make the operation fail if the content already
+exists.
+
+----
+[domain@localhost:9990 /] /deployment=exploded.war:add-content(content=[{target-path=WEB-INF/classes/org/jboss/as/test/deployment/trivial/ServiceActivatorDeployment.class, input-stream-index=/home/demo/org/jboss/as/test/deployment/trivial/ServiceActivatorDeployment.class}, {target-path=META-INF/MANIFEST.MF, input-stream-index=/home/demo/META-INF/MANIFEST.MF}, {target-path=META-INF/services/org.jboss.msc.service.ServiceActivator, input-stream-index=/home/demo/META-INF/services/org.jboss.msc.service.ServiceActivator}])
+----
+
+Each content specifies a source content and the target path to which it
+will be copied relative to the deployment root. With WildFly 11 you can
+use *input-stream-index* (which was a convenient way to pass a stream of
+content) from the CLI by pointing it to a local file.
+
+----
+[domain@localhost:9990 /] /deployment=exploded.war:remove-content(paths=[WEB-INF/classes/org/jboss/as/test/deployment/trivial/ServiceActivatorDeployment.class, META-INF/MANIFEST.MF, META-INF/services/org.jboss.msc.service.ServiceActivator])
+----
+
+Now you can list the content of an exploded deployment, or just some
+part of it.
+
+[source, ruby]
+----
+[domain@localhost:9990 /] /deployment=kitchensink.ear:browse-content(archive=false, path=wildfly-kitchensink-ear-web.war)
+{
+    "outcome" => "success",
+    "result" => [
+        {
+            "path" => "META-INF/",
+            "directory" => true
+        },
+        {
+            "path" => "META-INF/MANIFEST.MF",
+            "directory" => false,
+            "file-size" => 128L
+        },
+        {
+            "path" => "WEB-INF/",
+            "directory" => true
+        },
+        {
+            "path" => "WEB-INF/templates/",
+            "directory" => true
+        },
+        {
+            "path" => "WEB-INF/classes/",
+            "directory" => true
+        },
+        {
+            "path" => "WEB-INF/classes/org/",
+            "directory" => true
+        },
+        {
+            "path" => "WEB-INF/classes/org/jboss/",
+            "directory" => true
+        },
+        {
+            "path" => "WEB-INF/classes/org/jboss/as/",
+            "directory" => true
+        },
+        {
+            "path" => "WEB-INF/classes/org/jboss/as/quickstarts/",
+            "directory" => true
+        },
+        {
+            "path" => "WEB-INF/classes/org/jboss/as/quickstarts/kitchensink_ear/",
+            "directory" => true
+        },
+        {
+            "path" => "WEB-INF/classes/org/jboss/as/quickstarts/kitchensink_ear/controller/",
+            "directory" => true
+        },
+        {
+            "path" => "WEB-INF/classes/org/jboss/as/quickstarts/kitchensink_ear/rest/",
+            "directory" => true
+        },
+        {
+            "path" => "WEB-INF/classes/org/jboss/as/quickstarts/kitchensink_ear/util/",
+            "directory" => true
+        },
+        {
+            "path" => "resources/",
+            "directory" => true
+        },
+        {
+            "path" => "resources/css/",
+            "directory" => true
+        },
+        {
+            "path" => "resources/gfx/",
+            "directory" => true
+        },
+        {
+            "path" => "WEB-INF/templates/default.xhtml",
+            "directory" => false,
+            "file-size" => 2113L
+        },
+        {
+            "path" => "WEB-INF/faces-config.xml",
+            "directory" => false,
+            "file-size" => 1365L
+        },
+        {
+            "path" => "WEB-INF/classes/org/jboss/as/quickstarts/kitchensink_ear/controller/MemberController.class",
+            "directory" => false,
+            "file-size" => 2750L
+        },
+        {
+            "path" => "WEB-INF/classes/org/jboss/as/quickstarts/kitchensink_ear/rest/MemberResourceRESTService.class",
+            "directory" => false,
+            "file-size" => 6363L
+        },
+        {
+            "path" => "WEB-INF/classes/org/jboss/as/quickstarts/kitchensink_ear/rest/JaxRsActivator.class",
+            "directory" => false,
+            "file-size" => 464L
+        },
+        {
+            "path" => "WEB-INF/classes/org/jboss/as/quickstarts/kitchensink_ear/util/WebResources.class",
+            "directory" => false,
+            "file-size" => 667L
+        },
+        {
+            "path" => "WEB-INF/beans.xml",
+            "directory" => false,
+            "file-size" => 1262L
+        },
+        {
+            "path" => "index.xhtml",
+            "directory" => false,
+            "file-size" => 3603L
+        },
+        {
+            "path" => "index.html",
+            "directory" => false,
+            "file-size" => 949L
+        },
+        {
+            "path" => "resources/css/screen.css",
+            "directory" => false,
+            "file-size" => 4025L
+        },
+        {
+            "path" => "resources/gfx/headerbkg.png",
+            "directory" => false,
+            "file-size" => 1147L
+        },
+        {
+            "path" => "resources/gfx/asidebkg.png",
+            "directory" => false,
+            "file-size" => 1374L
+        },
+        {
+            "path" => "resources/gfx/banner.png",
+            "directory" => false,
+            "file-size" => 41473L
+        },
+        {
+            "path" => "resources/gfx/bkg-blkheader.png",
+            "directory" => false,
+            "file-size" => 116L
+        },
+        {
+            "path" => "resources/gfx/rhjb_eap_logo.png",
+            "directory" => false,
+            "file-size" => 2637L
+        },
+        {
+            "path" => "META-INF/maven/",
+            "directory" => true
+        },
+        {
+            "path" => "META-INF/maven/org.wildfly.quickstarts/",
+            "directory" => true
+        },
+        {
+            "path" => "META-INF/maven/org.wildfly.quickstarts/wildfly-kitchensink-ear-web/",
+            "directory" => true
+        },
+        {
+            "path" => "META-INF/maven/org.wildfly.quickstarts/wildfly-kitchensink-ear-web/pom.xml",
+            "directory" => false,
+            "file-size" => 4128L
+        },
+        {
+            "path" => "META-INF/maven/org.wildfly.quickstarts/wildfly-kitchensink-ear-web/pom.properties",
+            "directory" => false,
+            "file-size" => 146L
+        }
+    ]
+}
+----
+
+You also have a *read-content* operation but since it returns a binary
+stream, this is not displayable from the CLI.
+
+[source, ruby]
+----
+[domain@localhost:9990 /] /deployment=kitchensink.ear:read-content(path=META-INF/MANIFEST.MF)
+{
+    "outcome" => "success",
+    "result" => {"uuid" => "b373d587-72ee-4b1e-a02a-71fbb0c85d32"},
+    "response-headers" => {"attached-streams" => [{
+        "uuid" => "b373d587-72ee-4b1e-a02a-71fbb0c85d32",
+        "mime-type" => "text/plain"
+    }]}
+}
+----
+
+The management CLI however provides high level commands to display or
+save binary stream attachments:
+
+[source, ruby]
+----
+[domain@localhost:9990 /] attachment display --operation=/deployment=kitchensink.ear:read-content(path=META-INF/MANIFEST.MF)
+ATTACHMENT d052340a-abb7-4a66-aa24-4eeeb6b256be:
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Built-By: mjurc
+Created-By: Apache Maven 3.3.9
+Build-Jdk: 1.8.0_91
+----
+
+----
+[domain@localhost:9990 /] attachment save --operation=/deployment=kitchensink.ear:read-content(path=META-INF/MANIFEST.MF) --file=example
+File saved to /home/mjurc/wildfly/build/target/wildfly-11.0.0.Alpha1-SNAPSHOT/example
+----
+
+[[xml-configuration-file]]
+=== XML Configuration File
+
+When you deploy content, the domain controller adds two types of entries
+to the `domain.xml` configuration file, one showing global information
+about the deployment, and another for each relevant server group showing
+how it is used by that server group:
+
+[source, xml]
+----
+[...]
+<deployments>
+   <deployment name="test-application.war"
+               runtime-name="test-application.war">
+       <content sha1="dda9881fa7811b22f1424b4c5acccb13c71202bd"/>
+   </deployment>
+</deployments>
+[...]
+<server-groups>
+   <server-group name="main-server-group" profile="default">
+       [...]
+       <deployments>
+           <deployment name="test-application.war" runtime-name="test-application.war"/>
+       </deployments>
+   </server-group>
+</server-groups>
+[...]
+----
+
+~(See domain/configuration/domain.xml)~
+
+[[standalone-server]]
+== Standalone Server
+
+Deployments on a standalone server work in a similar way to those on
+managed domains. The main difference is that there are no server group
+associations.
+
+[[deployment-commands-1]]
+=== Deployment Commands
+
+The same CLI commands used for managed domains work for standalone
+servers when deploying and removing an application:
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] deploy ~/Desktop/test-application.war
+'test-application.war' deployed successfully.
+ 
+[standalone@localhost:9990 /] undeploy test-application.war
+Successfully undeployed test-application.war.
+----
+
+[[deploying-using-the-deployment-scanner]]
+=== Deploying Using the Deployment Scanner
+
+Deployment content (for example, war, ear, jar, and sar files) can be
+placed in the standalone/deployments directory of the WildFly
+distribution, in order to be automatically deployed into the server
+runtime. For this to work the `deployment-scanner` subsystem must be
+present. The scanner periodically checks the contents of the deployments
+directory and reacts to changes by updating the server.
+
+[IMPORTANT]
+
+Users are encouraged to use the WildFly management APIs to upload and
+deploy deployment content instead of relying on the deployment scanner
+that periodically scans the directory, particularly if running
+production systems.
+
+[[deployment-scanner-modes]]
+==== Deployment Scanner Modes
+
+The WildFly filesystem deployment scanner operates in one of two
+different modes, depending on whether it will directly monitor the
+deployment content in order to decide to deploy or redeploy it.
+
+Auto-deploy mode:
+
+The scanner will directly monitor the deployment content, automatically
+deploying new content and redeploying content whose timestamp has
+changed. This is similiar to the behavior of previous AS releases,
+although there are differences:
+
+* A change in any file in an exploded deployment triggers redeploy.
+Because EE 6+ applications do not require deployment descriptors, +
+there is no attempt to monitor deployment descriptors and only redeploy
+when a deployment descriptor changes.
+* The scanner will place marker files in this directory as an indication
+of the status of its attempts to deploy or undeploy content. These are
+detailed below.
+
+Manual deploy mode:
+
+The scanner will not attempt to directly monitor the deployment content
+and decide if or when the end user wishes the content to be deployed.
+Instead, the scanner relies on a system of marker files, with the user's
+addition or removal of a marker file serving as a sort of command
+telling the scanner to deploy, undeploy or redeploy content.
+
+Auto-deploy mode and manual deploy mode can be independently configured
+for zipped deployment content and exploded deployment content. This is
+done via the "auto-deploy" attribute on the deployment-scanner element
+in the standalone.xml configuration file:
+
+[source, xml]
+----
+<deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir"
+   path="deployments" auto-deploy-zipped="true" auto-deploy-exploded="false"/>
+----
+
+By default, auto-deploy of zipped content is enabled, and auto-deploy of
+exploded content is disabled. Manual deploy mode is strongly recommended
+for exploded content, as exploded content is inherently vulnerable to
+the scanner trying to auto-deploy partially copied content.
+
+[[marker-files]]
+==== Marker Files
+
+The marker files always have the same name as the deployment content to
+which they relate, but with an additional file suffix appended. For
+example, the marker file to indicate the example.war file should be
+deployed is named example.war.dodeploy. Different marker file suffixes
+have different meanings.
+
+The relevant marker file types are:
+
+[cols=",",options="header"]
+|=======================================================================
+|File |Purpose
+
+|.dodeploy |Placed by the user to indicate that the given content
+shouldbe deployed into the runtime (or redeployed if alreadydeployed in
+the runtime.)
+
+|.skipdeploy |Disables auto-deploy of the content for as long as the
+fileis present. Most useful for allowing updates to explodedcontent
+without having the scanner initiate redeploy in themiddle of the update.
+Can be used with zipped content aswell, although the scanner will detect
+in-progress changesto zipped content and wait until changes are
+complete.
+
+|.isdeploying |Placed by the deployment scanner service to indicate that
+ithas noticed a .dodeploy file or new or updated auto-deploymode content
+and is in the process of deploying the content.This marker file will be
+deleted when the deployment processcompletes.
+
+|.deployed |Placed by the deployment scanner service to indicate that
+thegiven content has been deployed into the runtime. If an enduser
+deletes this file, the content will be undeployed.
+
+|.failed |Placed by the deployment scanner service to indicate that
+thegiven content failed to deploy into the runtime. The contentof the
+file will include some information about the cause ofthe failure. Note
+that with auto-deploy mode, removing thisfile will make the deployment
+eligible for deployment again.
+
+|.isundeploying |Placed by the deployment scanner service to indicate
+that ithas noticed a .deployed file has been deleted and thecontent is
+being undeployed. This marker file will be deletedwhen the undeployment
+process completes.
+
+|.undeployed |Placed by the deployment scanner service to indicate that
+thegiven content has been undeployed from the runtime. If an enduser
+deletes this file, it has no impact.
+
+|.pending |Placed by the deployment scanner service to indicate that
+ithas noticed the need to deploy content but has not yetinstructed the
+server to deploy it. This file is created ifthe scanner detects that
+some auto-deploy content is still inthe process of being copied or if
+there is some problem thatprevents auto-deployment. The scanner will not
+instruct theserver to deploy or undeploy any content (not just
+thedirectly affected content) as long as this condition holds.
+|=======================================================================
+
+==== Basic workflows:
+
+All examples assume variable $JBOSS_HOME points to the root of the
+WildFly distribution.
+
+[upperalpha]
+. Add new zipped content and deploy it:
+[arabic]
+..  cp target/example.war/ $JBOSS_HOME/standalone/deployments
+..  (Manual mode only) touch
+$JBOSS_HOME/standalone/deployments/example.war.dodeploy
+. Add new unzipped content and deploy it:
+..  cp -r target/example.war/ $JBOSS_HOME/standalone/deployments
+..  (Manual mode only) touch
+$JBOSS_HOME/standalone/deployments/example.war.dodeploy
+. Undeploy currently deployed content:
+..  rm $JBOSS_HOME/standalone/deployments/example.war.deployed
+. Auto-deploy mode only: Undeploy currently deployed content:
+..  rm $JBOSS_HOME/standalone/deployments/example.war
+. Replace currently deployed zipped content with a new version and deploy it:
+..  cp target/example.war/ $JBOSS_HOME/standalone/deployments
+..  (Manual mode only) touch
+$JBOSS_HOME/standalone/deployments/example.war.dodeploy
+. Manual mode only: Replace currently deployed unzipped content with a
+new version and deploy it:
+..  rm $JBOSS_HOME/standalone/deployments/example.war.deployed
+..  wait for $JBOSS_HOME/standalone/deployments/example.war.undeployed
+file to appear
+..  cp -r target/example.war/ $JBOSS_HOME/standalone/deployments
+..  touch $JBOSS_HOME/standalone/deployments/example.war.dodeploy
+. Auto-deploy mode only: Replace currently deployed unzipped content
+with a new version and deploy it:
+..  touch $JBOSS_HOME/standalone/deployments/example.war.skipdeploy
+..  cp -r target/example.war/ $JBOSS_HOME/standalone/deployments
+..  rm $JBOSS_HOME/standalone/deployments/example.war.skipdeploy
+. Manual mode only: Live replace portions of currently deployed
+unzipped content without redeploying:
+.. cp -r target/example.war/foo.html
+$JBOSS_HOME/standalone/deployments/example.war
+. Auto-deploy mode only: Live replace portions of currently deployed
+unzipped content without redeploying:
+..  touch $JBOSS_HOME/standalone/deployments/example.war.skipdeploy
+..  cp -r target/example.war/foo.html
+$JBOSS_HOME/standalone/deployments/example.war
+. Manual or auto-deploy mode: Redeploy currently deployed content
+(i.e. bounce it with no content change):
+..  touch $JBOSS_HOME/standalone/deployments/example.war.dodeploy
+. Auto-deploy mode only: Redeploy currently deployed content (i.e.
+bounce it with no content change):
+..  touch $JBOSS_HOME/standalone/deployments/example.war
+
+[TIP]
+
+The above examples use Unix shell commands. Windows equivalents are:
+cp src dest --> xcopy /y src dest +
+cp -r src dest --> xcopy /e /s /y src dest +
+rm afile --> del afile +
+touch afile --> echo>> afile
+
+Note that the behavior of 'touch' and 'echo' are different but the
+differences are not relevant to the usages in the examples above.
+
+[[managed-and-unmanaged-deployments]]
+== Managed and Unmanaged Deployments
+
+WildFly supports two mechanisms for dealing with deployment content –
+managed and unmanaged deployments.
+
+With a managed deployment the server takes the deployment content and
+copies it into an internal content repository and thereafter uses that
+copy of the content, not the original user-provided content. The server
+is thereafter responsible for the content it uses.
+
+With an unmanaged deployment the user provides the local filesystem path
+of deployment content, and the server directly uses that content.
+However the user is responsible for ensuring that content, e.g. for
+making sure that no changes are made to it that will negatively impact
+the functioning of the deployed application.
+
+To help you differentiate managed from unmanaged deployments the
+deployment model has a runtime boolean attribute 'managed'.
+
+Managed deployments have a number of benefits over unmanaged:
+
+* They can be manipulated by remote management clients, not requiring
+access to the server filesystem.
+* In a managed domain, WildFly/EAP will take responsibility for
+replicating a copy of the deployment to all hosts/servers in the domain
+where it is needed. With an unmanaged deployment, it is the user's
+responsibility to have the deployment available on the local filesystem
+on all relevant hosts, at a consistent path.
+* The deployment content actually used is stored on the filesystem in
+the internal content repository, which should help shelter it from
+unintended changes.
+
+All of the previous examples above illustrate using managed deployments,
+except for any discussion of deployment scanner handling of exploded
+deployments. In WildFly 10 and earlier exploded deployments are always
+unmanaged, this is no longer the case since WildFly 11.
+
+[[content-repository]]
+=== Content Repository
+
+For a managed deployment, the actual file the server uses when creating
+runtime services is not the file provided to the CLI `deploy` command or
+to the web console. It is a copy of that file stored in an internal
+content repository. The repository is located in the
+`domain/data/content` directory for a managed domain, or in
+`standalone/data/content` for a standalone server. Actual binaries are
+stored in a subdirectory:
+
+[source,bash]
+----
+ls domain/data/content/
+  |---/47
+  |-----95cc29338b5049e238941231b36b3946952991
+  |---/dd
+  |-----a9881fa7811b22f1424b4c5acccb13c71202bd
+----
+
+[TIP]
+
+The location of the content repository and its internal structure is
+subject to change at any time and should not be relied upon by end
+users.
+
+The description of a managed deployment in the domain or standalone
+configuration file includes an attribute recording the SHA1 hash of the
+deployment content:
+
+[source, xml]
+----
+<deployments>
+   <deployment name="test-application.war"
+               runtime-name="test-application.war">
+       <content sha1="dda9881fa7811b22f1424b4c5acccb13c71202bd"/>
+   </deployment>
+</deployments>
+----
+
+The WildFly process calculates and records that hash when the user
+invokes a management operation (e.g. CLI `deploy` command or using the
+console) providing deployment content. The user is not expected to
+calculate the hash.
+
+The sha1 attribute in the content element tells the WildFly process
+where to find the deployment content in its internal content repository.
+
+In a domain each host will have a copy of the content needed by its
+servers in its own local content repository. The WildFly domain
+controller and slave host controller processes take responsibility for
+ensuring each host has the needed content.
+
+[[unmanaged-deployments]]
+=== Unmanaged Deployments
+
+An unmanaged deployment is one where the server directly deploys the
+content at a path you specify instead of making an internal copy and
+then deploying the copy.
+
+Initially deploying an unmanaged deployment is much like deploying a
+managed one, except you tell WildFly that you do not want the deployment
+to be managed:
+
+[source]
+----
+[standalone@localhost:9990 /] deploy ~/Desktop/test-application.war --unmanaged
+'test-application.war' deployed successfully.
+----
+
+When you do this, instead of the server making a copy of the content at
+`/Desktop/test-application.war`, calculating the hash of the content,
+storing the hash in the configuration file and then installing the copy
+into the runtime, instead it will convert
+`/Desktop/test-application.war` to an absolute path, store the path in
+the configuration file, and then install the original content in the
+runtime.
+
+You can also use unmanaged deployments in a domain:
+
+[source]
+----
+[domain@localhost:9990 /] deploy /home/example/Desktop/test-application.war --server-group=main-server-group --unmanaged
+'test-application.war' deployed successfully.
+----
+
+However, before you run this command you must ensure that a copy of the
+content is present on all machines that have servers in the target
+server groups, all at the same filesystem path. The domain will not copy
+the file for you.
+
+Undeploy is no different from a managed undeploy:
+
+[source]
+----
+[standalone@localhost:9990 /] undeploy test-application.war
+Successfully undeployed test-application.war.
+----
+
+Doing a replacement of the deployment with a new version is a bit
+different, the server is using the file you want to replace. You should
+undeploy the deployment, replace the content, and then deploy again. Or
+you can stop the server, replace the deployment and deploy again.
+
+:leveloffset: +1
+
+include::Deployment_Overlays.adoc[]
+
+:leveloffset: -1

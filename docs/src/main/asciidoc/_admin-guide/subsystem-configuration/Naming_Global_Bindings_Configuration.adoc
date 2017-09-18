@@ -1,0 +1,214 @@
+= Global Bindings Configuration
+
+The Naming subsystem configuration allows binding entries into the
+following global JNDI namespaces:
+
+* `java:global`
+* `java:jboss`
+* `java:`
+
+[NOTE]
+
+If WildFly is to be used as a Java EE application server, then it's
+recommended to opt for `java:global`, since it is a standard (i.e.
+portable) namespace.
+
+Four different types of bindings are supported:
+
+* Simple
+* Object Factory
+* External Context
+* Lookup
+
+In the subsystem's XML configuration, global bindings are configured
+through the `<bindings />` XML element, as an example:
+
+[source, xml]
+----
+<bindings>
+    <simple name="java:global/a" value="100" type="int" />
+    <object-factory name="java:global/foo/bar/factory" module="org.foo.bar" class="org.foo.bar.ObjectFactory" />
+    <external-context name="java:global/federation/ldap/example" class="javax.naming.directory.InitialDirContext" cache="true">
+        <environment>
+            <property name="java.naming.factory.initial" value="com.sun.jndi.ldap.LdapCtxFactory" />
+            <property name="java.naming.provider.url" value="ldap://ldap.example.com:389" />
+            <property name="java.naming.security.authentication" value="simple" />
+            <property name="java.naming.security.principal" value="uid=admin,ou=system" />
+            <property name="java.naming.security.credentials" value="secret" />
+        </environment>
+    </external-context>
+    <lookup name="java:global/c" lookup="java:global/b" />
+</bindings>
+----
+
+[[simple-bindings]]
+== Simple Bindings
+
+A simple binding is a primitive or java.net.URL entry, and it is defined
+through the `simple` XML element. An example of its XML configuration:
+
+[source,xml]
+----
+<simple name="java:global/a" value="100" type="int" />
+----
+
+The `name` attribute is mandatory and specifies the target JNDI name for
+the entry.
+
+The `value` attribute is mandatory and defines the entry's value.
+
+The optional `type` attribute, which defaults to `java.lang.String`,
+specifies the type of the entry's value. Besides java.lang.String,
+allowed types are all the primitive types and their corresponding object
+wrapper classes, such as int or java.lang.Integer, and java.net.URL.
+
+Management clients, such as the WildFly CLI, may be used to configure
+simple bindings. An example to `add` and `remove` the one in the XML
+example above:
+
+[source,ruby]
+----
+/subsystem=naming/binding=java\:global\/a:add(binding-type=simple, type=int, value=100)
+/subsystem=naming/binding=java\:global\/a:remove
+----
+
+[[object-factories]]
+== Object Factories
+
+The Naming subsystem configuration allows the binding of
+`javax.naming.spi.ObjectFactory` entries, through the `object-factory`
+XML element, for instance:
+
+[source, xml]
+----
+<object-factory name="java:global/foo/bar/factory" module="org.foo.bar" class="org.foo.bar.ObjectFactory">
+    <environment>
+        <property name="p1" value="v1" />
+        <property name="p2" value="v2" />
+    </environment>
+</object-factory>
+----
+
+The `name` attribute is mandatory and specifies the target JNDI name for
+the entry.
+
+The `class` attribute is mandatory and defines the object factory's Java
+type.
+
+The `module` attribute is mandatory and specifies the JBoss Module ID
+where the object factory Java class may be loaded from.
+
+The optional `environment` child element may be used to provide a custom
+environment to the object factory.
+
+Management clients, such as the WildFly CLI, may be used to configure
+object factory bindings. An example to `add` and `remove` the one in the
+XML example above:
+
+[source, ruby]
+----
+/subsystem=naming/binding=java\:global\/foo\/bar\/factory:add(binding-type=object-factory, module=org.foo.bar, class=org.foo.bar.ObjectFactory, environment=[p1=v1, p2=v2])
+/subsystem=naming/binding=java\:global\/foo\/bar\/factory:remove
+----
+
+[[external-context-federation]]
+== External Context Federation
+
+Federation of external JNDI contexts, such as a LDAP context, are
+achieved by adding External Context bindings to the global bindings
+configuration, through the `external-context` XML element. An example of
+its XML configuration:
+
+[source, xml]
+----
+<external-context name="java:global/federation/ldap/example" class="javax.naming.directory.InitialDirContext" cache="true">
+    <environment>
+        <property name="java.naming.factory.initial" value="com.sun.jndi.ldap.LdapCtxFactory" />
+        <property name="java.naming.provider.url" value="ldap://ldap.example.com:389" />
+        <property name="java.naming.security.authentication" value="simple" />
+        <property name="java.naming.security.principal" value="uid=admin,ou=system" />
+        <property name="java.naming.security.credentials" value="secret" />
+    </environment>
+</external-context>
+----
+
+The `name` attribute is mandatory and specifies the target JNDI name for
+the entry.
+
+The `class` attribute is mandatory and indicates the Java initial naming
+context type used to create the federated context. Note that such type
+must have a constructor with a single environment map argument.
+
+The optional `module` attribute specifies the JBoss Module ID where any
+classes required by the external JNDI context may be loaded from.
+
+The optional `cache` attribute, which value defaults to `false`,
+indicates if the external context instance should be cached.
+
+The optional `environment` child element may be used to provide the
+custom environment needed to lookup the external context.
+
+Management clients, such as the WildFly CLI, may be used to configure
+external context bindings. An example to `add` and `remove` the one in
+the XML example above:
+
+[source, ruby]
+----
+/subsystem=naming/binding=java\:global\/federation\/ldap\/example:add(binding-type=external-context, cache=true, class=javax.naming.directory.InitialDirContext, environment=[java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory, java.naming.provider.url=ldap\:\/\/ldap.example.com\:389, java.naming.security.authentication=simple, java.naming.security.principal=uid\=admin\,ou\=system, java.naming.security.credentials= secret])
+ 
+/subsystem=naming/binding=java\:global\/federation\/ldap\/example:remove
+----
+
+Some JNDI providers may fail when their resources are looked up if they
+do not implement properly the lookup(Name) method. Their errors would
+look like:
+
+[cols="",options="header"]
+|=======================================================================
+|11:31:49,047 ERROR org.jboss.resource.adapter.jms.inflow.JmsActivation
+(default-threads -1) javax.naming.InvalidNameException: Only support
+CompoundName namesat
+com.tibco.tibjms.naming.TibjmsContext.lookup(TibjmsContext.java:504)at
+javax.naming.InitialContext.lookup(InitialContext.java:421)
+|=======================================================================
+
+To work around their shortcomings, the
+`org.jboss.as.naming.lookup.by.string` property can be specified in the
+external-context's environment to use instead the lookup(String) method
+(with a performance degradation):
+
+[source, xml]
+----
+<property name="org.jboss.as.naming.lookup.by.string" value="true"/>
+----
+
+*Binding Aliases*
+
+The Naming subsystem configuration allows the binding of existent
+entries into additional names, i.e. aliases. Binding aliases are
+specified through the `lookup` XML element. An example of its XML
+configuration:
+
+[source, xml]
+----
+<lookup name="java:global/c" lookup="java:global/b" />
+----
+
+The `name` attribute is mandatory and specifies the target JNDI name for
+the entry.
+
+The `lookup` attribute is mandatory and indicates the source JNDI name.
+It can chain lookups on external contexts. For example, having an
+external context bounded to _java:global/federation/ldap/example_,
+searching can be done there by setting `lookup` attribute to
+_java:global/federation/ldap/example/subfolder_.
+
+Management clients, such as the WildFly CLI, may be used to configure
+binding aliases. An example to `add` and `remove` the one in the XML
+example above:
+
+[source, ruby]
+----
+/subsystem=naming/binding=java\:global\/c:add(binding-type=lookup, lookup=java\:global\/b)
+/subsystem=naming/binding=java\:global\/c:remove
+----

@@ -1,0 +1,299 @@
+= The HTTP management API
+
+[[introduction]]
+== Introduction
+
+The Management API in WildFly is accessible through multiple channels,
+one of them being HTTP and JSON.
+
+Even if you haven't used a curl command line you might already have used
+this channel since it is how the web console interact with the
+Management API.
+
+WildFly 9 is distributed secured by default, the default security
+mechanism is _username / password_ based making use of *HTTP Digest* for
+the authentication process.
+
+Thus *you need to create a user* with the
+link:add-user_utility.html[add-user.sh] script.
+
+[[interacting-with-the-model]]
+== Interacting with the model
+
+Since we must be authenticated , the client will have to support HTTP
+Digest authentication.
+
+For example this can be activated in _curl_ using the _--digest_ option.
+
+The WildFly HTTP Management API adheres to the REST principles so the
+GET operations must be idempotent.
+
+This means that using a request with method *GET* can be used to read
+the model but *you won't be able to change it*.
+
+You must use *POST* to change the model or read it. A *POST* request may
+contain the operation either in DMR or in JSON format as its body.
+
+You have to define the *Content-Type=application/json* header in the
+request to specify that you are using some JSON.
+
+If you want to submit DMR in the request body then the *Content-Type* or
+the *Accept* header should be *"application/dmr-encoded"*.
+
+[[get-for-reading]]
+== GET for Reading
+
+While you can do everything with *POST*, some operations can be called
+through a 'classical' *GET* request.
+
+These are the supported operations for a GET :
+
+* attribute : for a read-attribute operation
+* resource : for a read-resource operation
+* resource-description : for a read-resource-description operation
+* snapshots : for the list-snapshots operation
+* operation-description : for a read-operation-description operation
+* operation-names : for ad read-operation-names operation
+
+The URL format is the following one : _http://server:9990/management/_
+_<path_to_resource>?operation=<operation_name>&operation_parameter=<value>..._
+
+_path_to_resource_ is the path to the wanted resource replacing all '='
+with '/' : thus for example subsystem=undertow/server=default-server
+becomes subsystem/undertow/server/default-server.
+
+So to read the server-state :
+
+....
+http://localhost:9990/management?operation=attribute&name=server-state&json.pretty=1
+....
+
+[[lets-read-some-resource]]
+== Let's read some resource
+
+* This is simple operation that is equivalent of running
+:read-attribute(name=server-state) with CLI in root directory
+** Using GET
++
+....
+http://localhost:9990/management?operation=attribute&name=server-state&json.pretty=1
+....
+** Using POST
++
+[source,ruby]
+----
+$ curl --digest -L -D - http://localhost:9990/management --header "Content-Type: application/json" -d '{"operation":"read-attribute","name":"server-state","json.pretty":1}' -u admin
+Enter host password for user 'admin':
+HTTP/1.1 401 Unauthorized
+Connection: keep-alive
+WWW-Authenticate: Digest realm="ManagementRealm",domain="/management",nonce="P80WU3BANtQNMTQwNjg5Mzc5MDQ2MlpjmRaZ+Vlp1OVeNEGBeXg=",opaque="00000000000000000000000000000000",algorithm=MD5
+Content-Length: 77
+Content-Type: text/html
+Date: Fri, 01 Aug 2014 11:49:50 GMT
+ 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Authentication-Info: nextnonce="M+h9aADejeINMTQwNjg5Mzc5MDQ2OPQbHKdAS8pRE8BbGEDY5uI="
+Content-Type: application/json; charset=utf-8
+Content-Length: 55
+Date: Fri, 01 Aug 2014 11:49:50 GMT
+ 
+{
+    "outcome" : "success",
+    "result" : "running"
+}
+----
+
+* Here's an example of an operation on a resource with a nested address
+and passed parameters. This is same as if you would run
+*/host=master/server=server-01:read-attribute(name=server-state)*
+
+[source,ruby]
+----
+$ curl --digest -L -D - http://localhost:9990/management --header "Content-Type: application/json" -d '{"operation":"read-attribute","address":[{"host":"master"},{"server":"server-01"}],"name":"server-state","json.pretty":1}'
+HTTP/1.1 200 OK
+Transfer-encoding: chunked
+Content-type: application/json
+Date: Tue, 17 Apr 2012 04:02:24 GMT
+ 
+{
+    "outcome" : "success",
+    "result" : "running"
+}
+----
+
+* Following example will get us information from http connection in
+undertow subsystem including run-time attributes +
+This is the same as running
+/subsystem=undertow/server=default-server:read-resource(include-runtime=true,recursive=true)
+in CLI
+** Using GET
++
+[source, ruby]
+----
+http://localhost:9990/management/subsystem/undertow/server/default-server?operation=resource&recursive=true&json.pretty=1
+ 
+{
+    "default-host" : "default-host",
+    "servlet-container" : "default",
+    "ajp-listener" : null,
+    "host" : {"default-host" : {
+        "alias" : ["localhost"],
+        "default-web-module" : "ROOT.war",
+        "filter-ref" : {
+            "server-header" : {"predicate" : null},
+            "x-powered-by-header" : {"predicate" : null}
+        },
+        "location" : {"/" : {
+            "handler" : "welcome-content",
+            "filter-ref" : null
+        }},
+        "setting" : null
+    }},
+    "http-listener" : {"default" : {
+        "allow-encoded-slash" : false,
+        "allow-equals-in-cookie-value" : false,
+        "always-set-keep-alive" : true,
+        "buffer-pipelined-data" : true,
+        "buffer-pool" : "default",
+        "certificate-forwarding" : false,
+        "decode-url" : true,
+        "enabled" : true,
+        "max-buffered-request-size" : 16384,
+        "max-cookies" : 200,
+        "max-header-size" : 51200,
+        "max-headers" : 200,
+        "max-parameters" : 1000,
+        "max-post-size" : 10485760,
+        "proxy-address-forwarding" : false,
+        "read-timeout" : null,
+        "receive-buffer" : null,
+        "record-request-start-time" : false,
+        "redirect-socket" : "https",
+        "send-buffer" : null,
+        "socket-binding" : "http",
+        "tcp-backlog" : null,
+        "tcp-keep-alive" : null,
+        "url-charset" : "UTF-8",
+        "worker" : "default",
+        "write-timeout" : null
+    }},
+    "https-listener" : null
+}
+----
+** Using POST
++
+[source,ruby]
+----
+$ curl --digest -D - http://localhost:9990/management --header "Content-Type: application/json" -d '{"operation":"read-resource", "include-runtime":"true" , "recursive":"true", "address":["subsystem","undertow","server","default-server"], "json.pretty":1}' -u admin:admin
+HTTP/1.1 401 Unauthorized
+Connection: keep-alive
+WWW-Authenticate: Digest realm="ManagementRealm",domain="/management",nonce="a3paQ9E0/l8NMTQwNjg5OTU0NDk4OKjmim2lopZNc5zCevjYWpk=",opaque="00000000000000000000000000000000",algorithm=MD5
+Content-Length: 77
+Content-Type: text/html
+Date: Fri, 01 Aug 2014 13:25:44 GMT
+ 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Authentication-Info: nextnonce="nTOSJd3ufO4NMTQwNjg5OTU0NDk5MeUsRw5rKXUT4Qvk1nbrG5c="
+Content-Type: application/json; charset=utf-8
+Content-Length: 1729
+Date: Fri, 01 Aug 2014 13:25:45 GMT
+ 
+{
+    "outcome" : "success",
+    "result" : {
+        "default-host" : "default-host",
+        "servlet-container" : "default",
+        "ajp-listener" : null,
+        "host" : {"default-host" : {
+            "alias" : ["localhost"],
+            "default-web-module" : "ROOT.war",
+            "filter-ref" : {
+                "server-header" : {"predicate" : null},
+                "x-powered-by-header" : {"predicate" : null}
+            },
+            "location" : {"/" : {
+                "handler" : "welcome-content",
+                "filter-ref" : null
+            }},
+            "setting" : null
+        }},
+        "http-listener" : {"default" : {
+            "allow-encoded-slash" : false,
+            "allow-equals-in-cookie-value" : false,
+            "always-set-keep-alive" : true,
+            "buffer-pipelined-data" : true,
+            "buffer-pool" : "default",
+            "certificate-forwarding" : false,
+            "decode-url" : true,
+            "enabled" : true,
+            "max-buffered-request-size" : 16384,
+            "max-cookies" : 200,
+            "max-header-size" : 51200,
+            "max-headers" : 200,
+            "max-parameters" : 1000,
+            "max-post-size" : 10485760,
+            "proxy-address-forwarding" : false,
+            "read-timeout" : null,
+            "receive-buffer" : null,
+            "record-request-start-time" : false,
+            "redirect-socket" : "https",
+            "send-buffer" : null,
+            "socket-binding" : "http",
+            "tcp-backlog" : null,
+            "tcp-keep-alive" : null,
+            "url-charset" : "UTF-8",
+            "worker" : "default",
+            "write-timeout" : null
+        }},
+        "https-listener" : null
+    }
+}
+----
+
+* You may also used some encoded DMR but the result won't be human
+readable
++
+[source,bash]
+----
+curl --digest -u admin:admin --header "Content-Type: application/dmr-encoded" -d bwAAAAMACW9wZXJhdGlvbnMADXJlYWQtcmVzb3VyY2UAB2FkZHJlc3NsAAAAAAAHcmVjdXJzZVoB  http://localhost:9990/management
+----
+
+* You can deploy applications on the server
+** First upload the file which will create a managed content. You will
+have to use http://localhost:9990/management/*add-content*
++
+[source,ruby]
+----
+curl --digest -u admin:admin --form file=@tiny-webapp.war  http://localhost:9990/management/add-content
+{"outcome" : "success", "result" : { "BYTES_VALUE" : "+QJlHTDrogO9pm/57GkT/vxWNz0=" }}
+----
+** Now let's deploy the application
++
+[source,ruby]
+----
+curl --digest -u admin:admin -L --header "Content-Type: application/json" -d '{"content":[{"hash": {"BYTES_VALUE" : "+QJlHTDrogO9pm/57GkT/vxWNz0="}}], "address": [{"deployment":"tiny-webapp.war"}], "operation":"add", "enabled":"true"}' http://localhost:9990/management
+{"outcome" : "success"}
+----
+
+[[using-some-jax-rs-code]]
+== Using some JAX-RS code
+
+[source, java]
+----
+HttpAuthenticationFeature feature = HttpAuthenticationFeature.digest("admin", "admin");
+Client client = ClientBuilder.newClient();
+client.register(feature);
+Entity<SimpleOperation> operation = Entity.entity(
+    new SimpleOperation("read-resource", true, "subsystem", "undertow", "server", "default-server"),
+    MediaType.APPLICATION_JSON_TYPE);
+WebTarget managementResource = client.target("http://localhost:9990/management");
+String response = managementResource.request(MediaType.APPLICATION_JSON_TYPE)
+    .header("Content-type", MediaType.APPLICATION_JSON)
+    .post(operation, String.class);
+System.out.println(response);
+ 
+ 
+{"outcome" : "success", "result" : {"default-host" : "default-host", "servlet-container" : "default", "ajp-listener" : null, "host" : {"default-host" : {"alias" : ["localhost"], "default-web-module" : "ROOT.war", "filter-ref" : {"server-header" : {"predicate" : null}, "x-powered-by-header" : {"predicate" : null}}, "location" : {"/" : {"handler" : "welcome-content", "filter-ref" : null}}, "setting" : null}}, "http-listener" : {"default" : {"allow-encoded-slash" : false, "allow-equals-in-cookie-value" : false, "always-set-keep-alive" : true, "buffer-pipelined-data" : true, "buffer-pool" : "default", "certificate-forwarding" : false, "decode-url" : true, "enabled" : true, "max-buffered-request-size" : 16384, "max-cookies" : 200, "max-header-size" : 51200, "max-headers" : 200, "max-parameters" : 1000, "max-post-size" : 10485760, "proxy-address-forwarding" : false, "read-timeout" : null, "receive-buffer" : null, "record-request-start-time" : false, "redirect-socket" : "https", "send-buffer" : null, "socket-binding" : "http", "tcp-backlog" : null, "tcp-keep-alive" : null, "url-charset" : "UTF-8", "worker" : "default", "write-timeout" : null}}, "https-listener" : null}}
+----

@@ -1,0 +1,18 @@
+= Target Audience
+
+This document is a guide to the setup, administration, and configuration
+of WildFly.
+
+[[prerequisites]]
+== Prerequisites
+
+Before continuing, you should know how to download, install and run
+WildFly. For more information on these steps, refer here:
+link:Getting_Started_Guide.html[Getting Started Guide].
+
+[[examples-in-this-guide]]
+== Examples in this guide
+
+The examples in this guide are largely expressed as XML configuration
+file excerpts, or by using a representation of the de-typed management
+model.

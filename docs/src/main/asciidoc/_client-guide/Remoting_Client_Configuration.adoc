@@ -1,0 +1,88 @@
+= Remoting Client Configuration
+
+== <endpoint /> - Remoting Client
+
+You can use the `endpoint` element, which is in the `urn:jboss-remoting:5.0` namespace, to configure a JBoss Remoting client endpoint using the `wildfly-config.xml` file. This section describes how to configure a JBoss Remoting client using this element.
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+...
+    <endpoint xmlns="urn:jboss-remoting:5.0">
+       ...
+    </endpoint>
+...
+</configuration>
+----
+
+This section describes the child elements and attributes that can be configured within this element.
+
+The _<endpoint />_&nbsp;element contains the following optional attribute:
+
+[cols=",",options="header"]
+|===
+| Attribute Name | Attribute Description
+| `name` | The endpoint name.  If not given, an endpoint name will be derived from the system's host name, if possible.
+|===
+
+The _<endpoint />_&nbsp;element can optionally contain the following two child elements, as described in the next sections:
+
+* *<providers />*
+* *<connections />*
+
+The configured endpoint will use the default XNIO configuration.
+
+=== <providers />
+
+This optional element specifies transport providers for the remote endpoint. It can contain any number of _<provider />_&nbsp;sub-elements.
+
+==== <provider />
+
+This element defines a remote transport provider provider. It has the following attributes.
+
+[cols=",",options="header"]
+|===
+| Attribute Name | Attribute Description
+| `scheme` | The primary URI scheme which corresponds to this provider. This attribute is required.
+| `aliases` | A space-separated list of other URI scheme names that are also recognized for this provider . This attribute is optional.
+| `module` | The name of the module that contains the provider implementation.  This attribute is optional; if not given, the class loader of JBoss Remoting itself will be searched for the provider class.
+| `class` | The name of the class that implements the transport provider.  This attribute is optional; if not given, the Java `java.util.ServiceLoader` facility will be used to search for the provider class.
+|===
+
+This element has no content.
+
+=== <connections />
+
+This optional element specifies connections for the remote endpoint. It can contain any number of [#connection] elements.
+
+==== <connection />
+
+This element defines a connection for the remote endpoint. It has the following attributes.
+
+[cols=",",options="header"]
+|===
+| Attribute Name | Attribute Description
+| `destination` | The destination URI for the connection. This attribute is required.
+| `read-timeout` | The timeout, in seconds, for read operations on the corresponding socket. This attribute is optional, however it should only be given if a `heartbeat-interval` is defined.
+| `write-timeout` | The timeout, in seconds, for a write operation. This attribute is optional, however it should only be given if a `heartbeat-interval` is defined..
+| `ip-traffic-class` | Defines the numeric IP traffic class to use for this connection's traffic.  This attribute is optional.
+| `tcp-keepalive` | Boolean setting that determines whether to use TCP keepalive. This attribute is optional.
+| `heartbeat-interval` | The interval, in milliseconds, to use when checking for a connection heartbeat. This attribute is optional.
+|===
+
+=== Example Remoting Client Configuration in the wildfly-config.xml File
+
+[source, xml]
+----
+<configuration>
+...
+    <endpoint xmlns="urn:jboss-remoting:5.0">
+        <connections>
+            <connection destination="remote+http://10.20.30.40:8080" read-timeout="50" write-timeout="50" heartbeat-interval="10000"/>
+        </connections>
+    </endpoint>
+...
+</configuration>
+----

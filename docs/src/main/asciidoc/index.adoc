@@ -1,0 +1,88 @@
+= Documentation
+:ext-relative: {outfilesuffix}
+
+image:images/splash_wildflylogo_small.png[WildFly, align="center"]
+
+Welcome to the WildFly Documentation. The documentation for WildFly is
+split into two categories:
+
+* _Administrator Guides_ for those wanting to understand how to install
+and configure the server
+
+* _Developer Guides_ for those wanting to understand how to develop
+applications for the server
+
+There is also the http://wildscribe.github.io/[WildFly Model Reference]
+that provides information about all subsystem configuration options
+generated directly from the management model.
+
+[[administrator-guides]]
+== Administrator Guides
+
+* The link:Getting_Started_Guide{outfilesuffix}[Getting Started Guide] shows you
+how to install and start the server, how to configure logging, how to
+deploy an application, how to deploy a datasource, and how to get
+started using the command line interface and web management interface
+
+* The link:Admin_Guide{outfilesuffix}[Admin Guide] provides detailed information
+on using the CLI and Web Management interface, how to use the domain
+configuration, and shows you how to configure key subsystems
+
+* The link:High_Availability_Guide{outfilesuffix}[High Availability Guide] shows
+you how to create a cluster, how configure the web container and EJB
+container for clustering, and shows you how to configure load balancing
+and failover
+
+[[developer-guides]]
+== Developer Guides
+
+* The link:Getting_Started_Developing_Applications_Guide{outfilesuffix}[Getting
+Started Developing Applications Guide] shows you how to build Java EE
+applications and deploy them to WildFly. The guide starts by showing you
+the simplest _helloworld_ application using just Servlet and CDI, and
+then adds in JSF, persistence and transactions, EJB, Bean Validation,
+RESTful web services and more. You'll also discover how to deploy an
+OSGi bundle to WildFly. Finally, you'll get the opportunity to create
+your own skeleton project. Each tutorial is accompanied by a quickstart,
+which contains the source code, deployment descriptors and a Maven based
+build.
+
+* The link:Developer_Guide{outfilesuffix}[Developer Guide] ( _in progress_) takes
+you through every deployment descriptor and every annotation offered by
+WildFly.
+
+* The link:JavaEE_Tutorial{outfilesuffix}[JavaEE Tutorial] ( _in progress_)
+builds on what you learnt in the
+link:Getting_Started_Developing_Applications_Guide{outfilesuffix}[Getting Started
+Developing Applications Guide], and shows you how to build a complex
+application using Java EE and portable extensions.
+
+* The link:Extending_WildFly{outfilesuffix}[Extending WildFly] guide walks you
+through creating a new WildFly subsystem extension, in order to add more
+functionality to WildFly, and shows how to test it before plugging it
+into WildFly.
+
+* The link:Testsuite{outfilesuffix}[WildFly Testsuite] guide walks you trough testing WildFly
+
+== Security Guide
+
+* The link:WildFly_Elytron_Security{outfilesuffix}[WildFly Elytron Security] guide walks you trough new security layer of of WildFly
+
+
+[[quickstarts]]
+== Quickstarts
+
+WildFly comes with a number of quickstarts, examples which introduce to
+a particular technology or feature of the application server. The
+link:https://github.com/jboss-developer/jboss-developer-shared-resources/blob/master/guides/CONTRIBUTING.md#contribute-a-quickstart[Contributing a Quickstart] section
+of the documentation details the available quickstarts
+
+[[more-resources]]
+== More Resources
+
+* link:Glossary.html[Glossary]
+* http://www.wildfly.org[WildFly project page]
+* https://issues.jboss.org/browse/WFLY[WildFly issue tracker]
+* https://community.jboss.org/en/wildfly[WildFly user forum]
+* https://community.jboss.org/en/wildfly/dev[WildFly wiki]
+* https://github.com/wildfly/wildfly/[WildFly source]

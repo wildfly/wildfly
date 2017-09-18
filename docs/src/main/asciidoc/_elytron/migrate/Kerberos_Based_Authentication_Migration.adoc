@@ -1,0 +1,315 @@
+= Kerberos Authentication Migration
+
+When working with Kerberos configuration it is possible for the
+application server to rely on configuration from the environment or the
+key configuration can be specified using system properties, for the
+purpose of these examples I define system properties - these properties
+are applicable to both the legacy configuration and the migrated Elytron
+configuration.
+
+[source, ruby]
+----
+./system-property=sun.security.krb5.debug:add(value=true)
+./system-property=java.security.krb5.realm:add(value=ELYTRON.ORG)
+./system-property=java.security.krb5.kdc:add(value=kdc.elytron.org)
+----
+
+The first line makes debugging easier but the last two lines specify the
+Kerberos realm in use and the address of the KDC.
+
+[source, xml]
+----
+  <system-properties>
+    <property name="sun.security.krb5.debug" value="true"/>
+    <property name="java.security.krb5.realm" value="ELYTRON.ORG"/>
+    <property name="java.security.krb5.kdc" value="kdc.elytron.org"/>
+  </system-properties>
+----
+
+[[http-authentication]]
+== HTTP Authentication
+
+[[legacy-security-realm]]
+=== Legacy Security Realm
+
+A legacy security realm can be define so that SPNEGO authentication can
+be enabled for the HTTP management interface.
+
+[source, ruby]
+----
+./core-service=management/security-realm=Kerberos:add
+./core-service=management/security-realm=Kerberos/server-identity=kerberos:add
+./core-service=management/security-realm=Kerberos/server-identity=kerberos/keytab=HTTP\/test-server.elytron.org@ELYTRON.ORG:add(path=/home/darranl/src/kerberos/test-server.keytab, debug=true)
+./core-service=management/security-realm=Kerberos/authentication=kerberos:add(remove-realm=true)
+----
+
+This results in the following configuration: -
+
+[source, xml]
+----
+  <security-realms>
+    ...
+    <security-realm name="Kerberos">
+      <server-identities>
+        <kerberos>
+          <keytab principal="HTTP/test-server.elytron.org@ELYTRON.ORG" path="/home/darranl/src/kerberos/test-server.keytab" debug="true"/>
+        </kerberos>
+      </server-identities>
+      <authentication>
+        <kerberos remove-realm="true"/>
+      </authentication>
+    </security-realm>
+  </security-realms>
+----
+
+[[application-spnego]]
+=== Application SPNEGO
+
+Alternatively deployed applications would make use of a pair of security
+domains.
+
+[source, java]
+----
+./subsystem=security/security-domain=host:add
+./subsystem=security/security-domain=host/authentication=classic:add
+./subsystem=security/security-domain=host/authentication=classic/login-module=1:add(code=Kerberos, flag=Required, module-options={storeKey=true, useKeyTab=true, principal=HTTP/test-server.elytron.org@ELYTRON.ORG, keyTab=/home/darranl/src/kerberos/test-server.keytab, debug=true}
+----
+
+[source, ruby]
+----
+./subsystem=security/security-domain=SPNEGO:add
+./subsystem=security/security-domain=SPNEGO/authentication=classic:add
+./subsystem=security/security-domain=SPNEGO/authentication=classic/login-module=1:add(code=SPNEGO, flag=requisite,  module-options={password-stacking=useFirstPass, serverSecurityDomain=host})
+./subsystem=security/security-domain=SPNEGO/authentication=classic/login-module=1:write-attribute(name=module, value=org.jboss.security.negotiation)
+./subsystem=security/security-domain=SPNEGO/authentication=classic/login-module=2:add(code=UsersRoles, flag=required, module-options={password-stacking=useFirstPass, usersProperties=file:///home/darranl/src/kerberos/spnego-users.properties, rolesProperties=file:///home/darranl/src/kerberos/spnego-roles.properties, defaultUsersProperties=file:///home/darranl/src/kerberos/spnego-users.properties, defaultRolesProperties=file:///home/darranl/src/kerberos/spnego-roles.properties})
+----
+
+This results in: -
+
+[source, xml]
+----
+  <subsystem xmlns="urn:jboss:domain:security:2.0">
+    <security-domains>
+      ...
+      <security-domain name="host">
+        <authentication>
+          <login-module name="1" code="Kerberos" flag="required">
+            <module-option name="storeKey" value="true"/>
+            <module-option name="useKeyTab" value="true"/>
+            <module-option name="principal" value="HTTP/test-server.elytron.org@ELYTRON.ORG"/>
+            <module-option name="keyTab" value="/home/darranl/src/kerberos/test-server.keytab"/>
+            <module-option name="debug" value="true"/>
+          </login-module>
+        </authentication>
+      </security-domain>
+      <security-domain name="SPNEGO">
+        <authentication>
+          <login-module name="1" code="SPNEGO" flag="requisite" module="org.jboss.security.negotiation">
+            <module-option name="password-stacking" value="useFirstPass"/>
+            <module-option name="serverSecurityDomain" value="host"/>
+          </login-module>
+          <login-module name="2" code="UsersRoles" flag="required">
+            <module-option name="password-stacking" value="useFirstPass"/>
+            <module-option name="usersProperties" value="file:///home/darranl/src/kerberos/spnego-users.properties"/>
+            <module-option name="rolesProperties" value="file:///home/darranl/src/kerberos/spnego-roles.properties"/>
+            <module-option name="defaultUsersProperties" value="file:///home/darranl/src/kerberos/spnego-users.properties"/>
+            <module-option name="defaultRolesProperties" value="file:///home/darranl/src/kerberos/spnego-roles.properties"/>
+          </login-module>
+        </authentication>
+      </security-domain>
+    </security-domains>
+  </subsystem>
+----
+
+An application can now be deployed referencing the SPNEGO security
+domain and secured with SPNEGO mechanism.
+
+[[migrated-spnego]]
+=== Migrated SPNEGO
+
+The equivalent configuration can be achieved with WildFly Elytron by
+first defining a security realm which will be used to load identity
+information.
+
+[source, ruby]
+----
+./subsystem=elytron/properties-realm=spnego-properties:add(users-properties={path=/home/darranl/src/kerberos/spnego-users.properties, plain-text=true, digest-realm-name=ELYTRON.ORG}, groups-properties={path=/home/darranl/src/kerberos/spnego-roles.properties})
+----
+
+Next a Kerberos security factory is defined which allows the server to
+load it's own Kerberos identity.
+
+[source, ruby]
+----
+./subsystem=elytron/kerberos-security-factory=test-server:add(path=/home/darranl/src/kerberos/test-server.keytab, principal=HTTP/test-server.elytron.org@ELYTRON.ORG, debug=true)
+----
+
+As with the previous examples we define a security realm to pull
+together the policy as well as a HTTP authentication factory for the
+authentication policy.
+
+[source, ruby]
+----
+./subsystem=elytron/security-domain=SPNEGODomain:add(default-realm=spnego-properties, realms=[{realm=spnego-properties, role-decoder=groups-to-roles}], permission-mapper=default-permission-mapper)
+./subsystem=elytron/http-authentication-factory=spnego-http-authentication:add(security-domain=SPNEGODomain, http-server-mechanism-factory=global,mechanism-configurations=[{mechanism-name=SPNEGO, credential-security-factory=test-server}])
+----
+
+Overall this results in the following configuration: -
+
+[source, xml]
+----
+  <subsystem xmlns="urn:wildfly:elytron:1.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+    ...
+    <security-domains>
+    ...
+      <security-domain name="SPNEGODomain" default-realm="spnego-properties" permission-mapper="default-permission-mapper">
+        <realm name="spnego-properties" role-decoder="groups-to-roles"/>
+      </security-domain>
+    </security-domains>
+    <security-realms>
+      ...
+      <properties-realm name="spnego-properties">
+        <users-properties path="/home/darranl/src/kerberos/spnego-users.properties" digest-realm-name="ELYTRON.ORG" plain-text="true"/>
+        <groups-properties path="/home/darranl/src/kerberos/spnego-roles.properties"/>
+      </properties-realm>
+    </security-realms>
+    <credential-security-factories>
+      <kerberos-security-factory name="test-server" principal="HTTP/test-server.elytron.org@ELYTRON.ORG" path="/home/darranl/src/kerberos/test-server.keytab" debug="true"/>
+    </credential-security-factories>
+    ...
+    <http>
+      ...
+      <http-authentication-factory name="spnego-http-authentication" http-server-mechanism-factory="global" security-domain="SPNEGODomain">
+        <mechanism-configuration>
+          <mechanism mechanism-name="SPNEGO" credential-security-factory="test-server"/>
+        </mechanism-configuration>
+      </http-authentication-factory>
+      ...
+    </http>
+    ...
+  </subsystem>
+----
+
+Now, to enable SPNEGO authentication for the HTTP management interface,
+update this interface to reference the `http-authentication-factory`
+defined above, as described in the
+https://docs.jboss.org/author/display/WFLY/Migrate+Legacy+Security+to+Elytron+Security#MigrateLegacySecuritytoElytronSecurity-MigratedConfiguration[properties
+authentication section].
+
+Alternatively, to secure an application using SPNEGO authentication, an
+application security domain can be defined in the Undertow subsystem to
+map security domains to the `http-authentication-factory` defined above,
+as described in the
+https://docs.jboss.org/author/display/WFLY/Migrate+Legacy+Security+to+Elytron+Security#MigrateLegacySecuritytoElytronSecurity-FullyMigratedConfiguration[properties
+authentication section].
+
+[[remoting-sasl-authentication]]
+== Remoting / SASL Authentication
+
+[[legacy-security-realm-1]]
+=== Legacy Security Realm
+
+It is also possible to define a legacy security realm for Kerberos /
+GSSAPI SASL authenticatio for Remoting authentication such as the native
+management interface.
+
+[source, ruby]
+----
+./core-service=management/security-realm=Kerberos:add
+./core-service=management/security-realm=Kerberos/server-identity=kerberos:add
+./core-service=management/security-realm=Kerberos/server-identity=kerberos/keytab=remote\/test-server.elytron.org@ELYTRON.ORG:add(path=/home/darranl/src/kerberos/remote-test-server.keytab, debug=true)
+./core-service=management/security-realm=Kerberos/authentication=kerberos:add(remove-realm=true)
+----
+
+[source, xml]
+----
+  <management>
+    <security-realms>
+      ...
+      <security-realm name="Kerberos">
+        <server-identities>
+          <kerberos>
+            <keytab principal="remote/test-server.elytron.org@ELYTRON.ORG" path="/home/darranl/src/kerberos/remote-test-server.keytab" debug="true"/>
+          </kerberos>
+        </server-identities>
+        <authentication>
+          <kerberos remove-realm="true"/>
+        </authentication>
+      </security-realm>
+    </security-realms>
+    ...
+  </management>
+----
+
+[[migrated-gssapi]]
+=== Migrated GSSAPI
+
+The steps to define the equivalent Elytron configuration are very
+similar to the HTTP example.
+
+First define the security realm to load the identity from: -
+
+[source, ruby]
+----
+./path=kerberos:add(relative-to=user.home, path=src/kerberos)
+./subsystem=elytron/properties-realm=kerberos-properties:add(users-properties={path=kerberos-users.properties, relative-to=kerberos, digest-realm-name=ELYTRON.ORG}, groups-properties={path=kerberos-groups.properties, relative-to=kerberos})
+----
+
+Then define the Kerberos security factory for the server's identity.
+
+[source, ruby]
+----
+./subsystem=elytron/kerberos-security-factory=test-server:add(relative-to=kerberos, path=remote-test-server.keytab, principal=remote/test-server.elytron.org@ELYTRON.ORG)
+----
+
+Finally define the security domain and this time a SASL authentication
+factory.
+
+[source, ruby]
+----
+./subsystem=elytron/security-domain=KerberosDomain:add(default-realm=kerberos-properties, realms=[{realm=kerberos-properties, role-decoder=groups-to-roles}], permission-mapper=default-permission-mapper)
+./subsystem=elytron/sasl-authentication-factory=gssapi-authentication-factory:add(security-domain=KerberosDomain, sasl-server-factory=elytron, mechanism-configurations=[{mechanism-name=GSSAPI, credential-security-factory=test-server}])
+----
+
+This results in the following subsystem configuration: -
+
+[source, xml]
+----
+  <subsystem xmlns="urn:wildfly:elytron:1.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+    ...
+    <security-domains>
+      ...
+      <security-domain name="KerberosDomain" default-realm="kerberos-properties" permission-mapper="default-permission-mapper">
+        <realm name="kerberos-properties" role-decoder="groups-to-roles"/>
+      </security-domain>
+    </security-domains>
+    <security-realms>
+     ...
+       <properties-realm name="kerberos-properties">
+         <users-properties path="kerberos-users.properties" relative-to="kerberos" digest-realm-name="ELYTRON.ORG"/>
+         <groups-properties path="kerberos-groups.properties" relative-to="kerberos"/>
+       </properties-realm>
+     </security-realms>
+     <credential-security-factories>
+       <kerberos-security-factory name="test-server" principal="remote/test-server.elytron.org@ELYTRON.ORG" path="remote-test-server.keytab" relative-to="kerberos"/>
+     </credential-security-factories>
+     ...
+     <sasl>
+       ...
+       <sasl-authentication-factory name="gssapi-authentication-factory" sasl-server-factory="elytron" security-domain="KerberosDomain">
+         <mechanism-configuration>
+           <mechanism mechanism-name="GSSAPI" credential-security-factory="test-server"/>
+         </mechanism-configuration>
+       </sasl-authentication-factory>
+       ...
+     </sasl>
+   </subsystem>
+----
+
+The management interface or Remoting connectors can now be updated to
+reference the SASL authentication factory.
+
+The two Elytron examples defined here could also be combined into one to
+use a shared security domain and security realm and just use protocol
+specific authentication factories each referencing their own Kerberos
+security factory.

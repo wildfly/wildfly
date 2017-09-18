@@ -1,0 +1,268 @@
+= EE Concurrency Utilities
+
+[[overview]]
+== Overview
+
+EE Concurrency Utilities (JSR 236) is a technology introduced with Java
+EE 7, which adapts well known Java SE concurrency utilities to the Java
+EE application environment specifics. The Java EE application server is
+responsible for the creation (and shutdown) of every instance of the EE
+Concurrency Utilities, and provide these to the applications, ready to
+use.
+
+The EE Concurrency Utilities support the propagation of the invocation
+context, capturing the existent context in the application threads to
+use in their own threads, the same way a logged-in user principal is
+propagated when a servlet invokes an EJB asynchronously. The propagation
+of the invocation context includes, by default, the class loading, JNDI
+and security contexts.
+
+WildFly creates a single default instance of each EE Concurrency Utility
+type in all configurations within the distribution, as mandated by the
+specification, but additional instances, perhaps customised to better
+serve a specific usage, may be created through WildFly's EE Subsystem
+Configuration. To learn how to configure EE Concurrency Utilities please
+refer to link:EE_Concurrency_Utilities_Configuration.html[EE Concurrency
+Utilities Configuration]. Additionally, the EE subsystem configuration
+also includes the configuration of which instance should be considered
+the default instance mandated by the Java EE specification, and such
+configuration is covered by
+link:Default_EE_Bindings_Configuration.html[Default EE Bindings
+Configuration].
+
+[[context-service]]
+== Context Service
+
+The Context Service ( `javax.enterprise.concurrent.ContextService`) is a
+brand new concurrency utility, which applications may use to build
+contextual proxies from existing objects.
+
+A contextual proxy is an object that sets a invocation context, captured
+when created, whenever is invoked, before delegating the invocation to
+the original object.
+
+Usage example:
+
+[source, java]
+----
+public void onGet(...) {
+  Runnable task = ...;
+  Runnable contextualTask = contextService.createContextualProxy(task, Runnable.class);
+  // ...
+}
+----
+
+WildFly default configurations creates a single default instance of a
+Context Service, which may be retrieved through `@Resource` injection:
+
+[source, java]
+----
+@Resource
+private ContextService contextService;
+----
+
+[NOTE]
+
+To retrieve instead a non default Context Service instance,
+`@Resource`'s `lookup` attribute needs to specify the JNDI name used in
+the wanted instance configuration. WildFly will always inject the
+default instance, no matter what's the `name` attribute value, if the
+`lookup` attribute is not defined.
+
+Applications may alternatively use instead the standard JNDI API:
+
+[source, java]
+----
+ContextService contextService = InitialContext.doLookup("java:comp/DefaultContextService");
+----
+
+[NOTE]
+
+As mandated by the Java EE specification, the default Context Service
+instance's JNDI name is `java:comp/DefaultContextService`.
+
+[[managed-thread-factory]]
+== Managed Thread Factory
+
+The Managed Thread Factory (
+`javax.enterprise.concurrent.ManagedThreadFactory`) allows Java EE
+applications to create Java threads. It is an extension of Java SE's
+Thread Factory ( `java.util.concurrent.ThreadFactory`) adapted to the
+Java EE platform specifics.
+
+Managed Thread Factory instances are managed by the application server,
+thus Java EE applications are forbidden to invoke any lifecycle related
+method.
+
+In case the Managed Thread Factory is configured to use a Context
+Service, the application's thread context is captured when a thread
+creation is requested, and such context is propagated to the thread's
+Runnable execution.
+
+Managed Thread Factory threads implement
+`javax.enterprise.concurrent.ManageableThread`, which allows an
+application to learn about termination status.
+
+Usage example:
+
+[source, java]
+----
+public void onGet(...) {
+  Runnable task = ...;
+  Thread thread = managedThreadFactory.newThread(task);
+  thread.start();
+    // ...
+}
+----
+
+WildFly default configurations creates a single default instance of a
+Managed Thread Factory, which may be retrieved through `@Resource`
+injection:
+
+[source, java]
+----
+@Resource
+private ManagedThreadFactory managedThreadFactory;
+----
+
+[NOTE]
+
+To retrieve instead a non default Managed Thread Factory instance,
+`@Resource`'s `lookup` attribute needs to specify the JNDI name used in
+the wanted instance configuration. WildFly will always inject the
+default instance, no matter what's the `name` attribute value, in case
+the `lookup` attribute is not defined.
+
+Applications may alternatively use instead the standard JNDI API:
+
+[source, java]
+----
+ManagedThreadFactory managedThreadFactory = InitialContext.doLookup("java:comp/DefaultManagedThreadFactory");
+----
+
+[NOTE]
+
+As mandated by the Java EE specification, the default Managed Thread
+Factory instance's JNDI name is `java:comp/DefaultManagedThreadFactory`.
+
+[[managed-executor-service]]
+== Managed Executor Service
+
+The Managed Executor Service (
+`javax.enterprise.concurrent.ManagedExecutorService`) allows Java EE
+applications to submit tasks for asynchronous execution. It is an
+extension of Java SE's Executor Service (
+`java.util.concurrent.ExecutorService`) adapted to the Java EE platform
+requirements.
+
+Managed Executor Service instances are managed by the application
+server, thus Java EE applications are forbidden to invoke any lifecycle
+related method.
+
+In case the Managed Executor Service is configured to use a Context
+Service, the application's thread context is captured when the task is
+submitted, and propagated to the executor thread responsible for the
+task execution.
+
+Usage example:
+
+[source, java]
+----
+public void onGet(...) {
+    Runnable task = ...;
+    Future future = managedExecutorService.submit(task);
+    // ...
+}
+----
+
+WildFly default configurations creates a single default instance of a
+Managed Executor Service, which may be retrieved through `@Resource`
+injection:
+
+[source, java]
+----
+@Resource
+private ManagedExecutorService managedExecutorService;
+----
+
+[NOTE]
+
+To retrieve instead a non default Managed Executor Service instance,
+`@Resource`'s `lookup` attribute needs to specify the JNDI name used in
+the wanted instance configuration. WildFly will always inject the
+default instance, no matter what's the `name` attribute value, in case
+the `lookup` attribute is not defined.
+
+Applications may alternatively use instead the standard JNDI API:
+
+[source, java]
+----
+ManagedExecutorService managedExecutorService = InitialContext.doLookup("java:comp/DefaultManagedExecutorService");
+----
+
+[NOTE]
+
+As mandated by the Java EE specification, the default Managed Executor
+Service instance's JNDI name is
+`java:comp/DefaultManagedExecutorService`.
+
+[[managed-scheduled-executor-service]]
+== Managed Scheduled Executor Service
+
+The Managed Scheduled Executor Service (
+`javax.enterprise.concurrent.ManagedScheduledExecutorService`) allows
+Java EE applications to schedule tasks for asynchronous execution. It is
+an extension of Java SE's Executor Service (
+`java.util.concurrent.ScheduledExecutorService`) adapted to the Java EE
+platform requirements.
+
+Managed Scheduled Executor Service instances are managed by the
+application server, thus Java EE applications are forbidden to invoke
+any lifecycle related method.
+
+In case the Managed Scheduled Executor Service is configured to use a
+Context Service, the application's thread context is captured when the
+task is scheduled, and propagated to the executor thread responsible for
+the task execution.
+
+Usage example:
+
+[source, java]
+----
+public void onGet(...) {
+    Runnable task = ...;
+    ScheduledFuture future = managedScheduledExecutorService.schedule(task, 60, TimeUnit.SECONDS);
+    // ...
+}
+----
+
+WildFly default configurations creates a single default instance of a
+Managed Scheduled Executor Service, which may be retrieved through
+`@Resource` injection:
+
+[source, java]
+----
+@Resource
+private ManagedScheduledExecutorService managedScheduledExecutorService;
+----
+
+[NOTE]
+
+To retrieve instead a non default Managed Scheduled Executor Service
+instance, `@Resource`'s `lookup` attribute needs to specify the JNDI
+name used in the wanted instance configuration. WildFly will always
+inject the default instance, no matter what's the `name` attribute
+value, in case the `lookup` attribute is not defined.
+
+Applications may alternatively use instead the standard JNDI API:
+
+[source, java]
+----
+ManagedScheduledExecutorService managedScheduledExecutorService = InitialContext.doLookup("java:comp/DefaultManagedScheduledExecutorService");
+----
+
+[NOTE]
+
+As mandated by the Java EE specification, the default Managed Scheduled
+Executor Service instance's JNDI name is
+`java:comp/DefaultManagedScheduledExecutorService`.

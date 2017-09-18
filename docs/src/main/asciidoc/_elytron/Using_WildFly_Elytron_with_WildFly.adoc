@@ -1,0 +1,127 @@
+= Using Elytron within WildFly
+
+[[using-the-out-of-the-box-elytron-components]]
+== Using the Out of the Box Elytron Components
+
+[[securing-management-interfaces]]
+=== Securing Management Interfaces
+
+You can find more details on the enabling WildFly to use the out of the
+box Elytron components for securing the management interfaces in the
+link:Elytron_Subsystem.html#src-557147_ElytronSubsystem-DefaultManagementAuthenticationConfiguration[Default
+Management Authentication Configuration] section.
+
+[[securing-applications]]
+=== Securing Applications
+
+The _elytron_ subsystem provides _application-http-authentication_ by
+default which can be used to secure applications. For more details on
+how _application-http-authentication_ is configured, see the
+link:Elytron_Subsystem.html#src-557147_ElytronSubsystem-OutoftheBoxConfiguration[Out
+of the Box Configuration] section.
+
+To configure applications to use _application-http-authentication_, see
+link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureApplicationstoUseElytronorLegacySecurityforAuthentication[Configure
+Applications to Use Elytron or Legacy Security for Authentication]. You
+can also override the default behavior of all applications using the
+steps in
+link:Using_the_Elytron_Subsystem.html#src-557140_safe-id-VXNpbmd0aGVFbHl0cm9uU3Vic3lzdGVtLU92ZXJyaWRlYW5BcHBsaWNhdGlvbidzQXV0aGVudGljYXRpb25Db25maWd1cmF0aW9u[Override
+an Application's Authentication Configuration].
+
+[[using-ssltls]]
+=== Using SSL/TLS
+
+WildFly does provide a default one-way SSL/TLS configuration using the
+legacy core management authentication but does not provide one in the
+_elytron_ subsystem. You can find more details on configuring SSL/TLS
+using the _elytron_ subsystem for both the management interfaces as well
+as for applications in
+link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ssl-tls[Configure
+SSL/TLS]
+
+[[using-elytron-with-other-subsystems]]
+=== Using Elytron with Other Subsystems
+
+In addition to securing applications and management interfaces, Elytron
+also integrates with other subsystems in WildFly.
+
+[cols=",",options="header"]
+|=======================================================================
+|Subsystem |Details
+
+|batch-jberet |You can configure the batch-jberet to run batch jobs
+using an Elytron security domain.
+
+|datasources |You can use a credential store or an Elytron security
+domain to provide authentication information in a datasource definition.
+
+|messaging-activemq |You can secure remote connections to the remote
+connections used by the messaging-activemq subsystem.
+
+|iiop-openjdk |You can use the elytron subsystem to configure SSL/TLS
+between clients and servers using the iiop-openjdk subsystem.
+
+|mail |You can use a credential store to provide authentication
+information in a server definition in the mail subsystem.
+
+|undertow |You can use the elytron subsystem to configure both SSL/TLS
+and application authentication.
+|=======================================================================
+
+[[undertow-subsystem]]
+== Undertow Subsystem
+
+[[ejb-subsystem]]
+== EJB Subsystem
+
+Configuration can be added to the EJB subsystem to map a security domain
+name referenced in a deployment to an Elytron security domain:
+
+[source, ruby]
+----
+/subsystem=ejb3/application-security-domain=MyAppSecurity:add(security-domain=ApplicationDomain)
+----
+
+Which results in:
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:ejb3:5.0">
+...
+    <application-security-domains>
+        <application-security-domain name="MyAppSecurity" security-domain="ApplicationDomain"/>
+    </application-security-domains>
+...
+</subsystem>
+----
+
+_Note: If the deployment was already deployed at this point the
+application server should be reloaded or the deployment redeployed for
+the application security domain mapping to take effect._
+
+An `application-security-domain` has two main attributes:
+
+* name - the name of the security domain as specified in a deployment
+* security-domain - a reference to the Elytron security domain that
+should be used
+
+When an application security domain mapping is configured for a bean in
+a deployment, this indicates that security should be handled by Elytron.
+
+[[webservices-subsystem]]
+== WebServices Subsystem
+
+There is adapter in webservices subsystem to make authentication works
+for elytron security domain automatically. Like configure with legacy
+security domain, you can configure elytron security domain in deployment
+descriptor or annotation to secure webservice endpoint.
+
+[[legacy-security-subsystem]]
+== Legacy Security Subsystem
+
+As previously described, Elytron based security is configured by
+chaining together different capability references to form a complete
+security policy. To allow an incremental migration from the legacy
+Security subsystem some of the major components of this subsystem can be
+mapped to Elytron capabilities and used within an Elytron based set up.
+

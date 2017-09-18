@@ -1,0 +1,190 @@
+= General Elytron Architecture
+
+The overall architecture for WildFly Elytron is building up a full
+security policy from assembling smaller components together, by default
+we include various implementations of the components - in addition to
+this, custom implementations of many components can be provided in order
+to provide more specialised implementations.
+
+Within WildFly the different Elytron components are handled as
+capabilities meaning that different implementations can be mixed and
+matched, however the different implementations are modelled using
+distinct resources. This section contains a number of diagrams to show
+the general relationships between different components to provide a high
+level view, however the different resource definitions may use different
+dependencies depending on their purpose.
+
+[[security-domains]]
+== Security Domains
+
+Within WildFly Elytron a SecurityDomain can be considered as a security
+policy backed by one or more SecurityRealm instances. Resources that
+make authorization decisions will be associated with a SecurityDomain,
+from the SecurityDomain a SecurityIdentity can be obtained which is a
+representation of the current identity, from this the identities roles
+and permissions can be checked to make the authorization decision for
+the resource.
+
+The SecurityDomain is the general wrapper around the policy describing a
+resulting SecurityIdentity and makes use of the following components to
+define this policy.
+
+* NameRewriter
+
+NameRewriters are used in multiple places within the Elytron
+configuration, as their name implies, their purpose is to take a name
+and map it to another representation of the name or perform some
+normalisation or clean up of the name.
+
+* RealmMapper
+
+As a SecurityDomain is able to reference multiple SecurityRealms the
+RealmMapper is responsible for identifying which SecurityRealm to use
+based on the supplied name for authentication.
+
+* SecurityRealm
+
+One more more named SecurityRealms are associated with a SecurityDomain,
+the SecurityRealms are the access to the underlying repository of
+identities and are used for obtaining credentials to allow
+authentication mechanisms to perform verification, for validation of
+Evidence and for obtaining the raw AuthorizationIdentity performing the
+authentication.
+
+Some SecurityRealm implementations are also modifiable so expose an API
+that allows for updates to be made to the repository containing the
+identities.
+
+* RoleDecoder
+
+Along with the SecurityRealm association is also a reference to a
+RoleDecoder, the RoleDecoder takes the raw AuthorizationIdentity
+returned from the SecurityRealm and converts it's attributes into roles.
+
+* RoleMapper
+
+After the roles have been decoded for an identity further mapping can be
+applied, this could be as simple at normalising the format of the names
+through to adding or removing specific role names. If a RoleMapper is
+referenced by the SecurityRealm association that RoleMapper is applied
+first before applying the RoleMapper associated with the SecurityDomain.
+
+* PrincipalDecoder
+
+A PrincipalDecoder converts from a Principal to a String representation
+of a name, one example for this is we have an X500PrincipalDecoder which
+is able to extract an attribute from a distinguished name.
+
+* PermissionMapper
+
+In addition to having roles a SecurityIdentity can also have a set of
+permissions, the PermissionMapper assigns those permissions to the
+identity.
+
+Different secured resources can be associated with different
+SecurityDomains for their authorization decisions, within WildFly
+Elytron we have the ability to configure inflow between different
+SecurityDomains. The inflow process means that a SecurityIdentity
+inflowed into a second SecurityDomain has the mappings of the new
+SecurityDomain applied to it so although a common identity may be
+calling different resources each of those resources could have a very
+different view.
+
+[[sasl-authentication]]
+== SASL Authentication
+
+The SaslAuthenticationFactory is an authentication policy for
+authentication using SASL authentication mechanisms, in addition to
+being a policy it is also a factory for configured authentication
+mechanisms backed by a SecurityDomain.
+
+The SaslAuthenticationFactory references the following: -
+
+* SecurityDomain
+
+This is the security domain that any mechanism authentication will be
+performed against.
+
+* SaslServerFactory
+
+This is the general factory for server side SASL authentication
+mechanisms.
+
+* MechanismConfigurationSelector
+
+Additional configuration can be supplied for the authentication
+mechanisms, the configuration will be described in more detail later but
+the purpose of the MechanismConfigurationSelector is to obtain
+configuration specific to the mechanism selected. This can include
+information about realm names a mechanism should present to a remote
+client plus additional NameRewriters and RealmMappers to use during the
+authentication process.
+
+The reason some of the components referenced by the SecurityDomain are
+duplicated is so that mechanism specific mappings can be applied.
+
+[[http-authentication]]
+== HTTP Authentication
+
+The HttpAuthenticationFactory is an authentication policy for
+authentication using HTTP authentication mechanisms, in addition to
+being a policy it is also a factory for configured authentication
+mechanisms backed by a SecurityDomain.
+
+The HttpAuthenticationFactory references the following: -
+
+* SecurityDomain
+
+This is the security domain that any mechanism authentication will be
+performed against.
+
+* HttpServerAuthenticationMechanismFactory
+
+This is the general factory for server side HTTP authentication
+mechanisms.
+
+* MechanismConfigurationSelector
+
+Additional configuration can be supplied for the authentication
+mechanisms, the configuration will be described in more detail later but
+the purpose of the MechanismConfigurationSelector is to obtain
+configuration specific to the mechanism selected. This can include
+information about realm names a mechanism should present to a remote
+client plus additional NameRewriters and RealmMappers to use during the
+authentication process.
+
+The reason some of the components referenced by the SecurityDomain are
+duplicated is so that mechanism specific mappings can be applied.
+
+[[ssl-tls]]
+== SSL / TLS
+
+The SSLContext defined within Elytron is a javax.net.ssl.SSLContext
+meaning it can be used by anything that uses an SSLContext directly.
+
+In addition to the usual configuration for an SSLContext it is possible
+to configure additional items such as cipher suites and protocols and
+the SSLContext returned will wrap any engines created to set these
+values.
+
+The SSLContext within Elytron can also reference the following: -
+
+* KeyManagers
+
+An array of KeyManager instances to be used by the SSLContext, this in
+turn can reference a KeyStore to load the keys.
+
+* TrustManagers
+
+An array of TrustManager instances to be used by the SSLContext, this in
+turn can also reference a KeyStore to load the certificates.
+
+* SecurityDomain
+
+This is optional, however if an SSLContext is configured to reference a
+SecurityDomain then verification of a clients certificate can be
+performed as an authentication ensuring the appropriate permissions to
+Logon are assigned before even allowing the connection to be fully
+opened, additionally the SecurityIdentity can be established at the time
+the connection is opened and used for any invocations over the
+connection.

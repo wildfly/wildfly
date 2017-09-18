@@ -1,0 +1,93 @@
+= EE Subsystem Configuration
+:leveloffset: +1
+The EE subsystem provides common functionality in the Java EE platform,
+such as the EE Concurrency Utilities (JSR 236) and `@Resource`
+injection. The subsystem is also responsible for managing the lifecycle
+of Java EE application's deployments, that is, `.ear` files.
+
+The EE subsystem configuration may be used to:
+
+* customise the deployment of Java EE applications
+* create EE Concurrency Utilities instances
+* define the default bindings
+
+The subsystem name is ee and this document covers EE subsystem version
+`2.0`, which XML namespace within WildFly XML configurations is
+`urn:jboss:domain:ee:2.0`. The path for the subsystem's XML schema,
+within WildFly's distribution, is `docs/schema/jboss-as-ee_2_0.xsd`.
+
+Subsystem XML configuration example with all elements and attributes
+specified:
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:ee:2.0" >
+    <global-modules>
+        <module name="org.jboss.logging"
+                slot="main"/>
+        <module name="org.apache.log4j"
+                annotations="true"
+                meta-inf="true"
+                services="false" />
+    </global-modules>
+    <ear-subdeployments-isolated>true</ear-subdeployments-isolated>
+    <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
+    <jboss-descriptor-property-replacement>false</jboss-descriptor-property-replacement>
+    <annotation-property-replacement>false</annotation-property-replacement>
+    <concurrent>
+        <context-services>
+            <context-service
+                    name="default"
+                    jndi-name="java:jboss/ee/concurrency/context/default"
+                    use-transaction-setup-provider="true" />
+        </context-services>
+        <managed-thread-factories>
+            <managed-thread-factory
+                    name="default"
+                    jndi-name="java:jboss/ee/concurrency/factory/default"
+                    context-service="default"
+                    priority="1" />
+        </managed-thread-factories>
+        <managed-executor-services>
+            <managed-executor-service
+                    name="default"
+                    jndi-name="java:jboss/ee/concurrency/executor/default"
+                    context-service="default"
+                    thread-factory="default"
+                    hung-task-threshold="60000"
+                    core-threads="5"
+                    max-threads="25"
+                    keepalive-time="5000"
+                    queue-length="1000000"
+                    reject-policy="RETRY_ABORT" />
+        </managed-executor-services>
+        <managed-scheduled-executor-services>
+            <managed-scheduled-executor-service
+                    name="default"
+                    jndi-name="java:jboss/ee/concurrency/scheduler/default"
+                    context-service="default"
+                    thread-factory="default"
+                    hung-task-threshold="60000"
+                    core-threads="5"
+                    keepalive-time="5000"
+                    reject-policy="RETRY_ABORT" />
+        </managed-scheduled-executor-services>
+    </concurrent>
+    <default-bindings
+            context-service="java:jboss/ee/concurrency/context/default"
+            datasource="java:jboss/datasources/ExampleDS"
+            jms-connection-factory="java:jboss/DefaultJMSConnectionFactory"
+            managed-executor-service="java:jboss/ee/concurrency/executor/default"
+            managed-scheduled-executor-service="java:jboss/ee/concurrency/scheduler/default"
+            managed-thread-factory="java:jboss/ee/concurrency/factory/default" />
+</subsystem>
+----
+
+
+include::EE_Application_Deployment_Configuration.adoc[leveloffset=+1]
+
+include::EE_Concurrency_Utilities_Configuration.adoc[leveloffset=+1]
+
+include::EE_Default_Bindings_Configuration.adoc[leveloffset=+1]
+
+:leveloffset: -1

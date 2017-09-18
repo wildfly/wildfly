@@ -1,0 +1,55 @@
+= Subsystem configuration
+Subsystem configuration reference
+:author: tcerar@redhat.com
+:icons: font
+:source-highlighter: coderay
+:toc: macro
+:toclevels: 2
+
+ifdef::basebackend-html[toc::[]]
+
+The following chapters will focus on the high level management use cases
+that are available through the CLI and the web interface. For a detailed
+description of each subsystem configuration property, please consult the
+respective component reference.
+
+Schema Location
+
+TIP: The configuration schemas can found in `$JBOSS_HOME/docs/schema`.
+
+:leveloffset: +1
+
+
+include::subsystem-configuration/EE.adoc[]
+
+include::subsystem-configuration/Naming.adoc[]
+
+include::subsystem-configuration/DataSource.adoc[]
+
+include::subsystem-configuration/Logging.adoc[]
+
+include::subsystem-configuration/EJB3.adoc[]
+
+include::subsystem-configuration/Undertow.adoc[]
+
+include::subsystem-configuration/Messaging.adoc[]
+
+include::subsystem-configuration/Security.adoc[]
+
+include::subsystem-configuration/Web_services.adoc[]
+
+include::subsystem-configuration/Resource_adapters.adoc[]
+
+include::subsystem-configuration/Batch_(JSR-352).adoc[]
+
+include::subsystem-configuration/JSF.adoc[]
+
+include::subsystem-configuration/JMX.adoc[]
+
+include::subsystem-configuration/Deployment_Scanner.adoc[]
+
+include::subsystem-configuration/Core_Management.adoc[]
+
+include::subsystem-configuration/Simple_configuration_subsystems.adoc[]
+
+:leveloffset: -1

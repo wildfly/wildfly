@@ -78,7 +78,7 @@
             versions, add the artifactId or other qualifier to the property name.
             For example: <version.org.jboss.hal.release-stream>
          -->
-
+        <version.asciidoctor.plugin>1.5.6</version.asciidoctor.plugin>
         <version.antlr>2.7.7</version.antlr>
         <version.asm>3.3.1</version.asm>
         <version.ch.qos.cal10n>0.8.1</version.ch.qos.cal10n>
@@ -844,7 +844,27 @@
                     <artifactId>licenses-plugin</artifactId>
                     <version>${version.org.wildfly.maven.plugins}</version>
                 </plugin>
-           </plugins>
+                <plugin>
+                    <groupId>org.asciidoctor</groupId>
+                    <artifactId>asciidoctor-maven-plugin</artifactId>
+                    <version>${version.asciidoctor.plugin}</version>
+                    <configuration>
+                        <sourceHighlighter>coderay</sourceHighlighter>
+                        <attributes>
+                            <icons>font</icons>
+                            <pagenums/>
+                            <version>${project.version}</version>
+                            <idprefix/>
+                            <idseparator>-</idseparator>
+                            <allow-uri-read>true</allow-uri-read>
+                            <wildflyVersion>12</wildflyVersion>
+                            <revnumber>${project.version}</revnumber>
+                            <revdate>${maven.build.timestamp}</revdate>
+                            <organization>${project.organization.name}</organization>
+                        </attributes>
+                    </configuration>
+                </plugin>
+            </plugins>
         </pluginManagement>
     </build>
 
@@ -6305,6 +6325,17 @@
 
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>docs</id>
+            <activation>
+                <property>
+                    <name>docs</name>
+                </property>
+            </activation>
+            <modules>
+                <module>docs</module>
+            </modules>
         </profile>
 
         <!--

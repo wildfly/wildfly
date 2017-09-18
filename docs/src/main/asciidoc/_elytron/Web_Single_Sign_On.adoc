@@ -1,0 +1,157 @@
+= Web Single Sign-On
+
+This document will guide on how to enable single sign-on across different applications deployed into different servers, where these applications belong to same security domain.
+
+== Create a Server Configuration Template
+
+For this document, you'll need to run at least two server instances in order to check single sign-on and how it affect usability in your applications. Users should be able to log in once and have access to any application using the same security domain.
+
+All configuration described in the next sections should be done with a server instance using *standalone-ha.xml* (or standalone-full-ha.xml).
+
+Run a server instance using the following command:
+
+----
+bin/standalone.sh -c standalone-ha.xml
+----
+
+=== Create a HTTP Authentication Factory
+
+IMPORTANT: If you already have a _http-authentication-factory_&nbsp;defined in Elytron subsystem and just want to use it to enable single sign-on to your applications, please skip this section.{info}
+First, you need a _security-domain_ which we'll use to authenticate users. Please, execute the following CLI commands:
+
+----
+# Creates a FileSystem Realm, an identity store where users are stored in the local filesystem
+/subsystem=elytron/filesystem-realm=example-realm:add(path=/tmp/example-realm)
+
+# Creates a Security Domain
+/subsystem=elytron/security-domain=example-domain:add(default-realm=example-realm, permission-mapper=default-permission-mapper,realms=[{realm=example-realm, role-decoder=groups-to-roles}]
+
+# Creates an user that you can use to access your applications
+/subsystem=elytron/filesystem-realm=example-realm:add-identity(identity=alice)
+/subsystem=elytron/filesystem-realm=example-realm:add-identity-attribute(identity=alice, name=groups, value=["user"])
+/subsystem=elytron/filesystem-realm=example-realm:set-password(identity=alice, clear={password=alice})
+----
+
+Now you can create a _http-authentication-factory_ that you'll use to actually protect your web applications using Undertow:
+[source]
+----
+# Create a Http Authentication Factory
+/subsystem=elytron/http-authentication-factory=example-http-authentication:add(security-domain=example-domain, http-server-mechanism-factory=global, mechanism-configurations=[{mechanism-name=FORM}]
+----
+
+=== Create a Application Security Domain in Undertow
+
+[IMPORTANT]
+If you already have a&nbsp;_application-security-domain_&nbsp;defined in Undertow subsystem and just want to use it to enable single sign-on to your applications, please skip this section.
+
+In order to protect applications using the configuration defined in Elytron subsystem, you should create a application-security-domain definition in Undertow subsystem as follows:
+
+----
+/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=example-http-authentication)
+----
+
+By default, if your application does not define any specific _security-domain_ in _jboss-web.xml_, the application server will choose one with a name *other*.
+
+=== Create a Key Store
+
+In order to create a _key-store_ in Elytron subsystem, first create a Java Key Store as follows:
+[source, bash]
+----
+keytool -genkeypair -alias localhost -keyalg RSA -keysize 1024 -validity 365 -keystore keystore.jks -dname "CN=localhost" -keypass secret -storepass secret
+----
+
+Once the _keystore.jks_ file is created, execute the following CLI commands to create a _key-store_ definition in Elytron:
+
+[source]
+----
+/subsystem=elytron/key-store=example-keystore:add(path=keystore.jks, relative-to=jboss.server.config.dir, credential-reference={clear-text=secret}, type=JKS)
+----
+
+
+=== Enable Single Sign-On
+
+Single Sign-On is enabled to a specific _application-security-domain_ definition in Undertow subsystem. It is important that the servers you will be using to deploy applications are using the same configuration.
+
+To enable single-sign on, just change an existing application-security-domain in Undertow subsystem as follows:
+
+[source, ruby]
+----
+/subsystem=undertow/application-security-domain=other/setting=single-sign-on:add(key-store=example-keystore, key-alias=localhost, domain=localhost, credential-reference={clear-text=secret})
+----
+
+After restarting the servers, users should be able to log in once and have access to any application using the same _application-security-domain_.
+
+== Create Two Server Instances
+
+All configuration you did so far should be reflect in _$JBOSS_HOME_/_standalone/standalone-ha.xml._ You can now create two distinct server configuration directories_:\_
+[source, bash]
+----
+cp -r standalone standalone-a
+cp -r standalone standalone-b
+----
+
+And you can run the two instances using the command below:
+
+----
+$JBOSS_HOME/bin/standalone.sh -c standalone-ha.xml -Djboss.node.name=node-a -Djboss.socket.binding.port-offset=200 -Djboss.server.base.dir=$JBOSS_HOME/standalone-a
+$JBOSS_HOME/bin/standalone.sh -c standalone-ha.xml -Djboss.node.name=node-b -Djboss.socket.binding.port-offset=300 -Djboss.server.base.dir=$JBOSS_HOME/standalone-b ----
+----
+
+== Deploy an Application
+
+For the sake of simplicity, these are the minimum files you need in your application:
+
+.WEB-INF/web.xml
+[source, xml]
+----
+<web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+
+    <security-constraint>
+        <display-name>SecurityConstraint</display-name>
+        <web-resource-collection>
+            <web-resource-name>All Resources</web-resource-name>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>user</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <form-login-config>
+            <form-login-page>/login.html</form-login-page>
+            <form-error-page>/login.html</form-error-page>
+        </form-login-config>
+    </login-config>
+
+    <security-role>
+        <role-name>user</role-name>
+    </security-role>
+</web-app>
+----
+
+.login.html
+[source, html]
+----
+<html>
+    <body>
+        <form method="post" action="j_security_check">
+            <input type="text" name="j_username">
+            <input type="password" name="j_password">
+            <input type="submit" value="Log In">
+        </form>
+    </body>
+</html>
+----
+
+IMPORTANT: Make sure you have at least a welcome file (e.g.: index.html\|jsp).
+
+--
+Deploy your application into both server instances and try to log in using the user you created at the beginning of this document:
+
+* Username: *alice*
+* Password: *alice*
+--

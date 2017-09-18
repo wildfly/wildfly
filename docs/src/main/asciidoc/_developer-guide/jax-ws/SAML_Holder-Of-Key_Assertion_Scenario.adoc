@@ -1,0 +1,1155 @@
+= SAML Holder-Of-Key Assertion Scenario
+
+WS-Trust deals with managing software security tokens. A SAML assertion
+is a type of security token. In the Holder-Of-Key method, the STS
+creates a SAML token containing the client's public key and signs the
+SAML token with its private key. The client includes the SAML token and
+signs the outgoing soap envelope to the web service with its private
+key. The web service validates the SOAP message and the SAML token.
+
+Implementation of this scenario has the following requirements.
+
+* SAML tokens with a Holder-Of-Key subject confirmation method must be
+protected so the token can not be snooped. In most cases, a
+Holder-Of-Key token combined with HTTPS is sufficient to prevent "a man
+in the middle" getting possession of the token. This means a security
+policy that uses a sp:TransportBinding and sp:HttpsToken.
+* A Holder-Of-Key token has no encryption or signing keys associated
+with it, therefore a sp:IssuedToken of SymmetricKey or PublicKey keyType
+should be used with a sp:SignedEndorsingSupportingTokens.
+
+[[web-service-provider]]
+== Web service Provider
+
+This section examines the web service elements for the SAML
+Holder-Of-Key scenario. The components are
+
+* Web service provider's WSDL
+* SSL configuration
+* Web service provider's Interface and Implementation classes.
+* Crypto properties and keystore files
+* MANIFEST.MF
+
+[[web-service-provider-wsdl]]
+=== Web service provider WSDL
+
+The web service provider is a contract-first endpoint. All the WS-trust
+and security policies for it are declared in the WSDL,
+HolderOfKeyService.wsdl. For this scenario a ws-requester is required to
+present a SAML 2.0 token of SymmetricKey keyType, issued from a designed
+STS. The address of the STS is provided in the WSDL. A transport binding
+policy is used. The token is declared to be signed and endorsed,
+sp:SignedEndorsingSupportingTokens. A detailed explanation of the
+security settings are provided in the comments in the listing below.
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="http://www.jboss.org/jbossws/ws-extensions/holderofkeywssecuritypolicy"
+             name="HolderOfKeyService"
+        xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/holderofkeywssecuritypolicy"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+        xmlns="http://schemas.xmlsoap.org/wsdl/"
+        xmlns:wsp="http://www.w3.org/ns/ws-policy"
+        xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
+    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+    xmlns:wsaws="http://www.w3.org/2005/08/addressing"
+    xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex"
+    xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702"
+    xmlns:t="http://docs.oasis-open.org/ws-sx/ws-trust/200512">
+ 
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://www.jboss.org/jbossws/ws-extensions/holderofkeywssecuritypolicy"
+                  schemaLocation="HolderOfKeyService_schema1.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="sayHello">
+    <part name="parameters" element="tns:sayHello"/>
+  </message>
+  <message name="sayHelloResponse">
+    <part name="parameters" element="tns:sayHelloResponse"/>
+  </message>
+  <portType name="HolderOfKeyIface">
+    <operation name="sayHello">
+      <input message="tns:sayHello"/>
+      <output message="tns:sayHelloResponse"/>
+    </operation>
+  </portType>
+<!--
+        The wsp:PolicyReference binds the security requirments on all the endpoints.
+        The wsp:Policy wsu:Id="#TransportSAML2HolderOfKeyPolicy" element is defined later in this file.
+-->
+  <binding name="HolderOfKeyServicePortBinding" type="tns:HolderOfKeyIface">
+    <wsp:PolicyReference URI="#TransportSAML2HolderOfKeyPolicy" />
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="sayHello">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+<!--
+  The soap:address has been defined to use JBoss's https port, 8443.  This is
+  set in conjunction with the sp:TransportBinding policy for https.
+-->
+  <service name="HolderOfKeyService">
+    <port name="HolderOfKeyServicePort" binding="tns:HolderOfKeyServicePortBinding">
+      <soap:address location="https://@jboss.bind.address@:8443/jaxws-samples-wsse-policy-trust-holderofkey/HolderOfKeyService"/>
+    </port>
+  </service>
+ 
+ 
+  <wsp:Policy wsu:Id="TransportSAML2HolderOfKeyPolicy">
+    <wsp:ExactlyOne>
+      <wsp:All>
+  <!--
+        The wsam:Addressing element, indicates that the endpoints of this
+        web service MUST conform to the WS-Addressing specification.  The
+        attribute wsp:Optional="false" enforces this assertion.
+  -->
+        <wsam:Addressing wsp:Optional="false">
+          <wsp:Policy />
+        </wsam:Addressing>
+<!--
+  The sp:TransportBinding element indicates that security is provided by the
+  message exchange transport medium, https.  WS-Security policy specification
+  defines the sp:HttpsToken for use in exchanging messages transmitted over HTTPS.
+-->
+          <sp:TransportBinding
+            xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+            <wsp:Policy>
+              <sp:TransportToken>
+                <wsp:Policy>
+                  <sp:HttpsToken>
+                    <wsp:Policy/>
+                  </sp:HttpsToken>
+                </wsp:Policy>
+              </sp:TransportToken>
+<!--
+     The sp:AlgorithmSuite element, requires the TripleDes algorithm suite
+     be used in performing cryptographic operations.
+-->
+              <sp:AlgorithmSuite>
+                <wsp:Policy>
+                  <sp:TripleDes />
+                </wsp:Policy>
+              </sp:AlgorithmSuite>
+<!--
+     The sp:Layout element,  indicates the layout rules to apply when adding
+     items to the security header.  The sp:Lax sub-element indicates items
+     are added to the security header in any order that conforms to
+     WSS: SOAP Message Security.
+-->
+              <sp:Layout>
+                <wsp:Policy>
+                  <sp:Lax />
+                </wsp:Policy>
+              </sp:Layout>
+              <sp:IncludeTimestamp />
+            </wsp:Policy>
+          </sp:TransportBinding>
+ 
+<!--
+  The sp:SignedEndorsingSupportingTokens, when transport level security level is
+  used there will be no message signature and the signature generated by the
+  supporting token will sign the Timestamp.
+-->
+        <sp:SignedEndorsingSupportingTokens
+          xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+          <wsp:Policy>
+<!--
+  The sp:IssuedToken element asserts that a SAML 2.0 security token of type
+  Bearer is expected from the STS.  The
+  sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
+  attribute instructs the runtime to include the initiator's public key
+  with every message sent to the recipient.
+ 
+  The sp:RequestSecurityTokenTemplate element directs that all of the
+  children of this element will be copied directly into the body of the
+  RequestSecurityToken (RST) message that is sent to the STS when the
+  initiator asks the STS to issue a token.
+-->
+            <sp:IssuedToken
+              sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
+              <sp:RequestSecurityTokenTemplate>
+                <t:TokenType>http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0</t:TokenType>
+ <!--
+   KeyType of "SymmetricKey", the client must prove to the WS service that it
+   possesses a particular symmetric session key.
+ -->
+                <t:KeyType>http://docs.oasis-open.org/ws-sx/ws-trust/200512/SymmetricKey</t:KeyType>
+              </sp:RequestSecurityTokenTemplate>
+              <wsp:Policy>
+                <sp:RequireInternalReference />
+              </wsp:Policy>
+<!--
+  The sp:Issuer element defines the STS's address and endpoint information
+  This information is used by the STSClient.
+-->
+              <sp:Issuer>
+                <wsaws:Address>http://@jboss.bind.address@:8080/jaxws-samples-wsse-policy-trust-sts-holderofkey/SecurityTokenService</wsaws:Address>
+                <wsaws:Metadata
+                  xmlns:wsdli="http://www.w3.org/2006/01/wsdl-instance"
+                  wsdli:wsdlLocation="http://@jboss.bind.address@:8080/jaxws-samples-wsse-policy-trust-sts-holderofkey/SecurityTokenService?wsdl">
+                  <wsaw:ServiceName
+                    xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
+                    xmlns:stsns="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
+                    EndpointName="UT_Port">stsns:SecurityTokenService</wsaw:ServiceName>
+                </wsaws:Metadata>
+              </sp:Issuer>
+ 
+            </sp:IssuedToken>
+          </wsp:Policy>
+        </sp:SignedEndorsingSupportingTokens>
+<!--
+    The sp:Wss11 element declares WSS: SOAP Message Security 1.1 options
+    to be supported by the STS.  These particular elements generally refer
+    to how keys are referenced within the SOAP envelope.  These are normally
+    handled by CXF.
+-->
+        <sp:Wss11>
+          <wsp:Policy>
+            <sp:MustSupportRefIssuerSerial />
+            <sp:MustSupportRefThumbprint />
+            <sp:MustSupportRefEncryptedKey />
+          </wsp:Policy>
+        </sp:Wss11>
+<!--
+    The sp:Trust13 element declares controls for WS-Trust 1.3 options.
+    They are policy assertions related to exchanges specifically with
+    client and server challenges and entropy behaviors.  Again these are
+    normally handled by CXF.
+-->
+        <sp:Trust13>
+          <wsp:Policy>
+            <sp:MustSupportIssuedTokens />
+            <sp:RequireClientEntropy />
+            <sp:RequireServerEntropy />
+          </wsp:Policy>
+        </sp:Trust13>
+      </wsp:All>
+    </wsp:ExactlyOne>
+  </wsp:Policy>
+ 
+</definitions>
+----
+
+[[ssl-configuration]]
+=== SSL configuration
+
+https://docs.jboss.org/author/display/JBWS/WS-Trust+and+STS#WS-TrustandSTS-SSLconfiguration
+
+This web service is using https, therefore the JBoss server must be
+configured to provide SSL support in the Web subsystem. There are 2
+components to SSL configuration.
+
+* create a certificate keystore
+* declare an SSL connector in the Web subsystem of the JBoss server
+configuration file.
+
+Follow the directions in the, " _Using the pure Java implementation
+supplied by JSSE_" section in the link:#[SSL Setup
+Guide|../../../../../../../../../../display/WFLY8/SSL+setup+guide|||\].
+
+Here is an example of an SSL connector declaration.
+
+[source, java]
+----
+<subsystem xmlns="urn:jboss:domain:web:1.4" default-virtual-server="default-host" native="false">
+.....
+  <connector name="jbws-https-connector" protocol="HTTP/1.1" scheme="https" socket-binding="https" secure="true" enabled="true">
+    <ssl key-alias="tomcat" password="changeit" certificate-key-file="/myJbossHome/security/test.keystore" verify-client="false"/>
+  </connector>
+...
+----
+
+[[web-service-interface]]
+=== Web service Interface
+
+The web service provider interface class, HolderOfKeyIface, is a simple
+straight forward web service definition.
+
+[source, java]
+----
+package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.holderofkey;
+ 
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+ 
+@WebService
+(
+   targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/holderofkeywssecuritypolicy"
+)
+public interface HolderOfKeyIface {
+   @WebMethod
+   String sayHello();
+}
+----
+
+[[web-service-implementation]]
+=== Web service Implementation
+
+The web service provider implementation class, HolderOfKeyImpl, is a
+simple POJO. It uses the standard WebService annotation to define the
+service endpoint. In addition there are two Apache CXF annotations,
+EndpointProperties and EndpointProperty used for configuring the
+endpoint for the CXF runtime. These annotations come from the
+https://ws.apache.org/wss4j/[Apache WSS4J project], which provides a
+Java implementation of the primary WS-Security standards for Web
+Services. These annotations are programmatically adding properties to
+the endpoint. With plain Apache CXF, these properties are often set via
+the <jaxws:properties> element on the <jaxws:endpoint> element in the
+Spring config; these annotations allow the properties to be configured
+in the code.
+
+WSS4J uses the Crypto interface to get keys and certificates for
+signature creation/verification, as is asserted by the WSDL for this
+service. The WSS4J configuration information being provided by
+HolderOfKeyImpl is for Crypto's Merlin implementation. More information
+will be provided about this in the keystore section.
+
+The first EndpointProperty statement in the listing disables ensurance
+of compliance with the Basic Security Profile 1.1. The next
+EndpointProperty statements declares the Java properties file that
+contains the (Merlin) crypto configuration information. The last
+EndpointProperty statement declares the STSHolderOfKeyCallbackHandler
+implementation class. It is used to obtain the user's password for the
+certificates in the keystore file.
+
+[source, java]
+----
+package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.holderofkey;
+ 
+import org.apache.cxf.annotations.EndpointProperties;
+import org.apache.cxf.annotations.EndpointProperty;
+ 
+import javax.jws.WebService;
+ 
+@WebService
+   (
+      portName = "HolderOfKeyServicePort",
+      serviceName = "HolderOfKeyService",
+      wsdlLocation = "WEB-INF/wsdl/HolderOfKeyService.wsdl",
+      targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/holderofkeywssecuritypolicy",
+      endpointInterface = "org.jboss.test.ws.jaxws.samples.wsse.policy.trust.holderofkey.HolderOfKeyIface"
+   )
+@EndpointProperties(value = {
+   @EndpointProperty(key = "ws-security.is-bsp-compliant", value = "false"),
+   @EndpointProperty(key = "ws-security.signature.properties", value = "serviceKeystore.properties"),
+   @EndpointProperty(key = "ws-security.callback-handler", value = "org.jboss.test.ws.jaxws.samples.wsse.policy.trust.holderofkey.HolderOfKeyCallbackHandler")
+})
+public class HolderOfKeyImpl implements HolderOfKeyIface
+{
+   public String sayHello()
+   {
+      return "Holder-Of-Key WS-Trust Hello World!";
+   }
+}
+----
+
+[[crypto-properties-and-keystore-files]]
+=== Crypto properties and keystore files
+
+WSS4J's Crypto implementation is loaded and configured via a Java
+properties file that contains Crypto configuration data. The file
+contains implementation-specific properties such as a keystore location,
+password, default alias and the like. This application is using the
+Merlin implementation. File serviceKeystore.properties contains this
+information.
+
+File servicestore.jks, is a Java KeyStore (JKS) repository. It contains
+self signed certificates for myservicekey and mystskey. _Self signed
+certificates are not appropriate for production use._
+
+....
+org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+org.apache.ws.security.crypto.merlin.keystore.type=jks
+org.apache.ws.security.crypto.merlin.keystore.password=sspass
+org.apache.ws.security.crypto.merlin.keystore.alias=myservicekey
+org.apache.ws.security.crypto.merlin.keystore.file=servicestore.jks
+....
+
+[[manifest.mf]]
+=== MANIFEST.MF
+
+https://docs.jboss.org/author/display/JBWS/WS-Trust+and+STS#WS-TrustandSTS-MANIFEST.MF
+
+When deployed on WildFly this application requires access to the JBossWs
+and CXF APIs provided in module org.jboss.ws.cxf.jbossws-cxf-client. The
+dependency statement directs the server to provide them at deployment.
+
+....
+Manifest-Version:1.0
+Ant-Version: Apache Ant1.8.2
+Created-By:1.7.0_25-b15 (Oracle Corporation)
+Dependencies: org.jboss.ws.cxf.jbossws-cxf-client
+....
+
+[[security-token-service]]
+== Security Token Service
+
+This section examines the crucial elements in providing the Security
+Token Service functionality for providing a SAML Holder-Of-Key token.
+The components that will be discussed are.
+
+* Security Domain
+* STS's WSDL
+* STS's implementation class
+* STSBearerCallbackHandler
+* Crypto properties and keystore files
+* MANIFEST.MF
+
+[[security-domain]]
+=== Security Domain
+
+The STS requires a JBoss security domain be configured. The
+jboss-web.xml descriptor declares a named security
+domain,"JBossWS-trust-sts" to be used by this service for
+authentication. This security domain requires two properties files and
+the addition of a security-domain declaration in the JBoss server
+configuration file.
+
+For this scenario the domain needs to contain user _alice_, password
+_clarinet_, and role _friend_. See the listings below for
+jbossws-users.properties and jbossws-roles.properties. In addition the
+following XML must be added to the JBoss security subsystem in the
+server configuration file. Replace " *SOME_PATH*" with appropriate
+information.
+
+[source,xml]
+----
+<security-domain name="JBossWS-trust-sts">
+  <authentication>
+   <login-module code="UsersRoles" flag="required">
+     <module-option name="usersProperties" value="/SOME_PATH/jbossws-users.properties"/>
+     <module-option name="unauthenticatedIdentity" value="anonymous"/>
+     <module-option name="rolesProperties" value="/SOME_PATH/jbossws-roles.properties"/>
+   </login-module>
+  </authentication>
+</security-domain>
+----
+
+jboss-web.xml
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jboss-web PUBLIC"-//JBoss//DTD Web Application 2.4//EN" ">
+<jboss-web>
+  <security-domain>java:/jaas/JBossWS-trust-sts</security-domain>
+</jboss-web>
+----
+
+[cols="",options="header"]
+|====
+| 
+|====
+
+jbossws-users.properties
+
+....
+# A sample users.properties filefor use with the UsersRolesLoginModule
+alice=clarinet
+....
+
+[cols="",options="header"]
+|====
+| 
+|====
+
+jbossws-roles.properties
+
+....
+# A sample roles.properties filefor use with the UsersRolesLoginModule
+alice=friend
+....
+
+[[stss-wsdl]]
+=== STS's WSDL
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+  targetNamespace="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
+  xmlns:tns="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
+  xmlns:wstrust="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:wsap10="http://www.w3.org/2006/05/addressing/wsdl"
+  xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+  xmlns:wsp="http://www.w3.org/ns/ws-policy"
+  xmlns:wst="http://docs.oasis-open.org/ws-sx/ws-trust/200512"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata">
+ 
+  <wsdl:types>
+    <xs:schema elementFormDefault="qualified"
+               targetNamespace='http://docs.oasis-open.org/ws-sx/ws-trust/200512'>
+ 
+      <xs:element name='RequestSecurityToken'
+                  type='wst:AbstractRequestSecurityTokenType'/>
+      <xs:element name='RequestSecurityTokenResponse'
+                  type='wst:AbstractRequestSecurityTokenType'/>
+ 
+      <xs:complexType name='AbstractRequestSecurityTokenType'>
+        <xs:sequence>
+          <xs:any namespace='##any' processContents='lax' minOccurs='0'
+                  maxOccurs='unbounded'/>
+        </xs:sequence>
+        <xs:attribute name='Context' type='xs:anyURI' use='optional'/>
+        <xs:anyAttribute namespace='##other' processContents='lax'/>
+      </xs:complexType>
+      <xs:element name='RequestSecurityTokenCollection'
+                  type='wst:RequestSecurityTokenCollectionType'/>
+      <xs:complexType name='RequestSecurityTokenCollectionType'>
+        <xs:sequence>
+          <xs:element name='RequestSecurityToken'
+                      type='wst:AbstractRequestSecurityTokenType' minOccurs='2'
+                      maxOccurs='unbounded'/>
+        </xs:sequence>
+      </xs:complexType>
+ 
+      <xs:element name='RequestSecurityTokenResponseCollection'
+                  type='wst:RequestSecurityTokenResponseCollectionType'/>
+      <xs:complexType name='RequestSecurityTokenResponseCollectionType'>
+        <xs:sequence>
+          <xs:element ref='wst:RequestSecurityTokenResponse' minOccurs='1'
+                      maxOccurs='unbounded'/>
+        </xs:sequence>
+        <xs:anyAttribute namespace='##other' processContents='lax'/>
+      </xs:complexType>
+ 
+    </xs:schema>
+  </wsdl:types>
+ 
+  <!-- WS-Trust defines the following GEDs -->
+  <wsdl:message name="RequestSecurityTokenMsg">
+    <wsdl:part name="request" element="wst:RequestSecurityToken"/>
+  </wsdl:message>
+  <wsdl:message name="RequestSecurityTokenResponseMsg">
+    <wsdl:part name="response"
+               element="wst:RequestSecurityTokenResponse"/>
+  </wsdl:message>
+  <wsdl:message name="RequestSecurityTokenCollectionMsg">
+    <wsdl:part name="requestCollection"
+               element="wst:RequestSecurityTokenCollection"/>
+  </wsdl:message>
+  <wsdl:message name="RequestSecurityTokenResponseCollectionMsg">
+    <wsdl:part name="responseCollection"
+               element="wst:RequestSecurityTokenResponseCollection"/>
+  </wsdl:message>
+ 
+  <!-- This portType an example of a Requestor (or other) endpoint that
+         Accepts SOAP-based challenges from a Security Token Service -->
+  <wsdl:portType name="WSSecurityRequestor">
+    <wsdl:operation name="Challenge">
+      <wsdl:input message="tns:RequestSecurityTokenResponseMsg"/>
+      <wsdl:output message="tns:RequestSecurityTokenResponseMsg"/>
+    </wsdl:operation>
+  </wsdl:portType>
+ 
+  <!-- This portType is an example of an STS supporting full protocol -->
+  <wsdl:portType name="STS">
+    <wsdl:operation name="Cancel">
+      <wsdl:input
+        wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Cancel"
+        message="tns:RequestSecurityTokenMsg"/>
+      <wsdl:output
+        wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RSTR/CancelFinal"
+        message="tns:RequestSecurityTokenResponseMsg"/>
+    </wsdl:operation>
+    <wsdl:operation name="Issue">
+      <wsdl:input
+        wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue"
+        message="tns:RequestSecurityTokenMsg"/>
+      <wsdl:output
+        wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RSTRC/IssueFinal"
+        message="tns:RequestSecurityTokenResponseCollectionMsg"/>
+    </wsdl:operation>
+    <wsdl:operation name="Renew">
+      <wsdl:input
+        wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Renew"
+        message="tns:RequestSecurityTokenMsg"/>
+      <wsdl:output
+        wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RSTR/RenewFinal"
+        message="tns:RequestSecurityTokenResponseMsg"/>
+    </wsdl:operation>
+    <wsdl:operation name="Validate">
+      <wsdl:input
+        wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Validate"
+        message="tns:RequestSecurityTokenMsg"/>
+      <wsdl:output
+        wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RSTR/ValidateFinal"
+        message="tns:RequestSecurityTokenResponseMsg"/>
+    </wsdl:operation>
+    <wsdl:operation name="KeyExchangeToken">
+      <wsdl:input
+        wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/KET"
+        message="tns:RequestSecurityTokenMsg"/>
+      <wsdl:output
+        wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RSTR/KETFinal"
+        message="tns:RequestSecurityTokenResponseMsg"/>
+    </wsdl:operation>
+    <wsdl:operation name="RequestCollection">
+      <wsdl:input message="tns:RequestSecurityTokenCollectionMsg"/>
+      <wsdl:output message="tns:RequestSecurityTokenResponseCollectionMsg"/>
+    </wsdl:operation>
+  </wsdl:portType>
+ 
+  <!-- This portType is an example of an endpoint that accepts
+         Unsolicited RequestSecurityTokenResponse messages -->
+  <wsdl:portType name="SecurityTokenResponseService">
+    <wsdl:operation name="RequestSecurityTokenResponse">
+      <wsdl:input message="tns:RequestSecurityTokenResponseMsg"/>
+    </wsdl:operation>
+  </wsdl:portType>
+ 
+  <wsdl:binding name="UT_Binding" type="wstrust:STS">
+    <wsp:PolicyReference URI="#UT_policy"/>
+    <soap:binding style="document"
+                  transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="Issue">
+      <soap:operation
+        soapAction="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue"/>
+      <wsdl:input>
+        <wsp:PolicyReference
+          URI="#Input_policy"/>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <wsp:PolicyReference
+          URI="#Output_policy"/>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Validate">
+      <soap:operation
+        soapAction="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Validate"/>
+      <wsdl:input>
+        <wsp:PolicyReference
+          URI="#Input_policy"/>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <wsp:PolicyReference
+          URI="#Output_policy"/>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Cancel">
+      <soap:operation
+        soapAction="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Cancel"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Renew">
+      <soap:operation
+        soapAction="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Renew"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="KeyExchangeToken">
+      <soap:operation
+        soapAction="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/KeyExchangeToken"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RequestCollection">
+      <soap:operation
+        soapAction="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/RequestCollection"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+ 
+  <wsdl:service name="SecurityTokenService">
+    <wsdl:port name="UT_Port" binding="tns:UT_Binding">
+      <soap:address location="http://localhost:8080/SecurityTokenService/UT"/>
+    </wsdl:port>
+  </wsdl:service>
+ 
+  <wsp:Policy wsu:Id="UT_policy">
+    <wsp:ExactlyOne>
+      <wsp:All>
+        <wsap10:UsingAddressing/>
+        <sp:SymmetricBinding
+          xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+          <wsp:Policy>
+            <sp:ProtectionToken>
+              <wsp:Policy>
+                <sp:X509Token
+                  sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/Never">
+                  <wsp:Policy>
+                    <sp:RequireDerivedKeys/>
+                    <sp:RequireThumbprintReference/>
+                    <sp:WssX509V3Token10/>
+                  </wsp:Policy>
+                </sp:X509Token>
+              </wsp:Policy>
+            </sp:ProtectionToken>
+            <sp:AlgorithmSuite>
+              <wsp:Policy>
+                <sp:Basic256/>
+              </wsp:Policy>
+            </sp:AlgorithmSuite>
+            <sp:Layout>
+              <wsp:Policy>
+                <sp:Lax/>
+              </wsp:Policy>
+            </sp:Layout>
+            <sp:IncludeTimestamp/>
+            <sp:EncryptSignature/>
+            <sp:OnlySignEntireHeadersAndBody/>
+          </wsp:Policy>
+        </sp:SymmetricBinding>
+        <sp:SignedSupportingTokens
+          xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+          <wsp:Policy>
+            <sp:UsernameToken
+              sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
+              <wsp:Policy>
+                <sp:WssUsernameToken10/>
+              </wsp:Policy>
+            </sp:UsernameToken>
+          </wsp:Policy>
+        </sp:SignedSupportingTokens>
+        <sp:Wss11
+          xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+          <wsp:Policy>
+            <sp:MustSupportRefKeyIdentifier/>
+            <sp:MustSupportRefIssuerSerial/>
+            <sp:MustSupportRefThumbprint/>
+            <sp:MustSupportRefEncryptedKey/>
+          </wsp:Policy>
+        </sp:Wss11>
+        <sp:Trust13
+          xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+          <wsp:Policy>
+            <sp:MustSupportIssuedTokens/>
+            <sp:RequireClientEntropy/>
+            <sp:RequireServerEntropy/>
+          </wsp:Policy>
+        </sp:Trust13>
+      </wsp:All>
+    </wsp:ExactlyOne>
+  </wsp:Policy>
+ 
+  <wsp:Policy wsu:Id="Input_policy">
+    <wsp:ExactlyOne>
+      <wsp:All>
+        <sp:SignedParts
+          xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+          <sp:Body/>
+          <sp:Header Name="To"
+                     Namespace="http://www.w3.org/2005/08/addressing"/>
+          <sp:Header Name="From"
+                     Namespace="http://www.w3.org/2005/08/addressing"/>
+          <sp:Header Name="FaultTo"
+                     Namespace="http://www.w3.org/2005/08/addressing"/>
+          <sp:Header Name="ReplyTo"
+                     Namespace="http://www.w3.org/2005/08/addressing"/>
+          <sp:Header Name="MessageID"
+                     Namespace="http://www.w3.org/2005/08/addressing"/>
+          <sp:Header Name="RelatesTo"
+                     Namespace="http://www.w3.org/2005/08/addressing"/>
+          <sp:Header Name="Action"
+                     Namespace="http://www.w3.org/2005/08/addressing"/>
+        </sp:SignedParts>
+      </wsp:All>
+    </wsp:ExactlyOne>
+  </wsp:Policy>
+ 
+  <wsp:Policy wsu:Id="Output_policy">
+    <wsp:ExactlyOne>
+      <wsp:All>
+        <sp:SignedParts
+          xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+          <sp:Body/>
+          <sp:Header Name="To"
+                     Namespace="http://www.w3.org/2005/08/addressing"/>
+          <sp:Header Name="From"
+                     Namespace="http://www.w3.org/2005/08/addressing"/>
+          <sp:Header Name="FaultTo"
+                     Namespace="http://www.w3.org/2005/08/addressing"/>
+          <sp:Header Name="ReplyTo"
+                     Namespace="http://www.w3.org/2005/08/addressing"/>
+          <sp:Header Name="MessageID"
+                     Namespace="http://www.w3.org/2005/08/addressing"/>
+          <sp:Header Name="RelatesTo"
+                     Namespace="http://www.w3.org/2005/08/addressing"/>
+          <sp:Header Name="Action"
+                     Namespace="http://www.w3.org/2005/08/addressing"/>
+        </sp:SignedParts>
+      </wsp:All>
+    </wsp:ExactlyOne>
+  </wsp:Policy>
+ 
+</wsdl:definitions>
+----
+
+[[stss-implementation-class]]
+=== STS's implementation class
+
+The Apache CXF's STS, SecurityTokenServiceProvider, is a web service
+provider that is compliant with the protocols and functionality defined
+by the WS-Trust specification. It has a modular architecture. Many of
+its components are configurable or replaceable and there are many
+optional features that are enabled by implementing and configuring
+plug-ins. Users can customize their own STS by extending from
+SecurityTokenServiceProvider and overriding the default settings.
+Extensive information about the CXF's STS configurable and pluggable
+components can be found
+http://coheigea.blogspot.com/2011/11/apache-cxf-sts-documentation-part-viii_10.html[here].
+
+This STS implementation class, SampleSTSHolderOfKey, is a POJO that
+extends from SecurityTokenServiceProvider. Note that the class is
+defined with a WebServiceProvider annotation and not a WebService
+annotation. This annotation defines the service as a Provider-based
+endpoint, meaning it supports a more messaging-oriented approach to Web
+services. In particular, it signals that the exchanged messages will be
+XML documents of some type. SecurityTokenServiceProvider is an
+implementation of the javax.xml.ws.Provider interface. In comparison the
+WebService annotation defines a (service endpoint interface) SEI-based
+endpoint which supports message exchange via SOAP envelopes.
+
+As was done in the HolderOfKeyImpl class, the WSS4J annotations
+EndpointProperties and EndpointProperty are providing endpoint
+configuration for the CXF runtime. The first EndpointProperty statements
+declares the Java properties file that contains the (Merlin) crypto
+configuration information. WSS4J reads this file and extra required
+information for message handling. The last EndpointProperty statement
+declares the STSHolderOfKeyCallbackHandler implementation class. It is
+used to obtain the user's password for the certificates in the keystore
+file.
+
+In this implementation we are customizing the operations of token
+issuance and their static properties.
+
+StaticSTSProperties is used to set select properties for configuring
+resources in the STS. You may think this is a duplication of the
+settings made with the WSS4J annotations. The values are the same but
+the underlaying structures being set are different, thus this
+information must be declared in both places.
+
+The setIssuer setting is important because it uniquely identifies the
+issuing STS. The issuer string is embedded in issued tokens and, when
+validating tokens, the STS checks the issuer string value. Consequently,
+it is important to use the issuer string in a consistent way, so that
+the STS can recognize the tokens that it has issued.
+
+The setEndpoints call allows the declaration of a set of allowed token
+recipients by address. The addresses are specified as reg-ex patterns.
+
+TokenIssueOperation has a modular structure. This allows custom
+behaviors to be injected into the processing of messages. In this case
+we are overriding the SecurityTokenServiceProvider's default behavior
+and performing SAML token processing. CXF provides an implementation of
+a SAMLTokenProvider which we are using rather than writing our own.
+
+Learn more about the SAMLTokenProvider
+http://coheigea.blogspot.it/2011/10/apache-cxf-sts-documentation-part-iv.html[here].
+
+[source, java]
+----
+package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.stsholderofkey;
+ 
+import org.apache.cxf.annotations.EndpointProperties;
+import org.apache.cxf.annotations.EndpointProperty;
+import org.apache.cxf.sts.StaticSTSProperties;
+import org.apache.cxf.sts.operation.TokenIssueOperation;
+import org.apache.cxf.sts.service.ServiceMBean;
+import org.apache.cxf.sts.service.StaticService;
+import org.apache.cxf.sts.token.provider.SAMLTokenProvider;
+import org.apache.cxf.ws.security.sts.provider.SecurityTokenServiceProvider;
+ 
+import javax.xml.ws.WebServiceProvider;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+ 
+/**
+ * User: rsearls
+ * Date: 3/14/14
+ */
+@WebServiceProvider(serviceName = "SecurityTokenService",
+   portName = "UT_Port",
+   targetNamespace = "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
+   wsdlLocation = "WEB-INF/wsdl/holderofkey-ws-trust-1.4-service.wsdl")
+//be sure to have dependency on org.apache.cxf module when on AS7, otherwise Apache CXF annotations are ignored
+@EndpointProperties(value = {
+   @EndpointProperty(key = "ws-security.signature.properties", value = "stsKeystore.properties"),
+   @EndpointProperty(key = "ws-security.callback-handler", value = "org.jboss.test.ws.jaxws.samples.wsse.policy.trust.stsholderofkey.STSHolderOfKeyCallbackHandler")
+})
+public class SampleSTSHolderOfKey extends SecurityTokenServiceProvider
+{
+ 
+   public SampleSTSHolderOfKey() throws Exception
+   {
+      super();
+ 
+      StaticSTSProperties props = new StaticSTSProperties();
+      props.setSignatureCryptoProperties("stsKeystore.properties");
+      props.setSignatureUsername("mystskey");
+      props.setCallbackHandlerClass(STSHolderOfKeyCallbackHandler.class.getName());
+      props.setEncryptionCryptoProperties("stsKeystore.properties");
+      props.setEncryptionUsername("myservicekey");
+      props.setIssuer("DoubleItSTSIssuer");
+ 
+      List<ServiceMBean> services = new LinkedList<ServiceMBean>();
+      StaticService service = new StaticService();
+      service.setEndpoints(Arrays.asList(
+         "https://localhost:(\\d)*/jaxws-samples-wsse-policy-trust-holderofkey/HolderOfKeyService",
+         "https://\\[::1\\]:(\\d)*/jaxws-samples-wsse-policy-trust-holderofkey/HolderOfKeyService",
+         "https://\\[0:0:0:0:0:0:0:1\\]:(\\d)*/jaxws-samples-wsse-policy-trust-holderofkey/HolderOfKeyService"
+      ));
+ 
+      services.add(service);
+ 
+      TokenIssueOperation issueOperation = new TokenIssueOperation();
+      issueOperation.getTokenProviders().add(new SAMLTokenProvider());
+      issueOperation.setServices(services);
+      issueOperation.setStsProperties(props);
+      this.setIssueOperation(issueOperation);
+ 
+   }
+}
+----
+
+[[holderofkeycallbackhandler]]
+=== HolderOfKeyCallbackHandler
+
+STSHolderOfKeyCallbackHandler is a callback handler for the WSS4J Crypto
+API. It is used to obtain the password for the private key in the
+keystore. This class enables CXF to retrieve the password of the user
+name to use for the message signature.
+
+[source, java]
+----
+package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.stsholderofkey;
+ 
+import org.jboss.wsf.stack.cxf.extensions.security.PasswordCallbackHandler;
+ 
+import java.util.HashMap;
+import java.util.Map;
+ 
+/**
+ * User: rsearls
+ * Date: 3/19/14
+ */
+public class STSHolderOfKeyCallbackHandler extends PasswordCallbackHandler
+{
+   public STSHolderOfKeyCallbackHandler()
+   {
+      super(getInitMap());
+   }
+ 
+   private static Map<String, String> getInitMap()
+   {
+      Map<String, String> passwords = new HashMap<String, String>();
+      passwords.put("mystskey", "stskpass");
+      passwords.put("alice", "clarinet");
+      return passwords;
+   }
+}
+----
+
+[[crypto-properties-and-keystore-files-1]]
+=== Crypto properties and keystore files
+
+WSS4J's Crypto implementation is loaded and configured via a Java
+properties file that contains Crypto configuration data. The file
+contains implementation-specific properties such as a keystore location,
+password, default alias and the like. This application is using the
+Merlin implementation. File stsKeystore.properties contains this
+information.
+
+File servicestore.jks, is a Java KeyStore (JKS) repository. It contains
+self signed certificates for myservicekey and mystskey. _Self signed
+certificates are not appropriate for production use._
+
+....
+org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+org.apache.ws.security.crypto.merlin.keystore.type=jks
+org.apache.ws.security.crypto.merlin.keystore.password=stsspass
+org.apache.ws.security.crypto.merlin.keystore.file=stsstore.jks
+....
+
+[[manifest.mf-1]]
+=== MANIFEST.MF
+
+When deployed on WildFly, this application requires access to the
+JBossWs and CXF APIs provided in modules
+org.jboss.ws.cxf.jbossws-cxf-client and org.apache.cxf. The Apache CXF
+internals, org.apache.cxf.impl, are needed to build the STS
+configuration in the SampleSTSHolderOfKey constructor. The dependency
+statement directs the server to provide them at deployment.
+
+....
+Manifest-Version:1.0
+Ant-Version: Apache Ant1.8.2
+Created-By:1.7.0_25-b15 (Oracle Corporation)
+Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.apache.cxf.impl
+....
+
+[[web-service-requester]]
+== Web service requester
+
+This section examines the crucial elements in calling a web service that
+implements endpoint security as described in the SAML Holder-Of-Key
+scenario. The components that will be discussed are.
+
+* web service requester's implementation
+* ClientCallbackHandler
+* Crypto properties and keystore files
+
+[[web-service-requester-implementation]]
+=== Web service requester Implementation
+
+The ws-requester, the client, uses standard procedures for creating a
+reference to the web service. To address the endpoint security
+requirements, the web service's "Request Context" is configured with the
+information needed in message generation. In addition, the STSClient
+that communicates with the STS is configured with similar values. Note
+the key strings ending with a ".it" suffix. This suffix flags these
+settings as belonging to the STSClient. The internal CXF code assigns
+this information to the STSClient that is auto-generated for this
+service call.
+
+There is an alternate method of setting up the STSCLient. The user may
+provide their own instance of the STSClient. The CXF code will use this
+object and not auto-generate one. When providing the STSClient in this
+way, the user must provide a org.apache.cxf.Bus for it and the
+configuration keys must not have the ".it" suffix. This is used in the
+ActAs and OnBehalfOf examples.
+
+[source, java]
+----
+String serviceURL = "https://" + getServerHost() + ":8443/jaxws-samples-wsse-policy-trust-holderofkey/HolderOfKeyService";
+ 
+final QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/holderofkeywssecuritypolicy", "HolderOfKeyService");
+final URL wsdlURL = new URL(serviceURL + "?wsdl");
+Service service = Service.create(wsdlURL, serviceName);
+HolderOfKeyIface proxy = (HolderOfKeyIface) service.getPort(HolderOfKeyIface.class);
+ 
+Map<String, Object> ctx = ((BindingProvider)proxy).getRequestContext();
+ 
+// set the security related configuration information for the service "request"
+ctx.put(SecurityConstants.CALLBACK_HANDLER, new ClientCallbackHandler());
+ctx.put(SecurityConstants.SIGNATURE_PROPERTIES,
+  Thread.currentThread().getContextClassLoader().getResource(
+  "META-INF/clientKeystore.properties"));
+ctx.put(SecurityConstants.ENCRYPT_PROPERTIES,
+  Thread.currentThread().getContextClassLoader().getResource(
+  "META-INF/clientKeystore.properties"));
+ctx.put(SecurityConstants.SIGNATURE_USERNAME, "myclientkey");
+ctx.put(SecurityConstants.ENCRYPT_USERNAME, "myservicekey");
+ 
+//-- Configuration settings that will be transfered to the STSClient
+// "alice" is the name provided for the WSS Username. Her password will
+// be retreived from the ClientCallbackHander by the STSClient.
+ctx.put(SecurityConstants.USERNAME + ".it", "alice");
+ctx.put(SecurityConstants.CALLBACK_HANDLER + ".it", new ClientCallbackHandler());
+ctx.put(SecurityConstants.ENCRYPT_PROPERTIES + ".it",
+  Thread.currentThread().getContextClassLoader().getResource(
+  "META-INF/clientKeystore.properties"));
+ctx.put(SecurityConstants.ENCRYPT_USERNAME + ".it", "mystskey");
+ctx.put(SecurityConstants.STS_TOKEN_USERNAME + ".it", "myclientkey");
+ctx.put(SecurityConstants.STS_TOKEN_PROPERTIES + ".it",
+  Thread.currentThread().getContextClassLoader().getResource(
+  "META-INF/clientKeystore.properties"));
+ctx.put(SecurityConstants.STS_TOKEN_USE_CERT_FOR_KEYINFO + ".it", "true");
+ 
+proxy.sayHello();
+----
+
+[[clientcallbackhandler]]
+=== ClientCallbackHandler
+
+ClientCallbackHandler is a callback handler for the WSS4J Crypto API. It
+is used to obtain the password for the private key in the keystore. This
+class enables CXF to retrieve the password of the user name to use for
+the message signature. Note that "alice" and her password have been
+provided here. This information is not in the (JKS) keystore but
+provided in the WildFly security domain. It was declared in file
+jbossws-users.properties.
+
+[source, java]
+----
+package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.shared;
+ 
+import java.io.IOException;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import org.apache.ws.security.WSPasswordCallback;
+ 
+public class ClientCallbackHandler implements CallbackHandler {
+ 
+    public void handle(Callback[] callbacks) throws IOException,
+            UnsupportedCallbackException {
+        for (int i = 0; i < callbacks.length; i++) {
+            if (callbacks[i] instanceof WSPasswordCallback) {
+                WSPasswordCallback pc = (WSPasswordCallback) callbacks[i];
+                if ("myclientkey".equals(pc.getIdentifier())) {
+                    pc.setPassword("ckpass");
+                    break;
+                } else if ("alice".equals(pc.getIdentifier())) {
+                    pc.setPassword("clarinet");
+                    break;
+                } else if ("bob".equals(pc.getIdentifier())) {
+                    pc.setPassword("trombone");
+                    break;
+                } else if ("myservicekey".equals(pc.getIdentifier())) {  // rls test  added for bearer test
+                   pc.setPassword("skpass");
+                   break;
+                }
+            }
+        }
+    }
+}
+----
+
+[[crypto-properties-and-keystore-files-2]]
+=== Crypto properties and keystore files
+
+WSS4J's Crypto implementation is loaded and configured via a Java
+properties file that contains Crypto configuration data. The file
+contains implementation-specific properties such as a keystore location,
+password, default alias and the like. This application is using the
+Merlin implementation. File clientKeystore.properties contains this
+information.
+
+File clientstore.jks, is a Java KeyStore (JKS) repository. It contains
+self signed certificates for myservicekey and mystskey. _Self signed
+certificates are not appropriate for production use._
+
+....
+org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+org.apache.ws.security.crypto.merlin.keystore.type=jks
+org.apache.ws.security.crypto.merlin.keystore.password=cspass
+org.apache.ws.security.crypto.merlin.keystore.alias=myclientkey
+org.apache.ws.security.crypto.merlin.keystore.file=META-INF/clientstore.jks
+....

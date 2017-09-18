@@ -1,0 +1,216 @@
+= Interfaces and ports
+
+
+[[interface-declarations]]
+== Interface declarations
+
+WildFly uses named interface references throughout the configuration. A
+network interface is declared by specifying a logical name and a
+selection criteria for the physical interface:
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] :read-children-names(child-type=interface)
+{
+   "outcome" => "success",
+   "result" => [
+       "management",
+       "public"
+   ]
+}
+----
+
+This means the server in question declares two interfaces: One is
+referred to as " _management_"; the other one " _public_". The "
+_management_" interface is used for all components and services that are
+required by the management layer (i.e. the HTTP Management Endpoint).
+The " _public_" interface binding is used for any application related
+network communication (i.e. Web, Messaging, etc). There is nothing
+special about these names; interfaces can be declared with any name.
+Other sections of the configuration can then reference those interfaces
+by their logical name, rather than having to include the full details of
+the interface (which, on servers in a management domain, may vary on
+different machines).
+
+The `domain.xml`, `host.xml` and `standalone.xml` configuration files
+all include a section where interfaces can be declared. If we take a
+look at the XML declaration it reveals the selection criteria. The
+criteria is one of two types: either a single element indicating that
+the interface should be bound to a wildcard address, or a set of one or
+more characteristics that an interface or address must have in order to
+be a valid match. The selection criteria in this example are specific IP
+addresses for each interface:
+
+[source, xml]
+----
+<interfaces>
+  <interface name="management">
+   <inet-address value="127.0.0.1"/>
+  </interface>
+  <interface name="public">
+   <inet-address value="127.0.0.1"/>
+  </interface>
+</interfaces>
+----
+
+Some other examples:
+
+[source, xml]
+----
+<interface name="global">
+   <!-- Use the wildcard address -->
+   <any-address/>
+</interface>
+ 
+<interface name="external">
+   <nic name="eth0"/>
+</interface>
+ 
+<interface name="default">
+   <!-- Match any interface/address on the right subnet if it's
+        up, supports multicast and isn't point-to-point -->
+   <subnet-match value="192.168.0.0/16"/>
+   <up/>
+   <multicast/>
+   <not>
+      <point-to-point/>
+   </not>
+</interface>
+----
+
+=== The -b command line argument
+
+WildFly supports using the `-b` command line argument to specify the
+address to assign to interfaces. See
+link:Command_line_parameters.adoc#controlling-the-bind-address[Controlling
+the Bind Address with -b] for further details.
+
+[[socket-binding-groups]]
+== Socket Binding Groups
+
+The socket configuration in WildFly works similarly to the interfaces
+declarations. Sockets are declared using a logical name, by which they
+will be referenced throughout the configuration. Socket declarations are
+grouped under a certain name. This allows you to easily reference a
+particular socket binding group when configuring server groups in a
+managed domain. Socket binding groups reference an interface by its
+logical name:
+
+[source, xml]
+----
+<socket-binding-group name="standard-sockets" default-interface="public">
+  <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
+  <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
+  <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
+  <socket-binding name="http" port="${jboss.http.port:8080}"/>
+  <socket-binding name="https" port="${jboss.https.port:8443}"/>
+  <socket-binding name="txn-recovery-environment" port="4712"/>
+  <socket-binding name="txn-status-manager" port="4713"/>
+</socket-binding-group>
+----
+
+A socket binding includes the following information:
+
+* name -- logical name of the socket configuration that should be used
+elsewhere in the configuration
+* port -- base port to which a socket based on this configuration should
+be bound. (Note that servers can be configured to override this base
+value by applying an increment or decrement to all port values.)
+* interface (optional) -- logical name (see "Interfaces declarations"
+above) of the interface to which a socket based on this configuration
+should be bound. If not defined, the value of the "default-interface"
+attribute from the enclosing socket binding group will be used.
+* multicast-address (optional) -- if the socket will be used for
+multicast, the multicast address to use
+* multicast-port (optional) -- if the socket will be used for multicast,
+the multicast port to use
+* fixed-port (optional, defaults to false) -- if true, declares that the
+value of port should always be used for the socket and should not be
+overridden by applying an increment or decrement
+
+[[ipv4-versus-ipv6]]
+== IPv4 versus IPv6
+
+WildFly supports the use of both IPv4 and IPv6 addresses. By default,
+WildFly is configured for use in an IPv4 network and so if you are
+running in an IPv4 network, no changes are required. If you need to run
+in an IPv6 network, the changes required are minimal and involve
+changing the JVM stack and address preferences, and adjusting any
+interface IP address values specified in the configuration
+(standalone.xml or domain.xml).
+
+[[stack-and-address-preference]]
+=== Stack and address preference
+
+The system properties java.net.preferIPv4Stack and
+java.net.preferIPv6Addresses are used to configure the JVM for use with
+IPv4 or IPv6 addresses. With WildFly, in order to run using IPv4
+addresses, you need to specify java.net.preferIPv4Stack=true; in order
+to run with IPv6 addresses, you need to specify
+java.net.preferIPv4Stack=false (the JVM default) and
+java.net.preferIPv6Addresses=true. The latter ensures that any hostname
+to IP address conversions always return IPv6 address variants.
+
+These system properties are conveniently set by the JAVA_OPTS
+environment variable, defined in the standalone.conf (or domain.conf)
+file. For example, to change the IP stack preference from its default of
+IPv4 to IPv6, edit the standalone.conf (or domain.conf) file and change
+its default IPv4 setting:
+
+----
+if [ "x$JAVA_OPTS" = "x" ]; then
+   JAVA_OPTS=" ... -Djava.net.preferIPv4Stack=true ..."
+...
+----
+
+to an IPv6 suitable setting:
+
+----
+if [ "x$JAVA_OPTS" = "x" ]; then
+   JAVA_OPTS=" ... -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true ..."
+...
+----
+
+[[ip-address-literals]]
+=== IP address literals
+
+To change the IP address literals referenced in standalone.xml (or
+domain.xml), first visit the interface declarations and ensure that
+valid IPv6 addresses are being used as interface values. For example, to
+change the default configuration in which the loopback interface is used
+as the primary interface, change from the IPv4 loopback address:
+
+[source, xml]
+----
+<interfaces>
+  <interface name="management">
+    <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
+  </interface>
+  <interface name="public">
+    <inet-address value="${jboss.bind.address:127.0.0.1}"/>
+  </interface>
+</interfaces>
+----
+
+to the IPv6 loopback address:
+
+[source, xml]
+----
+<interfaces>
+  <interface name="management">
+    <inet-address value="${jboss.bind.address.management:[::1]}"/>
+  </interface>
+  <interface name="public">
+    <inet-address value="${jboss.bind.address:[::1]}"/>
+  </interface>
+</interfaces>
+----
+
+Note that when embedding IPv6 address literals in the substitution
+expression, square brackets surrounding the IP address literal are used
+to avoid ambiguity. This follows the convention for the use of IPv6
+literals in URLs.
+
+Over and above making such changes for the interface definitions, you
+should also check the rest of your configuration file and adjust IP
+address literals from IPv4 to IPv6 as required.

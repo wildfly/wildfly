@@ -1,0 +1,44 @@
+= WildFly Client Configuration
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 2
+:toc-title: WildFly Client Configuration Guide
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+:wildflyVersion: 11
+:numbered:
+
+ifdef::basebackend-html[toc::[]]
+ifndef::ebook-format[:leveloffset: 1]
+
+:leveloffset: 0
+
+
+== Introduction
+
+As of WildFly 11 a common configuration framework has been introduced for use by the client libraries to define configuration, this allows for the configuration to be shared across multiple clients rather than relying on their own configuration files.  As an example the configuration used by an EJB client can be shared with the JBoss CLI, if both of these required SSL configuration this can now be defined once and re-used.
+
+Programmatic APIs are also available for many of the options however this document is focusing on the configuration available within the common `wildfly-config.xml` configuration file.
+
+== wildfly-config.xml Discovery
+
+At the time a client requires access to its configuration, the class path is scanned for a `wildfly-config.xml` or `META-INF/wildfly-config.xml` file. Once the file is located the configuration will be parsed to be made available for that client.
+
+
+Alternatively, the `wildfly.config.url` system property can also be specified to identify the location of the configuration that should be used.
+
+== Configuration Sections
+
+:leveloffset: +2
+
+include::_client-guide/authentication-client.adoc[]
+
+include::_client-guide/jboss-ejb-client.adoc[]
+
+include::_client-guide/Remoting_Client_Configuration.adoc[]
+
+include::_client-guide/XNIO_Client_Configuration.adoc[]
+
+:leveloffset: -2

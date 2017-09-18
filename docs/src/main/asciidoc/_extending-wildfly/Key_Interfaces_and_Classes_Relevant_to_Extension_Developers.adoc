@@ -1,0 +1,1206 @@
+= Key Interfaces and Classes Relevant to Extension Developers
+
+In the first major section of this guide, we provided an example of how
+to implement an extension to the AS. The emphasis there was learning by
+doing. In this section, we'll focus a bit more on the major WildFly
+interfaces and classes that most are relevant to extension developers.
+The best way to learn about these interfaces and classes in detail is to
+look at their javadoc. What we'll try to do here is provide a brief
+introduction of the key items and how they relate to each other.
+
+Before digging into this section, readers are encouraged to read the
+"Core Management Concepts" section of the Admin Guide.
+
+[[extension-interface]]
+== Extension Interface
+
+The `org.jboss.as.controller.Extension` interface is the hook by which
+your extension to the AS kernel is able to integrate with the AS. During
+boot of the AS, when the `<extension>` element in the AS's xml
+configuration file naming your extension is parsed, the JBoss Modules
+module named in the element's name attribute is loaded. The standard JDK
+`java.lang.ServiceLoader` mechanism is then used to load your module's
+implementation of this interface.
+
+The function of an `Extension` implementation is to register with the
+core AS the management API, xml parsers and xml marshallers associated
+with the extension module's subsystems. An `Extension` can register
+multiple subsystems, although the usual practice is to register just one
+per extension.
+
+Once the `Extension` is loaded, the core AS will make two invocations
+upon it:
+
+* `void initializeParsers(ExtensionParsingContext context)`
+
+When this is invoked, it is the `Extension` implementation's
+responsibility to initialize the XML parsers for this extension's
+subsystems and register them with the given `ExtensionParsingContext`.
+The parser's job when it is later called is to create
+`org.jboss.dmr.ModelNode` objects representing WildFly management API
+operations needed make the AS's running configuration match what is
+described in the xml. Those management operation `ModelNode` s are added
+to a list passed in to the parser.
+
+A parser for each version of the xml schema used by a subsystem should
+be registered. A well behaved subsystem should be able to parse any
+version of its schema that it has ever published in a final release.
+
+* `void initialize(ExtensionContext context)`
+
+When this is invoked, it is the `Extension` implementation's
+responsibility to register with the core AS the management API for its
+subsystems, and to register the object that is capable of marshalling
+the subsystem's in-memory configuration back to XML. Only one XML
+marshaller is registered per subsystem, even though multiple XML parsers
+can be registered. The subsystem should always write documents that
+conform to the latest version of its XML schema.
+
+The registration of a subsystem's management API is done via the
+`ManagementResourceRegistration` interface. Before discussing that
+interface in detail, let's describe how it (and the related `Resource`
+interface) relate to the notion of managed resources in the AS.
+
+[[wildfly-managed-resources]]
+== WildFly Managed Resources
+
+Each subsystem is responsible for managing one or more management
+resources. The conceptual characteristics of a management resource are
+covered in some detail in the link:Management_resources.html[Admin
+Guide]; here we'll just summarize the main points. A management resource
+has
+
+* An *_address_* consisting of a list of key/value pairs that uniquely
+identifies a resource
+* Zero or more *_attributes_* , the value of which is some sort of
+`org.jboss.dmr.ModelNode`
+* Zero or more supported *_operations_* . An operation has a string name
+and zero or more parameters, each of which is a key/value pair where the
+key is a string naming the parameter and the value is some sort of
+`ModelNode`
+* Zero or more *_children_* , each of which in turn is a managed
+resource
+
+The implementation of a managed resource is somewhat analogous to the
+implementation of a Java object. A managed resource will have a "type",
+which encapsulates API information about that resource and logic used to
+implement that API. And then there are actual instances of the resource,
+which primarily store data representing the current state of a
+particular resource. This is somewhat analogous to the "class" and
+"object" notions in Java.
+
+A managed resource's type is encapsulated by the
+`org.jboss.as.controller.registry.ManagementResourceRegistration` the
+core AS creates when the type is registered. The data for a particular
+instance is encapsulated in an implementation of the
+`org.jboss.as.controller.registry.Resource` interface.
+
+[[managementresourceregistration-interface]]
+== ManagementResourceRegistration Interface
+
+In the Java analogy used above, the `ManagementResourceRegistration` is
+analogous to the "class", while the `Resource` discussed below is
+analogous to an instance of that class.
+
+A `ManagementResourceRegistration` represents the specification for a
+particular managed resource type. All resources whose address matches
+the same pattern will be of the same type, specified by the type's
+`ManagementResourceRegistration`. The MRR encapsulates:
+
+* A `PathAddress` showing the address pattern that matches resources of
+that type. This `PathAddress` can and typically does involve wildcards
+in the value of one or more elements of the address. In this case there
+can be more than one instance of the type, i.e. different `Resource`
+instances.
+* Definition of the various attributes exposed by resources of this
+type, including the `OperationStepHandler` implementations used for
+reading and writing the attribute values.
+* Definition of the various operations exposed by resources of this
+type, including the `OperationStepHandler` implementations used for
+handling user invocations of those operations.
+* Definition of child resource types. `ManagementResourceRegistration`
+instances form a tree.
+* Definition of management notifications emitted by resources of this
+type.
+* Definition of
+link:Working_with_WildFly_Capabilities.html[capabilities] provided by
+resources of this type.
+* Definition of link:RBAC.html[RBAC] access constraints that should be
+applied by the management kernel when authorizing operations against
+resources of this type.
+* Whether the resource type is an alias to another resource type, and if
+so information about that relationship. Aliases are primarily used to
+preserve backwards compatibility of the management API when the location
+of a given type of resources is moved in a newer release.
+
+The `ManagementResourceRegistration` interface is a subinterface of
+`ImmutableManagementResourceRegistration`, which provides a read-only
+view of the information encapsulated by the MRR. The MRR subinterface
+adds the methods needed for registering the attributes, operations,
+children, etc.
+
+Extension developers do not directly instantiate an MRR. Instead they
+create a `ResourceDefinition` for the root resource type for each
+subsystem, and register it with the `ExtensionContext` passed in to
+their `Extension` implementation's `initialize` method:
+
+[source, java]
+----
+    public void initialize(ExtensionContext context) {
+        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_VERSION);
+        subsystem.registerXMLElementWriter(getOurXmlWriter());
+        ResourceDefinition rd = getOurSubsystemDefinition();
+        ManagementResourceRegistration mrr = subsystem.registerSubsystemModel(rd));
+    }
+----
+
+The kernel uses the provided `ResourceDefinition` to construct a
+`ManagementResourceRegistration` and then passes that MRR to the various
+`registerXXX` methods implemented by the `ResourceDefinition`, giving it
+the change to record the resource type's attributes, operations and
+children.
+
+[[resourcedefinition-interface]]
+== ResourceDefinition Interface
+
+An implementation of `ResourceDefinition` is the primary class used by
+an extension developer when defining a managed resource type. It
+provides basic information about the type, exposes a
+`DescriptionProvider` used to generate a DMR description of the type,
+and implements callbacks the kernel can invoke when building up the
+`ManagementResourceRegistration` to ask for registration of definitions
+of attributes, operations, children, notifications and capabilities.
+
+Almost always an extension author will create their `ResourceDefinition`
+by creating a subclass of the
+`org.jboss.as.controller.SimpleResourceDefinition` class or of its
+`PersistentResourceDefinition` subclass. Both of these classes have
+constructors that take a `Parameters` object, which is a simple builder
+class to use to provide most of the key information about the resource
+type. The extension-specific subclass would then take responsibility for
+any additional behavior needed by overriding the `registerAttributes`,
+`registerOperations`, `registerNotifications` and `registerChildren`
+callbacks to do whatever is needed beyond what is provided by the
+superclasses.
+
+For example, to add a writable attribute:
+
+[source, java]
+----
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        super.registerAttributes(resourceRegistration);
+        // Now we register the 'foo' attribute
+        AttributeDefinition ad = FOO; // constant declared elsewhere
+        OperationStepHandler writeHandler = new FooWriteAttributeHandler();
+        resourceRegistration.registerReadWriteHandler(ad, null, writeHandler); // null read handler means use default read handling
+    }
+----
+
+To register a custom operation:
+
+[source, java]
+----
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+        // Now we register the 'foo-bar' custom operation
+        OperationDefinition od = FooBarOperationStepHandler.getDefinition();
+        OperationStepHandler osh = new FooBarOperationStepHandler();
+        resourceRegistration.registerOperationHandler(od, osh);
+    }
+----
+
+To register a child resource type:
+
+[source, java]
+----
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        // Now we register the 'baz=*' child type
+        ResourceDefinition rd = new BazResourceDefinition();
+        resourceRegistration.registerSubmodel(rd);
+    }
+----
+
+[[resourcedescriptionresolver]]
+=== ResourceDescriptionResolver
+
+One of the things a `ResourceDefinition` must be able to do is provide a
+`DescriptionProvider` that provides a proper DMR description of the
+resource to use as the output for the standard
+`read-resource-description` management operation. Since you are almost
+certainly going to be using one of the standard `ResourceDefinition`
+implementations like `SimpleResourceDefinition`, the creation of this
+`DescriptionProvider` is largely handled for you. The one thing that is
+not handled for you is providing the localized free form text
+descriptions of the various attributes, operations, operation
+parameters, child types, etc used in creating the resource description.
+
+For this you must provide an implementation of the
+`ResourceDescriptionResolver` interface, typically passed to the
+`Parameters` object provided to the `SimpleResourceDefinition`
+constructor. This interface has various methods that are invoked when a
+piece of localized text description is needed.
+
+Almost certainly you'll satisfy this requirement by providing an
+instance of the `StandardResourceDescriptionResolver` class.
+
+`StandardResourceDescriptionResolver` uses a `ResourceBundle` to load
+text from a properties file available on the classpath. The keys in the
+properties file must follow patterns expected by
+`StandardResourceDescriptionResolver`. See the
+`StandardResourceDescriptionResolver` javadoc for further details.
+
+The biggest task here is to create the properties file and add the text
+descriptions. A text description must be provided for everything. The
+typical thing to do is to store this properties file in the same package
+as your `Extension` implementation, in a file named
+`LocalDescriptions.properties`.
+
+[[attributedefinition-class]]
+== AttributeDefinition Class
+
+The `AttributeDefinition` class is used to create the static definition
+of one of a managed resource's attributes. It's a bit poorly named
+though, because the same interface is used to define the details of
+parameters to operations, and to define fields in the result of of
+operations.
+
+The definition includes all the static information about the
+attribute/operation parameter/result field, e.g. the DMR `ModelType` of
+its value, whether its presence is required, whether it supports
+expressions, etc. See
+link:Description_of_the_Management_Model.html[Description of the
+Management Model] for a description of the metadata available. Almost
+all of this comes from the `AttributeDefinition`.
+
+Besides basic metadata, the `AttributeDefinition` can also hold custom
+logic the kernel should use when dealing with the attribute/operation
+parameter/result field. For example, a `ParameterValidator` to use to
+perform special validation of values (beyond basic things like DMR type
+checks and defined/undefined checks), or an `AttributeParser` or
+`AttributeMarshaller` to use to perform customized parsing from and
+marshaling to XML.
+
+WildFly Core's `controller` module provides a number of subclasses of
+`AttributeDefinition` used for the usual kinds of attributes. For each
+there is an associated builder class which you should use to build the
+`AttributeDefinition`. Most commonly used are
+`SimpleAttributeDefinition`, built by the associated
+`SimpleAttributeDefinitionBuilder`. This is used for attributes whose
+values are analogous to java primitives, `String` or byte[]. For
+collections, there are various subclasses of `ListAttributeDefinition`
+and `MapAttributeDefinition`. All have a `Builder` inner class. For
+complex attributes, i.e. those with a fixed set of fully defined fields,
+use `ObjectTypeAttributeDefinition`. (Each field in the complex type is
+itself specified by an `AttributeDefinition`.) Finally there's
+`ObjectListAttributeDefinition` and `ObjectMapAttributeDefinition` for
+lists whose elements are complex types and maps whose values are complex
+types respectively.
+
+Here's an example of creating a simple attribute definition with extra
+validation of the range of allowed values:
+
+[source, java]
+----
+static final AttributeDefinition QUEUE_LENGTH = new SimpleAttributeDefinitionBuilder("queue-length", ModelType.INT)
+                .setRequired(true)
+                .setAllowExpression(true)
+                .setValidator(new IntRangeValidator(1, Integer.MAX_VALUE))
+                .setRestartAllServices() // means modification after resource add puts the server in reload-required
+                .build();
+----
+
+Via a bit of dark magic, the kernel knows that the `IntRangeValidator`
+defined here is a reliable source of information on min and max values
+for the attribute, so when creating the `read-resource-description`
+output for the attribute it will use it and output `min` and `max`
+metadata. For STRING attributes, `StringLengthValidator` can also be
+used, and the kernel will see this and provide `min-length` and
+`max-length` metadata. In both cases the kernel is checking for the
+presence of a `MinMaxValidator` and if found it provides the appropriate
+metadata based on the type of the attribute.
+
+Use `EnumValidator` to restrict a STRING attribute's values to a set of
+legal values:
+
+[source, java]
+----
+    static final SimpleAttributeDefinition TIME_UNIT = new SimpleAttributeDefinitionBuilder("unit", ModelType.STRING)
+            .setRequired(true)
+            .setAllowExpression(true)
+            .setValidator(new EnumValidator<TimeUnit>(TimeUnit.class))
+            .build();
+----
+
+`EnumValidator` is an implementation of `AllowedValuesValidator` that
+works with Java enums. You can use other implementations or write your
+own to do other types of restriction to certain values.
+
+Via a bit of dark magic similar to what is done with `MinMaxValidator`,
+the kernel recognizes the presence of an `AllowedValuesValidator` and
+uses it to seed the `allowed-values` metadata in
+`read-resource-description` output.
+
+[[key-uses-of-attributedefinition]]
+=== Key Uses of AttributeDefinition
+
+Your `AttributeDefinition` instances will be some of the most commonly
+used objects in your extension code. Following are the most typical
+uses. In each of these examples assume there is a
+`SimpleAttributeDefinition` stored in a constant FOO_AD that is
+available to the code. Typically FOO_AD would be a constant in the
+relevant `ResourceDefinition` implementation class. Assume FOO_AD
+represents an INT attribute.
+
+Note that for all of these cases except for "Use in Extracting Data from
+the Configuration Model for Use in Runtime Services" there may be
+utility code that handles this for you. For example
+`PersistentResourceXMLParser` can handle the XML cases, and
+`AbstractAddStepHandler` can handle the "Use in Storing Data Provided by
+the User to the Configuration Model" case.
+
+[[use-in-xml-parsing]]
+==== Use in XML Parsing
+
+Here we have your extension's implementation of
+`XMLElementReader<List<ModelNode>>` that is being used to parse the xml
+for your subsystem and add `ModelNode` operations to the list that will
+be used to boot the server.
+
+[source, java]
+----
+    @Override
+    public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList) throws XMLStreamException {
+        // Create a node for the op to add our subsystem
+        ModelNode addOp = new ModelNode();
+        addOp.get("address").add("subsystem", "mysubsystem");
+        addOp.get("operation").set("add");
+        operationList.add(addOp);
+ 
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            final String value = reader.getAttributeValue(i);
+            final String attribute = reader.getAttributeLocalName(i);
+            if (FOO_AD.getXmlName().equals(attribute) {
+                FOO_AD.parseAndSetParameter(value, addOp, reader);
+            } else ....
+        }
+ 
+        ... more parsing
+    }
+----
+
+Note that the parsing code has deliberately been abbreviated. The key
+point is the `parseAndSetParameter` call. FOO_AD will validate the
+`value` read from XML, throwing an XMLStreamException with a useful
+message if invalid, including a reference to the current location of the
+`reader`. If valid, `value` will be converted to a DMR `ModelNode` of
+the appropriate type and stored as a parameter field of `addOp`. The
+name of the parameter will be what `FOO_AD.getName()` returns.
+
+If you use `PersistentResourceXMLParser` this parsing logic is handled
+for you and you don't need to write it yourself.
+
+[[use-in-storing-data-provided-by-the-user-to-the-configuration-model]]
+==== Use in Storing Data Provided by the User to the Configuration Model
+
+Here we illustrate code in an `OperationStepHandler` that extracts a
+value from a user-provided `operation` and stores it in the internal
+model:
+
+[source, java]
+----
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        // Get the Resource targeted by this operation
+        Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        ModelNode model = resource.getModel();
+        // Store the value of any 'foo' param to the model's 'foo' attribute
+        FOO_AD.validateAndSet(operation, model);
+ 
+        ... do other stuff
+    }
+----
+
+As the name implies `validateAndSet` will validate the value in
+`operation` before setting it. A validation failure will result in an
+`OperationFailedException` with an appropriate message, which the kernel
+will use to provide a failure response to the user.
+
+Note that `validateAndSet` will not perform expression resolution.
+Expression resolution is not appropriate at this stage, when we are just
+trying to store data to the persistent configuration model. However, it
+will check for expressions and fail validation if found and FOO_AD
+wasn't built with `setAllowExpressions(true)`.
+
+This work of storing data to the configuration model is usually done in
+handlers for the `add` and `write-attribute` operations. If you base
+your handler implementations on the standard classes provided by WildFly
+Core, this part of the work will be handled for you.
+
+[[use-in-extracting-data-from-the-configuration-model-for-use-in-runtime-services]]
+==== Use in Extracting Data from the Configuration Model for Use in
+Runtime Services
+
+This is the example you are most likely to use in your code, as this is
+where data needs to be extracted from the configuration model and passed
+to your runtime services. What your services need is custom, so there's
+no utility code we provide.
+
+Assume as part of `... do other stuff` in the last example that your
+handler adds a step to do further work once operation execution proceeds
+to RUNTIME state (see Operation Execution and the `OperationContext` for
+more on what this means):
+
+[source, java]
+----
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+ 
+                // Get the Resource targetted by this operation
+                Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+                ModelNode model = resource.getModel();
+                // Extract the value of the 'foo' attribute from the model
+                int foo = FOO_AD.resolveModelAttribute(context, model).asInt();
+               
+                Service<XyZ> service = new MyService(foo);
+ 
+                ... do other stuff, like install 'service' with MSC
+    }
+        }, Stage.RUNTIME);
+----
+
+Use `resolveModelAttribute` to extract data from the model. It does a
+number of things:
+
+* reads the value from the model
+* if it's an expression and expressions are supported, resolves it
+* if it's undefined and undefined is allowed but FOO_AD was configured
+with a default value, uses the default value
+* validates the result of that (which is how we check that expressions
+resolve to legal values), throwing OperationFailedException with a
+useful message if invalid
+* returns that as a `ModelNode`
+
+If when you built FOO_AD you configured it such that the user must
+provide a value, or if you configured it with a default value, then you
+know the return value of `resolveModelAttribute` will be a defined
+`ModelNode`. Hence you can safely perform type conversions with it, as
+we do in the example above with the call to `asInt()`. If FOO_AD was
+configured such that it's possible that the attribute won't have a
+defined value, you need to guard against that, e.g.:
+
+[source, java]
+----
+    ModelNode node = FOO_AD.resolveModelAttribute(context, model);
+    Integer foo = node.isDefined() ? node.asInt() : null;
+----
+
+[[use-in-marshaling-configuration-model-data-to-xml]]
+==== Use in Marshaling Configuration Model Data to XML
+
+Your `Extension` must register an
+`XMLElementWriter<SubsystemMarshallingContext>` for each subsystem. This
+is used to marshal the subsystem's configuration to XML. If you don't
+use `PersistentResourceXMLParser` for this you'll need to write your own
+marshaling code, and `AttributeDefinition` will be used.
+
+[source, java]
+----
+    @Override
+    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+        context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+ 
+        ModelNode subsystemModel = context.getModelNode();
+        // we persist foo as an xml attribute
+        FOO_AD.marshalAsAttribute(subsystemModel, writer);
+        // We also have a different attribute that we marshal as an element
+        BAR_AD.marshalAsElement(subsystemModel, writer);
+    }
+----
+
+The `SubsystemMarshallingContext` provides a `ModelNode` that represents
+the entire resource tree for the subsystem (including child resources).
+Your `XMLElementWriter` should walk through that model, using
+`marshalAsAttribute` or `marshalAsElement` to write the attributes in
+each resource. If the model includes child node trees that represent
+child resources, create child xml elements for those and continue down
+the tree.
+
+[[operationdefinition-and-operationstephandler-interfaces]]
+== OperationDefinition and OperationStepHandler Interfaces
+
+`OperationDefinition` defines an operation, particularly its name, its
+parameters and the details of any result value, with
+`AttributeDefinition` instances used to define the parameters and result
+details. The `OperationDefinition` is used to generate the
+`read-operation-description` output for the operation, and in some cases
+is also used by the kernel to decide details as to how to execute the
+operation.
+
+Typically `SimpleOperationDefinitionBuilder` is used to create an
+`OperationDefinition`. Usually you only need to create an
+`OperationDefinition` for custom operations. For the common `add` and
+`remove` operations, if you provide minimal information about your
+handlers to your `SimpleResourceDefinition` implementation via the
+`Parameters` object passed to its constructor, then
+`SimpleResourceDefinition` can generate a correct `OperationDefinition`
+for those operations.
+
+The `OperationStepHandler` is what contains the actual logic for doing
+what the user requests when they invoke an operation. As its name
+implies, each OSH is responsible for doing one step in the overall
+sequence of things necessary to give effect to what the user requested.
+One of the things an OSH can do is add other steps, with the result that
+an overall operation can involve a great number of OSHs executing. (See
+Operation Execution and the `OperationContext` for more on this.)
+
+Each OSH is provided in its `execute` method with a reference to the
+`OperationContext` that is controlling the overall operation, plus an
+`operation` `ModelNode` that represents the operation that particular
+OSH is being asked to deal with. The `operation` node will be of
+`ModelType.OBJECT` with the following key/value pairs:
+
+* a key named `operation` with a value of `ModelType.STRING` that
+represents the name of the operation. Typically an OSH doesn't care
+about this information as it is written for an operation with a
+particular name and will only be invoked for that operation.
+* a key named `address` with a value of `ModelType.LIST` with list
+elements of `ModelType.PROPERTY`. This value represents the address of
+the resource the operation targets. If this key is not present or the
+value is undefined or an empty list, the target is the root resource.
+Typically an OSH doesn't care about this information as it can more
+efficiently get the address from the `OperationContext` via its
+`getCurrentAddress()` method.
+* other key/value pairs that represent parameters to the operation, with
+the key the name of the parameter. This is the main information an OSH
+would want from the `operation` node.
+
+There are a variety of situations where extension code will instantiate
+an `OperationStepHandler`
+
+* When registering a writable attribute with a
+`ManagementResourceRegistration` (typically in an implementation of
+`ResourceDefinition.registerAttributes`), an OSH must be provided to
+handle the `write-attribute` operation.
+* When registering a read-only or read-write attribute that needs
+special handling of the `read-attribute` operation, an OSH must be
+provided.
+* When registering a metric attribute, an OSH must be provided to handle
+the `read-attribute` operation.
+* Most resources need OSHs created for the `add` and `remove`
+operations. These are passed to the `Parameters` object given to the
+`SimpleResourceDefinition` constructor, for use by the
+`SimpleResourceDefinition` in its implementation of the
+`registerOperations` method.
+* If your resource has custom operations, you will instantiate them to
+register with a `ManagementResourceRegistration`, typically in an
+implementation of `ResourceDefinition.registerOperations`
+* If an OSH needs to tell the `OperationContext` to add additional steps
+to do further handling, the OSH will create another OSH to execute that
+step. This second OSH is typically an inner class of the first OSH.
+
+[[operation-execution-and-the-operationcontext]]
+== Operation Execution and the OperationContext
+
+When the `ModelController` at the heart of the WildFly Core management
+layer handles a request to execute an operation, it instantiates an
+implementation of the `OperationContext` interface to do the work. The
+`OperationContext` is configured with an initial list of operation steps
+it must execute. This is done in one of two ways:
+
+* During boot, multiple steps are configured, one for each operation in
+the list generated by the parser of the xml configuration file. For each
+operation, the `ModelController` finds the
+`ManagementResourceRegistration` that matches the address of the
+operation and finds the `OperationStepHandler` registered with that MRR
+for the operation's name. A step is added to the `OperationContext` for
+each operation by providing the operation `ModelNode` itself, plus the
+`OperationStepHandler`.
+* After boot, any management request involves only a single operation,
+so only a single step is added. (Note that a `composite` operation is
+still a single operation; it's just one that internally executes via
+multiple steps.)
+
+The `ModelController` then asks the `OperationContext` to execute the
+operation.
+
+The `OperationContext` acts as both the engine for operation execution,
+and as the interface provided to `OperationStepHandler` implementations
+to let them interact with the rest of the system.
+
+[[execution-process]]
+=== Execution Process
+
+Operation execution proceeds via execution by the `OperationContext` of
+a series of "steps" with an `OperationStepHandler` doing the key work
+for each step. As mentioned above, during boot the OC is initially
+configured with a number of steps, but post boot operations involve only
+a single step initially. But even a post-boot operation can end up
+involving numerous steps before completion. In the case of a
+`/:read-resource(recursive=true)` operation, thousands of steps might
+execute. This is possible because one of the key things an
+`OperationStepHandler` can do is ask the `OperationContext` to add
+additional steps to execute later.
+
+Execution proceeds via a series of "stages", with a queue of steps
+maintained for each stage. An `OperationStepHandler` can tell the
+`OperationContext` to add a step for any stage equal to or later than
+the currently executing stage. The instruction can either be to add the
+step to the head of the queue for the stage or to place it at the end of
+the stage's queue.
+
+Execution of a stage continues until there are no longer any steps in
+the stage's queue. Then an internal transition task can execute, and the
+processing of the next stage's steps begins.
+
+Here is some brief information about each stage:
+
+[[stage.model]]
+==== Stage.MODEL
+
+This stage is concerned with interacting with the persistent
+configuration model, either making changes to it or reading information
+from it. Handlers for this stage should not make changes to the runtime,
+and handlers running after this stage should not make changes to the
+persistent configuration model.
+
+If any step fails during this stage, the operation will automatically
+roll back. Rollback of MODEL stage failures cannot be turned off.
+Rollback during boot results in abort of the process start.
+
+The initial step or steps added to the `OperationContext` by the
+`ModelController` all execute in Stage.MODEL. This means that all
+`OperationStepHandler` instances your extension registers with a
+`ManagementResourceRegistration` must be designed for execution in
+`Stage.MODEL`. If you need work done in later stages your `Stage.MODEL`
+handler must add a step for that work.
+
+When this stage completes, the `OperationContext` internally performs
+model validation work before proceeding on to the next stage. Validation
+failures will result in rollback.
+
+[[stage.runtime]]
+==== Stage.RUNTIME
+
+This stage is concerned with interacting with the server runtime, either
+reading from it or modifying it (e.g. installing or removing services or
+updating their configuration.) By the time this stage begins, all model
+changes are complete and model validity has been checked. So typically
+handlers in this stage read their inputs from the model, not from the
+original `operation` `ModelNode` provided by the user.
+
+Most `OperationStepHandler` logic written by extension authors will be
+for Stage.RUNTIME. The vast majority of Stage.MODEL handling can best be
+performed by the base handler classes WildFly Core provides in its
+`controller` module. (See below for more on those.)
+
+During boot failures in `Stage.RUNTIME` will not trigger rollback and
+abort of the server boot. After boot, by default failures here will
+trigger rollback, but users can prevent that by using the
+`rollback-on-runtime-failure` header. However, a RuntimeException thrown
+by a handler will trigger rollback.
+
+At the end of `Stage.RUNTIME`, the `OperationContext` blocks waiting for
+the MSC service container to stabilize (i.e. for all services to have
+reached a rest state) before moving on to the next stage.
+
+[[stage.verify]]
+==== Stage.VERIFY
+
+Service container verification work is performed in this stage, checking
+that any MSC changes made in `Stage.RUNTIME` had the expected effect.
+Typically extension authors do not add any steps in this stage, as the
+steps automatically added by the `OperationContext` itself are all that
+are needed. You can add a step here though if you have an unusual use
+case where you need to verify something after MSC has stabilized.
+
+Handlers in this stage should not make any further runtime changes;
+their purpose is simply to do verification work and fail the operation
+if verification is unsuccessful.
+
+During boot failures in `Stage.VERIFY` will not trigger rollback and
+abort of the server boot. After boot, by default failures here will
+trigger rollback, but users can prevent that by using the
+`rollback-on-runtime-failure` header. However, a RuntimeException thrown
+by a handler will trigger rollback.
+
+There is no special transition work at the end of this stage.
+
+[[stage.domain]]
+==== Stage.DOMAIN
+
+Extension authors should not add steps in this stage; it is only for use
+by the kernel.
+
+Steps needed to execute rollout across the domain of an operation that
+affects multiple processes in a managed domain run here. This stage is
+only run on Host Contoller processes, never on servers.
+
+[[stage.done-and-resulthandler-rollbackhandler-execution]]
+==== Stage.DONE and ResultHandler / RollbackHandler Execution
+
+This stage doesn't maintain a queue of steps; no `OperationStepHandler`
+executes here. What does happen here is persistence of any configuration
+changes to the xml file and commit or rollback of changes affecting
+multiple processes in a managed domain.
+
+While no `OperationStepHandler` executes in this stage, following
+persistence and transaction commit all `ResultHandler` or
+`RollbackHandler` callbacks registered with the `OperationContext` by
+the steps that executed are invoked. This is done in the reverse order
+of step execution, so the callback for the last step to run is the first
+to be executed. The most common thing for a callback to do is to respond
+to a rollback by doing whatever is necessary to reverse changes made in
+`Stage.RUNTIME`. (No reversal of `Stage.MODEL` changes is needed,
+because if an operation rolls back the updated model produced by the
+operation is simply never published and is discarded.)
+
+[[tips-about-adding-steps]]
+==== Tips About Adding Steps
+
+Here are some useful tips about how to add steps:
+
+* Add a step to the head of the current stage's queue if you want it to
+execute next, prior to any other steps. Typically you would use this
+technique if you are trying to decompose some complex work into pieces,
+with reusable logic handling each piece. There would be an
+`OperationStepHandler` for each part of the work, added to the head of
+the queue in the correct sequence. This would be a pretty advanced use
+case for an extension author but is quite common in the handlers
+provided by the kernel.
+* Add a step to the end of the queue if either you don't care when it
+executes or if you do care and want to be sure it executes after any
+already registered steps.
+** A very common example of this is a `Stage.MODEL` handler adding a
+step for its associated `Stage.RUNTIME` work. If there are multiple
+model steps that will execute (e.g. at boot or as part of handling a
+`composite`), each will want to add a runtime step, and likely the best
+order for those runtime steps is the same as the order of the model
+steps. So if each adds its runtime step at the end, the desired result
+will be achieved.
+** A more sophisticated but important scenario is when a step may or may
+not be executing as part of a larger set of steps, i.e. it may be one
+step in a `composite` or it may not. There is no way for the handler to
+know. But it can assume that if it is part of a composite, the steps for
+the other operations in the composite *are already registered in the
+queue*. (The handler for the `composite` op guarantees this.) So, if it
+wants to do some work (say validation of the relationship between
+different attributes or resources) the input to which may be affected by
+possible other already registered steps, instead of doing that work
+itself, it should register a different step at the *end* of the queue
+and have that step do the work. This will ensure that when the
+validation step runs, the other steps in the `composite` will have had a
+chance to do their work. *Rule of thumb: always doing any extra
+validation work in an added step.*
+
+[[passing-data-to-an-added-step]]
+===== Passing Data to an Added Step
+
+Often a handler author will want to share state between the handler for
+a step it adds and the handler that added it. There are a number of ways
+this can be done:
+
+* Very often the `OperationStepHandler` for the added class is an inner
+class of the handler that adds it. So here sharing state is easily done
+using final variables in the outer class.
+* The handler for the added step can accept values passed to its
+constructor which can serve as shared state.
+* The `OperationContext` includes an Attachment API which allows
+arbitary data to be attached to the context and retrieved by any handler
+that has access to the attachment key.
+* The `OperationContext.addStep` methods include overloaded variants
+where the caller can pass in an `operation` `ModelNode` that will in
+turn be passed to the `execute` method of the handler for the added
+step. So, state can be passed via this `ModelNode`. It's important to
+remember though that the `address` field of the `operation` will govern
+what the `OperationContext` sees as the target of operation when that
+added step's handler executes.
+
+[[controlling-output-from-an-added-step]]
+===== Controlling Output from an Added Step
+
+When an `OperationStepHandler` wants to report an operation result, it
+calls the `OperationContext.getResult()` method and manipulates the
+returned `ModelNode`. Similarly for failure messages it can call
+`OperationContext.getFailureDescription()`. The usual assumption when
+such a call is made is that the result or failure description being
+modified is the one at the root of the response to the end user. But
+this is not necessarily the case.
+
+When an `OperationStepHandler` adds a step it can use one of the
+overloaded `OperationContext.addStep` variants that takes a `response`
+`ModelNode` parameter. If it does, whatever `ModelNode` it passes in
+will be what is updated as a result of `OperationContext.getResult()`
+and `OperationContext.getFailureDescription()` calls by the step's
+handler. This node does not need to be one that is directly associated
+with the response to the user.
+
+How then does the handler that adds a step in this manner make use of
+whatever results the added step produces, since the added step will not
+run until the adding step completes execution? There are a couple of
+ways this can be done.
+
+The first is to add yet another step, and provide it a reference to the
+`response` node used by the second step. It will execute after the
+second step and can read its response and use it in formulating its own
+response.
+
+The second way involves using a `ResultHandler`. The `ResultHandler` for
+a step will execute *after* any step that it adds executes. And, it is
+legal for a `ResultHandler` to manipulate the "result" value for an
+operation, or its "failure-description" in case of failure. So, the
+handler that adds a step can provide to its `ResultHandler` a reference
+to the `response` node it passed to `addStep`, and the `ResultHandler`
+can in turn and use its contents to manipulate its own response.
+
+This kind of handling wouldn't commonly be done by extension authors and
+great care needs to be taken if it is done. It is often done in some of
+the kernel handlers.
+
+[[operationstephandler-use-of-the-operationcontext]]
+=== OperationStepHandler use of the OperationContext
+
+All useful work an `OperationStepHandler` performs is done by invoking
+methods on the `OperationContext`. The `OperationContext` interface is
+extensively javadoced, so this section will just provide a brief partial
+overview. The OSH can use the `OperationContext` to:
+
+* Learn about the environment in which it is executing (
+`getProcessType`, `getRunningMode`, `isBooting`, `getCurrentStage`,
+`getCallEnvironment`, `getSecurityIdentity`, `isDefaultRequiresRuntime`,
+`isNormalServer`)
+* Learn about the operation ( `getCurrentAddress`,
+`getCurrentAddressValue`, `getAttachmentStream`,
+`getAttachmentStreamCount`)
+* Read the `Resource` tree ( `readResource`, `readResourceFromRoot`,
+`getOriginalRootResource`)
+* Manipulate the `Resource` tree ( `createResource`, `addResource`,
+`readResourceForUpdate`, `removeResource`)
+* Read the resource type information ( `getResourceRegistration`,
+`getRootResourceRegistration`)
+* Manipulate the resource type information (
+`getResourceRegistrationForUpdate`)
+* Read the MSC service container ( `getServiceRegistry(false)`)
+* Manipulate the MSC service container ( `getServiceTarget`,
+`getServiceRegistry(true)`, `removeService`)
+* Manipulate the process state ( `reloadRequired`,
+`revertReloadRequired`, `restartRequired`, `revertRestartRequired`
+* Resolve expressions ( `resolveExpressions`)
+* Manipulate the operation response ( `getResult`,
+`getFailureDescription`, `attachResultStream`, `runtimeUpdateSkipped`)
+* Force operation rollback ( `setRollbackOnly`)
+* Add other steps ( `addStep`)
+* Share data with other steps ( `attach`, `attachIfAbsent`,
+`getAttachment`, `detach`)
+* Work with capabilities (numerous methods)
+* Emit notifications ( `emit`)
+* Request a callback to a `ResultHandler` or `RollbackHandler` (
+`completeStep`)
+
+[[locking-and-change-visibility]]
+=== Locking and Change Visibility
+
+The `ModelController` and `OperationContext` work together to ensure
+that only one operation at a time is modifying the state of the system.
+This is done via an exclusive lock maintained by the `ModelController`.
+Any operation that does not need to write never requests the lock and is
+able to proceed without being blocked by an operation that holds the
+lock (i.e. writes do not block reads.) If two operations wish to
+concurrently write, one or the other will get the lock and the loser
+will block waiting for the winner to complete and release the lock.
+
+The `OperationContext` requests the exclusive lock the first time any of
+the following occur:
+
+* A step calls one of its methods that indicates a wish to modify the
+resource tree ( `createResource`, `addResource`,
+`readResourceForUpdate`, `removeResource`)
+* A step calls one of its methods that indicates a wish to modify the
+`ManagementResourceRegistration` tree (
+`getResourceRegistrationForUpdate`)
+* A step calls one of its methods that indicates a desire to change MSC
+services ( `getServiceTarget`, `removeService` or `getServiceRegistry`
+with the `modify` param set to `true`)
+* A step calls one of its methods that manipulates the capability
+registry (various)
+* A step explicitly requests the lock by calling the
+`acquireControllerLock` method (doing this is discouraged)
+
+The step that acquired the lock is tracked, and the lock is released
+when the `ResultHandler` added by that step has executed. (If the step
+doesn't add a result handler, a default no-op one is automatically
+added).
+
+When an operation first expresses a desire to manipulate the `Resource`
+tree or the capability registry, a private copy of the tree or registry
+is created and thereafter the `OperationContext` works with that copy.
+The copy is published back to the `ModelController` in `Stage.DONE` if
+the operation commits. Until that happens any changes to the tree or
+capability registry made by the operation are invisible to other
+threads. If the operation does not commit, the private copies are simply
+discarded.
+
+However, the `OperationContext` does not make a private copy of the
+`ManagementResourceRegistration` tree before manipulating it, nor is
+there a private copy of the MSC service container. So, any changes made
+by an operation to either of those are immediately visible to other
+threads.
+
+[[resource-interface]]
+== Resource Interface
+
+An instance of the `Resource` interface holds the state for a particular
+instance of a type defined by a `ManagementResourceRegistration`.
+Referring back to the analogy mentioned earlier the
+`ManagementResourceRegistration` is analogous to a Java class while the
+`Resource` is analogous to an instance of that class.
+
+The `Resource` makes available state information, primarily
+
+* Some descriptive metadata, such as its address, whether it is
+runtime-only and whether it represents a proxy to a another primary
+resource that resides on another process in a managed domain
+* A `ModelNode` of `ModelType.OBJECT` whose keys are the resource's
+attributes and whose values are the attribute values
+* Links to child resources such that the resources form a tree
+
+[[creating-resources]]
+=== Creating Resources
+
+Typically extensions create resources via `OperationStepHandler` calls
+to the `OperationContext.createResource` method. However it is allowed
+for handlers to use their own `Resource` implementations by
+instantiating the resource and invoking `OperationContext.addResource`.
+The `AbstractModelResource` class can be used as a base class.
+
+[[runtime-only-and-synthetic-resources-and-the-placeholderresourceentry-class]]
+=== Runtime-Only and Synthetic Resources and the PlaceholderResourceEntry Class
+
+A runtime-only resource is one whose state is not persisted to the xml
+configuration file. Many runtime-only resources are also "synthetic"
+meaning they are not added or removed as a result of user initiated
+management operations. Rather these resources are "synthesized" in order
+to allow users to use the management API to examine some aspect of the
+internal state of the process. A good example of synthetic resources are
+the resources in the `/core-service=platform-mbeans` branch of the
+resource tree. There are resources there that represent various aspects
+of the JVM (classloaders, memory pools, etc) but which resources are
+present entirely depends on what the JVM is doing, not on any management
+action. Another example are resources representing "core queues" in the
+WildFly messaging and messaging-artemismq subsystems. Queues are created
+as a result of activity in the message broker which may not involve
+calls to the management API. But for each such queue a management
+resource is available to allow management users to perform management
+operations against the queue.
+
+It is a requirement of execution of a management operation that the
+`OperationContext` can navigate through the resource tree to a
+`Resource` object located at the address specified. This requirement
+holds true even for synthetic resources. How can this be handled, given
+the fact these resources are not created in response to management
+operations?
+
+The trick involves using special implementations of `Resource`. Let's
+imagine a simple case where we have a parent resource which is fairly
+normal (i.e. it holds persistent configuration and is added via a user's
+`add` operation) except for the fact that one of its child types
+represents synthetic resources (e.g. message queues). How would this be
+handled?
+
+First, the parent resource would require a custom implementation of the
+`Resource` interface. The `OperationStepHandler` for the `add` operation
+would instantiate it, providing it with access to whatever API is needed
+for it to work out what items exist for which a synthetic resource
+should be made available (e.g. an API provided by the message broker
+that provides access to its queues). The `add` handler would use the
+`OperationContext.addResource` method to tie this custom resource into
+the overall resource tree.
+
+The custom `Resource` implementation would use special implementations
+of the various methods that relate to accessing children. For all calls
+that relate to the synthetic child type (e.g. core-queue) the custom
+implementation would use whatever API call is needed to provide the
+correct data for that child type (e.g. ask the message broker for the
+names of queues).
+
+A nice strategy for creating such a custom resource is to use
+delegation. Use `Resource.Factory.create}()` to create a standard
+resource. Then pass it to the constructor of your custom resource type
+for use as a delegate. The custom resource type's logic is focused on
+the synthetic children; all other work it passes on to the delegate.
+
+What about the synthetic resources themselves, i.e. the leaf nodes in
+this part of the tree? These are created on the fly by the parent
+resource in response to `getChild`, `requireChild`, `getChildren` and
+`navigate` calls that target the synthetic resource type. These
+created-on-the-fly resources can be very lightweight, since they store
+no configuration model and have no children. The
+`PlaceholderResourceEntry` class is perfect for this. It's a very
+lightweight `Resource` implementation with minimal logic that only
+stores the final element of the resource's address as state.
+
+See `LoggingResource` in the WildFly Core logging subsystem for an
+example of this kind of thing. Searching for other uses of
+`PlaceholderResourceEntry` will show other examples.
+
+[[deploymentunitprocessor-interface]]
+== DeploymentUnitProcessor Interface
+
+TODO
+
+[[useful-classes-for-implementing-operationstephandler]]
+== Useful classes for implementing OperationStepHandler
+
+The WildFly Core `controller` module includes a number of
+`OperationStepHandler` implementations that in some cases you can use
+directly, and that in other cases can serve as the base class for your
+own handler implementation. In all of these a general goal is to
+eliminate the need for your code to do anything in `Stage.MODEL` while
+providing support for whatever is appropriate for `Stage.RUNTIME`.
+
+[[add-handlers]]
+=== Add Handlers
+
+`AbstractAddStepHandler` is a base class for handlers for `add`
+operations. There are a number of ways you can configure its behavior,
+the most commonly used of which are to:
+
+* Configure its behavior in `Stage.MODEL` by passing to its constructor
+`AttributeDefinition` and `RuntimeCapability` instances for the
+attributes and capabilities provided by the resource. The handler will
+automatically validate the operation parameters whose names match the
+provided attributes and store their values in the model of the newly
+added `Resource`. It will also record the presence of the given
+capabilities.
+* Control whether a `Stage.RUNTIME` step for the operation needs to be
+added, by overriding the
+`protected boolean requiresRuntime(OperationContext context)` method.
+Doing this is atypical; the standard behavior in the base class is
+appropriate for most cases.
+* Implement the primary logic of the `Stage.RUNTIME` step by overriding
+the
+`protected void performRuntime(final OperationContext context, final ModelNode operation, final Resource resource)`
+method. This is typically the bulk of the code in an
+`AbstractAddStepHandler` subclass. This is where you read data from the
+`Resource` model and use it to do things like configure and install MSC
+services.
+* Handle any unusual needs of any rollback of the `Stage.RUNTIME` step
+by overriding
+`protected void rollbackRuntime(OperationContext context, final ModelNode operation, final Resource resource)`.
+Doing this is not typically needed, since if the rollback behavior
+needed is simply to remove any MSC services installed in
+`performRuntime`, the `OperationContext` will do this for you
+automatically.
+
+`AbstractBoottimeAddStepHandler` is a subclass of
+`AbstractAddStepHandler` meant for use by `add` operations that should
+only do their normal `Stage.RUNTIME` work in server, boot, with the
+server being put in `reload-required` if executed later. Primarily this
+is used for `add` operations that register `DeploymentUnitProcessor`
+implementations, as this can only be done at boot.
+
+Usage of `AbstractBoottimeAddStepHandler` is the same as for
+`AbstractAddStepHandler` except that instead of overriding
+`performRuntime` you override
+`protected void performBoottime(OperationContext context, ModelNode operation, Resource resource)`.
+
+A typical thing to do in `performBoottime` is to add a special step that
+registers one or more `DeploymentUnitProcessor` s.
+
+[source, java]
+----
+    @Override
+    public void performBoottime(OperationContext context, ModelNode operation, final Resource resource)
+            throws OperationFailedException {
+ 
+        context.addStep(new AbstractDeploymentChainStep() {
+            @Override
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+ 
+                processorTarget.addDeploymentProcessor(RequestControllerExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_GLOBAL_REQUEST_CONTROLLER, new RequestControllerDeploymentUnitProcessor());
+            }
+        }, OperationContext.Stage.RUNTIME);
+   
+        ... do other things
+----
+
+[[remove-handlers]]
+=== Remove Handlers
+
+TODO `AbstractRemoveStepHandler` `ServiceRemoveStepHandler`
+
+[[write-attribute-handlers]]
+=== Write attribute handlers
+
+TODO `AbstractWriteAttributeHandler`
+
+[[reload-required-handlers]]
+=== Reload-required handlers
+
+`ReloadRequiredAddStepHandler` `ReloadRequiredRemoveStepHandler`
+`ReloadRequiredWriteAttributeHandler`
+
+Use these for cases where, post-boot, the change to the configuration
+model made by the operation cannot be reflected in the runtime until the
+process is reloaded. These handle the mechanics of recording the need
+for reload and reverting it if the operation rolls back.
+
+[[restart-parent-resource-handlers]]
+=== Restart Parent Resource Handlers
+
+`RestartParentResourceAddHandler` `RestartParentResourceRemoveHandler`
+`RestartParentWriteAttributeHandler`
+
+Use these in cases where a management resource doesn't directly control
+any runtime services, but instead simply represents a chunk of
+configuration that a parent resource uses to configure services it
+installs. (Really, this kind of situation is now considered to be a poor
+management API design and is discouraged. Instead of using child
+resources for configuration chunks, complex attributes on the parent
+resource should be used.)
+
+These handlers help you deal with the mechanics of the fact that,
+post-boot, any change to the child resource likely requires a restart of
+the service provided by the parent.
+
+[[model-only-handlers]]
+=== Model Only Handlers
+
+`ModelOnlyAddStepHandler` `ModelOnlyRemoveStepHandler`
+`ModelOnlyWriteAttributeHandler`
+
+Use these for cases where the operation never affects the runtime, even
+at boot. All it does is update the configuration model. In most cases
+such a thing would be odd. These are primarily useful for legacy
+subsystems that are no longer usable on current version servers and thus
+will never do anything in the runtime. However, current version Domain
+Controllers must be able to understand the subsystem's configuration
+model to allow them to manage older Host Controllers running previous
+versions where the subsystem is still usable by servers. So these
+handlers allow the DC to maintain the configuration model for the
+subsystem.
+
+[[misc]]
+=== Misc
+
+`AbstractRuntimeOnlyHandler` is used for custom operations that don't
+involve the configuration model. Create a subclass and implement the
+`protected abstract void executeRuntimeStep(OperationContext context, ModelNode operation)`
+method. The superclass takes care of adding a `Stage.RUNTIME` step that
+calls your method.
+
+`ReadResourceNameOperationStepHandler` is for cases where a resource
+type includes a 'name' attribute whose value is simply the value of the
+last element in the resource's address. There is no need to store the
+value of such an attribute in the resource's model, since it can always
+be determined from the resource address. But, if the value is not stored
+in the resource model, when the attribute is registered with
+`ManagementResourceRegistration.registerReadAttribute` an
+`OperationStepHandler` to handle the `read-attribute` operation must be
+provided. Use `ReadResourceNameOperationStepHandler` for this. (Note
+that including such an attribute in your management API is considered to
+be poor practice as it's just redundant data.)

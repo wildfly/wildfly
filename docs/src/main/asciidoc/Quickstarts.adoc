@@ -1,0 +1,29 @@
+= Quickstarts
+
+WildFly ships with a number of quickstarts that show you how to get
+started with a variety of technologies in WildFly. You'll find out how
+to write a web application using the latest Java EE technologies like
+CDI and JAX-RS. How to write client libraries to talk to WildFly using
+web services, JMS or EJB. How to set up a distributed transaction, and
+how to recover from a transaction failure. And much, much more.
+
+[[getting-started]]
+== Getting Started
+
+Some of the quickstarts are described in great detail in the
+link:Getting_Started_Developing_Applications_Guide.html[Getting Started
+Developing Applications Guide], which focuses on how get WildFly and
+Eclipse, with JBoss Tools set up, and how to build web applications.
+
+The other quickstarts are all described in README files and code
+comments, including what to look out for, how to install and start
+WildFly, and how to deploy and test the quickstart.
+
+To download the quickstarts, visit
+https://github.com/wildfly/quickstart.
+
+[[contributing]]
+== Contributing
+
+If you want to contribute to the quickstarts, check out our
+link:https://github.com/jboss-developer/jboss-developer-shared-resources/blob/master/guides/CONTRIBUTING.md#contribute-a-quickstart[Contributing a Quickstart] page.

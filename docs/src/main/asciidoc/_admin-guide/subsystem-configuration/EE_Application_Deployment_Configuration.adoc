@@ -1,0 +1,129 @@
+= Java EE Application Deployment
+
+The EE subsystem configuration allows the customisation of the
+deployment behaviour for Java EE Applications.
+
+[[global-modules]]
+== Global Modules
+
+Global modules is a set of JBoss Modules that will be added as
+dependencies to the JBoss Module of every Java EE deployment. Such
+dependencies allows Java EE deployments to see the classes exported by
+the global modules.
+
+Each global module is defined through the `module` resource, an example
+of its XML configuration:
+
+[source, xml]
+----
+  <global-modules>
+    <module name="org.jboss.logging" slot="main"/>
+    <module name="org.apache.log4j" annotations="true" meta-inf="true" services="false" />
+  </global-modules>
+----
+
+The only mandatory attribute is the JBoss Module `name`, the `slot`
+attribute defaults to `main`, and both define the JBoss Module ID to
+reference.
+
+The optional `annotations` attribute, which defaults to `false`,
+indicates if a pre-computed annotation index should be imported from
+META-INF/jandex.idx
+
+The optional `services` attribute indicates if any services exposed in
+META-INF/services should be made available to the deployments class
+loader, and defaults to `false`.
+
+The optional `meta-inf` attribute, which defaults to `true`, indicates
+if the Module's `META-INF` path should be available to the deployment's
+class loader.
+
+[[ear-subdeployments-isolation]]
+== EAR Subdeployments Isolation
+
+A flag indicating whether each of the subdeployments within a `.ear` can
+access classes belonging to another subdeployment within the same
+`.ear`. The default value is `false`, which allows the subdeployments to
+see classes belonging to other subdeployments within the `.ear`.
+
+[source, xml]
+----
+  <ear-subdeployments-isolated>true</ear-subdeployments-isolated>
+----
+
+For example:
+
+....
+myapp.ear
+|
+|--- web.war
+|
+|--- ejb1.jar
+|
+|--- ejb2.jar
+....
+
+If the `ear-subdeployments-isolated` is set to false, then the classes
+in `web.war` can access classes belonging to `ejb1.jar` and `ejb2.jar`.
+Similarly, classes from `ejb1.jar` can access classes from `ejb2.jar`
+(and vice-versa).
+
+[NOTE]
+
+This flag has no effect on the isolated classloader of the `.war`
+file(s), i.e. irrespective of whether this flag is set to `true` or
+`false`, the `.war` within a `.ear` will have a isolated classloader,
+and other subdeployments within that `.ear` will not be able to access
+classes from that `.war`. This is as per spec.
+
+[[property-replacement]]
+== Property Replacement
+
+The EE subsystem configuration includes flags to configure whether
+system property replacement will be done on XML descriptors and Java
+Annotations included in Java EE deployments.
+
+[NOTE]
+
+System properties etc are resolved in the security context of the
+application server itself, not the deployment that contains the file.
+This means that if you are running with a security manager and enable
+this property, a deployment can potentially access system properties or
+environment entries that the security manager would have otherwise
+prevented.
+
+[[spec-descriptor-property-replacement]]
+=== Spec Descriptor Property Replacement
+
+Flag indicating whether system property replacement will be performed on
+standard Java EE XML descriptors. If not configured this defaults to
+`true`, however it is set to `false` in the standard configuration files
+shipped with WildFly.
+
+[source, xml]
+----
+  <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
+----
+
+[[jboss-descriptor-property-replacement]]
+=== JBoss Descriptor Property Replacement
+
+Flag indicating whether system property replacement will be performed on
+WildFly proprietary XML descriptors, such as `jboss-app.xml`. This
+defaults to `true`.
+
+[source, xml]
+----
+  <jboss-descriptor-property-replacement>false</jboss-descriptor-property-replacement>
+----
+
+[[annotation-property-replacement]]
+=== Annotation Property Replacement
+
+Flag indicating whether system property replacement will be performed on
+Java annotations. The default value is `false`.
+
+[source, xml]
+----
+  <annotation-property-replacement>false</annotation-property-replacement>
+----

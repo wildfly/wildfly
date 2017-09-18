@@ -1,0 +1,138 @@
+= jboss-ejb3.xml Reference
+
+`jboss-ejb3.xml` is a custom deployment descriptor that can be placed in
+either ejb-jar or war archives. If it is placed in an ejb-jar then it
+must be placed in the `META-INF` folder, in a web archive it must be
+placed in the `WEB-INF` folder.
+
+The contents of `jboss-ejb3.xml` are merged with the contents of
+`ejb-jar.xml`, with the `jboss-ejb3.xml` items taking precedence.
+
+[[example-file]]
+== Example File
+
+A simple example is shown below:
+
+[source,xml]
+----
+<?xml version="1.1" encoding="UTF-8"?>
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+               xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:s="urn:security:1.1"
+               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd"
+               version="3.1"
+               impl-version="2.0">
+    <enterprise-beans>
+        <message-driven>
+            <ejb-name>ReplyingMDB</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.mdb.messagedestination.ReplyingMDB</ejb-class>
+            <activation-config>
+                <activation-config-property>
+                    <activation-config-property-name>destination</activation-config-property-name>
+                    <activation-config-property-value>java:jboss/mdbtest/messageDestinationQueue
+                    </activation-config-property-value>
+                </activation-config-property>
+            </activation-config>
+        </message-driven>
+    </enterprise-beans>
+    <assembly-descriptor>
+        <s:security>
+            <ejb-name>DDMyDomainSFSB</ejb-name>
+            <s:security-domain>myDomain</s:security-domain>
+            <s:run-as-principal>myPrincipal</s:run-as-principal>
+        </s:security>
+    </assembly-descriptor>
+</jboss:ejb-jar>
+----
+
+As you can see the format is largely similar to `ejb-jar.xml`, in fact
+they even use the same namespaces, however `jboss-ejb3.xml` adds some
+additional namespaces of its own to allow for configuring non-spec info.
+The format of the standard `http://java.sun.com/xml/ns/javaee` is well
+documented elsewhere, this document will cover the non-standard
+namespaces.
+
+NOTE: Namespace "http://www.jboss.com/xml/ns/javaee" is bound to "jboss-ejb3-spec-2_0.xsd": this file redefines some elements of "ejb-jar_3_1.xml"
+
+[[the-root-namespace-httpwww.jboss.comxmlnsjavaee]]
+=== The root namespace http://www.jboss.com/xml/ns/javaee
+
+[[assembly-descriptor-namespaces]]
+=== Assembly descriptor namespaces
+
+The following namespaces can all be used in the `<assembly-descriptor>`
+element. They can be used to apply their configuration to a single bean,
+or to all beans in the deployment by using `*` as the `ejb-name`.
+
+[[the-security-namespace-urnsecurity]]
+==== The security namespace urn:security
+
+This allows you to set the security domain and the run-as principal for
+an EJB.
+
+[source,xml]
+----
+<s:security>
+  <ejb-name>*</ejb-name>
+  <s:security-domain>myDomain</s:security-domain>
+  <s:run-as-principal>myPrincipal</s:run-as-principal>
+</s:security>
+----
+
+[[the-resource-adaptor-namespace-urnresource-adapter-binding]]
+==== The resource adaptor namespace urn:resource-adapter-binding
+
+This allows you to set the resource adaptor for an MDB.
+
+[source,xml]
+----
+<r:resource-adapter-binding>
+  <ejb-name>*</ejb-name>
+  <r:resource-adapter-name>myResourceAdaptor</r:resource-adapter-name>
+</r:resource-adapter-binding>
+----
+
+[[the-iiop-namespace-urniiop]]
+==== The IIOP namespace urn:iiop
+
+The IIOP namespace is where IIOP settings are configured. As there are
+quite a large number of options these are covered in the
+link:#src-557220[IIOP guide].
+
+[[the-pool-namespace-urnejb-pool1.0]]
+==== The pool namespace urn:ejb-pool:1.0
+
+This allows you to select the pool that is used by the SLSB or MDB.
+Pools are defined in the server configuration (i.e. `standalone.xml` or
+`domain.xml`)
+
+[source,xml]
+----
+<p:pool>
+  <ejb-name>*</ejb-name>
+  <p:bean-instance-pool-ref>my-pool</p:bean-instance-pool-ref>
+</p:pool>
+----
+
+[[the-cache-namespace-urnejb-cache1.0]]
+==== The cache namespace urn:ejb-cache:1.0
+
+This allows you to select the cache that is used by the SFSB. Caches are
+defined in the server configuration (i.e. `standalone.xml` or
+`domain.xml`)
+
+[source,xml]
+----
+<c:cache>
+  <ejb-name>*</ejb-name>
+  <c:cache-ref>my-cache</c:cache-ref>
+</c:cache>
+----
+
+[[the-clustering-namespace-urnclustering1.0]]
+==== The clustering namespace urn:clustering:1.0
+
+This namespace is deprecated and as of WildFly {wildflyVersion} its use has no effect.
+The clustering behavior of EJBs is determined by the profile in use on
+the server.

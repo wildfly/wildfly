@@ -1,0 +1,723 @@
+= Working with WildFly Capabilities
+
+An extension to WildFly will likely want to make use of services
+provided by the WildFly kernel, may want to make use of services
+provided by other subsystems, and may wish to make functionality
+available to other extensions. Each of these cases involves integration
+between different parts of the system. In releases prior to WildFly 10,
+this kind of integration was done on an ad-hoc basis, resulting in
+overly tight coupling between different parts of the system and overly
+weak integration contracts. For example, a service installed by
+subsystem A might depend on a service installed by subsystem B, and to
+record that dependency A's authors copy a ServiceName from B's code, or
+even refer to a constant or static method from B's code. The result is
+B's code cannot evolve without risking breaking A. And the authors of B
+may not even intend for other subsystems to use its services. There is
+no proper integration contract between the two subsystems.
+
+Beginning with WildFly Core 2 and WildFly 10 the WildFly kernel's
+management layer provides a mechanism for allowing different parts of
+the system to integrate with each other in a loosely coupled manner.
+This is done via WildFly Capabilities. Use of capabilities provides the
+following benefits:
+
+1.  A standard way for system components to define integration contracts
+for their use by other system components.
+2.  A standard way for system components to access integration contracts
+provided by other system components.
+3.  A mechanism for configuration model referential integrity checking,
+such that if one component's configuration has an attribute that refers
+to an other component (e.g. a `socket-binding` attribute in a subsystem
+that opens a socket referring to that socket's configuration), the
+validity of that reference can be checked when validating the
+configuration model.
+
+[[capabilities]]
+== Capabilities
+
+A capability is a piece of functionality used in a WildFly Core based
+process that is exposed via the WildFly Core management layer.
+Capabilities may depend on other capabilities, and this interaction
+between capabilities is mediated by the WildFly Core management layer.
+
+Some capabilities are automatically part of a WildFly Core based
+process, but in most cases the configuration provided by the end user
+(i.e. in standalone.xml, domain.xml and host.xml) determines what
+capabilities are present at runtime. It is the responsibility of the
+handlers for management operations to register capabilities and to
+register any requirements those capabilities may have for the presence
+of other capabilities. This registration is done during the MODEL stage
+of operation execution
+
+A capability has the following basic characteristics:
+
+1.  It has a name.
+2.  It may install an MSC service that can be depended upon by services
+installed by other capabilities. If it does, it provides a mechanism for
+discovering the name of that service.
+3.  It may expose some other API not based on service dependencies
+allowing other capabilities to integrate with it at runtime.
+4.  It may depend on, or *require* other capabilities.
+
+During boot of the process, and thereafter whenever a management
+operation makes a change to the process' configuration, at the end of
+the MODEL stage of operation execution the kernel management layer will
+validate that all capabilities required by other capabilities are
+present, and will fail any management operation step that introduced an
+unresolvable requirement. This will be done before execution of the
+management operation proceeds to the RUNTIME stage, where interaction
+with the process' MSC Service Container is done. As a result, in the
+RUNTIME stage the handler for an operation can safely assume that the
+runtime services provided by a capability for which it has registered a
+requirement are available.
+
+[[comparison-to-other-concepts]]
+=== Comparison to other concepts
+
+[[capabilities-vs-modules]]
+==== Capabilities vs modules
+
+A JBoss Modules module is the means of making resources available to the
+classloading system of a WildFly Core based process. To make a
+capability available, you must package its resources in one or more
+modules and make them available to the classloading system. But a module
+is not a capability in and of itself, and simply copying a module to a
+WildFly installation does not mean a capability is available. Modules
+can include resources completely unrelated to management capabilities.
+
+[[capabilities-vs-extensions]]
+==== Capabilities vs Extensions
+
+An extension is the means by which the WildFly Core management layer is
+made aware of manageable functionality that is not part of the WildFly
+Core kernel. The extension registers with the kernel new management
+resource types and handlers for operations on those resources. One of
+the things a handler can do is register or unregister a capability and
+its requirements. An extension may register a single capability,
+multiple capabilities, or possibly none at all. Further, not all
+capabilities are registered by extensions; the WildFly Core kernel
+itself may register a number of different capabilities.
+
+[[capability-names]]
+=== Capability Names
+
+Capability names are simple strings, with the dot character serving as a
+separator to allow namespacing.
+
+The 'org.wildfly' namespace is reserved for projects associated with the
+WildFly organization on github ( https://github.com/wildfly).
+
+[[statically-vs-dynamically-named-capabilities]]
+=== Statically vs Dynamically Named Capabilities
+
+The full name of a capability is either statically known, or it may
+include a statically known base element and then a dynamic element. The
+dynamic part of the name is determined at runtime based on the address
+of the management resource that registers the capability. For example,
+the management resource at the address
+'/socket-binding-group=standard-sockets/socket-binding=web' will
+register a dynamically named capability named
+'org.wildlfy.network.socket-binding.web'. The
+'org.wildlfy.network.socket-binding' portion is the static part of the
+name.
+
+All dynamically named capabilities that have the same static portion of
+their name should provide a consistent feature set and set of
+requirements.
+
+[[service-provided-by-a-capability]]
+=== Service provided by a capability
+
+Typically a capability functions by registering a service with the
+WildFly process' MSC ServiceContainer, and then dependent capabilities
+depend on that service. The WildFly Core management layer orchestrates
+registration of those services and service dependencies by providing a
+means to discover service names.
+
+[[custom-integration-apis-provided-by-a-capability]]
+=== Custom integration APIs provided by a capability
+
+Instead of or in addition to providing MSC services, a capability may
+expose some other API to dependent capabilities. This API must be
+encapsulated in a single class (although that class can use other
+non-JRE classes as method parameters or return types).
+
+[[capability-requirements]]
+=== Capability Requirements
+
+A capability may rely on other capabilities in order to provide its
+functionality at runtime. The management operation handlers that
+register capabilities are also required to register their requirements.
+
+There are three basic types of requirements a capability may have:
+
+* Hard requirements. The required capability must always be present for
+the dependent capability to function.
+* Optional requirements. Some aspect of the configuration of the
+dependent capability controls whether the depended on capability is
+actually necessary. So the requirement cannot be known until the running
+configuration is analyzed.
+* Runtime-only requirements. The dependent capability will check for the
+presence of the depended upon capability at runtime, and if present it
+will utilize it, but if it is not present it will function properly
+without the capability. There is nothing in the dependent capability's
+configuration that controls whether the depended on capability must be
+present. Only capabilities that declare themselves as being suitable for
+use as a runtime-only requirement should be depended upon in this
+manner.
+
+Hard and optional requirements may be for either statically named or
+dynamically named capabilities. Runtime-only requirements can only be
+for statically named capabilities, as such a requirement cannot be
+specified via configuration, and without configuration the dynamic part
+of the required capability name is unknown.
+
+[[supporting-runtime-only-requirements]]
+==== Supporting runtime-only requirements
+
+Not all capabilities are usable as a runtime-only requirement.
+
+Any dynamically named capability is not usable as a runtime-only
+requirement.
+
+For a capability to support use as a runtime-only requirement, it must
+guarantee that a configuration change to a running process that removes
+the capability will not impact currently running capabilities that have
+a runtime-only requirement for it. This means:
+
+* A capability that supports runtime-only usage must ensure that it
+never removes its runtime service except via a full process reload.
+* A capability that exposes a custom integration API generally is not
+usable as a runtime-only requirement. If such a capability does support
+use as a runtime-only requirement, it must ensure that any functionality
+provided via its integration API remains available as long as a full
+process reload has not occurred.
+
+[[capability-contract]]
+== Capability Contract
+
+A capability provides a stable contract to users of the capability. The
+contract includes the following:
+
+* The name of the capability (including whether it is dynamically
+named).
+* Whether it installs an MSC Service, and if it does, the value type of
+the service. That value type then becomes a stable API users of the
+capability can rely upon.
+* Whether it provides a custom integration API, and if it does, the type
+that represents that API. That type then becomes a stable API users of
+the capability can rely upon.
+* Whether the capability supports use as a runtime-only requirement.
+
+Developers can learn about available capabilities and the contracts they
+provide by reading the WildFly _capabilty registry_.
+
+[[capability-registry]]
+== Capability Registry
+
+The WildFly organization on github maintains a git repo where
+information about available capabilities is published.
+
+https://github.com/wildfly/wildfly-capabilities
+
+Developers can learn about available capabilities and the contracts they
+provide by reading the WildFly capabilty registry.
+
+The README.md file at the root of that repo explains the how to find out
+information about the registry.
+
+Developers of new capabilities are *strongly encouraged* to document and
+register their capability by submitting a pull request to the
+wildfly-capabilities github repo. This both allows others to learn about
+your capability and helps prevent capability name collisions.
+Capabilities that are used in the WildFly or WildFly Core code base
+itself *must* have a registry entry before the code referencing them
+will be merged.
+
+External organizations that create capabilities should include an
+organization-specific namespace as part their capability names to avoid
+name collisions.
+
+[[using-capabilities]]
+== Using Capabilities
+
+Now that all the background information is presented, here are some
+specifics about how to use WildFly capabilities in your code.
+
+[[basics-of-using-your-own-capability]]
+=== Basics of Using Your Own Capability
+
+[[creating-your-capability]]
+==== Creating your capability
+
+A capability is an instance of the immutable
+`org.jboss.as.controller.capability.RuntimeCapability` class. A
+capability is usually registered by a resource, so the usual way to use
+one is to store it in constant in the resource's `ResourceDefinition`.
+Use a `RuntimeCapability.Builder` to create one.
+
+[source, java]
+----
+class MyResourceDefinition extends SimpleResourceDefinition {
+    
+    static final RuntimeCapability<Void> FOO_CAPABILITY = RuntimeCapability.Builder.of("com.example.foo").build();
+ 
+    . . .
+}
+----
+
+That creates a statically named capability named `com.example.foo`.
+
+If the capability is dynamically named, add the `dynamic` parameter to
+state this:
+
+[source, java]
+----
+    static final RuntimeCapability<Void> FOO_CAPABILITY = 
+            RuntimeCapability.Builder.of("com.example.foo", true).build();
+----
+
+Most capabilities install a service that requiring capabilities can
+depend on. If your capability does this, you need to declare the
+service's _value type_ (the type of the object returned by
+`org.jboss.msc.Service.getValue()`). For example, if FOO_CAPABILITY
+provides a `Service<javax.sql.DataSource>`:
+
+[source, java]
+----
+    static final RuntimeCapability<Void> FOO_CAPABILITY = 
+            RuntimeCapability.Builder.of("com.example.foo", DataSource.class).build();
+----
+
+For a dynamic capability:
+
+[source, java]
+----
+    static final RuntimeCapability<Void> FOO_CAPABILITY = 
+           RuntimeCapability.Builder.of("com.example.foo", true, DataSource.class).build();
+----
+
+If the capability provides a custom integration API, you need to
+instantiate an instance of that API:
+
+[source, java]
+----
+public class JTSCapability {
+ 
+    static final JTSCapability INSTANCE = new JTSCapability();
+ 
+    private JTSCapability() {}
+ 
+    /**
+     * Gets the names of the {@link org.omg.PortableInterceptor.ORBInitializer} implementations that should be included
+     * as part of the {@link org.omg.CORBA.ORB#init(String[], java.util.Properties) initialization of an ORB}.
+     *
+     * @return the names of the classes implementing {@code ORBInitializer}. Will not be {@code null}.
+     */
+    public List<String> getORBInitializerClasses() {
+        return Collections.unmodifiableList(Arrays.asList(
+            "com.arjuna.ats.jts.orbspecific.jacorb.interceptors.interposition.InterpositionORBInitializerImpl",
+            "com.arjuna.ats.jbossatx.jts.InboundTransactionCurrentInitializer"));
+    }
+}
+----
+
+and provide it to the builder:
+
+[source, java]
+----
+    static final RuntimeCapability<JTSCapability> FOO_CAPABILITY = 
+            RuntimeCapability.Builder.of("com.example.foo", JTSCapability.INSTANCE).build();
+----
+
+For a dynamic capability:
+
+[source, java]
+----
+    static final RuntimeCapability<JTSCapability> FOO_CAPABILITY = RuntimeCapability.Builder.of("com.example.foo", true, JTSCapability.INSTANCE).build();
+----
+
+A capability can provide both a custom integration API and install a
+service:
+
+[source, java]
+----
+    static final RuntimeCapability<JTSCapability> FOO_CAPABILITY = 
+            RuntimeCapability.Builder.of("com.example.foo", JTSCapability.INSTANCE)
+                .setServiceType(DataSource.class)
+                .build();
+----
+
+[[registering-and-unregistering-your-capability]]
+==== Registering and unregistering your capability
+
+Once you have your capability, you need to ensure it gets registered
+with the WildFly Core kernel when your resource is added. This is easily
+done simply by providing a reference to the capability to the resource's
+`ResourceDefinition`. This assumes your resource definition is a
+subclass of the standard
+`org.jboss.as.controller.SimpleResourceDefinition`.
+`SimpleResourceDefinition` provides a `Parameters` class that provides a
+builder-style API for setting up all the data needed by your definition.
+This includes a `setCapabilities` method that can be used to declare the
+capabilities provided by resources of this type.
+
+[source, java]
+----
+class MyResourceDefinition extends SimpleResourceDefinition {
+    
+    . . .
+ 
+    MyResourceDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH, RESOLVER)
+            .setAddHandler(MyAddHandler.INSTANCE)
+            .setRemoveHandler(MyRemoveHandler.INSTANCE)
+            .setCapabilities(FOO_CAPABILITY)
+            ); 
+    }
+}
+----
+
+Your add handler needs to extend the standard
+`org.jboss.as.controller.AbstractAddStepHandler` class or one of its
+subclasses:
+
+[source, java]
+----
+class MyAddHandler extends AbstractAddStepHandler() {
+----
+
+`AbstractAddStepHandler`'s logic will register the capability when it
+executes.
+
+Your remove handler must also extend of the standard
+`org.jboss.as.controller.AbstractRemoveStepHandler` or one of its
+subclasses.
+
+[source, java]
+----
+class MyRemoveHandler extends AbstractRemoveStepHandler() {
+----
+
+`AbstractRemoveStepHandler`'s logic will deregister the capability when
+it executes.
+
+If for some reason you cannot base your `ResourceDefinition` on
+`SimpleResourceDefinition` or your handlers on `AbstractAddStepHandler`
+and `AbstractRemoveStepHandler` then you will need to take
+responsibility for registering the capability yourself. This is not
+expected to be a common situation. See the implementation of those
+classes to see how to do it.
+
+[[installing-accessing-and-removing-the-service-provided-by-your-capability]]
+==== Installing, accessing and removing the service provided by your
+capability
+
+If your capability installs a service, you should use the
+`RuntimeCapability` when you need to determine the service's name. For
+example in the `Stage.RUNTIME` handling of your "add" step handler.
+Here's an example for a statically named capability:
+
+[source, java]
+----
+class MyAddHandler extends AbstractAddStepHandler() {
+ 
+    . . .
+ 
+    @Override
+    protected void performRuntime(final OperationContext context, final ModelNode operation, 
+                                  final Resource resource) throws OperationFailedException {
+        
+        ServiceName serviceName = FOO_CAPABILITY.getCapabilityServiceName();
+        Service<DataSource> service = createDataSourceService(context, resource);
+        context.getServiceTarget().addService(serviceName, service).install();
+        
+    }
+----
+
+If the capability is dynamically named, get the dynamic part of the name
+from the `OperationContext` and use that when getting the service name:
+
+[source, java]
+----
+class MyAddHandler extends AbstractAddStepHandler() {
+ 
+    . . .
+ 
+    @Override
+    protected void performRuntime(final OperationContext context, final ModelNode operation, 
+                                  final Resource resource) throws OperationFailedException {
+        
+        String myName = context.getCurrentAddressValue();
+        ServiceName serviceName = FOO_CAPABILITY.getCapabilityServiceName(myName);
+        Service<DataSource> service = createDataSourceService(context, resource);
+        context.getServiceTarget().addService(serviceName, service).install();
+        
+    }
+----
+
+The same patterns should be used when accessing or removing the service
+in handlers for `remove`, `write-attribute` and custom operations.
+
+If you use `ServiceRemoveStepHandler` for the `remove` operation, simply
+provide your `RuntimeCapability` to the `ServiceRemoveStepHandler`
+constructor and it will automatically remove your capability's service
+when it executes.
+
+[[basics-of-using-other-capabilities]]
+=== Basics of Using Other Capabilities
+
+When a capability needs another capability, it only refers to it by its
+string name. A capability should not reference the `RuntimeCapability`
+object of another capability.
+
+Before a capability can look up the service name for a required
+capability's service, or access its custom integration API, it must
+first register a requirement for the capability. This must be done in
+Stage.MODEL, while service name lookups and accessing the custom
+integration API is done in Stage.RUNTIME.
+
+Registering a requirement for a capability is simple.
+
+[[registering-a-hard-requirement-for-a-static-capability]]
+==== Registering a hard requirement for a static capability
+
+If your capability has a hard requirement for a statically named
+capability, simply declare that to the builder for your
+`RuntimeCapability`. For example, WildFly's JTS capability requires both
+a basic transaction support capability and IIOP capabilities:
+
+[source, java]
+----
+    static final RuntimeCapability<JTSCapability> JTS_CAPABILITY =
+            RuntimeCapability.Builder.of("org.wildfly.transactions.jts", new JTSCapability())
+                .addRequirements("org.wildfly.transactions", "org.wildfly.iiop.orb", "org.wildfly.iiop.corba-naming")
+                .build();
+----
+
+When your capability is registered with the system, the WildFly Core
+kernel will automatically register any static hard requirements declared
+this way.
+
+[[registering-a-requirement-for-a-dynamically-named-capability]]
+==== Registering a requirement for a dynamically named capability
+
+If the capability you require is dynamically named, usually your
+capability's resource will include an attribute whose value is the
+dynamic part of the required capability's name. You should declare this
+fact in the `AttributeDefinition` for the attribute using the
+`SimpleAttributeDefinitionBuilder.setCapabilityReference` method.
+
+For example, the WildFly "remoting" subsystem's
+"org.wildfly.remoting.connector" capability has a requirement for a
+dynamically named socket-binding capability:
+
+[source, java]
+----
+public class ConnectorResource extends SimpleResourceDefinition {
+ 
+    . . .
+ 
+    static final String SOCKET_CAPABILITY_NAME = "org.wildfly.network.socket-binding";
+    static final RuntimeCapability<Void> CONNECTOR_CAPABILITY =
+            RuntimeCapability.Builder.of("org.wildfly.remoting.connector", true)
+                    .build();
+ 
+    . . .
+ 
+    static final SimpleAttributeDefinition SOCKET_BINDING = 
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.SOCKET_BINDING, ModelType.STRING, false)
+                .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                .setCapabilityReference(SOCKET_CAPABILITY_NAME, CONNECTOR_CAPABILITY)
+                .build();
+----
+
+If the "add" operation handler for your resource extends
+`AbstractAddStepHandler` and the handler for `write-attribute` extends
+`AbstractWriteAttributeHandler`, the declaration above is sufficient to
+ensure that the appropriate capability requirement will be registered
+when the attribute is modified.
+
+[[depending-upon-a-service-provided-by-another-capability]]
+==== Depending upon a service provided by another capability
+
+Once the requirement for the capability is registered, your
+`OperationStepHandler` can use the `OperationContext` to discover the
+name of the service provided by the required capability.
+
+For example, the "add" handler for a remoting connector uses the
+`OperationContext` to find the name of the needed \{\{SocketBinding}
+service:
+
+[source, java]
+----
+        final String socketName = ConnectorResource.SOCKET_BINDING.resolveModelAttribute(context, fullModel).asString();
+        final ServiceName socketBindingName = context.getCapabilityServiceName(ConnectorResource.SOCKET_CAPABILITY_NAME, socketName, SocketBinding.class);
+        
+----
+
+That service name is then used to add a dependency on the
+`SocketBinding` service to the remoting connector service.
+
+If the required capability isn't dynamically named, `OperationContext`
+exposes an overloaded `getCapabilityServiceName` variant. For example,
+if a capability requires a remoting Endpoint:
+
+[source, java]
+----
+        ServiceName endpointService = context.getCapabilityServiceName("org.wildfly.remoting.endpoint", Endpoint.class);
+----
+
+[[using-a-custom-integration-api-provided-by-another-capability]]
+==== Using a custom integration API provided by another capability
+
+In your `Stage.RUNTIME` handler, use
+`OperationContext.getCapabilityRuntimeAPI` to get a reference to the
+required capability's custom integration API. Then use it as necessary.
+
+[source, java]
+----
+        List<String> orbInitializers = new ArrayList<String>();
+        . . . 
+        JTSCapability jtsCapability = context.getCapabilityRuntimeAPI(IIOPExtension.JTS_CAPABILITY, JTSCapability.class);
+        orbInitializers.addAll(jtsCapability.getORBInitializerClasses());
+----
+
+[[runtime-only-requirements]]
+==== Runtime-only requirements
+
+If your capability has a runtime-only requirement for another
+capability, that means that if that capability is present in
+`Stage.RUNTIME` you'll use it, and if not you won't. There is nothing
+about the configuration of your capability that triggers the need for
+the other capability; you'll just use it if it's there.
+
+In this case, use `OperationContext.hasOptionalCapability` in your
+`Stage.RUNTIME` handler to check if the capability is present:
+
+[source, java]
+----
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+ 
+        ServiceName myServiceName = MyResource.FOO_CAPABILITY.getCapabilityServiceName();
+        Service<DataSource> myService = createService(context, model);
+        ServiceBuilder<DataSource> builder = context.getTarget().addService(myServiceName, myService);
+ 
+        // Inject a "Bar" into our "Foo" if bar capability is present
+        if (context.hasOptionalCapability("com.example.bar", MyResource.FOO_CAPABILITY.getName(), null) {
+            ServiceName barServiceName = context.getCapabilityServiceName("com.example.bar", Bar.class);
+            builder.addDependency(barServiceName, Bar.class, myService.getBarInjector());
+        } 
+ 
+        builder.install();        
+    }
+----
+
+The WildFly Core kernel will not register a requirement for the
+"com.example.bar" capability, so if a configuration change occurs that
+means that capability will no longer be present, that change will not be
+rolled back. Because of this, runtime-only requirements can only be used
+with capabilities that declare in their contract that they support such
+use.
+
+[[using-a-capability-in-a-deploymentunitprocessor]]
+==== Using a capability in a DeploymentUnitProcessor
+
+A `DeploymentUnitProcessor` is likely to have a need to interact with
+capabilities, in order to create service dependencies from a deployment
+service to a capability provided service or to access some aspect of a
+capability's custom integration API that relates to deployments.
+
+If a `DeploymentUnitProcessor` associated with a capability
+implementation needs to utilize its own capability object, the
+`DeploymentUnitProcessor` authors should simply provide it with a
+reference to the `RuntimeCapability` instance. Service name lookups or
+access to the capabilities custom integration API can then be performed
+by invoking the methods on the `RuntimeCapability`.
+
+If you need to access service names or a custom integration API
+associated with a different capability, you will need to use the
+`org.jboss.as.controller.capability.CapabilityServiceSupport` object
+associated with the deployment unit. This can be found as an attachment
+to the `DeploymentPhaseContext`:
+
+[source, java]
+----
+class MyDUP implements DeploymentUntiProcessor {
+ 
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+ 
+        AttachmentKey<CapabilityServiceSupport> key = org.jboss.as.server.deployment.Attachments.DEPLOYMENT_COMPLETE_SERVICES;
+        CapabilityServiceSupport capSvcSupport = phaseContext.getAttachment(key);
+----
+
+Once you have the `CapabilityServiceSupport` you can use it to look up
+service names:
+
+[source, java]
+----
+        ServiceName barSvcName = capSvcSupport.getCapabilityServiceName("com.example.bar");
+        // Determine what 'baz' the user specified in the deployment descriptor
+        String bazDynamicName = getSelectedBaz(phaseContext);
+        ServiceName bazSvcName = capSvcSupport.getCapabilityServiceName("com.example.baz", bazDynamicName);
+----
+
+[IMPORTANT]
+
+It's important to note that when you request a service name associated
+with a capability, the `CapabilityServiceSupport` will give you one
+regardless of whether the capability is actually registered with the
+kernel. If the capability isn't present, any service dependency your DUP
+creates using that service name will eventually result in a service
+start failure, due to the missing dependency. This behavior of not
+failing immediately when the capability service name is requested is
+deliberate. It allows deployment operations that use the
+`rollback-on-runtime-failure=false` header to successfully install (but
+not start) all of the services related to a deployment. If a subsequent
+operation adds the missing capability, the missing service dependency
+problem will then be resolved and the MSC service container will
+automatically start the deployment services.
+
+You can also use the `CapabilityServiceSupport` to obtain a reference to
+the capability's custom integration API:
+
+[source, java]
+----
+        // We need custom integration with the baz capability beyond service injection
+        BazIntegrator bazIntegrator;
+        try {
+            bazIntegrator = capSvcSupport.getCapabilityRuntimeAPI("com.example.baz", bazDynamicName, BazIntegrator.class);
+        } catch (NoSuchCapabilityException e) {
+            // 
+            String msg = String.format("Deployment %s requires use of the 'bar' capability but it is not currently registered",
+                                       phaseContext.getDeploymentUnit().getName());
+            throw new DeploymentUnitProcessingException(msg);
+        }
+----
+
+Note that here, unlike the case with service name lookups, the
+`CapabilityServiceSupport` will throw a checked exception if the desired
+capability is not installed. This is because the kernel has no way to
+satisfy the request for a custom integration API if the capability is
+not installed. The `DeploymentUnitProcessor` will need to catch and
+handle the exception.
+
+[[detailed-api]]
+=== Detailed API
+
+The WildFly Core kernel's API for using capabilities is covered in
+detail in the javadoc for the
+https://github.com/wildfly/wildfly-core/blob/master/controller/src/main/java/org/jboss/as/controller/capability/RuntimeCapability.java[RuntimeCapability
+and RuntimeCapability.Builder] classes and the
+https://github.com/wildfly/wildfly-core/blob/master/controller/src/main/java/org/jboss/as/controller/OperationContext.java[OperationContext]
+and
+https://github.com/wildfly/wildfly-core/blob/master/controller/src/main/java/org/jboss/as/controller/capability/CapabilityServiceSupport.java[CapabilityServiceSupport]
+interfaces.
+
+Many of the methods in `OperationContext` related to capabilities have
+to do with registering capabilities or registering requirements for
+capabilities. Typically non-kernel developers won't need to worry about
+these, as the abstract `OperationStepHandler` implementations provided
+by the kernel take care of this for you, as described in the preceding
+sections. If you do find yourself in a situation where you need to use
+these in an extension, please read the javadoc thoroughly.

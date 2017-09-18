@@ -1,0 +1,45 @@
+= Naming Subsystem Configuration
+
+The Naming subsystem provides the JNDI implementation on WildFly, and
+its configuration allows to:
+
+* bind entries in global JNDI namespaces
+* turn off/on the remote JNDI interface
+
+The subsystem name is naming and this document covers Naming subsystem
+version `2.0`, which XML namespace within WildFly XML configurations is
+`urn:jboss:domain:naming:2.0`. The path for the subsystem's XML schema,
+within WildFly's distribution, is `docs/schema/jboss-as-naming_2_0.xsd`.
+
+Subsystem XML configuration example with all elements and attributes
+specified:
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:naming:2.0">
+    <bindings>
+        <simple name="java:global/a" value="100" type="int" />
+        <simple name="java:global/jboss.org/docs/url" value="https://docs.jboss.org" type="java.net.URL" />
+        <object-factory name="java:global/foo/bar/factory" module="org.foo.bar" class="org.foo.bar.ObjectFactory" />
+        <external-context name="java:global/federation/ldap/example" class="javax.naming.directory.InitialDirContext" cache="true">
+            <environment>
+                <property name="java.naming.factory.initial" value="com.sun.jndi.ldap.LdapCtxFactory" />
+                <property name="java.naming.provider.url" value="ldap://ldap.example.com:389" />
+                <property name="java.naming.security.authentication" value="simple" />
+                <property name="java.naming.security.principal" value="uid=admin,ou=system" />
+                <property name="java.naming.security.credentials" value="secret" />
+            </environment>
+        </external-context>
+        <lookup name="java:global/c" lookup="java:global/b" />
+    </bindings>
+    <remote-naming/>
+</subsystem>
+----
+
+:leveloffset: +1
+
+include::Naming_Global_Bindings_Configuration.adoc[]
+
+include::Naming_Remote_JNDI_Configuration.adoc[]
+
+:leveloffset: -1

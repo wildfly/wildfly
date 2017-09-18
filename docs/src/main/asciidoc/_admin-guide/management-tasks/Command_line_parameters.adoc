@@ -1,0 +1,452 @@
+= Command line parameters
+
+To start up a WildFly managed domain, execute the
+`$JBOSS_HOME/bin/domain.sh` script. To start up a standalone server,
+execute the `$JBOSS_HOME/bin/standalone.sh`. With no arguments, the
+default configuration is used. You can override the default
+configuration by providing arguments on the command line, or in your
+calling script.
+
+[[system-properties]]
+== System properties
+
+To set a system property, pass its new value using the standard jvm
+`-Dkey=value` options:
+
+[source,bash]
+----
+$JBOSS_HOME/bin/standalone.sh -Djboss.home.dir=some/location/wildFly \
+    -Djboss.server.config.dir=some/location/wildFly/custom-standalone
+----
+
+This command starts up a standalone server instance using a non-standard
+AS home directory and a custom configuration directory. For specific
+information about system properties, refer to the definitions below.
+
+Instead of passing the parameters directly, you can put them into a
+properties file, and pass the properties file to the script, as in the
+two examples below.
+
+[source,bash]
+----
+$JBOSS_HOME/bin/domain.sh --properties=/some/location/jboss.properties
+$JBOSS_HOME/bin/domain.sh -P=/some/location/jboss.properties
+----
+
+Note however, that properties set this way are not processed as part of
+JVM launch. They are processed early in the boot process, but this
+mechanism should not be used for setting properties that control JVM
+behavior (e.g. java.net.perferIPv4Stack) or the behavior of the JBoss
+Modules classloading system.
+
+The syntax for passing in parameters and properties files is the same
+regardless of whether you are running the `domain.sh`, `standalone.sh`,
+or the Microsoft Windows scripts `domain.bat` or `standalone.bat`.
+
+The properties file is a standard Java property file containing
+`key=value` pairs:
+
+[source,bash]
+----
+jboss.home.dir=/some/location/wildFly
+jboss.domain.config.dir=/some/location/wildFly/custom-domain
+----
+
+System properties can also be set via the xml configuration files. Note
+however that for a standalone server properties set this way will not be
+set until the xml configuration is parsed and the commands created by
+the parser have been executed. So this mechanism should not be used for
+setting properties whose value needs to be set before this point.
+
+[[controlling-filesystem-locations-with-system-properties]]
+=== Controlling filesystem locations with system properties
+
+The standalone and the managed domain modes each use a default
+configuration which expects various files and writable directories to
+exist in standard locations. Each of these standard locations is
+associated with a system property, which has a default value. To
+override a system property, pass its new value using the one of the
+mechanisms above. The locations which can be controlled via system
+property are:
+
+[[standalone]]
+==== Standalone
+
+[cols=",,",options="header"]
+|=======================================================================
+|Property name |Usage |Default value
+
+|java.ext.dirs |The JDK extension directory paths |null
+
+|jboss.home.dir |The root directory of the WildFly installation. |Set by
+standalone.sh to $JBOSS_HOME
+
+|jboss.server.base.dir |The base directory for server content.
+|jboss.home.dir/standalone
+
+|jboss.server.config.dir |The base configuration directory.
+|jboss.server.base.dir/configuration
+
+|jboss.server.data.dir |The directory used for persistent data file
+storage. |jboss.server.base.dir/data
+
+|jboss.server.log.dir |The directory containing the server.log file.
+|jboss.server.base.dir/log
+
+|jboss.server.temp.dir |The directory used for temporary file storage.
+|jboss.server.base.dir/tmp
+
+|jboss.server.deploy.dir |The directory used to store deployed content
+|jboss.server.data.dir/content
+|=======================================================================
+
+[[managed-domain]]
+==== Managed Domain
+
+[cols=",,",options="header"]
+|=======================================================================
+|Property name |Usage |Default value
+
+|jboss.home.dir |The root directory of the WildFly installation. |Set by
+domain.sh to $JBOSS_HOME
+
+|jboss.domain.base.dir |The base directory for domain content.
+|jboss.home.dir/domain
+
+|jboss.domain.config.dir |The base configuration directory
+|jboss.domain.base.dir/configuration
+
+|jboss.domain.data.dir |The directory used for persistent data file
+storage. |jboss.domain.base.dir/data
+
+|jboss.domain.log.dir |The directory containing the host-controller.log
+and process-controller.log files |jboss.domain.base.dir/log
+
+|jboss.domain.temp.dir |The directory used for temporary file storage
+|jboss.domain.base.dir/tmp
+
+|jboss.domain.deployment.dir |The directory used to store deployed
+content |jboss.domain.base.dir/content
+
+|jboss.domain.servers.dir |The directory containing the output for the
+managed server instances |jboss.domain.base.dir/servers
+|=======================================================================
+
+[[other-command-line-parameters]]
+== Other command line parameters
+
+The first acceptable format for command line arguments to the WildFly
+launch scripts is
+
+....
+--name=value
+....
+
+For example:
+
+[source,bash]
+----
+$JBOSS_HOME/bin/standalone.sh --server-config=standalone-ha.xml
+----
+
+If the parameter name is a single character, it is prefixed by a single
+'-' instead of two. Some parameters have both a long and short option.
+
+....
+-x=value
+....
+
+For example:
+
+[source,bash]
+----
+$JBOSS_HOME/bin/standalone.sh -P=/some/location/jboss.properties
+----
+
+For some command line arguments frequently used in previous major
+releases of WildFly, replacing the "=" in the above examples with a
+space is supported, for compatibility.
+
+....
+-b 192.168.100.10
+....
+
+If possible, use the `-x=value` syntax. New parameters will always
+support this syntax.
+
+The sections below describe the command line parameter names that are
+available in standalone and domain mode.
+
+[[standalone-1]]
+=== Standalone
+
+[cols=",,",options="header"]
+|=======================================================================
+|Name |Default if absent |Value
+
+|--admin-only |- |Set the server's running type to ADMIN_ONLY causing it
+to open administrative interfaces and accept management requests but not
+start other runtime services oraccept end user requests.
+
+|--server-config-c |standalone.xml |A relative path which is interpreted
+to be relative to jboss.server.config.dir. The name of the configuration
+file to use.
+
+|--read-only-server-config |- |A relative path which is interpreted to
+be relative to jboss.server.config.dir. This is similar to
+--server-config but if this alternative is specified the server willnot
+overwrite the file when the management model is changed. However a full
+versioned history is maintained of the file.
+|=======================================================================
+
+[[managed-domain-1]]
+=== Managed Domain
+
+[cols=",,",options="header"]
+|=======================================================================
+|Name |Default if absent |Value
+
+|--admin-only |- |Set the server's running type to ADMIN_ONLY causing it
+to open administrative interfaces and accept management requests but not
+start servers or, if this host controlleris the master for the domain,
+accept incoming connections from slave host controllers.
+
+|--domain-config-c |domain.xml |A relative path which is interpreted to
+be relative to jboss.domain.config.dir. The name of the domain wide
+configuration file to use.
+
+|--read-only-domain-config |- |A relative path which is interpreted to
+be relative to jboss.domain.config.dir. This is similar to
+--domain-config but if this alternative is specified the host
+controllerwill not overwrite the file when the management model is
+changed. However a full versioned history is maintained of the file.
+
+|--host-config |host.xml |A relative path which is interpreted to be
+relative to jboss.domain.config.dir. The name of the host-specific
+configuration file to use.
+
+|--read-only-host-config |- |A relative path which is interpreted to be
+relative to jboss.domain.config.dir. This is similar to --host-config
+but if this alternative is specified the host controller willnot
+overwrite the file when the management model is changed. However a full
+versioned history is maintained of the file.
+|=======================================================================
+
+The following parameters take no value and are only usable on slave host
+controllers (i.e. hosts configured to connect to a `remote` domain
+controller.)
+
+[cols=",",options="header"]
+|=======================================================================
+|Name |Function
+
+|--backup |Causes the slave host controller to create and maintain a
+local copy (domain.cached-remote.xml) of the domain configuration. If
+ignore-unused-configuration is unset in host.xml,a complete copy of the
+domain configuration will be stored locally, otherwise the configured
+value of ignore-unused-configuration in host.xml will be used. (See
+ignore-unused-configuration for more details.)
+
+|--cached-dc |If the slave host controller is unable to contact the
+master domain controller to get its configuration at boot, this option
+will allow the slave host controller to boot and becomeoperational using
+a previously cached copy of the domain configuration
+(domain.cached-remote.xml.) If the cached configuration is not present,
+this boot will fail. This file is created using using one ofthe
+following methods:- A previously successful connection to the master
+domain controller using --backup or --cached-dc.- Copying the domain
+configuration from an alternative host to
+domain/configuration/domain.cached-remote.xml.The unavailable master
+domain controller will be polled periodically for availability, and once
+becoming available, the slave host controller will reconnect to the
+master host controller and synchronize the domainconfiguration. During
+the interval the master domain controller is unavailable, the slave host
+controller will not be able make any modifications to the domain
+configuration, but it may launch servers and handlerequests to deployed
+applications etc.
+|=======================================================================
+
+[cols=",",options="header"]
+|====
+|  | 
+|====
+
+[[common-parameters]]
+=== Common parameters
+
+These parameters apply in both standalone or managed domain mode:
+
+[cols=",",options="header"]
+|=======================================================================
+|Name |Function
+
+|-b=<value> |Sets system property jboss.bind.address to <value>. See
+Controlling the Bind Address with -b for further details.
+
+|-b<name>=<value> |Sets system property jboss.bind.address.<name> to
+<value> where name can vary. See Controlling the Bind Address with -b
+for further details.
+
+|-u=<value> |Sets system property jboss.default.multicast.address to
+<value>. See Controlling the Default Multicast Address with -u for
+further details.
+
+|--version-v-V |Prints the version of WildFly to standard output and
+exits the JVM.
+
+|--help-h |Prints a help message explaining the options and exits the
+JVM.
+|=======================================================================
+
+[[controlling-the-bind-address]]
+== Controlling the Bind Address with -b
+
+WildFly binds sockets to the IP addresses and interfaces contained in
+the `<interfaces>` elements in `standalone.xml`, `domain.xml` and
+`host.xml`. (See
+link:General_configuration_concepts.html#src-557065_Generalconfigurationconcepts-interfaces[Interfaces]
+and
+link:General_configuration_concepts.html#src-557065_Generalconfigurationconcepts-socket-bindings[Socket
+Bindings] for further information on these elements.) The standard
+configurations that ship with WildFly includes two interface
+configurations:
+
+[source, xml]
+----
+<interfaces>
+    <interface name="management">
+        <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
+    </interface>
+    <interface name="public">
+       <inet-address value="${jboss.bind.address:127.0.0.1}"/>
+    </interface>
+</interfaces>
+----
+
+Those configurations use the values of system properties
+`jboss.bind.address.management` and `jboss.bind.address` if they are
+set. If they are not set, 127.0.0.1 is used for each value.
+
+As noted in
+link:#src-557062_Commandlineparameters-common-parameters[Common
+Parameters], the AS supports the `-b` and `-b<name>` command line
+switches. The only function of these switches is to set system
+properties `jboss.bind.address` and `jboss.bind.address.<name>`
+respectively. However, because of the way the standard WildFly
+configuration files are set up, using the `-b` switches can indirectly
+control how the AS binds sockets.
+
+_If your interface configurations match those shown above_, using this
+as your launch command causes all sockets associated with interface
+named "public" to be bound to `192.168.100.10`.
+
+[source,bash]
+----
+$JBOSS_HOME/bin/standalone.sh -b=192.168.100.10
+----
+
+In the standard config files, public interfaces are those not associated
+with server management. Public interfaces handle normal end-user
+requests.
+
+Interface names
+
+[IMPORTANT]
+
+The interface named "public" is not inherently special. It is provided
+as a convenience. You can name your interfaces to suit your environment.
+
+To bind the public interfaces to all IPv4 addresses (the IPv4 wildcard
+address), use the following syntax:
+
+
+----
+$JBOSS_HOME/bin/standalone.sh -b=0.0.0.0
+----
+
+You can also bind the management interfaces, as follows:
+
+
+----
+$JBOSS_HOME/bin/standalone.sh -bmanagement=192.168.100.10
+----
+
+In the standard config files, management interfaces are those sockets
+associated with server management, such as the socket used by the CLI,
+the HTTP socket used by the admin console, and the JMX connector socket.
+
+Be Careful
+
+[IMPORTANT]
+
+The `-b` switch only controls the interface bindings because the
+standard config files that ship with WildFly sets things up that way. If
+you change the `<interfaces>` section in your configuration to no longer
+use the system properties controlled by `-b`, then setting `-b` in your
+launch command will have no effect.
+
+For example, this perfectly valid setting for the "public" interface
+causes `-b` to have no effect on the "public" interface:
+
+[source, xml]
+----
+<interface name="public">
+   <nic name="eth0"/>
+</interface>
+----
+
+The key point is *the contents of the configuration files determine the
+configuration. Settings like* `-b` *are not overrides of the
+configuration files.* They only provide a shorter syntax for setting a
+system properties that may or may not be referenced in the configuration
+files. They are provided as a convenience, and you can choose to modify
+your configuration to ignore them.
+
+[[controlling-the-default-multicast-address-with--u]]
+== Controlling the Default Multicast Address with -u
+
+WildFly may use multicast communication for some services, particularly
+those involving high availability clustering. The multicast addresses
+and ports used are configured using the `socket-binding` elements in
+`standalone.xml` and `domain.xml`. (See
+link:General_configuration_concepts.html#src-557065_Generalconfigurationconcepts-socket-bindings[Socket
+Bindings] for further information on these elements.) The standard HA
+configurations that ship with WildFly include two socket binding
+configurations that use a default multicast address:
+
+[source, xml]
+----
+<socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
+<socket-binding name="jgroups-udp" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
+----
+
+Those configurations use the values of system property
+`jboss.default.multicast.address` if it is set. If it is not set,
+`230.0.0.4` is used for each value. (The configuration may include other
+socket bindings for multicast-based services that are not meant to use
+the default multicast address; e.g. a binding the mod-cluster services
+use to communicate on a separate address/port with Apache httpd
+servers.)
+
+As noted in
+link:#common-parameters[Common Parameters], the AS supports the `-u` command line switch. The only
+function of this switch is to set system property `jboss.default.multicast.address`. However, because of the way the
+standard AS configuration files are set up, using the `-u` switches can indirectly control how the AS uses multicast.
+
+_If your socket binding configurations match those shown above_, using
+this as your launch command causes the service using those sockets
+configurations to be communicate over multicast address `230.0.1.2`.
+
+----
+$JBOSS_HOME/bin/standalone.sh -u=230.0.1.2
+----
+
+Be Careful
+
+[NOTE]
+
+As with the `-b` switch, the `-u` switch only controls the multicast
+address used because the standard config files that ship with WildFly
+sets things up that way. If you change the `<socket-binding>` sections
+in your configuration to no longer use the system properties controlled
+by `-u`, then setting `-u` in your launch command will have no effect.

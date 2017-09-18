@@ -1,0 +1,315 @@
+= WildFly 9 JNDI Implementation
+
+[[introduction]]
+== Introduction
+
+This page proposes a reworked WildFly JNDI implementation, and
+new/updated APIs for WildFly subsystem and EE deployment processors
+developers to bind new resources easier.
+
+To support discussion in the community, the content includes a big focus
+on comparing WildFly {wildflyVersion} JNDI implementation with the new proposal, and
+should later evolve to the prime guide for WildFly developers needing to
+interact with JNDI at subsystem level.
+
+[[architecture]]
+== Architecture
+
+WildFly relies on MSC to provide the data source for the JNDI tree. Each
+resource bound in JNDI is stored in a MSC service (BinderService), and
+such services are installed as children of subsystem/deployment
+services, for an automatically unbound as consequence of uninstall of
+the parent services.
+
+Since there is the need to know what entries are bound, and MSC does not
+provides that, there is also the (ServiceBased)NamingStore concept,
+which internally manage the set of service names bound. There are
+multiple naming stores in every WildFly instance, serving different JNDI
+namespaces:
+
+* java:comp - the standard EE namespace for entries scoped to a specific
+component, such as an EJB
+* java:module - the standard EE namespace for entries scoped to specific
+module, such as an EJB jar, and shared by all components in it
+* java:app - the standard EE namespace for entries scoped to a specific
+application, i.e. EAR, and shared by all modules in it
+* java:global - the standard EE namespace for entries shared by all
+deployments
+* java:jboss - a proprietary namespace "global" namespace
+* java:jboss/exported - a proprietary "global" namespace which entries
+are exposed to remote JNDI
+* java: - any entries not in the other namespaces
+
+One particular implementation choice, to save resources, is that JNDI
+contexts by default are not bound, the naming stores will search for any
+entry bound with a name that is a child of the context name, if found
+then its assumed the context exists.
+
+The reworked implementation introduces shared/global java:comp,
+java:module and java:app namespaces. Any entry bound on these will
+automatically be available to every EE deployment scoped instance of
+these namespaces, what should result in a significant reduction of
+binder services, and also of EE deployment processors. Also, the Naming
+subsystem may now configure bind on these shared contexts, and these
+contexts will be available when there is no EE component in the
+invocation, which means that entries such as java:comp/DefaultDatasource
+will always be available.
+
+[[binding-apis]]
+== Binding APIs
+
+WildFly Naming subsystem exposes high level APIs to bind new JNDI
+resources, there is no need to deal with the low level BinderService
+type anymore.
+
+[[subsystem]]
+=== Subsystem
+
+At the lowest level a JNDI entry is bound by installing a BinderService
+to a ServiceTarget:
+
+[source, java]
+----
+ 
+   /**
+     * Binds a new entry to JNDI.
+     * @param serviceTarget the binder service's target
+     * @param name the new JNDI entry's name
+     * @param value the new JNDI entry's value
+     */
+    private ServiceController<?> bind(ServiceTarget serviceTarget, String name, Object value) {
+        
+ // the bind info object provides MSC service names to use when creating the binder service
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
+        final BinderService binderService = new BinderService(bindInfo.getBindName());
+        
+ // the entry's value is provided by a managed reference factory,
+        // since the value may need to be obtained on lookup (e.g. EJB reference)
+        final ManagedReferenceFactory managedReferenceFactory = new ImmediateManagedReferenceFactory(value);
+        
+ return serviceTarget
+                // add binder service to specified target
+                .addService(bindInfo.getBinderServiceName(), binderService)
+                // when started the service will be injected with the factory
+                .addInjection(binderService.getManagedObjectInjector(), managedReferenceFactory)
+                // the binder service depends on the related naming store service,
+                // and on start/stop will add/remove its service name
+                .addDependency(bindInfo.getParentContextServiceName(),
+                        ServiceBasedNamingStore.class,
+                        binderService.getNamingStoreInjector())
+                .install();
+    }
+----
+
+But the example above is the simplest usage possible, it may become
+quite complicated if the entry's value is not immediately available, for
+instance it is a value in another MSC service, or is a value in another
+JNDI entry. It's also quite easy to introduce bugs when working with the
+service names, or incorrectly assume that other MSC functionality, such
+as alias names, may be used.
+
+Using the new high level API, it's as simple as:
+
+[source, java]
+----
+// bind an immediate value
+ContextNames.bindInfoFor("java:comp/ORB").bind(serviceTarget, this.orb);
+ 
+ 
+// bind value from another JNDI entry (an alias/linkref)
+ContextNames.bindInfoFor("java:global/x").bind(serviceTarget, new JndiName("java:jboss/x"));
+ 
+ 
+// bind value obtained from a MSC service
+ContextNames.bindInfoFor("java:global/z").bind(serviceTarget, serviceName);
+----
+
+If there is the need to access the binder's service builder, perhaps to
+add a service verification handler or simply not install the binder
+service right away:
+
+[source, java]
+----
+ContextNames.bindInfoFor("java:comp/ORB").builder(serviceTarget, verificationHandler, ServiceController.Mode.ON_DEMAND).installService(this.orb);
+----
+
+[[ee-deployment]]
+=== EE Deployment
+
+With respect to EE deployments, the subsystem API should not be used,
+since bindings may need to be discarded/overridden, thus a EE deployment
+processor should add a new binding in the form of a
+BindingConfiguration, to the EeModuleDescription or
+ComponentDescription, depending if the bind is specific to a component
+or not. An example of a deployment processor adding a binding:
+
+[source, java]
+----
+public class ModuleNameBindingProcessor implements DeploymentUnitProcessor {
+ 
+    // jndi name objects are immutable
+    private static final JndiName JNDI_NAME_java_module_ModuleName = new JndiName("java:module/ModuleName");
+ 
+    @Override
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        
+ final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        // skip deployment unit if it's the top level EAR
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+            return;
+        }
+        
+ // the module's description is in the DUs attachments
+        final EEModuleDescription moduleDescription = deploymentUnit
+                .getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        if (moduleDescription == null) {
+            return;
+        }
+        
+ // add the java:module/ModuleName binding
+        // the value's injection source for an immediate available value
+        final InjectionSource injectionSource = new ImmediateInjectionSource(moduleDescription.getModuleName());
+        
+ // add the binding configuration to the module's description bindings configurations
+        moduleDescription.getBindingConfigurations()
+                .addDeploymentBinding(new BindingConfiguration(JNDI_NAME_java_module_ModuleName, injectionSource));
+    }
+ 
+    //...
+}
+----
+
+[IMPORTANT]
+
+When adding the binding configuration use:
+
+* addDeploymentBinding() for a binding that may not be overriden, such
+as the ones found in xml descriptors
+* addPlatformBinding() for a binding which may be overriden by a
+deployment descriptor bind or annotation, for instance
+java:comp/DefaultDatasource
+
+A deployment processor may now also add a binding configuration to all
+components in a module:
+
+[source, java]
+----
+     
+moduleDescription.getBindingConfigurations().addPlatformBindingToAllComponents(bindingConfiguration);
+----
+
+[IMPORTANT]
+
+In the reworked implementation there is now no need to behave
+differently considering the deployment type, for instance if deployment
+is a WAR or app client, the Module/Component BindingConfigurations
+objects handle all of that. The processor should simply go for the 3 use
+cases: module binding, component binding or binding shared by all
+components.
+
+[IMPORTANT]
+
+All deployment binding configurations MUST be added before INSTALL
+phase, this is needed because on such phase, when the bindings are
+actually done, there must be a final set of deployment binding names
+known, such information is need to understand if a resource injection
+targets entries in the global or scoped EE namespaces.
+
+Most cases for adding bindings to EE deployments are in the context of a
+processor deploying a XML descriptor, or scanning deployment classes for
+annotations, and there abstract types, such as the
+AbstractDeploymentDescriptorBindingsProcessor, which simplifies greatly
+the processor code for such use cases.
+
+One particular use case is the parsing of EE Resource Definitions, and
+the reworked implementation provides high level abstract deployment
+processors for both XML descriptor and annotations, an example for each:
+
+[source, java]
+----
+/**
+ * Deployment processor responsible for processing administered-object deployment descriptor elements
+ *
+ * @author Eduardo Martins
+ */
+public class AdministeredObjectDefinitionDescriptorProcessor extends ResourceDefinitionDescriptorProcessor {
+ 
+    @Override
+    protected void processEnvironment(RemoteEnvironment environment, ResourceDefinitionInjectionSources injectionSources) throws DeploymentUnitProcessingException {
+        final AdministeredObjectsMetaData metaDatas = environment.getAdministeredObjects();
+        if (metaDatas != null) {
+            for(AdministeredObjectMetaData metaData : metaDatas) {
+                injectionSources.addResourceDefinitionInjectionSource(getResourceDefinitionInjectionSource(metaData));
+            }
+        }
+    }
+ 
+    private ResourceDefinitionInjectionSource getResourceDefinitionInjectionSource(final AdministeredObjectMetaData metaData) {
+        final String name = metaData.getName();
+        final String className = metaData.getClassName();
+        final String resourceAdapter = metaData.getResourceAdapter();
+        final AdministeredObjectDefinitionInjectionSource resourceDefinitionInjectionSource = new AdministeredObjectDefinitionInjectionSource(name, className, resourceAdapter);
+        resourceDefinitionInjectionSource.setInterface(metaData.getInterfaceName());
+        if (metaData.getDescriptions() != null) {
+            resourceDefinitionInjectionSource.setDescription(metaData.getDescriptions().toString());
+        }
+        resourceDefinitionInjectionSource.addProperties(metaData.getProperties());
+        return resourceDefinitionInjectionSource;
+    }
+ 
+}
+----
+
+and
+
+[source, java]
+----
+/**
+ * Deployment processor responsible for processing {@link javax.resource.AdministeredObjectDefinition} and {@link javax.resource.AdministeredObjectDefinitions}.
+ *
+ * @author Jesper Pedersen
+ * @author Eduardo Martins
+ */
+public class AdministeredObjectDefinitionAnnotationProcessor extends ResourceDefinitionAnnotationProcessor {
+ 
+    private static final DotName ANNOTATION_NAME = DotName.createSimple(AdministeredObjectDefinition.class.getName());
+    private static final DotName COLLECTION_ANNOTATION_NAME = DotName.createSimple(AdministeredObjectDefinitions.class.getName());
+ 
+    @Override
+    protected DotName getAnnotationDotName() {
+        return ANNOTATION_NAME;
+    }
+ 
+    @Override
+    protected DotName getAnnotationCollectionDotName() {
+        return COLLECTION_ANNOTATION_NAME;
+    }
+ 
+    @Override
+    protected ResourceDefinitionInjectionSource processAnnotation(AnnotationInstance annotationInstance) throws DeploymentUnitProcessingException {
+        final String name = AnnotationElement.asRequiredString(annotationInstance, AnnotationElement.NAME);
+        final String className = AnnotationElement.asRequiredString(annotationInstance, "className");
+        final String ra = AnnotationElement.asRequiredString(annotationInstance, "resourceAdapter");
+        final AdministeredObjectDefinitionInjectionSource directAdministeredObjectInjectionSource =
+                new AdministeredObjectDefinitionInjectionSource(name, className, ra);
+        directAdministeredObjectInjectionSource.setDescription(AnnotationElement.asOptionalString(annotationInstance,
+                AdministeredObjectDefinitionInjectionSource.DESCRIPTION));
+        directAdministeredObjectInjectionSource.setInterface(AnnotationElement.asOptionalString(annotationInstance,
+                AdministeredObjectDefinitionInjectionSource.INTERFACE));
+        directAdministeredObjectInjectionSource.addProperties(AnnotationElement.asOptionalStringArray(annotationInstance,
+                AdministeredObjectDefinitionInjectionSource.PROPERTIES));
+        return directAdministeredObjectInjectionSource;
+    }
+ 
+}
+----
+
+[IMPORTANT]
+
+The abstract processors with respect to Resource Definitions are already
+submitted through WFLY-3292's PR.
+
+[[resource-ref-processing]]
+== Resource Ref Processing
+
+TODO for now no changes on this in the reworked WildFly Naming.

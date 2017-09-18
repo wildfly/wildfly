@@ -1,0 +1,537 @@
+= Description of the Management Model
+
+A detailed description of the resources, attributes and operations that
+make up the management model provided by an individual WildFly instance
+or by any Domain Controller or slave Host Controller process can be
+queried using the `read-resource-description`, `read-operation-names`,
+`read-operation-description` and `read-child-types` operations described
+in the link:Global_operations.html[Global operations] section. In this
+section we provide details on what's included in those descriptions.
+
+[[description-of-the-wildfly-managed-resources]]
+== Description of the WildFly Managed Resources
+
+All portions of the management model exposed by WildFly are addressable
+via an ordered list of key/value pairs. For each addressable
+_link:Management_resources.html[Management Resource]_ , the following
+descriptive information will be available:
+
+* `description` – String – text description of this portion of the model
+* `min-occurs` – int, either 0 or 1 – Minimum number of resources of
+this type that must exist in a valid model. If not present, the default
+value is 0.
+* `max-occurs` – int – Maximum number of resources of this type that may
+exist in a valid model. If not present, the default value depends upon
+the value of the final key/value pair in the address of the described
+resource. If this value is '*', the default value is Integer.MAX_VALUE,
+i.e. there is no limit. If this value is some other string, the default
+value is 1.
+* `attributes` – Map of String (the attribute name) to complex structure
+– the configuration attributes available in this portion of the model.
+See
+link:#DescriptionoftheManagementModel-attribute-description[below]
+for the representation of each attribute.
+* `operations` – Map of String (the operation name) to complex structure
+– the operations that can be targetted at this address. See
+link:#DescriptionoftheManagementModel-operation-description[below]
+for the representation of each operation.
+* `children` – Map of String (the type of child) to complex structure –
+the relationship of this portion of the model to other addressable
+portions of the model. See
+link:#DescriptionoftheManagementModel-children-description[below]
+for the representation of each child relationship.
+* `head-comment-allowed` – boolean – indicates whether this portion of
+the model can store an XML comment that would be written in the
+persistent form of the model (e.g. domain.xml) before the start of the
+XML element that represents this portion of the model. This item is
+optional, and if not present defaults to true. (Note: storing XML
+comments in the in-memory model is not currently supported. This
+description key is for future use.)
+* `tail-comment-allowed` – boolean – similar to `head-comment-allowed`,
+but indicates whether a comment just before the close of the XML element
+is supported. A tail comment can only be supported if the element has
+child elements, in which case a comment can be inserted between the
+final child element and the element's closing tag. This item is
+optional, and if not present defaults to true. (Note: storing XML
+comments in the in-memory model is not currently supported. This
+description key is for future use.)
+
+For example:
+
+[source, ruby]
+----
+{
+     "description => "A manageable resource",
+     "tail-comment-allowed" => false,
+     "attributes" => {
+          "foo" => {
+               .... details of attribute foo
+          }
+      },
+     "operations" => {
+          "start" => {
+               .... details of the start operation
+          }
+      },
+     "children" => {
+          "bar" => {
+               .... details of the relationship with children of type "bar"
+          }
+      }
+}
+----
+
+[[description-of-an-attribute]]
+=== Description of an Attribute
+
+An attribute is a portion of the management model that is not directly
+addressable. Instead, it is conceptually a property of an addressable
+link:Management_resources.html[management resource]. For each attribute
+in the model, the following descriptive information will be available:
+
+* `description` – String – text description of the attribute
+* `type` – `org.jboss.dmr.ModelType` – the type of the attribute value.
+One of the enum values BIG_DECIMAL, BIG_INTEGER, BOOLEAN, BYTES, DOUBLE,
+INT, LIST, LONG, OBJECT, PROPERTY, STRING. Most of these are
+self-explanatory. An OBJECT will be represented in the detyped model as
+a map of string keys to values of some other legal type, conceptually
+similar to a `javax.management.openmbean.CompositeData`. A PROPERTY is a
+single key/value pair, where the key is a string, and the value is of
+some other legal type.
+* `value-type` – ModelType or complex structure – Only present if type
+is LIST or OBJECT. If all elements in the LIST or all the values of the
+OBJECT type are of the same type, this will be one of the ModelType
+enums BIG_DECIMAL, BIG_INTEGER, BOOLEAN, BYTES, DOUBLE, INT, LONG,
+STRING. Otherwise, `value-type` will detail the structure of the
+attribute value, enumerating the value's fields and the type of their
+value. So, an attribute with a `type` of LIST and a `value-type` value
+of `ModelType.STRING` is analogous to a Java `List<String>`, while one
+with a `value-type` value of `ModelType.INT` is analogous to a Java
+`List<Integer>`. An attribute with a `type` of OBJECT and a `value-type`
+value of `ModelType.STRING` is analogous to a Java
+`Map<String, String>`. An attribute with a `type` of OBJECT and a
+`value-type` whose value is not of type `ModelType` represents a
+fully-defined complex object, with the object's legal fields and their
+values described.
+* `expressions-allowed` – boolean – indicates whether the value of the
+attribute may be of type `ModelType.EXPRESSION`, instead of its standard
+type (see `type` and `value-type` above for discussion of an attribute's
+standard type.) A value of ModelType.EXPRESSION contains a
+system-property substitution expression that the server will resolve
+against the server-side system property map before using the value. For
+example, an attribute named max-threads may have an expression value of
+`${example.pool.max-threads:10`} instead of just 10. Default value if
+not present is false.
+* `required` – boolean – true if the attribute must have a defined value
+in a representation of its portion of the model unless another attribute
+included in a list of `alternatives` is defined; false if it may be
+undefined (implying a null value) even in the absence of alternatives.
+If not present, true is the default.
+* `nillable` – boolean – true if the attribute might not have a defined
+value in a representation of its portion of the model. A nillable
+attribute may +
+be undefined either because it is not `required` or because it is
+required but has `alternatives` and one of the alternatives is defined.
+* `storage` – String – Either "configuration" or "runtime". If
+"configuration", the attribute's value is stored as part of the
+persistent configuration (e.g. in domain.xml, host.xml or
+standalone.xml.) If "runtime" the attribute's value is not stored in the
+persistent configuration; the value only exists as long as the resource
+is running.
+* `access-type` – String – One of "read-only", "read-write" or "metric".
+Whether an attribute value can be written, or can only read. A "metric"
+is a read-only attribute whose value is not stored in the persistent
+configuration, and whose value may change due to activity on the server.
+If an attribute is "read-write", the resource will expose an operation
+named "write-attribute" whose "name" parameter will accept this
+attribute's name and whose "value" parameter will accept a valid value
+for this attribute. That operation will be the standard means of
+updating this attribute's value.
+* `restart-required` – String – One of "no-services", "all-services",
+"resource-services" or "jvm". Only relevant to attributes whose
+access-type is read-write. Indicates whether execution of a
+write-attribute operation whose name parameter specifies this attribute
+requires a restart of services (or an entire JVM) in order for the
+change to take effect in the runtime . See discussion of "
+link:#DescriptionoftheManagementModel-applying-runtime-updates[Applying
+Updates to Runtime Services]" below. Default value is "no-services".
+* `default` – the default value for the attribute that will be used in
+runtime services if the attribute is not explicitly defined and no other
+attributes listed as `alternatives` are defined.
+* `alternatives` – List of string – Indicates an exclusive relationship
+between attributes. If this attribute is defined, the other attributes
+listed in this descriptor's value should be undefined, even if their
+`required` descriptor says true; i.e. the presence of this attribute
+satisfies the requirement. Note that an attribute that is not explicitly
+configured but has a `default` value is still regarded as not being
+defined for purposes of checking whether the exclusive relationship has
+been violated. Default is undefined; i.e. this does not apply to most
+attributes.
+* `requires` – List of string – Indicates that if this attribute has a
+value (other than undefined), the other attributes listed in this
+descriptor's value must also have a value, even if their required
+descriptor says false. This would typically be used in conjunction with
+alternatives. For example, attributes "a" and "b" are required, but are
+alternatives to each other; "c" and "d" are optional. But "b" requires
+"c" and "d", so if "b" is used, "c" and "d" must also be defined.
+Default is undefined; i.e. this does not apply to most attributes.
+* `capability-reference` – string – if defined indicates that this
+attribute's value specifies the dynamic portion of the name of the
+specified capability provided by another resource. This indicates the
+attribute is a reference to another area of the management model. (Note
+that at present some attributes that reference other areas of the model
+may not provide this information.)
+* `head-comment-allowed` – boolean – indicates whether the model can
+store an XML comment that would be written in the persistent form of the
+model (e.g. domain.xml) before the start of the XML element that
+represents this attribute. This item is optional, and if not present
+defaults to false. (This is a different default from what is used for an
+entire management resource, since model attributes often map to XML
+attributes, which don't allow comments.) (Note: storing XML comments in
+the in-memory model is not currently supported. This description key is
+for future use.)
+* `tail-comment-allowed` – boolean – similar to head-comment-allowed,
+but indicates whether a comment just before the close of the XML element
+is supported. A tail comment can only be supported if the element has
+child elements, in which case a comment can be inserted between the
+final child element and the element's closing tag. This item is
+optional, and if not present defaults to false. (This is a different
+default from what is used for an entire management resource, since model
+attributes often map to XML attributes, which don't allow comments.)
+(Note: storing XML comments in the in-memory model is not currently
+supported. This description key is for future use.)
+* arbitrary key/value pairs that further describe the attribute value,
+e.g. "max" => 2. See "
+link:#DescriptionoftheManagementModel-arbitrary-descriptors[Arbitrary
+Descriptors]" below.
+
+Some examples:
+
+[source, ruby]
+----
+"foo" => {
+     "description" => "The foo",
+     "type" => INT,
+     "max" => 2
+}
+----
+
+[source, ruby]
+----
+"bar" => {
+     "description" => "The bar",
+     "type" => OBJECT,
+     "value-type" => {
+          "size" => INT,
+          "color" => STRING
+     }
+}
+----
+
+[[description-of-an-operation]]
+=== Description of an Operation
+
+A management resource may have operations associated with it. The
+description of an operation will include the following information:
+
+* `operation-name` – String – the name of the operation
+* `description` – String – text description of the operation
+* `request-properties` – Map of String to complex structure –
+description of the parameters of the operation. Keys are the names of
+the parameters, values are descriptions of the parameter value types.
+See
+link:#DescriptionoftheManagementModel-param-description[below]
+for details on the description of parameter value types.
+* `reply-properties` – complex structure, or empty – description of the
+return value of the operation, with an empty node meaning void. See
+link:#DescriptionoftheManagementModel-param-description[below]
+for details on the description of operation return value types.
+* `restart-required` – String – One of "no-services", "all-services",
+"resource-services" or "jvm". Indicates whether the operation makes a
+configuration change that requires a restart of services (or an entire
+JVM) in order for the change to take effect in the runtime. See
+discussion of "
+link:#DescriptionoftheManagementModel-applying-runtime-updates[Applying
+Updates to Runtime Services]" below. Default value is "no-services".
+
+[[description-of-an-operation-parameter-or-return-value]]
+==== Description of an Operation Parameter or Return Value
+
+* `description` – String – text description of the parameter or return
+value
+* `type` – `org.jboss.dmr.ModelType` – the type of the parameter or
+return value. One of the enum values BIG_DECIMAL, BIG_INTEGER, BOOLEAN,
+BYTES, DOUBLE, INT, LIST, LONG, OBJECT, PROPERTY, STRING.
+* `value-type` – `ModelType` or complex structure – Only present if type
+is LIST or OBJECT. If all elements in the LIST or all the values of the
+OBJECT type are of the same type, this will be one of the ModelType
+enums BIG_DECIMAL, BIG_INTEGER, BOOLEAN, BYTES, DOUBLE, INT, LIST, LONG,
+PROPERTY, STRING. Otherwise, value-type will detail the structure of the
+attribute value, enumerating the value's fields and the type of their
+value.So, a parameter with a `type` of LIST and a `value-type` value of
+`ModelType.STRING` is analogous to a Java `List<String>`, while one with
+a `value-type` value of `ModelType.INT` is analogous to a Java
+`List<Integer>`. A parameter with a `type` of OBJECT and a `value-type`
+value of `ModelType.STRING` is analogous to a Java
+`Map<String, String>`. A parameter with a `type` of OBJECT and a
+`value-type` whose value is not of type `ModelType` represents a
+fully-defined complex object, with the object's legal fields and their
+values described.
+* `expressions-allowed` – boolean – indicates whether the value of the
+the parameter or return value may be of type `ModelType.EXPRESSION`,
+instead its standard type (see type and value-type above for discussion
+of the standard type.) A value of ModelType.EXPRESSION contains a
+system-property substitution expression that the server will resolve
+against the server-side system property map before using the value. For
+example, a parameter named max-threads may have an expression value of
+`${example.pool.max-threads:10`} instead of just 10. Default value if
+not present is false.
+* `required` – boolean – true if the parameter or return value must have
+a defined value in the operation or response unless another item
+included in a list of `alternatives` is defined; false if it may be
+undefined (implying a null value) even in the absence of alternatives.
+If not present, true is the default.
+* `nillable` – boolean – true if the parameter or return value might not
+have a defined value in a representation of its portion of the model. A
+nillable parameter or return value may be undefined either because it is
+not `required` or because it is required but has `alternatives` and one
+of the alternatives is defined.
+* `default` – the default value for the parameter that will be used in
+runtime services if the parameter is not explicitly defined and no other
+parameters listed as `alternatives` are defined.
+* `restart-required` – String – One of "no-services", "all-services",
+"resource-services" or "jvm". Only relevant to attributes whose
+access-type is read-write. Indicates whether execution of a
+write-attribute operation whose name parameter specifies this attribute
+requires a restart of services (or an entire JVM) in order for the
+change to take effect in the runtime . See discussion of "
+link:#DescriptionoftheManagementModel-applying-runtime-updates[Applying
+Updates to Runtime Services]" below. Default value is "no-services".
+* `alternatives` – List of string – Indicates an exclusive relationship
+between parameters. If this attribute is defined, the other parameters
+listed in this descriptor's value should be undefined, even if their
+required descriptor says true; i.e. the presence of this parameter
+satisfies the requirement. Note that an parameer that is not explicitly
+configured but has a `default` value is still regarded as not being
+defined for purposes of checking whether the exclusive relationship has
+been violated. Default is undefined; i.e. this does not apply to most
+parameters.
+* `requires` – List of string – Indicates that if this parameter has a
+value (other than undefined), the other parameters listed in this
+descriptor's value must also have a value, even if their required
+descriptor says false. This would typically be used in conjunction with
+alternatives. For example, parameters "a" and "b" are required, but are
+alternatives to each other; "c" and "d" are optional. But "b" requires
+"c" and "d", so if "b" is used, "c" and "d" must also be defined.
+Default is undefined; i.e. this does not apply to most parameters.
+* arbitrary key/value pairs that further describe the attribute value,
+e.g. "max" =>2. See "
+link:#DescriptionoftheManagementModel-arbitrary-descriptors[Arbitrary
+Descriptors]" below.
+
+[[arbitrary-descriptors]]
+=== Arbitrary Descriptors
+
+The description of an attribute, operation parameter or operation return
+value type can include arbitrary key/value pairs that provide extra
+information. Whether a particular key/value pair is present depends on
+the context, e.g. a pair with key "max" would probably only occur as
+part of the description of some numeric type.
+
+Following are standard keys and their expected value type. If descriptor
+authors want to add an arbitrary key/value pair to some descriptor and
+the semantic matches the meaning of one of the following items, the
+standard key/value type must be used.
+
+* `min` – int – the minimum value of some numeric type. The absence of
+this item implies there is no minimum value.
+* `max` – int – the maximum value of some numeric type. The absence of
+this item implies there is no maximum value.
+* `min-length` – int – the minimum length of some string, list or byte[]
+type. The absence of this item implies a minimum length of zero.
+* `max-length` – int – the maximum length of some string, list or
+byte[]. The absence of this item implies there is no maximum value.
+* `allowed` – List – a list of legal values. The type of the elements in
+the list should match the type of the attribute.
+* `unit` - The unit of the value, if one is applicable - e.g. ns, ms, s,
+m, h, KB, MB, TB. See the
+`org.jboss.as.controller.client.helpers.MeasurementUnit` in the
+org.jboss.as:jboss-as-controller-client artifact for a listing of legal
+measurement units..
+
+Some examples:
+
+[source, ruby]
+----
+{
+     "operation-name" => "incrementFoo",
+     "description" => "Increase the value of the 'foo' attribute by the given amount",
+     "request-properties" => {
+          "increment" => {
+               "type" => INT,
+               "description" => "The amount to increment",
+               "required" => true
+     }},
+     "reply-properties" => {
+               "type" => INT,
+               "description" => "The new value",
+     }
+}
+----
+
+[source, ruby]
+----
+{
+     "operation-name" => "start",
+     "description" => "Starts the thing",
+     "request-properties" => {},
+     "reply-properties" => {}
+}
+----
+
+[[description-of-parentchild-relationships]]
+=== Description of Parent/Child Relationships
+
+The address used to target an addressable portion of the model must be
+an ordered list of key value pairs. The effect of this requirement is
+the addressable portions of the model naturally form a tree structure,
+with parent nodes in the tree defining what the valid keys are and the
+children defining what the valid values are. The parent node also
+defines the cardinality of the relationship. The description of the
+parent node includes a children element that describes these
+relationships:
+
+[source, ruby]
+----
+{
+     ....
+     "children" => {
+          "connector" => {
+               .... description of the relationship with children of type "connector"
+          },
+          "virtual-host" => {
+               .... description of the relationship with children of type "virtual-host"
+          }
+}
+----
+
+The description of each relationship will include the following
+elements:
+
+* `description` – String – text description of the relationship
+* `model-description` – either "undefined" or a complex structure – This
+is a node of ModelType.OBJECT, the keys of which are legal values for
+the value portion of the address of a resource of this type, with the
+special character '*' indicating the value portion can have an arbitrary
+value. The values in the node are the full description of the particular
+child resource (its text description, attributes, operations, children)
+as detailed above. This `model-description` may also be "undefined",
+i.e. a null value, if the query that asked for the parent node's
+description did not include the "recursive" param set to true.
+
+Example with if the recursive flag was set to true:
+
+[source, ruby]
+----
+{
+     "description" => "The connectors used to handle client connections",
+     "model-description" => {
+          "*" => {
+              "description" => "Handles client connections",
+              "min-occurs" => 1,
+              "attributes => {
+                   ... details of children as documented above
+              },
+              "operations" => {
+                   .... details of operations as documented above
+              },
+              "children" => {
+                   .... details of the children's children
+              }
+          }
+     }
+}
+----
+
+If the recursive flag was false:
+
+[source, ruby]
+----
+{
+     "description" => "The connectors used to handle client connections",
+     "model-description" => undefined
+}
+----
+
+[[applying-updates-to-runtime-services]]
+=== Applying Updates to Runtime Services
+
+An attribute or operation description may include a "
+`restart-required`" descriptor; this section is an explanation of the
+meaning of that descriptor.
+
+An operation that changes a management resource's persistent
+configuration usually can also also affect a runtime service associated
+with the resource. For example, there is a runtime service associated
+with any host.xml or standalone.xml `<interface>` element; other
+services in the runtime depend on that service to provide the
+`InetAddress` associated with the interface. In many cases, an update to
+a resource's persistent configuration can be immediately applied to the
+associated runtime service. The runtime service's state is updated to
+reflect the new value(s).
+
+However, in many cases the runtime service's state cannot be updated
+without restarting the service. Restarting a service can have broad
+effects. A restart of a service A will trigger a restart of other
+services B, C and D that depend A, triggering a restart of services that
+depend on B, C and D, etc. Those service restarts may very well disrupt
+handling of end-user requests.
+
+Because restarting a service can be disruptive to end-user request
+handling, the handlers for management operations will not restart any
+service without some form of explicit instruction from the end user
+indicating a service restart is desired. In a few cases, simply
+executing the operation is an indication the user wants services to
+restart (e.g. a `/host=master/server-config=server-one:restart`
+operation in a managed domain, or a `/:reload` operation on a standalone
+server.) For all other cases, if an operation (or attribute write)
+cannot be performed without restarting a service, the metadata
+describing the operation or attribute will include a "
+`restart-required`" descriptor whose value indicates what is necessary
+for the operation to affect the runtime:
+
+* `no-services` – Applying the operation to the runtime does not require
+the restart of any services. This value is the default if the
+restart-required descriptor is not present.
+* `all-services` – The operation can only immediately update the
+persistent configuration; applying the operation to the runtime will
+require a subsequent restart of all services in the affected VM.
+Executing the operation will put the server into a " `reload-required`"
+state. Until a restart of all services is performed the response to this
+operation and to any subsequent operation will include a response header
+" `process-state" => "reload-required`". For a standalone server, a
+restart of all services can be accomplished by executing the `/:reload`
+CLI command. For a server in a managed domain, restarting all services
+currently requires a full restart of the affected server VM (e.g.
+`/host=master/server-config=server-one:restart`).
+* `jvm` --The operation can only immediately update the persistent
+configuration; applying the operation to the runtime will require a full
+process restart (i.e. stop the JVM and launch a new JVM). Executing the
+operation will put the server into a " `restart-required`" state. Until
+a restart is performed the response to this operation and to any
+subsequent operation will include a response header "
+`process-state" => "restart-required`". For a standalone server, a full
+process restart requires first stopping the server via OS-level
+operations (Ctrl-C, kill) or via the `/:shutdown` CLI command, and then
+starting the server again from the command line. For a server in a
+managed domain, restarting a server requires executing the
+`/host=<host>/server-config=<server>:restart` operation.
+* `resource-services` – The operation can only immediately update the
+persistent configuration; applying the operation to the runtime will
+require a subsequent restart of some services associated with the
+resource. If the operation includes the request header
+`"allow-resource-service-restart" => true`, the handler for the
+operation will go ahead and restart the runtime service. Otherwise
+executing the operation will put the server into a " `reload-required`"
+state. (See the discussion of " `all-services`" above for more on the "
+`reload-required`" state.)

@@ -1,0 +1,96 @@
+= WildFly Elytron Security
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 2
+:toc-title: WildFly Elytron Security Guide
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+:wildflyVersion: 11
+:numbered:
+
+ifdef::basebackend-html[toc::[]]
+ifndef::ebook-format[:leveloffset: 1]
+
+:leveloffset: 0
+
+[[about]]
+== About
+
+The WildFly Elytron project is a new security framework brought to
+WildFly to provide a single unified security framework across the whole
+of the application server. As a single framework it will be usable both
+for configuring management access to the server and for applications
+deployed to the server, it will also be usable across all process types
+so there will be no need to learn a different security framework for
+host controllers in a domain compared to configuring a standalone
+server.
+
+The project covers these main areas: -
+
+* Authentication
+* Authorization
+* SSL / TLS
+* Secure Credential Storage
+
+[[authentication]]
+=== Authentication
+
+One of the fundamental objectives of the project was to ensure that we
+can use stronger authentication mechanisms for both HTTP and SASL based
+authentication, in both cases the new framework also makes it possible
+to bring in new implementations opening up various integration
+opportunities with external solutions.
+
+[[authorization]]
+=== Authorization
+
+The architecture of the project makes a very clear distinction between
+the raw representation of the identity as returned by a SecurityRealm
+from the repository of identities and the final representation as a
+SecurityIdentity after roles have been decoded and mapped and
+permissions have been mapped.
+
+Custom implementations of the components to perform role decoding and
+mapping, and permission mapping can be provided allowing for further
+flexibility beyond the default set of components provided by the
+project.
+
+=== SSL / TLS
+
+The project becomes the centralised point within the application server
+for configuring SSL related resources meaning they can be configured in
+a central location and referenced by resources across the application
+server. The centralised configuration also covers advanced options such
+as configuration of enabled cipher suites and protocols without this
+information needing to be distributed across the management model.
+
+The SSL / TLS implementation also includes an optimisation where it can
+be closely tied to authentication allowing for permissions checks to be
+performed on establishment of a connection before the first request is
+received and the eager construction of a SecurityIdentity eliminating
+the need for it to be constructed on a per-request basis.
+
+[[secure-credential-storage]]
+=== Secure Credential Storage
+
+The previous vault used for plain text String encryption is replaced
+with a newly designed credential store. in addition to the protection it
+offers for the credentials stored within it, the store currently
+supports storage of clear text credentials.
+
+:leveloffset: +1
+
+include::_elytron/General_Elytron_Architecture.adoc[]
+include::_elytron/Elytron_Subsystem.adoc[]
+include::_elytron/Using_the_Elytron_Subsystem.adoc[]
+include::_elytron/Using_WildFly_Elytron_with_WildFly.adoc[]
+include::_elytron/Client_Authentication_with_Elytron_Client.adoc[]
+include::_elytron/Elytron_and_Java_Authorization_Contract_for_Containers-JACC.adoc[]
+include::_elytron/KeyCloak_Integration.adoc[]
+include::_elytron/OpenSSL.adoc[]
+include::_elytron/Web_Single_Sign_On.adoc[]
+include::_elytron/Migrate_Legacy_Security_to_Elytron_Security.adoc[]
+
+:leveloffset: -1

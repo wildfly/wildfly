@@ -1,0 +1,25 @@
+= WildFly Testsuite
+WildFly team;
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 3
+:toc-title: WildFly testsuite
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+:wildflyVersion: 11
+
+:leveloffset: +1
+
+ifndef::ebook-format[:leveloffset: 1]
+
+(C) 2017 The original authors.
+
+ifdef::basebackend-html[toc::[]]
+:numbered:
+
+include::_testsuite/WildFly_Testsuite_Overview.adoc[]
+include::_testsuite/WildFly_Integration_Testsuite_User_Guide.adoc[]
+include::_testsuite/WildFly_Testsuite_Harness_Developer_Guide.adoc[]
+include::_testsuite/WildFly_Testsuite_Test_Developer_Guide.adoc[]

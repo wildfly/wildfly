@@ -1,0 +1,514 @@
+= Management resources
+
+When WildFly parses your configuration files at boot, or when you use
+one of the AS's link:Management_Clients.html[Management Clients] you are
+adding, removing or modifying _management resources_ in the AS's
+internal management model. A WildFly management resource has the
+following characteristics:
+
+[[address]]
+== Address
+
+All WildFly management resources are organized in a tree. The path to
+the node in the tree for a particular resource is its _address_. Each
+segment in a resource's address is a key/value pair:
+
+* The key is the resource's _type_, in the context of its parent. So,
+for example, the root resource for a standalone server has children of
+type `subsystem`, `interface`, `socket-binding`, etc. The resource for
+the subsystem that provides the AS's webserver capability has children
+of type `connector` and `virtual-server`. The resource for the subsystem
+that provides the AS's messaging server capability has, among others,
+children of type `jms-queue` and `jms-topic`.
+* The value is the name of a particular resource of the given type, e.g
+`web` or `messaging` for subsystems or `http` or `https` for web
+subsystem connectors.
+
+The full address for a resource is the ordered list of key/value pairs
+that lead from the root of the tree to the resource. Typical notation is
+to separate the elements in the address with a '/' and to separate the
+key and the value with an '=':
+
+* `/subsystem=undertow/server=default-server/http-listener=default`
+* `/subsystem=messaging/jms-queue=testQueue`
+* `/interface=public`
+
+When using the HTTP API, a '/' is used to separate the key and the value
+instead of an '=':
+
+* `http://localhost:9990/management/subsystem/undertow/server/default-server/http-listener/default`
+* `http://localhost:9990/management/subsystem/messaging/jms-queue/testQueue`
+* `http://localhost:9990/management/interface/public`
+
+[[operations]]
+== Operations
+
+Querying or modifying the state of a resource is done via an operation.
+An operation has the following characteristics:
+
+* A string name
+* Zero or more named parameters. Each parameter has a string name, and a
+value of type `org.jboss.dmr.ModelNode` (or, when invoked via the CLI,
+the text representation of a `ModelNode`; when invoked via the HTTP API,
+the JSON representation of a `ModelNode`.) Parameters may be optional.
+* A return value, which will be of type `org.jboss.dmr.ModelNode` (or,
+when invoked via the CLI, the text representation of a `ModelNode`; when
+invoked via the HTTP API, the JSON representation of a `ModelNode`.)
+
+Every resource except the root resource will have an `add` operation and
+should have a `remove` operation ("should" because in WildFly {wildflyVersion} many do
+not). The parameters for the `add` operation vary depending on the
+resource. The `remove` operation has no parameters.
+
+There are also a number of "global" operations that apply to all
+resources. See link:Global_operations.adoc[Global operations] for full
+details.
+
+The operations a resource supports can themselves be determined by
+invoking an operation: the `read-operation-names` operation. Once the
+name of an operation is known, details about its parameters and return
+value can be determined by invoking the `read-operation-description`
+operation. For example, to learn the names of the operations exposed by
+the root resource for a standalone server, and then learn the full
+details of one of them, via the CLI one would:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /] :read-operation-names
+{
+    "outcome" => "success",
+    "result" => [
+        "add-namespace",
+        "add-schema-location",
+        "delete-snapshot",
+        "full-replace-deployment",
+        "list-snapshots",
+        "read-attribute",
+        "read-children-names",
+        "read-children-resources",
+        "read-children-types",
+        "read-config-as-xml",
+        "read-operation-description",
+        "read-operation-names",
+        "read-resource",
+        "read-resource-description",
+        "reload",
+        "remove-namespace",
+        "remove-schema-location",
+        "replace-deployment",
+        "shutdown",
+        "take-snapshot",
+        "upload-deployment-bytes",
+        "upload-deployment-stream",
+        "upload-deployment-url",
+        "validate-address",
+        "write-attribute"
+    ]
+}
+[standalone@localhost:9990 /] :read-operation-description(name=upload-deployment-url)
+{
+    "outcome" => "success",
+    "result" => {
+        "operation-name" => "upload-deployment-url",
+        "description" => "Indicates that the deployment content available at the included URL should be added to the deployment content repository. Note that this operation does not indicate the content should be deployed into the runtime.",
+        "request-properties" => {"url" => {
+            "type" => STRING,
+            "description" => "The URL at which the deployment content is available for upload to the domain's or standalone server's deployment content repository.. Note that the URL must be accessible from the target of the operation (i.e. the Domain Controller or standalone server).",
+            "required" => true,
+            "min-length" => 1,
+            "nillable" => false
+        }},
+        "reply-properties" => {
+            "type" => BYTES,
+            "description" => "The hash of managed deployment content that has been uploaded to the domain's or standalone server's deployment content repository.",
+            "min-length" => 20,
+            "max-length" => 20,
+            "nillable" => false
+        }
+    }
+}
+----
+
+See link:#descriptions[#Descriptions]
+below for more on how to learn about the operations a resource exposes.
+
+[[attributes]]
+== Attributes
+
+Management resources expose information about their state as attributes.
+Attributes have string name, and a value of type
+`org.jboss.dmr.ModelNode` (or: for the CLI, the text representation of a
+`ModelNode`; for HTTP API, the JSON representation of a `ModelNode`.)
+
+Attributes can either be read-only or read-write. Reading and writing
+attribute values is done via the global `read-attribute` and
+`write-attribute` operations.
+
+The `read-attribute` operation takes a single parameter "name" whose
+value is a the name of the attribute. For example, to read the "port"
+attribute of a socket-binding resource via the CLI:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /] /socket-binding-group=standard-sockets/socket-binding=https:read-attribute(name=port)
+{
+    "outcome" => "success",
+    "result" => 8443
+}
+----
+
+If an attribute is writable, the `write-attribute` operation is used to
+mutate its state. The operation takes two parameters:
+
+* `name` – the name of the attribute
+* `value` – the value of the attribute
+
+For example, to read the "port" attribute of a socket-binding resource
+via the CLI:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /] /socket-binding-group=standard-sockets/socket-binding=https:write-attribute(name=port,value=8444)
+{"outcome" => "success"}
+----
+
+Attributes can have one of two possible _storage types_:
+
+* *CONFIGURATION* – means the value of the attribute is stored in the
+persistent configuration; i.e. in the `domain.xml`, `host.xml` or
+`standalone.xml` file from which the resource's configuration was read.
+* *RUNTIME* – the attribute value is only available from a running
+server; the value is not stored in the persistent configuration. A
+metric (e.g. number of requests serviced) is a typical example of a
+RUNTIME attribute.
+
+The values of all of the attributes a resource exposes can be obtained
+via the `read-resource` operation, with the "include-runtime" parameter
+set to "true". For example, from the CLI:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /] /subsystem=undertow/server=default-server/http-listener=default:read-resource(include-runtime=true)
+{
+    "outcome" => "success",
+    "result" => {
+        "allow-encoded-slash" => false,
+        "allow-equals-in-cookie-value" => false,
+        "always-set-keep-alive" => true,
+        "buffer-pipelined-data" => true,
+        "buffer-pool" => "default",
+        "bytes-received" => 0L,
+        "bytes-sent" => 0L,
+        "certificate-forwarding" => false,
+        "decode-url" => true,
+        "disallowed-methods" => ["TRACE"],
+        "enable-http2" => false,
+        "enabled" => true,
+        "error-count" => 0L,
+        "max-buffered-request-size" => 16384,
+        "max-connections" => undefined,
+        "max-cookies" => 200,
+        "max-header-size" => 1048576,
+        "max-headers" => 200,
+        "max-parameters" => 1000,
+        "max-post-size" => 10485760L,
+        "max-processing-time" => 0L,
+        "no-request-timeout" => undefined,
+        "processing-time" => 0L,
+        "proxy-address-forwarding" => false,
+        "read-timeout" => undefined,
+        "receive-buffer" => undefined,
+        "record-request-start-time" => false,
+        "redirect-socket" => "https",
+        "request-count" => 0L,
+        "request-parse-timeout" => undefined,
+        "resolve-peer-address" => false,
+        "send-buffer" => undefined,
+        "socket-binding" => "http",
+        "tcp-backlog" => undefined,
+        "tcp-keep-alive" => undefined,
+        "url-charset" => "UTF-8",
+        "worker" => "default",
+        "write-timeout" => undefined
+    }
+}
+----
+
+Omit the "include-runtime" parameter (or set it to "false") to limit
+output to those attributes whose values are stored in the persistent
+configuration:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /] /subsystem=undertow/server=default-server/http-listener=default:read-resource(include-runtime=false
+{
+    "outcome" => "success",
+    "result" => {
+        "allow-encoded-slash" => false,
+        "allow-equals-in-cookie-value" => false,
+        "always-set-keep-alive" => true,
+        "buffer-pipelined-data" => true,
+        "buffer-pool" => "default",
+        "certificate-forwarding" => false,
+        "decode-url" => true,
+        "disallowed-methods" => ["TRACE"],
+        "enable-http2" => false,
+        "enabled" => true,
+        "max-buffered-request-size" => 16384,
+        "max-connections" => undefined,
+        "max-cookies" => 200,
+        "max-header-size" => 1048576,
+        "max-headers" => 200,
+        "max-parameters" => 1000,
+        "max-post-size" => 10485760L,
+        "no-request-timeout" => undefined,
+        "proxy-address-forwarding" => false,
+        "read-timeout" => undefined,
+        "receive-buffer" => undefined,
+        "record-request-start-time" => false,
+        "redirect-socket" => "https",
+        "request-parse-timeout" => undefined,
+        "resolve-peer-address" => false,
+        "send-buffer" => undefined,
+        "socket-binding" => "http",
+        "tcp-backlog" => undefined,
+        "tcp-keep-alive" => undefined,
+        "url-charset" => "UTF-8",
+        "worker" => "default",
+        "write-timeout" => undefined
+    }
+}
+----
+
+See link:#src-557064_Managementresources-Descriptions[#Descriptions]
+below for how to learn more about the attributes a particular resource
+exposes.
+
+[[children]]
+== Children
+
+Management resources may support child resources. The
+link:#src-557064_Managementresources-Address[_types_ of children] a
+resource supports (e.g. `connector` for the web subsystem resource) can
+be obtained by querying the resource's description (see
+link:#src-557064_Managementresources-Descriptions[#Descriptions] below)
+or by invoking the `read-children-types` operation. Once you know the
+legal child types, you can query the names of all children of a given
+type by using the global `read-children-types` operation. The operation
+takes a single parameter "child-type" whose value is the type. For
+example, a resource representing a socket binding group has children. To
+find the type of those children and the names of resources of that type
+via the CLI one could:
+
+[source, yaml]
+----
+[standalone@localhost:9990 /] /socket-binding-group=standard-sockets:read-children-types
+{
+    "outcome" => "success",
+    "result" => ["socket-binding"]
+}
+[standalone@localhost:9990 /] /socket-binding-group=standard-sockets:read-children-names(child-type=socket-binding)
+{
+    "outcome" => "success",
+    "result" => [
+        "http",
+        "https",
+        "jmx-connector-registry",
+        "jmx-connector-server",
+        "jndi",
+        "osgi-http",
+        "remoting",
+        "txn-recovery-environment",
+        "txn-status-manager"
+    ]
+}
+----
+
+[[descriptions]]
+== Descriptions
+
+All resources expose metadata that describes their attributes,
+operations and child types. This metadata is itself obtained by invoking
+one or more of the link:Global_operations.adoc[global operations] each
+resource supports. We showed examples of the `read-operation-names`,
+`read-operation-description`, `read-children-types` and
+`read-children-names` operations above.
+
+The `read-resource-description` operation can be used to find the
+details of the attributes and child types associated with a resource.
+For example, using the CLI:
+
+[source, yaml]
+----
+[standalone@localhost:9990 /] /socket-binding-group=standard-sockets:read-resource-description
+{
+    "outcome" => "success",
+    "result" => {
+        "description" => "Contains a list of socket configurations.",
+        "head-comment-allowed" => true,
+        "tail-comment-allowed" => false,
+        "attributes" => {
+            "name" => {
+                "type" => STRING,
+                "description" => "The name of the socket binding group.",
+                "required" => true,
+                "head-comment-allowed" => false,
+                "tail-comment-allowed" => false,
+                "access-type" => "read-only",
+                "storage" => "configuration"
+            },
+            "default-interface" => {
+                "type" => STRING,
+                "description" => "Name of an interface that should be used as the interface for any sockets that do not explicitly declare one.",
+                "required" => true,
+                "head-comment-allowed" => false,
+                "tail-comment-allowed" => false,
+                "access-type" => "read-write",
+                "storage" => "configuration"
+            },
+            "port-offset" => {
+                "type" => INT,
+                "description" => "Increment to apply to the base port values defined in the socket bindings to derive the runtime values to use on this server.",
+                "required" => false,
+                "head-comment-allowed" => true,
+                "tail-comment-allowed" => false,
+                "access-type" => "read-write",
+                "storage" => "configuration"
+            }
+        },
+        "operations" => {},
+        "children" => {"socket-binding" => {
+            "description" => "The individual socket configurtions.",
+            "min-occurs" => 0,
+            "model-description" => undefined
+        }}
+    }
+}
+----
+
+Note the
+`"operations" => }} in the output above. If the command had included the {{operations`
+parameter (i.e.
+`/socket-binding-group=standard-sockets:read-resource-description(operations=true)`)
+the output would have included the description of each operation
+supported by the resource.
+
+See the link:Global_operations.adoc[Global operations] section for
+details on other parameters supported by the `read-resource-description`
+operation and all the other globally available operations.
+
+== Comparison to JMX MBeans
+
+WildFly management resources are conceptually quite similar to Open
+MBeans. They have the following primary differences:
+
+* WildFly management resources are organized in a tree structure. The
+order of the key value pairs in a resource's address is significant, as
+it defines the resource's position in the tree. The order of the key
+properties in a JMX `ObjectName` is not significant.
+* In an Open MBean attribute values, operation parameter values and
+operation return values must either be one of the simple JDK types
+(String, Boolean, Integer, etc) or implement either the
+`javax.management.openmbean.CompositeData` interface or the
+`javax.management.openmbean.TabularData` interface. WildFly management
+resource attribute values, operation parameter values and operation
+return values are all of type `org.jboss.dmr.ModelNode`.
+
+[[basic-structure-of-the-management-resource-trees]]
+== Basic structure of the management resource trees
+
+As noted above, management resources are organized in a tree structure.
+The structure of the tree depends on whether you are running a
+standalone server or a managed domain.
+
+=== Standalone server
+
+The structure of the managed resource tree is quite close to the
+structure of the `standalone.xml` configuration file.
+
+* The root resource
+** `extension` – extensions installed in the server
+** `path` – paths available on the server
+** `system-property` – system properties set as part of the
+configuration (i.e. not on the command line)
+** `core-service=management` – the server's core management services
+** `core-service=service-container` – resource for the JBoss MSC
+`ServiceContainer` that's at the heart of the AS
+** `subsystem` – the subsystems installed on the server. The bulk of the
+management model will be children of type `subsystem`
+** `interface` – interface configurations
+** `socket-binding-group` – the central resource for the server's socket
+bindings
+*** `socket-binding` – individual socket binding configurations
+** `deployment` – available deployments on the server
+
+=== Managed domain
+
+In a managed domain, the structure of the managed resource tree spans
+the entire domain, covering both the domain wide configuration (e.g.
+what's in `domain.xml`, the host specific configuration for each host
+(e.g. what's in `host.xml`, and the resources exposed by each running
+application server. The Host Controller processes in a managed domain
+provide access to all or part of the overall resource tree. How much is
+available depends on whether the management client is interacting with
+the Host Controller that is acting as the master Domain Controller. If
+the Host Controller is the master Domain Controller, then the section of
+the tree for each host is available. If the Host Controller is a slave
+to a remote Domain Controller, then only the portion of the tree
+associated with that host is available.
+
+* The root resource for the entire domain. The persistent configuration
+associated with this resource and its children, except for those of type
+`host`, is persisted in the `domain.xml` file on the Domain Controller.
+** `extension` – extensions available in the domain
+** `path` – paths available on across the domain
+** `system-property` – system properties set as part of the
+configuration (i.e. not on the command line) and available across the
+domain
+** `profile` – sets of subsystem configurations that can be assigned to
+server groups
+*** `subsystem` – configuration of subsystems that are part of the
+profile
+** `interface` – interface configurations
+** `socket-binding-group` – sets of socket bindings configurations that
+can be applied to server groups
+*** `socket-binding` – individual socket binding configurations
+** `deployment` – deployments available for assignment to server groups
+** deployment-overlay -- deployment-overlays content available to
+overlay deployments in server groups
+** `server-group` – server group configurations
+** host – the individual Host Controllers. Each child of this type
+represents the root resource for a particular host. The persistent
+configuration associated with one of these resources or its children is
+persisted in the host's `host.xml` file.
+*** `path` – paths available on each server on the host
+*** `system-property` – system properties to set on each server on the
+host
+*** `core-service=management` – the Host Controller's core management
+services
+*** `interface` – interface configurations that apply to the Host
+Controller or servers on the host
+*** `jvm` – JVM configurations that can be applied when launching
+servers
+*** `server-config` – configuration describing how the Host Controller
+should launch a server; what server group configuration to use, and any
+server-specific overrides of items specified in other resources
+*** `server` – the root resource for a running server. Resources from
+here and below are not directly persisted; the domain-wide and host
+level resources contain the persistent configuration that drives a
+server
+**** `extension` – extensions installed in the server
+**** `path` – paths available on the server
+**** `system-property` – system properties set as part of the
+configuration (i.e. not on the command line)
+**** `core-service=management` – the server's core management services
+**** `core-service=service-container` – resource for the JBoss MSC
+`ServiceContainer` that's at the heart of the AS
+**** `subsystem` – the subsystems installed on the server. The bulk of
+the management model will be children of type `subsystem`
+**** `interface` – interface configurations
+**** `socket-binding-group` – the central resource for the server's
+socket bindings
+***** `socket-binding` – individual socket binding configurations
+**** `deployment` – available deployments on the server
+**** deployment-overlay -- available overlays on the server

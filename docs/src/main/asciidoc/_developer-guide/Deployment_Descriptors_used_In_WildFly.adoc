@@ -1,0 +1,73 @@
+= Deployment Descriptors used In WildFly
+
+This page gives a list and a description of all the valid deployment
+descriptors that a WildFly deployment can use. This document is a work
+in progress.
+
+[cols=",,,,",options="header"]
+|=======================================================================
+|Descriptor |Location |Specification |Description |Info
+
+|jboss-deployment-structure.xml |META-INF or WEB-INF of the top level
+deployment |  |This file can be used to control class loading for the
+deployment |Class Loading in WildFly
+
+|beans.xml |WEB-INF or META-INF |CDI |The presence of this descriptor
+(even if empty) activates CDI |Weld Reference Guide
+
+|web.xml |WEB-INF |Servlet |Web deployment descriptor | 
+
+|jboss-web.xml |WEB-INF |  |JBoss Web deployment descriptor. This can be
+use to override settings from web.xml, and to set WildFly specific
+options | 
+
+|ejb-jar.xml |WEB-INF of a war, or META-INF of an EJB jar |EJB |The EJB
+spec deployment descriptor |ejb-jar.xml schema
+
+|jboss-ejb3.xml |WEB-INF of a war, or META-INF of an EJB jar |  |The
+JBoss EJB deployment descriptor, this can be used to override settings
+from ejb-jar.xml, and to set WildFly specific settings | 
+
+|application.xml |META-INF of an EAR |Java EE Platform Specification | 
+|application.xml schema
+
+|jboss-app.xml |META-INF of an EAR |  |JBoss application deployment
+descriptor, can be used to override settings application.xml, and to set
+WildFly specific settings | 
+
+|persistence.xml |META-INF |JPA |JPA descriptor used for defining
+persistence units |Hibernate Reference Guide
+
+|jboss-ejb-client.xml |WEB-INF of a war, or META-INF of an EJB jar | 
+|Remote EJB settings. This file is used to setup the EJB client context
+for a deployment that is used for remote EJB invocations |EJB
+invocations from a remote server instance
+
+|jbosscmp-jdbc.xml |META-INF of an EJB jar |  |CMP deployment
+descriptor. Used to map CMP entity beans to a database. The format is
+largely unchanged from previous versions. | 
+
+|ra.xml |META-INF of a rar archive |  |Spec deployment descriptor for
+resource adaptor deployments |IronJacamar Reference Guide Schema
+
+|ironjacamar.xml |META-INF of a rar archive |  |JBoss deployment
+descriptor for resource adaptor deployments |IronJacamar Reference Guide
+
+|*-jms.xml |META-INF or WEB-INF |  |JMS message destination deployment
+descriptor, used to deploy message destinations with a deployment | 
+
+|*-ds.xml |META-INF or WEB-INF |  |Datasource deployment descriptor, use
+to bundle datasources with a deployment |DataSource Configuration
+
+|application-client.xml |META-INF of an application client jar |Java EE6
+Platform Specification |The spec deployment descriptor for application
+client deployments |application-client.xml schema
+
+|jboss-client.xml |META-INF of an application client jar |  |The WildFly
+specific deployment descriptor for application client deployments | 
+
+|jboss-webservices.xml |META-INF for EJB webservice deployments or
+WEB-INF for POJO webservice deployments/EJB webservice endpoints bundled
+in .war |  |The JBossWS 4.0.x specific deployment descriptor for
+webservice endpoints | 
+|=======================================================================

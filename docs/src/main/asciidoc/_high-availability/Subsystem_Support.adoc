@@ -1,0 +1,11 @@
+= Subsystem Support
+
+
+////
+todo look into moving this into admin guide!
+////
+
+
+include::subsystem-support/Infinispan_Subsystem.adoc[]
+include::subsystem-support/JGroups_Subsystem.adoc[]
+include::subsystem-support/mod_cluster_Subsystem.adoc[]

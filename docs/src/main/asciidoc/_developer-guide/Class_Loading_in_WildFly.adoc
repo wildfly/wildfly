@@ -1,0 +1,450 @@
+= Class Loading in WildFly
+
+
+Since JBoss AS 7, Class loading is considerably different to previous
+versions of JBoss AS. Class loading is based on the
+link:#src-557206[MODULES] project. Instead of the more familiar
+hierarchical class loading environment, WildFly's class loading is based
+on modules that have to define explicit dependencies on other modules.
+Deployments in WildFly are also modules, and do not have access to
+classes that are defined in jars in the application server unless an
+explicit dependency on those classes is defined.
+
+[[deployment-module-names]]
+== Deployment Module Names
+
+Module names for top level deployments follow the format
+`deployment.myarchive.war` while sub deployments are named like
+`deployment.myear.ear.mywar.war`.
+
+This means that it is possible for a deployment to import classes from
+another deployment using the other deployments module name, the details
+of how to add an explicit module dependency are explained below.
+
+[[automatic-dependencies]]
+== Automatic Dependencies
+
+Even though in WildFly modules are isolated by default, as part of the
+deployment process some dependencies on modules defined by the
+application server are set up for you automatically. For instance, if
+you are deploying a Java EE application a dependency on the Java EE
+API's will be added to your module automatically. Similarly if your
+module contains a beans.xml file a dependency on
+http://seamframework.org/Weld[Weld]will be added automatically, along
+with any supporting modules that weld needs to operate.
+
+For a complete list of the automatic dependencies that are added, please
+see link:#src-557206[Implicit module dependencies for deployments].
+
+Automatic dependencies can be excluded through the use of
+`jboss-deployment-structure.xml`.
+
+[[class-loading-precedence]]
+== Class Loading Precedence
+
+A common source of errors in Java applications is including API classes
+in a deployment that are also provided by the container. This can result
+in multiple versions of the class being created and the deployment
+failing to deploy properly. To prevent this in WildFly, module
+dependencies are added in a specific order that should prevent this
+situation from occurring.
+
+In order of highest priority to lowest priority
+
+1.  System Dependencies - These are dependencies that are added to the
+module automatically by the container, including the Java EE api's.
+2.  User Dependencies - These are dependencies that are added through
+`jboss-deployment-structure.xml` or through the `Dependencies:` manifest
+entry.
+3.  Local Resource - Class files packaged up inside the deployment
+itself, e.g. class files from `WEB-INF/classes` or `WEB-INF/lib` of a
+war.
+4.  Inter deployment dependencies - These are dependencies on other
+deployments in an ear deployment. This can include classes in an ear's
+lib directory, or classes defined in other ejb jars.
+
+[[war-class-loading]]
+== WAR Class Loading
+
+The war is considered to be a single module, so classes defined in
+`WEB-INF/lib` are treated the same as classes in `WEB-INF/classes`. All
+classes packaged in the war will be loaded with the same class loader.
+
+[[ear-class-loading]]
+== EAR Class Loading
+
+Ear deployments are multi-module deployments. This means that not all
+classes inside an ear will necessarily have access to all other classes
+in the ear, unless explicit dependencies have been defined. By default
+the `EAR/lib` directory is a single module, and every WAR or EJB jar
+deployment is also a separate module. Sub deployments (wars and
+ejb-jars) always have a dependency on the parent module, which gives
+them access to classes in `EAR/lib`, however they do not always have an
+automatic dependency on each other. This behaviour is controlled via the
+`ear-subdeployments-isolated` setting in the ee subsystem configuration:
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:ee:1.0" >            
+  <ear-subdeployments-isolated>false</ear-subdeployments-isolated>
+</subsystem>
+----
+
+By default this is set to false, which allows the sub-deployments to see
+classes belonging to other sub-deployments within the .ear.
+
+For example, consider the following .ear deployment:
+
+....
+myapp.ear
+ |
+ |--- web.war
+ |
+ |--- ejb1.jar
+ |
+ |--- ejb2.jar
+....
+
+If the ear-subdeployments-isolated is set to false, then the classes in
+web.war can access classes belonging to ejb1.jar and ejb2.jar.
+Similarly, classes from ejb1.jar can access classes from ejb2.jar (and
+vice-versa).
+
+[NOTE]
+
+The ear-subdeployments-isolated element value has no effect on the
+isolated classloader of the .war file(s). i.e. irrespective of whether
+this flag is set to true or false, the .war within a .ear will have a
+isolated classloader and other sub-deployments within that .ear will not
+be able to access classes from that .war. This is as per spec.
+
+If the ear-subdeployments-isolated is set to true then no automatic
+module dependencies between the sub-deployments are set up. User must
+manually setup the dependency with `Class-Path` entries, or by setting
+up explicit module dependencies.
+
+Portability
+
+[TIP]
+
+The Java EE specification says that portable applications should not
+rely on sub deployments having access to other sub deployments unless an
+explicit Class-Path entry is set in the MANIFEST.MF. So portable
+applications should always use Class-Path entry to explicitly state
+their dependencies.
+
+[IMPORTANT]
+
+It is also possible to override the ear-subdeployments-isolated element
+value at a per deployment level. See the section on
+jboss-deployment-structure.xml below.
+
+`Dependencies:` *Manifest Entries*
+
+Deployments (or more correctly modules within a deployment) may set up
+dependencies on other modules by adding a `Dependencies:` manifest
+entry. This entry consists of a comma separated list of module names
+that the deployment requires. The available modules can be seen under
+the `modules` directory in the application server distribution. For
+example to add a dependency on javassist and apache velocity you can add
+a manifest entry as follows:
+
+`Dependencies: org.javassist export,org.apache.velocity export services,org.antlr`
+
+Each dependency entry may also specify some of the following parameters
+by adding them after the module name:
+
+* `export` This means that the dependencies will be exported, so any
+module that depends on this module will also get access to the
+dependency.
+* `services` By default items in META-INF of a dependency are not
+accessible, this makes items from `META-INF/services` accessible so
+http://download.oracle.com/javase/6/docs/api/java/util/ServiceLoader.html[services]in
+the modules can be loaded.
+* `optional` If this is specified the deployment will not fail if the
+module is not available.
+* `meta-inf` This will make the contents of the `META-INF` directory
+available (unlike `services`, which just makes `META-INF/services`
+available). In general this will not cause any deployment descriptors in
+META-INF to be processed, with the exception of `beans.xml`. If a
+`beans.xml` file is present this module will be scanned by Weld and any
+resulting beans will be available to the application.
+* `annotations` If a jandex index has be created for the module these
+annotations will be merged into the deployments annotation index. The
+https://github.com/jbossas/jandex[Jandex] index can be generated using
+the
+https://github.com/jbossas/jandex/blob/master/src/main/java/org/jboss/jandex/JandexAntTask.java[Jandex
+ant task], and must be named `META-INF/jandex.idx`. Note that it is not
+necessary to break open the jar being indexed to add this to the modules
+class path, a better approach is to create a jar containing just this
+index, and adding it as an additional resource root in the `module.xml`
+file.
+
+Adding a dependency to all modules in an EAR
+
+[IMPORTANT]
+
+Using the `export` parameter it is possible to add a dependency to all
+sub deployments in an ear. If a module is exported from a
+`Dependencies:` entry in the top level of the ear (or by a jar in the
+`ear/lib` directory) it will be available to all sub deployments as
+well.
+
+[TIP]
+
+To generate a MANIFEST.MF entry when using maven put the following in
+your pom.xml:
+
+.pom.xml
+
+[source, xml]
+----
+<build>
+   ...
+   <plugins>
+     <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+       <artifactId>maven-war-plugin</artifactId>
+       <configuration>
+          <archive>
+             <manifestEntries>
+                <Dependencies>org.slf4j</Dependencies>
+             </manifestEntries>
+          </archive>
+       </configuration>
+     </plugin>
+   </plugins>
+</build>
+----
+
+If your deployment is a jar you must use the `maven-jar-plugin` rather
+than the `maven-war-plugin`.
+
+[[class-path-entries]]
+=== Class Path Entries
+
+It is also possible to add module dependencies on other modules inside
+the deployment using the `Class-Path` manifest entry. This can be used
+within an ear to set up dependencies between sub deployments, and also
+to allow modules access to additional jars deployed in an ear that are
+not sub deployments and are not in the `EAR/lib` directory. If a jar in
+the `EAR/lib` directory references a jar via `Class-Path:` then this
+additional jar is merged into the parent ear's module, and is accessible
+to all sub deployments in the ear.
+
+[[global-modules]]
+== Global Modules
+
+It is also possible to set up global modules, that are accessible to all
+deployments. This is done by modifying the configuration file
+(standalone/domain.xml).
+
+For example, to add javassist to all deployments you can use the
+following XML:
+
+.standalone.xml/domain.xml
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:ee:1.0" >            
+  <global-modules>
+    <module name="org.javassist" slot="main" />            
+  </global-modules> 
+</subsystem>
+----
+
+Note that the `slot` field is optional and defaults to `main`.
+
+[[jboss-deployment-structure-file]]
+== JBoss Deployment Structure File
+
+`jboss-deployment-structure.xml` is a JBoss specific deployment
+descriptor that can be used to control class loading in a fine grained
+manner. It should be placed in the top level deployment, in `META-INF`
+(or `WEB-INF` for web deployments). It can do the following:
+
+* Prevent automatic dependencies from being added
+* Add additional dependencies
+* Define additional modules
+* Change an EAR deployments isolated class loading behaviour
+* Add additional resource roots to a module
+
+An example of a complete `jboss-deployment-structure.xml` file for an
+ear deployment is as follows:
+
+.jboss-deployment-structure.xml
+
+[source, xml]
+----
+<jboss-deployment-structure>
+  <!-- Make sub deployments isolated by default, so they cannot see each others classes without a Class-Path entry -->
+  <ear-subdeployments-isolated>true</ear-subdeployments-isolated>
+  <!-- This corresponds to the top level deployment. For a war this is the war's module, for an ear -->
+  <!-- This is the top level ear module, which contains all the classes in the EAR's lib folder     -->
+  <deployment>
+     <!-- exclude-subsystem prevents a subsystems deployment unit processors running on a deployment -->
+     <!-- which gives basically the same effect as removing the subsystem, but it only affects single deployment -->
+     <exclude-subsystems>
+        <subsystem name="resteasy" />
+    </exclude-subsystems>
+    <!-- Exclusions allow you to prevent the server from automatically adding some dependencies     -->
+    <exclusions>
+        <module name="org.javassist" />
+    </exclusions>
+    <!-- This allows you to define additional dependencies, it is the same as using the Dependencies: manifest attribute -->
+    <dependencies>
+      <module name="deployment.javassist.proxy" />
+      <module name="deployment.myjavassist" />
+      <!-- Import META-INF/services for ServiceLoader impls as well -->
+      <module name="myservicemodule" services="import"/>
+    </dependencies>
+    <!-- These add additional classes to the module. In this case it is the same as including the jar in the EAR's lib directory -->
+    <resources>
+      <resource-root path="my-library.jar" />
+    </resources>
+  </deployment>
+  <sub-deployment name="myapp.war">
+    <!-- This corresponds to the module for a web deployment -->
+    <!-- it can use all the same tags as the <deployment> entry above -->
+    <dependencies>
+      <!-- Adds a dependency on a ejb jar. This could also be done with a Class-Path entry -->
+      <module name="deployment.myear.ear.myejbjar.jar" />
+    </dependencies>
+    <!-- Set's local resources to have the lowest priority -->
+    <!-- If the same class is both in the sub deployment and in another sub deployment that -->
+    <!-- is visible to the war, then the Class from the other deployment will be loaded,  -->
+    <!-- rather than the class actually packaged in the war. -->
+    <!-- This can be used to resolve ClassCastExceptions  if the same class is in multiple sub deployments-->
+    <local-last value="true" />
+  </sub-deployment>
+  <!-- Now we are going to define two additional modules -->
+  <!-- This one is a different version of javassist that we have packaged -->
+  <module name="deployment.myjavassist" >
+    <resources>
+     <resource-root path="javassist.jar" >
+       <!-- We want to use the servers version of javassist.util.proxy.* so we filter it out-->
+       <filter>
+         <exclude path="javassist/util/proxy" />
+       </filter>
+     </resource-root>
+    </resources>
+  </module>
+  <!-- This is a module that re-exports the containers version of javassist.util.proxy -->
+  <!-- This means that there is only one version of the Proxy classes defined          -->
+  <module name="deployment.javassist.proxy" >
+    <dependencies>
+      <module name="org.javassist" >
+        <imports>
+          <include path="javassist/util/proxy" />
+          <exclude path="/**" />
+        </imports>
+      </module>
+    </dependencies>
+  </module>
+</jboss-deployment-structure>
+----
+
+[IMPORTANT]
+
+The xsd for jboss-deployment-structure.xml is available at
+https://github.com/wildfly/wildfly-core/blob/master/server/src/main/resources/schema/jboss-deployment-structure-1_2.xsd[https://github.com/wildfly/wildfly/blob/master/build/src/main/resources/docs/schema/jboss-deployment-structure-1_2.xsd]
+
+[[accessing-jdk-classes]]
+== Accessing JDK classes
+
+Not all JDK classes are exposed to a deployment by default. If your
+deployment uses JDK classes that are not exposed you can get access to
+them using jboss-deployment-structure.xml with system dependencies:
+
+.Using jboss-deployment-structure.xml to access JDK classes
+
+[source, xml]
+----
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+    <deployment>
+        <dependencies>
+            <system export="true">
+                <paths>
+                    <path name="com/sun/corba/se/spi/legacy/connection"/>
+                </paths>
+            </system>
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure>
+----
+
+[[the-jboss.api-property-and-application-use-of-modules-shipped-with-wildfly]]
+== The "jboss.api" property and application use of modules shipped with
+WildFly
+
+The WildFly distribution includes a large number of modules, a great
+many of which are included for use by WildFly internals, with no testing
+of the appropriateness of their direct use by applications or any
+commitment to continue to ship those modules in future releases if they
+are no longer needed by the internals. So how can a user know whether it
+is advisable for their application to specify an explicit dependency on
+a module WildFly ships? The "jboss.api" property specified in the
+module's module.xml file can tell you:
+
+.Example declaration of the jboss.api property
+
+[source, xml]
+----
+<module xmlns="urn:jboss:module:1.5" name="com.google.guava">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+----
+
+If a module does not have a property element like the above, then it's
+equivalent to one with a value of "public".
+
+Following are the meanings of the various values you may see for the
+jboss.api property:
+
+[cols="1,3",options="header"]
+|=======================================================================
+|Value |Meaning
+
+|public |May be explicitly depended upon by end user applications. Will
+continue to be available in future releases within the same major series
+and should not have incompatible API changes in future releases within
+the same minor series, and ideally not within the same major series.
+
+|private |Intended for internal use only. Only tested according to
+internal usage. May not be safe for end user applications to use
+directly.Could change significantly or be removed in a future release
+without notice.
+
+|unsupported |If you see this value in a module.xml in a WildFly
+release, please file a bug report, as it is not applicable in WildFly.
+In EAP it has a meaning equivalent to "private" but that does not mean
+the module is "private" in WildFly; it could very easily be "public".
+
+|preview |May be explicitly depended upon by end user applications, but
+there are no guarantees of continued availability in future releases or
+that there will not be incompatible API changes. This is not a common
+classification in WildFly. It is not used in WildFly 10.
+
+|deprecated |May be explicitly depended upon by end user applications.
+Stable and reliable but an alternative should be sought. Will be removed
+in a future major release.
+|=======================================================================
+
+Note that these definitions are only applicable to WildFly. In EAP and
+other Red Hat products based on WildFly the same classifiers are used,
+with generally similar meaning, but the precise meaning is per the
+definitions on the Red Hat customer support portal.
+
+If an application declares a direct dependency on a module marked
+"private", "unsupported" or "deprecated", during deployment a WARN
+message will be logged. The logging will be in log categories
+"org.jboss.as.dependency.private", "org.jboss.as.dependency.unsupported"
+and "org.jboss.as.dependency.deprecated" respectively. These categories
+are not used for other purposes, so once you feel sufficiently warned
+the logging can be safely suppressed by turning the log level for the
+relevant category to ERROR or higher.
+
+Other than the WARN messages noted above, declaring a direct dependency
+on a non-public module has no impact on how WildFly processes the
+deployment.

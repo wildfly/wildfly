@@ -1,0 +1,334 @@
+= Undertow subsystem configuration
+
+****
+
+*Web subsystem was replaced in WildFly 8 with Undertow.*
+
+****
+
+There are two main parts to the undertow subsystem, which are server and
+Servlet container configuration, as well as some ancillary items.
+Advanced topics like load balancing and failover are covered on the
+"High Availability Guide". The default configuration does is suitable
+for most use cases and provides reasonable performance settings.
+
+*Required extension:*
+
+[source, xml]
+----
+<extension module="org.wildfly.extension.undertow" />
+----
+
+*Basic subsystem configuration example:*
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:undertow:1.0">
+        <buffer-caches>
+            <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
+        </buffer-caches>
+        <server name="default-server">
+            <http-listener name="default" socket-binding="http" />
+            <host name="default-host" alias="localhost">
+                <location name="/" handler="welcome-content" />
+            </host>
+        </server>
+        <servlet-container name="default" default-buffer-cache="default" stack-trace-on-error="local-only" >
+            <jsp-config/>
+            <persistent-sessions/>
+        </servlet-container>
+        <handlers>
+            <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
+        </handlers>
+    </subsystem>
+----
+
+*Dependencies on other subsystems:*
+
+IO Subsystem
+
+[[buffer-cache-configuration]]
+== Buffer cache configuration
+
+The buffer cache is used for caching content, such as static files.
+Multiple buffer caches can be configured, which allows for separate
+servers to use different sized caches.
+
+Buffers are allocated in regions, and are of a fixed size. If you are
+caching many small files then using a smaller buffer size will be
+better.
+
+The total amount of space used can be calculated by multiplying the
+buffer size by the number of buffers per region by the maximum number of
+regions.
+
+[source, xml]
+----
+  <buffer-caches>
+    <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
+  </buffer-caches>
+----
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|buffer-size |The size of the buffers. Smaller buffers allow space to be
+utilised more effectively
+
+|buffers-per-region |The numbers of buffers per region
+
+|max-regions |The maximum number of regions. This controls the maximum
+amount of memory that can be used for caching
+|=======================================================================
+
+[[server-configuration]]
+== Server configuration
+
+A server represents an instance of Undertow. Basically this consists of
+a set of connectors and some configured handlers.
+
+[source, xml]
+----
+<server name="default-server" default-host="default-host" servlet-container="default" >
+----
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|default-host |the virtual host that will be used if an incoming request
+as no Host: header
+
+|servlet-container |the servlet container that will be used by this
+server, unless is is explicitly overriden by the deployment
+|=======================================================================
+
+[[connector-configuration]]
+=== Connector configuration
+
+Undertow provides HTTP, HTTPS and AJP connectors, which are configured
+per server.
+
+[[common-settings]]
+==== Common settings
+
+The following settings are common to all connectors:
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|socket-binding |The socket binding to use. This determines the address
+and port the listener listens on.
+
+|worker |A reference to an XNIO worker, as defined in the IO subsystem.
+The worker that is in use controls the IO and blocking thread pool.
+
+|buffer-pool |A reference to a buffer pool as defined in the IO
+subsystem. These buffers are used internally to read and write requests.
+In general these should be at least 8k, unless you are in a memory
+constrained environment.
+
+|enabled |If the connector is enabled.
+
+|max-post-size |The maximum size of incoming post requests that is
+allowed.
+
+|buffer-pipelined-data |If responses to HTTP pipelined requests should
+be buffered, and send out in a single write. This can improve
+performance if HTTP pipe lining is in use and responses are small.
+
+|max-header-size |The maximum size of a HTTP header block that is
+allowed. Responses with to much data in their header block will have the
+request terminated and a bad request response send.
+
+|max-parameters |The maximum number of query or path parameters that are
+allowed. This limit exists to prevent hash collision based DOS attacks.
+
+|max-headers |The maximum number of headers that are allowed. This limit
+exists to prevent hash collision based DOS attacks.
+
+|max-cookies |The maximum number of cookies that are allowed. This limit
+exists to prevent hash collision based DOS attacks.
+
+|allow-encoded-slash |Set this to true if you want the server to decode
+percent encoded slash characters. This is probably a bad idea, as it can
+have security implications, due to different servers interpreting the
+slash differently. Only enable this if you have a legacy application
+that requires it.
+
+|decode-url |If the URL should be decoded. If this is not set to true
+then percent encoded characters in the URL will be left as is.
+
+|url-charset |The charset to decode the URL to.
+
+|always-set-keep-alive |If the 'Connection: keep-alive' header should be
+added to all responses, even if not required by spec.
+
+|disallowed-methods |A comma separated list of HTTP methods that are not
+allowed. HTTP TRACE is disabled by default.
+|=======================================================================
+
+[[http-connector]]
+==== HTTP Connector
+
+[source,xml]
+----
+<http-listener name="default" socket-binding="http"  />
+----
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|certificate-forwarding |If this is set to true then the HTTP listener
+will read a client certificate from the SSL_CLIENT_CERT header. This
+allows client cert authentication to be used, even if the server does
+not have a direct SSL connection to the end user. This should only be
+enabled for servers behind a proxy that has been configured to always
+set these headers.
+
+|redirect-socket |The socket binding to redirect requests that require
+security too.
+
+|proxy-address-forwarding |If this is enabled then the X-Forwarded-For
+and X-Forwarded-Proto headers will be used to determine the peer
+address. This allows applications that are behind a proxy to see the
+real address of the client, rather than the address of the proxy.
+|=======================================================================
+
+[[https-listener]]
+==== HTTPS listener
+
+Https listener provides secure access to the server. The most important
+configuration option is security realm which defines SSL secure context.
+
+[source,xml]
+----
+<https-listener name="default" socket-binding="https" security-realm="ssl-realm" />
+----
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|security-realm |The security realm to use for the SSL configuration.
+See Security realm examples for how to configure it: Examples
+
+|verify-client |One of either NOT_REQUESTED, REQUESTED or REQUIRED. If
+client cert auth is in use this should be either REQUESTED or REQUIRED.
+
+|enabled-cipher-suites |A list of cypher suit names that are allowed.
+|=======================================================================
+
+[[ajp-listener]]
+==== AJP listener
+
+[source,xml]
+----
+<ajp-listener name="default" socket-binding="ajp" />
+----
+
+[[host-configuration]]
+=== Host configuration
+
+The host element corresponds to a virtual host.
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|name |The virtual host name
+
+|alias |A whitespace separated list of additional host names that should
+be matched
+
+|default-web-module |The name of a deployment that should be used to
+serve up requests that do not match anything.
+|=======================================================================
+
+[[servlet-container-configuration]]
+== Servlet container configuration
+
+The servlet-container element corresponds to an instance of an Undertow
+Servlet container. Most servers will only need a single servlet
+container, however there may be cases where it makes sense to define
+multiple containers (in particular if you want applications to be
+isolated, so they cannot dispatch to each other using the
+RequestDispatcher. You can also use multiple Servlet containers to serve
+different applications from the same context path on different virtual
+hosts).
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|allow-non-standard-wrappers |The Servlet specification requires
+applications to only wrap the request/response using wrapper classes
+that extend from the ServletRequestWrapper and ServletResponseWrapper
+classes. If this is set to true then this restriction is relaxed.
+
+|default-buffer-cache |The buffer cache that is used to cache static
+resources in the default Servlet.
+
+|stack-trace-on-error |Can be either all, none, or local-only. When set
+to none Undertow will never display stack traces. When set to All
+Undertow will always display them (not recommended for production use).
+When set to local-only Undertow will only display them for requests from
+local addresses, where there are no headers to indicate that the request
+has been proxied. Note that this feature means that the Undertow error
+page will be displayed instead of the default error page specified in
+web.xml.
+
+|default-encoding |The default encoding to use for requests and
+responses.
+
+|use-listener-encoding |If this is true then the default encoding will
+be the same as that used by the listener that received the request.
+|=======================================================================
+
+[[jsp-configuration]]
+=== JSP configuration
+
+[[session-cookie-configuration]]
+=== Session Cookie Configuration
+
+This allows you to change the attributes of the session cookie.
+
+[cols=",",options="header"]
+|======================================
+|Attribute |Description
+|name |The cookie name
+|domain |The cookie domain
+|comment |The cookie comment
+|http-only |If the cookie is HTTP only
+|secure |If the cookie is marked secure
+|max-age |The max age of the cookie
+|======================================
+
+[[persistent-session-configuration]]
+=== Persistent Session Configuration
+
+Persistent sessions allow session data to be saved across redeploys and
+restarts. This feature is enabled by adding the persistent-sessions
+element to the server config. This is mostly intended to be a
+development time feature.
+
+If the path is not specified then session data is stored in memory, and
+will only be persistent across redeploys, rather than restarts.
+
+[cols=",",options="header"]
+|======================================================
+|Attribute |Description
+|path |The path to the persistent sessions data
+|relative-to |The location that the path is relevant to
+|======================================================
+
+:leveloffset: +1
+
+include::Undertow_AJP_listeners.adoc[]
+
+include::Undertow_using_as_a_Load_Balancer.adoc[]
+
+:leveloffset: -1

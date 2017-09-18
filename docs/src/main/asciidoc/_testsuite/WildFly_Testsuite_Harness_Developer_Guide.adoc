@@ -1,0 +1,109 @@
+= WildFly Testsuite Harness Developer Guide
+
+*Audience:* Whoever wants to change the testsuite harness
+
+*JIRA*: https://issues.jboss.org/browse/WFLY-576[WFLY-576]
+
+[[testsuite-requirements]]
+== Testsuite requirements
+
+http://community.jboss.org/wiki/ASTestsuiteRequirements will probably be
+merged here later.
+
+[[adding-a-new-maven-plugin]]
+== Adding a new maven plugin
+
+The plugin version needs to be specified in jboss-parent. See
+https://github.com/jboss/jboss-parent-pom/blob/master/pom.xml#L65 .
+
+[[shortened-maven-run-overview]]
+== Shortened Maven run overview
+
+See link:#src-557176[Shortened Maven Run Overview].
+
+[[how-the-as-instance-is-built]]
+== How the AS instance is built
+
+See link:#src-557176[How the JBoss AS instance is built and configured
+for testsuite modules.]
+
+[[properties-and-their-propagation]]
+== Properties and their propagation
+
+﻿Propagated to tests through arquillian.xml: +
+`<property name="javaVmArguments">${server.jvm.args}</property>` +
+TBD: https://issues.jboss.org/browse/ARQ-647
+
+[[jboss-as-instance-dir]]
+=== JBoss AS instance dir
+
+*integration/pom.xml*
+
+(currently nothing)
+
+**-arquillian.xml*
+
+[source, xml]
+----
+<container qualifier="jboss" default="true">
+    <configuration>
+        <property name="jbossHome">${basedir}/target/jbossas</property>
+----
+
+[[server-jvm-arguments]]
+=== Server JVM arguments
+
+[source, xml]
+----
+<surefire.memory.args>-Xmx512m -XX:MaxPermSize=256m</surefire.memory.args>
+    <surefire.jpda.args></surefire.jpda.args>
+    <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
+----
+
+[[ip-settings]]
+=== IP settings
+
+* `${ip.server.stack` *}* - used in
+`<systemPropertyVariables> / <server.jvm.args>` which is used in
+`*-arquillian.xml`.
+
+[[testsuite-directories]]
+=== Testsuite directories
+
+* `${jbossas.ts.integ.dir`}
+* `${jbossas.ts.dir`}
+* `${jbossas.project.dir`}
+
+[[clustering-properties]]
+=== Clustering properties
+
+* node0
+* node1
+
+== Debug parameters propagation
+
+[source, xml]
+----
+<surefire.jpda.args></surefire.jpda.args>       - default
+
+<surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args> - activated by -Ddebug or -Djpda
+
+
+testsuite/pom.xml:        <surefire.system.args>... ${surefire.jpda.args} ...</surefire.system.args>
+testsuite/pom.xml:                        <jboss.options>${surefire.system.args}</jboss.options>
+
+testsuite/integration/pom.xml:     <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.security} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=
+
+
+integration/pom.xml:
+<server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.security} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -DudpGroup=${udpGroup} ${jvm.args.dirs}</server.jvm.args>
+
+arquillian.xml:
+<property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas</property>
+----
+
+include::How_the_server_is_built_and_configured_for_testsuite_modules.adoc[]
+
+include::Plugin_executions_matrix.adoc[]
+
+include::Shortened_Maven_Run_Overview.adoc[]

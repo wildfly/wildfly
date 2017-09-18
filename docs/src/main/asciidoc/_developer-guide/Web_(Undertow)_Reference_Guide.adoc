@@ -1,0 +1,30 @@
+= Sharing sessions between wars in an ear
+
+Undertow allows you to share sessions between wars in an ear, if it is
+explicitly configured to do so. Note that if you use this feature your
+applications may not be portable, as this is not a standard servlet
+feature.
+
+In order to enable this you must include a `shared-session-config`
+element in the `jboss-all.xml` file in the META-INF directory of the
+ear:
+
+[source, xml]
+----
+<jboss umlns="urn:jboss:1.0">
+    <shared-session-config xmlns="urn:jboss:shared-session-config:1.0">
+        <session-config>
+            <cookie-config>
+                <path>/</path>
+            </cookie-config>
+        </session-config>
+    </shared-session-config>
+</jboss>
+----
+
+This element is used to configure the shared session manager that will
+be used by all wars in the ear. For full details of all the options
+provided by this file please see the schema at
+https://github.com/wildfly/wildfly/blob/master/undertow/src/main/resources/schema/shared-session-config_1_0.xsd,
+however in general it mimics the options that are available in
+jboss-web.xml for configuring the session.

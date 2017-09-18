@@ -1,0 +1,57 @@
+= Default HTTP Interface Security
+ifdef::env-github[:imagesdir: ../]
+
+WildFly is distributed secured by default. The default security
+mechanism is username / password based making use of HTTP Digest for the
+authentication process.
+
+The reason for securing the server by default is so that if the
+management interfaces are accidentally exposed on a public IP address
+authentication is required to connect - for this reason there is no
+default user in the distribution.
+
+If you attempt to connect to the admin console before you have added a
+user to the server you will be presented with the following screen.
+
+image:images/no-users.png[no-users.png]
+
+The user are stored in a properties file called mgmt-users.properties
+under standalone/configuration and domain/configuration depending on the
+running mode of the server, these files contain the users username along
+with a pre-prepared hash of the username along with the name of the
+realm and the users password.
+
+[NOTE]
+
+Although the properties files do not contain the plain text passwords
+they should still be guarded as the pre-prepared hashes could be used to
+gain access to any server with the same realm if the same user has used
+the same password.
+
+To manipulate the files and add users we provide a utility add-user.sh
+and add-user.bat to add the users and generate the hashes, to add a user
+you should execute the script and follow the guided process.
+image:images/add-user.png[Add User] +
+The full details of the add-user utility are described later but for the
+purpose of accessing the management interface you need to enter the
+following values: -
+
+* Type of user - This will be a 'Management User' to selection option a.
+* Realm - This MUST match the realm name used in the configuration so
+unless you have changed the configuration to use a different realm name
+leave this set as 'ManagementRealm'.
+* Username - The username of the user you are adding.
+* Password - The users password.
+
+Provided the validation passes you will then be asked to confirm you
+want to add the user and the properties files will be updated.
+
+For the final question, as this is a user that is going to be accessing
+the admin console just answer 'n' - this option will be described later
+for adding slave host controllers that authenticate against a master
+domain controller but that is a later topic.
+
+Updates to the properties file are picked up in real time so either
+click 'Try Again' on the error page that was displayed in the browser or
+navigate to the console again and you should then be prompted to enter
+the username and password to connect to the server.

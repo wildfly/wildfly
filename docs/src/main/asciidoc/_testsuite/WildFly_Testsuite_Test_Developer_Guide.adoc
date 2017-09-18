@@ -1,0 +1,258 @@
+= WildFly Testsuite Test Developer Guide
+
+*See also:* link:WildFly_Integration_Testsuite_User_Guide.html[WildFly
+Integration Testsuite User Guide]
+
+[[pre-requisites]]
+== Pre-requisites
+
+Please be sure to read link:#src-557173[Pre-requisites - test quality
+standards] and follow those guidelines.
+
+[[arquillian-container-configuration]]
+== Arquillian container configuration
+
+See
+https://docs.jboss.org/author/display/ARQ/JBoss+AS+7.1%2C+JBoss+EAP+6.0+-+Managed[AS
+7.1 managed container adapter refrence].
+
+[[managementclient-and-modelnode-usage-example]]
+== ManagementClient and ModelNode usage example
+
+[source, java]
+----
+final ModelNode operation = new ModelNode();
+operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
+operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+operation.get(ModelDescriptionConstants.RECURSIVE).set(true);
+ 
+final ModelNode result = managementClient.getControllerClient().execute(operation);
+Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
+----
+
+ManagementClient can be obtained as described below.
+
+[[arquillian-features-available-in-tests]]
+== Arquillian features available in tests
+
+@ServerSetup
+
+TBD
+
+[source, java]
+----
+@ContainerResource private ManagementClient managementClient;
+final ModelNode result = managementClient.getControllerClient().execute(operation);
+----
+
+TBD
+
+[source, java]
+----
+@ArquillianResource private ManagementClient managementClient;
+ModelControllerClient client = managementClient.getControllerClient();
+----
+
+[source, java]
+----
+@ArquillianResource ContainerController cc;
+ 
+@Test
+public void test() {
+    cc.setup("test", ...properties..)
+    cc.start("test")
+}
+----
+
+[source, xml]
+----
+<arquillian>
+    <container qualifier="test" mode="manual" />
+</arquillian>
+----
+
+[source, java]
+----
+// Targeted containers HTTP context.
+@ArquillianResource URL url;
+----
+
+[source, java]
+----
+// Targeted containers HTTP context where servlet is located.
+@ArquillianResource(SomeServlet.class) URL url;
+----
+
+[source, java]
+----
+// Targeted containers initial context.
+@ArquillianResource InitialContext|Context context;
+----
+
+[source, java]
+----
+// The manual deployer.
+@ArquillianResource Deployer deployer;
+----
+
+See
+https://docs.jboss.org/author/display/ARQ/Resource+injection[Arquillian's
+Resource Injection docs] for more info,
+https://github.com/arquillian/arquillian-examples for examples.
+
+See also
+https://docs.jboss.org/author/display/ARQ/Reference+Guide[Arquillian
+Reference].
+
+Note to @ServerSetup annotation: It works as expected only on non-manual
+containers. In case of manual mode containers it calls setup() method
+after each server start up which is right (or actually before
+deployment), but the tearDown() method is called only at AfterClass
+event, i.e. usually after your manual shutdown of the server. Which
+limits you on the ability to revert some configuration changes on the
+server and so on. I cloned the annotation and changed it to fit the
+manual mode, but it is still in my github branch :)
+
+[[properties-available-in-tests]]
+== Properties available in tests
+
+[[directories]]
+=== Directories
+
+* jbosssa.project.dir - Project's root dir (where ./build.sh is).
+* jbossas.ts.dir - Testsuite dir.
+* jbossas.ts.integ.dir - Testsuite's integration module dir.
+* jboss.dist - Path to AS distribution, either built
+(build/target/jboss-as-...) or user-provided via -Djboss.dist
+* jboss.inst - (Arquillian in-container only) Path to the AS instance in
+which the test is running (until ARQ-650 is possibly done)
+
+* [line-through]*jboss.home* - Deprecated as it's name is unclear and
+confusing. Use jboss.dist or jboss.inst.
+
+[[networking]]
+=== Networking
+
+* node0
+* node1
+* 230.0.0.4
+
+[[time-related-coefficients-ratios]]
+=== Time-related coefficients (ratios)
+
+In case some of the following causes timeouts, you may prolong the
+timeouts by setting value >= 100:
+
+100 = leave as is, +
+150 = 50 % longer, etc.
+
+* timeout.ratio.gen - General ratio - can be used to adjust all
+timeouts.When this and specific are defined, both apply.
+
+* timeout.ratio.fs- Filesystem IO
+* timeout.ratio.net - Network IO
+* timeout.ratio.mem - Memory IO
+* timeout.ratio.cpu - Processor
+* timeout.ratio.db - Database
+
+Time ratios will soon be provided by
+`org.jboss.as.test.shared.time.TimeRatio.for*()` methods.
+
+[[negative-tests]]
+== Negative tests
+
+To test invalid deployment handling: @ShouldThrowException
+
+Currently doesn't work due to
+https://issues.jboss.org/browse/WFLY-673[WFLY-673].
+
+optionally you might be able to catch it using the manual deployer
+
+[source, java]
+----
+@Deployment(name = "X", managed = false) ...
+ 
+@Test
+public void shouldFail(@ArquillianResource Deployer deployer) throws Exception {
+  try {
+    deployer.deploy("X")
+  }
+  catch(Exception e) {
+   // do something
+  }
+}
+----
+
+[[clustering-tests-wfly-616]]
+== Clustering tests (WFLY-616)
+
+You need to deploy the same thing twice, so two deployment methods that
+just return the same thing. +
+And then you have tests that run against each.
+
+[source, java]
+----
+@Deployment(name = "deplA", testable = false)
+    @TargetsContainer("serverB")
+    public static Archive<?> deployment()
+ 
+    @Deployment(name = "deplB", testable = false)
+    @TargetsContainer("serverA")
+    public static Archive<?> deployment(){ ... }
+ 
+    @Test
+    @OperateOnDeployment("deplA")
+    public void testA(){ ... }
+ 
+    @Test
+    @OperateOnDeployment("deplA")
+    public void testA() {...}
+----
+
+[[how-to-get-the-tests-to-master]]
+== How to get the tests to master
+
+* First of all, *be sure to read the "Before you add a test" section*.
+* *Fetch* the newest mater:
+`git fetch upstream # Provided you have the jbossas/jbossas GitHub repo`
+`as a remote called 'upstream'.`
+* *Rebase* your branch: git checkout WFLY-1234-your-branch; git rebase
+upstream/master
+* *Run* *_whole_* *testsuite* (integration-tests -DallTests). You may
+use
+https://jenkins.mw.lab.eng.bos.redhat.com/hudson/job/wildfly-as-testsuite-RHEL-matrix-openJDK7/lastCompletedBuild/testReport/.
+** If any tests fail and they do not fail in master, fix it and go back
+to the "Fetch" step.
+* *Push* to a new branch in your GitHub repo:
+`git push origin WFLY-1234-new-XY-tests`
+* *Create a pull-request* on GitHub. Go to your branch and click on
+"Pull Request".
+** If you have a jira, start the title with it, like - WFLY-1234 New
+tests for XYZ.
+** If you don't, write some apposite title. In the description, describe
+in detail what was done and why should it be merged. Keep in mind that
+the diff will be visible under your description.
+* *Keep the branch rebased daily* until it's merged (see the Fetch
+step). If you don't, you're dramatically decreasing chance to get it
+merged.
+* There's a mailing list, jbossas-pull-requests, which is notified of
+every pull-request.
+* You might have someone with merge privileges to cooperate with you, so
+they know what you're doing, and expect your pull request.
+* When your pull request is reviewed and merged, you'll be notified by
+mail from GitHub.
+* You may also check if it was merged by the following:
+`git fetch upstream; git cherry` `<branch> ## Or` git branch
+--contains\{\{<branch> - see}} `here`
+* Your commits will appear in master. They will have the same hash as in
+your branch.
+** You are now safe to delete both your local and remote branches:
+`git branch -D WFLY-1234-your-branch; git push origin :WFLY-1234-your-branch`
+
+
+include::How_to_Add_a_Test_Case.adoc[]
+
+include::Pre-requisites_-_test_quality_standards.adoc[]
+
+include::Shared_Test_Classes_and_Resources.adoc[]
+

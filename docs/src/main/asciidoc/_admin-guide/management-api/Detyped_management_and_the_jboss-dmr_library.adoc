@@ -1,0 +1,746 @@
+= Detyped management and the jboss-dmr library
+
+The management model exposed by WildFly is very large and complex. There
+are dozens, probably hundreds of logical concepts involved – hosts,
+server groups, servers, subsystems, datasources, web connectors, and on
+and on – each of which in a classic objected oriented API design could
+be represented by a Java _type_ (i.e. a Java class or interface.)
+However, a primary goal in the development of WildFly's native
+management API was to ensure that clients built to use the API had as
+few compile-time and run-time dependencies on JBoss-provided classes as
+possible, and that the API exposed by those libraries be powerful but
+also simple and stable. A management client running with the management
+libraries created for an earlier version of WildFly should still work if
+used to manage a later version domain. The management client libraries
+needed to be _forward compatible_.
+
+It is highly unlikely that an API that consists of hundreds of Java
+types could be kept forward compatible. Instead, the WildFly management
+API is a _detyped_ API. A detyped API is like decaffeinated coffee – it
+still has a little bit of caffeine, but not enough to keep you awake at
+night. WildFly's management API still has a few Java types in it (it's
+impossible for a Java library to have no types!) but not enough to keep
+you (or us) up at night worrying that your management clients won't be
+forward compatible.
+
+A detyped API works by making it possible to build up arbitrarily
+complex data structures using a small number of Java types. All of the
+parameter values and return values in the API are expressed using those
+few types. Ideally, most of the types are basic JDK types, like
+`java.lang.String`, `java.lang.Integer`, etc. In addition to the basic
+JDK types, WildFly's detyped management API uses a small library called
+*jboss-dmr*. The purpose of this section is to provide a basic overview
+of the jboss-dmr library.
+
+Even if you don't use jboss-dmr directly (probably the case for all but
+a few users), some of the information in this section may be useful.
+When you invoke operations using the application server's Command Line
+Interface, the return values are just the text representation of of a
+jboss-dmr `ModelNode`. If your CLI commands require complex parameter
+values, you may yourself end up writing the text representation of a
+`ModelNode`. And if you use the HTTP management API, all response bodies
+as well as the request body for any POST will be a JSON representation
+of a `ModelNode`.
+
+The source code for jboss-dmr is available on
+https://github.com/jbossas/jboss-dmr[Github]. The maven coordinates for
+a jboss-dmr release are `org.jboss.jboss-dmr:jboss-dmr`.
+
+[[modelnode-and-modeltype]]
+== ModelNode and ModelType
+
+The public API exposed by jboss-dmr is very simple: just three classes,
+one of which is an enum!
+
+The primary class is `org.jboss.dmr.ModelNode`. A `ModelNode` is
+essentially just a wrapper around some _value_; the value is typically
+some basic JDK type. A `ModelNode` exposes a `getType()` method. This
+method returns a value of type `org.jboss.dmr.ModelType`, which is an
+enum of all the valid types of values. And that's 95% of the public API;
+a class and an enum. (We'll get to the third class, `Property`, below.)
+
+[[basic-modelnode-manipulation]]
+=== Basic ModelNode manipulation
+
+To illustrate how to work with `ModelNode` s, we'll use the
+http://www.beanshell.org[Beanshell] scripting library. We won't get into
+many details of beanshell here; it's a simple and intuitive tool and
+hopefully the following examples are as well.
+
+We'll start by launching a beanshell interpreter, with the jboss-dmr
+library available on the classpath. Then we'll tell beanshell to import
+all the jboss-dmr classes so they are available for use:
+
+[source, java]
+----
+$ java -cp bsh-2.0b4.jar:jboss-dmr-1.0.0.Final.jar bsh.Interpreter
+BeanShell 2.0b4 - by Pat Niemeyer (pat@pat.net)
+bsh % import org.jboss.dmr.*;
+bsh %
+----
+
+Next, create a `ModelNode` and use the beanshell `print` function to
+output what type it is:
+
+[source, java]
+----
+bsh % ModelNode node = new ModelNode();
+bsh % print(node.getType());
+UNDEFINED
+----
+
+A new `ModelNode` has no value stored, so its type is
+`ModelType.UNDEFINED`.
+
+Use one of the overloaded `set` method variants to assign a node's
+value:
+
+[source, java]
+----
+bsh % node.set(1);
+bsh % print(node.getType());
+INT
+bsh % node.set(true);
+bsh % print(node.getType());
+BOOLEAN
+bsh % node.set("Hello, world");
+bsh % print(node.getType());
+STRING
+----
+
+Use one of the `asXXX()` methods to retrieve the value:
+
+[source, java]
+----
+bsh % node.set(2);
+bsh % print(node.asInt());
+2
+bsh % node.set("A string");
+bsh % print(node.asString());
+A string
+----
+
+`ModelNode` will attempt to perform type conversions when you invoke the
+`asXXX` methods:
+
+[source, java]
+----
+bsh % node.set(1);
+bsh % print(node.asString());
+1
+bsh % print(node.asBoolean());
+true
+bsh % node.set(0);
+bsh % print(node.asBoolean());
+false
+bsh % node.set("true");
+bsh % print(node.asBoolean());
+true
+----
+
+Not all type conversions are possible:
+
+[source, java]
+----
+bsh % node.set("A string");
+bsh % print(node.asInt());
+// Error: // Uncaught Exception: Method Invocation node.asInt : at Line: 20 : in file: <unknown file> : node .asInt ( )
+ 
+Target exception: java.lang.NumberFormatException: For input string: "A string"
+ 
+java.lang.NumberFormatException: For input string: "A string"
+ at java.lang.NumberFormatException.forInputString(NumberFormatException.java:48)
+ at java.lang.Integer.parseInt(Integer.java:449)
+ at java.lang.Integer.parseInt(Integer.java:499)
+ at org.jboss.dmr.StringModelValue.asInt(StringModelValue.java:61)
+ at org.jboss.dmr.ModelNode.asInt(ModelNode.java:117)
+        ....
+----
+
+The `ModelNode.getType()` method can be used to ensure a node has an
+expected value type before attempting a type conversion.
+
+One `set` variant takes another `ModelNode` as its argument. The value
+of the passed in node is copied, so there is no shared state between the
+two model nodes:
+
+[source, java]
+----
+bsh % node.set("A string");
+bsh % ModelNode another = new ModelNode();
+bsh % another.set(node);
+bsh % print(another.asString());
+A string
+bsh % node.set("changed");
+bsh % print(node.asString());
+changed
+bsh % print(another.asString());
+A string
+----
+
+A `ModelNode` can be cloned. Again, there is no shared state between the
+original node and its clone:
+
+[source, java]
+----
+bsh % ModelNode clone = another.clone();
+bsh % print(clone.asString());
+A string
+bsh % another.set(42);
+bsh % print(another.asString());
+42
+bsh % print(clone.asString());
+A string
+----
+
+Use the `protect()` method to make a `ModelNode` immutable:
+
+[source, java]
+----
+bsh % clone.protect();
+bsh % clone.set("A different string");
+// Error: // Uncaught Exception: Method Invocation clone.set : at Line: 15 : in file: <unknown file> : clone .set ( "A different string" )
+ 
+Target exception: java.lang.UnsupportedOperationException
+ 
+java.lang.UnsupportedOperationException
+ at org.jboss.dmr.ModelNode.checkProtect(ModelNode.java:1441)
+ at org.jboss.dmr.ModelNode.set(ModelNode.java:351)
+        ....
+----
+
+[[lists]]
+=== Lists
+
+The above examples aren't particularly interesting; if all we can do
+with a `ModelNode` is wrap a simple Java primitive, what use is that?
+However, a `ModelNode`'s value can be more complex than a simple
+primitive, and using these more complex types we can build complex data
+structures. The first more complex type is `ModelType.LIST`.
+
+Use the `add` methods to initialize a node's value as a list and add to
+the list:
+
+[source, java]
+----
+bsh % ModelNode list = new ModelNode();
+bsh % list.add(5);
+bsh % list.add(10);
+bsh % print(list.getType());
+LIST
+----
+
+Use `asInt()` to find the size of the list:
+
+[source, java]
+----
+bsh % print(list.asInt());
+2
+----
+
+Use the overloaded `get` method variant that takes an int param to
+retrieve an item. The item is returned as a `ModelNode`:
+
+[source, java]
+----
+bsh % ModelNode child = list.get(1);
+bsh % print(child.asInt());
+10
+----
+
+Elements in a list need not all be of the same type:
+
+[source, java]
+----
+bsh % list.add("A string");
+bsh % print(list.get(1).getType());
+INT
+bsh % print(list.get(2).getType());
+STRING
+----
+
+*Here's one of the trickiest things about jboss-dmr:* _The_ `get`
+_methods actually mutate state; they are not "read-only"_. For example,
+calling `get` with an index that does not exist yet in the list will
+actually create a child of type `ModelType.UNDEFINED` at that index (and
+will create UNDEFINED children for any intervening indices.)
+
+[source, java]
+----
+bsh % ModelNode four = list.get(4);
+bsh % print(four.getType());
+UNDEFINED
+bsh % print(list.asInt());
+6
+----
+
+Since the `get` call always returns a `ModelNode` and never `null` it is
+safe to manipulate the return value:
+
+[source, java]
+----
+bsh % list.get(5).set(30);
+bsh % print(list.get(5).asInt());
+30
+----
+
+That's not so interesting in the above example, but later on with node
+of type `ModelType.OBJECT` we'll see how that kind of method chaining
+can let you build up fairly complex data structures with a minimum of
+code.
+
+Use the `asList()` method to get a `List<ModelNode>` of the children:
+
+[source, java]
+----
+bsh % for (ModelNode element : list.asList()) {
+print(element.getType());
+}
+INT
+INT
+STRING
+UNDEFINED
+UNDEFINED
+INT
+----
+
+The `asString()` and `toString()` methods provide slightly differently
+formatted text representations of a `ModelType.LIST` node:
+
+[source, java]
+----
+bsh % print(list.asString());
+[5,10,"A string",undefined,undefined,30]
+bsh % print(list.toString());
+[
+    5,
+    10,
+    "A string",
+    undefined,
+    undefined,
+    30
+]
+----
+
+Finally, if you've previously used `set` to assign a node's value to
+some non-list type, you cannot use the `add` method:
+
+[source, java]
+----
+bsh % node.add(5);
+// Error: // Uncaught Exception: Method Invocation node.add : at Line: 18 : in file: <unknown file> : node .add ( 5 )
+ 
+Target exception: java.lang.IllegalArgumentException
+ 
+java.lang.IllegalArgumentException
+ at org.jboss.dmr.ModelValue.addChild(ModelValue.java:120)
+ at org.jboss.dmr.ModelNode.add(ModelNode.java:1007)
+ at org.jboss.dmr.ModelNode.add(ModelNode.java:761)
+        ...
+----
+
+You can, however, use the `setEmptyList()` method to change the node's
+type, and then use `add`:
+
+[source, java]
+----
+bsh % node.setEmptyList();
+bsh % node.add(5);
+bsh % print(node.toString());
+[5]
+----
+
+[[properties]]
+=== Properties
+
+The third public class in the jboss-dmr library is
+`org.jboss.dmr.Property`. A `Property` is a `String => ModelNode` tuple.
+
+[source, java]
+----
+bsh % Property prop = new Property("stuff", list);
+bsh % print(prop.toString());
+org.jboss.dmr.Property@79a5f739
+bsh % print(prop.getName());
+stuff
+bsh % print(prop.getValue());
+[
+    5,
+    10,
+    "A string",
+    undefined,
+    undefined,
+    30
+]
+----
+
+The property can be passed to `ModelNode.set`:
+
+[source, java]
+----
+bsh % node.set(prop);
+bsh % print(node.getType());
+PROPERTY
+----
+
+The text format for a node of `ModelType.PROPERTY` is:
+
+[source, java]
+----
+bsh % print(node.toString());
+("stuff" => [
+    5,
+    10,
+    "A string",
+    undefined,
+    undefined,
+    30
+])
+----
+
+Directly instantiating a `Property` via its constructor is not common.
+More typically one of the two argument `ModelNode.add` or
+`ModelNode.set` variants is used. The first argument is the property
+name:
+
+[source, java]
+----
+bsh % ModelNode simpleProp = new ModelNode();
+bsh % simpleProp.set("enabled", true);
+bsh % print(simpleProp.toString());
+("enabled" => true)
+bsh % print(simpleProp.getType());
+PROPERTY
+bsh % ModelNode propList = new ModelNode();
+bsh % propList.add("min", 1);
+bsh % propList.add("max", 10);
+bsh % print(propList.toString());
+[
+    ("min" => 1),
+    ("max" => 10)
+]
+bsh % print(propList.getType());
+LIST
+bsh % print(propList.get(0).getType());
+PROPERTY
+----
+
+The `asPropertyList()` method provides easy access to a
+`List<Property>`:
+
+[source, java]
+----
+bsh % for (Property prop : propList.asPropertyList()) {
+print(prop.getName() + " = " + prop.getValue());
+}
+min = 1
+max = 10
+----
+
+[[modeltype.object]]
+=== ModelType.OBJECT
+
+The most powerful and most commonly used complex value type in jboss-dmr
+is `ModelType.OBJECT`. A `ModelNode` whose value is `ModelType.OBJECT`
+internally maintains a `Map<String, ModelNode`.
+
+Use the `get` method variant that takes a string argument to add an
+entry to the map. If no entry exists under the given name, a new entry
+is added with a the value being a `ModelType.UNDEFINED` node. The node
+is returned:
+
+[source, java]
+----
+bsh % ModelNode range = new ModelNode();
+bsh % ModelNode min = range.get("min");
+bsh % print(range.toString());
+{"min" => undefined}
+bsh % min.set(2);
+bsh % print(range.toString());
+{"min" => 2}
+----
+
+Again *it is important to remember that the* `get` *operation may mutate
+the state of a model node by adding a new entry.* _It is not a read-only
+operation._
+
+Since `get` will never return `null`, a common pattern is to use method
+chaining to create the key/value pair:
+
+[source, java]
+----
+bsh % range.get("max").set(10);
+bsh % print(range.toString());
+{
+    "min" => 2,
+    "max" => 10
+}
+----
+
+A call to `get` passing an already existing key will of course return
+the same model node as was returned the first time `get` was called with
+that key:
+
+[source, java]
+----
+bsh % print(min == range.get("min"));
+true
+----
+
+Multiple parameters can be passed to `get`. This is a simple way to
+traverse a tree made up of `ModelType.OBJECT` nodes. Again, `get` may
+mutate the node on which it is invoked; e.g. it will actually create the
+tree if nodes do not exist. This next example uses a workaround to get
+beanshell to handle the overloaded `get` method that takes a variable
+number of arguments:
+
+[source, java]
+----
+bsh % String[] varargs = { "US", "Missouri", "St. Louis" };
+bsh % salesTerritories.get(varargs).set("Brian");
+bsh % print(salesTerritories.toString());
+{"US" => {"Missouri" => {"St. Louis" => "Brian"}}}
+----
+
+The normal syntax would be:
+
+....
+salesTerritories.get("US", "Missouri", "St. Louis").set("Brian");
+....
+
+The key/value pairs in the map can be accessed as a `List<Property`:
+
+[source, java]
+----
+bsh % for (Property prop : range.asPropertyList()) {
+print(prop.getName() + " = " + prop.getValue());
+}
+min = 2
+----
+
+The semantics of the backing map in a node of `ModelType.OBJECT` are
+those of a `LinkedHashMap`. The map remembers the order in which
+key/value pairs are added. This is relevant when iterating over the
+pairs after calling `asPropertyList()` and for controlling the order in
+which key/value pairs appear in the output from `toString()`.
+
+Since the `get` method will actually mutate the state of a node if the
+given key does not exist, `ModelNode` provides a couple methods to let
+you check whether the entry is there. The `has` method simply does that:
+
+[source, java]
+----
+bsh % print(range.has("unit"));
+false
+bsh % print(range.has("min"));
+true
+----
+
+Very often, the need is to not only know whether the key/value pair
+exists, but whether the value is defined (i.e. not
+`ModelType.UNDEFINED`. This kind of check is analogous to checking
+whether a field in a Java class has a null value. The `hasDefined` lets
+you do this:
+
+[source, java]
+----
+bsh % print(range.hasDefined("unit"));
+false
+bsh % // Establish an undefined child 'unit';
+bsh % range.get("unit");
+bsh % print(range.toString());
+{
+    "min" => 2,
+    "max" => 10,
+    "unit" => undefined
+}
+bsh % print(range.hasDefined("unit"));
+false
+bsh % range.get("unit").set("meters");
+bsh % print(range.hasDefined("unit"));
+true
+----
+
+[[modeltype.expression]]
+=== ModelType.EXPRESSION
+
+A value of type `ModelType.EXPRESSION` is stored as a string, but can
+later be _resolved_ to different value. The string has a special syntax
+that should be familiar to those who have used the system property
+substitution feature in previous JBoss AS releases.
+
+[source, java]
+----
+[<prefix>][${<system-property-name>[:<default-value>]}][<suffix>]*
+----
+
+For example:
+
+....
+${queue.length}
+http://${host}
+http://${host:localhost}:${port:8080}/index.html
+....
+
+Use the `setExpression` method to set a node's value to type expression:
+
+[source, java]
+----
+bsh % ModelNode expression = new ModelNode();
+bsh % expression.setExpression("${queue.length}");
+bsh % print(expression.getType());
+EXPRESSION
+----
+
+Calling `asString()` returns the same string that was input:
+
+[source, java]
+----
+bsh % print(expression.asString());
+${queue.length}
+----
+
+However, calling `toString()` tells you that this node's value is not of
+`ModelType.STRING`:
+
+[source, java]
+----
+bsh % print(expression.toString());
+expression "${queue.length}"
+----
+
+When the `resolve` operation is called, the string is parsed and any
+embedded system properties are resolved against the JVM's current system
+property values. A new `ModelNode` is returned whose value is the
+resolved string:
+
+[source, java]
+----
+bsh % System.setProperty("queue.length", "10");
+bsh % ModelNode resolved = expression.resolve();
+bsh % print(resolved.asInt());
+10
+----
+
+Note that the type of the `ModelNode` returned by `resolve()` is
+`ModelType.STRING`:
+
+[source, java]
+----
+bsh % print(resolved.getType());
+STRING
+----
+
+The `resolved.asInt()` call in the previous example only worked because
+the string "10" happens to be convertible into the int 10.
+
+Calling `resolve()` has no effect on the value of the node on which the
+method is invoked:
+
+[source, java]
+----
+bsh % resolved = expression.resolve();
+bsh % print(resolved.toString());
+"10"
+bsh % print(expression.toString());
+expression "${queue.length}"
+----
+
+If an expression cannot be resolved, `resolve` just uses the original
+string. The string can include more than one system property
+substitution:
+
+[source, java]
+----
+bsh % expression.setExpression("http://${host}:${port}/index.html");
+bsh % resolved = expression.resolve();
+bsh % print(resolved.asString());
+http://${host}:${port}/index.html
+----
+
+The expression can optionally include a default value, separated from
+the name of the system property by a colon:
+
+[source, java]
+----
+bsh % expression.setExpression("http://${host:localhost}:${port:8080}/index.html");
+bsh % resolved = expression.resolve();
+bsh % print(resolved.asString());
+http://localhost:8080/index.html
+----
+
+Actually including a system property substitution in the expression is
+not required:
+
+[source, java]
+----
+bsh % expression.setExpression("no system property");
+bsh % resolved = expression.resolve();
+bsh % print(resolved.asString());
+no system property
+bsh % print(expression.toString());
+expression "no system property"
+----
+
+The `resolve` method works on nodes of other types as well; it returns a
+copy without attempting any real resolution:
+
+[source, java]
+----
+bsh % ModelNode basic = new ModelNode();
+bsh % basic.set(10);
+bsh % resolved = basic.resolve();
+bsh % print(resolved.getType());
+INT
+bsh % resolved.set(5);
+bsh % print(resolved.asInt());
+5
+bsh % print(basic.asInt());
+10
+----
+
+[[modeltype.type]]
+=== ModelType.TYPE
+
+You can also pass one of the values of the `ModelType` enum to `set`:
+
+[source, java]
+----
+bsh % ModelNode type = new ModelNode();
+bsh % type.set(ModelType.LIST);
+bsh % print(type.getType());
+TYPE
+bsh % print(type.toString());
+LIST
+----
+
+This is useful when using a `ModelNode` data structure to describe
+another `ModelNode` data structure.
+
+[[full-list-of-modelnode-types]]
+=== Full list of ModelNode types
+
+BIG_DECIMAL +
+BIG_INTEGER +
+BOOLEAN +
+BYTES +
+DOUBLE +
+EXPRESSION +
+INT +
+LIST +
+LONG +
+OBJECT +
+PROPERTY +
+STRING +
+TYPE +
+UNDEFINED
+
+[[text-representation-of-a-modelnode]]
+=== Text representation of a ModelNode
+
+TODO – document the grammar
+
+[[json-representation-of-a-modelnode]]
+=== JSON representation of a ModelNode
+
+TODO – document the grammar

@@ -1,0 +1,14 @@
+= HA Singleton Features
+
+In general, an HA or clustered singleton is a service that exists on
+multiple nodes in a cluster, but is active on just a single node at any
+given time. If the node providing the service fails or is shut down, a
+new singleton provider is chosen and started. Thus, other than a brief
+interval when one provider has stopped and another has yet to start, the
+service is always running on one node.
+
+include::ha-singleton/Singleton_subsystem.adoc[]
+
+include::ha-singleton/Singleton_deployments.adoc[]
+
+include::ha-singleton/Singleton_MSC_services.adoc[]
