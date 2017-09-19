@@ -140,6 +140,6 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Cluster
                 }
             }
             return null;
-        });
+        }).call();
     }
 }
