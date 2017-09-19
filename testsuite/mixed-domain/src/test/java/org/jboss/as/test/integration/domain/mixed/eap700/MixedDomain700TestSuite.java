@@ -35,7 +35,7 @@ import org.junit.runners.Suite.SuiteClasses;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Suite.class)
-@SuiteClasses(value= {SimpleMixedDomain700TestCase.class, MixedDomainDeployment700TestCase.class, DomainHostExcludes700TestCase.class})
+@SuiteClasses(value= {SimpleMixedDomain700TestCase.class, MixedDomainDeployment700TestCase.class})
 @Version(AsVersion.EAP_7_0_0)
 public class MixedDomain700TestSuite extends MixedDomainTestSuite {
 
