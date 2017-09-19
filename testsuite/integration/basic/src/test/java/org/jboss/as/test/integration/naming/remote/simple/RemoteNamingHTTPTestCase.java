@@ -27,7 +27,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.common.DefaultConfiguration;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -78,7 +77,9 @@ public class RemoteNamingHTTPTestCase {
         URI webUri = managementClient.getWebUri();
         URI namingUri = new URI("http", webUri.getUserInfo(), webUri.getHost(), webUri.getPort(), "/wildfly-services", "" ,"");
         env.put(Context.PROVIDER_URL, namingUri.toString());
-        return new InitialContext(DefaultConfiguration.addSecurityProperties(env));
+        env.put(Context.SECURITY_PRINCIPAL, System.getProperty("jboss.application.username", "guest"));
+        env.put(Context.SECURITY_CREDENTIALS, System.getProperty("jboss.application.username", "guest"));
+        return new InitialContext(env);
     }
 
     private static AuthenticationContext old;

@@ -35,7 +35,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.common.DefaultConfiguration;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -107,7 +106,7 @@ public class HttpRemoteIdentityTestCase {
         env.put(Context.INITIAL_CONTEXT_FACTORY, WildFlyInitialContextFactory.class.getName());
         URI namingUri = getHttpUri();
         env.put(Context.PROVIDER_URL, namingUri.toString());
-        return new InitialContext(DefaultConfiguration.addSecurityProperties(env));
+        return new InitialContext(env);
     }
 
     private URI getHttpUri() throws URISyntaxException {
