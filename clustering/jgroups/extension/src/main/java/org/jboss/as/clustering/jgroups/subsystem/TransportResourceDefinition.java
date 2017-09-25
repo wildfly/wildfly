@@ -115,9 +115,12 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
                 .setDefaultValue(new ModelNode(false))
                 .setDeprecated(JGroupsModel.VERSION_4_0_0.getVersion())),
         SOCKET_BINDING("socket-binding", ModelType.STRING, builder -> builder
+                .setAllowExpression(false)
+                .setRequired(true)
                 .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
                 .setCapabilityReference(new CapabilityReference(Capability.TRANSPORT, CommonUnaryRequirement.SOCKET_BINDING))),
         DIAGNOSTICS_SOCKET_BINDING("diagnostics-socket-binding", ModelType.STRING, builder -> builder
+                .setAllowExpression(false)
                 .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
                 .setCapabilityReference(new CapabilityReference(Capability.TRANSPORT, CommonUnaryRequirement.SOCKET_BINDING))),
         SITE("site", ModelType.STRING),
