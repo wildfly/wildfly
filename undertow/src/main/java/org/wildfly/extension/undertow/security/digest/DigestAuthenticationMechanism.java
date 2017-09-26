@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.wildfly.extension.undertow.logging.UndertowLogger;
+
 /**
  * {@link io.undertow.server.HttpHandler} to handle HTTP Digest authentication, both according to RFC-2617 and draft update to allow additional
  * algorithms to be used.
@@ -164,7 +166,7 @@ public class DigestAuthenticationMechanism implements AuthenticationMechanism {
 
                         return handleDigestHeader(exchange, securityContext);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        UndertowLogger.ROOT_LOGGER.unexceptedAuthentificationError(e.getLocalizedMessage(), e);
                     }
                 }
 
