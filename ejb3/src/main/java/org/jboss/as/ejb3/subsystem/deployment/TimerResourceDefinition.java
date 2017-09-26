@@ -222,6 +222,9 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
             @Override
             protected void readAttribute(TimerImpl timer, ModelNode toSet) {
+                if (timer.isCanceled()) {
+                    return;
+                }
                 try {
                     final long time = timer.getTimeRemaining();
                     toSet.set(time);
@@ -238,6 +241,9 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
             @Override
             protected void readAttribute(TimerImpl timer, ModelNode toSet) {
+                if (timer.isCanceled()) {
+                    return;
+                }
                 try {
                     final Date d = timer.getNextTimeout();
                     if (d != null) {
@@ -253,6 +259,9 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
             @Override
             protected void readAttribute(TimerImpl timer, ModelNode toSet) {
+                if (timer.isCanceled()) {
+                    return;
+                }
                 final boolean calendarTimer = timer.isCalendarTimer();
                 toSet.set(calendarTimer);
             }
@@ -262,6 +271,9 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
             @Override
             protected void readAttribute(TimerImpl timer, ModelNode toSet) {
+                if (timer.isCanceled()) {
+                    return;
+                }
                 final boolean persistent = timer.isPersistent();
                 toSet.set(persistent);
             }
@@ -280,7 +292,7 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
             @Override
             protected void readAttribute(TimerImpl timer, ModelNode toSet) {
-                if (!timer.isCalendarTimer()) {
+                if (timer.isCanceled() || !timer.isCalendarTimer()) {
                     return;
                 }
                 ScheduleExpression sched = timer.getSchedule();
@@ -315,6 +327,9 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
             @Override
             protected void readAttribute(TimerImpl timer, ModelNode toSet) {
+                if (timer.isCanceled()) {
+                    return;
+                }
                 final Object pk = timer.getPrimaryKey();
                 if (pk != null) {
                     toSet.set(pk.toString());
@@ -326,6 +341,9 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
             @Override
             protected void readAttribute(TimerImpl timer, ModelNode toSet) {
+                if (timer.isCanceled()) {
+                    return;
+                }
                 if (timer.getInfo() != null) {
                     toSet.set(timer.getInfo().toString());
                 }
