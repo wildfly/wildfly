@@ -1480,7 +1480,7 @@
       <artifactId>cryptacular</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License, Version 3</name>
+          <name>GNU Lesser General Public License v3.0 only</name>
           <url>http://www.gnu.org/licenses/lgpl-3.0-standalone.html</url>
           <distribution>repo</distribution>
         </license>
