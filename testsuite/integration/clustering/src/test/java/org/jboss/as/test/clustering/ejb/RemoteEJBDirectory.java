@@ -27,10 +27,6 @@ import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import org.jboss.ejb.client.Affinity;
-import org.jboss.ejb.client.ClusterAffinity;
-import org.jboss.ejb.client.EJBClient;
-
 /**
  * @author Paul Ferraro
  */
@@ -60,21 +56,6 @@ public class RemoteEJBDirectory extends AbstractEJBDirectory {
 
     @Override
     protected <T> T lookup(String beanName, Class<T> beanInterface, Type type) throws NamingException {
-        T bean = super.lookup(beanName, beanInterface, type);
-        Affinity affinity = new ClusterAffinity("ejb");
-        switch (type) {
-            case STATEFUL: {
-                EJBClient.setStrongAffinity(bean, affinity);
-                break;
-            }
-            case STATELESS: {
-                EJBClient.setWeakAffinity(bean, affinity);
-                break;
-            }
-            default: {
-                // No need to set initial affinity
-            }
-        }
-        return bean;
+        return super.lookup(beanName, beanInterface, type);
     }
 }
