@@ -559,11 +559,11 @@
 
         <profile>
             <id>ts.clustering.two.clusters.profile</id>
-            <activation><property><name>extendedTests</name></property></activation>
-
-            <!--
-                Server configuration executions.
-            -->
+            <activation>
+                <property>
+                    <name>!ts.noClustering</name>
+                </property>
+            </activation>
             <build>
                 <plugins>
                     <plugin>
@@ -617,15 +617,20 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
+                                    <!-- Needed for EJB client tests -->
+                                    <reuseForks>false</reuseForks>
+
                                     <!-- Tests to execute. -->
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/twoclusters/RemoteEJBTwoClusterTestCase.java</include>
+                                        <include>org/jboss/as/test/clustering/twoclusters/**/*TestCase.java</include>
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-two-clusters</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <!--bit of a workaround, we don't include ${jvm.args.ip.server} as clustering does custom binding-->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs}</server.jvm.args>
                                         <stack>udp</stack>
                                     </systemPropertyVariables>
                                 </configuration>
