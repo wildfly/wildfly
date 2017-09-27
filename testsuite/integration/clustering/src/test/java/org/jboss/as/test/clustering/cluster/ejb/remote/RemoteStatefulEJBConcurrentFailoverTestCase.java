@@ -59,7 +59,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@org.junit.Ignore("WFLY-9130")
 public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstractTestCase {
     private static final String MODULE_NAME = "remote-stateful-ejb-concurrent-failover-test";
 
