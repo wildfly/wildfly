@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.security.vault;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -41,6 +42,8 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.PropertyPermission;
 
 /**
  * Test whether vault can be used for system property.
@@ -99,6 +102,11 @@ public class ExternalPasswordByClassTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "vault-ext.jar");
         jar.addClass(BasicVaultServerSetupTask.class);
         jar.addClass(ExternalPasswordModuleSetupTask.class);
+
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission("vault.testing.property", "read")),
+                "jboss-permissions.xml");
+
         return jar;
     }
 
