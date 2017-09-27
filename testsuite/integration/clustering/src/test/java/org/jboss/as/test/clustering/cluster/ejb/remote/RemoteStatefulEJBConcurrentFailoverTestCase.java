@@ -31,8 +31,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.naming.NamingException;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -175,7 +173,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
         public void run() {
             try {
                 this.directory.lookupStateful(this.beanClass, Incrementor.class);
-            } catch (NamingException e) {
+            } catch (Exception e) {
                 throw new IllegalStateException(e);
             } finally {
                 this.latch.countDown();

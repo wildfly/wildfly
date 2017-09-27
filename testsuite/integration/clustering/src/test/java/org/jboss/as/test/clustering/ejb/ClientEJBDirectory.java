@@ -53,12 +53,12 @@ public class ClientEJBDirectory implements EJBDirectory {
     }
 
     @Override
-    public <T> T lookupStateless(String beanName, Class<T> beanInterface) throws Exception {
+    public <T> T lookupStateless(String beanName, Class<T> beanInterface) {
         return EJBClient.createProxy(this.createStatelessLocator(beanName, beanInterface));
     }
 
     @Override
-    public <T> T lookupSingleton(String beanName, Class<T> beanInterface) throws Exception {
+    public <T> T lookupSingleton(String beanName, Class<T> beanInterface) {
         return EJBClient.createProxy(this.createStatelessLocator(beanName, beanInterface));
     }
 

@@ -22,20 +22,13 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
-import java.util.function.UnaryOperator;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessIncrementorBean;
-import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.ejb.ClientEJBDirectory;
 import org.jboss.shrinkwrap.api.Archive;
 
-/**
- * Validates failover behavior of a remotely accessed @Stateless EJB.
- * @author Paul Ferraro
- */
-public class RemoteStatelessEJBFailoverTestCase extends AbstractRemoteStatelessEJBFailoverTestCase {
-    private static final String MODULE_NAME = "remote-stateless-ejb-failover-test";
+public class ClientRemoteStatefulEJBFailoverTestCase extends AbstractRemoteStatefulEJBFailoverTestCase {
+    private static final String MODULE_NAME = "client-remote-stateful-ejb-failover-test";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -49,7 +42,7 @@ public class RemoteStatelessEJBFailoverTestCase extends AbstractRemoteStatelessE
         return createDeployment(MODULE_NAME);
     }
 
-    public RemoteStatelessEJBFailoverTestCase() {
-        super(() -> new RemoteEJBDirectory(MODULE_NAME), StatelessIncrementorBean.class, UnaryOperator.identity());
+    public ClientRemoteStatefulEJBFailoverTestCase() {
+        super(() -> new ClientEJBDirectory(MODULE_NAME));
     }
 }
