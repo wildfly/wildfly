@@ -25,7 +25,6 @@ package org.jboss.as.test.clustering.ejb;
 import java.util.Properties;
 
 import javax.ejb.EJBHome;
-import javax.ejb.SessionBean;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -59,18 +58,8 @@ public abstract class AbstractEJBDirectory implements EJBDirectory {
     }
 
     @Override
-    public <T> T lookupStateful(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException {
-        return this.lookupStateful(beanClass.getSimpleName(), beanInterface);
-    }
-
-    @Override
     public <T> T lookupStateful(String beanName, Class<T> beanInterface) throws NamingException {
         return this.lookup(beanName, beanInterface, Type.STATEFUL);
-    }
-
-    @Override
-    public <T> T lookupStateless(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException {
-        return this.lookupStateless(beanClass.getSimpleName(), beanInterface);
     }
 
     @Override
@@ -79,18 +68,8 @@ public abstract class AbstractEJBDirectory implements EJBDirectory {
     }
 
     @Override
-    public <T> T lookupSingleton(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException {
-        return this.lookupSingleton(beanClass.getSimpleName(), beanInterface);
-    }
-
-    @Override
     public <T> T lookupSingleton(String beanName, Class<T> beanInterface) throws NamingException {
         return this.lookup(beanName, beanInterface, Type.SINGLETON);
-    }
-
-    @Override
-    public <T extends EJBHome> T lookupHome(Class<? extends SessionBean> beanClass, Class<T> homeInterface) throws NamingException {
-        return this.lookupHome(beanClass.getSimpleName(), homeInterface);
     }
 
     @Override
