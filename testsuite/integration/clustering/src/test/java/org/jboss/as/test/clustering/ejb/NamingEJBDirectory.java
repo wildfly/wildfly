@@ -33,23 +33,27 @@ import javax.transaction.UserTransaction;
 
 
 /**
+ * Abstract JNDI-based {@link EJBDirectory}.
  * @author Paul Ferraro
- *
  */
-public abstract class AbstractEJBDirectory implements EJBDirectory {
+public abstract class NamingEJBDirectory implements EJBDirectory {
     private final Context context;
+    private final String prefix;
+    private final String moduleName;
     private final String txContextName;
 
     protected enum Type {
         STATEFUL, STATELESS, SINGLETON, HOME
     }
 
-    protected AbstractEJBDirectory(String txContextName, Properties env) throws NamingException {
-        this(txContextName, new InitialContext(env));
+    protected NamingEJBDirectory(Properties env, String prefix, String moduleName, String txContextName) throws NamingException {
+        this(new InitialContext(env), prefix, moduleName, txContextName);
     }
 
-    protected AbstractEJBDirectory(String txContextName, InitialContext context) {
+    protected NamingEJBDirectory(InitialContext context, String prefix, String moduleName, String txContextName) {
         this.context = context;
+        this.prefix = prefix;
+        this.moduleName = moduleName;
         this.txContextName = txContextName;
     }
 
@@ -64,18 +68,8 @@ public abstract class AbstractEJBDirectory implements EJBDirectory {
     }
 
     @Override
-    public <T> T lookupStateful(String beanName, Class<T> beanInterface) throws NamingException {
-        return this.lookup(beanName, beanInterface, Type.STATEFUL);
-    }
-
-    @Override
     public <T> T lookupStateless(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException {
         return this.lookupStateless(beanClass.getSimpleName(), beanInterface);
-    }
-
-    @Override
-    public <T> T lookupStateless(String beanName, Class<T> beanInterface) throws NamingException {
-        return this.lookup(beanName, beanInterface, Type.STATELESS);
     }
 
     @Override
@@ -84,13 +78,23 @@ public abstract class AbstractEJBDirectory implements EJBDirectory {
     }
 
     @Override
-    public <T> T lookupSingleton(String beanName, Class<T> beanInterface) throws NamingException {
-        return this.lookup(beanName, beanInterface, Type.SINGLETON);
+    public <T extends EJBHome> T lookupHome(Class<? extends SessionBean> beanClass, Class<T> homeInterface) throws NamingException {
+        return this.lookupHome(beanClass.getSimpleName(), homeInterface);
     }
 
     @Override
-    public <T extends EJBHome> T lookupHome(Class<? extends SessionBean> beanClass, Class<T> homeInterface) throws NamingException {
-        return this.lookupHome(beanClass.getSimpleName(), homeInterface);
+    public <T> T lookupStateful(String beanName, Class<T> beanInterface) throws NamingException {
+        return this.lookup(beanName, beanInterface, Type.STATEFUL);
+    }
+
+    @Override
+    public <T> T lookupStateless(String beanName, Class<T> beanInterface) throws NamingException {
+        return this.lookup(beanName, beanInterface, Type.STATELESS);
+    }
+
+    @Override
+    public <T> T lookupSingleton(String beanName, Class<T> beanInterface) throws NamingException {
+        return this.lookup(beanName, beanInterface, Type.SINGLETON);
     }
 
     @Override
@@ -107,7 +111,9 @@ public abstract class AbstractEJBDirectory implements EJBDirectory {
         return this.lookup(this.createJndiName(beanName, beanInterface, type), beanInterface);
     }
 
-    protected abstract <T> String createJndiName(String beanName, Class<T> beanInterface, Type type);
+    protected String createJndiName(String beanName, Class<?> beanInterface, Type type) {
+        return String.format("%s/%s/%s!%s", this.prefix, this.moduleName, beanName, beanInterface.getName());
+    }
 
     protected <T> T lookup(String name, Class<T> targetClass) throws NamingException {
         return targetClass.cast(this.context.lookup(name));

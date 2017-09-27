@@ -159,7 +159,7 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
     }
 
     @AfterClass
-    public static void destroy() throws NamingException {
+    public static void destroy() throws Exception {
         beanDirectory.close();
         txnBeanDirectory.close();
     }

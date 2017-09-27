@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.clustering;
 
-import javax.naming.NamingException;
-
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
@@ -69,7 +67,7 @@ public class ClusterTestUtil {
         return archive;
     }
 
-    public static void establishTopology(EJBDirectory directory, String container, String cache, String... nodes) throws NamingException, InterruptedException {
+    public static void establishTopology(EJBDirectory directory, String container, String cache, String... nodes) throws Exception {
         TopologyChangeListener listener = directory.lookupStateless(TopologyChangeListenerBean.class, TopologyChangeListener.class);
         listener.establishTopology(container, cache, TopologyChangeListener.DEFAULT_TIMEOUT, nodes);
     }

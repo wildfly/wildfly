@@ -24,7 +24,6 @@ package org.jboss.as.test.clustering.ejb;
 
 import javax.ejb.EJBHome;
 import javax.ejb.SessionBean;
-import javax.naming.NamingException;
 import javax.transaction.UserTransaction;
 
 /**
@@ -33,24 +32,32 @@ import javax.transaction.UserTransaction;
  * @author Paul Ferraro
  */
 public interface EJBDirectory extends AutoCloseable {
-    <T> T lookupStateful(String beanName, Class<T> beanInterface) throws NamingException;
+    <T> T lookupStateful(String beanName, Class<T> beanInterface) throws Exception;
 
-    <T> T lookupStateful(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
+    default <T> T lookupStateful(Class<? extends T> beanClass, Class<T> beanInterface) throws Exception {
+        return this.lookupStateful(beanClass.getSimpleName(), beanInterface);
+    }
 
-    <T> T lookupStateless(String beanName, Class<T> beanInterface) throws NamingException;
+    <T> T lookupStateless(String beanName, Class<T> beanInterface) throws Exception;
 
-    <T> T lookupStateless(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
+    default <T> T lookupStateless(Class<? extends T> beanClass, Class<T> beanInterface) throws Exception {
+        return this.lookupStateless(beanClass.getSimpleName(), beanInterface);
+    }
 
-    <T> T lookupSingleton(String beanName, Class<T> beanInterface) throws NamingException;
+    <T> T lookupSingleton(String beanName, Class<T> beanInterface) throws Exception;
 
-    <T> T lookupSingleton(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
+    default <T> T lookupSingleton(Class<? extends T> beanClass, Class<T> beanInterface) throws Exception {
+        return this.lookupSingleton(beanClass.getSimpleName(), beanInterface);
+    }
 
-    <T extends EJBHome> T lookupHome(String beanName, Class<T> homeInterface) throws NamingException;
+    <T extends EJBHome> T lookupHome(String beanName, Class<T> homeInterface) throws Exception;
 
-    <T extends EJBHome> T lookupHome(Class<? extends SessionBean> beanClass, Class<T> homeInterface) throws NamingException;
+    default <T extends EJBHome> T lookupHome(Class<? extends SessionBean> beanClass, Class<T> homeInterface) throws Exception {
+        return this.lookupHome(beanClass.getSimpleName(), homeInterface);
+    }
 
-    UserTransaction lookupUserTransaction() throws NamingException;
+    UserTransaction lookupUserTransaction() throws Exception;
 
     @Override
-    void close() throws NamingException;
+    void close() throws Exception;
 }

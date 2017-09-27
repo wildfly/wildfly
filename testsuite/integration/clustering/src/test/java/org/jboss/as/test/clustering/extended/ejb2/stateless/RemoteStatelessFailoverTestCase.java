@@ -112,7 +112,7 @@ public class RemoteStatelessFailoverTestCase {
     }
 
     @AfterClass
-    public static void destroy() throws NamingException {
+    public static void destroy() throws Exception {
         directoryAnnotation.close();
         directoryDD.close();
     }
