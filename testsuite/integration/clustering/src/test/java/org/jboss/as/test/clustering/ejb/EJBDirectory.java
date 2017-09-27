@@ -35,19 +35,27 @@ import javax.transaction.UserTransaction;
 public interface EJBDirectory extends AutoCloseable {
     <T> T lookupStateful(String beanName, Class<T> beanInterface) throws NamingException;
 
-    <T> T lookupStateful(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
+    default <T> T lookupStateful(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException {
+        return this.lookupStateful(beanClass.getSimpleName(), beanInterface);
+    }
 
     <T> T lookupStateless(String beanName, Class<T> beanInterface) throws NamingException;
 
-    <T> T lookupStateless(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
+    default <T> T lookupStateless(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException {
+        return this.lookupStateless(beanClass.getSimpleName(), beanInterface);
+    }
 
     <T> T lookupSingleton(String beanName, Class<T> beanInterface) throws NamingException;
 
-    <T> T lookupSingleton(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
+    default <T> T lookupSingleton(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException {
+        return this.lookupSingleton(beanClass.getSimpleName(), beanInterface);
+    }
 
     <T extends EJBHome> T lookupHome(String beanName, Class<T> homeInterface) throws NamingException;
 
-    <T extends EJBHome> T lookupHome(Class<? extends SessionBean> beanClass, Class<T> homeInterface) throws NamingException;
+    default <T extends EJBHome> T lookupHome(Class<? extends SessionBean> beanClass, Class<T> homeInterface) throws NamingException {
+        return this.lookupHome(beanClass.getSimpleName(), homeInterface);
+    }
 
     UserTransaction lookupUserTransaction() throws NamingException;
 

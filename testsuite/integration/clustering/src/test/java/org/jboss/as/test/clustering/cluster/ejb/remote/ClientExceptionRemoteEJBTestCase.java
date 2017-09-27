@@ -38,6 +38,7 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.InfinispanExceptionThrowingIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
+import org.jboss.as.test.clustering.ejb.ClientEJBDirectory;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
@@ -47,6 +48,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * Test for WFLY-5788.
@@ -79,8 +81,17 @@ public class ClientExceptionRemoteEJBTestCase extends ClusterAbstractTestCase {
     }
 
     @Test
-    public void test() throws Exception {
-        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
+    public void testJNDI() throws Exception {
+        test(() -> new RemoteEJBDirectory(MODULE_NAME));
+    }
+
+    @Test
+    public void testClient() throws Exception {
+        test(() -> new ClientEJBDirectory(MODULE_NAME));
+    }
+
+    private static void test(ExceptionSupplier<EJBDirectory, Exception> directoryProvider) throws Exception {
+        try (EJBDirectory directory = directoryProvider.get()) {
             Incrementor bean = directory.lookupStateful(InfinispanExceptionThrowingIncrementorBean.class, Incrementor.class);
 
             bean.increment();

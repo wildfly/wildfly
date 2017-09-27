@@ -33,6 +33,7 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatefulIncrementorBean;
+import org.jboss.as.test.clustering.ejb.ClientEJBDirectory;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -43,6 +44,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * Validates failover behavior of a remotely accessed @Stateful EJB.
@@ -77,8 +79,17 @@ public class RemoteStatefulEJBFailoverTestCase extends ClusterAbstractTestCase {
     }
 
     @Test
-    public void test() throws Exception {
-        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
+    public void testJNDI() throws Exception {
+        this.test(() -> new RemoteEJBDirectory(MODULE_NAME));
+    }
+
+    @Test
+    public void testClient() throws Exception {
+        this.test(() -> new ClientEJBDirectory(MODULE_NAME));
+    }
+
+    private void test(ExceptionSupplier<EJBDirectory, Exception> directoryProvider) throws Exception {
+        try (EJBDirectory directory = directoryProvider.get()) {
             Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
 
             Result<Integer> result = bean.increment();

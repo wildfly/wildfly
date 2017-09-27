@@ -37,10 +37,12 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.ejb.ClientEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * Validates failover behavior of a remotely accessed @Stateless EJB.
@@ -65,9 +67,18 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Cluster
     }
 
     @Test
-    public void test() throws Exception {
+    public void testJNDI() throws Exception {
+        this.test(() -> new RemoteEJBDirectory(this.module));
+    }
+
+    @Test
+    public void testClient() throws Exception {
+        this.test(() -> new ClientEJBDirectory(this.module));
+    }
+
+    private void test(ExceptionSupplier<EJBDirectory, Exception> directoryProvider) throws Exception {
         this.configurator.apply(() -> {
-            try (EJBDirectory directory = new RemoteEJBDirectory(this.module)) {
+            try (EJBDirectory directory = directoryProvider.get()) {
                 Incrementor bean = directory.lookupStateless(this.beanClass, Incrementor.class);
 
                 // Allow sufficient time for client to receive full topology
