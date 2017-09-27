@@ -1,33 +1,27 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2017, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.test.clustering.twoclusters;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
-import org.jboss.as.test.clustering.EJBClientContextSelector;
-import org.jboss.as.test.clustering.ejb.EJBDirectory;
-import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.as.test.clustering.cluster.ExtendedClusterAbstractTestCase;
-import org.jboss.as.test.clustering.twoclusters.bean.SerialBean;
-import org.jboss.as.test.clustering.twoclusters.bean.common.CommonStatefulSB;
-import org.jboss.as.test.clustering.twoclusters.bean.forwarding.AbstractForwardingStatefulSBImpl;
-import org.jboss.as.test.clustering.twoclusters.bean.forwarding.ForwardingStatefulSBImpl;
-import org.jboss.as.test.clustering.twoclusters.bean.forwarding.NonTxForwardingStatefulSBImpl;
-import org.jboss.as.test.clustering.twoclusters.bean.stateful.RemoteStatefulSB;
-import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.logging.Logger;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import javax.naming.NamingException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -35,6 +29,28 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
+
+import javax.naming.NamingException;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.clustering.cluster.ExtendedClusterAbstractTestCase;
+import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.clustering.twoclusters.bean.SerialBean;
+import org.jboss.as.test.clustering.twoclusters.bean.common.CommonStatefulSB;
+import org.jboss.as.test.clustering.twoclusters.bean.stateful.RemoteStatefulSB;
+import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.logging.Logger;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * Test EJBClient functionality across two clusters with fail-over.
@@ -53,14 +69,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase {
+public abstract class AbstractRemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase {
 
-    private static final Logger logger = Logger.getLogger(RemoteEJBTwoClusterTestCase.class);
-    private static final String FORWARDER_MODULE_NAME = "clusterbench-ee6-ejb-forwarder";
-    private static final String FORWARDER_WITH_TXN_MODULE_NAME = "clusterbench-ee6-ejb-forwarder-with-txn";
+    private static final Logger logger = Logger.getLogger(AbstractRemoteEJBTwoClusterTestCase.class);
     private static final String RECEIVER_MODULE_NAME = "clusterbench-ee6-ejb";
-    // EJBClient configuartion to cluster A
-    private static final String FORWARDER_CLIENT_PROPERTIES = "org/jboss/as/test/clustering/twoclusters/forwarder-jboss-ejb-client.properties";
 
     private static long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
     private static long FAILURE_FREE_TIME = TimeoutUtil.adjust(5000);
@@ -70,20 +82,12 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
     // allowed percentage of exceptions (exceptions / invocations)
     private static double EXCEPTION_PERCENTAGE = 0.1;
 
-    // EJB deployment lookup helpers
-    private static EJBDirectory beanDirectory;
-    private static EJBDirectory txnBeanDirectory;
+    private final ExceptionSupplier<EJBDirectory, NamingException> directorySupplier;
+    private final Supplier<Class> implementationSupplier;
 
-    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
-    public static Archive<?> deployment0() {
-        return getNonTxForwardingDeployment();
-    }
-
-    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
-    public static Archive<?> deployment1() {
-        return getNonTxForwardingDeployment();
+    AbstractRemoteEJBTwoClusterTestCase(ExceptionSupplier<EJBDirectory, NamingException> directorySupplier, Supplier<Class> implementationSupplier) {
+        this.directorySupplier = directorySupplier;
+        this.implementationSupplier = implementationSupplier;
     }
 
     @Deployment(name = DEPLOYMENT_3, managed = false, testable = false)
@@ -98,44 +102,6 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
         return getNonForwardingDeployment();
     }
 
-    @Deployment(name = "deployment-4", managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
-    public static Archive<?> deployment0_txn() {
-        return getTxForwardingDeployment();
-    }
-
-    @Deployment(name = "deployment-5", managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
-    public static Archive<?> deployment1_txn() {
-        return getTxForwardingDeployment();
-    }
-
-    private static Archive<?> getTxForwardingDeployment() {
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, FORWARDER_WITH_TXN_MODULE_NAME + ".jar");
-        ejbJar.addPackage(CommonStatefulSB.class.getPackage());
-        ejbJar.addPackage(RemoteStatefulSB.class.getPackage());
-        ejbJar.addClass(SerialBean.class.getName());
-        // the forwarding classes
-        ejbJar.addClass(AbstractForwardingStatefulSBImpl.class.getName());
-        ejbJar.addPackage(ForwardingStatefulSBImpl.class.getPackage());
-        // remote outbound connection configuration
-        ejbJar.addAsManifestResource(RemoteEJBTwoClusterTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
-        return ejbJar;
-    }
-
-    private static Archive<?> getNonTxForwardingDeployment() {
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, FORWARDER_MODULE_NAME + ".jar");
-        ejbJar.addPackage(CommonStatefulSB.class.getPackage());
-        ejbJar.addPackage(RemoteStatefulSB.class.getPackage());
-        ejbJar.addClass(SerialBean.class.getName());
-        // the forwarding classes
-        ejbJar.addClass(AbstractForwardingStatefulSBImpl.class.getName());
-        ejbJar.addClass(NonTxForwardingStatefulSBImpl.class.getName());
-        // remote outbound connection configuration
-        ejbJar.addAsManifestResource(RemoteEJBTwoClusterTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
-        return ejbJar;
-    }
-
     private static Archive<?> getNonForwardingDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, RECEIVER_MODULE_NAME + ".jar");
         ejbJar.addPackage(CommonStatefulSB.class.getPackage());
@@ -144,72 +110,15 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
         return ejbJar;
     }
 
-    /*
-     * In the test case framework:
-     * - containers are deployed by the framework before any test runs
-     * - containers are undeployed by the test case itself
-     * - deployments are deployed by the test case itself
-     * - deployments are undeployed by the test case itself
-     */
-
-    @BeforeClass
-    public static void beforeTest() throws NamingException {
-        beanDirectory = new RemoteEJBDirectory(FORWARDER_MODULE_NAME);
-        txnBeanDirectory = new RemoteEJBDirectory(FORWARDER_WITH_TXN_MODULE_NAME);
-    }
-
-    @AfterClass
-    public static void destroy() throws Exception {
-        beanDirectory.close();
-        txnBeanDirectory.close();
-    }
-
-    @After
-    public void afterTest() throws Exception {
-    }
-
-    /*
-     * Tests concurrent fail-over without a managed transaction context on the forwarder.
-     */
-    @Test
-    @InSequence(1)
-    public void testConcurrentFailoverOverWithoutTransactions() throws Exception {
-
-        testConcurrentFailoverOverWithTwoClusters(false);
-    }
-
-    /*
-     * Tests concurrent fail-over with a managed transaction context on the forwarder.
-     */
-    @Test
-    @InSequence(2)
-    public void testConcurrentFailoverOverWithTransactions() throws Exception {
-        // some additional transaction-oriented deployments for containers 1 and 2
-        this.deploy("deployment-4", "deployment-5");
-
-        testConcurrentFailoverOverWithTwoClusters(true);
-
-        // additional un-deployments for containers 1 and 2
-        this.undeploy("deployment-4", "deployment-5");
-    }
-
-    /*
+    /**
      * Tests that EJBClient invocations on stateful session beans can still successfully be processed
      * as long as one node in each cluster is available.
      */
-    public void testConcurrentFailoverOverWithTwoClusters(boolean useTransactions) throws Exception {
-        // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
-        // that should be used for this test using FORWARDER_CLIENT_PROPERTIES and ensure the EJB client context is reset
-        // to its original state at the end of the test
-        EJBClientContextSelector.setup(FORWARDER_CLIENT_PROPERTIES);
-
-        try {
+    @Test
+    public void test() throws Exception {
+        try (EJBDirectory directory = directorySupplier.get()) {
             // get the correct forwarder deployment on cluster A
-            RemoteStatefulSB bean = null;
-            if (useTransactions)
-                bean = txnBeanDirectory.lookupStateful(ForwardingStatefulSBImpl.class, RemoteStatefulSB.class);
-            else
-                bean = beanDirectory.lookupStateful(NonTxForwardingStatefulSBImpl.class, RemoteStatefulSB.class);
+            RemoteStatefulSB bean = directory.lookupStateful(implementationSupplier.get().getSimpleName(), RemoteStatefulSB.class);
 
             AtomicInteger count = new AtomicInteger();
 
@@ -234,20 +143,20 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
                 // a few seconds of non-failure behaviour
                 Thread.sleep(FAILURE_FREE_TIME);
 
-                logger.trace("------ Shutdown clusterA-node0 -----");
+                logger.debug("------ Shutdown clusterA-node0 -----");
                 // stop cluster A node 0
-                stop(CONTAINER_1);
+                stop(GRACEFUL_SHUTDOWN_TIMEOUT, CONTAINER_1);
                 // Let the server stay down for a while
                 Thread.sleep(SERVER_DOWN_TIME);
-                logger.trace("------ Startup clusterA-node0 -----");
+                logger.debug("------ Startup clusterA-node0 -----");
                 start(CONTAINER_1);
 
                 // a few seconds of non-failure behaviour
                 Thread.sleep(FAILURE_FREE_TIME);
 
-                logger.trace("----- Shutdown clusterA-node1 -----");
+                logger.debug("----- Shutdown clusterA-node1 -----");
                 // stop cluster A node 1
-                stop(CONTAINER_2);
+                stop(GRACEFUL_SHUTDOWN_TIMEOUT, CONTAINER_2);
                 // Let the server stay down for a while
                 Thread.sleep(SERVER_DOWN_TIME);
                 logger.trace("------ Startup clusterA-node1 -----");
@@ -256,9 +165,9 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
                 // a few seconds of non-failure behaviour
                 Thread.sleep(FAILURE_FREE_TIME);
 
-                logger.trace("----- Shutdown clusterB-node0 -----");
+                logger.debug("----- Shutdown clusterB-node0 -----");
                 // stop cluster B node 0
-                stop(CONTAINER_3);
+                stop(GRACEFUL_SHUTDOWN_TIMEOUT, CONTAINER_3);
                 // Let the server stay down for a while
                 Thread.sleep(SERVER_DOWN_TIME);
                 logger.trace("------ Startup clusterB-node0 -----");
@@ -267,12 +176,12 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
                 // a few seconds of non-failure behaviour
                 Thread.sleep(FAILURE_FREE_TIME);
 
-                logger.trace("----- Shutdown clusterB-node1 -----");
+                logger.debug("----- Shutdown clusterB-node1 -----");
                 // stop cluster B node 1
-                stop(CONTAINER_4);
+                stop(GRACEFUL_SHUTDOWN_TIMEOUT, CONTAINER_4);
                 // Let the server stay down for a while
                 Thread.sleep(SERVER_DOWN_TIME);
-                logger.trace("------ Startup clusterB-node1 -----");
+                logger.debug("------ Startup clusterB-node1 -----");
                 start(CONTAINER_4);
 
                 // a few seconds of non-failure behaviour
@@ -283,26 +192,25 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
                 try {
                     future.get();
                 } catch (CancellationException e) {
-                    logger.trace("Could not cancel future: " + e.toString());
+                    logger.debug("Could not cancel future: " + e.toString());
                 }
 
                 // test is completed, report results
                 double invocations = client.getInvocationCount();
                 double exceptions = client.getExceptionCount();
-                logger.trace("Total invocations = " + invocations + ", total exceptions = " + exceptions);
-                Assert.assertTrue("Too many exceptions! percentage = " + 100 * (exceptions/invocations), (exceptions/invocations) < EXCEPTION_PERCENTAGE);
+                logger.debug("Total invocations = " + invocations + ", total exceptions = " + exceptions);
+                Assert.assertTrue("Too many exceptions! percentage = " + 100 * (exceptions / invocations), (exceptions / invocations) < EXCEPTION_PERCENTAGE);
 
             } catch (Exception e) {
                 Assert.fail("Exception occurred on client: " + e.getMessage() + ", test did not complete successfully (inner)");
 
             } finally {
-                logger.trace("Shutting down executor");
+                logger.debug("Shutting down executor");
                 executor.shutdownNow();
             }
 
         } catch (Exception e) {
             Assert.fail("Exception occurred on client: " + e.getMessage() + ", test did not complete successfully (outer)");
-
         }
     }
 
@@ -347,16 +255,16 @@ public class RemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase
                 // check to see if the previous invocation was exceptional
                 if (this.lastWasException) {
                     // reset the value of the counter
-                    this.count.set(value+1);
+                    this.count.set(value + 1);
                     this.lastWasException = false;
-                    logger.trace("CLIENT: made invocation (" + this.invocationCount + ") on bean, resetting count = " + (value+1));
+                    logger.trace("CLIENT: made invocation (" + this.invocationCount + ") on bean, resetting count = " + (value + 1));
                 } else {
                     int count = this.count.getAndIncrement();
                     logger.trace("CLIENT: made invocation (" + this.invocationCount + ") on bean, count = " + count + ", value = " + value);
                 }
             } catch (Exception e) {
                 // log the occurrence of the exception
-                logger.trace("CLIENT: Exception invoking (" + this.invocationCount + ") on bean from client: " + e.getMessage());
+                logger.debug("CLIENT: Exception invoking (" + this.invocationCount + ") on bean from client: " + e.getMessage());
                 this.exceptionCount++;
                 this.lastWasException = true;
             } finally {

@@ -6,6 +6,7 @@ import javax.annotation.PostConstruct;
 import javax.ejb.Remove;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+
 import org.jboss.logging.Logger;
 
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)

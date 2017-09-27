@@ -18,5 +18,5 @@
                 </connection-creation-options>
             </cluster>
         </clusters>
-   </client-context>
+    </client-context>
 </jboss-ejb-client>
