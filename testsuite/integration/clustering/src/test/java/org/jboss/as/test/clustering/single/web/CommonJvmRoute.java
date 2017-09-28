@@ -21,6 +21,10 @@ public class CommonJvmRoute {
   private static final String[] properties = new String[] { "jvmRoute", "jboss.mod_cluster.jvmRoute", "instance-id", "jboss.domain.web.instance-id", "jboss.jvmRoute" };
   private static final String UNKNOWN = "unknown";
 
+  public static String[] getProperties() {
+    return properties;
+  }
+
   public String jvmRoute() {
     // This should work for both AS5 and AS7 with reasonable set jvmRoute property.
     String jvmRoute1 = UNKNOWN;
