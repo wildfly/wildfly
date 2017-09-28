@@ -32,7 +32,7 @@
         <stacks>
           ...
           <stack name="tunnel">
-              <transport type="TUNNEL" shared="false">
+              <transport type="TUNNEL" shared="false" socket-binding="jgroups-udp">
                   <property name="gossip_router_hosts">127.0.0.1[12001]</property>
               </transport>
               <protocol type="PING"/>
@@ -56,7 +56,7 @@
     <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
 
     <!-- Namespaces -->
-    <xsl:variable name="domainns" select="'urn:jboss:domain:jgroups'"/>
+    <xsl:variable name="jgroupsns" select="'urn:jboss:domain:jgroups'"/>
 
     <!-- Parameters -->
     <xsl:param name="stack" select="'tunnel'"/>
@@ -64,9 +64,9 @@
     <xsl:param name="router-port" select="'12001'"/>
 
     <!-- Add stack with TUNNEL transport -->
-    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $domainns)]
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jgroupsns)]
                           /*[local-name()='stacks']
-                          /*[local-name()='stack'][last()]">
+                          /*[local-name()='stack' and @name='udp']">
         <xsl:copy>
             <xsl:apply-templates select="@*|node()"/>
         </xsl:copy>
@@ -82,6 +82,11 @@
                 <xsl:attribute name="shared">
                     <xsl:value-of select="'false'"/>
                 </xsl:attribute>
+                <!-- https://issues.jboss.org/browse/WFLY-9378 socket-binding is required -->
+                <!-- https://issues.jboss.org/browse/WFLY-9377 but reloading the server currently fails which complicates moving the script to use just CLI -->
+                <xsl:attribute name="socket-binding">
+                    <xsl:value-of select="'jgroups-udp'"/>
+                </xsl:attribute>
                 <xsl:element name="property" namespace="{namespace-uri()}">
                     <xsl:attribute name="name">
                         <xsl:value-of select="'gossip_router_hosts'"/>
@@ -95,7 +100,6 @@
                     <xsl:value-of select="4000"/>
                 </xsl:element>
             </xsl:element>
-            <!--<xsl:apply-templates select="*[local-name()!='transport']"/>-->
             <xsl:for-each select="*[local-name()='protocol']">
                 <xsl:copy>
                     <xsl:apply-templates select="@*|node()"/>
