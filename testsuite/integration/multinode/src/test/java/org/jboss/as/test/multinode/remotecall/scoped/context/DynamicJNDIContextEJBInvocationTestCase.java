@@ -36,8 +36,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.naming.InitialContext;
+import java.io.FilePermission;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * A test case for testing the feature introduced in https://issues.jboss.org/browse/EJBCLIENT-34 which
@@ -64,6 +67,10 @@ public class DynamicJNDIContextEJBInvocationTestCase {
         jar.addClasses(StatefulRemoteHomeForBeanOnOtherServer.class);
         jar.addAsManifestResource(DynamicJNDIContextEJBInvocationTestCase.class.getPackage(), "MANIFEST.MF", "MANIFEST.MF");
         jar.addAsManifestResource(DynamicJNDIContextEJBInvocationTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new FilePermission(System.getProperty("jbossas.multinode.server") + "/standalone/tmp/auth/*", "read")),
+                "permissions.xml"
+        );
         return jar;
     }
 
