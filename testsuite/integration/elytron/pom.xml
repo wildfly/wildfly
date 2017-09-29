@@ -43,8 +43,8 @@
 
     <properties>
         <wildfly.instance.name>wildfly</wildfly.instance.name>
-        <wildfly.dir>${basedir}/target/${wildfly.instance.name}</wildfly.dir>
-        <jboss.dist>${wildfly.dir}</jboss.dist>
+        <jboss.dist>${basedir}/target/${wildfly.instance.name}</jboss.dist>
+        <wildfly.dir>${jboss.dist}</wildfly.dir>
 
         <enforcer.skip>true</enforcer.skip>
     </properties>
