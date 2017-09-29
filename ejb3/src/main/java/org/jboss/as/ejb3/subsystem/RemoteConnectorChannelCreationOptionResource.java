@@ -86,8 +86,8 @@ class RemoteConnectorChannelCreationOptionResource extends SimpleResourceDefinit
      */
     private static class ChannelCreationOptionWriteAttributeHandler extends RestartParentWriteAttributeHandler {
 
-        public ChannelCreationOptionWriteAttributeHandler(final AttributeDefinition attributeDefinition) {
-            super(EJB3SubsystemModel.REMOTE, attributeDefinition);
+        ChannelCreationOptionWriteAttributeHandler(final AttributeDefinition attributeDefinition) {
+            super(EJB3SubsystemModel.SERVICE, attributeDefinition);
         }
 
         @Override
@@ -107,7 +107,7 @@ class RemoteConnectorChannelCreationOptionResource extends SimpleResourceDefinit
     private static class ChannelCreationOptionAdd extends RestartParentResourceAddHandler {
 
         private ChannelCreationOptionAdd() {
-            super(EJB3SubsystemModel.REMOTE);
+            super(EJB3SubsystemModel.SERVICE);
         }
 
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -142,7 +142,7 @@ class RemoteConnectorChannelCreationOptionResource extends SimpleResourceDefinit
      */
     private static class ChannelCreationOptionRemove extends RestartParentResourceRemoveHandler {
         private ChannelCreationOptionRemove() {
-            super(EJB3SubsystemModel.REMOTE);
+            super(EJB3SubsystemModel.SERVICE);
         }
 
         @Override
