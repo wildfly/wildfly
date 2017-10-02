@@ -22,12 +22,19 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.tx;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Properties;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.transaction.UserTransaction;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.common.DefaultConfiguration;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatelessEJBLocator;
@@ -45,13 +52,6 @@ import org.wildfly.naming.client.WildFlyInitialContextFactory;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.transaction.UserTransaction;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Properties;
 
 /**
  * @author Jaikiran Pai
@@ -107,7 +107,9 @@ public class HTTPEJBClientUserTransactionTestCase {
         env.put(Context.INITIAL_CONTEXT_FACTORY, WildFlyInitialContextFactory.class.getName());
         URI namingUri = getHttpUri();
         env.put(Context.PROVIDER_URL, namingUri.toString());
-        return new InitialContext(DefaultConfiguration.addSecurityProperties(env));
+        env.put(Context.SECURITY_PRINCIPAL, "user1");
+        env.put(Context.SECURITY_CREDENTIALS, "password1");
+        return new InitialContext(env);
     }
 
     private URI getHttpUri() throws URISyntaxException {
