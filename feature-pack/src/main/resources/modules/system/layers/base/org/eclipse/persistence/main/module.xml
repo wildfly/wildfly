@@ -33,7 +33,6 @@
     </resources>
 
     <dependencies>
-        <module name="asm.asm"/>
         <module name="javax.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.enterprise.api"/>
@@ -43,7 +42,6 @@
         <module name="javax.xml.bind.api"/>
         <module name="org.antlr"/>
         <module name="org.dom4j"/>
-        <module name="org.javassist"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>
