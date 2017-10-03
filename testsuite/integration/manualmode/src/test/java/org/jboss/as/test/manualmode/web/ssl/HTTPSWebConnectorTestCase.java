@@ -406,15 +406,11 @@ public class HTTPSWebConnectorTestCase {
         final ModelControllerClient client = managementClient.getControllerClient();
 
         // delete https web connectors
-        ModelNode operation = createOpNode("subsystem=undertow/server=default-server/https-listener=" + HTTPS,
-                ModelDescriptionConstants.REMOVE);
-        Utils.applyUpdate(operation, client);
-
         rmHttpsConnector(HTTPS_NAME_VERIFY_NOT_REQUESTED, client);
         rmHttpsConnector(HTTPS_NAME_VERIFY_REQUESTED, client);
         rmHttpsConnector(HTTPS_NAME_VERIFY_REQUIRED, client);
 
-        operation = createOpNode("core-service=management/security-realm=" + HTTPS_REALM, ModelDescriptionConstants.REMOVE);
+        ModelNode operation = createOpNode("core-service=management/security-realm=" + HTTPS_REALM, ModelDescriptionConstants.REMOVE);
         Utils.applyUpdate(operation, client);
 
         FileUtils.deleteDirectory(WORK_DIR);
