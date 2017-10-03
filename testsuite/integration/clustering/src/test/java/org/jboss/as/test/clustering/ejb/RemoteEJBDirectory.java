@@ -27,16 +27,11 @@ import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import org.jboss.ejb.client.Affinity;
-import org.jboss.ejb.client.ClusterAffinity;
-import org.jboss.ejb.client.EJBClient;
-
 /**
+ * {@link EJBDirectory} that uses remote JNDI.
  * @author Paul Ferraro
  */
-public class RemoteEJBDirectory extends AbstractEJBDirectory {
-
-    private static final String TX_CONTEXT_NAME = "txn:UserTransaction";
+public class RemoteEJBDirectory extends NamingEJBDirectory {
 
     private static Properties createEnvironment() {
         Properties env = new Properties();
@@ -46,35 +41,24 @@ public class RemoteEJBDirectory extends AbstractEJBDirectory {
         return env;
     }
 
-    private final String module;
-
     public RemoteEJBDirectory(String module) throws NamingException {
-        super(TX_CONTEXT_NAME, createEnvironment());
-        this.module = module;
+        this(module, createEnvironment());
+    }
+
+    public RemoteEJBDirectory(String module, Properties properties) throws NamingException {
+        super(properties, "ejb:", module, "txn:UserTransaction");
     }
 
     @Override
-    protected <T> String createJndiName(String beanName, Class<T> beanInterface, Type type) {
-        return String.format("ejb:/%s/%s!%s%s", this.module, beanName, beanInterface.getName(), (type == Type.STATEFUL) ? "?stateful" : "");
-    }
-
-    @Override
-    protected <T> T lookup(String beanName, Class<T> beanInterface, Type type) throws NamingException {
-        T bean = super.lookup(beanName, beanInterface, type);
-        Affinity affinity = new ClusterAffinity("ejb");
+    protected String createJndiName(String beanName, Class<?> beanInterface, Type type) {
+        String jndiName = super.createJndiName(beanName, beanInterface, type);
         switch (type) {
             case STATEFUL: {
-                EJBClient.setStrongAffinity(bean, affinity);
-                break;
-            }
-            case STATELESS: {
-                EJBClient.setWeakAffinity(bean, affinity);
-                break;
+                return jndiName + "?stateful=true";
             }
             default: {
-                // No need to set initial affinity
+                return jndiName;
             }
         }
-        return bean;
     }
 }

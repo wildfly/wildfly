@@ -27,6 +27,7 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.PropertyPermission;
 import java.util.concurrent.Callable;
 import java.util.function.UnaryOperator;
 
@@ -34,13 +35,20 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.SecureStatelessIncrementorBean;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
-import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * Validates failover behavior of a remotely accessed @Stateless EJB.
@@ -54,12 +62,20 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Cluster
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
     private static final long INVOCATION_WAIT = TimeoutUtil.adjust(10);
 
-    private final String module;
+    static Archive<?> createDeployment(String moduleName) {
+        return ShrinkWrap.create(JavaArchive.class, moduleName + ".jar")
+                .addPackage(EJBDirectory.class.getPackage())
+                .addClasses(Result.class, Incrementor.class, IncrementorBean.class, StatelessIncrementorBean.class, SecureStatelessIncrementorBean.class)
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read")), "permissions.xml")
+                ;
+    }
+
+    private final ExceptionSupplier<EJBDirectory, Exception> directoryProvider;
     private final Class<? extends Incrementor> beanClass;
     private final UnaryOperator<Callable<Void>> configurator;
 
-    AbstractRemoteStatelessEJBFailoverTestCase(String module, Class<? extends Incrementor> beanClass, UnaryOperator<Callable<Void>> configurator) {
-        this.module = module;
+    AbstractRemoteStatelessEJBFailoverTestCase(ExceptionSupplier<EJBDirectory, Exception> directoryProvider, Class<? extends Incrementor> beanClass, UnaryOperator<Callable<Void>> configurator) {
+        this.directoryProvider = directoryProvider;
         this.beanClass = beanClass;
         this.configurator = configurator;
     }
@@ -67,7 +83,7 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Cluster
     @Test
     public void test() throws Exception {
         this.configurator.apply(() -> {
-            try (EJBDirectory directory = new RemoteEJBDirectory(this.module)) {
+            try (EJBDirectory directory = this.directoryProvider.get()) {
                 Incrementor bean = directory.lookupStateless(this.beanClass, Incrementor.class);
 
                 // Allow sufficient time for client to receive full topology

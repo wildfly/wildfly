@@ -26,7 +26,6 @@ import javax.ejb.Remote;
 import javax.ejb.Stateful;
 import javax.naming.NamingException;
 
-import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 
 @Stateful(passivationCapable = false)
@@ -38,7 +37,7 @@ public class ClientIncrementorBean implements Incrementor {
 
     @PostConstruct
     public void postConstruct() {
-        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE)) {
+        try (RemoteEJBDirectory directory = new RemoteEJBDirectory(MODULE)) {
             this.locator = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
         } catch (NamingException e) {
             throw new IllegalStateException(e);

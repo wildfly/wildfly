@@ -62,7 +62,7 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends ClusterAbs
     }
 
     @AfterClass
-    public static void destroy() throws NamingException {
+    public static void destroy() throws Exception {
         directory.close();
         singletonDirectory.close();
     }

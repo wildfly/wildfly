@@ -61,7 +61,7 @@ public abstract class ClusterPassivationTestBase {
     }
 
     @AfterClass
-    public static void destroy() throws NamingException {
+    public static void destroy() throws Exception {
         directory.close();
     }
 
