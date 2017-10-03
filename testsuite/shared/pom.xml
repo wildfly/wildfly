@@ -140,7 +140,7 @@
                             <goal>clean</goal>
                         </goals>
                         <configuration>
-                            <keystore>${basedir}/target/tests-keystores/application.keystore</keystore>
+                            <keystore>${basedir}/target/classes/org/jboss/as/test/shared/shared-keystores/application.keystore</keystore>
                         </configuration>
                     </execution>
                     <execution>
@@ -150,7 +150,7 @@
                             <goal>generateKeyPair</goal>
                         </goals>
                         <configuration>
-                            <keystore>${basedir}/target/shared-keystores/application.keystore</keystore>
+                            <keystore>${basedir}/target/classes/org/jboss/as/test/shared/shared-keystores/application.keystore</keystore>
                             <dname>cn=server, ou=organizationUnit, o=organizationName, c=countryCode</dname>
                             <storetype>JKS</storetype>
                             <keypass>password</keypass>

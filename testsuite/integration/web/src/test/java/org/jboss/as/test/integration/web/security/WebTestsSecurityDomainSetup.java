@@ -34,10 +34,13 @@ import static org.jboss.as.security.Constants.LOGIN_MODULE;
 import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
@@ -78,6 +81,12 @@ public class WebTestsSecurityDomainSetup extends AbstractSecurityDomainSetup {
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+        // Retrieve application.keystore file from jar archive of wildfly-testsuite-shared module
+        File destFile = new File(System.getProperty("jboss.home") + File.separator + "standalone" + File.separator +
+                "configuration" + File.separatorChar + "application.keystore");
+        URL resourceUrl = this.getClass().getResource("/org/jboss/as/test/shared/shared-keystores/application.keystore");
+        FileUtils.copyInputStreamToFile(resourceUrl.openStream(), destFile);
+
         if (WebSecurityCommon.isElytron()) {
             cli = new CLIWrapper(true);
             setElytronBased();
