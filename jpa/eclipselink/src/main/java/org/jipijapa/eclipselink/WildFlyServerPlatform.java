@@ -22,13 +22,23 @@
 
 package org.jipijapa.eclipselink;
 
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.util.List;
+
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.TransactionManager;
 
+import org.eclipse.persistence.internal.security.PrivilegedAccessHelper;
+import org.eclipse.persistence.logging.SessionLog;
 import org.eclipse.persistence.platform.server.jboss.JBossPlatform;
 import org.eclipse.persistence.sessions.DatabaseSession;
 import org.eclipse.persistence.transaction.jboss.JBossTransactionController;
+import org.jipijapa.JipiLogger;
 
 /**
  * The fully qualified name of WildFlyServerPlatform must be set as the value
@@ -48,6 +58,67 @@ public class WildFlyServerPlatform extends JBossPlatform {
     @Override
     public Class<?> getExternalTransactionControllerClass() {
         return JBossAS7TransactionController.class;
+    }
+
+    @Override
+    public MBeanServer getMBeanServer() {
+        if(mBeanServer == null) {
+            List<MBeanServer> mBeanServerList = null;
+            try {
+                if (PrivilegedAccessHelper.shouldUsePrivilegedAccess()) {
+                    try {
+                        mBeanServerList = AccessController.doPrivileged(
+                                new PrivilegedExceptionAction<List<MBeanServer>>() {
+                                    public List<MBeanServer> run() {
+                                        return MBeanServerFactory.findMBeanServer(null);
+                                    }
+                                }
+                        );
+                    } catch (PrivilegedActionException pae) {
+                        getAbstractSession().log(SessionLog.WARNING, SessionLog.SERVER,
+                                "failed_to_find_mbean_server", "null or empty List returned from privileged MBeanServerFactory.findMBeanServer(null)");
+                        // Skip the superclass impl of a JNDI lookup
+                    }
+                } else {
+                    mBeanServerList = MBeanServerFactory.findMBeanServer(null);
+                }
+                if (mBeanServer == null) {
+                    // Attempt to get the first MBeanServer we find - usually there is only one - when agentId == null we return a List of them
+                    if (mBeanServerList == null || mBeanServerList.isEmpty()) {
+                        // Skip the superclass impl of trying ManagementFactory.getPlatformMBeanServer()
+                        // if privileged access is disabled.
+                        // WildFly has already called that by the time this code would get run, so if we
+                        // got here it's an error situation and we should just log and return null
+                        getAbstractSession().log(SessionLog.WARNING, SessionLog.SERVER,
+                                "failed_to_find_mbean_server", "null or empty List returned from MBeanServerFactory.findMBeanServer(null)");
+                    } else {
+                        // Use the first MBeanServer by default - there may be multiple domains each with their own MBeanServer
+                        mBeanServer = mBeanServerList.get(JMX_MBEANSERVER_INDEX_DEFAULT_FOR_MULTIPLE_SERVERS);
+                        if (mBeanServerList.size() > 1) {
+                            getAbstractSession().log(SessionLog.WARNING, SessionLog.SERVER,
+                                    "jmx_mbean_runtime_services_registration_encountered_multiple_mbeanserver_instances",
+                                    mBeanServerList.size(), JMX_MBEANSERVER_INDEX_DEFAULT_FOR_MULTIPLE_SERVERS, mBeanServer);
+                            if (null != mBeanServer.getDefaultDomain()) {
+                                // Prefer no default domain, as WildFly does not register an mbean server with a default domain
+                                for (int i = 1; i < mBeanServerList.size(); i++) {
+                                    MBeanServer anMBeanServer = mBeanServerList.get(i);
+                                    if (null == anMBeanServer.getDefaultDomain()) {
+                                        mBeanServer = anMBeanServer;
+                                        getAbstractSession().log(SessionLog.WARNING, SessionLog.SERVER,
+                                                "jmx_mbean_runtime_services_switching_to_alternate_mbeanserver",
+                                                mBeanServer, i);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                JipiLogger.JPA_LOGGER.error(e.getLocalizedMessage(), e);
+            }
+        }
+        return mBeanServer;
     }
 
     public static class JBossAS7TransactionController extends JBossTransactionController {
