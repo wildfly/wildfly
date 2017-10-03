@@ -23,15 +23,26 @@ package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PreDestroy;
+import javax.annotation.PostConstruct;
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
 
 @Stateful
 @Remote(Incrementor.class)
-public class SlowToDestroyStatefulIncrementorBean extends IncrementorBean {
-    @PreDestroy
-    public void preDestroy() {
+public class SlowStatefulIncrementorBean extends IncrementorBean {
+
+    @Override
+    public Result<Integer> increment() {
+        delay();
+        return super.increment();
+    }
+
+    @PostConstruct
+    public void init() {
+        delay();
+    }
+
+    private static void delay() {
         try {
             TimeUnit.SECONDS.sleep(2);
         } catch (InterruptedException e) {

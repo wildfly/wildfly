@@ -149,6 +149,8 @@ public abstract class AbstractRemoteStatefulEJBFailoverTestCase extends ClusterA
                 Assert.assertEquals(count++, result.getValue().intValue());
                 Assert.assertEquals(String.valueOf(i), target, result.getNode());
             }
+
+            bean.remove();
         }
     }
 }

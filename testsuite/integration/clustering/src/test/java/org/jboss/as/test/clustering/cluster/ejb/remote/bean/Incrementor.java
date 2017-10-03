@@ -21,6 +21,13 @@
  */
 package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 
+import javax.ejb.Remove;
+
 public interface Incrementor {
     Result<Integer> increment();
+
+    @Remove
+    default void remove() {
+        // Do nothing
+    }
 }
