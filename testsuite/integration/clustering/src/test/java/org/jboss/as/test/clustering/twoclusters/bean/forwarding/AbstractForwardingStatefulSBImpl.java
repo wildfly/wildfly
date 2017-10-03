@@ -7,7 +7,9 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+
 import java.util.Hashtable;
+
 import org.jboss.logging.Logger;
 
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -19,11 +21,11 @@ public class AbstractForwardingStatefulSBImpl {
 
     private final String appName = "";
     private final String moduleName = "clusterbench-ee6-ejb";
-    private final String distinctName = "" ;
+    private final String distinctName = "";
     private final String beanName = RemoteStatefulSBImpl.class.getSimpleName();
-    private final String viewClassName = RemoteStatefulSB.class.getName() ;
+    private final String viewClassName = RemoteStatefulSB.class.getName();
 
-    private final String EJB_NAME = "ejb:" + appName + "/" + moduleName + "/" + distinctName + "/" + beanName +  "!" + viewClassName + "?stateful";
+    private final String EJB_NAME = "ejb:" + appName + "/" + moduleName + "/" + distinctName + "/" + beanName + "!" + viewClassName + "?stateful";
 
     @SuppressWarnings("unchecked")
     private RemoteStatefulSB forward() {
