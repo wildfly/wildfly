@@ -39,6 +39,7 @@ import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.clustering.single.web.CommonJvmRoute;
 import org.jboss.as.test.clustering.single.web.JvmRouteServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
@@ -60,6 +61,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.PropertyPermission;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -109,8 +111,17 @@ public class WorkerFailoverTestCase {
     }
 
     private static Archive<?> getDeployment() {
+        final String[] properties = CommonJvmRoute.getProperties();
+        final PropertyPermission[] propertyPermissions = new PropertyPermission[properties.length];
+
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE + ".war");
         war.addClasses(JvmRouteServlet.class, CommonJvmRoute.class);
+
+        for (int i = 0; i < properties.length; i++) {
+            propertyPermissions[i] = new PropertyPermission(properties[i], "read");
+        }
+
+        war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(propertyPermissions), "permissions.xml");
 
         return war;
     }
