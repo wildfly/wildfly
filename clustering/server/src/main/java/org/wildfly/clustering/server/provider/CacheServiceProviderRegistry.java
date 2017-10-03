@@ -180,7 +180,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
 
     @Override
     public void membershipChanged(List<Node> previousMembers, List<Node> members, final boolean merged) {
-        if (this.getGroup().isCoordinator()) {
+        if (this.group.getNodes().equals(members.get(0))) {
             Set<Node> deadNodes = new HashSet<>(previousMembers);
             deadNodes.removeAll(members);
             Set<Node> newNodes = new HashSet<>(members);
