@@ -47,20 +47,18 @@ import org.wildfly.clustering.service.ValueDependency;
  */
 public class JGroupsTransportBuilder extends GlobalComponentBuilder<TransportConfiguration> {
 
-    private final String containerName;
-
     private volatile ValueDependency<ChannelFactory> factory;
+    private volatile ValueDependency<String> cluster;
     private volatile String channel;
     private volatile long lockTimeout;
 
     public JGroupsTransportBuilder(PathAddress containerAddress) {
         super(CacheContainerComponent.TRANSPORT, containerAddress);
-        this.containerName = containerAddress.getLastElement().getValue();
     }
 
     @Override
     public ServiceBuilder<TransportConfiguration> build(ServiceTarget target) {
-        return this.factory.register(super.build(target));
+        return this.factory.register(this.cluster.register(super.build(target)));
     }
 
     @Override
@@ -68,6 +66,7 @@ public class JGroupsTransportBuilder extends GlobalComponentBuilder<TransportCon
         this.lockTimeout = LOCK_TIMEOUT.resolveModelAttribute(context, model).asLong();
         this.channel = ModelNodes.optionalString(CHANNEL.resolveModelAttribute(context, model)).orElse(null);
         this.factory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, this.channel), ChannelFactory.class);
+        this.cluster = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, this.channel), String.class);
         return this;
     }
 
@@ -77,7 +76,7 @@ public class JGroupsTransportBuilder extends GlobalComponentBuilder<TransportCon
         ProtocolStackConfiguration stack = factory.getProtocolStackConfiguration();
         org.wildfly.clustering.jgroups.spi.TransportConfiguration.Topology topology = stack.getTransport().getTopology();
         TransportConfigurationBuilder builder = new GlobalConfigurationBuilder().transport()
-                .clusterName(this.containerName)
+                .clusterName(this.cluster.getValue())
                 .distributedSyncTimeout(this.lockTimeout)
                 .transport(new ChannelFactoryTransport(factory))
         ;

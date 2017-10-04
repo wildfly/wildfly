@@ -131,7 +131,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
                 .addAttributes(Attribute.class)
                 .addAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
-                .addResourceCapabilityReference(new CapabilityReference(Capability.TRANSPORT, JGroupsTransportResourceDefinition.Requirement.CHANNEL_FACTORY), address -> address.getParent().getLastElement().getValue())
+                .addResourceCapabilityReference(new CapabilityReference(Capability.TRANSPORT, JGroupsTransportResourceDefinition.Requirement.CHANNEL), address -> address.getParent().getLastElement().getValue())
             ), handler, registrationConfigurator.andThen(registration -> {
                 if (registration.isRuntimeOnlyRegistrationValid()) {
                     new MetricHandler<>(new ClusteredCacheMetricExecutor(), ClusteredCacheMetric.class).register(registration);
