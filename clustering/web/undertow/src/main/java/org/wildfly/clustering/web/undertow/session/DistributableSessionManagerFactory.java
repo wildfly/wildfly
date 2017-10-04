@@ -28,7 +28,6 @@ import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -48,9 +47,9 @@ import io.undertow.servlet.api.ThreadSetupHandler;
  */
 public class DistributableSessionManagerFactory implements io.undertow.servlet.api.SessionManagerFactory {
 
-    private final SessionManagerFactory<Batch> factory;
+    private final SessionManagerFactory<LocalSessionContext, Batch> factory;
 
-    public DistributableSessionManagerFactory(SessionManagerFactory<Batch> factory) {
+    public DistributableSessionManagerFactory(SessionManagerFactory<LocalSessionContext, Batch> factory) {
         this.factory = factory;
     }
 
@@ -60,10 +59,9 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
         boolean statisticsEnabled = info.getMetricsCollector() != null;
         RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new RecordableInactiveSessionStatistics() : null;
         IdentifierFactory<String> factory = new IdentifierFactoryAdapter(info.getSessionIdGenerator());
-        LocalContextFactory<LocalSessionContext> localContextFactory = new LocalSessionContextFactory();
         SessionListeners listeners = new SessionListeners();
         SessionExpirationListener expirationListener = new UndertowSessionExpirationListener(deployment, listeners);
-        SessionManagerConfiguration<LocalSessionContext> configuration = new SessionManagerConfiguration<LocalSessionContext>() {
+        SessionManagerConfiguration configuration = new SessionManagerConfiguration() {
             @Override
             public ServletContext getServletContext() {
                 return deployment.getServletContext();
@@ -77,11 +75,6 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
             @Override
             public SessionExpirationListener getExpirationListener() {
                 return expirationListener;
-            }
-
-            @Override
-            public LocalContextFactory<LocalSessionContext> getLocalContextFactory() {
-                return localContextFactory;
             }
 
             @Override
