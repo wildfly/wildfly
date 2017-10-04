@@ -52,6 +52,7 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.MappedValueService;
+import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerConfiguration;
@@ -93,7 +94,7 @@ public class DistributableSessionManagerFactoryBuilder implements CapabilityServ
     }
 
     private final ServiceName name;
-    private final CapabilityServiceBuilder<org.wildfly.clustering.web.session.SessionManagerFactory<Batch>> factoryBuilder;
+    private final CapabilityServiceBuilder<org.wildfly.clustering.web.session.SessionManagerFactory<LocalSessionContext, Batch>> factoryBuilder;
 
     public DistributableSessionManagerFactoryBuilder(ServiceName name, DistributableSessionManagerConfiguration config, SessionManagerFactoryBuilderProvider<Batch> provider) {
         this.name = name;
@@ -101,7 +102,8 @@ public class DistributableSessionManagerFactoryBuilder implements CapabilityServ
         Module module = config.getModule();
         MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
-        SessionManagerFactoryConfiguration<MarshallingContext> configuration = new SessionManagerFactoryConfiguration<MarshallingContext>() {
+        LocalContextFactory<LocalSessionContext> localContextFactory = new LocalSessionContextFactory();
+        SessionManagerFactoryConfiguration<MarshallingContext, LocalSessionContext> configuration = new SessionManagerFactoryConfiguration<MarshallingContext, LocalSessionContext>() {
             @Override
             public int getMaxActiveSessions() {
                 return config.getMaxActiveSessions();
@@ -135,6 +137,11 @@ public class DistributableSessionManagerFactoryBuilder implements CapabilityServ
             @Override
             public MarshallingContext getMarshallingContext() {
                 return context;
+            }
+
+            @Override
+            public LocalContextFactory<LocalSessionContext> getLocalContextFactory() {
+                return localContextFactory;
             }
         };
         this.factoryBuilder = provider.getBuilder(configuration);
