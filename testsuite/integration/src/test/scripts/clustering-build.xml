@@ -100,6 +100,7 @@
             <param name="cacheMode" value="SYNC"/>
             <param name="stack" value="tcp"/>
         </antcall>
+        <antcall target="build-clustering-tunnel"/>
     </target>
 
     <!-- Build SYNC-tcp stack configs -->
@@ -125,7 +126,6 @@
             <param name="cacheMode" value="ASYNC"/>
             <param name="stack" value="udp"/>
         </antcall>
-        <antcall target="build-clustering-tunnel"/>
     </target>
 
     <!-- Single node tests -->

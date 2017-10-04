@@ -65,10 +65,10 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SingletonTunnelTestCase extends ClusterAbstractTestCase {
+public class SingletonSplitBrainTestCase extends ClusterAbstractTestCase {
 
     private static final long TOPOLOGY_CHANGE_TIMEOUT = 75000; // maximum time in ms to wait for cluster topology change
-    private static final String CONTAINER = "singleton";
+    private static final String CONTAINER = "server";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
