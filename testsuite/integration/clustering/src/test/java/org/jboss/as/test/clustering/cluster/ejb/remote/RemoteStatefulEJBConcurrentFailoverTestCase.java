@@ -39,7 +39,7 @@ import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
-import org.jboss.as.test.clustering.cluster.ejb.remote.bean.SlowToDestroyStatefulIncrementorBean;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.SlowStatefulIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -61,7 +61,6 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
     private static final String MODULE_NAME = "remote-stateful-ejb-concurrent-failover-test";
 
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
-    private static final long INVOCATION_WAIT = TimeoutUtil.adjust(10);
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -78,7 +77,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
     private static Archive<?> createDeployment() {
         return ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar")
                 .addPackage(EJBDirectory.class.getPackage())
-                .addClasses(Result.class, Incrementor.class, IncrementorBean.class, SlowToDestroyStatefulIncrementorBean.class)
+                .addClasses(Result.class, Incrementor.class, IncrementorBean.class, SlowStatefulIncrementorBean.class)
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read")), "permissions.xml")
                 ;
     }
@@ -90,7 +89,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
 
     public void test(Lifecycle lifecycle) throws Exception {
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
-            Incrementor bean = directory.lookupStateful(SlowToDestroyStatefulIncrementorBean.class, Incrementor.class);
+            Incrementor bean = directory.lookupStateful(SlowStatefulIncrementorBean.class, Incrementor.class);
 
             AtomicInteger count = new AtomicInteger();
 
@@ -102,7 +101,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             try {
                 CountDownLatch latch = new CountDownLatch(1);
-                Future<?> future = executor.scheduleWithFixedDelay(new IncrementTask(bean, count, latch), 0, INVOCATION_WAIT, TimeUnit.MILLISECONDS);
+                Future<?> future = executor.scheduleWithFixedDelay(new IncrementTask(bean, count, latch), 0, 1, TimeUnit.MILLISECONDS);
                 latch.await();
 
                 lifecycle.stop(target);
@@ -114,10 +113,12 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
                     // Ignore
                 }
 
+                bean.remove();
+/* EJBCLIENT-279
                 lifecycle.start(target);
 
                 latch = new CountDownLatch(1);
-                future = executor.scheduleWithFixedDelay(new LookupTask(directory, SlowToDestroyStatefulIncrementorBean.class, latch), 0, INVOCATION_WAIT, TimeUnit.MILLISECONDS);
+                future = executor.scheduleWithFixedDelay(new LookupTask(directory, SlowStatefulIncrementorBean.class, latch), 0, 1, TimeUnit.MILLISECONDS);
                 latch.await();
 
                 lifecycle.stop(target);
@@ -128,7 +129,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
                 } catch (CancellationException e) {
                     // Ignore
                 }
-
+*/
                 lifecycle.start(target);
             } finally {
                 executor.shutdownNow();
@@ -157,7 +158,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
             }
         }
     }
-
+/*
     private class LookupTask implements Runnable {
         private final EJBDirectory directory;
         private final Class<? extends Incrementor> beanClass;
@@ -172,7 +173,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
         @Override
         public void run() {
             try {
-                this.directory.lookupStateful(this.beanClass, Incrementor.class);
+                this.directory.lookupStateful(this.beanClass, Incrementor.class).remove();
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             } finally {
@@ -180,4 +181,5 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
             }
         }
     }
+*/
 }
