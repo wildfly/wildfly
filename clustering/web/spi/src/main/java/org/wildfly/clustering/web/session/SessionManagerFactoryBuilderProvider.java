@@ -30,5 +30,5 @@ import org.wildfly.clustering.marshalling.spi.Marshallability;
  * @author Paul Ferraro
  */
 public interface SessionManagerFactoryBuilderProvider<B extends Batch> {
-    <C extends Marshallability> CapabilityServiceBuilder<SessionManagerFactory<B>> getBuilder(SessionManagerFactoryConfiguration<C> configuration);
+    <C extends Marshallability, L> CapabilityServiceBuilder<SessionManagerFactory<L, B>> getBuilder(SessionManagerFactoryConfiguration<C, L> configuration);
 }

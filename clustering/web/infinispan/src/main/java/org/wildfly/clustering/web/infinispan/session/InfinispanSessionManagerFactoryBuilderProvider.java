@@ -37,7 +37,7 @@ import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
 public class InfinispanSessionManagerFactoryBuilderProvider implements SessionManagerFactoryBuilderProvider<TransactionBatch> {
 
     @Override
-    public <C extends Marshallability> CapabilityServiceBuilder<SessionManagerFactory<TransactionBatch>> getBuilder(SessionManagerFactoryConfiguration<C> config) {
+    public <C extends Marshallability, L> CapabilityServiceBuilder<SessionManagerFactory<L, TransactionBatch>> getBuilder(SessionManagerFactoryConfiguration<C, L> config) {
         return new InfinispanSessionManagerFactoryBuilder<>(config);
     }
 }
