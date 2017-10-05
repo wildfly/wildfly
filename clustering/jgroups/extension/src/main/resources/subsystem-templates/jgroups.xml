@@ -4,7 +4,7 @@
     <extension-module>org.jboss.as.clustering.jgroups</extension-module>
     <subsystem xmlns="urn:jboss:domain:jgroups:5.0">
         <channels default="ee">
-            <channel name="ee" stack="udp"/>
+            <channel name="ee" stack="udp" cluster="ejb"/>
         </channels>
         <stacks>
             <stack name="udp">
