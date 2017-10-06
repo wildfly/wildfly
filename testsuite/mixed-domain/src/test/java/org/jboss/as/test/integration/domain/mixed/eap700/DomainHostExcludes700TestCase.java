@@ -36,6 +36,6 @@ public class DomainHostExcludes700TestCase extends DomainHostExcludesTest {
     @BeforeClass
     public static void beforeClass() throws InterruptedException, TimeoutException, MgmtOperationException, IOException {
         LegacyConfig700TestSuite.initializeDomain();
-        setup(DomainHostExcludes700TestCase.class,null, ModelVersion.create(4, 1));
+        setup(DomainHostExcludes700TestCase.class,"EAP7.0", ModelVersion.create(4, 1));
     }
 }
