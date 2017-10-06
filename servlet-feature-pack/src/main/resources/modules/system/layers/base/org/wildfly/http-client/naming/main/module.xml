@@ -38,5 +38,6 @@
         <module name="org.jboss.marshalling" />
         <module name="org.jboss.marshalling.river" />
         <module name="org.wildfly.security.elytron"/>
+        <module name="org.wildfly.http-client.ejb" optional="true" services="import" />
     </dependencies>
 </module>
