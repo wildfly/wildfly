@@ -69,6 +69,7 @@ public class IIOPTransformers implements ExtensionTransformerRegistration {
         builder.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(IIOPRootDefinition.CLIENT_REQUIRES_SSL.getDefaultValue()), IIOPRootDefinition.CLIENT_REQUIRES_SSL)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(IIOPRootDefinition.SERVER_REQUIRES_SSL.getDefaultValue()), IIOPRootDefinition.SERVER_REQUIRES_SSL)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(IIOPRootDefinition.INTEROP_IONA.getDefaultValue()), IIOPRootDefinition.INTEROP_IONA)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, IIOPRootDefinition.AUTHENTICATION_CONTEXT, IIOPRootDefinition.SERVER_SSL_CONTEXT, IIOPRootDefinition.CLIENT_SSL_CONTEXT)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
                     @Override
@@ -81,7 +82,7 @@ public class IIOPTransformers implements ExtensionTransformerRegistration {
                         return IIOPLogger.ROOT_LOGGER.elytronInitializerNotSupportedInPreviousVersions();
                     }
                 }, IIOPRootDefinition.SECURITY)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, IIOPRootDefinition.SERVER_SSL_CONTEXT, IIOPRootDefinition.CLIENT_SSL_CONTEXT, IIOPRootDefinition.AUTHENTICATION_CONTEXT, IIOPRootDefinition.CLIENT_REQUIRES_SSL, IIOPRootDefinition.SERVER_REQUIRES_SSL)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, IIOPRootDefinition.SERVER_SSL_CONTEXT, IIOPRootDefinition.CLIENT_SSL_CONTEXT, IIOPRootDefinition.AUTHENTICATION_CONTEXT, IIOPRootDefinition.CLIENT_REQUIRES_SSL, IIOPRootDefinition.SERVER_REQUIRES_SSL, IIOPRootDefinition.INTEROP_IONA)
         ;
 
         chained.buildAndRegister(subsystemRegistration, new ModelVersion[]{
