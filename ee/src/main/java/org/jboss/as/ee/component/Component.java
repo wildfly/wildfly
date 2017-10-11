@@ -73,4 +73,6 @@ public interface Component {
         return true;
     }
 
+    void waitForComponentStart();
+
 }

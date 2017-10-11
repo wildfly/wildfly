@@ -581,9 +581,9 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     }
 
     @Override
-    public synchronized void start() {
+    public synchronized void init() {
         getShutDownInterceptorFactory().start();
-        super.start();
+        super.init();
         if(this.timerService instanceof TimerServiceImpl) {
             ((TimerServiceImpl) this.timerService).activate();
         }

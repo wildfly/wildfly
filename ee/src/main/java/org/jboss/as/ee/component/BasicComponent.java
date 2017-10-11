@@ -101,7 +101,7 @@ public class BasicComponent implements Component {
         return obj;
     }
 
-    protected void waitForComponentStart() {
+    public void waitForComponentStart() {
         if (!gate) {
             EeLogger.ROOT_LOGGER.tracef("Waiting for component %s (%s)", componentName, componentClass);
             // Block until successful start
@@ -219,14 +219,17 @@ public class BasicComponent implements Component {
      * {@inheritDoc}
      */
     public synchronized void start() {
-        final InterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
-        context.getContextData().put(Component.class, this);
-        createInterceptors(context);
-
+        init();
 
         this.stopping.set(false);
         gate = true;
         notifyAll();
+    }
+
+    public synchronized void init() {
+        final InterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
+        context.getContextData().put(Component.class, this);
+        createInterceptors(context);
     }
 
     protected void createInterceptors(InterceptorFactoryContext context) {

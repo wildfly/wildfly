@@ -348,6 +348,7 @@ public class LocalEjbReceiver extends EJBReceiver {
         if (!(component instanceof StatefulSessionComponent)) {
             throw EjbLogger.ROOT_LOGGER.notStatefulSessionBean(statelessLocator.getAppName(), statelessLocator.getModuleName(), statelessLocator.getDistinctName(), statelessLocator.getBeanName());
         }
+        component.waitForComponentStart();
         return ((StatefulSessionComponent) component).createSession();
     }
 
