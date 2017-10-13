@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Red Hat, Inc.
+ * Copyright 2017 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,27 +15,18 @@
  */
 package org.wildfly.test.manual.elytron.seccontext;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.junit.runner.RunWith;
-
 /**
- * Security context propagation test variant which uses Entry bean stateful and WhoAmI bean stateless.
+ * Custom exception that should be available just in deployments on server2.
  *
- * @author Josef Cacek
+ * @author Ondrej Kotek
  */
-@RunWith(Arquillian.class)
-@RunAsClient
-public class SecurityContextPropagationSFSLTestCase extends AbstractSecurityContextPropagationTestBase {
+public class Server2Exception extends RuntimeException {
 
-    @Override
-    protected boolean isEntryStateful() {
-        return false;
+    public Server2Exception() {
+        super();
     }
 
-    @Override
-    protected boolean isWhoAmIStateful() {
-        return true;
+    public Server2Exception(String s) {
+        super(s);
     }
-
 }

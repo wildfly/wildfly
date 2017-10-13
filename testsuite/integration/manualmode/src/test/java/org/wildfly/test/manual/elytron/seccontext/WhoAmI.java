@@ -16,7 +16,6 @@
 package org.wildfly.test.manual.elytron.seccontext;
 
 import java.security.Principal;
-
 import javax.ejb.Remote;
 
 @Remote
@@ -27,4 +26,13 @@ public interface WhoAmI {
      */
     Principal getCallerPrincipal();
 
+    /**
+     * Throws IllegalStateException.
+     */
+    String throwIllegalStateException();
+
+    /**
+     * Throws Server2Exception.
+     */
+    String throwServer2Exception();
 }
