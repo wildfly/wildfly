@@ -310,6 +310,17 @@ final class AssociationImpl implements Association, AutoCloseable {
             final SessionID sessionID;
             try {
                 sessionID = statefulSessionComponent.createSessionRemote();
+            }  catch (EJBComponentUnavailableException ex) {
+                // if the EJB is shutting down when the invocation was done, then it's as good as the EJB not being available. The client has to know about this as
+                // a "no such EJB" failure so that it can retry the invocation on a different node if possible.
+                EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Cannot handle session creation on bean: %s due to EJB component unavailability exception. Returning a no such EJB available message back to client", beanName);
+                sessionOpenRequest.writeNoSuchEJB();
+                return;
+            } catch (ComponentIsStoppedException ex) {
+                EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Cannot handle session creation on bean: %s due to EJB component stopped exception. Returning a no such EJB available message back to client", beanName);
+                sessionOpenRequest.writeNoSuchEJB();
+                return;
+                // TODO should we write a specifc response with a specific protocol letting client know that server is suspending?
             } catch (Exception t) {
                 EjbLogger.REMOTE_LOGGER.exceptionGeneratingSessionId(t, statefulSessionComponent.getComponentName(), ejbIdentifier);
                 sessionOpenRequest.writeException(t);
