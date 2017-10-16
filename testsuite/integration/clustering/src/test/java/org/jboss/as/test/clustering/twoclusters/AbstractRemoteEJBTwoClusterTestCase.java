@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.clustering.twoclusters;
 
+import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
 import static org.junit.Assert.fail;
 
 import java.util.concurrent.Executors;
@@ -44,6 +45,7 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.common.function.ExceptionSupplier;
@@ -67,6 +69,11 @@ import org.wildfly.common.function.ExceptionSupplier;
 @RunWith(Arquillian.class)
 @RunAsClient
 public abstract class AbstractRemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase {
+
+    @BeforeClass
+    public static void beforeClass() {
+        thisTestIsFailingIntermittently("WFLY-6224/JBEAP-3432, WFLY-9447/JBEAP-13511, etc.");
+    }
 
     private static long FAILURE_FREE_TIME = TimeoutUtil.adjust(5000);
     private static long SERVER_DOWN_TIME = TimeoutUtil.adjust(5000);
