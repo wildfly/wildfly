@@ -114,7 +114,6 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
                 }
 
                 bean.remove();
-/* EJBCLIENT-279
                 lifecycle.start(target);
 
                 latch = new CountDownLatch(1);
@@ -129,7 +128,6 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
                 } catch (CancellationException e) {
                     // Ignore
                 }
-*/
                 lifecycle.start(target);
             } finally {
                 executor.shutdownNow();
@@ -158,7 +156,6 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
             }
         }
     }
-/*
     private class LookupTask implements Runnable {
         private final EJBDirectory directory;
         private final Class<? extends Incrementor> beanClass;
@@ -181,5 +178,4 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends ClusterAbstract
             }
         }
     }
-*/
 }
