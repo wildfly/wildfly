@@ -15,7 +15,7 @@
  */
 package org.wildfly.test.manual.elytron.seccontext;
 
-import static org.wildfly.test.manual.elytron.seccontext.SeccontextUtil.SERVER2;
+import static org.wildfly.test.manual.elytron.seccontext.SeccontextUtil.WAR_WHOAMI;
 import static org.wildfly.test.manual.elytron.seccontext.SeccontextUtil.switchIdentity;
 
 import java.io.BufferedReader;
@@ -109,7 +109,7 @@ public class EntryBean implements Entry {
 
     private WhoAmI getWhoAmIBean(String providerUrl, boolean statefullWhoAmI) throws NamingException {
         return SeccontextUtil.lookup(
-                SeccontextUtil.getRemoteEjbName(SERVER2, "WhoAmIBean", WhoAmI.class.getName(), statefullWhoAmI), providerUrl);
+                SeccontextUtil.getRemoteEjbName(WAR_WHOAMI, "WhoAmIBean", WhoAmI.class.getName(), statefullWhoAmI), providerUrl);
     }
 
 }

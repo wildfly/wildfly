@@ -59,6 +59,11 @@
             <fileset dir="target/jbossas"/>
         </copy>
 
+        <echo message="Copying and configuring instance seccontext-server1-backup"/>
+        <copy todir="target/seccontext-server1-backup">
+            <fileset dir="target/jbossas"/>
+        </copy>
+
         <echo message="Copying and configuring instance seccontext-server2"/>
         <copy todir="target/seccontext-server2">
             <fileset dir="target/jbossas"/>
