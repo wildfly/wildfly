@@ -49,6 +49,7 @@ import org.jboss.as.test.clustering.cluster.singleton.partition.SingletonService
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeService;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -74,7 +75,8 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 @RunAsClient
 public class SingletonPartitionTestCase extends ClusterAbstractTestCase {
 
-    private static final long TOPOLOGY_CHANGE_TIMEOUT = 120000; // maximum time in ms to wait for cluster topology change
+    private static final long TOPOLOGY_CHANGE_TIMEOUT = TimeoutUtil.adjust(120_000); // maximum time in ms to wait for cluster topology change
+    private static final int SERVICE_TIMEOUT = TimeoutUtil.adjust(5_000); // it takes a little extra time after merge for the singleton service to migrate
     private static final String CONTAINER = "server";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -126,7 +128,7 @@ public class SingletonPartitionTestCase extends ClusterAbstractTestCase {
 
         waitForView(baseURL1, NODE_1, NODE_2);
         waitForView(baseURL2, NODE_1, NODE_2);
-        Thread.sleep(5000); // it takes a little extra time after merge for the singleton service to migrate
+        Thread.sleep(SERVICE_TIMEOUT);
 
 
         // check service A
@@ -142,7 +144,7 @@ public class SingletonPartitionTestCase extends ClusterAbstractTestCase {
         partition(true, baseURL1, baseURL2);
         waitForView(baseURL1, NODE_1);
         waitForView(baseURL2, NODE_2);
-        Thread.sleep(5000);
+        Thread.sleep(SERVICE_TIMEOUT);
 
         // check service A
         checkSingletonNode(serviceANode1Uri, NODE_1);
@@ -157,7 +159,7 @@ public class SingletonPartitionTestCase extends ClusterAbstractTestCase {
         partition(false, baseURL1, baseURL2);
         waitForView(baseURL1, NODE_1, NODE_2);
         waitForView(baseURL2, NODE_1, NODE_2);
-        Thread.sleep(5000);
+        Thread.sleep(SERVICE_TIMEOUT);
 
         // check service A
         checkSingletonNode(serviceANode1Uri, SingletonServiceActivator.SERVICE_A_PREFERRED_NODE);
@@ -172,7 +174,7 @@ public class SingletonPartitionTestCase extends ClusterAbstractTestCase {
         partition(true, baseURL1, baseURL2);
         waitForView(baseURL1, NODE_1);
         waitForView(baseURL2, NODE_2);
-        Thread.sleep(5000);
+        Thread.sleep(SERVICE_TIMEOUT);
 
         // check service A
         checkSingletonNode(serviceANode1Uri, NODE_1);
@@ -184,10 +186,10 @@ public class SingletonPartitionTestCase extends ClusterAbstractTestCase {
 
     @Override
     public void afterTestMethod() {
-        // Stop the container to ensure there aren't any remnants since the test operates on a live JGroups channel
-        stop(CONTAINERS);
-
         super.afterTestMethod();
+
+        // Stop the container to ensure there aren't any remnants since the test operates on a live JGroups channels
+        stop(CONTAINERS);
     }
 
     private static void checkSingletonNode(URI serviceUri, String expectedProviderNode) throws IOException {
