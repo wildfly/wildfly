@@ -36,7 +36,7 @@ import org.jboss.msc.value.InjectedValue;
 /**
  * User: jpai
  */
-public class StrictMaxPoolConfigService implements Service<PoolConfig> {
+public class StrictMaxPoolConfigService implements Service<StrictMaxPoolConfig> {
 
     public static final ServiceName EJB_POOL_CONFIG_BASE_SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("pool-config");
 
@@ -85,6 +85,10 @@ public class StrictMaxPoolConfigService implements Service<PoolConfig> {
         }
     }
 
+    public synchronized int getDerivedSize() {
+        return poolConfig.getMaxPoolSize();
+    }
+
     public synchronized void setDerive(Derive derive) {
         this.derive = derive;
         int max = this.declaredMaxSize;
@@ -117,7 +121,7 @@ public class StrictMaxPoolConfigService implements Service<PoolConfig> {
     }
 
     @Override
-    public PoolConfig getValue() throws IllegalStateException, IllegalArgumentException {
+    public StrictMaxPoolConfig getValue() throws IllegalStateException, IllegalArgumentException {
         return this.poolConfig;
     }
 

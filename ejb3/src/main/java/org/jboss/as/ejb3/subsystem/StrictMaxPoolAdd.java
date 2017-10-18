@@ -32,7 +32,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.component.pool.PoolConfig;
+import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfig;
 import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -78,7 +78,7 @@ public class StrictMaxPoolAdd extends AbstractAddStepHandler {
 
 
         final ServiceName serviceName = StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName);
-        ServiceBuilder<PoolConfig> svcBuilder = context.getServiceTarget().addService(serviceName, poolConfigService);
+        ServiceBuilder<StrictMaxPoolConfig> svcBuilder = context.getServiceTarget().addService(serviceName, poolConfigService);
 
         if (context.hasOptionalCapability(IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME, null, null)) {
             ServiceName name = context.getCapabilityServiceName(IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME, Integer.class);

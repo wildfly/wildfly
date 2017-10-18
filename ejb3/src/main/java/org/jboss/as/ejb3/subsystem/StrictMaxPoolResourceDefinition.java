@@ -95,6 +95,10 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .setAllowExpression(true)
                     .build();
+    public static final SimpleAttributeDefinition DERIVED_SIZE =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DERIVED_SIZE, ModelType.INT, true)
+                    .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+                    .build();
 
     public static final Map<String, AttributeDefinition> ATTRIBUTES ;
 
@@ -172,6 +176,8 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : ads) {
             resourceRegistration.registerReadWriteAttribute(attr, null, osh);
         }
+
+        resourceRegistration.registerReadOnlyAttribute(DERIVED_SIZE, new StrictMaxPoolDerivedSizeReadHandler());
     }
 
 }
