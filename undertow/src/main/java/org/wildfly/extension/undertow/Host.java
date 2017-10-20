@@ -46,6 +46,9 @@ import io.undertow.util.CopyOnWriteMap;
 import io.undertow.util.Methods;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ControlledProcessStateService;
+import org.jboss.as.server.suspend.ServerActivity;
+import org.jboss.as.server.suspend.ServerActivityCallback;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -76,6 +79,27 @@ public class Host implements Service<Host>, FilterLocation {
     private volatile GateHandlerWrapper gateHandlerWrapper;
     private final DefaultResponseCodeHandler defaultHandler;
 
+    private final InjectedValue<SuspendController> suspendControllerInjectedValue = new InjectedValue<>();
+
+
+    ServerActivity suspendListener = new ServerActivity() {
+        @Override
+        public void preSuspend(ServerActivityCallback listener) {
+            defaultHandler.setSuspended(true);
+            listener.done();
+        }
+
+        @Override
+        public void suspended(ServerActivityCallback listener) {
+            listener.done();
+        }
+
+        @Override
+        public void resume() {
+            defaultHandler.setSuspended(false);
+        }
+    };
+
     public Host(final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode ) {
         this.name = name;
         this.defaultWebModule = defaultWebModule;
@@ -103,6 +127,12 @@ public class Host implements Service<Host>, FilterLocation {
 
     @Override
     public void start(StartContext context) throws StartException {
+        suspendControllerInjectedValue.getValue().registerActivity(suspendListener);
+        if(suspendControllerInjectedValue.getValue().getState() == SuspendController.State.RUNNING) {
+            defaultHandler.setSuspended(false);
+        } else {
+            defaultHandler.setSuspended(true);
+        }
         ControlledProcessStateService controlledProcessStateService = controlledProcessStateServiceInjectedValue.getValue();
         //may be null for tests
         if(controlledProcessStateService != null && controlledProcessStateService.getCurrentState() == ControlledProcessState.State.STARTING) {
@@ -155,6 +185,7 @@ public class Host implements Service<Host>, FilterLocation {
             gateHandlerWrapper = null;
         }
         UndertowLogger.ROOT_LOGGER.hostStopping(name);
+        suspendControllerInjectedValue.getValue().unRegisterActivity(suspendListener);
     }
 
     @Override
@@ -294,6 +325,9 @@ public class Host implements Service<Host>, FilterLocation {
         return new LinkedHashMap<>(additionalAuthenticationMechanisms);
     }
 
+    public InjectedValue<SuspendController> getSuspendControllerInjectedValue() {
+        return suspendControllerInjectedValue;
+    }
 
     @Override
     public void addFilter(UndertowFilter filterRef) {

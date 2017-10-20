@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.StatusCodes;
 
 import org.jboss.logging.Logger;
 
@@ -41,7 +42,8 @@ public class DefaultResponseCodeHandler implements HttpHandler {
         traceEnabled = log.isTraceEnabled();
     }
 
-    private int responseCode;
+    private final int responseCode;
+    private volatile boolean suspended = false;
 
     public DefaultResponseCodeHandler(final int defaultCode) {
         this.responseCode = defaultCode;
@@ -49,10 +51,17 @@ public class DefaultResponseCodeHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        exchange.setStatusCode(this.responseCode);
+        if(suspended) {
+            exchange.setStatusCode(StatusCodes.SERVICE_UNAVAILABLE);
+        } else {
+            exchange.setStatusCode(this.responseCode);
+        }
         if (traceEnabled) {
             log.tracef("Setting response code %s for exchange %s", responseCode, exchange);
         }
     }
 
+    public void setSuspended(boolean suspended) {
+        this.suspended = suspended;
+    }
 }

@@ -64,6 +64,7 @@ import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
@@ -310,6 +311,8 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
             super.addExtraServices(target);
             try {
                 SSLContext sslContext = SSLContext.getDefault();
+
+                target.addService(SuspendController.SERVICE_NAME, new SuspendController()).install();
 
                 target.addService(Services.JBOSS_SERVICE_MODULE_LOADER, new ServiceModuleLoader(null)).install();
                 target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new NamingStoreService())
