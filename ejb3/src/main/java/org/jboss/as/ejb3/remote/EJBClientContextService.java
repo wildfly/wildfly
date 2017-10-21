@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.jboss.as.ejb3.subsystem.EJBClientConfiguratorService;
+import org.jboss.ejb.client.ClusterNodeSelector;
 import org.jboss.ejb.client.DeploymentNodeSelector;
 import org.jboss.ejb.client.EJBClientCluster;
 import org.jboss.ejb.client.EJBClientConnection;
@@ -121,8 +122,15 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
         }
 
         if (clientClusters != null) {
+            boolean firstSelector = true;
             for (EJBClientCluster clientCluster : clientClusters) {
                 builder.addClientCluster(clientCluster);
+                ClusterNodeSelector selector = clientCluster.getClusterNodeSelector();
+                if (firstSelector && selector != null) {
+                    builder.setClusterNodeSelector(selector);
+                    // Currently only one selector is supported per client context
+                    firstSelector = false;
+                }
             }
         }
 
