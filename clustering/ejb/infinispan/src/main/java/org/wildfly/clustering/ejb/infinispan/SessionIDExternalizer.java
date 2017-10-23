@@ -26,10 +26,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Base64;
 
-import org.jboss.ejb.client.BasicSessionID;
 import org.jboss.ejb.client.SessionID;
-import org.jboss.ejb.client.UUIDSessionID;
-import org.jboss.ejb.client.UnknownSessionID;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -38,11 +35,11 @@ import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 /**
  * @author Paul Ferraro
  */
-public class SessionIDExternalizer<T extends SessionID> extends SimpleKeyFormat<T> implements Externalizer<T> {
+@MetaInfServices(Externalizer.class)
+public class SessionIDExternalizer extends SimpleKeyFormat<SessionID> implements Externalizer<SessionID> {
 
-    @SuppressWarnings("unchecked")
-    public SessionIDExternalizer(Class<T> targetClass) {
-        super(targetClass, value -> (T) SessionID.createSessionID(Base64.getDecoder().decode(value)), id -> Base64.getEncoder().encodeToString(id.getEncodedForm()));
+    public SessionIDExternalizer() {
+        super(SessionID.class, value -> SessionID.createSessionID(Base64.getDecoder().decode(value)), id -> Base64.getEncoder().encodeToString(id.getEncodedForm()));
     }
 
     @Override
@@ -52,32 +49,10 @@ public class SessionIDExternalizer<T extends SessionID> extends SimpleKeyFormat<
         output.write(encoded);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public SessionID readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         byte[] encoded = new byte[IndexExternalizer.UNSIGNED_BYTE.readData(input)];
         input.readFully(encoded);
-        return (T) SessionID.createSessionID(encoded);
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class BasicSessionIDExternalizer extends SessionIDExternalizer<BasicSessionID> {
-        public BasicSessionIDExternalizer() {
-            super(BasicSessionID.class);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class UnknownSessionIDExternalizer extends SessionIDExternalizer<UnknownSessionID> {
-        public UnknownSessionIDExternalizer() {
-            super(UnknownSessionID.class);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class UUIDSessionIDExternalizer extends SessionIDExternalizer<UUIDSessionID> {
-        public UUIDSessionIDExternalizer() {
-            super(UUIDSessionID.class);
-        }
+        return SessionID.createSessionID(encoded);
     }
 }
