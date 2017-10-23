@@ -32,6 +32,7 @@ import java.time.MonthDay;
 import java.time.Period;
 import java.time.Year;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 import org.junit.Test;
@@ -60,6 +61,7 @@ public class TimeExternalizerTestCase {
         ExternalizerTestUtil.test(new YearExternalizer(), Year.now());
         ExternalizerTestUtil.test(new YearMonthExternalizer(), YearMonth.now());
         ExternalizerTestUtil.test(new ZoneOffsetExternalizer(), ZoneOffset.UTC);
+        ExternalizerTestUtil.test(new ZoneIdExternalizer(), ZoneId.of("America/New_York"));
     }
 
     private static <E extends Enum<E>> void test(Externalizer<E> externalizer) throws ClassNotFoundException, IOException {

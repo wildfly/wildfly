@@ -27,7 +27,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
@@ -48,5 +51,14 @@ public class DateExternalizerTestCase {
         ExternalizerTestUtil.test(new SqlDateExternalizer(), java.sql.Date.valueOf(LocalDate.now()));
         ExternalizerTestUtil.test(new SqlTimeExternalizer(), java.sql.Time.valueOf(LocalTime.now()));
         ExternalizerTestUtil.test(new SqlTimestampExternalizer(), java.sql.Timestamp.valueOf(LocalDateTime.now()));
+
+        // Validate default calendar
+        ExternalizerTestUtil.test(new CalendarExternalizer(), Calendar.getInstance());
+        // Validate Gregorian calendar w/locale
+        ExternalizerTestUtil.test(new CalendarExternalizer(), new Calendar.Builder().setLenient(false).setLocale(Locale.FRANCE).build());
+        // Validate Japanese Imperial calendar
+        ExternalizerTestUtil.test(new CalendarExternalizer(), Calendar.getInstance(TimeZone.getTimeZone("Asia/Tokyo"), Locale.JAPAN));
+        // Validate Buddhist calendar
+        ExternalizerTestUtil.test(new CalendarExternalizer(), Calendar.getInstance(TimeZone.getTimeZone("Asia/Bangkok"), Locale.forLanguageTag("th_TH")));
     }
 }

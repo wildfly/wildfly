@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,29 +22,19 @@
 
 package org.wildfly.clustering.marshalling.spi.util;
 
-import java.io.IOException;
-import java.util.Currency;
-import java.util.Locale;
-import java.util.Optional;
 import java.util.TimeZone;
-import java.util.UUID;
 
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.StringExternalizer;
 
 /**
- * Unit test for java.util.* externalizers.
  * @author Paul Ferraro
  */
-public class UtilExternalizerTestCase {
+@MetaInfServices(Externalizer.class)
+public class TimeZoneExternalizer extends StringExternalizer<TimeZone> {
 
-    @Test
-    public void test() throws ClassNotFoundException, IOException {
-        ExternalizerTestUtil.test(new CurrencyExternalizer(), Currency.getInstance(Locale.US));
-        ExternalizerTestUtil.test(new LocaleExternalizer(), Locale.US);
-        ExternalizerTestUtil.test(new OptionalExternalizer(), Optional.empty());
-        ExternalizerTestUtil.test(new TimeZoneExternalizer(), TimeZone.getDefault());
-        ExternalizerTestUtil.test(new TimeZoneExternalizer(), TimeZone.getTimeZone("America/New_York"));
-        ExternalizerTestUtil.test(new UUIDExternalizer(), UUID.randomUUID());
+    public TimeZoneExternalizer() {
+        super(TimeZone.class, TimeZone::getTimeZone, TimeZone::getID);
     }
 }
