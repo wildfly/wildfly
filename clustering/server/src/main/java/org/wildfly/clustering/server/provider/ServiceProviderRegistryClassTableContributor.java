@@ -21,21 +21,21 @@
  */
 package org.wildfly.clustering.server.provider;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
 
 /**
- * ClassTable contributor for the marshaller of a {@link ServiceProviderRegistration}.
+ * ClassTable contributor for the marshaller of a {@link org.wildfly.clustering.provider.ServiceProviderRegistration}.
  * @author Paul Ferraro
  */
 @MetaInfServices(ClassTableContributor.class)
 public class ServiceProviderRegistryClassTableContributor implements ClassTableContributor {
 
     @Override
-    public Collection<Class<?>> getKnownClasses() {
-        return Collections.<Class<?>>singleton(GetLocalServicesCommand.class);
+    public List<Class<?>> getKnownClasses() {
+        return Collections.<Class<?>>singletonList(GetLocalServicesCommand.class);
     }
 }
