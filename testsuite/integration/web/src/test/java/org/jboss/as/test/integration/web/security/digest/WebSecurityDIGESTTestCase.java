@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.web.security.digest;
 
+import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 
 import java.net.URL;
@@ -93,9 +94,26 @@ public class WebSecurityDIGESTTestCase extends WebSecurityPasswordBasedBase {
                 .GOOD_USER_PASSWORD + "makeThisPasswordWrong", HTTP_UNAUTHORIZED);
     }
 
+    /**
+     * Check that after successful login, the nonce can be re-used without an extra 401 Unauthorized response loop.
+     *
+     * @param url
+     * @throws Exception
+     */
+    @OperateOnDeployment(DEPLOYMENT)
+    @Test
+    public void testFollowupRequest(@ArquillianResource URL url) throws Exception {
+        makeCallFollowup(WebSecurityDigestSecurityDomainSetup.GOOD_USER_NAME, WebSecurityDigestSecurityDomainSetup
+                .GOOD_USER_PASSWORD, HTTP_OK, true);
+    }
+
     @Override
     protected void makeCall(String user, String pass, int expectedCode) throws Exception {
+        makeCallFollowup(user, pass, expectedCode, false);
+    }
+
+    protected void makeCallFollowup(String user, String pass, int expectedCode, boolean followup) throws Exception {
         final URL servletUrl = new URL(url.toExternalForm() + SimpleSecuredServlet.SERVLET_PATH.substring(1));
-        Utils.makeCallWithBasicAuthn(servletUrl, user, pass, expectedCode);
+        Utils.makeCallWithBasicAuthn(servletUrl, user, pass, expectedCode, followup);
     }
 }
