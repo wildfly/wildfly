@@ -30,7 +30,6 @@
 
     <resources>
         <artifact name="${org.apache.cxf:cxf-rt-bindings-coloc}"/>
-        <artifact name="${org.apache.cxf:cxf-rt-bindings-object}"/>
         <artifact name="${org.apache.cxf:cxf-rt-bindings-soap}"/>
         <artifact name="${org.apache.cxf:cxf-rt-bindings-xml}"/>
         <artifact name="${org.apache.cxf:cxf-rt-databinding-aegis}"/>
@@ -79,7 +78,7 @@
         <module name="javax.xml.soap.api" />
         <module name="javax.xml.stream.api" />
         <module name="javax.xml.ws.api" />
-        <module name="org.apache.commons.lang" />
+        <module name="org.apache.commons.lang3" />
         <module name="org.apache.commons.logging"/>
         <module name="org.apache.httpcomponents"/>
         <module name="org.apache.neethi" />

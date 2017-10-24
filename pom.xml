@@ -89,15 +89,15 @@
         <version.com.h2database>1.4.193</version.com.h2database>
         <version.com.microsoft.azure>5.0.0</version.com.microsoft.azure>
         <version.com.sun.faces>2.2.13.SP5</version.com.sun.faces>
-        <version.com.sun.istack>2.21</version.com.sun.istack>
+        <version.com.sun.istack>3.0.5</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
-        <version.com.sun.xsom>20140925</version.com.sun.xsom>
         <version.commons-beanutils>1.9.3</version.commons-beanutils>
         <version.commons-cli>1.3.1</version.commons-cli>
         <version.commons-codec>1.10</version.commons-codec>
         <version.commons-collections>3.2.2</version.commons-collections>
         <version.commons-digester>1.8</version.commons-digester>
         <version.commons-pool>1.6</version.commons-pool>
+        <version.commons-lang3>3.6</version.commons-lang3>
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.groovy-all>2.4.7</version.groovy-all>
@@ -118,8 +118,8 @@
         <version.net.shibboleth.utilities.java-support>7.1.1</version.net.shibboleth.utilities.java-support>
         <version.org.apache.activemq.artemis>1.5.5.jbossorg-008</version.org.apache.activemq.artemis>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
-        <version.org.apache.cxf>3.1.12</version.org.apache.cxf>
-        <version.org.apache.cxf.xjcplugins>3.0.5</version.org.apache.cxf.xjcplugins>
+        <version.org.apache.cxf>3.2.2</version.org.apache.cxf>
+        <version.org.apache.cxf.xjcplugins>3.1.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M20</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.2</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.jstl>1.2.6-RC1</version.org.apache.jstl>
@@ -128,11 +128,11 @@
         <version.org.apache.myfaces.core>2.2.11</version.org.apache.myfaces.core>
         <version.org.apache.openjpa>2.4.2</version.org.apache.openjpa>
         <version.org.eclipselink.version>2.6.3</version.org.eclipselink.version>
-        <version.org.apache.neethi>3.0.3</version.org.apache.neethi>
+        <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.16.0</version.org.apache.qpid.proton>
-        <version.org.apache.santuario>2.0.8</version.org.apache.santuario>
-        <version.org.apache.velocity>1.7</version.org.apache.velocity>
-        <version.org.apache.ws.security>2.1.10</version.org.apache.ws.security>
+        <version.org.apache.santuario>2.1.1</version.org.apache.santuario>
+        <version.org.apache.velocity>2.0</version.org.apache.velocity>
+        <version.org.apache.ws.security>2.2.1</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.2.1</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-4</version.org.apache.xalan>
         <version.org.bouncycastle>1.56</version.org.bouncycastle>
@@ -192,24 +192,24 @@
         <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>1.0.3.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>1.1.1.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>
         <version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec>1.0.1.Final</version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec>
-        <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>1.0.5.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>
+        <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec>1.0.1.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec>
         <version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>1.0.2.Final</version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.6.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
         <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>2.0.5.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>
         <version.org.jboss.spec.javax.websockets>1.1.3.Final</version.org.jboss.spec.javax.websockets>
         <version.org.jboss.weld.weld>3.0.2.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>3.0.SP2</version.org.jboss.weld.weld-api>
-        <version.org.jboss.ws.api>1.0.3.Final</version.org.jboss.ws.api>
-        <version.org.jboss.ws.spi>3.1.4.Final</version.org.jboss.ws.spi>
-        <version.org.jboss.ws.common>3.1.5.Final</version.org.jboss.ws.common>
-        <version.org.jboss.ws.common.tools>1.2.4.Final</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>5.1.9.Final</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.api>1.1.0.Final</version.org.jboss.ws.api>
+        <version.org.jboss.ws.spi>3.2.0.Final</version.org.jboss.ws.spi>
+        <version.org.jboss.ws.common>3.2.0.Final</version.org.jboss.ws.common>
+        <version.org.jboss.ws.common.tools>1.3.0.Final</version.org.jboss.ws.common.tools>
+        <version.org.jboss.ws.cxf>5.2.0.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jgroups>3.6.14.Final</version.org.jgroups>
         <version.org.jgroups.azure>1.1.0.Final</version.org.jgroups.azure>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
         <version.org.kohsuke.metainf-services>1.7</version.org.kohsuke.metainf-services>
-        <version.org.opensaml.opensaml>3.1.1</version.org.opensaml.opensaml>
+        <version.org.opensaml.opensaml>3.3.0</version.org.opensaml.opensaml>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP8</version.org.picketlink>
         <version.org.slf4j>1.7.22</version.org.slf4j>
@@ -224,7 +224,7 @@
         <version.org.wildfly.naming-client>1.0.7.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.transaction.client>1.0.2.Final</version.org.wildfly.transaction.client>
         <version.org.yaml.snakeyaml>1.17</version.org.yaml.snakeyaml>
-        <version.sun.jaxb>2.2.11.jbossorg-1</version.sun.jaxb>
+        <version.sun.jaxb>2.3.0</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.wsdl4j>1.6.3</version.wsdl4j>
@@ -1607,6 +1607,18 @@
 
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>xsom</artifactId>
+                <version>${version.sun.jaxb}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>relaxngDatatype</groupId>
+                        <artifactId>relaxngDatatype</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>txw2</artifactId>
                 <version>${version.sun.jaxb}</version>
             </dependency>
@@ -1677,18 +1689,6 @@
                     <exclusion>
                         <groupId>org.jvnet.mimepull</groupId>
                         <artifactId>mimepull</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>com.sun.xsom</groupId>
-                <artifactId>xsom</artifactId>
-                <version>${version.com.sun.xsom}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>relaxngDatatype</groupId>
-                        <artifactId>relaxngDatatype</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2130,12 +2130,20 @@
 
             <dependency>
                 <groupId>org.apache.velocity</groupId>
-                <artifactId>velocity</artifactId>
+                <artifactId>velocity-engine-core</artifactId>
                 <version>${version.org.apache.velocity}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>oro</groupId>
                         <artifactId>oro</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-lang3</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2159,6 +2167,13 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${version.commons-lang3}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.apache.cxf.services.sts</groupId>
@@ -2248,22 +2263,6 @@
                     <exclusion>
                          <groupId>org.springframework</groupId>
                          <artifactId>spring-jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-bindings-object</artifactId>
-                <version>${version.org.apache.cxf}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-transports-local</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>xalan</groupId>
@@ -3394,6 +3393,10 @@
                         <artifactId>cxf-core</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-text</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-aop</artifactId>
                     </exclusion>
@@ -3438,6 +3441,10 @@
                 <version>${version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-lang3</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-aop</artifactId>
                     </exclusion>
@@ -3478,6 +3485,10 @@
                 <version>${version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-lang3</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>commons-lang</groupId>
                         <artifactId>commons-lang</artifactId>
                     </exclusion>
@@ -3493,6 +3504,10 @@
                 <artifactId>cxf-xjc-bug986</artifactId>
                 <version>${version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-lang3</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>commons-lang</groupId>
                         <artifactId>commons-lang</artifactId>
@@ -3511,6 +3526,10 @@
                 <artifactId>cxf-xjc-ts</artifactId>
                 <version>${version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-lang3</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>commons-lang</groupId>
                         <artifactId>commons-lang</artifactId>
@@ -5377,8 +5396,8 @@
 
             <dependency>
                 <groupId>org.jboss.spec.javax.xml.bind</groupId>
-                <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec}</version>
+                <artifactId>jboss-jaxb-api_2.3_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec}</version>
             </dependency>
 
             <dependency>
@@ -5657,10 +5676,6 @@
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-bindings-object</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-bindings-coloc</artifactId>
                     </exclusion>
                     <exclusion>
@@ -5742,6 +5757,10 @@
                     <exclusion>
                         <groupId>commons-lang</groupId>
                         <artifactId>commons-lang</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-lang3</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.codehaus.woodstox</groupId>
@@ -5834,6 +5853,18 @@
                         <groupId>com.fasterxml.woodstox</groupId>
                         <artifactId>woodstox-core</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>javax.xml.stream</groupId>
+                        <artifactId>stax-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.activation</groupId>
+                        <artifactId>activation</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.annotation</groupId>
+                        <artifactId>jboss-annotations-api_1.2_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -5884,10 +5915,6 @@
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-bindings-soap</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-bindings-object</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
@@ -5976,6 +6003,10 @@
                     <exclusion>
                         <groupId>commons-lang</groupId>
                         <artifactId>commons-lang</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-lang3</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.codehaus.woodstox</groupId>

@@ -28,12 +28,13 @@
     </properties>
 
     <resources>
-        <artifact name="${org.apache.velocity:velocity}"/>
+        <artifact name="${org.apache.velocity:velocity-engine-core}"/>
     </resources>
 
     <dependencies>
         <module name="org.apache.commons.collections"/>
-        <module name="org.apache.commons.lang"/>
+        <module name="org.apache.commons.lang3"/>
+        <module name="org.slf4j"/>
     </dependencies>
 
 </module>
