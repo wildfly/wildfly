@@ -28,7 +28,7 @@
 
     <groupId>org.wildfly.bom</groupId>
     <artifactId>wildfly</artifactId>
-    <version>11.0.0.Final</version>
+    <version>11.1.0.Beta1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
