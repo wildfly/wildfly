@@ -28,7 +28,7 @@
 
     <groupId>org.wildfly.bom</groupId>
     <artifactId>wildfly</artifactId>
-    <version>11.0.0.CR2-SNAPSHOT</version>
+    <version>11.0.0.Final</version>
 
     <packaging>pom</packaging>
 
@@ -67,7 +67,7 @@
     </issueManagement>
 
     <properties>
-        <version.org.wildfly>11.0.0.CR2-SNAPSHOT</version.org.wildfly>
+        <version.org.wildfly>11.0.0.Final</version.org.wildfly>
 
         <!-- Versions of JBoss projects -->
 
@@ -93,7 +93,7 @@
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP8</version.org.picketlink>
         <version.org.wildfly.arquillian.container>2.1.0.Beta1</version.org.wildfly.arquillian.container>
-        <version.org.wildfly.security.elytron>1.1.1.Final</version.org.wildfly.security.elytron>
+        <version.org.wildfly.security.elytron>1.1.6.Final</version.org.wildfly.security.elytron>
         <version.org.wildfly.client.config>1.0.0.Final</version.org.wildfly.client.config>
         <version.org.wildfly.common>1.2.0.Final</version.org.wildfly.common>
         <version.org.wildfly.discovery>1.0.0.Final</version.org.wildfly.discovery>
