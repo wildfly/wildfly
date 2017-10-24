@@ -60,7 +60,7 @@
         <product.release.name>WildFly Servlet</product.release.name>
         <verifier.slot.name>wildfly-web</verifier.slot.name>
         <verifier.product.release.name>WildFly Servlet</verifier.product.release.name>
-        <verifier.product.release.version>11.0</verifier.product.release.version>
+        <verifier.product.release.version>11.1</verifier.product.release.version>
     </properties>
     <build>
         <finalName>${server.output.dir.prefix}-servlet-${project.version}</finalName>
