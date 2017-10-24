@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.security.common.negotiation;
 
-import static org.jboss.as.test.integration.security.common.Utils.IBM_JDK;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Base64;
@@ -73,10 +71,6 @@ public final class KerberosTestUtils {
      * @throws AssumptionViolatedException
      */
     public static void assumeKerberosAuthenticationSupported() throws AssumptionViolatedException {
-        if (IBM_JDK && isIPV6()) {
-            throw new AssumptionViolatedException(
-                    "Kerberos tests are not supported on IBM Java with IPv6. Find more info in https://bugzilla.redhat.com/show_bug.cgi?id=1188632");
-        }
         if (isIPV6()) {
             throw new AssumptionViolatedException(
                     "Kerberos tests are not supported when hostname is not available for tested IPv6 address. Find more info in https://issues.jboss.org/browse/WFLY-5409");
