@@ -136,8 +136,8 @@ public interface JGroupsLogger extends BasicLogger {
     @Message(id = 22, value = "%s entry not found in configured key store")
     IllegalArgumentException keyEntryNotFound(String alias);
 
-    @Message(id = 23, value = "%s key store entry does not contain a private key")
-    IllegalArgumentException privateKeyStoreEntryExpected(String alias);
+    @Message(id = 23, value = "%s key store entry is not of the expected type: %s")
+    IllegalArgumentException unexpectedKeyStoreEntryType(String alias, String type);
 
     @Message(id = 24, value = "%s key store entry does not contain a secret key")
     IllegalArgumentException secretKeyStoreEntryExpected(String alias);

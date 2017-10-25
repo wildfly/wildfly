@@ -137,15 +137,16 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
     private static void writeProtocolAttributes(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
         writeGenericProtocolAttributes(writer, property);
 
-        if (ProtocolRegistration.ProtocolType.MULTICAST_SOCKET.contains(property.getName())) {
+        String protocol = property.getName();
+        if (EnumSet.allOf(ProtocolRegistration.MulticastProtocol.class).stream().map(Enum::name).anyMatch(name -> protocol.equals(name))) {
             writeAttributes(writer, property.getValue(), SocketBindingProtocolResourceDefinition.Attribute.class);
-        } else if (ProtocolRegistration.ProtocolType.JDBC.contains(property.getName())) {
+        } else if (EnumSet.allOf(ProtocolRegistration.JdbcProtocol.class).stream().map(Enum::name).anyMatch(name -> protocol.equals(name))) {
             writeAttributes(writer, property.getValue(), JDBCProtocolResourceDefinition.Attribute.class);
-        } else if (ProtocolRegistration.ProtocolType.ENCRYPT.contains(property.getName())) {
+        } else if (EnumSet.allOf(ProtocolRegistration.EncryptProtocol.class).stream().map(Enum::name).anyMatch(name -> protocol.equals(name))) {
             writeAttributes(writer, property.getValue(), EncryptProtocolResourceDefinition.Attribute.class);
-        } else if (ProtocolRegistration.ProtocolType.SOCKET_DISCOVERY.contains(property.getName())) {
+        } else if (EnumSet.allOf(ProtocolRegistration.InitialHostsProtocol.class).stream().map(Enum::name).anyMatch(name -> protocol.equals(name))) {
             writeAttributes(writer, property.getValue(), SocketDiscoveryProtocolResourceDefinition.Attribute.class);
-        } else if (ProtocolRegistration.ProtocolType.AUTH.contains(property.getName())) {
+        } else if (EnumSet.allOf(ProtocolRegistration.AuthProtocol.class).stream().map(Enum::name).anyMatch(name -> protocol.equals(name))) {
             writeAuthToken(writer, property.getValue().get(AuthTokenResourceDefinition.WILDCARD_PATH.getKey()).asProperty());
         } else {
             writeAttributes(writer, property.getValue(), GenericProtocolResourceDefinition.DeprecatedAttribute.class);

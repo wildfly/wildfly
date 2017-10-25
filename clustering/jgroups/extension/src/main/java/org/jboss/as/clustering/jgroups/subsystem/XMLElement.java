@@ -21,11 +21,11 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.clustering.controller.Attribute;
-import org.jboss.as.clustering.jgroups.subsystem.ProtocolRegistration.ProtocolType;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
@@ -97,11 +97,11 @@ public enum XMLElement {
             }
         }
 
-        ProtocolType.MULTICAST_SOCKET.forEach(protocol -> protocols.put(protocol, XMLElement.SOCKET_PROTOCOL));
-        ProtocolType.JDBC.forEach(protocol -> protocols.put(protocol, XMLElement.JDBC_PROTOCOL));
-        ProtocolType.ENCRYPT.forEach(protocol -> protocols.put(protocol, XMLElement.ENCRYPT_PROTOCOL));
-        ProtocolType.SOCKET_DISCOVERY.forEach(protocol -> protocols.put(protocol, XMLElement.SOCKET_DISCOVERY_PROTOCOL));
-        ProtocolType.AUTH.forEach(protocol -> protocols.put(protocol, XMLElement.AUTH_PROTOCOL));
+        EnumSet.allOf(ProtocolRegistration.MulticastProtocol.class).forEach(protocol -> protocols.put(protocol.name(), XMLElement.SOCKET_PROTOCOL));
+        EnumSet.allOf(ProtocolRegistration.JdbcProtocol.class).forEach(protocol -> protocols.put(protocol.name(), XMLElement.JDBC_PROTOCOL));
+        EnumSet.allOf(ProtocolRegistration.EncryptProtocol.class).forEach(protocol -> protocols.put(protocol.name(), XMLElement.ENCRYPT_PROTOCOL));
+        EnumSet.allOf(ProtocolRegistration.InitialHostsProtocol.class).forEach(protocol -> protocols.put(protocol.name(), XMLElement.SOCKET_DISCOVERY_PROTOCOL));
+        EnumSet.allOf(ProtocolRegistration.AuthProtocol.class).forEach(protocol -> protocols.put(protocol.name(), XMLElement.AUTH_PROTOCOL));
 
         tokens.put(PlainAuthTokenResourceDefinition.PATH.getValue(), XMLElement.PLAIN_TOKEN);
         tokens.put(DigestAuthTokenResourceDefinition.PATH.getValue(), XMLElement.DIGEST_TOKEN);

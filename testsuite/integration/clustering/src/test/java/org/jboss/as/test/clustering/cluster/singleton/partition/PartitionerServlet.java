@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jgroups.Channel;
+import org.jgroups.JChannel;
 import org.jgroups.View;
 import org.jgroups.protocols.DISCARD;
 import org.jgroups.protocols.TP;
@@ -66,15 +66,15 @@ public class PartitionerServlet extends HttpServlet {
         this.log("Simulating network partitions? " + partition);
 
         @SuppressWarnings("unchecked")
-        ServiceController<Channel> service = (ServiceController<Channel>) CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse("org.wildfly.clustering.jgroups.default-channel"));
+        ServiceController<JChannel> service = (ServiceController<JChannel>) CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse("org.wildfly.clustering.jgroups.default-channel"));
         try {
-            Channel channel = service.awaitValue();
+            JChannel channel = service.awaitValue();
 
             if (partition) {
                 // Simulate partitions by injecting DISCARD protocol
                 DISCARD discard = new DISCARD();
                 discard.setDiscardAll(true);
-                channel.getProtocolStack().insertProtocol(discard, ProtocolStack.ABOVE, TP.class);
+                channel.getProtocolStack().insertProtocol(discard, ProtocolStack.Position.ABOVE, TP.class);
 
                 // Speed up partitioning
                 GMS gms = (GMS) channel.getProtocolStack().findProtocol(GMS.class);
