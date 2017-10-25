@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.security.xacml;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -45,6 +46,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * Arquillian JUnit testcase for testing XACML based authorization of EJBs.
@@ -160,7 +162,10 @@ public class EjbXACMLAuthorizationModuleTestCase {
                 .addAsResource(EjbXACMLAuthorizationModuleTestCase.class.getPackage(),
                         XACMLTestUtils.TESTOBJECTS_POLICIES + "/ejb-xacml-policy.xml", "xacml-policy.xml")
                 .addAsManifestResource(EjbXACMLAuthorizationModuleTestCase.class.getPackage(),
-                        XACMLTestUtils.TESTOBJECTS_CONFIG + "/jboss-ejb3.xml", "jboss-ejb3.xml");
+                        XACMLTestUtils.TESTOBJECTS_CONFIG + "/jboss-ejb3.xml", "jboss-ejb3.xml")
+                .addAsResource(createPermissionsXmlAsset(
+                        new ElytronPermission("getSecurityDomain")
+                ), "META-INF/permissions.xml");
         XACMLTestUtils.addJBossDeploymentStructureToArchive(jar);
         jar.addClasses(AbstractSecurityDomainsServerSetupTask.class);
         return jar;
