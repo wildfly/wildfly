@@ -110,7 +110,7 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
             // Only transform "native" protocols
             @SuppressWarnings("unchecked")
             P result = (P) (nativeProtocol ? ProtocolFactory.TRANSFORMER.apply(protocol) : protocol);
-            Map<String, String> properties = new HashMap<>(this.defaults.getValue().getProperties(this.name));
+            Map<String, String> properties = new HashMap<>(this.defaults.getValue().getProperties(protocolClass));
             properties.putAll(this.properties);
             Configurator.removeDeprecatedProperties(result, properties);
             Configurator.resolveAndAssignFields(result, properties);
