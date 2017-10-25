@@ -40,6 +40,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
@@ -56,6 +57,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Test case for BZ-1190029 and https://issues.jboss.org/browse/WFLY-4748.
@@ -95,6 +98,10 @@ public class SingletonPartitionTestCase extends ClusterAbstractTestCase {
         // partitioner
         war.addClass(PartitionerServlet.class);
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.clustering.common, org.jboss.as.controller, org.jboss.as.server, org.jgroups, org.infinispan, org.wildfly.clustering.infinispan.spi\n"));
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new ServerPermission("useServiceRegistry"),
+                new ServerPermission("getCurrentServiceContainer")
+        ), "permissions.xml");
         return war;
     }
 
