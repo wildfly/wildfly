@@ -35,6 +35,10 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.PropertyPermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 /**
  * Tests that invocations on a clustered stateful session EJB2 bean from a remote EJB client, failover to
  * other node(s) in cases like a node going down.
@@ -78,6 +82,9 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends RemoteEJBClient
         jar.addClass(CounterBean.class);
         jar.addClass(NodeNameGetter.class);
         jar.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: deployment." + MODULE_NAME_SINGLE + ".jar\n"), "MANIFEST.MF");
+        jar.addAsResource(createPermissionsXmlAsset(
+                new PropertyPermission("jboss.node.name", "read")),
+                "META-INF/jboss-permissions.xml");
         return jar;
     }
 

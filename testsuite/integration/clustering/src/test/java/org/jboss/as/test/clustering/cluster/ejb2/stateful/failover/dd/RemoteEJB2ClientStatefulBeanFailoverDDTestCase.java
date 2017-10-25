@@ -36,6 +36,10 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.PropertyPermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 /**
  * @author Ondrej Chaloupka
  */
@@ -74,6 +78,9 @@ public class RemoteEJB2ClientStatefulBeanFailoverDDTestCase extends RemoteEJBCli
         jar.addClass(NodeNameGetter.class);
         jar.addAsManifestResource(RemoteEJB2ClientStatefulBeanFailoverDDTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + MODULE_NAME_SINGLE + ".jar\n"), "MANIFEST.MF");
+        jar.addAsResource(createPermissionsXmlAsset(
+                new PropertyPermission("jboss.node.name", "read")),
+                "META-INF/jboss-permissions.xml");
         return jar;
     }
 

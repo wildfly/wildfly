@@ -23,12 +23,14 @@
 package org.jboss.as.test.clustering.cluster.ejb2.stateless;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PropertyPermission;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
@@ -143,6 +145,9 @@ public class RemoteStatelessFailoverTestCase {
         jar.addPackage(StatelessRemote.class.getPackage());
         jar.addClass(StatelessBean.class);
         jar.addClass(NodeNameGetter.class);
+        jar.addAsResource(createPermissionsXmlAsset(
+                new PropertyPermission("jboss.node.name", "read")),
+                "META-INF/jboss-permissions.xml");
         return jar;
     }
 
@@ -152,6 +157,9 @@ public class RemoteStatelessFailoverTestCase {
         jar.addClass(StatelessBeanDD.class);
         jar.addClass(NodeNameGetter.class);
         jar.addAsManifestResource(RemoteStatelessFailoverTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsResource(createPermissionsXmlAsset(
+                new PropertyPermission("jboss.node.name", "read")),
+                "META-INF/jboss-permissions.xml");
         return jar;
     }
 
