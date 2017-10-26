@@ -88,6 +88,7 @@ public class TransformUtils {
                     case JacORBSubsystemConstants.SECURITY_SUPPORT_SSL:
                     case JacORBSubsystemConstants.SECURITY_ADD_COMP_VIA_INTERCEPTOR:
                     case JacORBSubsystemConstants.NAMING_EXPORT_CORBALOC:
+                    case JacORBSubsystemConstants.INTEROP_IONA:
                         if (legacyValue.asString().equals(JacORBSubsystemConstants.ON)) {
                             value = new ModelNode(true);
                         } else {
