@@ -24,7 +24,8 @@ limitations under the License.
     4) standalone/configuration/standalone.xml must exist
     5) modules/system/layers/base/org/jboss/as/product/wildfly-full/dir/META-INF/MANIFEST.MF exists
     6) JBoss-Product-Release-Name key in manifest.mf above has value "WildFly Full"
-    7) JBoss-Product-Release-Version key in manifest.mf has value starting with "11.1"
+    7) JBoss-Product-Release-Version key in manifest.mf has value starting with the value of the
+       'verifier.product.release.version' property in this maven module's pom
 -->
   <files>
     <file>
