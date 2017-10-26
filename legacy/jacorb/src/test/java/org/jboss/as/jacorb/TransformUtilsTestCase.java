@@ -23,6 +23,7 @@ public class TransformUtilsTestCase {
         legacyModel.get("support-ssl").set("off");
         legacyModel.get("sun").set("on");
         legacyModel.get("comet").set("off");
+        legacyModel.get("iona").set("on");
         ModelNode newModel = TransformUtils.transformModel(legacyModel);
         Assert.assertTrue(newModel.get("name").equals(new ModelNode("test")));
         Assert.assertTrue(newModel.get("giop-version").equals(new ModelNode("1.2")));
@@ -30,6 +31,7 @@ public class TransformUtilsTestCase {
         Assert.assertTrue(newModel.get("transactions").equals(new ModelNode("full")));
         Assert.assertTrue(newModel.get("export-corbaloc").equals(new ModelNode(true)));
         Assert.assertTrue(newModel.get("support-ssl").equals(new ModelNode(false)));
+        Assert.assertTrue(newModel.get("iona").equals(new ModelNode(true)));
     }
 
     @Test
@@ -45,7 +47,7 @@ public class TransformUtilsTestCase {
     @Test
     public void testRejectedOnOffAttributeTurnedOff() throws Exception {
         ModelNode model = new ModelNode();
-        model.get("iona").set("off");
+        model.get("monitoring").set("off");
         List<String> result =TransformUtils.validateDeprecatedProperites(model);
         Assert.assertTrue(result.isEmpty());
     }
@@ -53,7 +55,7 @@ public class TransformUtilsTestCase {
     @Test
     public void testRejectedOnOffAttribute() throws Exception {
         ModelNode model = new ModelNode();
-        model.get("iona").set("on");
+        model.get("monitoring").set("on");
         List<String> result = TransformUtils.validateDeprecatedProperites(model);
         Assert.assertFalse(result.isEmpty());
     }

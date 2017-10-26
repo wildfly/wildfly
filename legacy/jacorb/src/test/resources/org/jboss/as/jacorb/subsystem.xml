@@ -3,6 +3,7 @@
         <initializers security="off" transactions="spec"/>
     </orb>
     <naming root-context="JBoss/Naming/root" export-corbaloc="on"/>
+    <interop iona="on" />
     <security support-ssl="on" security-domain="security-domain" add-component-via-interceptor="on" client-supports="MutualAuth"
               client-requires="None" server-supports="MutualAuth" server-requires="None"/>
     <properties>
