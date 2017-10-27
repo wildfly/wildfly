@@ -15,7 +15,7 @@
  */
 package org.wildfly.test.manual.elytron.seccontext;
 
-import static org.wildfly.test.manual.elytron.seccontext.SeccontextUtil.SERVER2;
+import static org.wildfly.test.manual.elytron.seccontext.SeccontextUtil.WAR_WHOAMI;
 import static org.wildfly.test.manual.elytron.seccontext.SeccontextUtil.switchIdentity;
 
 import java.io.BufferedReader;
@@ -26,7 +26,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
-
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
@@ -42,8 +41,8 @@ import javax.naming.NamingException;
  * @author Josef Cacek
  */
 @Stateless
-@RolesAllowed({ "entry", "admin" })
-@DeclareRoles({ "entry", "whoami", "servlet", "admin" })
+@RolesAllowed({ "entry", "admin", "no-server2-identity", "authz" })
+@DeclareRoles({ "entry", "whoami", "servlet", "admin", "no-server2-identity", "authz" })
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class EntryBean implements Entry {
 
@@ -56,28 +55,31 @@ public class EntryBean implements Entry {
     }
 
     @Override
-    public String[] doubleWhoAmI(String username, String password, ReAuthnType type, final String providerUrl,
-            boolean statefullWhoAmI) {
-        String[] result = new String[2];
-        result[0] = context.getCallerPrincipal().getName();
-
+    public String[] doubleWhoAmI(CallAnotherBeanInfo info) {
         final Callable<String> callable = () -> {
-            return getWhoAmIBean(providerUrl, statefullWhoAmI).getCallerPrincipal().getName();
+            return getWhoAmIBean(info.getLookupEjbAppName(), info.getProviderUrl(),
+                    info.isStatefullWhoAmI()).getCallerPrincipal().getName();
         };
-        try {
-            result[1] = switchIdentity(username, password, callable, type);
-        } catch (Exception e) {
-            StringWriter sw = new StringWriter();
-            e.printStackTrace(new PrintWriter(sw));
-            result[1] = sw.toString();
-        } finally {
-            String secondLocalWho = context.getCallerPrincipal().getName();
-            if (!secondLocalWho.equals(result[0])) {
-                throw new IllegalStateException(
-                        "Local getCallerPrincipal changed from '" + result[0] + "' to '" + secondLocalWho);
-            }
-        }
-        return result;
+
+        return whoAmIAndCall(info, callable);
+    }
+
+    public String[] whoAmIAndIllegalStateException(CallAnotherBeanInfo info) {
+        final Callable<String> callable = () -> {
+            return getWhoAmIBean(info.getLookupEjbAppName(), info.getProviderUrl(),
+                    info.isStatefullWhoAmI()).throwIllegalStateException();
+        };
+
+        return whoAmIAndCall(info, callable);
+    }
+
+    public String[] whoAmIAndServer2Exception(CallAnotherBeanInfo info) {
+        final Callable<String> callable = () -> {
+            return getWhoAmIBean(info.getLookupEjbAppName(), info.getProviderUrl(),
+                    info.isStatefullWhoAmI()).throwServer2Exception();
+        };
+
+        return whoAmIAndCall(info, callable);
     }
 
     @Override
@@ -107,9 +109,29 @@ public class EntryBean implements Entry {
         return result;
     }
 
-    private WhoAmI getWhoAmIBean(String providerUrl, boolean statefullWhoAmI) throws NamingException {
-        return SeccontextUtil.lookup(
-                SeccontextUtil.getRemoteEjbName(SERVER2, "WhoAmIBean", WhoAmI.class.getName(), statefullWhoAmI), providerUrl);
+    private String[] whoAmIAndCall(CallAnotherBeanInfo info, Callable<String> callable) {
+        String[] result = new String[2];
+        result[0] = context.getCallerPrincipal().getName();
+
+        try {
+            result[1] = switchIdentity(info.getUsername(), info.getPassword(), info.getAuthzName(), callable, info.getType());
+        } catch (Exception e) {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            result[1] = sw.toString();
+        } finally {
+            String secondLocalWho = context.getCallerPrincipal().getName();
+            if (!secondLocalWho.equals(result[0])) {
+                throw new IllegalStateException(
+                        "Local getCallerPrincipal changed from '" + result[0] + "' to '" + secondLocalWho);
+            }
+        }
+        return result;
     }
 
+    private WhoAmI getWhoAmIBean(String ejbAppName, String providerUrl, boolean statefullWhoAmI) throws NamingException {
+        return SeccontextUtil.lookup(
+                SeccontextUtil.getRemoteEjbName(ejbAppName == null ? WAR_WHOAMI : ejbAppName, "WhoAmIBean",
+                        WhoAmI.class.getName(), statefullWhoAmI), providerUrl);
+    }
 }

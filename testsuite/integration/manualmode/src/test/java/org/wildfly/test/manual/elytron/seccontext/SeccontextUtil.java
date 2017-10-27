@@ -36,8 +36,40 @@ import org.wildfly.security.sasl.SaslMechanismSelector;
  */
 public class SeccontextUtil {
 
+    /**
+     * Name of the first (entry) server in arquillian configuration.
+     */
     public static final String SERVER1 = "seccontext-server1";
+    public static final String SERVER1_BACKUP = "seccontext-server1-backup";
+    /**
+     * Name of the second (target) server in arquillian configuration.
+     */
     public static final String SERVER2 = "seccontext-server2";
+    /**
+     * Name of the third (target for server chain) server in arquillian configuration.
+     */
+    public static final String SERVER3 = "seccontext-server3";
+
+    /**
+     * Name of deployment which contains EntryBean EJB.
+     */
+    public static final String JAR_ENTRY_EJB = "entry-ejb";
+    /**
+     * Name of deployment which contains WhoAmI bean and WhoAmIServlet.
+     */
+    public static final String WAR_WHOAMI = "whoami";
+    /**
+     * Name of deployment which contains secured EntryServlet with BASIC HTTP authentication mechanism configured.
+     */
+    public static final String WAR_ENTRY_SERVLET_BASIC = "entry-servlet-basic";
+    /**
+     * Name of deployment which contains secured EntryServlet with FORM HTTP authentication mechanism configured.
+     */
+    public static final String WAR_ENTRY_SERVLET_FORM = "entry-servlet-form";
+    /**
+     * Name of deployment which contains secured EntryServlet with BEARER_TOKEN HTTP authentication mechanism configured.
+     */
+    public static final String WAR_ENTRY_SERVLET_BEARER_TOKEN = "entry-servlet-bearer";
 
     /**
      * Method which handles {@link ReAuthnType} types by using Elytron API. Based on provided type new
@@ -51,17 +83,37 @@ public class SeccontextUtil {
      */
     public static <T> T switchIdentity(final String username, final String password, final Callable<T> callable,
             ReAuthnType type) throws Exception {
+        return switchIdentity(username, password, null, callable, type);
+    }
+
+    /**
+     * Method which handles {@link ReAuthnType} types by using Elytron API. Based on provided type new
+     * {@link AuthenticationContext} is created and given callable is called within the context.
+     *
+     * @param username login name used for reauthentication scenarios (or null)
+     * @param password password used for reauthentication scenarios (or null)
+     * @param authzName used for authorization name
+     * @param callable logic to be executed in the requested AuthenticationContext
+     * @param type reauthentication type
+     * @return result of the callable call
+     */
+    public static <T> T switchIdentity(final String username, final String password, final String authzName,
+        final Callable<T> callable, ReAuthnType type) throws Exception {
+
         if (type == null) {
-            type = ReAuthnType.AUTHENTICATION_CONTEXT;
+            type = ReAuthnType.AC_AUTHENTICATION;
         }
+        final SecurityDomain securityDomain = SecurityDomain.getCurrent();
+        AuthenticationConfiguration authCfg = AuthenticationConfiguration.empty()
+                .setSaslMechanismSelector(SaslMechanismSelector.ALL);
         switch (type) {
-            case FORWARDED_IDENTITY:
-                return AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.empty()
-                        .useForwardedIdentity(SecurityDomain.getCurrent()).setSaslMechanismSelector(SaslMechanismSelector.ALL))
+            case FORWARDED_AUTHENTICATION:
+                return AuthenticationContext.empty().with(MatchRule.ALL, authCfg.useForwardedIdentity(securityDomain))
                         .runCallable(callable);
-            case AUTHENTICATION_CONTEXT:
-                AuthenticationConfiguration authCfg = AuthenticationConfiguration.empty()
-                        .setSaslMechanismSelector(SaslMechanismSelector.ALL);
+            case FORWARDED_AUTHORIZATION:
+                authCfg = authCfg.useForwardedAuthorizationIdentity(securityDomain);
+                // fall through
+            case AC_AUTHENTICATION:
                 if (username != null) {
                     authCfg = authCfg.useName(username);
                 }
@@ -69,20 +121,32 @@ public class SeccontextUtil {
                     authCfg = authCfg.usePassword(password);
                 }
                 return AuthenticationContext.empty().with(MatchRule.ALL, authCfg).runCallable(callable);
-            case SECURITY_DOMAIN_AUTHENTICATE:
+            case AC_AUTHORIZATION:
+                if (username != null) {
+                    authCfg = authCfg.useName(username);
+                }
+                if (password != null) {
+                    authCfg = authCfg.usePassword(password);
+                }
+                if (authzName != null) {
+                    authCfg = authCfg.useAuthorizationName(authzName);
+                }
+                return AuthenticationContext.empty().with(MatchRule.ALL, authCfg).runCallable(callable);
+            case SD_AUTHENTICATION:
                 return password == null ? null
-                        : SecurityDomain.getCurrent().authenticate(username, new PasswordGuessEvidence(password.toCharArray()))
+                        : securityDomain.authenticate(username, new PasswordGuessEvidence(password.toCharArray()))
                                 .runAs(callable);
-            case SECURITY_DOMAIN_AUTHENTICATE_FORWARDED:
+            case SD_AUTHENTICATION_FORWARDED:
                 final Callable<T> forwardIdentityCallable = () -> {
                     return AuthenticationContext.empty()
                             .with(MatchRule.ALL,
-                                    AuthenticationConfiguration.empty().useForwardedIdentity(SecurityDomain.getCurrent())
-                                            .setSaslMechanismSelector(SaslMechanismSelector.ALL))
+                                    AuthenticationConfiguration.empty()
+                                    .setSaslMechanismSelector(SaslMechanismSelector.ALL)
+                                    .useForwardedIdentity(securityDomain))
                             .runCallable(callable);
                 };
                 return password == null ? null
-                        : SecurityDomain.getCurrent().authenticate(username, new PasswordGuessEvidence(password.toCharArray()))
+                        : securityDomain.authenticate(username, new PasswordGuessEvidence(password.toCharArray()))
                                 .runAs(forwardIdentityCallable);
             case NO_REAUTHN:
             default:
@@ -95,7 +159,8 @@ public class SeccontextUtil {
      *
      * @return name to be used for EJB lookup.
      */
-    public static String getRemoteEjbName(String appName, String beanSimpleNameBase, String remoteInterfaceName, boolean stateful) {
+    public static String getRemoteEjbName(String appName, String beanSimpleNameBase, String remoteInterfaceName,
+            boolean stateful) {
         return "ejb:/" + appName + "/" + beanSimpleNameBase + (stateful ? "SFSB!" : "!") + remoteInterfaceName
                 + (stateful ? "?stateful" : "");
     }
