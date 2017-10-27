@@ -145,6 +145,12 @@ public class MessagingTransformers implements ExtensionTransformerRegistration {
     private static void buildTransformers2_0_0(ResourceTransformationDescriptionBuilder subsystem) {
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
 
+        rejectDefinedAttributeWithDefaultValue(server,
+                ServerDefinition.JOURNAL_JDBC_LOCK_ACQUISITION_TIMEOUT,
+                ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION,
+                ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD,
+                ServerDefinition.JOURNAL_NODE_MANAGER_STORE_TABLE
+        );
         ResourceTransformationDescriptionBuilder connectionFactory = server.addChildResource(MessagingExtension.CONNECTION_FACTORY_PATH);
         // initial-message-packet-size is now a configuration property of the connection-factory (was a runtime attribute before)
         rejectDefinedAttributeWithDefaultValue(connectionFactory, ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE);

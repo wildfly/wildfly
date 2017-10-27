@@ -60,11 +60,15 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_DATABASE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_DATASOURCE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_FILE_SIZE;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_JDBC_LOCK_ACQUISITION_TIMEOUT;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MAX_IO;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MESSAGES_TABLE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MIN_FILES;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_NODE_MANAGER_STORE_TABLE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_PAGE_STORE_TABLE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_POOL_FILES;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_SYNC_NON_TRANSACTIONAL;
@@ -102,6 +106,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 import javax.sql.DataSource;
@@ -495,7 +500,16 @@ class ServerAdd extends AbstractAddStepHandler {
         storageConfiguration.setMessageTableName(JOURNAL_MESSAGES_TABLE.resolveModelAttribute(context, model).asString());
         storageConfiguration.setLargeMessageTableName(JOURNAL_LARGE_MESSAGES_TABLE.resolveModelAttribute(context, model).asString());
         storageConfiguration.setPageStoreTableName(JOURNAL_PAGE_STORE_TABLE.resolveModelAttribute(context, model).asString());
-        storageConfiguration.setJdbcNetworkTimeout(JOURNAL_JDBC_NETWORK_TIMEOUT.resolveModelAttribute(context, model).asInt());
+        storageConfiguration.setNodeManagerStoreTableName(JOURNAL_NODE_MANAGER_STORE_TABLE.resolveModelAttribute(context, model).asString());
+        long lockAcquisitionTimeoutInMillis = TimeUnit.SECONDS.toMillis(JOURNAL_JDBC_LOCK_ACQUISITION_TIMEOUT.resolveModelAttribute(context, model).asInt());
+        storageConfiguration.setJdbcLockAcquisitionTimeoutMillis(lockAcquisitionTimeoutInMillis);
+        long lockExpirationInMillis = TimeUnit.SECONDS.toMillis(JOURNAL_JDBC_LOCK_EXPIRATION.resolveModelAttribute(context, model).asInt());
+        storageConfiguration.setJdbcLockExpirationMillis(lockExpirationInMillis);
+        long lockRenewPeriodInMillis = TimeUnit.SECONDS.toMillis(JOURNAL_JDBC_LOCK_RENEW_PERIOD.resolveModelAttribute(context, model).asInt());
+        storageConfiguration.setJdbcLockRenewPeriodMillis(lockRenewPeriodInMillis);
+        long networkTimeout = TimeUnit.SECONDS.toMillis(JOURNAL_JDBC_NETWORK_TIMEOUT.resolveModelAttribute(context, model).asInt());
+        // ARTEMIS-1493: Artemis API is not correct. the value must be in millis but it requires an int instead of a long.
+        storageConfiguration.setJdbcNetworkTimeout((int)networkTimeout);
         ModelNode databaseNode = JOURNAL_DATABASE.resolveModelAttribute(context, model);
         final String database = databaseNode.isDefined() ? databaseNode.asString() : null;
         try {

@@ -133,8 +133,12 @@ public class MessagingActiveMQSubsystem_3_0_TestCase extends AbstractSubsystemBa
                                         ServerDefinition.JOURNAL_BINDINGS_TABLE,
                                         ServerDefinition.JOURNAL_JMS_BINDINGS_TABLE,
                                         ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE,
+                                        ServerDefinition.JOURNAL_NODE_MANAGER_STORE_TABLE,
                                         ServerDefinition.JOURNAL_PAGE_STORE_TABLE,
                                         ServerDefinition.JOURNAL_DATABASE,
+                                        ServerDefinition.JOURNAL_JDBC_LOCK_ACQUISITION_TIMEOUT,
+                                        ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION,
+                                        ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD,
                                         ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT))
                         .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_MASTER_PATH),
                                 new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
@@ -169,6 +173,12 @@ public class MessagingActiveMQSubsystem_3_0_TestCase extends AbstractSubsystemBa
     public void testRejectingTransformersWildFly_11_0_0() throws Exception {
         testRejectingTransformers(WF_11_0_0_CR1, MessagingExtension.VERSION_2_0_0,
                 new FailedOperationTransformationConfig()
+                        .addFailedAttribute(pathAddress(SUBSYSTEM_PATH, SERVER_PATH),
+                                new FailedOperationTransformationConfig.NewAttributesConfig(
+                                        ServerDefinition.JOURNAL_JDBC_LOCK_ACQUISITION_TIMEOUT,
+                                        ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION,
+                                        ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD,
+                                        ServerDefinition.JOURNAL_NODE_MANAGER_STORE_TABLE))
                         .addFailedAttribute(pathAddress(SUBSYSTEM_PATH, SERVER_PATH, CONNECTION_FACTORY_PATH),
                                 new FailedOperationTransformationConfig.NewAttributesConfig(
                                         ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE)));

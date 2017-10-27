@@ -56,11 +56,15 @@
                 create-journal-dir="${create.journal.dir:true}"
                 datasource="fooDS"
                 database="mysql"
+                jdbc-lock-acquisition-timeout="${journal.jdbc.lock.acquisition.timeout:890}"
+                jdbc-lock-expiration="${journal.jdbc.lock.expiration:891}"
+                jdbc-lock-renew-period="${journal.jdbc.lock.renew.period:892}"
                 jdbc-network-timeout="${journal.jdbc.network.timeout:4567}"
                 messages-table="${journal.message.table:MESSAGES}"
                 bindings-table="${journal.bindings.table:BINDINGS}"
                 jms-bindings-table="${journal.jms.bindings.table:JMS_BINDINGS}"
                 large-messages-table="${journal.large-messages.table:LARGE_MESSAGES}"
+                node-manager-store-table="${journal.node-manager-store-table:NODE_MANAGER_STORE}"
                 page-store-table="${journal.page-store.table:PAGE_STORE}"/>
 
         <statistics

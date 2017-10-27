@@ -138,6 +138,11 @@ public class PropertySQLProviderFactory implements SQLProvider.Factory {
     private class PropertySQLProvider implements SQLProvider {
 
         private final String tableName;
+        private static final int STATE_ROW_ID = 0;
+        private static final int LIVE_LOCK_ROW_ID = 1;
+        private static final int BACKUP_LOCK_ROW_ID = 2;
+        private static final int NODE_ID_ROW_ID = 3;
+
 
         public PropertySQLProvider(String tableName, DatabaseStoreType storeType) {
             this.tableName = tableName;
@@ -245,6 +250,97 @@ public class PropertySQLProviderFactory implements SQLProvider.Factory {
         public boolean closeConnectionOnShutdown() {
             return Boolean.valueOf(sql("close-connection-on-shutdown"));
         }
+
+        @Override
+        public String createNodeManagerStoreTableSQL() {
+            return format(sql("create-node-manager-store-table"), tableName);
+        }
+
+        @Override
+        public String createStateSQL() {
+            return format(sql("create-state"), tableName, STATE_ROW_ID);
+        }
+
+        @Override
+        public String createNodeIdSQL() {
+            return format(sql("create-state"), tableName, NODE_ID_ROW_ID);
+        }
+
+        @Override
+        public String createLiveLockSQL() {
+            return format(sql("create-state"), tableName, LIVE_LOCK_ROW_ID);
+        }
+
+        @Override
+        public String createBackupLockSQL() {
+            return format(sql("create-state"), tableName, BACKUP_LOCK_ROW_ID);
+        }
+
+        @Override
+        public String tryAcquireLiveLockSQL() {
+            return format(sql("try-acquire-lock"), tableName, LIVE_LOCK_ROW_ID);
+        }
+
+        @Override
+        public String tryAcquireBackupLockSQL() {
+            return format(sql("try-acquire-lock"), tableName, BACKUP_LOCK_ROW_ID);
+        }
+
+        @Override
+        public String tryReleaseLiveLockSQL() {
+            return format(sql("try-release-lock"), tableName, LIVE_LOCK_ROW_ID);
+        }
+
+        @Override
+        public String tryReleaseBackupLockSQL() {
+            return format(sql("try-release-lock"), tableName, LIVE_LOCK_ROW_ID);
+        }
+
+        @Override
+        public String isLiveLockedSQL() {
+            return format(sql("is-locked"), tableName, LIVE_LOCK_ROW_ID);
+        }
+
+        @Override
+        public String isBackupLockedSQL() {
+            return format(sql("is-locked"), tableName, BACKUP_LOCK_ROW_ID);
+        }
+
+        @Override
+        public String renewLiveLockSQL() {
+            return format(sql("renew-lock"), tableName, LIVE_LOCK_ROW_ID);
+        }
+
+        @Override
+        public String renewBackupLockSQL() {
+            return format(sql("renew-lock"), tableName, BACKUP_LOCK_ROW_ID);
+        }
+
+        @Override
+        public String currentTimestampSQL() {
+            return format(sql("current-timestamp"), tableName);
+        }
+
+        @Override
+        public String writeStateSQL() {
+            return format(sql("write-state"), tableName, STATE_ROW_ID);
+        }
+
+        @Override
+        public String readStateSQL() {
+            return format(sql("read-state"), tableName, STATE_ROW_ID);
+        }
+
+        @Override
+        public String writeNodeIdSQL() {
+            return format(sql("write-nodeId"), tableName, NODE_ID_ROW_ID);
+        }
+
+        @Override
+        public String readNodeIdSQL() {
+            return format(sql("read-nodeId"), tableName, NODE_ID_ROW_ID);
+        }
+
 
         private String sql(final String key) {
             if (database != null) {
