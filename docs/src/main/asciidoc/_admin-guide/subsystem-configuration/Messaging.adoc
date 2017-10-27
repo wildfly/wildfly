@@ -287,6 +287,27 @@ the DLQ and redelivery settings.
 
 ~(See standalone/configuration/standalone-full.xml)~
 
+[[ha-jdbc-store]]
+== HA support for JDBC Store
+
+HA is supported for JDBC Store with the following attributes:
+
+* journal-node-manager-store-table
+* journal-jdbc-lock-expiration
+* journal-jdbc-lock-renew-period
+
+They have default values and will be taken into account based on the value of the
+server's `ha-policy` and `journal-datasource` attributes.
+
+For backwards compatibility, their value can also be specified using the respective Artemis-specific
+System properties:
+
+* `brokerconfig.storeConfiguration.nodeManagerStoreTableName`
+* `brokerconfig.storeConfiguration.jdbcLockExpirationMillis`
+* `brokerconfig.storeConfiguration.jdbcLockRenewPeriodMillis`
+
+If theses System properties are configured, they have precedence over the corresponding attribute's default value.
+
 [[security-domain-for-users]]
 == Security Domain for Users
 

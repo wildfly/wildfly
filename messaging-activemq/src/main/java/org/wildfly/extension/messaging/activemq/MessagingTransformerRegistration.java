@@ -45,7 +45,7 @@ import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 
 /**
- * {@link org.jboss.as.controller.ExtensionTransformerRegistration} for the messaging-activemq subsystem.
+ * {@link org.jboss.as.controller.transform.ExtensionTransformerRegistration} for the messaging-activemq subsystem.
  * @author Paul Ferraro
  */
 @MetaInfServices
@@ -60,10 +60,19 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
 
+        registerTransformers_WildFly_13_0_0(builder.createBuilder(MessagingExtension.VERSION_3_1_0, MessagingExtension.VERSION_3_0_0));
         registerTransformers_EAP_7_1_0(builder.createBuilder(MessagingExtension.VERSION_3_0_0, MessagingExtension.VERSION_2_0_0));
         registerTransformers_EAP_7_0_0(builder.createBuilder(MessagingExtension.VERSION_2_0_0, MessagingExtension.VERSION_1_0_0));
 
         builder.buildAndRegister(registration, new ModelVersion[] { MessagingExtension.VERSION_1_0_0, MessagingExtension.VERSION_2_0_0, MessagingExtension.VERSION_3_0_0 });
+    }
+
+    private static void registerTransformers_WildFly_13_0_0(ResourceTransformationDescriptionBuilder subsystem) {
+        ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
+
+        rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION,
+                ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD,
+                ServerDefinition.JOURNAL_NODE_MANAGER_STORE_TABLE);
     }
 
     private static void registerTransformers_EAP_7_1_0(ResourceTransformationDescriptionBuilder subsystem) {
