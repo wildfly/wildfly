@@ -46,10 +46,12 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistration.Listener;
@@ -65,7 +67,7 @@ import org.wildfly.clustering.server.logging.ClusteringServerLogger;
  * @author Paul Ferraro
  */
 @org.infinispan.notifications.Listener(sync = false)
-public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<T>, Group.Listener, AutoCloseable {
+public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<T>, GroupListener, AutoCloseable {
 
     private static ThreadFactory createThreadFactory(Class<?> targetClass) {
         PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
@@ -77,6 +79,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
     private final Batcher<? extends Batch> batcher;
     private final Cache<T, Set<Node>> cache;
     private final Group group;
+    private final Registration groupRegistration;
     private final CommandDispatcher<Set<T>> dispatcher;
 
     public CacheServiceProviderRegistry(CacheServiceProviderRegistryConfiguration<T> config) {
@@ -85,12 +88,12 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         this.batcher = config.getBatcher();
         this.dispatcher = config.getCommandDispatcherFactory().createCommandDispatcher(config.getId(), this.listeners.keySet());
         this.cache.addListener(this);
-        this.group.addListener(this);
+        this.groupRegistration = this.group.register(this);
     }
 
     @Override
     public void close() {
-        this.group.removeListener(this);
+        this.groupRegistration.close();
         this.cache.removeListener(this);
         this.dispatcher.close();
         // Cleanup any unclosed registrations

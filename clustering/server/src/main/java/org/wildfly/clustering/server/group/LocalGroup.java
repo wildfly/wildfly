@@ -24,7 +24,9 @@ package org.wildfly.clustering.server.group;
 import java.util.Collections;
 import java.util.List;
 
+import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Node;
 
 /**
@@ -42,10 +44,12 @@ public class LocalGroup implements Group {
     }
 
     @Override
-    public void addListener(Listener listener) {
+    public Registration register(GroupListener object) {
         // membership of a non-clustered group will never change
+        return () -> {};
     }
 
+    @Deprecated
     @Override
     public void removeListener(Listener listener) {
         // membership of a non-clustered group will never change

@@ -52,10 +52,12 @@ import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestCorrelator;
 import org.jgroups.blocks.RequestHandler;
 import org.jgroups.stack.Protocol;
+import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
@@ -80,7 +82,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
 
     private final Map<Object, Optional<Object>> contexts = new ConcurrentHashMap<>();
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
-    private final Map<Listener, ExecutorService> listeners = new ConcurrentHashMap<>();
+    private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final AtomicReference<View> view = new AtomicReference<>();
     private final JGroupsNodeFactory nodeFactory;
     private final MarshallingContext marshallingContext;
@@ -161,12 +163,12 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
     }
 
     @Override
-    public void addListener(Listener listener) {
+    public Registration register(GroupListener listener) {
         this.listeners.computeIfAbsent(listener, key -> Executors.newSingleThreadExecutor(createThreadFactory(listener.getClass())));
+        return () -> this.unregister(listener);
     }
 
-    @Override
-    public void removeListener(Listener listener) {
+    private void unregister(GroupListener listener) {
         ExecutorService executor = this.listeners.remove(listener);
         if (executor != null) {
             executor.shutdownNow();
@@ -176,6 +178,12 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    @Deprecated
+    @Override
+    public void removeListener(Listener listener) {
+        this.unregister(listener);
     }
 
     @Override
@@ -237,9 +245,9 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
                 this.nodeFactory.invalidate(leftMembers);
             }
 
-            for (Map.Entry<Listener, ExecutorService> entry : this.listeners.entrySet()) {
+            for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
                 try {
-                    Listener listener = entry.getKey();
+                    GroupListener listener = entry.getKey();
                     ExecutorService executor = entry.getValue();
                     executor.submit(() -> {
                         try {

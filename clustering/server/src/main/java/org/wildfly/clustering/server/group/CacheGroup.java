@@ -46,7 +46,9 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
@@ -64,7 +66,7 @@ public class CacheGroup implements Group, AutoCloseable {
         return new ClassLoaderThreadFactory(WildFlySecurityManager.doUnchecked(action), targetClass.getClassLoader());
     }
 
-    private final Map<Listener, ExecutorService> listeners = new ConcurrentHashMap<>();
+    private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final Cache<?, ?> cache;
     private final InfinispanNodeFactory factory;
     private final SortedMap<Integer, Boolean> views = Collections.synchronizedSortedMap(new TreeMap<>());
@@ -173,12 +175,12 @@ public class CacheGroup implements Group, AutoCloseable {
     }
 
     @Override
-    public void addListener(Listener listener) {
+    public Registration register(GroupListener listener) {
         this.listeners.computeIfAbsent(listener, key -> Executors.newSingleThreadExecutor(createThreadFactory(listener.getClass())));
+        return () -> this.unregister(listener);
     }
 
-    @Override
-    public void removeListener(Listener listener) {
+    private void unregister(GroupListener listener) {
         ExecutorService executor = this.listeners.remove(listener);
         if (executor != null) {
             PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
@@ -189,6 +191,12 @@ public class CacheGroup implements Group, AutoCloseable {
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    @Deprecated
+    @Override
+    public void removeListener(Listener listener) {
+        this.unregister(listener);
     }
 
     private List<Address> getAddresses() {

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,44 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.provider;
 
-import java.util.Set;
-
-import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.group.Node;
+package org.wildfly.clustering;
 
 /**
- * Registration of a provided service.
- *
+ * Encapsulates a registration.
  * @author Paul Ferraro
- * @param <T> a service type
  */
-public interface ServiceProviderRegistration<T> extends Registration {
-
+public interface Registration extends AutoCloseable {
     /**
-     * Listener for service provider changes.
+     * Removes this registration from the associated {@link Registrar}, after which this object is no longer functional.
      */
-    interface Listener {
-        /**
-         * Indicates that the set of nodes providing a given service has changed.
-         *
-         * @param nodes the new set of nodes providing the given service
-         */
-        void providersChanged(Set<Node> nodes);
-    }
-
-    /**
-     * The provided service.
-     *
-     * @return a service identifier
-     */
-    T getService();
-
-    /**
-     * Returns the set of nodes that can provide this service.
-     *
-     * @return a set of nodes
-     */
-    Set<Node> getProviders();
+    @Override
+    void close();
 }

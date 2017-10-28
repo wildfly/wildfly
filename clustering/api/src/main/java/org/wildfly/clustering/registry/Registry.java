@@ -24,6 +24,7 @@ package org.wildfly.clustering.registry;
 
 import java.util.Map;
 
+import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 
@@ -34,32 +35,12 @@ import org.wildfly.clustering.group.Node;
  * @param <V> the type of the registry entry value
  * @author Paul Ferraro
  */
-public interface Registry<K, V> extends AutoCloseable {
+public interface Registry<K, V> extends Registrar<RegistryListener<K, V>>, AutoCloseable {
 
     /**
-     * Listener for added, updated and removed entries.
+     * @deprecated Replaced by {@link RegistryListener}.
      */
-    interface Listener<K, V> {
-        /**
-         * Called when new entries have been added.
-         *
-         * @param added a map of entries that have been added
-         */
-        void addedEntries(Map<K, V> added);
-
-        /**
-         * Called when existing entries have been updated.
-         *
-         * @param updated a map of entries that have been updated
-         */
-        void updatedEntries(Map<K, V> updated);
-
-        /**
-         * Called when entries have been removed.
-         *
-         * @param removed a map of entries that have been removed
-         */
-        void removedEntries(Map<K, V> removed);
+    @Deprecated interface Listener<K, V> extends RegistryListener<K, V> {
     }
 
     /**
@@ -70,18 +51,16 @@ public interface Registry<K, V> extends AutoCloseable {
     Group getGroup();
 
     /**
-     * Adds a listener to this registry.
-     *
-     * @param listener a registry listener
+     * @deprecated Replaced by {@link #register(RegistryListener)}.
      */
-    void addListener(Listener<K, V> listener);
+    @Deprecated default void addListener(Listener<K, V> listener) {
+        this.register(listener);
+    }
 
     /**
-     * Adds a listener from this registry.
-     *
-     * @param listener a registry listener
+     * @deprecated Replaced by {@link org.wildfly.clustering.Registration#close()}.
      */
-    void removeListener(Listener<K, V> listener);
+    @Deprecated void removeListener(Listener<K, V> listener);
 
     /**
      * Returns all registry entries in this group.

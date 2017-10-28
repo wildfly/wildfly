@@ -23,40 +23,38 @@ package org.wildfly.clustering.group;
 
 import java.util.List;
 
+import org.wildfly.clustering.Registrar;
+
 /**
  * Represents a groups of nodes.
  *
  * @author Paul Ferraro
  */
-public interface Group {
+public interface Group extends Registrar<GroupListener> {
 
     /**
-     * Listener for membership changes.
+     * @deprecated Replaced by {@link GroupListener}.
      */
-    interface Listener {
-        /**
-         * Indicates that the membership of the group has changed.
-         *
-         * @param previousMembers previous group members
-         * @param members         new group members
-         * @param merged          indicates whether the membership change is the result of a merge view
-         */
-        void membershipChanged(List<Node> previousMembers, List<Node> members, boolean merged);
+    @Deprecated interface Listener extends GroupListener {
     }
 
     /**
      * Registers a membership listener for the group.
      *
      * @param listener listener to be added
+     * @deprecated Replaced by {@link #register(GroupListener)}.
      */
-    void addListener(Listener listener);
+    @Deprecated default void addListener(Listener listener) {
+        this.register(listener);
+    }
 
     /**
      * Removes a registered listener from the group.
      *
      * @param listener listener to be removed
+     * @deprecated Replaced by {@link org.wildfly.clustering.Registration#close()}
      */
-    void removeListener(Listener listener);
+    @Deprecated void removeListener(Listener listener);
 
     /**
      * Returns the name of this group.
