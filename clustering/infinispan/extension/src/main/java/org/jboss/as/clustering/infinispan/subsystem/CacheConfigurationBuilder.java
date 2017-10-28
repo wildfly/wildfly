@@ -38,6 +38,7 @@ import org.infinispan.configuration.cache.MemoryConfiguration;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.distribution.group.Grouper;
+import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
@@ -100,6 +101,7 @@ public class CacheConfigurationBuilder extends CapabilityServiceNameProvider imp
         return this;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void accept(ConfigurationBuilder builder) {
         builder.memory().read(this.memory.getValue());
@@ -108,5 +110,7 @@ public class CacheConfigurationBuilder extends CapabilityServiceNameProvider imp
         builder.persistence().read(this.persistence.getValue());
         builder.transaction().read(this.transaction.getValue());
         builder.jmxStatistics().read(this.statistics);
+        // Still need to specify this to silence log messages
+        builder.eviction().strategy(EvictionStrategy.MANUAL);
     }
 }
