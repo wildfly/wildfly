@@ -352,7 +352,7 @@ public interface AppClientLogger extends BasicLogger {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 23, value = "Could find application client %s")
+    @Message(id = 23, value = "Could not find application client %s")
     RuntimeException cannotFindAppClientFile(File deploymentName);
 
     @Message(id = 24, value = "Cannot specify both a host to connect to and an ejb-client.properties file. ")
