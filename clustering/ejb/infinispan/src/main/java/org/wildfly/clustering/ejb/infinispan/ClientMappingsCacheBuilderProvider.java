@@ -31,6 +31,7 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
+import org.wildfly.clustering.infinispan.spi.EvictableDataContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
@@ -40,7 +41,7 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
- * Creates routing services.
+ * Creates client mapping services.
  * @author Paul Ferraro
  */
 public class ClientMappingsCacheBuilderProvider implements CacheBuilderProvider, CacheAliasBuilderProvider {
@@ -51,6 +52,7 @@ public class ClientMappingsCacheBuilderProvider implements CacheBuilderProvider,
         this.providerClass = providerClass;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName) {
         List<CapabilityServiceBuilder<?>> builders = new LinkedList<>();
@@ -62,6 +64,12 @@ public class ClientMappingsCacheBuilderProvider implements CacheBuilderProvider,
                 // don't use DefaultConsistentHashFactory for REPL caches (WFLY-9276)
                 builder.clustering().hash().consistentHashFactory(null);
                 builder.clustering().l1().disable();
+                // Make sure we use default data container
+                builder.dataContainer().dataContainer(new EvictableDataContainer<>());
+                // Disable expiration
+                builder.expiration().lifespan(-1).maxIdle(-1);
+                // Disable eviction
+                builder.memory().size(-1);
                 builder.persistence().clearStores();
             }));
             builders.add(new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName));
