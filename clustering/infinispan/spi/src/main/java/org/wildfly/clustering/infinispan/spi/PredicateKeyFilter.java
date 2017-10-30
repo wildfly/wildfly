@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,31 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
+package org.wildfly.clustering.infinispan.spi;
+
+import java.util.function.Predicate;
+
+import org.infinispan.filter.KeyFilter;
 
 /**
- * Command that evicts a session.
  * @author Paul Ferraro
  */
-public class SessionEvictionCommand implements Command<Void, SessionEvictionContext> {
-    private static final long serialVersionUID = -4778211331615647237L;
+public class PredicateKeyFilter<K> implements KeyFilter<K> {
 
-    private final String id;
+    private final Predicate<? super K> predicate;
 
-    SessionEvictionCommand(String id) {
-        this.id = id;
+    public PredicateKeyFilter(Predicate<? super K> predicate) {
+        this.predicate = predicate;
     }
 
     @Override
-    public Void execute(SessionEvictionContext context) throws Exception {
-        InfinispanWebLogger.ROOT_LOGGER.tracef("Passivating session %s", this.id);
-        try (Batch batch = context.getBatcher().createBatch()) {
-            context.getEvictor().evict(this.id);
-            return null;
-        }
+    public boolean accept(K key) {
+        return this.predicate.test(key);
     }
 }

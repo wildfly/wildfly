@@ -26,6 +26,7 @@ import static org.mockito.Mockito.*;
 import java.util.UUID;
 
 import org.junit.Test;
+import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -57,32 +58,33 @@ public class ExpiredSessionRemoverTestCase {
         UUID validMetaDataValue = UUID.randomUUID();
 
         ExpiredSessionRemover<UUID, UUID, Object> subject = new ExpiredSessionRemover<>(factory);
-        subject.register(listener);
 
-        when(factory.getMetaDataFactory()).thenReturn(metaDataFactory);
-        when(factory.getAttributesFactory()).thenReturn(attributesFactory);
-        when(metaDataFactory.tryValue(missingSessionId)).thenReturn(null);
-        when(metaDataFactory.tryValue(expiredSessionId)).thenReturn(expiredMetaDataValue);
-        when(metaDataFactory.tryValue(validSessionId)).thenReturn(validMetaDataValue);
+        try (Registration regisration = subject.register(listener)) {
+            when(factory.getMetaDataFactory()).thenReturn(metaDataFactory);
+            when(factory.getAttributesFactory()).thenReturn(attributesFactory);
+            when(metaDataFactory.tryValue(missingSessionId)).thenReturn(null);
+            when(metaDataFactory.tryValue(expiredSessionId)).thenReturn(expiredMetaDataValue);
+            when(metaDataFactory.tryValue(validSessionId)).thenReturn(validMetaDataValue);
 
-        when(metaDataFactory.createImmutableSessionMetaData(expiredSessionId, expiredMetaDataValue)).thenReturn(expiredMetaData);
-        when(metaDataFactory.createImmutableSessionMetaData(validSessionId, validMetaDataValue)).thenReturn(validMetaData);
+            when(metaDataFactory.createImmutableSessionMetaData(expiredSessionId, expiredMetaDataValue)).thenReturn(expiredMetaData);
+            when(metaDataFactory.createImmutableSessionMetaData(validSessionId, validMetaDataValue)).thenReturn(validMetaData);
 
-        when(expiredMetaData.isExpired()).thenReturn(true);
-        when(validMetaData.isExpired()).thenReturn(false);
+            when(expiredMetaData.isExpired()).thenReturn(true);
+            when(validMetaData.isExpired()).thenReturn(false);
 
-        when(attributesFactory.findValue(expiredSessionId)).thenReturn(expiredAttributesValue);
-        when(attributesFactory.createImmutableSessionAttributes(expiredSessionId, expiredAttributesValue)).thenReturn(expiredAttributes);
-        when(factory.createImmutableSession(same(expiredSessionId), same(expiredMetaData), same(expiredAttributes))).thenReturn(expiredSession);
+            when(attributesFactory.findValue(expiredSessionId)).thenReturn(expiredAttributesValue);
+            when(attributesFactory.createImmutableSessionAttributes(expiredSessionId, expiredAttributesValue)).thenReturn(expiredAttributes);
+            when(factory.createImmutableSession(same(expiredSessionId), same(expiredMetaData), same(expiredAttributes))).thenReturn(expiredSession);
 
-        subject.remove(missingSessionId);
-        subject.remove(expiredSessionId);
-        subject.remove(validSessionId);
+            subject.remove(missingSessionId);
+            subject.remove(expiredSessionId);
+            subject.remove(validSessionId);
 
-        verify(factory).remove(expiredSessionId);
-        verify(factory, never()).remove(missingSessionId);
-        verify(factory, never()).remove(validSessionId);
+            verify(factory).remove(expiredSessionId);
+            verify(factory, never()).remove(missingSessionId);
+            verify(factory, never()).remove(validSessionId);
 
-        verify(listener).sessionExpired(expiredSession);
+            verify(listener).sessionExpired(expiredSession);
+        }
     }
 }
