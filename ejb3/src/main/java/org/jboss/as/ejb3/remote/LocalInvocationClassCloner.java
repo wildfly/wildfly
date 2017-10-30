@@ -51,6 +51,14 @@ public class LocalInvocationClassCloner implements ClassCloner {
             try {
                 return Class.forName(name, true, destClassLoader);
             } catch (ClassNotFoundException e) {
+                ClassLoader current = Thread.currentThread().getContextClassLoader();
+                if(current != destClassLoader) {
+                    try {
+                        return Class.forName(name, true, current);
+                    } catch (ClassNotFoundException ignored) {
+                        //fall through
+                    }
+                }
                 return original;
             }
         }

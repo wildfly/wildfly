@@ -270,8 +270,6 @@ public class LocalEjbReceiver extends EJBReceiver {
                 receiverContext.resultReady(new CloningExceptionProducer(invocation, resultCloner, e, allowPassByReference));
                 return;
             }
-            //we do not marshal the return type unless we have to, the spec only says we have to
-            //pass parameters by reference
             receiverContext.resultReady(new CloningResultProducer(invocation, resultCloner, result, allowPassByReference));
 
             for(Map.Entry<String, Object> entry : interceptorContext.getContextData().entrySet()) {
