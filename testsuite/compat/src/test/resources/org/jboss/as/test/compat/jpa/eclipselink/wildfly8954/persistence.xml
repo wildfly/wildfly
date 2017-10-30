@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
+    
+    <persistence-unit name="hibernate3_pc" transaction-type="JTA">
+        <!-- (a) Tell wildfly we want to use eclipselink and not hibernat -->
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        
+        <!-- (b) java:jboss/datasources/ExampleDS in defined in the standalone.xml it is the only type of datasource available -->
+        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+        <class>db.model.SomeEntity</class>
+
+        <properties>
+            <!-- (c) Tell eclipselink to create the DB schema - this should not be done with a JTA data source -->
+            <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
+            
+            <!-- (d) Set eclipse link with fine logging -->
+            <property name="eclipselink.logging.logger" value="JavaLogger" />
+            <property name="eclipselink.logging.level" value="FINE" />
+            <property name="eclipselink.logging.level.sql" value="FINE" />
+            <property name="eclipselink.logging.parameters" value="true" />
+
+            <!-- (e) Tune eclipse sequence generation to run on small self managed independent non jta transactions. We cannot do this here. -->
+            <!--   We do not have any non jta data source available in the standalone.xml so we leave this configuration out - which would be critical to use in any productive scenario-->
+            <!--  property name="eclipselink.jdbc.sequence-connection-pool" value="true" />
+            <property name="eclipselink.jdbc.sequence-connection-pool.non-jta-data-source" value="jdbc/SAMPLE_NON_JTA_DS" / -->
+                                   
+            <property name="javax.persistence.lock.timeout" value="2000" />
+            
+            <!-- (f) Have wildfly boot up the eclipselink module. Seems to be using 2.6.3 version - we are already at 2.6.4  
+                This is wildfly specific propery and it will cause the eclipse link module to be required during deploymnet.
+                NOTE: This module is being placed dynamic in the target/modules folder.
+              -->
+            <property name="jboss.as.jpa.providerModule" value="org.eclipse.persistence:test" />                                               
+        </properties>
+    </persistence-unit>
+</persistence>
