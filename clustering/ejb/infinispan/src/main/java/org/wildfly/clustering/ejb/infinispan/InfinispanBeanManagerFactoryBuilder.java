@@ -22,7 +22,6 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.infinispan.Cache;
@@ -66,7 +65,6 @@ public class InfinispanBeanManagerFactoryBuilder<I, T> implements Builder<BeanMa
     private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
     private final InjectedValue<MarshallingConfigurationRepository> repository = new InjectedValue<>();
     private final InjectedValue<ScheduledExecutorService> scheduler = new InjectedValue<>();
-    private final InjectedValue<Executor> executor = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<NodeFactory> group = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
@@ -94,7 +92,6 @@ public class InfinispanBeanManagerFactoryBuilder<I, T> implements Builder<BeanMa
                 .addDependency(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(this.support, containerName), KeyAffinityServiceFactory.class, this.affinityFactory)
                 .addDependency(deploymentUnitServiceName.append("marshalling"), MarshallingConfigurationRepository.class, this.repository)
                 .addDependency(deploymentUnitServiceName.append(this.name, "expiration"), ScheduledExecutorService.class, this.scheduler)
-                .addDependency(deploymentUnitServiceName.append(this.name, "eviction"), Executor.class, this.executor)
                 .addDependency(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(this.support, containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
                 .addDependency(ClusteringCacheRequirement.REGISTRY.getServiceName(this.support, containerName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), Registry.class, this.registry)
                 .addDependency(ClusteringCacheRequirement.GROUP.getServiceName(this.support, containerName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), NodeFactory.class, this.group)
@@ -130,11 +127,6 @@ public class InfinispanBeanManagerFactoryBuilder<I, T> implements Builder<BeanMa
     @Override
     public ScheduledExecutorService getScheduler() {
         return this.scheduler.getValue();
-    }
-
-    @Override
-    public Executor getExecutor() {
-        return this.executor.getValue();
     }
 
     @Override

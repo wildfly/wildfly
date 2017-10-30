@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.stateful.passivation.ejb2;
 
-import java.util.concurrent.TimeUnit;
-
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -31,6 +29,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.ejb.stateful.passivation.PassivationTestCaseSetup;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -48,6 +47,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup(PassivationTestCaseSetup.class)
 public class PassivationSucceedsEJB2TestCase {
+    private static final long PASSIVATION_WAIT = TimeoutUtil.adjust(5000);
     private static String jndi;
 
     @ArquillianResource
@@ -60,6 +60,7 @@ public class PassivationSucceedsEJB2TestCase {
     @Deployment
     public static Archive<?> deploy() throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "passivation-ejb2-test.jar");
+        jar.addClass(TimeoutUtil.class);
         jar.addPackage(PassivationSucceedsEJB2TestCase.class.getPackage());
         jar.addClasses(PassivationTestCaseSetup.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"),
@@ -75,31 +76,25 @@ public class PassivationSucceedsEJB2TestCase {
             Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
                     remote1.returnTrueString());
 
+            Assert.assertFalse("ejbPassivate not called on remote1, check cache configuration and client sleep time", remote1.hasBeenPassivated());
+            Assert.assertFalse("ejbActivate not called on remote1", remote1.hasBeenActivated());
+
+            // create another bean. This should force the other bean to passivate, as only one bean is allowed in the pool at a time
             TestPassivationRemote remote2 = home.create();
             try {
                 Assert.assertEquals("Returned remote2 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
                         remote2.returnTrueString());
 
-                // create another bean. This should force the other bean to passivate, as only one bean is allowed in the pool at a time
-                TestPassivationRemote remote3 = home.create();
-                try {
-                    TestPassivationRemote remote4 = home.create();
-                    try {
-                        // Passivation is asynchronous, so wait a sec for it to complete
-                        TimeUnit.SECONDS.sleep(1);
+                // Passivation is asynchronous, so wait a sec for it to complete
+                Thread.sleep(PASSIVATION_WAIT);
 
-                        Assert.assertTrue("ejbPassivate not called on remote1, check cache configuration and client sleep time",
-                                remote1.hasBeenPassivated());
-                        Assert.assertTrue("ejbPassivate not called on remote2, check cache configuration and client sleep time",
-                                remote2.hasBeenPassivated());
-                        Assert.assertTrue("ejbActivate not called on remote1", remote1.hasBeenActivated());
-                        Assert.assertTrue("ejbActivate not called on remote2", remote2.hasBeenActivated());
-                    } finally {
-                        remote4.remove();
-                    }
-                } finally {
-                    remote3.remove();
-                }
+                Assert.assertFalse("ejbPassivate not called on remote2, check cache configuration and client sleep time",
+                        remote2.hasBeenPassivated());
+                Assert.assertFalse("ejbActivate not called on remote2", remote2.hasBeenActivated());
+
+                Assert.assertTrue("ejbPassivate not called on remote1, check cache configuration and client sleep time",
+                        remote1.hasBeenPassivated());
+                Assert.assertTrue("ejbActivate not called on remote1", remote1.hasBeenActivated());
             } finally {
                 remote2.remove();
             }
