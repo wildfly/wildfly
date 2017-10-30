@@ -47,8 +47,6 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
-import org.jboss.as.test.integration.domain.mixed.eap620.DomainAdjuster620;
-import org.jboss.as.test.integration.domain.mixed.eap630.DomainAdjuster630;
 import org.jboss.as.test.integration.domain.mixed.eap640.DomainAdjuster640;
 import org.jboss.as.test.integration.domain.mixed.eap700.DomainAdjuster700;
 import org.jboss.dmr.ModelNode;
@@ -83,11 +81,8 @@ public class DomainAdjuster {
         final DomainAdjuster adjuster;
         switch (asVersion) {
             case EAP_6_2_0:
-                adjuster = new DomainAdjuster620();
-                break;
             case EAP_6_3_0:
-                adjuster = new DomainAdjuster630();
-                break;
+                throw new UnsupportedOperationException();
             case EAP_6_4_0:
                 adjuster = new DomainAdjuster640();
                 break;
