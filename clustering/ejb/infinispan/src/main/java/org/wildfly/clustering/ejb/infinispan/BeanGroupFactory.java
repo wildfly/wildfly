@@ -24,7 +24,6 @@ package org.wildfly.clustering.ejb.infinispan;
 import org.wildfly.clustering.ee.Creator;
 import org.wildfly.clustering.ee.Locator;
 import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.ee.infinispan.Evictor;
 
 /**
  * A factory for creating a {@link BeanGroup}.
@@ -35,7 +34,7 @@ import org.wildfly.clustering.ee.infinispan.Evictor;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public interface BeanGroupFactory<I, T> extends Creator<I, BeanGroupEntry<I, T>, Void>, Locator<I, BeanGroupEntry<I, T>>, Evictor<I>, Remover<I> {
+public interface BeanGroupFactory<I, T> extends Creator<I, BeanGroupEntry<I, T>, Void>, Locator<I, BeanGroupEntry<I, T>>, Remover<I> {
     /**
      * Create a new bean group using the specified identifier and entry.
      * @param id a group identifier
@@ -45,4 +44,8 @@ public interface BeanGroupFactory<I, T> extends Creator<I, BeanGroupEntry<I, T>,
     BeanGroup<I, T> createGroup(I id, BeanGroupEntry<I, T> entry);
 
     BeanGroupKey<I> createKey(I id);
+
+    int getPassiveCount();
+
+    void close();
 }

@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
-import org.infinispan.configuration.cache.MemoryConfiguration;
+import org.infinispan.configuration.cache.StorageType;
 import org.jboss.as.clustering.controller.BuilderAdapter;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -47,6 +47,7 @@ import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactory;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
+import org.wildfly.clustering.infinispan.spi.EvictableDataContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
@@ -107,11 +108,13 @@ public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManage
                 builder.expiration().lifespan(-1).maxIdle(-1);
                 InfinispanEjbLogger.ROOT_LOGGER.expirationDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, templateCacheName));
             }
-            // Ensure eviction is not enabled on cache
-            MemoryConfiguration memory = builder.memory().create();
-            if (memory.size() >= 0) {
-                builder.memory().size(-1);
-                InfinispanEjbLogger.ROOT_LOGGER.evictionDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, templateCacheName));
+
+            int size = this.config.getMaxSize();
+            builder.memory().storageType(StorageType.OBJECT).size(size);
+            if (size >= 0) {
+                // Only evict bean entries
+                // We will cascade eviction to the associated bean group
+                builder.dataContainer().dataContainer(new EvictableDataContainer<>(size, key -> key instanceof BeanGroupKey));
             }
         };
 
