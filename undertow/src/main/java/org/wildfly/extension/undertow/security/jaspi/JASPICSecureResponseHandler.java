@@ -49,10 +49,10 @@ public class JASPICSecureResponseHandler implements HttpHandler {
         } finally {
             try {
                 JASPICContext context = exchange.getAttachment(JASPICContext.ATTACHMENT_KEY);
-                ServletRequestContext requestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
-                String applicationIdentifier = JASPICAuthenticationMechanism.buildApplicationIdentifier(requestContext);
 
                 if (!JASPICAuthenticationMechanism.wasAuthExceptionThrown(exchange) && context != null) {
+                    ServletRequestContext requestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+                    String applicationIdentifier = JASPICAuthenticationMechanism.buildApplicationIdentifier(requestContext);
                     UndertowLogger.ROOT_LOGGER.debugf("secureResponse for layer [%s] and applicationContextIdentifier [%s].", JASPICAuthenticationMechanism.JASPI_HTTP_SERVLET_LAYER, applicationIdentifier);
                     context.getSam().secureResponse(context.getMessageInfo(), new Subject(), JASPICAuthenticationMechanism.JASPI_HTTP_SERVLET_LAYER, applicationIdentifier, context.getCbh());
 
