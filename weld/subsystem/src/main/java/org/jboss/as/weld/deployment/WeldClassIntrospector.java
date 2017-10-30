@@ -15,8 +15,10 @@ import org.jboss.as.ee.component.EEClassIntrospector;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.weld.WeldStartService;
 import org.jboss.as.weld.injection.InjectionTargets;
 import org.jboss.as.weld.services.BeanManagerService;
+import org.jboss.as.weld.util.Utils;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -43,6 +45,7 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service<EECla
         final WeldClassIntrospector introspector = new WeldClassIntrospector();
         serviceTarget.addService(serviceName(deploymentUnit), introspector)
                 .addDependency(BeanManagerService.serviceName(deploymentUnit), BeanManager.class, introspector.beanManager)
+                .addDependency(Utils.getRootDeploymentUnit(deploymentUnit).getServiceName().append(WeldStartService.SERVICE_NAME))
                 .install();
     }
 
