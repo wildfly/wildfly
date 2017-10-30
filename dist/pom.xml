@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>11.1.0.Beta1-SNAPSHOT</version>
+        <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-dist</artifactId>
@@ -60,7 +60,7 @@
         <product.release.name>WildFly Full</product.release.name>
         <verifier.slot.name>wildfly-full</verifier.slot.name>
         <verifier.product.release.name>WildFly Full</verifier.product.release.name>
-        <verifier.product.release.version>11.1</verifier.product.release.version>
+        <verifier.product.release.version>12.0</verifier.product.release.version>
     </properties>
 
     <build>
