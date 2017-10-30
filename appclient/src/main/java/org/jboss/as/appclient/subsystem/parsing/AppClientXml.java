@@ -53,7 +53,6 @@ import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.ExtensionXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.server.parsing.CommonXml;
 import org.jboss.as.server.parsing.SocketBindingsXml;
 import org.jboss.as.server.services.net.SocketBindingGroupResourceDefinition;
@@ -405,11 +404,6 @@ public class AppClientXml extends CommonXml {
             final ModelNode update = Util.getWriteAttributeOperation(address, NAME, value);
             operationList.add(update);
         }
-    }
-
-    public void writeContent(final XMLExtendedStreamWriter writer, final ModelMarshallingContext context)
-            throws XMLStreamException {
-        // we don't marshall appclient.xml
     }
 
     static class AppClientSocketBindingsXml extends SocketBindingsXml {
