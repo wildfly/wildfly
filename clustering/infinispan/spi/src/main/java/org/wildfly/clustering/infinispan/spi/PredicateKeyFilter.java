@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,15 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.session;
+package org.wildfly.clustering.infinispan.spi;
+
+import java.util.function.Predicate;
+
+import org.infinispan.filter.KeyFilter;
 
 /**
- * Statistics for active sessions.
  * @author Paul Ferraro
  */
-public interface ActiveSessionStatistics {
-    /**
-     * @return The number of active sessions
-     */
-    long getActiveSessionCount();
+public class PredicateKeyFilter<K> implements KeyFilter<K> {
+
+    private final Predicate<? super K> predicate;
+
+    public PredicateKeyFilter(Predicate<? super K> predicate) {
+        this.predicate = predicate;
+    }
+
+    @Override
+    public boolean accept(K key) {
+        return this.predicate.test(key);
+    }
 }

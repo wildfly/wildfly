@@ -36,12 +36,14 @@ public class DistributableSessionManagerStatistics implements RecordableSessionM
 
     private final InactiveSessionStatistics inactiveSessionStatistics;
     private final ActiveSessionStatistics activeSessionStatistics;
+    private final int maxActiveSessions;
     private volatile long startTime = System.currentTimeMillis();
     private final AtomicLong createdSessionCount = new AtomicLong();
 
-    public DistributableSessionManagerStatistics(ActiveSessionStatistics activeSessionStatistics, InactiveSessionStatistics inactiveSessionStatistics) {
+    public DistributableSessionManagerStatistics(ActiveSessionStatistics activeSessionStatistics, InactiveSessionStatistics inactiveSessionStatistics, int maxActiveSessions) {
         this.activeSessionStatistics = activeSessionStatistics;
         this.inactiveSessionStatistics = inactiveSessionStatistics;
+        this.maxActiveSessions = maxActiveSessions;
         this.reset();
     }
 
@@ -63,7 +65,7 @@ public class DistributableSessionManagerStatistics implements RecordableSessionM
 
     @Override
     public long getMaxActiveSessions() {
-        return this.activeSessionStatistics.getMaxActiveSessions();
+        return this.maxActiveSessions;
     }
 
     @Override

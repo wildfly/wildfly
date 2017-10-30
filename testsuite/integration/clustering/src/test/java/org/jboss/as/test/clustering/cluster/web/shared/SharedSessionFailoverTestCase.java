@@ -57,7 +57,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@org.junit.Ignore("WFLYCLSV0017: A command dispatcher for shared.ear.schedulers already exists, but with a different command context")
 public class SharedSessionFailoverTestCase extends ClusterAbstractTestCase {
 
     private static final String MODULE = "shared";

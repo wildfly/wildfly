@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,31 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
+package org.wildfly.clustering;
 
 /**
- * Command that evicts a session.
+ * Encapsulates a registration.
  * @author Paul Ferraro
  */
-public class SessionEvictionCommand implements Command<Void, SessionEvictionContext> {
-    private static final long serialVersionUID = -4778211331615647237L;
-
-    private final String id;
-
-    SessionEvictionCommand(String id) {
-        this.id = id;
-    }
-
+public interface Registration extends AutoCloseable {
+    /**
+     * Removes this registration from the associated {@link Registrar}, after which this object is no longer functional.
+     */
     @Override
-    public Void execute(SessionEvictionContext context) throws Exception {
-        InfinispanWebLogger.ROOT_LOGGER.tracef("Passivating session %s", this.id);
-        try (Batch batch = context.getBatcher().createBatch()) {
-            context.getEvictor().evict(this.id);
-            return null;
-        }
-    }
+    void close();
 }

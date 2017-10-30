@@ -22,25 +22,29 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
-import org.infinispan.configuration.cache.MemoryConfiguration;
+import org.infinispan.configuration.cache.StorageType;
+import org.infinispan.eviction.EvictionType;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.function.Consumers;
+import org.jboss.as.clustering.function.Functions;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.infinispan.spi.EvictableDataContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
@@ -49,6 +53,7 @@ import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilde
 import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.SuppliedValueService;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
@@ -93,11 +98,13 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability, L
                 builder.expiration().lifespan(-1).maxIdle(-1);
                 InfinispanWebLogger.ROOT_LOGGER.expirationDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(this.containerName, templateCacheName));
             }
-            // Ensure eviction is not enabled on cache
-            MemoryConfiguration memory = builder.memory().create();
-            if (memory.size() >= 0) {
-                builder.memory().size(-1);
-                InfinispanWebLogger.ROOT_LOGGER.evictionDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(this.containerName, templateCacheName));
+
+            int size = configuration.getMaxActiveSessions();
+            builder.memory().evictionType(EvictionType.MEMORY).storageType(StorageType.OBJECT).size(size);
+            if (size >= 0) {
+                // Only evict creation meta-data entries
+                // We will cascade eviction to the remaining entries for a given session
+                builder.dataContainer().dataContainer(new EvictableDataContainer<>(size, key -> key instanceof SessionCreationMetaDataKey));
             }
         };
 
@@ -126,8 +133,9 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability, L
         this.configurationBuilder.build(target).install();
         this.cacheBuilder.build(target).install();
 
-        Value<SessionManagerFactory<L, TransactionBatch>> value = () -> new InfinispanSessionManagerFactory<>(this);
-        ServiceBuilder<SessionManagerFactory<L, TransactionBatch>> builder = target.addService(this.getServiceName(), new ValueService<>(value))
+        Supplier<InfinispanSessionManagerFactory<C, L>> factory = () -> new InfinispanSessionManagerFactory<>(this);
+        Service<SessionManagerFactory<L, TransactionBatch>> service = new SuppliedValueService<>(Functions.identity(), factory, Consumers.close());
+        ServiceBuilder<SessionManagerFactory<L, TransactionBatch>> builder = target.addService(this.getServiceName(), service)
                 .addDependency(this.cacheBuilder.getServiceName(), Cache.class, this.cache)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 ;
