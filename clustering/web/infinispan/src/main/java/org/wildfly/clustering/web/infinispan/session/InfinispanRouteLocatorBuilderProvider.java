@@ -72,6 +72,7 @@ public class InfinispanRouteLocatorBuilderProvider implements RouteLocatorBuilde
         return builders;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void accept(ConfigurationBuilder builder) {
         CacheMode mode = builder.clustering().cacheMode();
@@ -79,6 +80,12 @@ public class InfinispanRouteLocatorBuilderProvider implements RouteLocatorBuilde
         // don't use DefaultConsistentHashFactory for REPL caches (WFLY-9276)
         builder.clustering().hash().consistentHashFactory(null);
         builder.clustering().l1().disable();
+        // Ensure we use the default data container
+        builder.dataContainer().dataContainer(null);
+        // Disable expiration
+        builder.expiration().lifespan(-1).maxIdle(-1);
+        // Disable eviction
+        builder.memory().size(-1);
         builder.persistence().clearStores();
     }
 }
