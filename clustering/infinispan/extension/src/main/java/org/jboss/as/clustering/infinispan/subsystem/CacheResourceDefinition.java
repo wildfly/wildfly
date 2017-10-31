@@ -52,8 +52,6 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -170,14 +168,6 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
                 }
             };
             builder.setCustomResourceTransformer(batchingTransformer);
-        }
-
-        if (InfinispanModel.VERSION_1_5_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), Attribute.STATISTICS_ENABLED.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.STATISTICS_ENABLED.getDefinition())
-                    .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), Attribute.STATISTICS_ENABLED.getDefinition());
         }
 
         LockingResourceDefinition.buildTransformation(version, builder);
