@@ -129,7 +129,7 @@
         <version.org.apache.openjpa>2.4.1</version.org.apache.openjpa>
         <version.org.eclipselink.version>2.6.3</version.org.eclipselink.version>
         <version.org.apache.neethi>3.0.3</version.org.apache.neethi>
-        <version.org.apache.qpid.proton>0.8</version.org.apache.qpid.proton>
+        <version.org.apache.qpid.proton>0.16.0</version.org.apache.qpid.proton>
         <version.org.apache.santuario>2.0.8</version.org.apache.santuario>
         <version.org.apache.velocity>1.7</version.org.apache.velocity>
         <version.org.apache.ws.security>2.1.10</version.org.apache.ws.security>
@@ -3741,12 +3741,6 @@
                         <artifactId>wsdl4j</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.qpid</groupId>
-                <artifactId>proton-jms</artifactId>
-                <version>${version.org.apache.qpid.proton}</version>
             </dependency>
 
             <dependency>
