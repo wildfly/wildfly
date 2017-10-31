@@ -26,7 +26,6 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.stream.StreamSupport;
 
 import javax.security.auth.Subject;
 
@@ -74,10 +73,10 @@ public class ConnectionSecurityContext {
                 final Principal principal = localIdentity.getPrincipal();
                 final String realm = principal instanceof RealmPrincipal ? ((RealmPrincipal) principal).getRealm() : null;
                 principals.add(new RealmUser(realm, principal.getName()));
-                StreamSupport.stream(localIdentity.getRoles().spliterator(), true).forEach((String role) -> {
+                for (String role : localIdentity.getRoles()) {
                     principals.add(new RealmGroup(role));
                     principals.add(new RealmRole(role));
-                });
+                }
                 return principals;
             } else {
                 return Collections.emptySet();
