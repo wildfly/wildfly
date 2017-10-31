@@ -37,5 +37,6 @@
         <module name="io.undertow.servlet"/>
         <module name="org.jboss.xnio"/>
         <module name="com.github.spullara.mustache" />
+        <module name="sun.scripting" />
     </dependencies>
 </module>
