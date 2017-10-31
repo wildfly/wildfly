@@ -151,7 +151,10 @@ public class InfinispanCacheDeploymentListener implements EventListener {
             if(ROOT_LOGGER.isTraceEnabled()) {
                 ROOT_LOGGER.tracef("stop second level cache by removing dependency on service '%s'", cacheWrapper.serviceName.getCanonicalName());
             }
-            ServiceContainerHelper.remove(currentServiceContainer().getRequiredService(cacheWrapper.serviceName));
+            ServiceController<?> service = currentServiceContainer().getService(cacheWrapper.serviceName);
+            if (service != null) {
+                ServiceContainerHelper.remove(service);
+            }
         } else if(ROOT_LOGGER.isTraceEnabled()){
             CacheWrapper cacheWrapper = (CacheWrapper) wrapper;
             ROOT_LOGGER.tracef("skipping stop of second level cache, will keep dependency on service '%s'", cacheWrapper.serviceName.getCanonicalName());
