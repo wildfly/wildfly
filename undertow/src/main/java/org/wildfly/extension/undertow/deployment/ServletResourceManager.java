@@ -47,10 +47,13 @@ public class ServletResourceManager implements ResourceManager {
     private final ResourceManager[] externalOverlays;
     private final boolean explodedDeployment;
 
-    public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays, boolean explodedDeployment, boolean followSymlink, boolean disableFileWatchService, List<String> externalOverlays) throws IOException {
+    public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays,
+                                  boolean explodedDeployment, boolean followSymlink, boolean disableFileWatchService,
+                                  List<String> externalOverlays) throws IOException {
         this.explodedDeployment = explodedDeployment;
         Path physicalFile = resourcesRoot.getPhysicalFile().toPath().toRealPath();
-        deploymentResourceManager = new PathResourceManager(physicalFile, TRANSFER_MIN_SIZE, true, followSymlink, !disableFileWatchService);
+        deploymentResourceManager = new PathResourceManager(physicalFile, TRANSFER_MIN_SIZE, true,
+                followSymlink, !disableFileWatchService);
         this.overlays = overlays;
         if(externalOverlays == null) {
             this.externalOverlays = new ResourceManager[0];
@@ -58,7 +61,8 @@ public class ServletResourceManager implements ResourceManager {
             this.externalOverlays = new ResourceManager[externalOverlays.size()];
             for (int i = 0; i < externalOverlays.size(); ++i) {
                 String path = externalOverlays.get(i);
-                PathResourceManager pr = new PathResourceManager(Paths.get(path), TRANSFER_MIN_SIZE, true, followSymlink, !disableFileWatchService);
+                PathResourceManager pr = new PathResourceManager(Paths.get(path).toRealPath(), TRANSFER_MIN_SIZE,
+                        true, followSymlink, !disableFileWatchService);
                 this.externalOverlays[i] = pr;
             }
         }
