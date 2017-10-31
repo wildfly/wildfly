@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -49,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
 import javax.security.auth.Subject;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
@@ -75,6 +77,7 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.RedirectStrategy;
 import org.apache.http.client.config.AuthSchemes;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -424,6 +427,27 @@ public class Utils extends CoreUtils {
      */
     public static String makeCallWithBasicAuthn(URL url, String user, String pass, int expectedStatusCode) throws IOException,
             URISyntaxException {
+        return makeCallWithBasicAuthn(url, user, pass, expectedStatusCode, false);
+    }
+
+    /**
+     * Returns response body for the given URL request as a String. It also checks if the returned HTTP status code is the
+     * expected one. If the server returns {@link HttpServletResponse#SC_UNAUTHORIZED} and username is provided, then a new
+     * request is created with the provided credentials (basic authentication).
+     *
+     * @param url URL to which the request should be made
+     * @param user Username (may be null)
+     * @param pass Password (may be null)
+     * @param expectedStatusCode expected status code returned from the requested server
+     * @param checkFollowupAuthState whether to check auth state for followup request - if set to true, followup
+     *                               request is sent to server and 200 OK is expected directly (no re-authentication
+     *                               challenge - 401 Unauthorized - is expected)
+     * @return HTTP response body
+     * @throws IOException
+     * @throws URISyntaxException
+     */
+    public static String makeCallWithBasicAuthn(URL url, String user, String pass, int expectedStatusCode, boolean
+            checkFollowupAuthState) throws IOException, URISyntaxException {
         LOGGER.trace("Requesting URL " + url);
 
         // use UTF-8 charset for credentials
@@ -457,6 +481,20 @@ public class Utils extends CoreUtils {
             response = httpClient.execute(httpGet, hc);
             statusCode = response.getStatusLine().getStatusCode();
             assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
+
+            if (checkFollowupAuthState) {
+                // Let's disable authentication for this client as we already have all the context neccessary to be
+                // authorized (we expect that gained 'nonce' value can be re-used in our case here).
+                // By disabling authentication we simply get first server response and thus we can check whether we've
+                // got 200 OK or different response code.
+                RequestConfig reqConf = RequestConfig.custom().setAuthenticationEnabled(false).build();
+                httpGet.setConfig(reqConf);
+                response = httpClient.execute(httpGet, hc);
+                statusCode = response.getStatusLine().getStatusCode();
+                assertEquals("Unexpected status code returned after the authentication.", HttpURLConnection.HTTP_OK,
+                        statusCode);
+            }
+
             return EntityUtils.toString(response.getEntity());
         }
     }
