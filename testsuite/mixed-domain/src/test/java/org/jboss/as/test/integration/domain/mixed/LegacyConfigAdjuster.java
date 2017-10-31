@@ -28,8 +28,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
-import org.jboss.as.test.integration.domain.mixed.eap620.LegacyConfigAdjuster620;
-import org.jboss.as.test.integration.domain.mixed.eap630.LegacyConfigAdjuster630;
 import org.jboss.as.test.integration.domain.mixed.eap640.LegacyConfigAdjuster640;
 import org.jboss.dmr.ModelNode;
 
@@ -50,11 +48,8 @@ public class LegacyConfigAdjuster {
         final LegacyConfigAdjuster adjuster;
         switch (asVersion) {
             case EAP_6_2_0:
-                adjuster = new LegacyConfigAdjuster620();
-                break;
             case EAP_6_3_0:
-                adjuster = new LegacyConfigAdjuster630();
-                break;
+                throw new UnsupportedOperationException();
             case EAP_6_4_0:
                 adjuster = new LegacyConfigAdjuster640();
                 break;
