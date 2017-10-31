@@ -219,7 +219,9 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         knownApplicationSecurityDomains.clear(); // If we are registering, time for a clean start.
         super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadOnlyAttribute(REFERENCING_DEPLOYMENTS, new ReferencingDeploymentsHandler());
+        if (resourceRegistration.getProcessType().isServer()) {
+            resourceRegistration.registerReadOnlyAttribute(REFERENCING_DEPLOYMENTS, new ReferencingDeploymentsHandler());
+        }
     }
 
     @Override
@@ -231,23 +233,27 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            RuntimeCapability<Void> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
-            ServiceName applicationSecurityDomainName = runtimeCapability.getCapabilityServiceName(BiFunction.class);
+            if (context.isDefaultRequiresRuntime()) {
+                context.addStep((ctx, op) -> {
+                    RuntimeCapability<Void> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(ctx.getCurrentAddressValue());
+                    ServiceName applicationSecurityDomainName = runtimeCapability.getCapabilityServiceName(BiFunction.class);
 
-            ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-            ServiceController<?> controller = serviceRegistry.getRequiredService(applicationSecurityDomainName);
+                    ServiceRegistry serviceRegistry = ctx.getServiceRegistry(false);
+                    ServiceController<?> controller = serviceRegistry.getRequiredService(applicationSecurityDomainName);
 
-            ModelNode deploymentList = new ModelNode();
-            if (controller.getState() == State.UP) {
-                Service service = controller.getService();
-                if (service instanceof ApplicationSecurityDomainService) {
-                    for (String current : ((ApplicationSecurityDomainService)service).getDeployments()) {
-                        deploymentList.add(current);
+                    ModelNode deploymentList = new ModelNode();
+                    if (controller.getState() == State.UP) {
+                        Service service = controller.getService();
+                        if (service instanceof ApplicationSecurityDomainService) {
+                            for (String current : ((ApplicationSecurityDomainService) service).getDeployments()) {
+                                deploymentList.add(current);
+                            }
+                        }
                     }
-                }
-            }
 
-            context.getResult().set(deploymentList);
+                    context.getResult().set(deploymentList);
+                }, OperationContext.Stage.RUNTIME);
+            }
         }
 
     }
