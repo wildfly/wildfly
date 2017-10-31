@@ -22,7 +22,12 @@
 
 package org.wildfly.extension.messaging.activemq.deployment.injection;
 
+import javax.jms.JMSContext;
+import javax.transaction.Synchronization;
 import javax.transaction.TransactionScoped;
+import javax.transaction.TransactionSynchronizationRegistry;
+
+import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
 
 /**
  * Injection of JMSContext in the @TransactionScoped scope.
@@ -31,4 +36,42 @@ import javax.transaction.TransactionScoped;
  */
 @TransactionScoped
 class TransactedJMSContext extends AbstractJMSContext {
+
+    /**
+     * Closing of transaction scoped JMSContext is executed through Synchronization listener.
+     * This method registers listener, which takes care of closing JMSContext.
+     *
+     * @param transactionSynchronizationRegistry
+     * @param contextInstance
+     */
+    void registerCleanUpListener(TransactionSynchronizationRegistry transactionSynchronizationRegistry, JMSContext contextInstance) {
+        //to avoid registration of more listeners for one context, flag in transaction is used.
+        Object alreadyRegistered = transactionSynchronizationRegistry.getResource(AfterCompletionSynchronization.class.getName());
+        if (alreadyRegistered == null) {
+            transactionSynchronizationRegistry.registerInterposedSynchronization(new AfterCompletionSynchronization(contextInstance));
+            transactionSynchronizationRegistry.putResource(AfterCompletionSynchronization.class.getName(), contextInstance);
+        }
+    }
+
+    /**
+     * Synchronization task, which executes "cleanup" on JMSContext in AfterCompletion phase. BeforeCompletion does nothing.
+     */
+    private class AfterCompletionSynchronization implements Synchronization {
+        final JMSContext context;
+
+        public AfterCompletionSynchronization(JMSContext context) {
+            this.context = context;
+        }
+
+        @Override
+        public void beforeCompletion() {
+            //intentionally blank
+        }
+
+        @Override
+        public void afterCompletion(int status) {
+            ROOT_LOGGER.debugf("Clean up JMSContext created from %s", TransactedJMSContext.this);
+            context.close();
+        }
+    }
 }
