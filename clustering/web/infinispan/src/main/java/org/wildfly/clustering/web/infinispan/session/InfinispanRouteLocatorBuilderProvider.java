@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
-import java.util.function.Supplier;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
@@ -55,12 +54,12 @@ public class InfinispanRouteLocatorBuilderProvider implements RouteLocatorBuilde
     }
 
     @Override
-    public Collection<CapabilityServiceBuilder<?>> getRouteLocatorConfigurationBuilders(String serverName, Supplier<ValueDependency<String>> routeDependencyProvider) {
+    public Collection<CapabilityServiceBuilder<?>> getRouteLocatorConfigurationBuilders(String serverName, ValueDependency<String> routeDependency) {
         String containerName = InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER;
 
         List<CapabilityServiceBuilder<?>> builders = new LinkedList<>();
 
-        builders.add(new RouteRegistryEntryProviderBuilder(serverName, routeDependencyProvider.get()));
+        builders.add(new RouteRegistryEntryProviderBuilder(serverName, routeDependency));
         builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, serverName)), containerName, serverName, null, builder -> {
             CacheMode mode = builder.clustering().cacheMode();
             builder.clustering().cacheMode(mode.isClustered() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
