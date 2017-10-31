@@ -24,6 +24,7 @@ package org.jboss.as.test.clustering.cluster.web;
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
@@ -35,6 +36,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  * @author Radoslav Husar
  * @version April 2012
  */
+@ServerSetup(ConcurrentWebFailoverServerSetup.class)
 public class ConcurrentFineWebFailoverTestCase extends AbstractWebFailoverTestCase {
     private static final String DEPLOYMENT_NAME = "fine-concurrent-distributable.war";
 

@@ -28,24 +28,37 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 /**
+ * {@link EJBDirectory} that uses remote JNDI.
  * @author Paul Ferraro
  */
-public class RemoteEJBDirectory extends AbstractEJBDirectory {
-    private static final Properties env = new Properties();
+public class RemoteEJBDirectory extends NamingEJBDirectory {
 
-    static {
-        env.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+    private static Properties createEnvironment() {
+        Properties env = new Properties();
+        env.setProperty(Context.INITIAL_CONTEXT_FACTORY, org.wildfly.naming.client.WildFlyInitialContextFactory.class.getName());
+        // TODO UserTransaction lookup currently requires environment to be configured with provider URLs.
+        // env.setProperty(Context.PROVIDER_URL, String.join(",", EJBClientContext.getCurrent().getConfiguredConnections().stream().map(EJBClientConnection::getDestination).map(URI::toString).collect(Collectors.toList())));
+        return env;
     }
 
-    private final String module;
-
     public RemoteEJBDirectory(String module) throws NamingException {
-        super(env);
-        this.module = module;
+        this(module, createEnvironment());
+    }
+
+    public RemoteEJBDirectory(String module, Properties properties) throws NamingException {
+        super(properties, "ejb:", module, "txn:UserTransaction");
     }
 
     @Override
-    protected <T> String createJndiName(String beanName, Class<T> beanInterface, Type type) {
-        return String.format("ejb:/%s/%s!%s%s", this.module, beanName, beanInterface.getName(), (type == Type.STATEFUL) ? "?stateful" : "");
+    protected String createJndiName(String beanName, Class<?> beanInterface, Type type) {
+        String jndiName = super.createJndiName(beanName, beanInterface, type);
+        switch (type) {
+            case STATEFUL: {
+                return jndiName + "?stateful=true";
+            }
+            default: {
+                return jndiName;
+            }
+        }
     }
 }

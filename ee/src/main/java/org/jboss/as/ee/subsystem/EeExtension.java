@@ -22,17 +22,9 @@
 
 package org.jboss.as.ee.subsystem;
 
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.ANNOTATIONS;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.META_INF;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SERVICES;
-
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -41,17 +33,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.ee.component.deployers.DefaultBindingsConfigurationProcessor;
-import org.jboss.as.ee.logging.EeLogger;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * JBossAS domain extension used to initialize the ee subsystem handlers and associated classes.
@@ -94,9 +76,6 @@ public class EeExtension implements Extension {
 
         subsystem.registerXMLElementWriter(EESubsystemXmlPersister.INSTANCE);
 
-        if (context.isRegisterTransformers()) {
-            registerTransformers(subsystem);
-        }
     }
 
     /**
@@ -104,148 +83,14 @@ public class EeExtension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_0.getUriString(), EESubsystemParser10.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_1.getUriString(), EESubsystemParser11.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_2.getUriString(), EESubsystemParser12.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_2_0.getUriString(), EESubsystemParser20.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_3_0.getUriString(), EESubsystemParser20.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_4_0.getUriString(), EESubsystemParser40.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_0.getUriString(), EESubsystemParser10::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_1.getUriString(), EESubsystemParser11::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_1_2.getUriString(), EESubsystemParser12::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_2_0.getUriString(), EESubsystemParser20::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_3_0.getUriString(), EESubsystemParser20::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.EE_4_0.getUriString(), EESubsystemParser40::new);
         context.setProfileParsingCompletionHandler(new BeanValidationProfileParsingCompletionHandler());
     }
 
-    private void registerTransformers(SubsystemRegistration subsystem) {
-        final ModelVersion v1_0_0 = ModelVersion.create(1, 0, 0);
-        final ModelVersion v1_1_0 = ModelVersion.create(1, 1, 0);
-        final ModelVersion v3_0_0 = ModelVersion.create(3, 0, 0);
-        ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystem.getSubsystemVersion());
-        ResourceTransformationDescriptionBuilder builder_3_0 = chainedBuilder.createBuilder(subsystem.getSubsystemVersion(), v3_0_0);
 
-        ManagedExecutorServiceResourceDefinition.INSTANCE.registerTransformers_4_0(builder_3_0);
-        ManagedScheduledExecutorServiceResourceDefinition.INSTANCE.registerTransformers_4_0(builder_3_0);
-
-
-        // 3.0.0 --> 1.1.0
-        ResourceTransformationDescriptionBuilder builder11 = chainedBuilder.createBuilder(v3_0_0, v1_1_0);
-        builder11.rejectChildResource(PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE));
-        builder11.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY));
-        builder11.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE));
-        builder11.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE));
-        builder11.discardChildResource(EESubsystemModel.DEFAULT_BINDINGS_PATH);
-
-        // 1.1.0 --> 1.0.0
-        ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(v1_1_0, v1_0_0);
-        GlobalModulesRejecterConverter globalModulesRejecterConverter = new GlobalModulesRejecterConverter();
-        builder.getAttributeBuilder()
-                // Deal with https://issues.jboss.org/browse/AS7-4892 on 7.1.2
-                .addRejectCheck(new JBossDescriptorPropertyReplacementRejectChecker(),
-                        EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT)
-                // Deal with new attributes added to global-modules elements
-                .addRejectCheck(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
-                .setValueConverter(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
-                // Deal with new attribute annotation-property-replacement
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT);
-
-
-        chainedBuilder.buildAndRegister(subsystem, new ModelVersion[] {
-                v1_0_0,
-                v1_1_0,
-                v3_0_0
-        });
-    }
-
-    /**
-     * Due to https://issues.jboss.org/browse/AS7-4892 the jboss-descriptor-property-replacement attribute
-     * does not get set properly in the model on 7.1.2; it remains undefined and defaults to 'true'.
-     * So although the model version has not changed we register a transformer and reject it for 7.1.2 if it is set
-     * and has a different value from 'true'
-     */
-    private static class JBossDescriptorPropertyReplacementRejectChecker extends RejectAttributeChecker.DefaultRejectAttributeChecker {
-
-        @Override
-        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-
-            return EeLogger.ROOT_LOGGER.onlyTrueAllowedForJBossDescriptorPropertyReplacement_AS7_4892();
-        }
-
-        @Override
-        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            if (attributeValue.isDefined()) {
-                ModelVersion version = context.getTarget().getVersion();
-                if (version.getMajor() == 1 && version.getMinor() == 2) {
-                    //7.1.2 has model version 1.2.0 and should have this transformation
-                    //7.1.3 has model version 1.3.0 and should not have this transformation
-                    if (attributeValue.getType() == ModelType.BOOLEAN) {
-                        return !attributeValue.asBoolean();
-                    } else {
-                        if (!Boolean.parseBoolean(attributeValue.asString())) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-    }
-
-    /**
-     * Reject global-modules values with new fields if they differ from the legacy default. If not rejected
-     * the converter removes the new fields.
-     */
-    private static class GlobalModulesRejecterConverter extends RejectAttributeChecker.DefaultRejectAttributeChecker implements AttributeConverter {
-
-        private final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
-
-        @Override
-        public void convertOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
-            cleanModel(attributeValue);
-        }
-
-        @Override
-        public void convertResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            cleanModel(attributeValue);
-        }
-
-        @Override
-        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            if (attributeValue.isDefined()) {
-                for (ModelNode node : attributeValue.asList()) {
-                    if (node.hasDefined(ANNOTATIONS)) {
-                        ModelNode annotations = node.get(ANNOTATIONS);
-                        if (EXPRESSION_PATTERN.matcher(annotations.asString()).matches() || annotations.asBoolean()) {
-                            return true;
-                        }
-                    }
-                    if (node.hasDefined(SERVICES)) {
-                        ModelNode services = node.get(SERVICES);
-                        if (EXPRESSION_PATTERN.matcher(services.asString()).matches() || !services.asBoolean()) {
-                            return true;
-                        }
-                    }
-                    if (node.hasDefined(META_INF)) {
-                        ModelNode metaInf = node.get(META_INF);
-                        if (EXPRESSION_PATTERN.matcher(metaInf.asString()).matches() || metaInf.asBoolean()) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return EeLogger.ROOT_LOGGER.propertiesNotAllowedOnGlobalModules();
-        }
-
-        private void cleanModel(final ModelNode attributeValue) {
-            if (attributeValue.isDefined()) {
-                for (ModelNode node : attributeValue.asList()) {
-                    node.remove(ANNOTATIONS);
-                    node.remove(SERVICES);
-                    node.remove(META_INF);
-                }
-            }
-        }
-    }
 }

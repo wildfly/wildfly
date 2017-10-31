@@ -74,7 +74,7 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                 }
             }
             this.definition = ObjectTypeAttributeDefinition.Builder.of(name, definitions.toArray(new AttributeDefinition[size]))
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setDeprecated(InfinispanModel.VERSION_4_0_0.getVersion())
                     .setSuffix("table")
                     .build();
@@ -116,17 +116,17 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     }
 
     BinaryKeyedJDBCStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, JDBCStoreResourceDefinition.PATH, WILDCARD_PATH), descriptor -> descriptor
+        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, JDBCStoreResourceDefinition.PATH, WILDCARD_PATH), descriptor -> descriptor
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addRequiredChildren(BinaryTableResourceDefinition.PATH)
                 // Translate deprecated TABLE attribute into separate add table operation
-                .addOperationTranslator(new TableAttributeTranslator(DeprecatedAttribute.TABLE, BinaryTableResourceDefinition.PATH))
+                .setAddOperationTransformation(new TableAttributeTransformation(DeprecatedAttribute.TABLE, BinaryTableResourceDefinition.PATH))
             , address -> new BinaryKeyedJDBCStoreBuilder(address.getParent()), registration -> {
                 registration.registerReadWriteAttribute(DeprecatedAttribute.TABLE.getDefinition(), LEGACY_READ_TABLE_HANDLER, LEGACY_WRITE_TABLE_HANDLER);
 
                 new BinaryTableResourceDefinition().register(registration);
             });
-        this.setDeprecated(InfinispanModel.VERSION_4_2_0.getVersion());
+        this.setDeprecated(InfinispanModel.VERSION_5_0_0.getVersion());
     }
 
     static final OperationStepHandler LEGACY_READ_TABLE_HANDLER = new OperationStepHandler() {

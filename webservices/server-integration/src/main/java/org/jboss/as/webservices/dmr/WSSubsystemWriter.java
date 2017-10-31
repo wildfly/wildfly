@@ -45,14 +45,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 final class WSSubsystemWriter implements XMLElementWriter<SubsystemMarshallingContext> {
 
-    private static final WSSubsystemWriter INSTANCE = new WSSubsystemWriter();
-
-    private WSSubsystemWriter() {
-        // forbidden instantiation
-    }
-
-    static WSSubsystemWriter getInstance() {
-        return INSTANCE;
+    WSSubsystemWriter() {
     }
 
     @Override

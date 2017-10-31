@@ -4,8 +4,7 @@
    A simple configuration for a Host Controller that only acts as the master domain controller
    and does not itself directly control any servers.
 -->
-<host name="master" xmlns="urn:jboss:domain:5.0">
-
+<host xmlns="urn:jboss:domain:6.0" name="master">
     <extensions>
         <?EXTENSIONS?>
     </extensions>
@@ -60,7 +59,7 @@
                 <socket interface="management" port="${jboss.management.native.port:9999}"/>
             </native-interface>
             <http-interface security-realm="ManagementRealm">
-                <http-upgrade enabled="true" />
+                <http-upgrade enabled="true"/>
                 <socket interface="management" port="${jboss.management.http.port:9990}"/>
             </http-interface>
         </management-interfaces>
@@ -83,6 +82,7 @@
                 <option value="-server"/>
                 <option value="-XX:MetaspaceSize=96m"/>
                 <option value="-XX:MaxMetaspaceSize=256m"/>
+                <option value="--add-exports=java.base/sun.nio.ch=ALL-UNNAMED"/>
             </jvm-options>
         </jvm>
     </jvms>

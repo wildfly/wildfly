@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.jdbc.DatabaseType;
@@ -35,11 +36,9 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter.Converter;
-import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -47,8 +46,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
@@ -69,41 +68,14 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
 
     static final PathElement PATH = pathElement("jdbc");
 
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        DATA_SOURCE("org.wildfly.clustering.infinispan.cache-container.cache.store.jdbc.data-source"),
-        ;
-        private final RuntimeCapability<Void> definition;
-
-        Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(name, true).build();
-        }
-
-        @Override
-        public RuntimeCapability<Void> getDefinition() {
-            return this.definition;
-        }
-
-        @Override
-        public RuntimeCapability<Void> resolve(PathAddress address) {
-            PathAddress cacheAddress = address.getParent();
-            PathAddress containerAddress = cacheAddress.getParent();
-            return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue(), cacheAddress.getLastElement().getValue());
-        }
-    }
-
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DATA_SOURCE("data-source", ModelType.STRING, new CapabilityReference(Capability.DATA_SOURCE, CommonUnaryRequirement.DATA_SOURCE), DeprecatedAttribute.DATASOURCE.getName()),
-        DIALECT("dialect", ModelType.STRING, new EnumValidatorBuilder<>(DatabaseType.class)),
+        DATA_SOURCE("data-source", ModelType.STRING, builder -> builder.setRequired(true).setCapabilityReference(new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.DATA_SOURCE)).setAlternatives(DeprecatedAttribute.DATASOURCE.getName())),
+        DIALECT("dialect", ModelType.STRING, builder -> builder.setAllowExpression(true).setRequired(false).setValidator(new EnumValidator<>(DatabaseType.class))),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, CapabilityReferenceRecorder reference, String... alternatives) {
-            this.definition = createBuilder(name, type, true).setAllowExpression(false).setCapabilityReference(reference).setAlternatives(alternatives).build();
-        }
-
-        Attribute(String name, ModelType type, ParameterValidatorBuilder validator) {
-            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, false).setAllowExpression(true);
-            this.definition = builder.setValidator(validator.configure(builder).build()).build();
+        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)).build();
         }
 
         @Override
@@ -113,12 +85,12 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
     }
 
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        DATASOURCE("datasource", ModelType.STRING, InfinispanModel.VERSION_4_0_0), // Defines data source as JNDI name
+        DATASOURCE("datasource", ModelType.STRING, builder -> builder.setAllowExpression(true).setRequired(false), InfinispanModel.VERSION_4_0_0), // Defines data source as JNDI name
         ;
         private final AttributeDefinition definition;
 
-        DeprecatedAttribute(String name, ModelType type, InfinispanModel deprecation) {
-            this.definition = createBuilder(name, type, false).setAllowExpression(true).setDeprecated(deprecation.getVersion()).build();
+        DeprecatedAttribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator, InfinispanModel deprecation) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type).setDeprecated(deprecation.getVersion()).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)).build();
         }
 
         @Override
@@ -127,16 +99,16 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         }
     }
 
-    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, boolean required) {
-        return new SimpleAttributeDefinitionBuilder(name, type)
-                .setRequired(required)
-                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-        ;
-    }
-
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder, PathElement path) {
 
-        if (InfinispanModel.VERSION_4_2_0.requiresTransformation(version) && !InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+        if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    // WFLY-8985 value MARIA_DB and any expression which could potentially resolve to that value on a slave node must be rejected
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.DIALECT.getDefinition())
+                    .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(DatabaseType.MARIA_DB.name())), Attribute.DIALECT.getDefinition());
+        }
+
+        if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version) && !InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             // DATASOURCE attribute was only supported as an add operation parameter
             builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, DeprecatedAttribute.DATASOURCE.getDefinition());
         }
@@ -180,26 +152,33 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         }
     }
 
-    static class TableAttributeTranslator implements OperationStepHandler {
+    static class TableAttributeTransformation implements UnaryOperator<OperationStepHandler> {
         private final org.jboss.as.clustering.controller.Attribute attribute;
         private final PathElement path;
 
-        TableAttributeTranslator(org.jboss.as.clustering.controller.Attribute attribute, PathElement path) {
+        TableAttributeTransformation(org.jboss.as.clustering.controller.Attribute attribute, PathElement path) {
             this.attribute = attribute;
             this.path = path;
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (operation.hasDefined(this.attribute.getName())) {
-                // Translate deprecated table attribute into separate add table operation
-                ModelNode addTableOperation = Util.createAddOperation(context.getCurrentAddress().append(this.path));
-                ModelNode parameters = operation.get(this.attribute.getName());
-                for (Property parameter : parameters.asPropertyList()) {
-                    addTableOperation.get(parameter.getName()).set(parameter.getValue());
+        public OperationStepHandler apply(OperationStepHandler handler) {
+            return (context, operation) -> {
+                if (operation.hasDefined(this.attribute.getName())) {
+                    // Translate deprecated table attribute into separate add table operation
+                    ModelNode addTableOperation = Util.createAddOperation(context.getCurrentAddress().append(this.path));
+                    ModelNode parameters = operation.get(this.attribute.getName());
+                    for (Property parameter : parameters.asPropertyList()) {
+                        addTableOperation.get(parameter.getName()).set(parameter.getValue());
+                    }
+                    context.addStep(addTableOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(this.path), ModelDescriptionConstants.ADD), context.getCurrentStage());
                 }
-                context.addStep(addTableOperation, context.getResourceRegistration().getOperationHandler(PathAddress.pathAddress(this.path), ModelDescriptionConstants.ADD), context.getCurrentStage());
-            }
+                handler.execute(context, operation);
+            };
+        }
+
+        public UnaryOperator<OperationStepHandler> andThen(UnaryOperator<OperationStepHandler> after) {
+            return handler -> after.apply(this.apply(handler));
         }
     }
 
@@ -243,10 +222,9 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         }
     };
 
-    JDBCStoreResourceDefinition(PathElement path, PathElement legacyPath, InfinispanResourceDescriptionResolver resolver, Consumer<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory, Consumer<ManagementResourceRegistration> registrationConfigurator) {
+    JDBCStoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, Consumer<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory, Consumer<ManagementResourceRegistration> registrationConfigurator) {
         super(path, legacyPath, resolver, configurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
-                .addCapabilities(Capability.class)
                 // Translate deprecated DATASOURCE attribute to DATA_SOURCE attribute
                 .addAttributeTranslation(DeprecatedAttribute.DATASOURCE, Attribute.DATA_SOURCE, POOL_NAME_TO_JNDI_NAME_TRANSLATOR, JNDI_NAME_TO_POOL_NAME_TRANSLATOR)
             ), builderFactory, registrationConfigurator);

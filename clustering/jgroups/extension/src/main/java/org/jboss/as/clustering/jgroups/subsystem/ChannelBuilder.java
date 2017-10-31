@@ -21,20 +21,23 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import javax.management.MBeanServer;
 
+import org.jboss.as.clustering.controller.Capability;
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -53,9 +56,8 @@ import org.wildfly.clustering.service.ValueDependency;
  * Provides a connected channel for use by dependent services.
  * @author Paul Ferraro
  */
-public class ChannelBuilder implements ResourceServiceBuilder<Channel>, Service<Channel> {
+public class ChannelBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<Channel>, Service<Channel> {
 
-    private final ServiceName serviceName;
     private final String name;
 
     private volatile ValueDependency<ChannelFactory> factory;
@@ -64,9 +66,9 @@ public class ChannelBuilder implements ResourceServiceBuilder<Channel>, Service<
     private volatile boolean statisticsEnabled = false;
     private volatile Channel channel;
 
-    public ChannelBuilder(ServiceName serviceName, String name) {
-        this.serviceName = serviceName;
-        this.name = name;
+    public ChannelBuilder(Capability capability, PathAddress address) {
+        super(capability, address);
+        this.name = address.getLastElement().getValue();
     }
 
     public ChannelBuilder statisticsEnabled(boolean enabled) {
@@ -75,15 +77,10 @@ public class ChannelBuilder implements ResourceServiceBuilder<Channel>, Service<
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.serviceName;
-    }
-
-    @Override
     public ServiceBuilder<Channel> build(ServiceTarget target) {
         ServiceBuilder<Channel> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.factory, this.cluster).forEach(dependency -> dependency.register(builder));
-        return (this.server != null) ? this.server.register(builder) : builder;
+        Stream.of(this.factory, this.cluster, this.server).filter(Objects::nonNull).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 
     @Override

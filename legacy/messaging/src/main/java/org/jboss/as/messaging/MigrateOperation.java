@@ -150,12 +150,12 @@ public class MigrateOperation implements OperationStepHandler {
 
 
     public static final StringListAttributeDefinition MIGRATION_WARNINGS_ATTR = new StringListAttributeDefinition.Builder(MIGRATION_WARNINGS)
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     public static final SimpleMapAttributeDefinition MIGRATION_ERROR_ATTR = new SimpleMapAttributeDefinition.Builder(MIGRATION_ERROR, ModelType.OBJECT, true)
             .setValueType(ModelType.OBJECT)
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     private static final OperationStepHandler DESCRIBE_MIGRATION_INSTANCE = new MigrateOperation(true);
@@ -177,15 +177,14 @@ public class MigrateOperation implements OperationStepHandler {
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(MIGRATE, resourceDescriptionResolver)
                         .setParameters(ADD_LEGACY_ENTRIES)
                         .setReplyParameters(MIGRATION_WARNINGS_ATTR, MIGRATION_ERROR_ATTR)
-                        .setRuntimeOnly()
                         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.READ_WHOLE_CONFIG)
                         .build(),
                 MigrateOperation.MIGRATE_INSTANCE);
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(DESCRIBE_MIGRATION, resourceDescriptionResolver)
                         .addParameter(ADD_LEGACY_ENTRIES)
                         .setReplyParameters(MIGRATION_WARNINGS_ATTR)
-                        .setRuntimeOnly()
                         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.READ_WHOLE_CONFIG)
+                        .setReadOnly()
                         .build(),
                 MigrateOperation.DESCRIBE_MIGRATION_INSTANCE);
     }
@@ -561,6 +560,8 @@ public class MigrateOperation implements OperationStepHandler {
     private void migratePooledConnectionFactory(ModelNode addOperation) {
         migrateConnectorAttribute(addOperation);
         migrateDiscoveryGroupNameAttribute(addOperation);
+        // WFLY-8928 - allow local transacted JMS session
+        addOperation.get("allow-local-transactions").set(new ModelNode(true));
     }
 
     private void migrateClusterConnection(ModelNode addOperation, List<String> warnings) {

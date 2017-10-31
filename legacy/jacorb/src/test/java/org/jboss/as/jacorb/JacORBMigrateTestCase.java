@@ -90,6 +90,7 @@ public class JacORBMigrateTestCase extends AbstractSubsystemTest {
         ModelNode newSubsystem = model.get(SUBSYSTEM).get("iiop-openjdk");
         Assert.assertTrue(newSubsystem.get("export-corbaloc").equals(new ModelNode(true)));
         Assert.assertTrue(newSubsystem.get("confidentiality").equals(new ModelNode("required")));
+        Assert.assertTrue(newSubsystem.get("iona").equals(new ModelNode(true)));
     }
 
     private static class NewSubsystemAdditionalInitialization extends AdditionalInitialization {

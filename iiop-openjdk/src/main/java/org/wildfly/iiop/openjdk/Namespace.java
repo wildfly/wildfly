@@ -33,9 +33,9 @@ enum Namespace {
 
     UNKNOWN(null),
     IIOP_OPENJDK_1_0("urn:jboss:domain:iiop-openjdk:1.0"),
-    IIOP_OPENJDK_3_0("urn:jboss:domain:iiop-openjdk:3.0");
+    IIOP_OPENJDK_2_0("urn:jboss:domain:iiop-openjdk:2.0");
 
-    static final Namespace CURRENT = IIOP_OPENJDK_3_0;
+    static final Namespace CURRENT = IIOP_OPENJDK_2_0;
 
 
     private final String namespaceURI;

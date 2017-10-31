@@ -10,6 +10,7 @@
         <subsystem>deployment-scanner.xml</subsystem>
         <subsystem supplement="full">ee.xml</subsystem>
         <subsystem supplement="full">ejb3.xml</subsystem>
+        <subsystem supplement="standalone-wildfly">elytron.xml</subsystem>
         <subsystem>io.xml</subsystem>
         <subsystem>infinispan.xml</subsystem>
         <subsystem>iiop-openjdk.xml</subsystem>
@@ -29,7 +30,6 @@
         <subsystem>request-controller.xml</subsystem>
         <subsystem>sar.xml</subsystem>
         <subsystem>security-manager.xml</subsystem>
-        <subsystem supplement="standalone-wildfly">elytron.xml</subsystem>
         <subsystem>security.xml</subsystem>
         <subsystem>transactions.xml</subsystem>
         <subsystem>undertow.xml</subsystem>

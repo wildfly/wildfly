@@ -22,6 +22,9 @@
 
 package org.wildfly.extension.picketlink.logging;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -32,11 +35,6 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.picketlink.common.exceptions.ProcessingException;
 import org.picketlink.identity.federation.core.audit.PicketLinkAuditEventType;
 import org.picketlink.idm.config.SecurityConfigurationException;
-
-import javax.xml.stream.XMLStreamException;
-
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
 
 /**
  * @author Pedro Igor
@@ -67,14 +65,14 @@ public interface PicketLinkLogger extends BasicLogger {
     @Message(id = 5, value = "Error while configuring the metrics collector. Metrics will not be collected.")
     void federationErrorCollectingMetric(@Cause Throwable t);
 
-    @Message(id = 6, value = "No writer provided for element %s. Check if a writer is registered in PicketLinkSubsystemWriter.")
-    IllegalStateException noModelElementWriterProvided(String modelElement);
+//    @Message(id = 6, value = "No writer provided for element %s. Check if a writer is registered in PicketLinkSubsystemWriter.")
+//    IllegalStateException noModelElementWriterProvided(String modelElement);
 
     @Message(id = 7, value = "Could not load module [%s].")
     RuntimeException moduleCouldNotLoad(String s, @Cause Throwable t);
 
-    @Message(id = 8, value = "Unexpected element [%s].")
-    XMLStreamException parserUnexpectedElement(String modelName);
+//    @Message(id = 8, value = "Unexpected element [%s].")
+//    XMLStreamException parserUnexpectedElement(String modelName);
 
     @Message(id = 9, value = "Could not load class [%s].")
     RuntimeException couldNotLoadClass(String mappingClass, @Cause Throwable e);

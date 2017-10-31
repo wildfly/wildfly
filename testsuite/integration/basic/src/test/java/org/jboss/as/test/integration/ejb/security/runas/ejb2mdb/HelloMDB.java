@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 
 import javax.annotation.Resource;
 import javax.annotation.security.RunAs;
+import javax.annotation.security.PermitAll;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
@@ -51,6 +52,7 @@ import org.jboss.logging.Logger;
         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
         @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "1")})
 @RunAs("INTERNAL_ROLE")
+@PermitAll // needed for access not being denied, see WFLY-8560
 public class HelloMDB implements MessageListener {
     private static final Logger log = Logger.getLogger(HowdyBean.class);
 
@@ -62,24 +64,16 @@ public class HelloMDB implements MessageListener {
 
     @Resource(lookup = "java:global/runasmdbejb-ejb2/GoodBye!org.jboss.as.test.integration.ejb.security.runas.ejb2mdb.GoodByeLocalHome")
     GoodByeLocalHome goodByeHome;
-    GoodByeLocal goodBye;
 
     public void onMessage(Message message) {
         try {
-            log.debug("[HelloMDB] calling goodByeHome.create()");
-            goodBye = goodByeHome.create();
-            log.debug("[HelloMDB] returned from goodByeHome.create()");
-            String replyMsg = this.callEJB() + goodBye.sayGoodBye("user1");
-            log.trace("[HelloMDB] calling sayHowdy: " + replyMsg);
+            GoodByeLocal goodBye = goodByeHome.create();
+            String messageToReply = String.format("%s! %s.", howdy.sayHowdy(), goodBye.sayGoodBye());
 
-            sendReply(replyMsg, (Queue) message.getJMSReplyTo(), message.getJMSMessageID());
+            sendReply(messageToReply, (Queue) message.getJMSReplyTo(), message.getJMSMessageID());
         } catch (Exception e) {
-            log.error("EXCEPTION: ", e);
+            log.errorf(e, "Can't process message '%s'", message);
         }
-    }
-
-    private String callEJB() {
-        return howdy.sayHowdy();
     }
 
     private void sendReply(String msg, Queue destination, String messageID) throws JMSException {

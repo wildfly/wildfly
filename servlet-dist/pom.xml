@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>11.0.0.Beta1-SNAPSHOT</version>
+        <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-servlet-dist</artifactId>
@@ -58,6 +58,9 @@
 
     <properties>
         <product.release.name>WildFly Servlet</product.release.name>
+        <verifier.slot.name>wildfly-web</verifier.slot.name>
+        <verifier.product.release.name>WildFly Servlet</verifier.product.release.name>
+        <verifier.product.release.version>12.0</verifier.product.release.version>
     </properties>
     <build>
         <finalName>${server.output.dir.prefix}-servlet-${project.version}</finalName>
@@ -99,7 +102,28 @@
                             </resources>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>verifications-configuration</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${basedir}/target/verifier</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/verifier</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-verifier-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

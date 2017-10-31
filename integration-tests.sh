@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Shell script to run the integration tests
+BASH_INTERPRETER=${BASH_INTERPRETER:-${SHELL}}
 
 PROGNAME=`basename $0`
 DIRNAME=`dirname "${BASH_SOURCE[0]}"`
@@ -172,9 +173,9 @@ main() {
 
     #  Execute in debug mode, or simply execute.
     if [ "x$MVN_DEBUG" != "x" ]; then
-        /bin/sh -x $MVN $MVN_ARGS $MVN_GOAL
+        "${BASH_INTERPRETER}" -x $MVN $MVN_ARGS $MVN_GOAL
     else
-        exec $MVN $MVN_ARGS $MVN_GOAL
+        exec "${BASH_INTERPRETER}" $MVN $MVN_ARGS $MVN_GOAL
     fi
 
     cd $DIRNAME

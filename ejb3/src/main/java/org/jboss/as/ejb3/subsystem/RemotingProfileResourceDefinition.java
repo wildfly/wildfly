@@ -32,8 +32,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -79,9 +77,5 @@ public class RemotingProfileResourceDefinition extends SimpleResourceDefinition 
         for (AttributeDefinition attr : ATTRIBUTES.values()) {
             resourceRegistration.registerReadWriteAttribute(attr, null, new RemotingProfileResourceChildWriteAttributeHandler(attr));
         }
-    }
-
-    public static void registerTransformers_4_0(ResourceTransformationDescriptionBuilder builder) {
-        builder.addChildResource(RemotingProfileResourceDefinition.INSTANCE).getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, StaticEJBDiscoveryDefinition.INSTANCE).end();
     }
 }

@@ -106,6 +106,7 @@
                 <xs:attribute name="request-parse-timeout" type="xs:int"/>
                 <xs:attribute name="disallowed-methods" type="stringList" default="TRACE"/>
                 <xs:attribute name="secure" type="xs:boolean" default="false"/>
+                <xs:attribute name="rfc6265-cookie-validation" type="xs:boolean" default="false"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -267,6 +268,7 @@
         <xs:attribute name="session-id-length" type="xs:int" use="optional" default="30" />
         <xs:attribute name="max-sessions" type="xs:int" use="optional" />
         <xs:attribute name="disable-file-watch-service" type="xs:boolean" use="optional" />
+        <xs:attribute name="disable-session-id-reuse" type="xs:boolean" use="optional" />
     </xs:complexType>
 
     <xs:complexType name="mime-mappingsType">
@@ -314,6 +316,7 @@
     <xs:complexType name="http-invokerType">
         <xs:attribute name="path" use="optional" type="xs:string" default="wildfly-services"/>
         <xs:attribute name="http-authentication-factory" type="xs:string" use="optional"/>
+        <xs:attribute name="security-realm" type="xs:string" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="websocketsType">
@@ -483,6 +486,7 @@
         <xs:attribute name="instance-id" use="optional" type="xs:string"/>
         <xs:attribute name="ssl-context" type="xs:string" />
         <xs:attribute name="security-realm" type="xs:string" use="optional" />
+        <xs:attribute name="enable-http2" type="xs:boolean" use="optional" default="false" />
     </xs:complexType>
 
     <xs:complexType name="filter-refType">

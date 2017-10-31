@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.function.UnaryOperator;
+
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
@@ -31,8 +33,7 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
-import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -55,30 +56,20 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "LOCKING");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        ACQUIRE_TIMEOUT("acquire-timeout", ModelType.LONG, new ModelNode(15000L)),
-        CONCURRENCY("concurrency-level", ModelType.INT, new ModelNode(1000)),
-        ISOLATION("isolation", ModelType.STRING, new ModelNode(IsolationLevel.READ_COMMITTED.name()), new EnumValidatorBuilder<>(IsolationLevel.class)),
-        STRIPING("striping", ModelType.BOOLEAN, new ModelNode(false)),
+        ACQUIRE_TIMEOUT("acquire-timeout", ModelType.LONG, new ModelNode(15000L), builder -> builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS)),
+        CONCURRENCY("concurrency-level", ModelType.INT, new ModelNode(1000), UnaryOperator.identity()),
+        ISOLATION("isolation", ModelType.STRING, new ModelNode(IsolationLevel.READ_COMMITTED.name()), builder -> builder.setValidator(new EnumValidator<>(IsolationLevel.class))),
+        STRIPING("striping", ModelType.BOOLEAN, new ModelNode(false), UnaryOperator.identity()),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type, defaultValue).build();
-        }
-
-        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
-            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
-            this.definition = builder.setValidator(validator.configure(builder).build()).build();
-        }
-
-        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
-            return new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-                    ;
+                    ).build();
         }
 
         @Override

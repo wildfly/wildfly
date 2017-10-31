@@ -191,12 +191,12 @@ public interface BatchLogger extends BasicLogger {
     @Message(id = 17, value = "Restarting previously stopped batch job %s. Previous execution id %d. New execution id %d.")
     void restartingJob(String jobName, long previousId, long newId);
 
-    /**
-     * Creates an exception indicating the job repository has been shutdown and job operations can no longer be
-     * executed.
-     */
-    @Message(id = 18, value = "The job repository has been shutdown. Job operations can no longer be executed.")
-    IllegalStateException jobRepositoryShutdown();
+//    /**
+//     * Creates an exception indicating the job repository has been shutdown and job operations can no longer be
+//     * executed.
+//     */
+//    @Message(id = 18, value = "The job repository has been shutdown. Job operations can no longer be executed.")
+//    IllegalStateException jobRepositoryShutdown();
 
     /**
      * Creates an exception indicating the batch environment was not found for the {@linkplain ClassLoader class loader}.
@@ -208,8 +208,8 @@ public interface BatchLogger extends BasicLogger {
 
     /**
      * Creates an exception indicating the user is not authorized for the batch operation.
-     * @param op the operation
-     * @param user the
+     * @param user the user name
+     * @param permission the missing permission
      * @return
      * Operation requires %s permissions. User %s is not authorized for this operation.
      */

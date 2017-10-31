@@ -27,7 +27,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
@@ -90,7 +89,4 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
         super(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE, ADD_HANDLER, REMOVE_HANDLER, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES, WRITE_HANDLER, ATTRIBUTES);
     }
 
-    static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
-        LegacyPassivationStoreResourceDefinition.registerTransformers_1_1_0(INSTANCE.getPathElement(), parent);
-    }
 }

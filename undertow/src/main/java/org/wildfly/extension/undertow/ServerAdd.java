@@ -52,7 +52,7 @@ class ServerAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        final ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent()).getModel();
+        final ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent(), false).getModel();
 
         final String name = context.getCurrentAddressValue();
         final String defaultHost = ServerDefinition.DEFAULT_HOST.resolveModelAttribute(context, resource.getModel()).asString();
@@ -92,7 +92,7 @@ class ServerAdd extends AbstractAddStepHandler {
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         super.recordCapabilitiesAndRequirements(context, operation, resource);
 
-        ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent()).getModel();
+        ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent(), false).getModel();
         final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context, parentModel).asString();
         boolean isDefaultServer = context.getCurrentAddressValue().equals(defaultServerName);
         if (isDefaultServer) {

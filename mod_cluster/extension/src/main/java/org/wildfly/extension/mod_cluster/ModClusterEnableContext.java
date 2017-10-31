@@ -82,7 +82,5 @@ public class ModClusterEnableContext implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-
-        context.stepCompleted();
     }
 }

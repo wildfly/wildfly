@@ -41,9 +41,11 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
@@ -55,21 +57,30 @@ import org.jboss.msc.service.ServiceName;
  * @since 7.1.0
  */
 class MailServerDefinition extends PersistentResourceDefinition {
+    static final String OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME = "org.wildfly.network.outbound-socket-binding";
+    static final String CREDENTIAL_STORE_CAPABILITY = "org.wildfly.security.credential-store";
+
+    static final RuntimeCapability<Void> SERVER_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.mail.session.server", true)
+            .setDynamicNameMapper(path -> new String[]{
+                                  path.getParent().getLastElement().getValue(),
+                                  path.getLastElement().getValue()})
+                    .build();
 
     static final SensitivityClassification MAIL_SERVER_SECURITY =
             new SensitivityClassification(MailExtension.SUBSYSTEM_NAME, "mail-server-security", false, false, true);
 
     static final SensitiveTargetAccessConstraintDefinition MAIL_SERVER_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(MAIL_SERVER_SECURITY);
 
-    protected static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF =
+    static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF, ModelType.STRING, false)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
                     .build();
 
-    protected static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF_OPTIONAL = SimpleAttributeDefinitionBuilder.create(OUTBOUND_SOCKET_BINDING_REF)
-            .setAllowNull(true)
+    static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING_REF_OPTIONAL = SimpleAttributeDefinitionBuilder.create(OUTBOUND_SOCKET_BINDING_REF)
+            .setCapabilityReference(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME)
+            .setRequired(false)
             .build();
 
     protected static final SimpleAttributeDefinition SSL =
@@ -104,6 +115,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
                     .addAlternatives(MailSubsystemModel.PASSWORD)
+                    .setCapabilityReference(CREDENTIAL_STORE_CAPABILITY)
                     .build();
 
     protected static final SimpleAttributeDefinition PASSWORD =
@@ -115,7 +127,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
                     .setAlternatives(CredentialReference.CREDENTIAL_REFERENCE)
                     .build();
 
-    protected static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.PROPERTIES, true)
+    static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.PROPERTIES, true)
             .setAttributeMarshaller(AttributeMarshaller.PROPERTIES_MARSHALLER_UNWRAPPED)
             .setAttributeParser(AttributeParser.PROPERTIES_PARSER_UNWRAPPED)
             .setAllowExpression(true)
@@ -126,18 +138,20 @@ class MailServerDefinition extends PersistentResourceDefinition {
     static final AttributeDefinition[] ATTRIBUTES_CUSTOM = {OUTBOUND_SOCKET_BINDING_REF_OPTIONAL, SSL, TLS, USERNAME, PASSWORD, CREDENTIAL_REFERENCE, PROPERTIES};
 
 
-    public static final MailServerDefinition INSTANCE_SMTP = new MailServerDefinition(MailSubsystemModel.SMTP_SERVER_PATH, ATTRIBUTES);
-    public static final MailServerDefinition INSTANCE_IMAP = new MailServerDefinition(MailSubsystemModel.IMAP_SERVER_PATH, ATTRIBUTES);
-    public static final MailServerDefinition INSTANCE_POP3 = new MailServerDefinition(MailSubsystemModel.POP3_SERVER_PATH, ATTRIBUTES);
-    public static final MailServerDefinition INSTANCE_CUSTOM = new MailServerDefinition(MailSubsystemModel.CUSTOM_SERVER_PATH, ATTRIBUTES_CUSTOM);
+    static final MailServerDefinition INSTANCE_SMTP = new MailServerDefinition(MailSubsystemModel.SMTP_SERVER_PATH, ATTRIBUTES);
+    static final MailServerDefinition INSTANCE_IMAP = new MailServerDefinition(MailSubsystemModel.IMAP_SERVER_PATH, ATTRIBUTES);
+    static final MailServerDefinition INSTANCE_POP3 = new MailServerDefinition(MailSubsystemModel.POP3_SERVER_PATH, ATTRIBUTES);
+    static final MailServerDefinition INSTANCE_CUSTOM = new MailServerDefinition(MailSubsystemModel.CUSTOM_SERVER_PATH, ATTRIBUTES_CUSTOM);
 
     private final List<AttributeDefinition> attributes;
 
     private MailServerDefinition(final PathElement path, AttributeDefinition[] attributes) {
-        super(path,
-                MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION, MailSubsystemModel.SERVER_TYPE),
-                new MailServerAdd(attributes),
-                new MailServerRemove());
+        super(new Parameters(path,
+                MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION, MailSubsystemModel.SERVER_TYPE))
+                .setAddHandler(new MailServerAdd(attributes))
+                .setRemoveHandler(new MailServerRemove(attributes))
+                .setCapabilities(SERVER_CAPABILITY)
+        );
         this.attributes = Arrays.asList(attributes);
     }
 
@@ -156,14 +170,17 @@ class MailServerDefinition extends PersistentResourceDefinition {
     }
 
     private static final class MailServerRemove extends RestartParentResourceRemoveHandler {
-        private MailServerRemove() {
+        private final AttributeDefinition[] attributes;
+        private MailServerRemove(AttributeDefinition ... attributes) {
             super(MailSubsystemModel.MAIL_SESSION);
+            this.attributes = attributes;
         }
 
         @Override
         protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
-            context.readResource(PathAddress.EMPTY_ADDRESS, false); //to make sure resource we are removing exists! it will throw exception.
+            Resource r = context.readResource(PathAddress.EMPTY_ADDRESS, false); //to make sure resource we are removing exists! it will throw exception.
             super.updateModel(context, operation);
+            recordCapabilitiesAndRequirements(context, r);
         }
 
         @Override
@@ -173,7 +190,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
 
         @Override
         protected ServiceName getParentServiceName(PathAddress parentAddress) {
-            return MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append(parentAddress.getLastElement().getValue());
+            return MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName(parentAddress.getLastElement().getValue());
         }
 
         @Override
@@ -183,7 +200,16 @@ class MailServerDefinition extends PersistentResourceDefinition {
             final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
             context.removeService(bindInfo.getBinderServiceName());
         }
-
+        //todo workaround until it is supported on abstract classes
+        private void recordCapabilitiesAndRequirements(OperationContext context, Resource resource) throws OperationFailedException {
+            context.deregisterCapability(MailServerDefinition.SERVER_CAPABILITY.getDynamicName(context.getCurrentAddress()));
+            ModelNode model = resource.getModel();
+            for (AttributeDefinition ad : attributes) {
+                if (ad != null && (model.hasDefined(ad.getName()) || ad.hasCapabilityRequirements())) {
+                    ad.removeCapabilityRequirements(context, resource, model.get(ad.getName()));
+                }
+            }
+        }
 
     }
 }

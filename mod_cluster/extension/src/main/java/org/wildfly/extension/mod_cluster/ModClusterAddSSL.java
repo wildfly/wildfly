@@ -66,7 +66,7 @@ class ModClusterAddSSL extends AbstractAddStepHandler {
             attr.validateAndSet(operation, model);
         }
         context.addStep((ctx, op) -> {
-            final ModelNode conf = ctx.readResourceFromRoot(ctx.getCurrentAddress().getParent()).getModel();
+            final ModelNode conf = ctx.readResourceFromRoot(ctx.getCurrentAddress().getParent(), false).getModel();
             if (conf.hasDefined(CommonAttributes.SSL_CONTEXT)) {
                 throw new OperationFailedException(ROOT_LOGGER.bothElytronAndLegacySslContextDefined());
             }

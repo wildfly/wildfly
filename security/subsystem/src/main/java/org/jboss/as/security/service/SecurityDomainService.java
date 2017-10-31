@@ -22,13 +22,14 @@
 
 package org.jboss.as.security.service;
 
+import java.util.concurrent.ConcurrentMap;
+
 import javax.security.auth.login.Configuration;
 
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.AuthenticationCacheFactory;
 import org.jboss.as.security.plugins.DefaultAuthenticationCacheFactory;
-import org.jboss.as.security.plugins.InfinispanAuthenticationCacheFactory;
 import org.jboss.as.security.plugins.JNDIBasedSecurityManagement;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.msc.inject.Injector;
@@ -56,7 +57,7 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
 
     private final InjectedValue<Configuration> configurationValue = new InjectedValue<Configuration>();
 
-    private final InjectedValue<Object> cacheManagerValue = new InjectedValue<>();
+    private final InjectedValue<ConcurrentMap> cacheValue = new InjectedValue<>();
 
     private final String name;
 
@@ -88,24 +89,25 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
         final JNDIBasedSecurityManagement securityManagement = (JNDIBasedSecurityManagement) securityManagementValue.getValue();
         AuthenticationCacheFactory cacheFactory = null;
         if ("infinispan".equals(cacheType)) {
-            cacheFactory = new InfinispanAuthenticationCacheFactory(cacheManagerValue.getValue(), name);
+            cacheFactory = () -> this.cacheValue.getValue();
         } else if ("default".equals(cacheType)) {
             cacheFactory = new DefaultAuthenticationCacheFactory();
         }
+        SecurityDomainContext sdc;
         try {
-            securityDomainContext = securityManagement.createSecurityDomainContext(name, cacheFactory);
+            sdc = securityManagement.createSecurityDomainContext(name, cacheFactory, jsseSecurityDomain);
         } catch (Exception e) {
             throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityDomainService", e);
         }
         if (jsseSecurityDomain != null) {
             try {
                 jsseSecurityDomain.reloadKeyAndTrustStore();
-                securityDomainContext.setJSSE(jsseSecurityDomain);
             } catch (Exception e) {
                 throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityDomainService", e);
             }
         }
-        securityManagement.getSecurityManagerMap().put(name, securityDomainContext);
+        securityManagement.getSecurityManagerMap().put(name, sdc);
+        this.securityDomainContext = sdc;
     }
 
     /** {@inheritDoc} */
@@ -149,8 +151,7 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
      *
      * @return target
      */
-    public Injector<Object> getCacheManagerInjector() {
-        return cacheManagerValue;
+    public Injector<ConcurrentMap> getCacheInjector() {
+        return cacheValue;
     }
-
 }

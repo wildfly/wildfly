@@ -1,7 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<server xmlns="urn:jboss:domain:5.0">
-
+<server xmlns="urn:jboss:domain:6.0">
     <management>
         <security-realms>
             <security-realm name="ManagementRealm">
@@ -13,7 +12,7 @@
         </security-realms>
         <management-interfaces>
             <http-interface console-enabled="false" security-realm="ManagementRealm">
-                <http-upgrade enabled="true" />
+                <http-upgrade enabled="true"/>
                 <socket-binding http="management-http"/>
             </http-interface>
         </management-interfaces>

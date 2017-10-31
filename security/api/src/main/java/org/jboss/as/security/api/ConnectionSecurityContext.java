@@ -26,15 +26,15 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.stream.StreamSupport;
 
 import javax.security.auth.Subject;
 
 import org.jboss.as.core.security.RealmGroup;
 import org.jboss.as.core.security.RealmRole;
 import org.jboss.as.core.security.RealmUser;
+import org.jboss.as.core.security.api.RealmPrincipal;
+import org.jboss.as.security.remoting.RemoteConnection;
 import org.jboss.as.security.remoting.RemotingContext;
-import org.jboss.remoting3.Connection;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
@@ -64,17 +64,19 @@ public class ConnectionSecurityContext {
      *         the {@link Thread}
      */
     public static Collection<Principal> getConnectionPrincipals() {
-        Connection con = RemotingContext.getConnection();
+        RemoteConnection con = RemotingContext.getRemoteConnection();
 
         if (con != null) {
             Collection<Principal> principals = new HashSet<>();
-            SecurityIdentity localIdentity = con.getLocalIdentity();
+            SecurityIdentity localIdentity = con.getSecurityIdentity();
             if (localIdentity != null) {
-                principals.add(new RealmUser(localIdentity.getPrincipal().getName()));
-                StreamSupport.stream(localIdentity.getRoles().spliterator(), true).forEach((String role) -> {
+                final Principal principal = localIdentity.getPrincipal();
+                final String realm = principal instanceof RealmPrincipal ? ((RealmPrincipal) principal).getRealm() : null;
+                principals.add(new RealmUser(realm, principal.getName()));
+                for (String role : localIdentity.getRoles()) {
                     principals.add(new RealmGroup(role));
                     principals.add(new RealmRole(role));
-                });
+                }
                 return principals;
             } else {
                 return Collections.emptySet();
@@ -103,7 +105,7 @@ public class ConnectionSecurityContext {
         SecurityContext nextContext = SecurityContextFactory.createSecurityContext(principal, credential, new Subject(), "USER_DELEGATION");
         SecurityContextAssociation.setSecurityContext(nextContext);
 
-        Connection con = RemotingContext.getConnection();
+        RemoteConnection con = RemotingContext.getRemoteConnection();
         RemotingContext.clear();
 
         return new ContextStateCache(con, current);

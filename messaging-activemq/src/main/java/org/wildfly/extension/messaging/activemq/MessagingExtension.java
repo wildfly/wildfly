@@ -35,6 +35,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTO
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.GROUPING_HANDLER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA_POLICY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACCEPTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_CONNECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_QUEUE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_TOPIC;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JOURNAL_DIRECTORY;
@@ -83,8 +84,8 @@ import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
  *   <dt><strong>Current</strong> - WildFly 11</dt>
  *   <dd>
  *     <ul>
- *       <li>XML namespace: urn:jboss:domain:messaging-activemq:1.1
- *       <li>Management model: 1.1.0
+ *       <li>XML namespace: urn:jboss:domain:messaging-activemq:2.0
+ *       <li>Management model: 2.0.0
  *     </ul>
  *   </dd>
  *   <dt>WildFly 10</dt>
@@ -122,6 +123,7 @@ public class MessagingExtension implements Extension {
     static final PathElement QUEUE_PATH = pathElement(QUEUE);
     static final PathElement RUNTIME_QUEUE_PATH = pathElement(RUNTIME_QUEUE);
     static final PathElement GROUPING_HANDLER_PATH = pathElement(GROUPING_HANDLER);
+    static final PathElement HTTP_CONNECTOR_PATH = pathElement(HTTP_CONNECTOR);
     static final PathElement HTTP_ACCEPTOR_PATH = pathElement(HTTP_ACCEPTOR);
     static final PathElement BROADCAST_GROUP_PATH = pathElement(BROADCAST_GROUP);
     static final PathElement CLUSTER_CONNECTION_PATH = pathElement(CLUSTER_CONNECTION);
@@ -146,9 +148,9 @@ public class MessagingExtension implements Extension {
 
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    protected static final ModelVersion VERSION_1_1_0 = ModelVersion.create(1, 1, 0);
+    protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_1_1_0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_2_0_0;
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         return getResourceDescriptionResolver(true, keyPrefix);
@@ -167,7 +169,7 @@ public class MessagingExtension implements Extension {
 
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        subsystemRegistration.registerXMLElementWriter(MessagingSubsystemParser_1_1.INSTANCE);
+        subsystemRegistration.registerXMLElementWriter(new MessagingSubsystemParser_2_0());
 
         boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
@@ -204,7 +206,7 @@ public class MessagingExtension implements Extension {
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_0.NAMESPACE, MessagingSubsystemParser_1_0.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_1.NAMESPACE, MessagingSubsystemParser_1_1.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_0.NAMESPACE, MessagingSubsystemParser_1_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_2_0.NAMESPACE, MessagingSubsystemParser_2_0::new);
     }
 }

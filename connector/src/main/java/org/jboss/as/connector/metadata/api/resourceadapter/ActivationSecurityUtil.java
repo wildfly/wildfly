@@ -18,7 +18,9 @@ package org.jboss.as.connector.metadata.api.resourceadapter;
 
 import java.util.List;
 
+import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Security;
+import org.jboss.jca.common.api.metadata.common.SecurityMetadata;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
 
@@ -32,21 +34,16 @@ public final class ActivationSecurityUtil {
     public static boolean isLegacySecurityRequired(Activation raxml) {
         boolean required = false;
         org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity wmsecurity = raxml.getWorkManager() != null ? raxml.getWorkManager().getSecurity() : null;
-        if (wmsecurity != null && !isElytronEnabled(wmsecurity)) {
-            String domain = wmsecurity.getDomain();
-            required = domain != null && domain.trim().length() > 0;
-        }
+        required = isLegacySecurityRequired(wmsecurity);
         if (!required) {
             List<ConnectionDefinition> connDefs = raxml.getConnectionDefinitions();
             if (connDefs != null) {
                 for (ConnectionDefinition cd : connDefs) {
-                    Security cdsecurity = cd.getSecurity();
-                    if (cdsecurity != null && !isElytronEnabled(cdsecurity)) {
-                        String domain = cdsecurity.resolveSecurityDomain();
-                        if (domain != null && domain.trim().length() > 0) {
-                            required = true;
-                            break;
-                        }
+                    Security cdSecurity = cd.getSecurity();
+                    Credential cdRecoveryCredential = cd.getRecovery() == null? null : cd.getRecovery().getCredential();
+                    if (isLegacySecurityRequired(cdSecurity) || isLegacySecurityRequired(cdRecoveryCredential)) {
+                        required = true;
+                        break;
                     }
                 }
             }
@@ -54,17 +51,29 @@ public final class ActivationSecurityUtil {
         return required;
     }
 
-    public static boolean isLegacySecurityRequired(Security security) {
-        boolean required = security != null && !isElytronEnabled(security);
-        if (required) {
-            String domain = security.resolveSecurityDomain();
-            required = domain != null && domain.trim().length() > 0;
-        }
-        return required;
+    public static boolean isLegacySecurityRequired(SecurityMetadata security) {
+        // no security config
+        if (security == null)
+            return false;
+        // security uses elytron
+        if (security instanceof org.jboss.as.connector.metadata.api.common.SecurityMetadata &&
+                ((org.jboss.as.connector.metadata.api.common.SecurityMetadata) security).isElytronEnabled())
+            return false;
+        // check if legacy domain is non-null
+        final String domain = security.resolveSecurityDomain();
+        return domain != null && domain.trim().length() > 0;
     }
 
-    private static boolean isElytronEnabled(Object config) {
-        return config instanceof WorkManagerSecurity && ((WorkManagerSecurity) config).isElytronEnabled();
+    private static boolean isLegacySecurityRequired(org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity config) {
+        // no security config
+        if (config == null)
+            return false;
+        // security config uses elytron
+        if (config instanceof WorkManagerSecurity && ((WorkManagerSecurity) config).isElytronEnabled())
+            return false;
+        // check if legacy domain is non-null
+        final String domain = config.getDomain();
+        return domain != null && domain.trim().length() > 0;
     }
 
     private ActivationSecurityUtil() {}

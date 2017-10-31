@@ -55,7 +55,7 @@ class AddressSettingsValidator {
             String addressSetting = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
 
             PathAddress hornetqServerAddress = context.getCurrentAddress().getParent();
-            Resource hornetqServer = context.readResourceFromRoot(hornetqServerAddress, true);
+            Resource hornetqServer = context.readResourceFromRoot(hornetqServerAddress, false);
 
             checkExpiryAddress(context, operation, hornetqServer, addressSetting);
             checkDeadLetterAddress(context, operation, hornetqServer, addressSetting);

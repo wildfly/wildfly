@@ -78,6 +78,9 @@ public final class Constants {
     public static final String SECURITY_CLIENT_REQUIRES_SSL = "client-requires-ssl";
     public static final String SECURITY_SERVER_REQUIRES_SSL = "server-requires-ssl";
 
+    public static final String INTEROP = "interop";
+    public static final String INTEROP_IONA = "iona";
+
     public static final String IOR_SETTINGS = "ior-settings";
     public static final String IOR_TRANSPORT_CONFIG = "transport-config";
     public static final String IOR_TRANSPORT_INTEGRITY = "integrity";

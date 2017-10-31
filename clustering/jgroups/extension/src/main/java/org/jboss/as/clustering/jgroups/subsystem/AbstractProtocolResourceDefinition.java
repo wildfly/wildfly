@@ -24,11 +24,11 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.AttributeMarshallers;
-import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -38,12 +38,10 @@ import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperatio
 import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -68,27 +66,29 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 public class AbstractProtocolResourceDefinition<P extends Protocol, C extends ProtocolConfiguration<P>> extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING, new ModelNode("org.jgroups"), new ModuleIdentifierValidatorBuilder()),
+        MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING, builder -> builder
+                .setDefaultValue(new ModelNode("org.jgroups"))
+                .setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())),
         PROPERTIES(ModelDescriptionConstants.PROPERTIES),
         STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN),
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
-            this.definition = createBuilder(name, type, null).build();
+            this(name, type, UnaryOperator.identity());
         }
 
-        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder) {
-            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
-            this.definition = builder.setValidator(validatorBuilder.configure(builder).build()).build();
+        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    ).build();
         }
 
         Attribute(String name) {
-            this.definition = new SimpleMapAttributeDefinition.Builder(name, true)
+            this.definition = new PropertiesAttributeDefinition.Builder(name)
                     .setAllowExpression(true)
-                    .setAttributeMarshaller(AttributeMarshallers.PROPERTY_LIST)
-                    .setAttributeParser(AttributeParsers.COLLECTION)
-                    .setDefaultValue(new ModelNode().setEmptyObject())
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
         }
@@ -106,7 +106,12 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, JGroupsModel deprecation) {
-            this.definition = createBuilder(name, type, null).setDeprecated(deprecation.getVersion()).build();
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
         }
 
         @Override
@@ -115,22 +120,13 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
         }
     }
 
-    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
-        return new SimpleAttributeDefinitionBuilder(name, type)
-                .setAllowExpression(true)
-                .setRequired(false)
-                .setDefaultValue(defaultValue)
-                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-        ;
-    }
-
     /**
      * Builds transformations common to both stack protocols and transport.
      */
     @SuppressWarnings("deprecation")
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
-        if (JGroupsModel.VERSION_4_1_0.requiresTransformation(version)) {
+        if (JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.STATISTICS_ENABLED.getDefinition())

@@ -41,7 +41,7 @@ public class RemoteTransportDefinition extends AbstractTransportDefinition {
 
     // for remote acceptor, the socket-binding is required
     public static final SimpleAttributeDefinition SOCKET_BINDING = create(GenericTransportDefinition.SOCKET_BINDING)
-            .setAllowNull(false)
+            .setRequired(true)
             .setAttributeMarshaller(new AttributeMarshaller() {
                 public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws javax.xml.stream.XMLStreamException {
                     if (isMarshallable(attribute, resourceModel)) {

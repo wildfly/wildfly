@@ -82,7 +82,6 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
@@ -96,6 +95,7 @@ import org.jboss.as.ejb3.security.SecurityDomainInterceptorFactory;
 import org.jboss.as.ejb3.security.SecurityRolesAddingInterceptor;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainDefinition;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
+import org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
@@ -277,6 +277,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     private BooleanSupplier outflowSecurityDomainsConfigured;
 
+    private boolean securityRequired;
+
     /**
      * Construct a new instance.
      *
@@ -345,11 +347,13 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     configuration.addTimeoutViewInterceptor(configuration.getNamespaceContextInterceptorFactory(), InterceptorOrder.View.JNDI_NAMESPACE_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
                     EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) description;
+                    final boolean securityRequired = hasBeanLevelSecurityMetadata();
+                    ejbComponentDescription.setSecurityRequired(securityRequired);
                     if (ejbComponentDescription.isSecurityDomainKnown()) {
-                        final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(policyContextID, ejbComponentDescription.isEnableJacc());
+                        final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(policyContextID, ejbComponentDescription.isEnableJacc(), true);
                         elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> configuration.addTimeoutViewInterceptor(elytronInterceptorFactory, priority));
                     } else if (deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED)) {
-                        configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(hasBeanLevelSecurityMetadata(), policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
+                        configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(securityRequired, policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
                     }
                     final Set<Method> classMethods = configuration.getClassIndex().getClassMethods();
                     for (final Method method : classMethods) {
@@ -819,7 +823,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 configuration.getDependencies().add(new DependencyConfigurator<ViewService>() {
                     @Override
                     public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ViewService service) throws DeploymentUnitProcessingException {
-                        serviceBuilder.addDependency(EJBRemoteConnectorService.SERVICE_NAME);
+                        CapabilityServiceSupport support = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
+                        serviceBuilder.addDependency(support.getCapabilityServiceName(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY_NAME));
                     }
                 });
             }
@@ -1136,7 +1141,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 '}' + "@" + Integer.toHexString(hashCode());
     }
 
-    public HashMap<Integer, InterceptorFactory> getElytronInterceptorFactories(String policyContextID, boolean enableJacc) {
+    public HashMap<Integer, InterceptorFactory> getElytronInterceptorFactories(String policyContextID, boolean enableJacc, boolean propagateSecurity) {
         final HashMap<Integer, InterceptorFactory> interceptorFactories = new HashMap<>(2);
         final Set<String> roles = new HashSet<>();
 
@@ -1168,6 +1173,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     roles.addAll(extraRoles);
                 }
             }
+
+        // Next interceptor: prevent identity propagation
+        } else if (! propagateSecurity) {
+            interceptorFactories.put(InterceptorOrder.View.RUN_AS_PRINCIPAL, new ImmediateInterceptorFactory(new RunAsPrincipalInterceptor(RunAsPrincipalInterceptor.ANONYMOUS_PRINCIPAL)));
         }
 
         // Next interceptor: run-as-role
@@ -1188,4 +1197,13 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
         return interceptorFactories;
     }
+
+    public void setSecurityRequired(final boolean securityRequired) {
+        this.securityRequired = securityRequired;
+    }
+
+    public boolean isSecurityRequired() {
+        return securityRequired;
+    }
+
 }

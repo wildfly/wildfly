@@ -67,7 +67,7 @@ public class BasicAuthnTestCase {
      * Tests access without authentication.
      */
     @Test
-    public void testUnrpotectedAccess(@ArquillianResource URL url) throws Exception {
+    public void testUnprotectedAccess(@ArquillianResource URL url) throws Exception {
         assertEquals("Response body is not correct.", SimpleServlet.RESPONSE_BODY,
                 Utils.makeCall(url.toURI(), SC_OK));
         assertEquals("Response body is not correct.", SimpleServlet.RESPONSE_BODY,
@@ -137,7 +137,6 @@ public class BasicAuthnTestCase {
         Utils.makeCallWithBasicAuthn(servletUrl, "user1", "password", SC_UNAUTHORIZED);
         Utils.makeCallWithBasicAuthn(servletUrl, "user1", "Password1", SC_UNAUTHORIZED);
         // unknown user
-        // ignored due to https://issues.jboss.org/browse/JBEAP-8810
-        // Utils.makeCallWithBasicAuthn(servletUrl, "User1", "password1", SC_UNAUTHORIZED);
+        Utils.makeCallWithBasicAuthn(servletUrl, "User1", "password1", SC_UNAUTHORIZED);
     }
 }

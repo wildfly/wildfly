@@ -23,7 +23,6 @@
 package org.wildfly.extension.batch.jberet.deployment;
 
 import java.util.Properties;
-import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
 import org.jberet.repository.JobRepository;
@@ -52,7 +51,7 @@ public class BatchEnvironmentService implements Service<SecurityAwareBatchEnviro
 
     private static final Properties PROPS = new Properties();
 
-    private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
+    private final InjectedValue<WildFlyArtifactFactory> artifactFactoryInjector = new InjectedValue<>();
     private final InjectedValue<JobExecutor> jobExecutorInjector = new InjectedValue<>();
     private final InjectedValue<TransactionManager> transactionManagerInjector = new InjectedValue<>();
     private final InjectedValue<RequestController> requestControllerInjector = new InjectedValue<>();
@@ -86,7 +85,7 @@ public class BatchEnvironmentService implements Service<SecurityAwareBatchEnviro
             jobRepository = batchConfiguration.getDefaultJobRepository();
         }
 
-        this.batchEnvironment = new WildFlyBatchEnvironment(beanManagerInjector.getOptionalValue(),
+        this.batchEnvironment = new WildFlyBatchEnvironment(artifactFactoryInjector.getValue(),
                 jobExecutor, transactionManagerInjector.getValue(),
                 jobRepository, jobXmlResolver);
 
@@ -113,8 +112,8 @@ public class BatchEnvironmentService implements Service<SecurityAwareBatchEnviro
         return batchEnvironment;
     }
 
-    public InjectedValue<BeanManager> getBeanManagerInjector() {
-        return beanManagerInjector;
+    public InjectedValue<WildFlyArtifactFactory> getArtifactFactoryInjector() {
+        return artifactFactoryInjector;
     }
 
     public InjectedValue<JobExecutor> getJobExecutorInjector() {
@@ -139,19 +138,19 @@ public class BatchEnvironmentService implements Service<SecurityAwareBatchEnviro
 
     private class WildFlyBatchEnvironment implements BatchEnvironment, SecurityAwareBatchEnvironment {
 
-        private final ArtifactFactory artifactFactory;
+        private final WildFlyArtifactFactory artifactFactory;
         private final JobExecutor jobExecutor;
         private final TransactionManager transactionManager;
         private final JobRepository jobRepository;
         private final JobXmlResolver jobXmlResolver;
 
-        WildFlyBatchEnvironment(final BeanManager beanManager,
+        WildFlyBatchEnvironment(final WildFlyArtifactFactory artifactFactory,
                                 final JobExecutor jobExecutor,
                                 final TransactionManager transactionManager,
                                 final JobRepository jobRepository,
                                 final JobXmlResolver jobXmlResolver) {
             this.jobXmlResolver = jobXmlResolver;
-            artifactFactory = new WildFlyArtifactFactory(beanManager);
+            this.artifactFactory = artifactFactory;
             this.jobExecutor = jobExecutor;
             this.transactionManager = transactionManager;
             this.jobRepository = jobRepository;
@@ -229,7 +228,8 @@ public class BatchEnvironmentService implements Service<SecurityAwareBatchEnviro
             // If the TCCL is null, use the deployments ModuleClassLoader
             final ClassLoaderContextHandle classLoaderContextHandle = (tccl == null ? new ClassLoaderContextHandle(classLoader) : new ClassLoaderContextHandle(tccl));
             // Class loader handle must be first so the TCCL is set before the other handles execute
-            return new ContextHandle.ChainedContextHandle(classLoaderContextHandle, new NamespaceContextHandle(), new SecurityContextHandle());
+            return new ContextHandle.ChainedContextHandle(classLoaderContextHandle, new NamespaceContextHandle(),
+                    new SecurityContextHandle(), artifactFactory.createContextHandle());
         }
     }
 }

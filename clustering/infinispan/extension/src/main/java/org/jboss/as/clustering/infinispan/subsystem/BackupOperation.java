@@ -55,7 +55,7 @@ public enum BackupOperation implements Operation<BackupOperationContext> {
     private final OperationDefinition definition;
 
     BackupOperation(String name, boolean readOnly) {
-        SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(name, new InfinispanResourceDescriptionResolver(BackupResourceDefinition.WILDCARD_PATH));
+        SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(name, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(BackupResourceDefinition.WILDCARD_PATH));
         if (readOnly) {
             builder.setReadOnly();
         }

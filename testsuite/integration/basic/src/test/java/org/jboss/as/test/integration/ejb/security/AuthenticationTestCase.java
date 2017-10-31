@@ -22,10 +22,12 @@
 package org.jboss.as.test.integration.ejb.security;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -46,9 +48,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBAccessException;
 import javax.security.auth.AuthPermission;
-import javax.security.auth.login.LoginContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -59,18 +59,16 @@ import org.jboss.as.test.integration.ejb.security.base.WhoAmIBean;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
-import org.jboss.security.client.SecurityClient;
-import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * Test case to hold the authentication scenarios, these range from calling a servlet which calls a bean to calling a bean which
@@ -89,12 +87,6 @@ public class AuthenticationTestCase {
 
     private static final Logger log = Logger.getLogger(AuthenticationTestCase.class.getName());
 
-    @BeforeClass
-    public static void beforeClass() {
-        //Conditionally ignore all the tests, although only testICIR_TwoBeans_ViaServlet() needs this treatment.
-        //There seems to be an issue with the system property not getting propagated to the server
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
-    }
     /*
      * Authentication Scenarios
      *
@@ -139,7 +131,11 @@ public class AuthenticationTestCase {
                         // TestSuiteEnvironment reads system properties
                         new PropertyPermission("management.address", "read"),
                         new PropertyPermission("node0", "read"),
-                        new PropertyPermission("jboss.http.port", "read")),
+                        new PropertyPermission("jboss.http.port", "read"),
+                        new PropertyPermission("jboss.bind.address", "read"),
+                        new ElytronPermission("getSecurityDomain"),
+                        new ElytronPermission("authenticate")
+                        ),
                         "permissions.xml");
         war.addPackage(CommonCriteria.class.getPackage());
         return war;
@@ -153,76 +149,51 @@ public class AuthenticationTestCase {
 
     @Test
     public void testAuthentication() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             String response = entryBean.whoAmI();
             assertEquals("user1", response);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     public void testAuthentication_BadPwd() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "wrong_password");
-        lc.login();
-        try {
-            entryBean.whoAmI();
-            fail("Expected EJBAccessException due to bad password not thrown. (EJB 3.1 FR 17.6.9)");
-        } catch (EJBAccessException ignored) {
-        } finally {
-            lc.logout();
-        }
+        Util.switchIdentity("user1", "wrong_password", () -> entryBean.whoAmI(), true);
     }
 
     @Test
     public void testAuthentication_TwoBeans() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             String[] response = entryBean.doubleWhoAmI();
             assertEquals("user1", response[0]);
             assertEquals("user1", response[1]);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     public void testAuthentication_TwoBeans_ReAuth() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             String[] response = entryBean.doubleWhoAmI("user2", "password2");
             assertEquals("user1", response[0]);
             assertEquals("user2", response[1]);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     // TODO - Similar test with first bean @RunAs - does it make sense to also manually switch?
     @Test
     public void testAuthentication_TwoBeans_ReAuth_BadPwd() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
-            entryBean.doubleWhoAmI("user2", "wrong_password");
-            fail("Expected EJBAccessException due to bad password not thrown. (EJB 3.1 FR 17.6.9)");
-        } catch (EJBAccessException ignored) {
-        } finally {
-            lc.logout();
-        }
+        Util.switchIdentity("user1", "password1", () -> entryBean.doubleWhoAmI("user2", "wrong_password"), true);
     }
 
     @Test
     public void testAuthenticatedCall() throws Exception {
         // TODO: this is not spec
-        final SecurityClient client = SecurityClientFactory.getSecurityClient();
-        client.setSimple("user1", "password1");
-        client.login();
-        try {
+        final Callable<Void> callable = () -> {
             try {
                 final Principal principal = whoAmIBean.getCallerPrincipal();
                 assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.",
@@ -233,9 +204,9 @@ public class AuthenticationTestCase {
                 fail("EJB 3.1 FR 17.6.5 The EJB container must provide the caller’s security context information during the execution of a business method ("
                         + e.getMessage() + ")");
             }
-        } finally {
-            client.logout();
-        }
+            return null;
+        };
+        Util.switchIdentitySCF("user1", "password1", callable);
     }
 
     @Test
@@ -283,7 +254,11 @@ public class AuthenticationTestCase {
             getWhoAmI("?method=doubleWhoAmI&username=user2&password=bad_password");
             fail("Expected IOException");
         } catch (IOException e) {
-            assertTrue(e.getMessage().contains("javax.ejb.EJBAccessException"));
+            if (SecurityDomain.getCurrent() == null) {
+                assertThat(e.getMessage(), containsString("javax.ejb.EJBAccessException"));
+            } else {
+                assertThat(e.getMessage(), containsString("javax.ejb.EJBException: java.lang.SecurityException: ELY01151"));
+            }
         }
     }
 
@@ -293,22 +268,18 @@ public class AuthenticationTestCase {
 
     @Test
     public void testICIRSingle() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             assertTrue(entryBean.doIHaveRole("Users"));
             assertTrue(entryBean.doIHaveRole("Role1"));
             assertFalse(entryBean.doIHaveRole("Role2"));
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     public void testICIR_TwoBeans() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             boolean[] response;
             response = entryBean.doubleDoIHaveRole("Users");
             assertTrue(response[0]);
@@ -321,16 +292,14 @@ public class AuthenticationTestCase {
             response = entryBean.doubleDoIHaveRole("Role2");
             assertFalse(response[0]);
             assertFalse(response[1]);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     public void testICIR_TwoBeans_ReAuth() throws Exception {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+        final Callable<Void> callable = () -> {
             boolean[] response;
             response = entryBean.doubleDoIHaveRole("Users", "user2", "password2");
             assertTrue(response[0]);
@@ -343,9 +312,9 @@ public class AuthenticationTestCase {
             response = entryBean.doubleDoIHaveRole("Role2", "user2", "password2");
             assertFalse(response[0]);
             assertTrue(response[1]);
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     private static String read(final InputStream in) throws IOException {

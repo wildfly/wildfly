@@ -1337,14 +1337,14 @@
     <server-groups>
         <server-group name="main-server-group" profile="full">
             <jvm name="default">
-                <heap size="1303m" max-size="1303m"/>
+                <heap size="128m" max-size="256m"/>
                 <permgen max-size="256m"/>
             </jvm>
             <socket-binding-group ref="full-sockets"/>
         </server-group>
         <server-group name="other-server-group" profile="full-ha">
             <jvm name="default">
-                <heap size="1303m" max-size="1303m"/>
+                <heap size="128m" max-size="256m"/>
                 <permgen max-size="256m"/>
             </jvm>
             <socket-binding-group ref="full-ha-sockets"/>

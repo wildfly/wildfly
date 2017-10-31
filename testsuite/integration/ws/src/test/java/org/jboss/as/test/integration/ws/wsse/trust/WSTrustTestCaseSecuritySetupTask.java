@@ -2,12 +2,15 @@ package org.jboss.as.test.integration.ws.wsse.trust;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.dmr.ModelNode;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +24,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
+
 public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
 
     public static final String SECURITY_REALM_NAME = "jbws-test-https-realm";
@@ -31,18 +35,26 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
 
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
-
-        addSecurityRealm(managementClient);
-        addHttpsListener(managementClient);
+        List<ModelNode> operations = new ArrayList<>();
+        addSecurityRealm(operations);
+        addHttpsListener(operations);
+        ModelNode updateOp = Operations.createCompositeOperation(operations);
+        updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+        updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());
         securityDomainsSubtask.setup(managementClient, containerId);
     }
 
     @Override
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-
         securityDomainsSubtask.tearDown(managementClient, containerId);
-        removeHttpsListener(managementClient);
-        removeSecurityRealm(managementClient);
+        List<ModelNode> operations = new ArrayList<>();
+        removeHttpsListener(operations);
+        removeSecurityRealm(operations);
+        ModelNode updateOp = Operations.createCompositeOperation(operations);
+        updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+        updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());
     }
 
 
@@ -57,31 +69,21 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
      * ...
      * </subsystem>
      */
-    private void addHttpsListener(ManagementClient managementClient) throws Exception {
-
-
+    private void addHttpsListener(List<ModelNode> operations) throws Exception {
         ModelNode addOp = createOpNode("socket-binding-group=standard-sockets/socket-binding=https2", ADD);
         addOp.get(PORT).set("8444");
-        addOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        addOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        CoreUtils.applyUpdate(addOp, managementClient.getControllerClient());
+        operations.add(addOp);
         addOp = createOpNode("subsystem=undertow/server=default-server/https-listener=" + HTTPS_LISTENER_NAME, ADD);
         addOp.get(SOCKET_BINDING).set("https2");
         addOp.get(SECURITY_REALM).set(SECURITY_REALM_NAME);
-        addOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        addOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        CoreUtils.applyUpdate(addOp, managementClient.getControllerClient());
+        operations.add(addOp);
     }
 
-    private void removeHttpsListener(ManagementClient managementClient) throws Exception {
+    private void removeHttpsListener(List<ModelNode> operations) throws Exception {
         ModelNode removeOp = createOpNode("socket-binding-group=standard-sockets/socket-binding=https2" + HTTPS_LISTENER_NAME, REMOVE);
-        removeOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        removeOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        CoreUtils.applyUpdate(removeOp, managementClient.getControllerClient());
+        operations.add(removeOp);
         removeOp = createOpNode("subsystem=undertow/server=default-server/https-listener=" + HTTPS_LISTENER_NAME, REMOVE);
-        removeOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        removeOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        CoreUtils.applyUpdate(removeOp, managementClient.getControllerClient());
+        operations.add(removeOp);
     }
 
     /**
@@ -96,26 +98,19 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
      * </server-identities>
      * </security-realm>
      */
-    private void addSecurityRealm(ManagementClient managementClient) throws Exception {
+    private void addSecurityRealm(List<ModelNode> operations) throws Exception {
         final ModelNode addOp = createOpNode("core-service=management/security-realm=" + SECURITY_REALM_NAME, ADD);
-        addOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        addOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        CoreUtils.applyUpdate(addOp, managementClient.getControllerClient());
-
+        operations.add(addOp);
         final ModelNode addSslIdentityOp = createOpNode("core-service=management/security-realm=" + SECURITY_REALM_NAME + "/server-identity=ssl", ADD);
         addSslIdentityOp.get("keystore-path").set(WSTrustTestCaseSecuritySetupTask.class.getResource("test.keystore").getPath());
         addSslIdentityOp.get("keystore-password").set("changeit");
         addSslIdentityOp.get("alias").set("tomcat");
-        addSslIdentityOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        addSslIdentityOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        CoreUtils.applyUpdate(addSslIdentityOp, managementClient.getControllerClient());
+        operations.add(addSslIdentityOp);
     }
 
-    private void removeSecurityRealm(ManagementClient managementClient) throws Exception {
+    private void removeSecurityRealm(List<ModelNode> operations) throws Exception {
         final ModelNode removeOp = createOpNode("core-service=management/security-realm=" + SECURITY_REALM_NAME, REMOVE);
-        removeOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-        removeOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        CoreUtils.applyUpdate(removeOp, managementClient.getControllerClient());
+        operations.add(removeOp);
     }
 
 

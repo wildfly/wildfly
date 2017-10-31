@@ -44,11 +44,11 @@ import org.jboss.dmr.ModelType;
 public class MappingModuleDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition CODE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.CODE, ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .build();
 
     protected static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.TYPE, ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .setAllowExpression(true)
             .build();
 

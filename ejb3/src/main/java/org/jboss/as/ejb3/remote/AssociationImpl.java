@@ -38,11 +38,14 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.network.ClientMapping;
+import org.jboss.as.security.remoting.RemoteConnection;
 import org.jboss.ejb.client.Affinity;
+import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBIdentifier;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EJBMethodLocator;
+import org.jboss.ejb.client.EJBModuleIdentifier;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.server.Association;
@@ -55,11 +58,13 @@ import org.jboss.ejb.server.Request;
 import org.jboss.ejb.server.SessionOpenRequest;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.remoting3.Connection;
+import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.common.annotation.NotNull;
 import org.wildfly.security.auth.server.SecurityIdentity;
 
 import javax.ejb.EJBException;
+import javax.net.ssl.SSLSession;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -70,6 +75,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -78,16 +84,22 @@ import java.util.stream.Collectors;
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-final class AssociationImpl implements Association {
+final class AssociationImpl implements Association, AutoCloseable {
 
     private final DeploymentRepository deploymentRepository;
-    private final RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector;
+    private final ClusterTopologyRegistrar clusterTopologyRegistrar;
+    private final Registry<String, List<ClientMapping>> clientMappingRegistry;
     private volatile Executor executor;
 
-    AssociationImpl(final DeploymentRepository deploymentRepository, final RegistryCollector<String, List<ClientMapping>> registryCollector) {
+    AssociationImpl(final DeploymentRepository deploymentRepository, final Registry<String, List<ClientMapping>> clientMappingRegistry) {
         this.deploymentRepository = deploymentRepository;
-        clientMappingRegistryCollector = registryCollector;
-        this.executor = executor;
+        this.clientMappingRegistry = clientMappingRegistry;
+        this.clusterTopologyRegistrar = (clientMappingRegistry != null) ? new ClusterTopologyRegistrar(clientMappingRegistry) : null;
+    }
+
+    @Override
+    public void close() {
+        if (this.clusterTopologyRegistrar != null) this.clusterTopologyRegistrar.close();
     }
 
     @Override
@@ -142,6 +154,7 @@ final class AssociationImpl implements Association {
 
         if (oneWay) {
             // send immediate response
+            updateAffinities(invocationRequest, attachments, ejbLocator, componentView);
             requestContent.writeInvocationResult(null);
         } else if(isAsync) {
             invocationRequest.writeProceedAsync();
@@ -158,10 +171,27 @@ final class AssociationImpl implements Association {
             final Object result;
 
             // the Remoting connection that is set here is only used for legacy purposes
-            SecurityActions.remotingContextSetConnection(invocationRequest.getProviderInterface(Connection.class));
+            Connection remotingConnection = invocationRequest.getProviderInterface(Connection.class);
+            if(remotingConnection != null) {
+                SecurityActions.remotingContextSetConnection(remotingConnection);
+            } else {
+                SecurityActions.remotingContextSetConnection(new RemoteConnection() {
+                    @Override
+                    public SSLSession getSslSession() {
+                        return null;
+                    }
+
+                    @Override
+                    public SecurityIdentity getSecurityIdentity() {
+                        return invocationRequest.getSecurityIdentity();
+                    }
+                });
+            }
 
             try {
-                result = invokeMethod(componentView, invokedMethod, invocationRequest, requestContent, cancellationFlag);
+                final Map<String, Object> contextDataHolder = new HashMap<>();
+                result = invokeMethod(componentView, invokedMethod, invocationRequest, requestContent, cancellationFlag, contextDataHolder);
+                attachments.putAll(contextDataHolder);
             } catch (EJBComponentUnavailableException ex) {
                 // if the EJB is shutting down when the invocation was done, then it's as good as the EJB not being available. The client has to know about this as
                 // a "no such EJB" failure so that it can retry the invocation on a different node if possible.
@@ -194,21 +224,12 @@ final class AssociationImpl implements Association {
                 }
                 invocationRequest.writeException(exceptionToWrite);
                 return;
+            } finally {
+                SecurityActions.remotingContextClear();
             }
             // invocation was successful
             if (! oneWay) try {
-                // attach any weak affinity if available
-                Affinity weakAffinity = null;
-                if (ejbLocator.isStateful() && componentView.getComponent() instanceof StatefulSessionComponent) {
-                    final StatefulSessionComponent statefulSessionComponent = (StatefulSessionComponent) componentView.getComponent();
-                    weakAffinity = getWeakAffinity(statefulSessionComponent, ejbLocator.asStateful());
-                } else if (componentView.getComponent() instanceof StatelessSessionComponent) {
-                    final StatelessSessionComponent statelessSessionComponent = (StatelessSessionComponent) componentView.getComponent();
-                    weakAffinity = statelessSessionComponent.getWeakAffinity();
-                }
-                if (weakAffinity != null && !weakAffinity.equals(Affinity.NONE)) {
-                    attachments.put(Affinity.WEAK_AFFINITY_CONTEXT_KEY, weakAffinity);
-                }
+                updateAffinities(invocationRequest, attachments, ejbLocator, componentView);
                 requestContent.writeInvocationResult(result);
             } catch (Throwable ioe) {
                 EjbLogger.REMOTE_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
@@ -217,6 +238,33 @@ final class AssociationImpl implements Association {
         // invoke the method and write out the response, possibly on a separate thread
         execute(invocationRequest, runnable, isAsync);
         return cancellationFlag::cancel;
+    }
+
+    private void updateAffinities(InvocationRequest invocationRequest, Map<String, Object> attachments, EJBLocator<?> ejbLocator, ComponentView componentView) {
+        Affinity legacyAffinity = null;
+        Affinity weakAffinity = null;
+        Affinity clusterAffinity = getClusterAffinity();
+
+        if (ejbLocator.isStateful() && componentView.getComponent() instanceof StatefulSessionComponent) {
+            final StatefulSessionComponent statefulSessionComponent = (StatefulSessionComponent) componentView.getComponent();
+            weakAffinity = legacyAffinity = getWeakAffinity(statefulSessionComponent, ejbLocator.asStateful());
+        } else if (componentView.getComponent() instanceof StatelessSessionComponent) {
+            // V3 and less used cluster affinity as a weak affinity for SLSBs
+            legacyAffinity = clusterAffinity;
+        }
+
+        // Always use the cluster as the strong affinity, if there is one
+        if (clusterAffinity != null) {
+            invocationRequest.updateStrongAffinity(clusterAffinity);
+        }
+
+        if (weakAffinity != null && !weakAffinity.equals(Affinity.NONE)) {
+            invocationRequest.updateWeakAffinity(weakAffinity);
+        }
+
+        if (legacyAffinity != null && !legacyAffinity.equals(Affinity.NONE)) {
+            attachments.put(Affinity.WEAK_AFFINITY_CONTEXT_KEY, legacyAffinity);
+        }
     }
 
     private void execute(Request request, Runnable task, final boolean isAsync) {
@@ -262,11 +310,33 @@ final class AssociationImpl implements Association {
             final SessionID sessionID;
             try {
                 sessionID = statefulSessionComponent.createSessionRemote();
+            }  catch (EJBComponentUnavailableException ex) {
+                // if the EJB is shutting down when the invocation was done, then it's as good as the EJB not being available. The client has to know about this as
+                // a "no such EJB" failure so that it can retry the invocation on a different node if possible.
+                EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Cannot handle session creation on bean: %s due to EJB component unavailability exception. Returning a no such EJB available message back to client", beanName);
+                sessionOpenRequest.writeNoSuchEJB();
+                return;
+            } catch (ComponentIsStoppedException ex) {
+                EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Cannot handle session creation on bean: %s due to EJB component stopped exception. Returning a no such EJB available message back to client", beanName);
+                sessionOpenRequest.writeNoSuchEJB();
+                return;
+                // TODO should we write a specifc response with a specific protocol letting client know that server is suspending?
             } catch (Exception t) {
                 EjbLogger.REMOTE_LOGGER.exceptionGeneratingSessionId(t, statefulSessionComponent.getComponentName(), ejbIdentifier);
                 sessionOpenRequest.writeException(t);
                 return;
             }
+
+            Affinity clusterAffinity = getClusterAffinity();
+            if (clusterAffinity != null) {
+                sessionOpenRequest.updateStrongAffinity(clusterAffinity);
+            }
+
+            Affinity weakAffinity = getWeakAffinity(statefulSessionComponent, sessionID);
+            if (weakAffinity != null && !Affinity.NONE.equals(weakAffinity)) {
+                sessionOpenRequest.updateWeakAffinity(weakAffinity);
+            }
+
             sessionOpenRequest.convertToStateful(sessionID);
         };
         execute(sessionOpenRequest, runnable, false);
@@ -275,87 +345,47 @@ final class AssociationImpl implements Association {
 
     @Override
     public ListenerHandle registerClusterTopologyListener(@NotNull final ClusterTopologyListener clusterTopologyListener) {
-        RegistryCollector<String, List<ClientMapping>> clientMappingRegistryCollector = this.clientMappingRegistryCollector;
-        final RegistryCollector.Listener<String, List<ClientMapping>> listener = new RegistryCollector.Listener<String, List<ClientMapping>>() {
-            public void registryAdded(final Registry<String, List<ClientMapping>> registry) {
-                final String clusterName = registry.getGroup().getName();
-                registry.addListener(new ClusterTopologyUpdateListener(clusterName, clusterTopologyListener));
-            }
-
-            public void registryRemoved(final Registry<String, List<ClientMapping>> registry) {
-                // Only send the cluster removal message if the cluster node count reaches 0
-                final Map.Entry<String, List<ClientMapping>> localEntry = registry.getEntry(registry.getGroup().getLocalNode());
-                final Map<String, List<ClientMapping>> entries = registry.getEntries();
-                if ((localEntry != null) ? (entries.size() == 1) && entries.containsKey(localEntry.getKey()) : entries.isEmpty()) {
-                    clusterTopologyListener.clusterRemoval(Collections.singletonList(registry.getGroup().getName()));
-                }
-            }
-        };
-        clientMappingRegistryCollector.addListener(listener);
-        // Ensure the cluster topology listener is also added for any registries that have already been added to clientMappingRegistryCollector
-        for (Registry<String, List<ClientMapping>> registry : clientMappingRegistryCollector.getRegistries()) {
-            registry.addListener(new ClusterTopologyUpdateListener(registry.getGroup().getName(), clusterTopologyListener));
-        }
-        clusterTopologyListener.clusterTopology(clientMappingRegistryCollector.getRegistries().parallelStream().map(r -> getClusterInfo(r.getEntries(), r.getGroup().getName())).collect(Collectors.toList()));
-        return () -> clientMappingRegistryCollector.removeListener(listener);
-    }
-
-    ClusterTopologyListener.ClusterInfo getClusterInfo(final Map<String, List<ClientMapping>> added, final String clusterName) {
-        final List<ClusterTopologyListener.NodeInfo> nodeInfoList = new ArrayList<>(added.size());
-        for (Map.Entry<String, List<ClientMapping>> entry : added.entrySet()) {
-            final String nodeName = entry.getKey();
-            final List<ClientMapping> clientMappingList = entry.getValue();
-            final List<ClusterTopologyListener.MappingInfo> mappingInfoList = new ArrayList<>();
-            for (ClientMapping clientMapping : clientMappingList) {
-                mappingInfoList.add(new ClusterTopologyListener.MappingInfo(
-                    clientMapping.getDestinationAddress(),
-                    clientMapping.getDestinationPort(),
-                    clientMapping.getSourceNetworkAddress(),
-                    clientMapping.getSourceNetworkMaskBits())
-                );
-            }
-            nodeInfoList.add(new ClusterTopologyListener.NodeInfo(nodeName, mappingInfoList));
-        }
-        return new ClusterTopologyListener.ClusterInfo(clusterName, nodeInfoList);
+        return (this.clusterTopologyRegistrar != null) ? this.clusterTopologyRegistrar.registerClusterTopologyListener(clusterTopologyListener) : () -> {};
     }
 
     @Override
     public ListenerHandle registerModuleAvailabilityListener(@NotNull final ModuleAvailabilityListener moduleAvailabilityListener) {
         final DeploymentRepositoryListener listener = new DeploymentRepositoryListener() {
+            @Override
             public void listenerAdded(final DeploymentRepository repository) {
-                List<ModuleAvailabilityListener.ModuleIdentifier> identifierList = new ArrayList<>();
-                for (DeploymentModuleIdentifier identifier : repository.getModules().keySet()) {
-                    final ModuleAvailabilityListener.ModuleIdentifier moduleIdentifier = toModuleIdentifier(identifier);
-                    identifierList.add(moduleIdentifier);
-                }
-                moduleAvailabilityListener.moduleAvailable(identifierList);
+                moduleAvailabilityListener.moduleAvailable(repository.getModules().keySet().stream().map(AssociationImpl::toModuleIdentifier).collect(Collectors.toList()));
             }
 
-            private ModuleAvailabilityListener.ModuleIdentifier toModuleIdentifier(final DeploymentModuleIdentifier identifier) {
-                return new ModuleAvailabilityListener.ModuleIdentifier(identifier.getApplicationName(), identifier.getModuleName(), identifier.getDistinctName());
-            }
-
+            @Override
             public void deploymentAvailable(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
                 moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
 
+            @Override
             public void deploymentStarted(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
             }
 
+            @Override
             public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
                 moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
 
-            @Override public void deploymentSuspended(DeploymentModuleIdentifier deployment) {
+            @Override
+            public void deploymentSuspended(DeploymentModuleIdentifier deployment) {
                 moduleAvailabilityListener.moduleUnavailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
 
-            @Override public void deploymentResumed(DeploymentModuleIdentifier deployment) {
+            @Override
+            public void deploymentResumed(DeploymentModuleIdentifier deployment) {
                 moduleAvailabilityListener.moduleAvailable(Collections.singletonList(toModuleIdentifier(deployment)));
             }
         };
         deploymentRepository.addListener(listener);
         return () -> deploymentRepository.removeListener(listener);
+    }
+
+    static EJBModuleIdentifier toModuleIdentifier(final DeploymentModuleIdentifier identifier) {
+        return new EJBModuleIdentifier(identifier.getApplicationName(), identifier.getModuleName(), identifier.getDistinctName());
     }
 
     private EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {
@@ -371,31 +401,78 @@ final class AssociationImpl implements Association {
         return moduleDeployment.getEjbs().get(beanName);
     }
 
-    private class ClusterTopologyUpdateListener implements Registry.Listener<String, List<ClientMapping>> {
-        private final String clusterName;
-        private final ClusterTopologyListener delegate;
+    private class ClusterTopologyRegistrar implements Registry.Listener<String, List<ClientMapping>> {
+        private final Set<ClusterTopologyListener> clusterTopologyListeners = ConcurrentHashMap.newKeySet();
+        private final Registry<String, List<ClientMapping>> clientMappingRegistry;
 
-        ClusterTopologyUpdateListener(final String clusterName, final ClusterTopologyListener delegate) {
-            this.clusterName = clusterName;
-            this.delegate = delegate;
+        ClusterTopologyRegistrar(Registry<String, List<ClientMapping>> clientMappingRegistry) {
+            this.clientMappingRegistry = clientMappingRegistry;
+            this.clientMappingRegistry.addListener(this);
         }
 
-        public void addedEntries(final Map<String, List<ClientMapping>> added) {
-            delegate.clusterNewNodesAdded(getClusterInfo(added, clusterName));
+        @Override
+        public void addedEntries(Map<String, List<ClientMapping>> added) {
+            ClusterTopologyListener.ClusterInfo info = getClusterInfo(added);
+            this.clusterTopologyListeners.forEach(listener -> {
+                // Synchronize each listener to ensure that the initial topology was set before processing new entries
+                synchronized (listener) {
+                    listener.clusterNewNodesAdded(info);
+                }
+            });
         }
 
-        public void updatedEntries(final Map<String, List<ClientMapping>> updated) {
-            delegate.clusterNewNodesAdded(getClusterInfo(updated, clusterName));
+        @Override
+        public void updatedEntries(Map<String, List<ClientMapping>> updated) {
+            this.addedEntries(updated);
         }
 
-        public void removedEntries(final Map<String, List<ClientMapping>> removed) {
-            final ArrayList<ClusterTopologyListener.ClusterRemovalInfo> list = new ArrayList<>();
-            list.add(new ClusterTopologyListener.ClusterRemovalInfo(clusterName, new ArrayList<>(removed.keySet())));
-            delegate.clusterNodesRemoved(list);
+        @Override
+        public void removedEntries(Map<String, List<ClientMapping>> removed) {
+            List<ClusterTopologyListener.ClusterRemovalInfo> removals = Collections.singletonList(new ClusterTopologyListener.ClusterRemovalInfo(this.clientMappingRegistry.getGroup().getName(), new ArrayList<>(removed.keySet())));
+            this.clusterTopologyListeners.forEach(listener -> {
+                // Synchronize each listener to ensure that the initial topology was set before processing removed entries
+                synchronized (listener) {
+                    listener.clusterNodesRemoved(removals);
+                }
+            });
+        }
+
+        ListenerHandle registerClusterTopologyListener(ClusterTopologyListener listener) {
+            // Synchronize on the listener to ensure that the initial topology is set before processing any changes from the registry listener
+            synchronized (listener) {
+                this.clusterTopologyListeners.add(listener);
+                listener.clusterTopology(!this.clientMappingRegistry.getGroup().isLocal() ? Collections.singletonList(getClusterInfo(this.clientMappingRegistry.getEntries())) : Collections.emptyList());
+            }
+            return () -> this.clusterTopologyListeners.remove(listener);
+        }
+
+        void close() {
+            this.clientMappingRegistry.removeListener(this);
+            this.clusterTopologyListeners.clear();
+        }
+
+        private ClusterTopologyListener.ClusterInfo getClusterInfo(final Map<String, List<ClientMapping>> entries) {
+            final List<ClusterTopologyListener.NodeInfo> nodeInfoList = new ArrayList<>(entries.size());
+            for (Map.Entry<String, List<ClientMapping>> entry : entries.entrySet()) {
+                final String nodeName = entry.getKey();
+                final List<ClientMapping> clientMappingList = entry.getValue();
+                final List<ClusterTopologyListener.MappingInfo> mappingInfoList = new ArrayList<>(clientMappingList.size());
+                for (ClientMapping clientMapping : clientMappingList) {
+                    mappingInfoList.add(new ClusterTopologyListener.MappingInfo(
+                        clientMapping.getDestinationAddress(),
+                        clientMapping.getDestinationPort(),
+                        clientMapping.getSourceNetworkAddress(),
+                        clientMapping.getSourceNetworkMaskBits())
+                    );
+                }
+                nodeInfoList.add(new ClusterTopologyListener.NodeInfo(nodeName, mappingInfoList));
+            }
+            return new ClusterTopologyListener.ClusterInfo(this.clientMappingRegistry.getGroup().getName(), nodeInfoList);
         }
     }
 
-    static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag) throws Exception {
+
+    static Object invokeMethod(final ComponentView componentView, final Method method, final InvocationRequest incomingInvocation, final InvocationRequest.Resolved content, final CancellationFlag cancellationFlag, Map<String, Object> contextDataHolder) throws Exception {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(content.getParameters());
         interceptorContext.setMethod(method);
@@ -442,6 +519,7 @@ final class AssociationImpl implements Association {
         final boolean isAsync = componentView.isAsynchronous(method);
         final boolean oneWay = isAsync && method.getReturnType() == void.class;
         final boolean isSessionBean = componentView.getComponent() instanceof SessionBeanComponent;
+        contextDataHolder.putAll(interceptorContext.getContextData());
         if (isAsync && isSessionBean) {
             if (! oneWay) {
                 interceptorContext.putPrivateData(CancellationFlag.class, cancellationFlag);
@@ -482,7 +560,18 @@ final class AssociationImpl implements Association {
 
     private static Affinity getWeakAffinity(final StatefulSessionComponent statefulSessionComponent, final StatefulEJBLocator<?> statefulEJBLocator) {
         final SessionID sessionID = statefulEJBLocator.getSessionId();
+        return getWeakAffinity(statefulSessionComponent, sessionID);
+    }
+
+    private static Affinity getWeakAffinity(final StatefulSessionComponent statefulSessionComponent, final SessionID sessionID) {
         return statefulSessionComponent.getCache().getWeakAffinity(sessionID);
+    }
+
+    private Affinity getClusterAffinity() {
+        Registry<String, List<ClientMapping>> registry = this.clientMappingRegistry;
+        Group group = registry != null ? registry.getGroup() : null;
+
+        return group != null && !group.isLocal() ? new ClusterAffinity(group.getName()) : null;
     }
 
     Executor getExecutor() {

@@ -242,7 +242,8 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        if (webdata.getServletMappings() == null || webdata.getServletMappings().isEmpty()) {
+        // suppress warning for EAR deployments, as we can't easily tell here the app is properly declared
+        if (deploymentUnit.getParent() == null && (webdata.getServletMappings() == null || webdata.getServletMappings().isEmpty())) {
             JAXRS_LOGGER.noServletDeclaration(deploymentUnit.getName());
         }
     }

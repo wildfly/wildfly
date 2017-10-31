@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.List;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
@@ -32,7 +32,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
@@ -42,10 +41,7 @@ import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Adds the timer service file based data store
@@ -64,8 +60,7 @@ public class FileDataStoreAdd extends AbstractAddStepHandler {
     }
 
 
-    protected void performRuntime(final OperationContext context, ModelNode operation, final ModelNode model,
-                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
 
         final ModelNode pathNode = FileDataStoreResourceDefinition.PATH.resolveModelAttribute(context, model);
         final String path = pathNode.isDefined() ? pathNode.asString() : null;
@@ -76,12 +71,12 @@ public class FileDataStoreAdd extends AbstractAddStepHandler {
         final FileTimerPersistence fileTimerPersistence = new FileTimerPersistence(true, path, relativeTo);
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final ServiceName serviceName = TimerPersistence.SERVICE_NAME.append(address.getLastElement().getValue());
-        newControllers.add(context.getServiceTarget().addService(serviceName, fileTimerPersistence)
+        context.getServiceTarget().addService(serviceName, fileTimerPersistence)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, fileTimerPersistence.getModuleLoader())
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, fileTimerPersistence.getPathManager())
                 .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, fileTimerPersistence.getTransactionManager())
                 .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class, fileTimerPersistence.getTransactionSynchronizationRegistry())
-                .install());
+                .install();
 
     }
 

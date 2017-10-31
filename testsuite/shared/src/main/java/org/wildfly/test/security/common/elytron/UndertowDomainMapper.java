@@ -67,7 +67,7 @@ public class UndertowDomainMapper  extends AbstractConfigurableElement implement
                         + "  mechanism-configurations=["
                         + "    {mechanism-name=DIGEST,mechanism-realm-configurations=[{realm-name=%1$s}]},"
                         + "    {mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=%1$s}]},"
-                        + "    {mechanism-name=FORM]}])", name));
+                        + "    {mechanism-name=FORM}])", name));
 
         if (applicationDomains.isEmpty()) {
             // /subsystem=undertow/application-security-domain=test:add(http-authentication-factory=test)

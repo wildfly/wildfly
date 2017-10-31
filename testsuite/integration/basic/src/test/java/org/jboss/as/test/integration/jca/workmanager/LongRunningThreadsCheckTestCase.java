@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import javax.annotation.Resource;
 
@@ -36,14 +37,17 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.services.workmanager.NamedWorkManager;
+import org.jboss.as.connector.services.workmanager.StatisticsExecutorImpl;
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
 import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
+import org.jboss.as.test.integration.jca.JcaTestsUtil;
 import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
 import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.jca.rar.MultipleResourceAdapter3;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -52,9 +56,10 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.lang.reflect.ReflectPermission;
 
 /**
  * JBQA-6454 Test case: long running threads pool and short running threads pool
@@ -65,17 +70,22 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(LongRunningThreadsCheckTestCase.TestCaseSetup.class)
-@Ignore("causing an osgi error during server reload")
 public class LongRunningThreadsCheckTestCase extends JcaMgmtBase {
 
     public static String ctx = "customContext";
     public static String wm = "customWM";
 
     static class TestCaseSetup extends JcaMgmtServerSetupTask {
+        private boolean enabled;
+        private boolean failingOnError;
+        private boolean failingOnWarning;
 
         @Override
         public void doSetup(final ManagementClient managementClient) throws Exception {
-
+            enabled = getArchiveValidationAttribute("enabled");
+            failingOnError = getArchiveValidationAttribute("fail-on-error");
+            failingOnWarning = getArchiveValidationAttribute("fail-on-warn");
+            setArchiveValidation(false, false, false);
             for (int i = 1; i <= 2; i++) {
                 ModelNode wmAddress = subsystemAddress.clone().add("workmanager", wm + i);
                 ModelNode bsAddress = subsystemAddress.clone().add("bootstrap-context", ctx + i);
@@ -115,7 +125,6 @@ public class LongRunningThreadsCheckTestCase extends JcaMgmtBase {
                     executeOperation(operation);
 
                 } catch (Exception e) {
-
                     throw new Exception(e.getMessage() + operation, e);
                 }
             }
@@ -129,10 +138,9 @@ public class LongRunningThreadsCheckTestCase extends JcaMgmtBase {
                 remove(wmAddress);
                 remove(bsAddress);
             }
+            setArchiveValidation(enabled, failingOnError, failingOnWarning);
             reload();
-
         }
-
     }
 
     /**
@@ -146,29 +154,29 @@ public class LongRunningThreadsCheckTestCase extends JcaMgmtBase {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "wm.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).addClasses(LongRunningThreadsCheckTestCase.class,
                 MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class, JcaMgmtServerSetupTask.class,
-                JcaMgmtBase.class);
+                JcaMgmtBase.class, JcaTestsUtil.class);
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
+        ja.addAsManifestResource(new StringAsset("Dependencies: org.jboss.dmr, " +
+                        "org.jboss.as.controller-client, org.jboss.as.cli, " +
+                        "org.jboss.as.connector, org.jboss.threads"),
+                "MANIFEST.MF");
 
         ResourceAdapterArchive ra1 = ShrinkWrap.create(ResourceAdapterArchive.class, "wm1.rar");
         ra1.addAsManifestResource(LongRunningThreadsCheckTestCase.class.getPackage(), "ra.xml", "ra.xml")
                 .addAsManifestResource(LongRunningThreadsCheckTestCase.class.getPackage(), "ironjacamar1.xml",
-                        "ironjacamar.xml")
-                .addAsManifestResource(
-                        new StringAsset(
-                                "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,org.jboss.as.connector \n"),
-                        "MANIFEST.MF");
+                        "ironjacamar.xml");
 
         ResourceAdapterArchive ra2 = ShrinkWrap.create(ResourceAdapterArchive.class, "wm2.rar");
         ra2.addAsManifestResource(LongRunningThreadsCheckTestCase.class.getPackage(), "ra.xml", "ra.xml")
                 .addAsManifestResource(LongRunningThreadsCheckTestCase.class.getPackage(), "ironjacamar2.xml",
-                        "ironjacamar.xml")
-                .addAsManifestResource(
-                        new StringAsset(
-                                "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,org.jboss.as.connector \n"),
-                        "MANIFEST.MF");
+                        "ironjacamar.xml");
 
         EnterpriseArchive ea = ShrinkWrap.create(EnterpriseArchive.class, "wm.ear");
         ea.addAsLibrary(ja).addAsModule(ra1).addAsModule(ra2);
+        ea.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                new RuntimePermission("accessDeclaredMembers"),
+                new ReflectPermission("suppressAccessChecks")
+        ), "permissions.xml");
 
         return ea;
     }
@@ -194,7 +202,10 @@ public class LongRunningThreadsCheckTestCase extends JcaMgmtBase {
         assertNotNull(adapter);
         NamedWorkManager manager = adapter.getWorkManager();
         assertEquals(wm + 1, manager.getName());
-        assertEquals(manager.getShortRunningThreadPool(), manager.getLongRunningThreadPool());
+        assertTrue(manager.getShortRunningThreadPool() instanceof StatisticsExecutorImpl);
+        assertTrue(manager.getLongRunningThreadPool() instanceof StatisticsExecutorImpl);
+        assertEquals(JcaTestsUtil.extractBlockingExecutor((StatisticsExecutorImpl) manager.getShortRunningThreadPool()),
+                JcaTestsUtil.extractBlockingExecutor((StatisticsExecutorImpl) manager.getLongRunningThreadPool()));
     }
 
     /**
@@ -204,7 +215,6 @@ public class LongRunningThreadsCheckTestCase extends JcaMgmtBase {
      */
     @Test
     public void testWmWithLongRunningThreads() throws Throwable {
-
         assertNotNull("A2 not found", adminObject2);
 
         MultipleAdminObject1Impl impl = (MultipleAdminObject1Impl) adminObject2;

@@ -489,7 +489,7 @@ class LegacySupport {
             return new LegacySupportListAttributeBuilder(attributeName)
                     .setXmlName(xmlName)
                     .setElementValidator(elementValidator)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setMinSize(1)
                     .setMaxSize(Integer.MAX_VALUE)
                     .setDeprecated(ModelVersion.create(1, 2))

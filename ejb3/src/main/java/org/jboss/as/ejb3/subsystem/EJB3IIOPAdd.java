@@ -23,18 +23,14 @@ package org.jboss.as.ejb3.subsystem;
 
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ejb3.deployment.processors.EjbIIOPDeploymentUnitProcessor;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * A {@link org.jboss.as.controller.AbstractBoottimeAddStepHandler} to handle the add operation for the EJB
@@ -50,7 +46,7 @@ public class EJB3IIOPAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         final Boolean enableByDefault = EJB3IIOPResourceDefinition.ENABLE_BY_DEFAULT.resolveModelAttribute(context, model).asBoolean();
         final Boolean useQualifiedName = EJB3IIOPResourceDefinition.USE_QUALIFIED_NAME.resolveModelAttribute(context, model).asBoolean();
         final IIOPSettingsService settingsService = new IIOPSettingsService(enableByDefault, useQualifiedName);
@@ -61,7 +57,7 @@ public class EJB3IIOPAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        newControllers.add(context.getServiceTarget().addService(IIOPSettingsService.SERVICE_NAME, settingsService).install());
+        context.getServiceTarget().addService(IIOPSettingsService.SERVICE_NAME, settingsService).install();
     }
 
 

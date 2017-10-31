@@ -51,15 +51,15 @@ public interface AppClientLogger extends BasicLogger {
      */
     AppClientLogger ROOT_LOGGER = Logger.getMessageLogger(AppClientLogger.class, "org.jboss.as.appclient");
 
-    /**
-     * Logs a generic error message using the {@link Throwable#toString() t.toString()} for the error message.
-     *
-     * @param cause the cause of the error.
-     * @param t     the cause to use for the log message.
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 1, value = "%s")
-    void caughtException(@Cause Throwable cause, Throwable t);
+//    /**
+//     * Logs a generic error message using the {@link Throwable#toString() t.toString()} for the error message.
+//     *
+//     * @param cause the cause of the error.
+//     * @param t     the cause to use for the log message.
+//     */
+//    @LogMessage(level = ERROR)
+//    @Message(id = 1, value = "%s")
+//    void caughtException(@Cause Throwable cause, Throwable t);
 
     /**
      * Logs an error message indicating there was an error running the app client.
@@ -72,13 +72,13 @@ public interface AppClientLogger extends BasicLogger {
     void exceptionRunningAppClient(@Cause Throwable cause, String exceptionName);
 
 
-    /**
-     *
-     * @param cause         the cause of the error.
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 3, value = "Error closing connection")
-    void exceptionClosingConnection(@Cause Throwable cause);
+//    /**
+//     *
+//     * @param cause         the cause of the error.
+//     */
+//    @LogMessage(level = ERROR)
+//    @Message(id = 3, value = "Error closing connection")
+//    void exceptionClosingConnection(@Cause Throwable cause);
 
     @Message(id = Message.NONE, value = "Name of the app client configuration file to use (default is \"appclient.xml\")")
     String argAppClientConfig();
@@ -125,13 +125,13 @@ public interface AppClientLogger extends BasicLogger {
     @Message(id = Message.NONE, value = "Set a system property")
     String argSystemProperty();
 
-    /**
-     * Instructions for the usage of the command line arguments instructions.
-     *
-     * @return the instructions.
-     */
-    @Message(id = Message.NONE, value = "Usage: ./appclient.sh [args...] myear.ear#appClient.jar [client args...]%n%nwhere args include:%n")
-    String argUsage();
+//    /**
+//     * Instructions for the usage of the command line arguments instructions.
+//     *
+//     * @return the instructions.
+//     */
+//    @Message(id = Message.NONE, value = "Usage: ./appclient.sh [args...] myear.ear#appClient.jar [client args...]%n%nwhere args include:%n")
+//    String argUsage();
 
     /**
      * Instructions for {@link org.jboss.as.process.CommandLineConstants#VERSION} command line argument.
@@ -204,15 +204,15 @@ public interface AppClientLogger extends BasicLogger {
     @Message(id = 8, value = "Could not load application client main class")
     RuntimeException cannotLoadAppClientMainClass(@Cause Throwable cause);
 
-    /**
-     * Creates an exception indicating the component class could not be loaded.
-     *
-     * @param cause the cause of the error.
-     *
-     * @return a {@link DeploymentUnitProcessingException} for the error.
-     */
-    @Message(id = 9, value = "Could not load component class")
-    DeploymentUnitProcessingException cannotLoadComponentClass(@Cause Throwable cause);
+//    /**
+//     * Creates an exception indicating the component class could not be loaded.
+//     *
+//     * @param cause the cause of the error.
+//     *
+//     * @return a {@link DeploymentUnitProcessingException} for the error.
+//     */
+//    @Message(id = 9, value = "Could not load component class")
+//    DeploymentUnitProcessingException cannotLoadComponentClass(@Cause Throwable cause);
 
     /**
      * A message indicating the properties could not be loaded from the URL.
@@ -255,18 +255,18 @@ public interface AppClientLogger extends BasicLogger {
     @Message(id = 13, value = "Duplicate subsystem declaration")
     XMLStreamException duplicateSubsystemDeclaration(@Param Location location);
 
-    /**
-     * Creates an exception indicating the element, represented by the {@code elementName} parameter, has already been
-     * declared.
-     *
-     * @param elementName the element name.
-     * @param value       the value.
-     * @param location    the location used in the constructor of the exception.
-     *
-     * @return a {@link XMLStreamException} for the error.
-     */
-    @Message(id = 14, value = "%s %s already declared")
-    XMLStreamException elementAlreadyDeclared(String elementName, Object value, @Param Location location);
+//    /**
+//     * Creates an exception indicating the element, represented by the {@code elementName} parameter, has already been
+//     * declared.
+//     *
+//     * @param elementName the element name.
+//     * @param value       the value.
+//     * @param location    the location used in the constructor of the exception.
+//     *
+//     * @return a {@link XMLStreamException} for the error.
+//     */
+//    @Message(id = 14, value = "%s %s already declared")
+//    XMLStreamException elementAlreadyDeclared(String elementName, Object value, @Param Location location);
 
     /**
      * Creates an exception indicating a failure to parse the xml file represented by the {@code appXml} parameter.
@@ -310,15 +310,15 @@ public interface AppClientLogger extends BasicLogger {
     @Message(id = 18, value = "More than one application client found and no app client name specified")
     RuntimeException multipleAppClientsFound();
 
-    /**
-     * Creates an exception indicating the model contains multiple nodes represented by the {@code nodeName} parameter.
-     *
-     * @param nodeName the name of the node.
-     *
-     * @return an {@link IllegalStateException} for the error.
-     */
-    @Message(id = 19, value = "Model contains multiple %s nodes")
-    IllegalStateException multipleNodesFound(String nodeName);
+//    /**
+//     * Creates an exception indicating the model contains multiple nodes represented by the {@code nodeName} parameter.
+//     *
+//     * @param nodeName the name of the node.
+//     *
+//     * @return an {@link IllegalStateException} for the error.
+//     */
+//    @Message(id = 19, value = "Model contains multiple %s nodes")
+//    IllegalStateException multipleNodesFound(String nodeName);
 
     /**
      * A message indicating a known option.
@@ -352,16 +352,16 @@ public interface AppClientLogger extends BasicLogger {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 23, value = "Could find application client %s")
+    @Message(id = 23, value = "Could not find application client %s")
     RuntimeException cannotFindAppClientFile(File deploymentName);
 
     @Message(id = 24, value = "Cannot specify both a host to connect to and an ejb-client.properties file. ")
     RuntimeException cannotSpecifyBothHostAndPropertiesFile();
 
-    /**
-     * The ejb-client.properties could not be loaded
-     */
-    @Message(id = 25, value = "Unable to load ejb-client.properties URL: %s ")
-    DeploymentUnitProcessingException exceptionLoadingEjbClientPropertiesURL(final String file, @Cause Throwable cause);
+//    /**
+//     * The ejb-client.properties could not be loaded
+//     */
+//    @Message(id = 25, value = "Unable to load ejb-client.properties URL: %s ")
+//    DeploymentUnitProcessingException exceptionLoadingEjbClientPropertiesURL(final String file, @Cause Throwable cause);
 
 }

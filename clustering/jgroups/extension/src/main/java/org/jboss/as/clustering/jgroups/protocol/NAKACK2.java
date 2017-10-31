@@ -32,7 +32,9 @@ public class NAKACK2 extends org.jgroups.protocols.pbcast.NAKACK2 implements Mul
 
     @Override
     public void setMulticast(boolean enabled) {
-        this.use_mcast_xmit = enabled;
-        this.use_mcast_xmit_req = enabled;
+        if (!enabled) {
+            this.use_mcast_xmit = false;
+            this.use_mcast_xmit_req = false;
+        }
     }
 }

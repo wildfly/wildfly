@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
@@ -93,17 +94,19 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
                     context.addStep(operation, this, OperationContext.Stage.MODEL);
                     return;
                 }
-            } else {
-                Optional<PathElement> singletonPathResult = parentDescriptor.getRequiredSingletonChildren().stream().filter((PathElement requiredPath) -> requiredPath.getKey().equals(path.getKey()) && !requiredPath.getValue().equals(path.getValue())).findFirst();
-                if (singletonPathResult.isPresent()) {
-                    PathElement singletonPath = singletonPathResult.get();
-                    if (context.readResourceFromRoot(parentAddress, false).hasChild(singletonPath)) {
-                        // If there is a required singleton sibling resource, we need to remove it first
-                        PathAddress singletonAddress = parentAddress.append(singletonPath);
+            }
+            Optional<PathElement> singletonPathResult = parentDescriptor.getRequiredSingletonChildren().stream().filter(requiredPath -> requiredPath.getKey().equals(path.getKey())).findFirst();
+            if (singletonPathResult.isPresent()) {
+                PathElement singletonPath = singletonPathResult.get();
+                Set<String> childrenNames = context.readResourceFromRoot(parentAddress, false).getChildrenNames(singletonPath.getKey());
+                if (!childrenNames.isEmpty()) {
+                    // If there is a required singleton sibling resource, we need to remove it first
+                    childrenNames.forEach(childName -> {
+                        PathAddress singletonAddress = parentAddress.append(singletonPath.getKey(), childName);
                         context.addStep(Util.createRemoveOperation(singletonAddress), context.getRootResourceRegistration().getOperationHandler(singletonAddress, ModelDescriptionConstants.REMOVE), OperationContext.Stage.MODEL);
-                        context.addStep(operation, this, OperationContext.Stage.MODEL);
-                        return;
-                    }
+                    });
+                    context.addStep(operation, this, OperationContext.Stage.MODEL);
+                    return;
                 }
             }
         }
@@ -111,16 +114,12 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         super.execute(context, operation);
 
         if (this.requiresRuntime(context)) {
-            this.descriptor.getRuntimeResourceRegistrations().forEach(registration -> context.addStep(registration, OperationContext.Stage.MODEL));
+            this.descriptor.getRuntimeResourceRegistrations().forEach(r -> context.addStep((c, op) -> r.register(c), OperationContext.Stage.MODEL));
         }
     }
 
     @Override
     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        // Perform operation translation
-        for (OperationStepHandler translator : this.descriptor.getOperationTranslators()) {
-            translator.execute(context, operation);
-        }
         // Validate extra add operation parameters
         for (AttributeDefinition definition : this.descriptor.getExtraParameters()) {
             definition.validateOperation(operation);
@@ -202,6 +201,6 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         parameters = Stream.concat(parameters, this.descriptor.getExtraParameters().stream());
         parameters = Stream.concat(parameters, this.descriptor.getAttributeTranslations().keySet().stream());
         parameters.forEach(attribute -> builder.addParameter(attribute));
-        registration.registerOperationHandler(builder.build(), this);
+        registration.registerOperationHandler(builder.build(), this.descriptor.getAddOperationTransformation().apply(this));
     }
 }

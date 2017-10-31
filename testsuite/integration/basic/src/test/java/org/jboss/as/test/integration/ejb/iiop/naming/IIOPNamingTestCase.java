@@ -1,9 +1,5 @@
 package org.jboss.as.test.integration.ejb.iiop.naming;
 
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assume.assumeThat;
-import static org.junit.matchers.JUnitMatchers.containsString;
-
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.util.Properties;
@@ -23,7 +19,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -91,8 +86,6 @@ public class IIOPNamingTestCase {
 
     @Test
     public void testIIOPNamingCorbanameInvocation() throws NamingException, RemoteException {
-        // AS7-2593: test hangs on OpenJDK
-        assumeThat(property("java.runtime.name"), not(containsString("OpenJDK")));
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
         prope.put(Context.PROVIDER_URL, "corbaloc::" + managementClient.getMgmtAddress() +":3528");
@@ -124,7 +117,6 @@ public class IIOPNamingTestCase {
     }
 
     @Test
-    @Ignore("Cosnaming does not support iiop:// in OpenJDK")
     public void testIIOPNamingIIOPInvocation() throws NamingException, RemoteException {
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
@@ -137,7 +129,6 @@ public class IIOPNamingTestCase {
     }
 
     @Test
-    @Ignore("Cosnaming does not support iiop:// in OpenJDK")
     public void testStatefulIIOPNamingIIOPInvocation() throws NamingException, RemoteException, RemoveException {
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
@@ -190,8 +181,6 @@ public class IIOPNamingTestCase {
      */
     @Test
     public void testCorbanameInvocationWithDDOverride() throws NamingException, RemoteException {
-        // AS7-2593: test hangs on OpenJDK
-        assumeThat(property("java.runtime.name"), not(containsString("OpenJDK")));
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
         prope.put(Context.PROVIDER_URL, "corbaloc::" + managementClient.getMgmtAddress() +":3528");
@@ -213,7 +202,6 @@ public class IIOPNamingTestCase {
      * @throws RemoteException if an error occurs while invoking the remote bean.
      */
     @Test
-    @Ignore("Cosnaming does not support iiop:// in OpenJDK")
     public void testIIOPInvocationWithDDOverride() throws NamingException, RemoteException {
         final Properties prope = new Properties();
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");

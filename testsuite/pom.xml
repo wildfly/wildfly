@@ -55,7 +55,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>11.0.0.Beta1-SNAPSHOT</version>
+        <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite</artifactId>
@@ -124,10 +124,6 @@
         <!-- Additional JVM args, like those for EC2. -->
         <jvm.args.other>-server</jvm.args.other>
 
-
-        <!-- JaCoCo - Code coverage (-Dcoverage). -->
-        <jvm.args.jacoco></jvm.args.jacoco>
-
         <!-- Logging config -->
         <testLogToFile>true</testLogToFile>
 
@@ -153,7 +149,7 @@
         <surefire.jpda.args></surefire.jpda.args>
         <as.debug.port>8787</as.debug.port>
         <modular.jdk.testsuite.args />
-        <surefire.system.args>${modular.jdk.testsuite.args} -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
+        <surefire.system.args>${modular.jdk.testsuite.args} -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist} ${surefire.jacoco.args}</surefire.system.args>
 
         <!-- If servers should be killed before the test suite is run-->
         <org.wildfly.test.kill-servers-before-test>false</org.wildfly.test.kill-servers-before-test>
@@ -927,235 +923,6 @@
             </build>
         </profile>
 
-
-        <!-- JaCoCo test coverage. Will set ${jvm.args.jacoco} to be used in Arquillian config. -->
-        <profile>
-            <id>ts.jacoco.profile</id>
-            <activation><property><name>coverage</name></property></activation>
-            <properties>
-                <jvm.args.jacoco>-javaagent:${jbossas.ts.dir}/target/jacoco-jars/agent/jacocoagent.jar=destfile=${basedir}/target/jacoco.exec,includes=*,excludes=org.jboss.as.test.*,append=true,output=file</jvm.args.jacoco>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.jacoco</groupId>
-                        <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>${version.jacoco.plugin}</version>
-                        <executions>
-                            <execution><id>ts.jacoco-prepare</id>
-                                <phase>process-test-classes</phase>
-                                <goals><goal>prepare-agent</goal></goals>
-                                <configuration>
-                                    <append>true</append>
-                                    <destFile>target/jacoco.exec</destFile>
-                                    <includes>
-                                        <include>*</include>
-                                    </includes>
-                                    <excludes>
-                                        <exclude>org.jboss.as.test.*</exclude>
-                                    </excludes>
-                                    <output>file</output>
-                                    <propertyName>jvm.args.jacoco</propertyName>
-                                </configuration>
-                            </execution>
-                            <!-- Doesn't work currently - waiting for JaCoCo to fix this. Moved to the Ant plugin execution. -->
-                            <execution><id>ts.jacoco.report</id>
-                                <phase>none</phase> <!-- post-integration-test -->
-                                <goals><goal>report</goal></goals>
-                                <configuration>
-                                    <dataFile>target/jacoco.exec</dataFile>
-                                    <outputDirectory>target/coverageReport</outputDirectory>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Copy JaCoCo jars to have them for the Ant plugin. -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <executions>
-                            <!-- Copy the ant tasks jar. Needed for ts.jacoco.report-ant . -->
-                            <execution> <id>ts.jacoco.dep.ant</id> <goals><goal>copy</goal></goals> <phase>process-test-resources</phase> <inherited>false</inherited>
-                                <configuration>
-                                    <artifactItems>
-                                        <artifactItem><groupId>org.jacoco</groupId><artifactId>org.jacoco.ant</artifactId><version>${version.jacoco.plugin}</version></artifactItem>
-                                    </artifactItems>
-                                    <stripVersion>true</stripVersion>
-                                    <outputDirectory>${basedir}/target/jacoco-jars</outputDirectory>
-                                </configuration>
-                            </execution>
-                            <!-- Copy the agent jar. Needed for ${jvm.args.jacoco} to have this jar on known path.
-                                 If the ts.jacoco-prepare worked and really put the value into the property, this might go away. -->
-                            <execution> <id>ts.jacoco.dep.agent</id> <goals><goal>unpack</goal></goals> <phase>process-test-resources</phase> <inherited>false</inherited>
-                                <configuration>
-                                    <artifactItems>
-                                        <artifactItem><groupId>org.jacoco</groupId><artifactId>org.jacoco.agent</artifactId><version>${version.jacoco.plugin}</version></artifactItem>
-                                    </artifactItems>
-                                    <stripVersion>true</stripVersion>
-                                    <outputDirectory>${basedir}/target/jacoco-jars/agent</outputDirectory>
-                                </configuration>
-                            </execution>
-
-                        </executions>
-                    </plugin>
-                    <!-- Ant plugin. -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <!-- DEBUG -->
-                            <execution>
-                                <id>ts.jacoco.debug</id>
-                                <phase>post-integration-test</phase>
-                                <goals><goal>run</goal></goals>
-                                <inherited>false</inherited>
-                                <configuration>
-                                    <target>
-                                        <echo>Jacoco argline: ${jvm.args.jacoco}</echo>
-                                        <echo>Jacoco jar: ${basedir}/target/jacoco-jars/org.jacoco.ant.jar</echo>
-                                    </target>
-                                </configuration>
-                            </execution>
-                            <!-- Must be run using Ant due to https://sourceforge.net/tracker/?func=detail&aid=3474708&group_id=177969&atid=883354 -->
-                            <execution>
-                                <id>ts.jacoco.report-ant</id>
-                                <phase>site</phase> <!-- post-integration-test -->
-                                <goals><goal>run</goal></goals>
-                                <inherited>false</inherited>
-                                <configuration>
-                                    <target>
-                                        <taskdef name="report" classname="org.jacoco.ant.ReportTask">
-                                            <classpath path="${basedir}/target/jacoco-jars/org.jacoco.ant.jar"/>
-                                        </taskdef>
-                                        <!--
-                                        <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml" classpathref="maven.plugin.classpath">
-                                            <classpath path="${basedir}/target/jacoco-jars/org.jacoco.ant.jar"/>
-                                        </taskdef>
-                                        -->
-                                        <echo>Creating JaCoCo test coverage reports...</echo>
-                                        <mkdir dir="${basedir}/target/coverage-report"/>
-                                        <report>
-                                            <executiondata>
-                                                <fileset dir="${basedir}">
-                                                    <include name="**/target/jacoco.exec"/>
-                                                </fileset>
-                                            </executiondata>
-                                            <structure name="AS 7 project">
-                                                <classfiles>
-                                                    <fileset dir="${jboss.dist}/modules">
-                                                        <include name="**/*.jar"/>
-                                                        <!-- Excludes solve "Can't add different class with same name: ..." -->
-                                                        <!-- We have 2.x in main. -->
-                                                        <exclude name="com/sun/jsf-impl/1.*/**/*"/>
-                                                        <!--  Wildfly-3383 - com/sun/codemodel vs. /1.0/com/sun/codemodel -->
-                                                        <exclude name="com/sun/xml/**/*"/>
-                                                        <exclude name="javax/faces/api/1.2/**/*"/>
-                                                        <!-- Wildfly-3390 -->
-                                                        <exclude name="org/apache/commons/beanutils/**/*"/>
-                                                        <!-- Wildfly-3389 -->
-                                                    </fileset>
-                                                </classfiles>
-                                                <sourcefiles encoding="UTF-8">
-                                                    <!--
-                                                         for i in $(find . -path './*/src/main/java'); do
-                                                             DIR=`echo $i | sed 's|./||'`;
-                                                             echo "<fileset dir=\"../$DIR\"><include name=\"**/*.java\"/></fileset>";
-                                                         done
-                                                    -->
-                                                    <fileset dir="../appclient/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../arquillian/common/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../arquillian/common-domain/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../arquillian/container-embedded/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../arquillian/container-managed/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../arquillian/container-managed-domain/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../arquillian/container-remote/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../arquillian/container-remote-domain/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../arquillian/protocol-jmx/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../arquillian/testenricher-msc/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../cli/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../clustering/api/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../clustering/common/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../clustering/ejb3-infinispan/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../clustering/impl/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../clustering/infinispan/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../clustering/jgroups/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../clustering/registry/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../clustering/service/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../clustering/singleton/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../clustering/web-infinispan/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../clustering/web-spi/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../cmp/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../config-assembly/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../connector/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../controller-client/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../controller/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../deployment-repository/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../deployment-scanner/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../domain-http/interface/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../domain-management/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../ee/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../ejb3/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../embedded/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../host-controller/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../jacorb/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../jaxr/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../jaxrs/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../jdr/jboss-as-jdr/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../jmx/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../jpa/core/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../jpa/hibernate3/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../jpa/hibernate4/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../jpa/openjpa/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../jpa/spi/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../jpa/util/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../jsr77/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../logging/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../mail/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../management-client-content/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../messaging/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../modcluster/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../naming/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../network/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../platform-mbean/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../pojo/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../process-controller/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../protocol/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../remoting/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../sar/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../security/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../server/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../subsystem-test/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../testsuite/shared/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../threads/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../transactions/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../webservices/server-integration/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../webservices/tests-integration/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../web/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../weld/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../xts/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../rts/src/main/java"><include name="**/*.java"/></fileset>
-                                                </sourcefiles>
-                                            </structure>
-                                            <html destdir ="${basedir}/target/coverage-report/html"/>
-                                            <xml  destfile="${basedir}/target/coverage-report/coverage-report.xml"/>
-                                            <csv  destfile="${basedir}/target/coverage-report/coverage-report.csv"/>
-                                        </report>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.jacoco</groupId>
-                                <artifactId>org.jacoco.ant</artifactId>
-                                <version>${version.jacoco.plugin}</version>
-                            </dependency>
-                        </dependencies>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
         <profile>
             <id>help</id>
             <activation><property><name>ts.help</name></property></activation>
@@ -1237,12 +1004,179 @@
                 <modular.jdk.testsuite.args>${modular.jdk.args}
                     --add-exports=java.base/sun.security.validator=ALL-UNNAMED
                     --add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED
-                    --add-opens=java.base/javax.crypto=ALL-UNNAMED
-                    --add-opens=java.base/sun.security.validator=ALL-UNNAMED
-                    --add-opens=java.management/javax.management.remote=ALL-UNNAMED
-                    --add-opens=java.base/java.lang=ALL-UNNAMED
+                    --add-exports=java.base/com.sun.crypto.provider=ALL-UNNAMED
                 </modular.jdk.testsuite.args>
             </properties>
+        </profile>
+        <profile>
+            <id>ci-cleanup</id>
+            <activation>
+                <property>
+                    <name>ci-cleanup</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Clean the server configuration(s) -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>clean-test-servers</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <failOnError>false</failOnError>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>target/jbossas</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-SYNC-tcp-0</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-SYNC-tcp-1</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-clustered-messaging-0</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-clustered-messaging-1</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-udp-jdbc-store</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-xsite-LON-0</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-xsite-LON-1</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-xsite-NYC-0</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-xsite-SFO-0</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/wildfly-xsite-SFO-0-backupFor</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/old-versions</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/domains</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-layered</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-admin-only</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-messaging-ha-server1</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-messaging-ha-server2</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-parse-marshal</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-with-remote-outbound-connection</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-with-remote-outbound-connection-tmp</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-multinode-client</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-multinode-client-tmp</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                        <fileset>
+                                            <directory>target/jbossas-multinode-server</directory>
+                                            <excludes>
+                                                <exclude>**/*.log</exclude>
+                                            </excludes>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
 
     </profiles>

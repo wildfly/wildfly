@@ -20,9 +20,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<host xmlns="urn:jboss:domain:5.0"
+<host xmlns="urn:jboss:domain:6.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:domain:5.0 wildfly-config_5_0.xsd"
+      xsi:schemaLocation="urn:jboss:domain:6.0 wildfly-config_6_0.xsd"
       name="master">
 
     <paths>
@@ -68,7 +68,7 @@
                 <socket interface="management" port="9999"/>
             </native-interface>
             <http-interface security-realm="ManagementRealm">
-                <http-upgrade enabled="true" />
+                <http-upgrade enabled="true"/>
                 <socket interface="management" port="9990"/>
             </http-interface>
         </management-interfaces>
@@ -88,6 +88,11 @@
  	<jvms>
  	   <jvm name="default">
           <heap size="64m" max-size="128m"/>
+           <jvm-options>
+               <option value="-ea"/>
+               <option value="--add-exports=java.base/sun.nio.ch=ALL-UNNAMED"/>
+               <option value="--illegal-access=permit"/>
+           </jvm-options>
           <environment-variables>
               <variable name="DOMAIN_TEST_JVM" value="jvm"/>
           </environment-variables>
@@ -142,6 +147,7 @@
             <!-- server-three avoids port conflicts by incrementing the ports in
                  the default socket-group declared in the server-group -->
             <socket-bindings port-offset="250"/>
+            <jvm name="default" />
         </server>
         <server name="reload-one" group="reload-test-group" auto-start="false">
             <interfaces>

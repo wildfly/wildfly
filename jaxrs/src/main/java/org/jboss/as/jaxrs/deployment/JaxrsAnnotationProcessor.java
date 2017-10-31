@@ -36,7 +36,6 @@ import static org.jboss.as.ee.weld.InjectionTargetDefiningAnnotations.INJECTION_
  * Looks for jaxrs annotations in war deployments
  *
  * @author Stuart Douglas
- *
  */
 public class JaxrsAnnotationProcessor implements DeploymentUnitProcessor {
 
@@ -62,7 +61,11 @@ public class JaxrsAnnotationProcessor implements DeploymentUnitProcessor {
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
+    public void undeploy(DeploymentUnit deploymentUnit) {
+        if (deploymentUnit.getParent() == null) {
+            deploymentUnit.getAttachmentList(INJECTION_TARGET_DEFINING_ANNOTATIONS).remove(JaxrsAnnotations.PROVIDER.getDotName());
+            deploymentUnit.getAttachmentList(INJECTION_TARGET_DEFINING_ANNOTATIONS).remove(JaxrsAnnotations.PATH.getDotName());
+        }
     }
 
 }

@@ -1,0 +1,46 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2017, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<subsystem xmlns="urn:jboss:domain:mail:3.0">
+    <mail-session name="defaultMail" jndi-name="java:/Mail" from="user dot name at domain dot tld">
+        <smtp-server outbound-socket-binding-ref="mail-smtp" tls="true" username="${exp.name:nobody}" />
+        <pop3-server outbound-socket-binding-ref="mail-pop3"/>
+        <imap-server outbound-socket-binding-ref="mail-imap" username="${exp.name:nobody}" />
+    </mail-session>
+    <mail-session name="default2" debug="true" jndi-name="java:jboss/mail/Default">
+        <smtp-server outbound-socket-binding-ref="mail-smtp"/>
+    </mail-session>
+    <mail-session name="custom" debug="true" jndi-name="java:jboss/mail/Custom">
+        <custom-server name="smtp" username="username" password="password">
+            <property name="host" value="mail.example.com"/>
+        </custom-server>
+        <custom-server name="pop3" outbound-socket-binding-ref="mail-pop3">
+            <property name="custom_prop" value="some-custom-prop-value"/>
+            <property name="some.fully.qualified.property" value="fully-qualified-prop-name"/>
+        </custom-server>
+    </mail-session>
+    <mail-session name="custom2" debug="true" jndi-name="java:jboss/mail/Custom2">
+        <custom-server name="pop3" outbound-socket-binding-ref="mail-pop3" username="user1">
+            <property name="custom_prop" value="some-custom-prop-value"/>
+        </custom-server>
+    </mail-session>
+</subsystem>

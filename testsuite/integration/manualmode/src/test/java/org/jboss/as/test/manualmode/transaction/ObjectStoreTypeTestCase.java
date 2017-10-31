@@ -21,6 +21,16 @@
  */
 package org.jboss.as.test.manualmode.transaction;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.util.Map;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -28,30 +38,27 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
-import java.util.Map;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 /**
- * @author Ivo Studensky
+ * @author Ivo Studensky - <istudensky@redhat.com>, initial test case
+ * @author Romain Pelisse - <belaran@redhat.com>, rework testcase for work on JBEAP-6449
+ *
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
+    @SuppressWarnings("unused")
     private static Logger log = Logger.getLogger(ObjectStoreTypeTestCase.class);
 
     private static final String CONTAINER = "default-jbossas";
+    private static final String JDBC_STORE_DS_NAME = "ObjectStoreTestDS";
 
     @ArquillianResource
     private static ContainerController container;
@@ -59,7 +66,11 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
     @Before
     public void before() throws Exception {
         container.start(CONTAINER);
-        initCLI();
+        initCLI(TimeoutUtil.adjust(20 * 1000));
+        String objectStoreType = readObjectStoreType();
+        assertTrue("Invalid store type: " + objectStoreType,
+                objectStoreType.equals("journal") || objectStoreType.equals("default"));
+        setDefaultObjectStore();
     }
 
     @After
@@ -68,197 +79,246 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
         container.stop(CONTAINER);
     }
 
+    @SuppressWarnings("rawtypes")
+    private void check(String objectStoreTypeExpected) throws IOException, MgmtOperationException {
+        final CLIOpResult ret = cli.readAllAsOpResult();
+        if (ret != null && ret.getFromResponse(RESPONSE_HEADERS) != null) {
+            assertEquals("restart-required", (String) ((Map) ret.getFromResponse(RESPONSE_HEADERS)).get(PROCESS_STATE));
+            cli.sendLine("reload");
+        }
+
+        String objectStoreType = readObjectStoreType();
+        assertEquals(objectStoreTypeExpected, objectStoreType);
+    }
+
     @Test
     public void testHornetQObjectStore() throws IOException, MgmtOperationException {
         try {
-            String objectStoreType = readObjectStoreType();
-            assertEquals("default", objectStoreType);
-
-            cli.sendLine("/subsystem=transactions:write-attribute(name=use-hornetq-store, value=true)");
-            final CLIOpResult ret = cli.readAllAsOpResult();
-            assertEquals("restart-required", (String) ((Map) ret.getFromResponse(RESPONSE_HEADERS)).get(PROCESS_STATE));
-
-            cli.sendLine("reload");
-
-            objectStoreType = readObjectStoreType();
-
-            // use-hornetq-store should have the same effect of use-journal-store even if it was deprecated
-            assertEquals("journal", objectStoreType);
-
+            useJournalStore();
         } finally {
             setDefaultObjectStore();
         }
-
     }
 
     @Test
     public void testJournalObjectStore() throws IOException, MgmtOperationException {
         try {
-            String objectStoreType = readObjectStoreType();
-            assertEquals("default", objectStoreType);
-
             cli.sendLine("/subsystem=transactions:write-attribute(name=use-journal-store, value=true)");
-            final CLIOpResult ret = cli.readAllAsOpResult();
-            assertEquals("restart-required", (String) ((Map) ret.getFromResponse(RESPONSE_HEADERS)).get(PROCESS_STATE));
-
-            cli.sendLine("reload");
-
-            objectStoreType = readObjectStoreType();
-            assertEquals("journal", objectStoreType);
-
+            check("journal");
         } finally {
             setDefaultObjectStore();
         }
-
     }
 
     @Test
     public void testJdbcObjectStore() throws IOException, MgmtOperationException {
-
         try {
-            String objectStoreType = readObjectStoreType();
-            assertEquals("default", objectStoreType);
-
-            // add data source
-            createDataSource();
-
-            cli.sendLine("/subsystem=transactions:write-attribute(name=jdbc-store-datasource, value=java:jboss/datasources/ObjectStoreTestDS)");
-            cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=true)");
-            final CLIOpResult ret = cli.readAllAsOpResult();
-            assertEquals("restart-required", ((Map) ret.getFromResponse(RESPONSE_HEADERS)).get(PROCESS_STATE));
-
-            cli.sendLine("reload");
-
-            objectStoreType = readObjectStoreType();
-            assertEquals("jdbc", objectStoreType);
-
+            useJdbcStore();
+            check("jdbc");
         } finally {
-            try {
-                setDefaultObjectStore(true);
-            } finally {
-                // remove data source
-                removeDataSource();
-            }
+            cleanJdbcSettingsAndResetToObjectStore();
         }
+    }
+
+    @Test
+    public void ifJournalIsTrueThenHornetQToo() throws IOException, MgmtOperationException {
+        useJournalStore();
+        checkThatAllUseAttributesAreConsistent("true", "false", "true");
+    }
+
+    private void useJdbcStore() throws IOException, MgmtOperationException {
+        useJdbcStore(true);
+    }
+
+    private void useJdbcStore(boolean expectedResults) throws IOException, MgmtOperationException {
+        setDefaultObjectStore();
+        // 1 - Create DS - required for the JDBC store
+        createDataSource();
+        // 2 - Set the value for 'jdbc-store-datasource'
+        cli.sendLine("/subsystem=transactions:write-attribute(name=jdbc-store-datasource, value=java:jboss/datasources/"
+                + JDBC_STORE_DS_NAME + ")");
+        CLIOpResult result = cli.readAllAsOpResult();
+        assertTrue("Failed to set jdbc-store-datasource.", result.isIsOutcomeSuccess());
+        // 3 - set 'use-jdbc-store' to true
+        cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=true)");
+        result = cli.readAllAsOpResult();
+        assertEquals("Failed to set use-jdbc-store to expected value", expectedResults, result.isIsOutcomeSuccess());
     }
 
     @Test
     public void testUseJdbcStoreWithoutDatasource() throws Exception {
         try {
-            String objectStoreType = readObjectStoreType();
-            assertEquals("default", objectStoreType);
-
-            createDataSource();
-
-            // try to undefine use-jdbc-store
-            cli.sendLine("/subsystem=transactions:undefine-attribute(name=use-jdbc-store)");
-            CLIOpResult result = cli.readAllAsOpResult();
-            assertTrue("Failed to undefine use-jdbc-store.", result.isIsOutcomeSuccess());
-
-            // try to set use-jdbc-store to false without defining datasource
-            cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=false)");
-            result = cli.readAllAsOpResult();
-            assertTrue("Failed to set use-jdbc-store to false.", result.isIsOutcomeSuccess());
-
             // try to set use-jdbc-store to true without defining datasource
             cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=true)", true);
-            result = cli.readAllAsOpResult();
+            CLIOpResult result = cli.readAllAsOpResult();
             assertFalse("Expected failure when jdbc-store-datasource is not set.", result.isIsOutcomeSuccess());
-
-            // correctly set jdbc-store-datasource first and then use-jdbc-store to true
-            cli.sendLine("/subsystem=transactions:write-attribute(name=jdbc-store-datasource, value=java:jboss/datasources/ObjectStoreTestDS)");
-            result = cli.readAllAsOpResult();
-            assertTrue("Failed to set jdbc-store-datasource.", result.isIsOutcomeSuccess());
-
-            cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=true)");
-            result = cli.readAllAsOpResult();
-            assertTrue("Failed to set use-jdbc-store.", result.isIsOutcomeSuccess());
-
-            // try to undefine jdbc-store-datasource when use-jdbc-store is set to true
-            cli.sendLine("/subsystem=transactions:undefine-attribute(name=jdbc-store-datasource)", true);
-            result = cli.readAllAsOpResult();
-            assertFalse("Expected failure when un-defining jdbc-store-datasource when use-jdbc-store is true.", result.isIsOutcomeSuccess());
-
-            // setting use-jdbc-store to false
-            cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=false)");
-            result = cli.readAllAsOpResult();
-            assertTrue("Failed to set use-jdbc-store to false.", result.isIsOutcomeSuccess());
-
-            // undefine jdbc-store-datasource
-            cli.sendLine("/subsystem=transactions:undefine-attribute(name=jdbc-store-datasource)");
-            result = cli.readAllAsOpResult();
-            assertTrue("Failed to undefine jdbc-store-datasource.", result.isIsOutcomeSuccess());
         } finally {
-            try {
-                setDefaultObjectStore(true);
-            } finally {
-                removeDataSource();
-            }
+            setDefaultObjectStore();
         }
+    }
+
+    @Test
+    public void testUndefinedJdbcStoreDSWhenJDBCisUsed() throws Exception {
+        try {
+            // Use JDBC store
+            useJdbcStore();
+            // try, and fail, to undefine jdbc-store-datasource when use-jdbc-store is set to true
+            cli.sendLine("/subsystem=transactions:undefine-attribute(name=jdbc-store-datasource", true);
+            CLIOpResult result = cli.readAllAsOpResult();
+            if (result.isIsOutcomeSuccess())
+                fail("The jdbc-store-datasource attribute has been undefined, while JDBC store is in use.");
+        } finally {
+            cleanJdbcSettingsAndResetToObjectStore();
+        }
+    }
+
+    private void checkAttributeIsAsExpected(String attributeName, String expectedValue) {
+        try {
+            cli.sendLine("/subsystem=transactions:read-attribute(name=" + attributeName + ")");
+            CLIOpResult result = cli.readAllAsOpResult();
+            assertEquals(attributeName + " has not the expected value", expectedValue, result.getResult());
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+
+    }
+
+    private void checkThatAllUseAttributesAreConsistent(String useJournalStore, String useJdbcStore, String useHornetQStore) {
+        checkAttributeIsAsExpected("use-jdbc-store", useJdbcStore);
+        checkAttributeIsAsExpected("use-journal-store", useJournalStore);
+        checkAttributeIsAsExpected("use-hornetq-store", useHornetQStore);
     }
 
     @Test
     public void testEitherJdbcOrJournalStore() throws Exception {
         try {
-            String objectStoreType = readObjectStoreType();
-            assertEquals("default", objectStoreType);
-
-            createDataSource();
-
-            // set jdbc-store-datasource so that use-jdbc-store can be set to true
-            cli.sendLine("/subsystem=transactions:write-attribute(name=jdbc-store-datasource, value=java:jboss/datasources/ObjectStoreTestDS)");
-            CLIOpResult result = cli.readAllAsOpResult();
-            assertTrue("Failed to set jdbc-store-datasource.", result.isIsOutcomeSuccess());
-
-            // set use-jdbc-store to true
-            cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=true)");
-            result = cli.readAllAsOpResult();
-            assertTrue("Failed to set use-jdbc-store to true.", result.isIsOutcomeSuccess());
-
-            // set use-journal-store to true
-            cli.sendLine("/subsystem=transactions:write-attribute(name=use-journal-store, value=true)");
-            result = cli.readAllAsOpResult();
-            assertTrue("Failed to set use-journal-store to true.", result.isIsOutcomeSuccess());
-
-            // check that use-jdbc-store was automatically set to false
-            cli.sendLine("/subsystem=transactions:read-attribute(name=use-jdbc-store)");
-            result = cli.readAllAsOpResult();
-            assertEquals("use-jdbc-store was not automatically deactivated.", "false", result.getResult());
-
-            // set use-jdbc-store to true
-            cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=true)");
-            result = cli.readAllAsOpResult();
-            assertTrue("Failed to set use-journal-store to true.", result.isIsOutcomeSuccess());
-
-            // check that use-journal-store was automatically set to false
-            cli.sendLine("/subsystem=transactions:read-attribute(name=use-journal-store)");
-            result = cli.readAllAsOpResult();
-            assertEquals("use-journal-store was not automatically deactivated.", "false", result.getResult());
-
-            // set use-jdbc-store to false
-            cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=false)");
-            result = cli.readAllAsOpResult();
-            assertTrue("Failed to set use-journal-store to false.", result.isIsOutcomeSuccess());
-
-            // undefine jdbc-store-datasource
-            cli.sendLine("/subsystem=transactions:undefine-attribute(name=jdbc-store-datasource)");
-            result = cli.readAllAsOpResult();
-            assertTrue("Failed to undefine jdbc-store-datasource.", result.isIsOutcomeSuccess());
+            // Set journal store
+            useJournalStore();
+            // Check that attributes are consistent with setting
+            checkThatAllUseAttributesAreConsistent("true", "false", "true");
+            // Use jdbcStore
+            useJdbcStore();
+            // Check that attributes are consistent with setting
+            checkThatAllUseAttributesAreConsistent("false", "true", "false");
         } finally {
-            try {
-                setDefaultObjectStore(true);
-            } finally {
-                removeDataSource();
-            }
+            cleanJdbcSettingsAndResetToObjectStore();
         }
     }
 
-    private void createDataSource() {
-        cli.sendLine("data-source add --name=ObjectStoreTestDS --jndi-name=java:jboss/datasources/ObjectStoreTestDS --driver-name=h2 --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1 --jta=false");
+    enum StorageMode {
+
+        USE_JDBC_STORE("use-jdbc-store"), USE_JOURNAL_STORE("use-journal-store"), USE_HORNETQ_STORE("use-hornetq-store");
+
+        StorageMode(String attributeName) {
+            this.attributeName = attributeName;
+        }
+
+        String attributeName;
+
+        public static StorageMode buildFromAttributeName(String attributeName) {
+            for ( StorageMode mode : StorageMode.values() ) {
+                if ( mode.attributeName.equals(attributeName) )
+                    return mode;
+            }
+            throw new IllegalArgumentException("No such storage mode available:" + attributeName);
+        }
     }
 
-    private void removeDataSource() {
-        cli.sendLine("data-source remove --name=ObjectStoreTestDS");
+    /*
+     * Checks that using two different storage mechanisms, within a
+     * batch, make the batch fails.
+     *
+     * See https://issues.jboss.org/browse/WFLY-8335 for more information
+     */
+    @Test(expected=java.lang.AssertionError.class)
+    public void testBatchCliFailsIfNoDSisDefined() throws IOException {
+        createDataSource();
+        cli.sendLine("batch");
+        cli.sendLine("/subsystem=transactions:write-attribute(name=use-journal-store,value=true)");
+        cli.sendLine("/subsystem=transactions:write-attribute(name=jdbc-store-datasource, value=java:jboss/datasources/"
+                + JDBC_STORE_DS_NAME + ")");
+        cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store,value=true)");
+        cli.sendLine("run-batch");
+    }
+
+    @Test
+    public void testThatAlternatesAreProperlyDefined() throws IOException {
+        cli.sendLine("/subsystem=transactions:read-resource-description");
+        CLIOpResult result = cli.readAllAsOpResult();
+        if ( result != null && result.getResultAsMap() != null ) {
+            ModelNode atts = (ModelNode)result.getResponseNode().get("result").get("attributes");
+            for ( StorageMode mode : StorageMode.values() )
+                checkStorageMode(atts, mode);
+        }
+        else
+            fail("Read resource description operation did provide any result");
+    }
+
+    private void checkStorageMode(ModelNode atts, StorageMode mode) {
+        ModelNode modeNode = atts.get(mode.attributeName);
+        assertTrue(modeNode != null);
+        ModelNode alternatives = modeNode.get("alternatives");
+        assertTrue(alternatives != null);
+        assertEquals(2, alternatives.asList().size());
+        for ( int nbAlternative = 0; nbAlternative < 2 ; nbAlternative++ )
+            checkAlternative(alternatives.get(nbAlternative).asString(), mode);
+    }
+
+    private void checkAlternative(String alternative, StorageMode mode) {
+        StorageMode alternativeStorageMode = StorageMode.buildFromAttributeName(alternative);
+        assertTrue(alternativeStorageMode != mode );
+    }
+
+    private void useJournalStore() throws IOException, MgmtOperationException {
+        cli.sendLine("/subsystem=transactions:write-attribute(name=use-journal-store, value=true)");
+        check("journal");
+    }
+
+    private void createDataSource() {
+        cli.sendLine("data-source add --name=" + JDBC_STORE_DS_NAME + " --jndi-name=java:jboss/datasources/"
+                + JDBC_STORE_DS_NAME + " --driver-name=h2 --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1 --jta=false");
+    }
+
+    private void undefinedAttributeIfDefined(String attributeName) {
+        try {
+            cli.sendLine("/subsystem=transactions:read-attribute(name=" + attributeName + ")");
+            CLIOpResult result = cli.readAllAsOpResult();
+            if (result.getResponseNode().isDefined())
+                cli.sendLine("/subsystem=transactions:undefine-attribute(name=" + attributeName + ")");
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private void cleanJdbcSettingsAndResetToObjectStore() throws IOException, MgmtOperationException {
+        try {
+            cleanupSettingsUsedForJDBCStore();
+        } finally {
+            setDefaultObjectStore();
+        }
+    }
+
+    private void removeDatasource() {
+        try {
+            cli.sendLine("data-source remove --name=" + JDBC_STORE_DS_NAME);
+        } catch (Exception e) {
+            // if the DS does not exist, not need to delete it...
+        }
+    }
+
+    private void cleanupSettingsUsedForJDBCStore() {
+        try {
+            // Undefine 'use-jdbc-store' first, if defined
+            undefinedAttributeIfDefined("use-jdbc-store");
+            // then undefine 'jdbc-store'
+            undefinedAttributeIfDefined("jdbc-store-datasource");
+            // finally delete Datasource if exists
+            removeDatasource();
+            // Reload configuration
+            cli.sendLine("reload");
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private String readObjectStoreType() throws IOException, MgmtOperationException {
@@ -268,26 +328,15 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
     }
 
     private void setDefaultObjectStore() throws IOException, MgmtOperationException {
-        setDefaultObjectStore(false);
-    }
-
-    private void setDefaultObjectStore(boolean reload) throws IOException, MgmtOperationException {
         final String objectStoreType = readObjectStoreType();
         if ("default".equals(objectStoreType)) {
             return;
         }
 
         try {
-            // reset the object store settings
             cli.sendLine("/subsystem=transactions:write-attribute(name=use-journal-store, value=false)");
-            cli.sendLine("/subsystem=transactions:write-attribute(name=use-hornetq-store, value=false)");
-            cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=false)");
-            cli.sendLine("/subsystem=transactions:undefine-attribute(name=jdbc-store-datasource)");
         } finally {
-            if (reload) {
-                cli.sendLine("reload");
-            }
+            cli.sendLine("reload");
         }
     }
-
 }

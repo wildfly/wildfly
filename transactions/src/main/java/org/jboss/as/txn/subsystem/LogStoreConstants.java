@@ -92,14 +92,14 @@ class LogStoreConstants {
 
     static SimpleAttributeDefinition LOG_STORE_TYPE = (new SimpleAttributeDefinitionBuilder(LOG_STORE_TYPE_ATTRIBUTE, ModelType.STRING))
             .setAllowExpression(false)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode("default"))
             .setMeasurementUnit(MeasurementUnit.NONE)
             .build();
 
     static final SimpleAttributeDefinition EXPOSE_ALL_LOGS = new SimpleAttributeDefinitionBuilder(EXPOSE_ALL_LOGS_ATTRIBUTE, ModelType.BOOLEAN)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode().set(false))
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setStorageRuntime()
@@ -107,7 +107,7 @@ class LogStoreConstants {
 
     static SimpleAttributeDefinition JMX_NAME = (new SimpleAttributeDefinitionBuilder(JMX_ON_ATTRIBUTE, ModelType.STRING))
             .setAllowExpression(false)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode())
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setValidator(new StringLengthValidator(0, true))
@@ -115,21 +115,21 @@ class LogStoreConstants {
 
     static SimpleAttributeDefinition TRANSACTION_AGE = (new SimpleAttributeDefinitionBuilder("age-in-seconds", ModelType.LONG))
             .setAllowExpression(false)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode())
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .build();
 
     static SimpleAttributeDefinition TRANSACTION_ID = (new SimpleAttributeDefinitionBuilder("id", ModelType.STRING))
             .setAllowExpression(false)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode())
             .setMeasurementUnit(MeasurementUnit.NONE)
             .build();
 
     static SimpleAttributeDefinition PARTICIPANT_STATUS = (new SimpleAttributeDefinitionBuilder("status", ModelType.STRING))
             .setAllowExpression(false)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode())
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setValidator(new EnumValidator<ParticipantStatus>(ParticipantStatus.class, true, false))
@@ -137,14 +137,14 @@ class LogStoreConstants {
 
     static SimpleAttributeDefinition PARTICIPANT_JNDI_NAME = (new SimpleAttributeDefinitionBuilder(JNDI_ATTRIBUTE, ModelType.STRING))
             .setAllowExpression(false)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode())
             .setMeasurementUnit(MeasurementUnit.NONE)
             .build();
 
     static SimpleAttributeDefinition EIS_NAME = (new SimpleAttributeDefinitionBuilder("eis-product-name", ModelType.STRING))
             .setAllowExpression(false)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode())
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setValidator(new StringLengthValidator(0, true))
@@ -152,7 +152,7 @@ class LogStoreConstants {
 
     static SimpleAttributeDefinition EIS_VERSION = (new SimpleAttributeDefinitionBuilder("eis-product-version", ModelType.STRING))
             .setAllowExpression(false)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode())
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setValidator(new StringLengthValidator(0, true))
@@ -160,7 +160,7 @@ class LogStoreConstants {
 
     static SimpleAttributeDefinition RECORD_TYPE = (new SimpleAttributeDefinitionBuilder("type", ModelType.STRING))
             .setAllowExpression(false)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode())
             .setMeasurementUnit(MeasurementUnit.NONE)
             .build();

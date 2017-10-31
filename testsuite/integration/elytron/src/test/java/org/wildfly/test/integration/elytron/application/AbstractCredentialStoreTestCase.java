@@ -136,15 +136,15 @@ public abstract class AbstractCredentialStoreTestCase {
         try (CLIWrapper cli = new CLIWrapper(true)) {
             try {
                 if (secret != null) {
-                    cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add(secret-value=\"%s\")", storeName,
+                    cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:add-alias(alias=%s, secret-value=\"%s\")", storeName,
                             alias, secret));
                     assertCredentialValue(storeName, alias, secret);
                 } else {
-                    cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add()", storeName, alias));
+                    cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:add-alias(alias=%s)", storeName, alias));
                     assertCredentialValue(storeName, alias, "");
                 }
             } finally {
-                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:remove()", storeName, alias), true);
+                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:remove-alias(alias=%s)", storeName, alias), true);
             }
         }
     }

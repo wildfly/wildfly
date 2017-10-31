@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<domain xmlns="urn:jboss:domain:5.0">
+<domain xmlns="urn:jboss:domain:6.0">
 
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
@@ -415,6 +415,7 @@
     <server-groups>
         <server-group name="server-group-a" profile="profile-a">
             <socket-binding-group ref="sockets-a"/>
+            <jvm name="default" />
         </server-group>
 
         <server-group name="server-group-b" profile="profile-b">
@@ -426,10 +427,12 @@
 
         <server-group name="server-group-c" profile="profile-shared">
             <socket-binding-group ref="sockets-shared"/>
+            <jvm name="default" />
         </server-group>
 
         <server-group name="server-group-d" profile="profile-shared">
             <socket-binding-group ref="sockets-shared"/>
+            <jvm name="default" />
         </server-group>
 
     </server-groups>

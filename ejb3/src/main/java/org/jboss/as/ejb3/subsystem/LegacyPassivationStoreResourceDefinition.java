@@ -37,8 +37,6 @@ import org.jboss.as.controller.operations.validation.TimeUnitValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -94,9 +92,4 @@ public abstract class LegacyPassivationStoreResourceDefinition extends SimpleRes
         }
     }
 
-    static void registerTransformers_1_1_0(PathElement path, ResourceTransformationDescriptionBuilder parent) {
-        parent.addChildResource(path).getAttributeBuilder()
-            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, IDLE_TIMEOUT_UNIT)
-        ;
-    }
 }

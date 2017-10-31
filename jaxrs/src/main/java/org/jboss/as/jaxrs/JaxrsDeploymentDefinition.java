@@ -92,7 +92,7 @@ public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
                 .setReadOnly()
                 .setRuntimeOnly()
                 .setReplyType(ModelType.LIST)
-                .setDeprecated(JaxrsExtension.MODEL_VERSION_1_1_0)
+                .setDeprecated(JaxrsExtension.MODEL_VERSION_2_0_0)
                 .setReplyParameters(JAXRS_RESOURCE).build();
 
 

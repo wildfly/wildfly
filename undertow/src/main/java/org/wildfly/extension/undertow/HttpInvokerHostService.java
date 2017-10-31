@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.jboss.as.domain.management.security.SecurityRealmService;
+import org.jboss.as.web.session.SimpleRoutingSupport;
+import org.jboss.as.web.session.SimpleSessionIdentifierCodec;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -40,6 +43,7 @@ import org.wildfly.security.http.HttpServerAuthenticationMechanism;
 import io.undertow.security.handlers.AuthenticationCallHandler;
 import io.undertow.security.handlers.AuthenticationConstraintHandler;
 import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.PathHandler;
 
 /**
@@ -47,9 +51,12 @@ import io.undertow.server.handlers.PathHandler;
  */
 class HttpInvokerHostService implements Service<HttpInvokerHostService> {
 
+    private static final String JSESSIONID = "JSESSIONID";
+
     private final String path;
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final InjectedValue<HttpAuthenticationFactory> httpAuthenticationFactoryInjectedValue = new InjectedValue<>();
+    private final InjectedValue<SecurityRealmService> realmService = new InjectedValue<>();
     private final InjectedValue<PathHandler> remoteHttpInvokerServiceInjectedValue = new InjectedValue<>();
 
     public HttpInvokerHostService(String path) {
@@ -61,15 +68,31 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
         HttpHandler handler = remoteHttpInvokerServiceInjectedValue.getValue();
         if(httpAuthenticationFactoryInjectedValue.getOptionalValue() != null) {
             handler = secureAccess(handler, httpAuthenticationFactoryInjectedValue.getOptionalValue());
+        } else if(realmService.getOptionalValue() != null) {
+            handler = secureAccess(handler, realmService.getOptionalValue().getHttpAuthenticationFactory());
         }
+        handler = setupRoutes(handler);
         host.getValue().registerHandler(path, handler);
-        host.getValue().registerModClusterPath(path);
+        host.getValue().registerLocation(path);
     }
 
     @Override
     public void stop(StopContext stopContext) {
         host.getValue().unregisterHandler(path);
-        host.getValue().unregisterModClusterPath(path);
+        host.getValue().unregisterLocation(path);
+    }
+
+    private HttpHandler setupRoutes(HttpHandler handler) {
+        final SimpleSessionIdentifierCodec codec = new SimpleSessionIdentifierCodec(new SimpleRoutingSupport(), this.host.getValue().getServer().getRoute());
+        return exchange -> {
+            exchange.addResponseCommitListener(ex -> {
+                Cookie cookie = ex.getResponseCookies().get(JSESSIONID);
+                if(cookie != null ) {
+                    cookie.setValue(codec.encode(cookie.getValue()));
+                }
+            });
+            handler.handleRequest(exchange);
+        };
     }
 
     private static HttpHandler secureAccess(HttpHandler domainHandler, final HttpAuthenticationFactory httpAuthenticationFactory) {
@@ -123,4 +146,7 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
         return remoteHttpInvokerServiceInjectedValue;
     }
 
+    public InjectedValue<SecurityRealmService> getRealmService() {
+        return realmService;
+    }
 }

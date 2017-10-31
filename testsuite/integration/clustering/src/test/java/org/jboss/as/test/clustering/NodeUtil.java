@@ -38,73 +38,74 @@ public final class NodeUtil {
 
     public static void deploy(Deployer deployer, String... deployments) {
         for (String deployment : deployments) {
-            log.trace("Deploying deployment=" + deployment);
-            deployer.deploy(deployment);
+            deploy(deployer, deployment);
         }
+    }
+
+    public static void deploy(Deployer deployer, String deployment) {
+        log.tracef("Deploying %s", deployment);
+        deployer.deploy(deployment);
+        log.tracef("Deployed %s", deployment);
     }
 
     public static void undeploy(Deployer deployer, String... deployments) {
         for (String deployment : deployments) {
-            log.trace("Undeploying deployment=" + deployment);
-            deployer.undeploy(deployment);
+            undeploy(deployer, deployment);
         }
     }
 
-    public static void start(ContainerController controller, Deployer deployer, String container, String deployment) {
-        try {
-            log.trace("Starting deployment=" + deployment + ", container=" + container);
-            controller.start(container);
-            deployer.deploy(deployment);
-            log.trace("Started deployment=" + deployment + ", container=" + container);
-        } catch (Throwable e) {
-            log.error("Failed to start container(s)", e);
-        }
+    public static void undeploy(Deployer deployer, String deployment) {
+        log.tracef("Undeploying %s", deployment);
+        deployer.undeploy(deployment);
+        log.tracef("Undeployed %s", deployment);
     }
 
     public static void start(ContainerController controller, String... containers) {
         // TODO do this in parallel.
         for (String container : containers) {
-            try {
-                log.trace("Starting deployment=NONE, container=" + container);
-                controller.start(container);
-            } catch (Throwable e) {
-                log.error("Failed to start containers", e);
-            }
+            start(controller, container);
+        }
+    }
+
+    public static void start(ContainerController controller, String container) {
+        if (!controller.isStarted(container)) {
+            log.tracef("Starting container %s", container);
+            controller.start(container);
+            log.tracef("Started container %s", container);
+        } else {
+            log.tracef("Container %s was already started", container);
         }
     }
 
     public static void stop(ContainerController controller, String... containers) {
         for (String container : containers) {
-            try {
-                log.trace("Stopping container=" + container);
-                controller.stop(container);
-                log.trace("Stopped container=" + container);
-            } catch (Throwable e) {
-                log.error("Failed to stop containers", e);
-            }
+            stop(controller, container);
         }
     }
 
-    public static void stop(int timeout, WildFlyContainerController controller, String... containers) {
-        for (String container : containers) {
-            try {
-                log.trace("Stopping container=" + container + ", timeout=" + timeout);
-                controller.stop(container, timeout);
-                log.trace("Stopped container=" + container + ", timeout=" + timeout);
-            } catch (Throwable e) {
-                log.error("Failed to stop containers", e);
-            }
-        }
-    }
-
-    public static void stop(ContainerController controller, Deployer deployer, String container, String deployment) {
-        try {
-            log.trace("Stopping deployment=" + deployment + ", container=" + container);
-            deployer.undeploy(deployment);
+    public static void stop(ContainerController controller, String container) {
+        if (controller.isStarted(container)) {
+            log.tracef("Stopping container %s", container);
             controller.stop(container);
-            log.trace("Stopped deployment=" + deployment + ", container=" + container);
-        } catch (Throwable e) {
-            log.error("Failed to stop containers", e);
+            log.tracef("Stopped container %s", container);
+        } else {
+            log.tracef("Container %s was already stopped", container);
+        }
+    }
+
+    public static void stop(WildFlyContainerController controller, int timeout, String... containers) {
+        for (String container : containers) {
+            stop(controller, timeout, container);
+        }
+    }
+
+    public static void stop(WildFlyContainerController controller, int timeout, String container) {
+        if (controller.isStarted(container)) {
+            log.tracef("Stopping container %s", container);
+            controller.stop(container, timeout);
+            log.tracef("Stopped container %s", container);
+        } else {
+            log.tracef("Container %s was already stopped", container);
         }
     }
 

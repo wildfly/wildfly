@@ -83,23 +83,22 @@ public class MigrateOperation implements OperationStepHandler {
 
 
     public static final StringListAttributeDefinition MIGRATION_WARNINGS_ATTR = new StringListAttributeDefinition.Builder(MIGRATION_WARNINGS)
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     public static final SimpleMapAttributeDefinition MIGRATION_ERROR_ATTR = new SimpleMapAttributeDefinition.Builder(MIGRATION_ERROR, ModelType.OBJECT, true)
             .setValueType(ModelType.OBJECT)
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     static void registerOperation(final ManagementResourceRegistration registry, final ResourceDescriptionResolver resourceDescriptionResolver) {
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(MIGRATE, resourceDescriptionResolver)
-                        .setRuntimeOnly()
                         .setReplyParameters(MIGRATION_WARNINGS_ATTR, MIGRATION_ERROR_ATTR)
                         .build(),
                 new MigrateOperation(false));
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(DESCRIBE_MIGRATION, resourceDescriptionResolver)
-                        .setRuntimeOnly()
                         .setReplyParameters(MIGRATION_WARNINGS_ATTR, MIGRATION_ERROR_ATTR)
+                        .setReadOnly()
                         .build(),
                 new MigrateOperation(true));
 
@@ -124,13 +123,13 @@ public class MigrateOperation implements OperationStepHandler {
 
         final PathAddress subsystemsAddress = context.getCurrentAddress().getParent();
 
-        if (context.readResourceFromRoot(subsystemsAddress).hasChild(OPENJDK_SUBSYSTEM_ELEMENT)) {
+        if (context.readResourceFromRoot(subsystemsAddress, false).hasChild(OPENJDK_SUBSYSTEM_ELEMENT)) {
             throw new OperationFailedException("can not migrate: the new iiop-openjdk subsystem is already defined");
         }
 
         final Map<PathAddress, ModelNode> migrateOperations = new LinkedHashMap<>();
 
-        if (!context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS).hasChild(OPENJDK_EXTENSION_ELEMENT)) {
+        if (!context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false).hasChild(OPENJDK_EXTENSION_ELEMENT)) {
             addOpenjdkExtension(context, migrateOperations);
         }
 
@@ -154,7 +153,7 @@ public class MigrateOperation implements OperationStepHandler {
                 checkPropertiesWithExpression(jacorbModel, warnings);
 
                 final ModelNode openjdkModel = TransformUtils.transformModel(jacorbModel);
-                ConfigValidator.validateConfig(context, openjdkModel);
+                warnings.addAll(ConfigValidator.validateConfig(context, openjdkModel));
 
                 final PathAddress openjdkAddress = subsystemsAddress.append(OPENJDK_SUBSYSTEM_ELEMENT);
                 addOpenjdkSubsystem(openjdkAddress, openjdkModel, migrateOperations);

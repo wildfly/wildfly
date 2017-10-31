@@ -63,7 +63,8 @@ public class AjpListenerService extends ListenerService {
     void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException {
         server = worker.createStreamConnectionServer(socketAddress, acceptListener, OptionMap.builder().addAll(commonOptions).addAll(socketOptions).getMap());
         server.resumeAccepts();
-        UndertowLogger.ROOT_LOGGER.listenerStarted("AJP", getName(), NetworkUtils.formatIPAddressForURI(binding.getValue().getSocketAddress().getAddress()), getBinding().getValue().getSocketAddress().getPort());
+        final InetSocketAddress boundAddress = server.getLocalAddress(InetSocketAddress.class);
+        UndertowLogger.ROOT_LOGGER.listenerStarted("AJP", getName(), NetworkUtils.formatIPAddressForURI(boundAddress.getAddress()), boundAddress.getPort());
     }
 
     @Override
@@ -73,10 +74,11 @@ public class AjpListenerService extends ListenerService {
 
     @Override
     void stopListening() {
+        final InetSocketAddress boundAddress = server.getLocalAddress(InetSocketAddress.class);
         server.suspendAccepts();
         UndertowLogger.ROOT_LOGGER.listenerSuspend("AJP", getName());
         IoUtils.safeClose(server);
-        UndertowLogger.ROOT_LOGGER.listenerStopped("AJP", getName(), NetworkUtils.formatIPAddressForURI(getBinding().getValue().getSocketAddress().getAddress()), getBinding().getValue().getSocketAddress().getPort());
+        UndertowLogger.ROOT_LOGGER.listenerStopped("AJP", getName(), NetworkUtils.formatIPAddressForURI(boundAddress.getAddress()), boundAddress.getPort());
     }
 
     @Override

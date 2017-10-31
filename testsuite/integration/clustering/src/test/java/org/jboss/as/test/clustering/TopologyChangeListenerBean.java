@@ -69,7 +69,7 @@ public class TopologyChangeListenerBean implements TopologyChangeListener {
                 CacheTopology topology = transfer.getCacheTopology();
                 Set<String> members = getMembers(topology);
                 while (!expectedMembers.equals(members)) {
-                    System.out.println(String.format("%s != %s, waiting for a topology change event. Current topology id = %d", expectedMembers, members, topology.getTopologyId()));
+                    //System.out.println(String.format("%s != %s, waiting for a topology change event. Current topology id = %d", expectedMembers, members, topology.getTopologyId()));
                     this.wait(endTime - now);
                     now = System.currentTimeMillis();
                     if (now >= endTime) {
@@ -78,7 +78,7 @@ public class TopologyChangeListenerBean implements TopologyChangeListener {
                     topology = transfer.getCacheTopology();
                     members = getMembers(topology);
                 }
-                System.out.println(String.format("Cache %s/%s successfully established view %s within %d ms. Topology id = %d", containerName, cacheName, expectedMembers, now - start, topology.getTopologyId()));
+                //System.out.println(String.format("Cache %s/%s successfully established view %s within %d ms. Topology id = %d", containerName, cacheName, expectedMembers, now - start, topology.getTopologyId()));
             }
         } finally {
             cache.removeListener(this);

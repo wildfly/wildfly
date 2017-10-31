@@ -24,7 +24,6 @@
 
 <module xmlns="urn:jboss:module:1.5" name="org.apache.qpid.proton">
     <resources>
-        <artifact name="${org.apache.qpid:proton-jms}"/>
         <artifact name="${org.apache.qpid:proton-j}"/>
     </resources>
 

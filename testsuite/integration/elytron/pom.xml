@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>11.0.0.Beta1-SNAPSHOT</version>
+        <version>12.0.0.Alpha1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -43,8 +43,8 @@
 
     <properties>
         <wildfly.instance.name>wildfly</wildfly.instance.name>
-        <wildfly.dir>${basedir}/target/${wildfly.instance.name}</wildfly.dir>
-        <jboss.dist>${wildfly.dir}</jboss.dist>
+        <jboss.dist>${basedir}/target/${wildfly.instance.name}</jboss.dist>
+        <wildfly.dir>${jboss.dist}</wildfly.dir>
 
         <enforcer.skip>true</enforcer.skip>
     </properties>
@@ -170,30 +170,16 @@
                     </environmentVariables>
                     <!-- Parameters to test cases. -->
                     <systemPropertyVariables>
-                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                         <jboss.inst>${wildfly.dir}</jboss.inst>
-                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.jacoco} ${jvm.args.other} ${jvm.args.timeouts}</server.jvm.args>
+                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts}</server.jvm.args>
                         <node0>${node0}</node0>
 
                         <!-- let's override the module.path parent configuration with dummy value, to avoid the "IllegalStateException: Duplicate layer 'base'" -->
                         <module.path>foo</module.path>
                     </systemPropertyVariables>
+                    <argLine>${surefire.system.args} ${jvm.args.ip.client}</argLine>
                 </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <configuration>
-                    <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>check-style</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>checkstyle</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
@@ -226,6 +212,7 @@
                             </scripts>
                             <jboss-home>${wildfly.dir}</jboss-home>
                             <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
                             <system-properties>
                                 <public.ip>${node0}</public.ip>
                                 <management.ip>${node0}</management.ip>

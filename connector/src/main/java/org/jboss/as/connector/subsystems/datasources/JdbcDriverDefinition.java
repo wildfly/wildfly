@@ -24,13 +24,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
-import static org.jboss.as.connector.subsystems.datasources.Constants.PROFILE;
 
 import java.util.List;
 
@@ -41,9 +35,6 @@ import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * Stefano Maestri
@@ -74,29 +65,6 @@ public class JdbcDriverDefinition extends SimpleResourceDefinition {
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
         return accessConstraints;
-    }
-
-    static void registerTransformers300(ResourceTransformationDescriptionBuilder parenBuilder) {
-
-        parenBuilder.addChildResource(PATH_DRIVER).getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, MODULE_SLOT, JDBC_COMPLIANT, PROFILE,
-                        DRIVER_MODULE_NAME, DRIVER_XA_DATASOURCE_CLASS_NAME, DRIVER_CLASS_NAME)
-                .end();
-    }
-
-    static void registerTransformers110(ResourceTransformationDescriptionBuilder parenBuilder) {
-
-        parenBuilder.addChildResource(PATH_DRIVER).getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.DRIVER_MINOR_VERSION, Constants.DRIVER_MAJOR_VERSION)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.DRIVER_DATASOURCE_CLASS_NAME)
-                .end();
-    }
-
-    static void registerTransformers111(ResourceTransformationDescriptionBuilder parenBuilder) {
-
-        parenBuilder.addChildResource(PATH_DRIVER).getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.DRIVER_DATASOURCE_CLASS_NAME)
-                .end();
     }
 
 }

@@ -35,6 +35,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.FilePermission;
 import java.io.IOException;
 import java.util.PropertyPermission;
 
@@ -60,6 +61,7 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -120,9 +122,14 @@ public class MDBTestCase {
                 .addPackage(JMSOperations.class.getPackage())
                 .addClass(TimeoutUtil.class)
                 .addAsManifestResource(MDBWithDeliveryActiveAnnotation.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.jboss.remoting3\n"), "MANIFEST.MF");
         // grant necessary permissions
-        ejbJar.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
+        ejbJar.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission("ts.timeout.factor", "read"),
+                new RemotingPermission("createEndpoint"),
+                new RemotingPermission("connect"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
+        ), "permissions.xml");
         return ejbJar;
     }
 

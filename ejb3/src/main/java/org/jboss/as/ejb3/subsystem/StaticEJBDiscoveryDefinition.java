@@ -78,9 +78,9 @@ public class StaticEJBDiscoveryDefinition {
         @Override
         public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
             if (resourceModel.isDefined()) {
-                writer.writeEmptyElement(attribute.getXmlName());
+                writer.writeEmptyElement(EJB3SubsystemXMLElement.MODULE.getLocalName());
                 for (SimpleAttributeDefinition valueType : VALUE_TYPE_FIELDS) {
-                    valueType.marshallAsAttribute(resourceModel, writer);
+                    valueType.getAttributeMarshaller().marshall(valueType, resourceModel, true, writer);
                 }
             }
         }
@@ -92,7 +92,7 @@ public class StaticEJBDiscoveryDefinition {
                     .build();
 
     public static final AttributeDefinition INSTANCE = ObjectListAttributeDefinition.Builder.of(STATIC_EJB_DISCOVERY, VALUE_TYPE_AD)
-        .setAllowNull(true)
+        .setRequired(false)
         .build();
 
     public static List<StaticEjbDiscovery> createStaticEjbList(final OperationContext context, final ModelNode ejbList) throws OperationFailedException {

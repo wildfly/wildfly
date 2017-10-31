@@ -4,6 +4,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
+import java.io.FilePermission;
 import java.net.URL;
 import java.util.PropertyPermission;
 
@@ -12,12 +13,10 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.naming.java.permission.JndiPermission;
@@ -35,11 +34,6 @@ public class NestedRemoteContextTestCase {
 
     private static final Package thisPackage = NestedRemoteContextTestCase.class.getPackage();
 
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
-    }
-
     @Deployment
     public static EnterpriseArchive deploymentTwo() {
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb.jar")
@@ -55,7 +49,8 @@ public class NestedRemoteContextTestCase {
                 .addAsManifestResource(thisPackage, "ear-jboss-deployment-structure.xml", "jboss-deployment-structure.xml")
                 .addAsManifestResource(createPermissionsXmlAsset(
                         // CallEjbServlet reads node0 system property
-                        new PropertyPermission("node0", "read")),
+                        new PropertyPermission("node0", "read"),
+                        new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")),
                         "permissions.xml");
         return ear;
     }

@@ -80,7 +80,7 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
     }
 
     InfinispanSubsystemResourceDefinition() {
-        super(PATH, new InfinispanResourceDescriptionResolver());
+        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER);
     }
 
     @Override

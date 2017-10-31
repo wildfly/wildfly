@@ -101,29 +101,27 @@ import java.util.regex.Pattern;
 /**
  * Operation to migrate from the legacy web subsystem to the new undertow subsystem.
  * <p/>
- * This operation must be performed when the server is in admin-only mode.
- * Internally, the operation:
+ * This operation must be performed when the server is in admin-only mode. Internally, the operation:
  * <p/>
  * <ul>
- * <li>query the description of all the web subsystem by invoking the :describe operation.
- * This returns a list of :add operations for each web resources.</li>
+ * <li>query the description of all the web subsystem by invoking the :describe operation. This returns a list of :add
+ * operations for each web resources.</li>
  * <li>:add the new org.widlfy.extension.undertow extension</li>
- * <li>for each web resources, transform the :add operations to add the
- * corresponding resource to the new undertow subsystem.
- * In this step, changes to the resources model are taken into account</li>
+ * <li>:add the new org.wildfly.extension.io</li>
+ * <li>for each web resources, transform the :add operations to add the corresponding resource to the new undertow
+ * subsystem. In this step, changes to the resources model are taken into account</li>
  * <li>:remove the web subsystem</li>
  * </ul>
  * <p/>
- * The companion <code>:describe-migration</code> operation will return a list of all the actual operations that would be
- * performed during the invocation of the <code>:migrate</code> operation.
+ * The companion <code>:describe-migration</code> operation will return a list of all the actual operations that would
+ * be performed during the invocation of the <code>:migrate</code> operation.
  * <p/>
- * Note that all new operation addresses are generated for standalone mode. If this is a domain mode server
- * then the addresses are fixed after they have been generated
+ * Note that all new operation addresses are generated for standalone mode. If this is a domain mode server then the
+ * addresses are fixed after they have been generated
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  * @author Stuart Douglas
  */
-
 public class WebMigrateOperation implements OperationStepHandler {
 
     private static final String UNDERTOW_EXTENSION = "org.wildfly.extension.undertow";
@@ -145,12 +143,12 @@ public class WebMigrateOperation implements OperationStepHandler {
     private static final Pattern ACCESS_LOG_PATTERN = Pattern.compile("%\\{(.*?)\\}(\\w)");
 
     public static final StringListAttributeDefinition MIGRATION_WARNINGS_ATTR = new StringListAttributeDefinition.Builder(MIGRATION_WARNINGS)
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     public static final SimpleMapAttributeDefinition MIGRATION_ERROR_ATTR = new SimpleMapAttributeDefinition.Builder(MIGRATION_ERROR, ModelType.OBJECT, true)
             .setValueType(ModelType.OBJECT)
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     private final boolean describe;
@@ -162,15 +160,14 @@ public class WebMigrateOperation implements OperationStepHandler {
 
     static void registerOperations(ManagementResourceRegistration registry, ResourceDescriptionResolver resourceDescriptionResolver) {
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(MIGRATE, resourceDescriptionResolver)
-                        .setRuntimeOnly()
                         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.READ_WHOLE_CONFIG)
                         .setReplyParameters(MIGRATION_WARNINGS_ATTR, MIGRATION_ERROR_ATTR)
                         .build(),
                 WebMigrateOperation.MIGRATE_INSTANCE);
         registry.registerOperationHandler(new SimpleOperationDefinitionBuilder(DESCRIBE_MIGRATION, resourceDescriptionResolver)
-                        .setRuntimeOnly()
                         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.READ_WHOLE_CONFIG)
                         .setReplyParameters(MIGRATION_WARNINGS_ATTR)
+                        .setReadOnly()
                         .build(),
                 WebMigrateOperation.DESCRIBE_MIGRATION_INSTANCE);
     }
@@ -1117,7 +1114,12 @@ public class WebMigrateOperation implements OperationStepHandler {
     private void migrateSubsystem(Map<PathAddress, ModelNode> newAddOperations, ModelNode newAddOp) {
         newAddOp.get(ADDRESS).set(pathAddress(pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME)).toModelNode());
         PathAddress address = pathAddress(newAddOp.get(OP_ADDR));
-        newAddOperations.put(address, createAddOperation(address));
+        ModelNode subsystemAdd = createAddOperation(address);
+        ModelNode defaultServer = newAddOperations.get(address.append(DEFAULT_SERVER_PATH));
+        if (defaultServer.hasDefined(Constants.DEFAULT_HOST)){
+            subsystemAdd.get(Constants.DEFAULT_VIRTUAL_HOST).set(defaultServer.get(Constants.DEFAULT_HOST));
+        }
+        newAddOperations.put(address, subsystemAdd);
     }
 
     private void describeLegacyWebResources(OperationContext context, ModelNode legacyModelDescription) {

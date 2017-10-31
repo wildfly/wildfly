@@ -55,7 +55,7 @@ public class ExternalContextsNavigableSet implements ExternalContexts {
 
     @Override
     public ServiceName getParentExternalContext(ServiceName serviceName) {
-        return externalContexts.lower(serviceName);
+        final ServiceName lower = externalContexts.lower(serviceName);
+        return lower != null && lower.isParentOf(serviceName) ? lower : null;
     }
-
 }

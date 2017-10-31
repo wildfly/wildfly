@@ -22,14 +22,14 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.List;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+
 import java.util.Timer;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ejb3.deployment.processors.AroundTimeoutAnnotationParsingProcessor;
 import org.jboss.as.ejb3.deployment.processors.TimerServiceDeploymentProcessor;
 import org.jboss.as.ejb3.deployment.processors.annotation.TimerServiceAnnotationProcessor;
@@ -39,13 +39,10 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * Adds the timer service
@@ -75,8 +72,7 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
         }
     }
 
-    protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model,
-                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
 
         final String defaultDataStore = TimerServiceResourceDefinition.DEFAULT_DATA_STORE.resolveModelAttribute(context, model).asString();
         final String threadPoolName = TimerServiceResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
@@ -93,8 +89,8 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        newControllers.add(context.getServiceTarget().addService(TimerServiceDeploymentProcessor.TIMER_SERVICE_NAME, new TimerValueService())
-                .install());
+        context.getServiceTarget().addService(TimerServiceDeploymentProcessor.TIMER_SERVICE_NAME, new TimerValueService())
+                .install();
 
     }
 

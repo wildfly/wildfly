@@ -53,12 +53,12 @@ public class TemplateConfigurationBuilder implements CapabilityServiceBuilder<Co
      * @param templateCacheName the name of the template cache
      */
     public TemplateConfigurationBuilder(ServiceName name, String containerName, String cacheName, String templateCacheName) {
-        this(name, containerName, cacheName, templateCacheName, null);
+        this(name, containerName, cacheName, templateCacheName, builder -> {});
     }
 
     public TemplateConfigurationBuilder(ServiceName name, String containerName, String cacheName, String templateCacheName, Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> templateConsumer) {
         Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> consumer = builder -> builder.read(this.template.getValue());
-        this.builder = new ConfigurationBuilder(name, containerName, cacheName, (templateConsumer != null) ? consumer.andThen(templateConsumer) : consumer);
+        this.builder = new ConfigurationBuilder(name, containerName, cacheName, consumer.andThen(templateConsumer));
         this.containerName = containerName;
         this.templateCacheName = templateCacheName;
     }

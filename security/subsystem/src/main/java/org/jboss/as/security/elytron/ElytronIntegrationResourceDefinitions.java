@@ -15,15 +15,17 @@
  */
 package org.jboss.as.security.elytron;
 
-import static org.jboss.as.security.elytron.Capabilities.KEY_MANAGERS_RUNTIME_CAPABILITY;
+import static org.jboss.as.security.elytron.Capabilities.KEY_MANAGER_RUNTIME_CAPABILITY;
 import static org.jboss.as.security.elytron.Capabilities.KEY_STORE_RUNTIME_CAPABILITY;
 import static org.jboss.as.security.elytron.Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY;
-import static org.jboss.as.security.elytron.Capabilities.TRUST_MANAGERS_RUNTIME_CAPABILITY;
+import static org.jboss.as.security.elytron.Capabilities.TRUST_MANAGER_RUNTIME_CAPABILITY;
 
 import java.security.KeyStore;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509ExtendedKeyManager;
+import javax.net.ssl.X509ExtendedTrustManager;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -32,6 +34,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.security.Constants;
@@ -55,16 +58,25 @@ public class ElytronIntegrationResourceDefinitions {
 
     public static final SimpleAttributeDefinition LEGACY_JAAS_CONFIG =
             new SimpleAttributeDefinitionBuilder(Constants.LEGACY_JAAS_CONFIG, ModelType.STRING, false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setValidator(new StringLengthValidator(1))
                     .setAllowExpression(false)
+                    .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
                     .build();
 
     public static final SimpleAttributeDefinition LEGACY_JSSE_CONFIG =
             new SimpleAttributeDefinitionBuilder(Constants.LEGACY_JSSE_CONFIG, ModelType.STRING, false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setValidator(new StringLengthValidator(1))
                     .setAllowExpression(false)
+                    .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+                    .build();
+
+    public static final SimpleAttributeDefinition APPLY_ROLE_MAPPERS =
+            new SimpleAttributeDefinitionBuilder(Constants.APPLY_ROLE_MAPPERS, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setDefaultValue(new ModelNode(true))
+                    .setAllowExpression(true)
                     .build();
 
     /**
@@ -78,12 +90,13 @@ public class ElytronIntegrationResourceDefinitions {
      */
     public static ResourceDefinition getElytronRealmResourceDefinition() {
 
-        final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JAAS_CONFIG};
+        final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JAAS_CONFIG, APPLY_ROLE_MAPPERS};
         final AbstractAddStepHandler addHandler = new BasicAddHandler<SecurityRealm>(attributes, SECURITY_REALM_RUNTIME_CAPABILITY) {
 
             @Override
             protected BasicService.ValueSupplier<SecurityRealm> getValueSupplier(ServiceBuilder<SecurityRealm> serviceBuilder, OperationContext context, ModelNode model) throws OperationFailedException {
                 final String legacyJAASConfig = asStringIfDefined(context, LEGACY_JAAS_CONFIG, model);
+                final boolean applyRoleMappers = APPLY_ROLE_MAPPERS.resolveModelAttribute(context, model).asBoolean();
                 final InjectedValue<SecurityDomainContext> securityDomainContextInjector = new InjectedValue<>();
                 if (legacyJAASConfig != null) {
                     serviceBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(legacyJAASConfig), SecurityDomainContext.class, securityDomainContextInjector);
@@ -91,7 +104,7 @@ public class ElytronIntegrationResourceDefinitions {
 
                 return () -> {
                     final SecurityDomainContext domainContext = securityDomainContextInjector.getValue();
-                    return new SecurityDomainContextRealm(domainContext);
+                    return new SecurityDomainContextRealm(domainContext, applyRoleMappers);
                 };
             }
         };
@@ -131,7 +144,7 @@ public class ElytronIntegrationResourceDefinitions {
                     }
                     final KeyStore keyStore = jsseDomain.getKeyStore();
                     if (keyStore == null) {
-                        throw SecurityLogger.ROOT_LOGGER.unableToLocateComponentInJSSEDomain("key store", legacyJSSEConfig);
+                        throw SecurityLogger.ROOT_LOGGER.unableToLocateComponentInJSSEDomain("KeyStore", legacyJSSEConfig);
                     }
                     return keyStore;
                 };
@@ -182,7 +195,7 @@ public class ElytronIntegrationResourceDefinitions {
                     }
                     final KeyStore trustStore = jsseDomain.getTrustStore();
                     if (trustStore == null) {
-                        throw SecurityLogger.ROOT_LOGGER.unableToLocateComponentInJSSEDomain("trust store", legacyJSSEConfig);
+                        throw SecurityLogger.ROOT_LOGGER.unableToLocateComponentInJSSEDomain("TrustStore", legacyJSSEConfig);
                     }
                     return trustStore;
                 };
@@ -206,10 +219,10 @@ public class ElytronIntegrationResourceDefinitions {
      */
     public static ResourceDefinition getElytronKeyManagersResourceDefinition() {
         final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JSSE_CONFIG};
-        final AbstractAddStepHandler addHandler = new BasicAddHandler<KeyManager[]>(attributes, KEY_MANAGERS_RUNTIME_CAPABILITY) {
+        final AbstractAddStepHandler addHandler = new BasicAddHandler<KeyManager>(attributes, KEY_MANAGER_RUNTIME_CAPABILITY) {
 
             @Override
-            protected BasicService.ValueSupplier<KeyManager[]> getValueSupplier(ServiceBuilder<KeyManager[]> serviceBuilder, OperationContext context, ModelNode model) throws OperationFailedException {
+            protected BasicService.ValueSupplier<KeyManager> getValueSupplier(ServiceBuilder<KeyManager> serviceBuilder, OperationContext context, ModelNode model) throws OperationFailedException {
                 final String legacyJSSEConfig = asStringIfDefined(context, LEGACY_JSSE_CONFIG, model);
                 final InjectedValue<SecurityDomainContext> securityDomainContextInjector = new InjectedValue<>();
                 if (legacyJSSEConfig != null) {
@@ -224,14 +237,19 @@ public class ElytronIntegrationResourceDefinitions {
                     }
                     final KeyManager[] keyManagers = jsseDomain.getKeyManagers();
                     if (keyManagers == null) {
-                        throw SecurityLogger.ROOT_LOGGER.unableToLocateComponentInJSSEDomain("key manager", legacyJSSEConfig);
+                        throw SecurityLogger.ROOT_LOGGER.unableToLocateComponentInJSSEDomain("KeyManager", legacyJSSEConfig);
                     }
-                    return keyManagers;
+                    for (KeyManager keyManager : keyManagers) {
+                        if (keyManager instanceof X509ExtendedKeyManager) {
+                            return keyManager;
+                        }
+                    }
+                    throw SecurityLogger.ROOT_LOGGER.expectedManagerTypeNotFound("KeyManager", X509ExtendedKeyManager.class.getSimpleName(), legacyJSSEConfig);
                 };
             }
         };
 
-        return new BasicResourceDefinition(Constants.ELYTRON_KEY_MANAGER, addHandler, attributes, KEY_MANAGERS_RUNTIME_CAPABILITY);
+        return new BasicResourceDefinition(Constants.ELYTRON_KEY_MANAGER, addHandler, attributes, KEY_MANAGER_RUNTIME_CAPABILITY);
     }
 
     /**
@@ -253,10 +271,10 @@ public class ElytronIntegrationResourceDefinitions {
      */
     public static ResourceDefinition getElytronTrustManagersResourceDefinition() {
         final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JSSE_CONFIG};
-        final AbstractAddStepHandler addHandler = new BasicAddHandler<TrustManager[]>(attributes, TRUST_MANAGERS_RUNTIME_CAPABILITY) {
+        final AbstractAddStepHandler addHandler = new BasicAddHandler<TrustManager>(attributes, TRUST_MANAGER_RUNTIME_CAPABILITY) {
 
             @Override
-            protected BasicService.ValueSupplier<TrustManager[]> getValueSupplier(ServiceBuilder<TrustManager[]> serviceBuilder, OperationContext context, ModelNode model) throws OperationFailedException {
+            protected BasicService.ValueSupplier<TrustManager> getValueSupplier(ServiceBuilder<TrustManager> serviceBuilder, OperationContext context, ModelNode model) throws OperationFailedException {
                 final String legacyJSSEConfig = asStringIfDefined(context, LEGACY_JSSE_CONFIG, model);
                 final InjectedValue<SecurityDomainContext> securityDomainContextInjector = new InjectedValue<>();
                 if (legacyJSSEConfig != null) {
@@ -271,14 +289,18 @@ public class ElytronIntegrationResourceDefinitions {
                     }
                     final TrustManager[] trustManagers = jsseDomain.getTrustManagers();
                     if (trustManagers == null) {
-                        throw SecurityLogger.ROOT_LOGGER.unableToLocateComponentInJSSEDomain("trust manager", legacyJSSEConfig);
+                        throw SecurityLogger.ROOT_LOGGER.unableToLocateComponentInJSSEDomain("TrustManager", legacyJSSEConfig);
                     }
-                    return trustManagers;
+                    for (TrustManager trustManager : trustManagers) {
+                        if (trustManager instanceof X509ExtendedTrustManager)
+                            return trustManager;
+                    }
+                    throw SecurityLogger.ROOT_LOGGER.expectedManagerTypeNotFound("TrustManager", X509ExtendedTrustManager.class.getSimpleName(), legacyJSSEConfig);
                 };
             }
         };
 
-        return new BasicResourceDefinition(Constants.ELYTRON_TRUST_MANAGER, addHandler, attributes, TRUST_MANAGERS_RUNTIME_CAPABILITY);
+        return new BasicResourceDefinition(Constants.ELYTRON_TRUST_MANAGER, addHandler, attributes, TRUST_MANAGER_RUNTIME_CAPABILITY);
     }
 
     static String asStringIfDefined(OperationContext context, SimpleAttributeDefinition attributeDefinition, ModelNode model) throws OperationFailedException {

@@ -22,21 +22,20 @@
 
 package org.wildfly.extension.picketlink.federation.model.idp;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
 import org.wildfly.extension.picketlink.common.model.validator.ElementMaxOccurrenceValidationStepHandler;
 import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Pedro Silva
@@ -74,13 +73,8 @@ public class IdentityProviderConfigAddStepHandler extends RestartParentResourceA
     }
 
     @Override
-    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-        IdentityProviderAddHandler.launchServices(context, parentModel, verificationHandler, null, parentAddress, true);
-    }
-
-    @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        IdentityProviderAddHandler.launchServices(context, parentModel, null, null, parentAddress, true);
+        IdentityProviderAddHandler.launchServices(context, parentModel, parentAddress, true);
     }
 
     @Override

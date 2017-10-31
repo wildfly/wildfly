@@ -25,6 +25,7 @@ package org.jboss.as.mail.extension;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import javax.mail.Session;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
@@ -34,28 +35,22 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author Tomaz Cerar
- * @created 19.12.11 21:04
+ * @created 19.12.11
  */
 class MailSessionDefinition extends PersistentResourceDefinition {
 
-    static final MailSessionDefinition INSTANCE = new MailSessionDefinition();
+    static final RuntimeCapability<Void> SESSION_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.mail.session", true, Session.class)
+                .build();
+
 
     private final List<AccessConstraintDefinition> accessConstraints;
-
-    private MailSessionDefinition() {
-        super(MailExtension.MAIL_SESSION_PATH,
-                MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION),
-                MailSessionAdd.INSTANCE,
-                new ServiceRemoveStepHandler(MailSessionAdd.MAIL_SESSION_SERVICE_NAME, MailSessionAdd.INSTANCE));
-        ApplicationTypeConfig atc = new ApplicationTypeConfig(MailExtension.SUBSYSTEM_NAME, MailSubsystemModel.MAIL_SESSION);
-        accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
-    }
 
     protected static final SimpleAttributeDefinition JNDI_NAME =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.JNDI_NAME, ModelType.STRING, false)
@@ -66,7 +61,7 @@ class MailSessionDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.FROM, ModelType.STRING, true)
                     .setRestartAllServices()
                     .setAllowExpression(true)
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .build();
     protected static final SimpleAttributeDefinition DEBUG =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.DEBUG, ModelType.BOOLEAN, true)
@@ -75,7 +70,7 @@ class MailSessionDefinition extends PersistentResourceDefinition {
                     .setRestartAllServices()
                     .build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = {DEBUG, JNDI_NAME, FROM};
+    static final AttributeDefinition[] ATTRIBUTES = {DEBUG, JNDI_NAME, FROM};
 
     private static final List<MailServerDefinition> CHILDREN = Arrays.asList(
             // /subsystem=mail/mail-session=java:/Mail/server=imap
@@ -88,6 +83,19 @@ class MailSessionDefinition extends PersistentResourceDefinition {
             MailServerDefinition.INSTANCE_CUSTOM
 
     );
+
+    static final MailSessionDefinition INSTANCE = new MailSessionDefinition();
+
+    private MailSessionDefinition() {
+        super(new Parameters(MailExtension.MAIL_SESSION_PATH,
+                MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION))
+                .setAddHandler(MailSessionAdd.INSTANCE)
+                .setRemoveHandler(new ServiceRemoveStepHandler(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName(), MailSessionAdd.INSTANCE))
+                .setCapabilities(SESSION_CAPABILITY)
+        );
+        ApplicationTypeConfig atc = new ApplicationTypeConfig(MailExtension.SUBSYSTEM_NAME, MailSubsystemModel.MAIL_SESSION);
+        accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
+    }
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration rootResourceRegistration) {

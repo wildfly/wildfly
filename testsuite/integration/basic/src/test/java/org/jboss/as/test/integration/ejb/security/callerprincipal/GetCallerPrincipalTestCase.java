@@ -22,6 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.security.callerprincipal;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.util.concurrent.Callable;
+
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -37,6 +41,7 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -54,8 +59,6 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.logging.Logger;
-import org.jboss.security.client.SecurityClient;
-import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -64,6 +67,7 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * The Bean Provider can invoke the getCallerPrincipal and isCallerInRole methods only
@@ -121,7 +125,8 @@ public class GetCallerPrincipalTestCase {
                 .addClass(TestResultsSingleton.class)
                 .addClass(ITestResultsSingleton.class)
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-single", "MANIFEST.MF");
+                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-single", "MANIFEST.MF")
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
         return jar;
     }
@@ -134,7 +139,8 @@ public class GetCallerPrincipalTestCase {
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF");
+                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
         return jar;
     }
@@ -147,7 +153,8 @@ public class GetCallerPrincipalTestCase {
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF");
+                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "jboss-permissions.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
         return jar;
     }
@@ -159,7 +166,8 @@ public class GetCallerPrincipalTestCase {
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")                ;
+                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
         return jar;
     }
@@ -171,12 +179,14 @@ public class GetCallerPrincipalTestCase {
                 .addClass(SLSBWithoutSecurityDomain.class)
                 .addClass(ISLSBWithoutSecurityDomain.class)
                 .addClass(PollingUtils.class)
+                .addClass(Util.class)
                 .addClasses(JmsQueueSetup.class, EjbSecurityDomainSetup.class, AbstractSecurityDomainSetup.class, AbstractMgmtTestBase.class)
                 .addPackage(AbstractMgmtTestBase.class.getPackage()).addClasses(MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class)
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-test", "MANIFEST.MF");
+                .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-test", "MANIFEST.MF")
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
         return jar;
     }
@@ -185,18 +195,10 @@ public class GetCallerPrincipalTestCase {
         return (ITestResultsSingleton) initialContext.lookup("ejb:/single//" + TestResultsSingleton.class.getSimpleName() + "!" + ITestResultsSingleton.class.getName());
     }
 
-    private SecurityClient login() throws Exception {
-        final SecurityClient client = SecurityClientFactory.getSecurityClient();
-        client.setSimple("user1", "password1");
-        client.login();
-        return client;
-    }
-
     @Test
     public void testStatelessLifecycle() throws Exception {
         deployer.deploy("slsb");
-        SecurityClient client = this.login();
-        try {
+        final Callable<Void> callable = () -> {
             ITestResultsSingleton results = this.getResultsSingleton();
             IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/slsb//" + SLSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName());
             log.trace("Stateless bean returns: " + bean.get());
@@ -206,17 +208,16 @@ public class GetCallerPrincipalTestCase {
             deployer.undeploy("slsb");
 
             Assert.assertEquals(OK + "stop", results.getSlsb("predestroy"));
-        } finally {
-            client.logout();
-        }
+            return null;
+        };
+        Util.switchIdentitySCF("user1", "password1", callable);
     }
 
     @Test
     public void testStatefulLifecycle() throws Exception {
         deployer.deploy("sfsb");
-        SecurityClient client = this.login();
-        ITestResultsSingleton results = this.getResultsSingleton();
-        try {
+        final Callable<Void> callable = () -> {
+            ITestResultsSingleton results = this.getResultsSingleton();
             IBeanLifecycleCallback bean = (IBeanLifecycleCallback) initialContext.lookup("ejb:/sfsb//" + SFSBLifecycleCallback.class.getSimpleName() + "!" + IBeanLifecycleCallback.class.getName() + "?stateful");
             log.trace("Stateful bean returns: " + bean.get());
 
@@ -225,9 +226,12 @@ public class GetCallerPrincipalTestCase {
             bean.remove();
 
             Assert.assertEquals(LOCAL_USER +  "stop", results.getSfsb("predestroy"));
+            return null;
+        };
+        try {
+            Util.switchIdentitySCF("user1", "password1", callable);
         } finally {
             deployer.undeploy("sfsb");
-            client.logout();
         }
     }
 
@@ -239,56 +243,58 @@ public class GetCallerPrincipalTestCase {
     @Test
     public void testMDBLifecycle() throws Exception {
         deployer.deploy("mdb");
-        SecurityClient client = this.login();
-        ITestResultsSingleton results = this.getResultsSingleton();
+        final Callable<Void> callable = () -> {
+            ITestResultsSingleton results = this.getResultsSingleton();
 
-        MessageProducer producer = null;
-        MessageConsumer consumer = null;
-        QueueConnection conn = null;
-        Session session = null;
+            MessageProducer producer = null;
+            MessageConsumer consumer = null;
+            QueueConnection conn = null;
+            Session session = null;
 
-        try {
-            QueueConnectionFactory qcf = (QueueConnectionFactory) new InitialContext().lookup("java:/ConnectionFactory");
-            Queue queue = (Queue) new InitialContext().lookup("java:jboss/" + QUEUE_NAME);
+            try {
+                QueueConnectionFactory qcf = (QueueConnectionFactory) new InitialContext().lookup("java:/ConnectionFactory");
+                Queue queue = (Queue) new InitialContext().lookup("java:jboss/" + QUEUE_NAME);
 
-            conn = qcf.createQueueConnection("guest", "guest");
-            conn.start();
-            session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
+                conn = qcf.createQueueConnection("guest", "guest");
+                conn.start();
+                session = conn.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
 
-            TemporaryQueue replyQueue = session.createTemporaryQueue();
+                TemporaryQueue replyQueue = session.createTemporaryQueue();
 
-            TextMessage msg = session.createTextMessage("Hello world");
-            msg.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
-            msg.setJMSReplyTo(replyQueue);
+                TextMessage msg = session.createTextMessage("Hello world");
+                msg.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
+                msg.setJMSReplyTo(replyQueue);
 
-            producer = session.createProducer(queue);
-            producer.send(msg);
-            consumer = session.createConsumer(replyQueue);
-            Message replyMsg = consumer.receive(5000);
+                producer = session.createProducer(queue);
+                producer.send(msg);
+                consumer = session.createConsumer(replyQueue);
+                Message replyMsg = consumer.receive(5000);
 
-            Object obj = ((ObjectMessage) replyMsg).getObject();
-            log.trace("MDB message get: " + obj);
+                Object obj = ((ObjectMessage) replyMsg).getObject();
+                log.trace("MDB message get: " + obj);
 
-            Assert.assertEquals(OK + "start", results.getMdb("postconstruct"));
+                Assert.assertEquals(OK + "start", results.getMdb("postconstruct"));
 
-            deployer.undeploy("mdb");
+                deployer.undeploy("mdb");
 
-            Assert.assertEquals(OK + "stop", results.getMdb("predestroy"));
-        } finally {
-            if(consumer != null) {
-                consumer.close();
+                Assert.assertEquals(OK + "stop", results.getMdb("predestroy"));
+            } finally {
+                if(consumer != null) {
+                    consumer.close();
+                }
+                if(producer!=null) {
+                    producer.close();
+                }
+                if(session!=null) {
+                    session.close();
+                }
+                if(conn!=null) {
+                    conn.close();
+                }
             }
-            if(producer!=null) {
-                producer.close();
-            }
-            if(session!=null) {
-                session.close();
-            }
-            if(conn!=null) {
-                conn.close();
-            }
-            client.logout();
-        }
+            return null;
+        };
+        Util.switchIdentitySCF("user1", "password1", callable);
     }
 
 }

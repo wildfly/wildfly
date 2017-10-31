@@ -22,18 +22,21 @@
 
 package org.wildfly.extension.picketlink.federation.model.idp;
 
+import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER_ATTRIBUTE_MANAGER;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER_ROLE_GENERATOR;
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.picketlink.identity.federation.bindings.wildfly.idp.UndertowAttributeManager;
 import org.picketlink.identity.federation.bindings.wildfly.idp.UndertowRoleGenerator;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
@@ -41,13 +44,6 @@ import org.wildfly.extension.picketlink.federation.config.IDPConfiguration;
 import org.wildfly.extension.picketlink.federation.model.AbstractEntityProviderAddHandler;
 import org.wildfly.extension.picketlink.federation.service.FederationService;
 import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
-
-import java.util.List;
-
-import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER_ATTRIBUTE_MANAGER;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER_ROLE_GENERATOR;
-import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -74,10 +70,10 @@ public class IdentityProviderAddHandler extends AbstractEntityProviderAddHandler
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
         ModelNode identityProviderNode = Resource.Tools.readModel(context.readResource(EMPTY_ADDRESS));
-        launchServices(context, identityProviderNode, verificationHandler, newControllers, pathAddress, false);
+        launchServices(context, identityProviderNode, pathAddress, false);
     }
 
     @Override
@@ -88,7 +84,7 @@ public class IdentityProviderAddHandler extends AbstractEntityProviderAddHandler
         }
     }
 
-    static void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, PathAddress pathAddress, boolean isRestart) throws OperationFailedException {
+    static void launchServices(OperationContext context, ModelNode model, PathAddress pathAddress, boolean isRestart) throws OperationFailedException {
         String alias = pathAddress.getLastElement().getValue();
         IdentityProviderService service = new IdentityProviderService(toIDPConfig(context, model, alias));
         ServiceBuilder<IdentityProviderService> serviceBuilder = context.getServiceTarget().addService(IdentityProviderService.createServiceName(alias), service);
@@ -105,15 +101,7 @@ public class IdentityProviderAddHandler extends AbstractEntityProviderAddHandler
             serviceBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(configuration.getSecurityDomain()));
         }
 
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-
-        ServiceController<IdentityProviderService> controller = serviceBuilder.install();
-
-        if (newControllers != null) {
-            newControllers.add(controller);
-        }
+        serviceBuilder.install();
 
         if (isRestart) {
             restartTrustDomains(alias, model, context);

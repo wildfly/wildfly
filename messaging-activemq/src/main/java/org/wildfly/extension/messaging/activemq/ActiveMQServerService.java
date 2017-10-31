@@ -53,6 +53,7 @@ import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.network.OutboundSocketBinding;
@@ -67,7 +68,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
@@ -109,11 +109,8 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     private final PathConfig pathConfig;
     // mapping between the {broadcast|discovery}-groups and the *names* of the JGroups channel they use
     private final Map<String, String> jgroupsChannels = new HashMap<String, String>();
-    // mapping between the {broadcast|discovery}-groups and the JGroups channel factory for the *stack* they use
-    private Map<String, ChannelFactory> jgroupFactories = new HashMap<String, ChannelFactory>();
-
-    // broadcast-group and discovery-groups configured with JGroups must share the same channel
-    private final Map<String, JChannel> channels = new HashMap<String, JChannel>();
+    // mapping between the {broadcast|discovery}-groups and the JGroups channel factory for the ChannelFactory they use
+    private final Map<String, ChannelFactory> jgroupFactories = new HashMap<String, ChannelFactory>();
 
     private final List<Interceptor> incomingInterceptors = new ArrayList<>();
     private final List<Interceptor> outgoingInterceptors = new ArrayList<>();
@@ -140,6 +137,10 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         return new MapInjector<String, SocketBinding>(socketBindings, name);
     }
 
+    ChannelFactory getChannelFactory(String name) {
+        return this.jgroupFactories.get(name);
+    }
+
     Injector<ChannelFactory> getJGroupsInjector(String name) {
         return new MapInjector<String, ChannelFactory>(jgroupFactories, name);
     }
@@ -158,10 +159,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
 
     InjectedValue<DataSource> getDataSource() {
         return dataSource;
-    }
-
-    Map<String, JChannel> getChannels() {
-        return channels;
     }
 
     protected List<Interceptor> getIncomingInterceptors() {
@@ -218,13 +215,25 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                             if (socketBinding == null) {
                                 throw MessagingLogger.ROOT_LOGGER.failedToFindConnectorSocketBinding(tc.getName());
                             }
-                            InetSocketAddress sa = socketBinding.getSocketAddress();
-                            port = sa.getPort();
-                            // resolve the host name of the address only if a loopback address has been set
-                            if (sa.getAddress().isLoopbackAddress()) {
-                                host = NetworkUtils.canonize(sa.getAddress().getHostName());
+                            if (socketBinding.getClientMappings() != null && !socketBinding.getClientMappings().isEmpty()) {
+                                // At the moment ActiveMQ doesn't allow to select mapping based on client's network.
+                                // Instead the first client-mapping element will always be used - see WFLY-8432
+                                ClientMapping clientMapping = socketBinding.getClientMappings().get(0);
+                                host = NetworkUtils.canonize(clientMapping.getDestinationAddress());
+                                port = clientMapping.getDestinationPort();
+
+                                if (socketBinding.getClientMappings().size() > 1) {
+                                    MessagingLogger.ROOT_LOGGER.multipleClientMappingsFound(socketBinding.getName(), tc.getName(), host, port);
+                                }
                             } else {
-                                host = NetworkUtils.canonize(sa.getAddress().getHostAddress());
+                                InetSocketAddress sa = socketBinding.getSocketAddress();
+                                port = sa.getPort();
+                                // resolve the host name of the address only if a loopback address has been set
+                                if (sa.getAddress().isLoopbackAddress()) {
+                                    host = NetworkUtils.canonize(sa.getAddress().getHostName());
+                                } else {
+                                    host = NetworkUtils.canonize(sa.getAddress().getHostAddress());
+                                }
                             }
                         } else {
                             port = binding.getDestinationPort();
@@ -238,6 +247,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                                 tc.getParams().put(TransportConstants.LOCAL_PORT_PROP_NAME, binding.getAbsoluteSourcePort());
                             }
                         }
+
                         tc.getParams().put(HOST, host);
                         tc.getParams().put(PORT, port);
                     }
@@ -270,9 +280,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                     if (jgroupFactories.containsKey(key)) {
                         ChannelFactory channelFactory = jgroupFactories.get(key);
                         String channelName = jgroupsChannels.get(key);
-                        JChannel channel = (JChannel) channelFactory.createChannel(channelName);
-                        channels.put(channelName, channel);
-                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, channel, channelName));
+                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, channelFactory, channelName));
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {
@@ -290,16 +298,11 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                 for(final Map.Entry<String, DiscoveryGroupConfiguration> entry : discoveryGroups.entrySet()) {
                     final String name = entry.getKey();
                     final String key = "discovery" + name;
-                    DiscoveryGroupConfiguration config = null;
+                    final DiscoveryGroupConfiguration config;
                     if (jgroupFactories.containsKey(key)) {
                         ChannelFactory channelFactory = jgroupFactories.get(key);
                         String channelName = jgroupsChannels.get(key);
-                        JChannel channel = channels.get(channelName);
-                        if (channel == null) {
-                            channel = (JChannel) channelFactory.createChannel(channelName);
-                            channels.put(channelName, channel);
-                        }
-                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), channel, channelName);
+                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), channelFactory, channelName);
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {

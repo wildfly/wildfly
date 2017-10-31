@@ -21,10 +21,8 @@
 */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.subsystems.common.pool.Constants.VALIDATE_ON_MATCH;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT_TRACE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 
 import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
@@ -38,12 +36,6 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -51,27 +43,27 @@ import org.jboss.dmr.ModelNode;
  */
 public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefinition {
 
-    private static final String LEGACY_MCP = "org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreArrayListManagedConnectionPool";
-
     static final PathElement PATH = PathElement.pathElement(CONNECTIONDEFINITIONS_NAME);
     private static final ResourceDescriptionResolver RESOLVER = ResourceAdaptersExtension.getResourceDescriptionResolver(CONNECTIONDEFINITIONS_NAME);
     private static final OperationDefinition FLUSH__IDLE_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_IDLE_CONNECTION_IN_POOL, RESOLVER)
-            .withFlag(Flag.RUNTIME_ONLY)
+            .setRuntimeOnly()
             .build();
     private static final OperationDefinition FLUSH_ALL_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_ALL_CONNECTION_IN_POOL, RESOLVER)
-            .withFlag(Flag.RUNTIME_ONLY)
+            .setRuntimeOnly()
             .build();
     private static final SimpleOperationDefinition DUMP_QUEUED_THREADS = new SimpleOperationDefinitionBuilder("dump-queued-threads-in-pool", RESOLVER)
-            .setRuntimeOnly().build();
+            .setReadOnly()
+            .setRuntimeOnly()
+            .build();
 
     private static final OperationDefinition FLUSH_INVALID_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_INVALID_CONNECTION_IN_POOL, RESOLVER)
-                .withFlag(Flag.RUNTIME_ONLY)
+                .setRuntimeOnly()
                 .build();
     private static final OperationDefinition FLUSH_GRACEFULY_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_GRACEFULLY_CONNECTION_IN_POOL, RESOLVER)
-                .withFlag(Flag.RUNTIME_ONLY)
+                .setRuntimeOnly()
                 .build();
     private static final OperationDefinition TEST_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.TEST_CONNECTION_IN_POOL, RESOLVER)
-            .withFlag(Flag.RUNTIME_ONLY)
+            .setRuntimeOnly()
             .build();
 
     private final boolean readOnly;
@@ -117,66 +109,5 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(new ConfigPropertyResourceDefinition(readOnly ? null : CDConfigPropertyAdd.INSTANCE, readOnly ? null : ReloadRequiredRemoveStepHandler.INSTANCE));
-    }
-
-    static void registerTransformer400(ResourceTransformationDescriptionBuilder parentBuilder) {
-        parentBuilder.addChildResource(PATH).getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),
-                        Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Constants.ENLISTMENT_TRACE), Constants.ENLISTMENT_TRACE)
-                .end();
-    }
-
-    static void registerTransformer300(ResourceTransformationDescriptionBuilder parentBuilder) {
-        parentBuilder.addChildResource(PATH).getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), Constants.ENLISTMENT_TRACE)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), Constants.MCP)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ENLISTMENT_TRACE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MCP)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT);
-    }
-    static void registerTransformer200(ResourceTransformationDescriptionBuilder parentBuilder) {
-        parentBuilder.addChildResource(PATH).getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), Constants.CONNECTABLE)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING, VALIDATE_ON_MATCH)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), Constants.ENLISTMENT_TRACE)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), Constants.MCP)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ENLISTMENT_TRACE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MCP)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING, VALIDATE_ON_MATCH)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT);
-    }
-
-    static void registerTransformer130(ResourceTransformationDescriptionBuilder parentBuilder) {
-        parentBuilder.addChildResource(PATH).getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.ALWAYS, Constants.ENLISTMENT, Constants.SHARABLE, org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), Constants.CONNECTABLE)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING, VALIDATE_ON_MATCH)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), Constants.ENLISTMENT_TRACE)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(LEGACY_MCP)), Constants.MCP)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)),Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FAIR)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ENLISTMENT_TRACE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MCP)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING, VALIDATE_ON_MATCH)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_ELYTRON_ENABLED, Constants.RECOVERY_CREDENTIAL_REFERENCE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.AUTHENTICATION_CONTEXT, Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION, Constants.RECOVERY_AUTHENTICATION_CONTEXT);
     }
 }

@@ -22,10 +22,6 @@
 
 package org.jboss.as.txn.service;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.transaction.TransactionManager;
-
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -35,11 +31,17 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.usertx.UserTransactionRegistry;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.transaction.client.AbstractTransaction;
 import org.wildfly.transaction.client.AssociationListener;
 import org.wildfly.transaction.client.ContextTransactionManager;
 import org.wildfly.transaction.client.CreationListener;
 import org.wildfly.transaction.client.LocalTransactionContext;
+
+import javax.transaction.TransactionManager;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Service responsible for getting the {@link TransactionManager}.
@@ -70,13 +72,26 @@ public class TransactionManagerService extends AbstractService<TransactionManage
 
         LocalTransactionContext.getCurrent().registerCreationListener((txn, createdBy) -> {
             if (createdBy == CreationListener.CreatedBy.USER_TRANSACTION) {
-                txn.registerAssociationListener(new AssociationListener() {
-                    private final AtomicBoolean first = new AtomicBoolean();
+                if (WildFlySecurityManager.isChecking()) {
+                    AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+                        txn.registerAssociationListener(new AssociationListener() {
+                            private final AtomicBoolean first = new AtomicBoolean();
 
-                    public void associationChanged(final AbstractTransaction t, final boolean a) {
-                        if (a && first.compareAndSet(false, true)) registry.userTransactionStarted();
-                    }
-                });
+                            public void associationChanged(final AbstractTransaction t, final boolean a) {
+                                if (a && first.compareAndSet(false, true)) registry.userTransactionStarted();
+                            }
+                        });
+                        return null;
+                    });
+                } else {
+                    txn.registerAssociationListener(new AssociationListener() {
+                        private final AtomicBoolean first = new AtomicBoolean();
+
+                        public void associationChanged(final AbstractTransaction t, final boolean a) {
+                            if (a && first.compareAndSet(false, true)) registry.userTransactionStarted();
+                        }
+                    });
+                }
             }
         });
     }

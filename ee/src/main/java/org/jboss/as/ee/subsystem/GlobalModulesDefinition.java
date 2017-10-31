@@ -88,9 +88,9 @@ public class GlobalModulesDefinition {
         @Override
         public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
             if (resourceModel.isDefined()) {
-                writer.writeEmptyElement(attribute.getXmlName());
+                writer.writeEmptyElement(Element.MODULE.getLocalName());
                 for (SimpleAttributeDefinition valueType : VALUE_TYPE_FIELDS) {
-                    valueType.marshallAsAttribute(resourceModel, writer);
+                    valueType.getAttributeMarshaller().marshall(valueType, resourceModel, true, writer);
                 }
             }
         }
@@ -102,7 +102,7 @@ public class GlobalModulesDefinition {
                     .build();
 
     public static final AttributeDefinition INSTANCE = ObjectListAttributeDefinition.Builder.of(GLOBAL_MODULES, VALUE_TYPE_AD)
-        .setAllowNull(true)
+        .setRequired(false)
         .build();
 
     public static List<GlobalModule> createModuleList(final OperationContext context, final ModelNode globalMods) throws OperationFailedException {

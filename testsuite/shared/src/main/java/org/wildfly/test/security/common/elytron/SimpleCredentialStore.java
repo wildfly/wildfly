@@ -60,40 +60,41 @@ public class SimpleCredentialStore extends AbstractConfigurableElement implement
 
     @Override
     public void create(CLIWrapper cli) throws Exception {
-        // /subsystem=elytron/credential-store=test:add(uri="cr-store://foo/a?create=true;keyStoreType=JCEKS;modifiable=true",
+        // /subsystem=elytron/credential-store=test:add(location=a,create=true,modifiable=true,implementation-properties={"keyStoreType"=>"JCEKS"},
         // credential-reference={clear-text=pass123})
 
         final StringBuilder sb = new StringBuilder("/subsystem=elytron/credential-store=");
-        sb.append(name).append(":add(").append("uri=\"cr-store://").append(name).append("/")
+        sb.append(name).append(":add(").append("location=")
                 .append(escapePath(keyStorePath.getPath()));
-        char separator = '?';
         if (create != null) {
-            sb.append(separator).append("create=").append(create.toString());
-            separator = ';';
+            sb.append(",").append("create=").append(create.toString());
         }
         if (modifiable != null) {
-            sb.append(separator).append("modifiable=").append(modifiable.toString());
-            separator = ';';
+            sb.append(",").append("modifiable=").append(modifiable.toString());
         }
+
         if (keyStoreType != null) {
-            sb.append(separator).append("keyStoreType=").append(keyStoreType);
-            separator = ';';
+            sb.append(",")
+                    .append("implementation-properties={")
+                    .append("\"keyStoreType\"=>\"")
+                    .append(keyStoreType)
+                    .append("\"}");
         }
-        sb.append("\", ");
+
 
         if (credential != null) {
-            sb.append(credential.asString());
+            sb.append(",").append(credential.asString());
         }
 
         if (isNotBlank(keyStorePath.getRelativeTo())) {
-            sb.append("relative-to=\"").append(keyStorePath.getRelativeTo()).append("\"");
+            sb.append(",").append("relative-to=\"").append(keyStorePath.getRelativeTo()).append("\"");
         }
         sb.append(")");
         cli.sendLine(sb.toString());
 
         for (Entry<String, String> entry : aliases.entrySet()) {
             // /subsystem=elytron/credential-store=test/alias=alias1:add(secret-value=mySecretValue)
-            cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add(secret-value=\"%s\")", name,
+            cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:add-alias(alias=%s, secret-value=\"%s\")", name,
                     entry.getKey(), entry.getValue()));
         }
     }
@@ -106,7 +107,7 @@ public class SimpleCredentialStore extends AbstractConfigurableElement implement
         // remove aliases
         for (String alias : aliases.keySet()) {
             // lowercase alias used - https://issues.jboss.org/browse/WFLY-8131
-            cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:remove()", name, alias.toLowerCase(Locale.ROOT)));
+            cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:remove-alias(alias=%s)", name, alias.toLowerCase(Locale.ROOT)));
         }
 
         cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:remove()", name));

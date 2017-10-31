@@ -1,0 +1,163 @@
+<!--
+  ~
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2015, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~
+  -->
+
+<subsystem xmlns="urn:jboss:domain:security:2.0">
+    <security-management initialize-jacc="true"/>
+    <security-domains>
+        <security-domain name="other" cache-type="default">
+            <authentication>
+                <login-module code="Remoting" flag="${test.prop:optional}" module="test-authentication">
+                    <module-option name="password-stacking" value="${test.prop:useFirstPass}"/>
+                </login-module>
+                <login-module code="Duplicate" flag="optional" />
+                <login-module name="duplicate-module" code="Duplicate" flag="optional" />
+                <login-module code="Anon" flag="optional"/>
+                <login-module code="RealmUsersRoles" flag="required">
+                    <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>
+                    <module-option name="rolesProperties" value="${jboss.server.config.dir}/application-roles.properties"/>
+                    <module-option name="realm" value="ApplicationRealm"/>
+                    <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+            </authentication>
+            <authorization>
+                <policy-module code="DenyAll" flag="${test.prop:required}" module="test-auth">
+                    <module-option name="a" value="${test.prop:c}"/>
+                </policy-module>
+            </authorization>
+            <acl>
+                <acl-module name="acl" code="AclThingy" flag="${test.prop:required}" module="test">
+                    <module-option name="d" value="${test.prop:r}"/>
+                </acl-module>
+            </acl>
+            <mapping>
+                <mapping-module name="test" code="SimpleRoles" type="${test.prop:role}" module="test-mapping">
+                    <module-option name="d" value="${test.prop:e}"/>
+                </mapping-module>
+            </mapping>
+            <audit>
+                <provider-module code="customModule">
+                    <module-option name="d" value="${test.prop:r}"/>
+                </provider-module>
+            </audit>
+            <identity-trust>
+                <trust-module code="IdentityThingy" flag="${test.prop:required}" module="test-identity">
+                    <module-option name="d" value="${test.prop:r}"/>
+                </trust-module>
+            </identity-trust>
+            <jsse truststore-url="${test.prop:keystore.jks}"
+                  truststore-password="${test.prop:rmi+ssl}"
+                  truststore-type="${test.prop:jks}"
+                  truststore-provider="${test.prop:truststore.jks}"
+                  truststore-provider-argument="${test.prop:trust-arg}"
+                  trust-manager-factory-algorithm="${test.prop:JKS}"
+                  trust-manager-factory-provider="${test.prop:JKS-provider}"
+                  keystore-url="${test.prop:clientcert.jks}"
+                  keystore-password="${test.prop:changeit}"
+                  keystore-type="${test.prop:jks2}"
+                  keystore-provider="${test.prop:keystore.jks}"
+                  keystore-provider-argument="${test.prop:key-arg}"
+                  key-manager-factory-algorithm="${test.prop:JKS}"
+                  key-manager-factory-provider="${test.prop:JKS-provider}"
+                  client-alias="${test.prop:client-alias}"
+                  server-alias="${test.prop:server-alias}"
+                  service-auth-token="${test.prop:server-auth-token}"
+                  client-auth="${test.prop:true}"
+                  cipher-suites="${test.prop:aaa,bbb,ccc}"
+                  protocols="${test.prop:one,two,three}">
+                <property name="name" value="${some.prop:default}"/>
+            </jsse>
+        </security-domain>
+        <security-domain name="jaspi-test" cache-type="default">
+            <authentication-jaspi>
+                <login-module-stack name="lm-stack">
+                    <login-module name="lm" code="UsersRoles" flag="required" module="test-jaspi">
+                        <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>
+                        <module-option name="rolesProperties" value="${jboss.server.config.dir}/application-roles.properties"/>
+                    </login-module>
+                </login-module-stack>
+                <auth-module code="org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule" login-module-stack-ref="lm-stack"
+                             flag="${test.prop:optional}" module="test-jaspi">
+                    <module-option name="x" value="${test.prop:y}"/>
+                    <module-option name="p" value="${test.prop:r}"/>
+                </auth-module>
+            </authentication-jaspi>
+        </security-domain>
+        <security-domain name="ordering" cache-type="default">
+            <authentication>
+                <login-module code="Remoting" flag="optional">
+                    <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+            </authentication>
+        </security-domain>
+        <security-domain name="other2" cache-type="default">
+            <authentication>
+                <login-module code="Remoting" flag="optional">
+                    <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+                <login-module code="RealmDirect" flag="required">
+                    <module-option name="password-stacking" value="useFirstPass"/>
+                </login-module>
+            </authentication>
+        </security-domain>
+        <security-domain name="jboss-web-policy" cache-type="default">
+            <authorization>
+                <policy-module code="Delegating" flag="required"/>
+            </authorization>
+        </security-domain>
+        <security-domain name="jboss-ejb-policy" cache-type="default">
+            <authorization>
+                <policy-module code="Delegating" flag="required"/>
+            </authorization>
+        </security-domain>
+        <security-domain name="jboss-empty-jsse" >
+            <jsse server-alias="silent.planet" />
+        </security-domain>
+        <security-domain name="domain-with-custom-audit-provider" >
+            <audit>
+                <provider-module code="org.myorg.security.MyCustomLogAuditProvider" module="org.myorg.security" />
+            </audit>
+        </security-domain>
+        <security-domain name="infinispan-cache" cache-type="infinispan">
+            <authorization>
+                <policy-module code="Delegating" flag="required"/>
+            </authorization>
+        </security-domain>
+    </security-domains>
+    <vault code="somevault">
+        <vault-option name="xyz" value="zxc"/>
+        <vault-option name="abc" value="def"/>
+    </vault>
+    <elytron-integration>
+        <security-realms>
+            <elytron-realm name="LegacyRealm1" legacy-jaas-config="other"/>
+            <elytron-realm name="LegacyRealm2" legacy-jaas-config="other2" apply-role-mappers="false"/>
+        </security-realms>
+        <tls>
+            <elytron-key-store name="LegacyKeyStore" legacy-jsse-config="other"/>
+            <elytron-trust-store name="LegacyTrustStore" legacy-jsse-config="other"/>
+            <elytron-key-manager name="LegacyKeyManager" legacy-jsse-config="other"/>
+            <elytron-trust-manager name="LegacyTrustManager" legacy-jsse-config="other"/>
+        </tls>
+    </elytron-integration>
+</subsystem>

@@ -1,0 +1,57 @@
+# enable Elytron across the server
+/subsystem=undertow/server=default-server/https-listener=https:remove()
+/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
+/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
+
+/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:remove
+
+/core-service=management/security-realm=ApplicationRealm:remove
+
+/subsystem=elytron/properties-realm=SeccontextRealm:add( \
+    groups-properties={path=seccontext.properties, relative-to=jboss.server.config.dir}, \
+    users-properties={path=seccontext.properties, relative-to=jboss.server.config.dir, \
+    digest-realm-name=SecurityContextTests, plain-text=true})
+/subsystem=elytron/token-realm=JWT:add(jwt={}, principal-claim=aud)
+/subsystem=elytron/constant-realm-mapper=JWT:add(realm-name=JWT)
+
+/subsystem=elytron/simple-permission-mapper=seccontext-server-permissions:add( \
+    permission-mappings=[{principals=[server], permissions=[ \
+      {class-name=org.wildfly.security.auth.permission.LoginPermission}, \
+      {class-name=org.wildfly.security.auth.permission.RunAsPrincipalPermission, target-name="*"} \
+    ]}])
+/subsystem=elytron/logical-permission-mapper=seccontext-allpermissions:add( \
+    logical-operation=or, left=default-permission-mapper, right=seccontext-server-permissions)
+
+/subsystem=elytron/security-domain=SeccontextDomain:add(realms=[ \
+    {realm=SeccontextRealm, role-decoder=groups-to-roles}, \
+    {realm=JWT, role-decoder=groups-to-roles} ], \
+    default-realm=SeccontextRealm, \
+    permission-mapper=seccontext-allpermissions)
+
+/subsystem=elytron/sasl-authentication-factory=seccontext-sasl-authn-factory:add( \
+    sasl-server-factory=elytron, \
+    security-domain=SeccontextDomain, \
+    mechanism-configurations=[ \
+        {mechanism-name=PLAIN}, \
+        {mechanism-name=DIGEST-MD5}, \
+        {mechanism-name=OAUTHBEARER, realm-mapper=JWT}])
+/socket-binding-group=standard-sockets/socket-binding=seccontext-remoting-socket:add(port=16444)
+/subsystem=remoting/connector=seccontext-connector:add(socket-binding=seccontext-remoting-socket, \
+    sasl-authentication-factory=seccontext-sasl-authn-factory)
+
+/subsystem=ejb3/application-security-domain=seccontext-entry:add(security-domain=SeccontextDomain)
+/subsystem=ejb3/application-security-domain=seccontext-whoami:add(security-domain=SeccontextDomain)
+
+/subsystem=elytron/http-authentication-factory=seccontext:add(security-domain=SeccontextDomain, \ 
+    http-server-mechanism-factory=global, \
+    mechanism-configurations=[ \
+        {mechanism-name=BASIC}, \
+        {mechanism-name=FORM}, \
+        {mechanism-name=BEARER_TOKEN, mechanism-realm-configurations=[{realm-mapper=JWT, realm-name=JWT-protected}]} \
+    ])
+
+/subsystem=undertow/application-security-domain=seccontext-web:add(http-authentication-factory=seccontext)
+/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, \
+    value=seccontext-sasl-authn-factory)

@@ -29,7 +29,7 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -71,7 +71,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        MODE("mode", ModelType.STRING, new ModelNode(Mode.SYNC.name()), builder -> builder.setValidator(new EnumValidatorBuilder<>(Mode.class).configure(builder).build())),
+        MODE("mode", ModelType.STRING, new ModelNode(Mode.SYNC.name()), builder -> builder.setValidator(new EnumValidator<>(Mode.class))),
         REMOTE_TIMEOUT("remote-timeout", ModelType.LONG, new ModelNode(10000L), UnaryOperator.identity()),
         ;
         private final AttributeDefinition definition;
@@ -116,7 +116,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
-        if (InfinispanModel.VERSION_4_2_0.requiresTransformation(version)) {
+        if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setValueConverter(new DefaultValueAttributeConverter(Attribute.REMOTE_TIMEOUT.getDefinition()), Attribute.REMOTE_TIMEOUT.getDefinition())
                     .setValueConverter(new DefaultValueAttributeConverter(Attribute.MODE.getDefinition()), Attribute.MODE.getDefinition())
@@ -131,7 +131,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
                 .addAttributes(Attribute.class)
                 .addAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
-                .addResourceCapabilityReference(new CapabilityReference(Capability.TRANSPORT, JGroupsTransportResourceDefinition.Requirement.CHANNEL_FACTORY), address -> address.getParent().getLastElement().getValue())
+                .addResourceCapabilityReference(new CapabilityReference(Capability.TRANSPORT, JGroupsTransportResourceDefinition.Requirement.CHANNEL), address -> address.getParent().getLastElement().getValue())
             ), handler, registrationConfigurator.andThen(registration -> {
                 if (registration.isRuntimeOnlyRegistrationValid()) {
                     new MetricHandler<>(new ClusteredCacheMetricExecutor(), ClusteredCacheMetric.class).register(registration);

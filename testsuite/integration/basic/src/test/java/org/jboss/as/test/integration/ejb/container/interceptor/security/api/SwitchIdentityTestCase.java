@@ -55,7 +55,6 @@ import org.jboss.resteasy.plugins.server.embedded.SimplePrincipal;
 import org.jboss.security.ClientLoginModule;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -63,6 +62,7 @@ import org.junit.runner.RunWith;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
+import org.wildfly.security.sasl.SaslMechanismSelector;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Property;
@@ -82,6 +82,16 @@ public class SwitchIdentityTestCase {
 
     private static final String EJB_OUTBOUND_REALM = "ejb-outbound-realm";
     private static final String SECURITY_DOMAIN_NAME = "switch-identity-test";
+
+    private final Map<String, String> passwordsToUse;
+
+    public SwitchIdentityTestCase() {
+        passwordsToUse = new HashMap<>();
+        passwordsToUse.put("guest", "guest");
+        passwordsToUse.put("user1", "password1");
+        passwordsToUse.put("user2", "password2");
+        passwordsToUse.put("remoteejbuser", "rem@teejbpasswd1");
+    }
 
     @ArquillianResource
     private ManagementClient mgmtClient;
@@ -109,7 +119,7 @@ public class SwitchIdentityTestCase {
 
     @BeforeClass
     public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
+        AssumeTestGroupUtil.assumeElytronProfileEnabled(); // PicketBox specific feature - not supported in Elytron
     }
 
     /**
@@ -124,8 +134,6 @@ public class SwitchIdentityTestCase {
         jar.addClasses(GuestDelegationLoginModule.class, EJBUtil.class, Manage.class, BridgeBean.class, TargetBean.class,
                 CurrentUserCredential.class, ServerSecurityInterceptor.class, ClientSecurityInterceptor.class);
         jar.addAsManifestResource(SwitchIdentityTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
-        jar.addAsManifestResource(new StringAsset(ClientSecurityInterceptor.class.getName()),
-                "services/org.jboss.ejb.client.EJBClientInterceptor");
         jar.addAsManifestResource(ClientSecurityInterceptor.class.getPackage(), "permissions.xml", "permissions.xml");
         jar.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.as.security-api", "org.jboss.as.core-security-api"), "jboss-deployment-structure.xml");
         return jar;
@@ -196,7 +204,8 @@ public class SwitchIdentityTestCase {
                         AuthenticationConfiguration.EMPTY
                                 .useName(username == null ? "$local" : username)
                                 .useRealm(null)
-                                .allowSaslMechanisms("DIGEST-MD5")
+                                .usePassword(passwordsToUse.getOrDefault(username, ""))
+                                .setSaslMechanismSelector(SaslMechanismSelector.fromString("DIGEST-MD5"))
                                 .useMechanismProperties(getSaslProperties(builder.getMap()))
                                 .useProvidersFromClassLoader(org.jboss.as.test.integration.ejb.container.interceptor.security.SwitchIdentityTestCase.class.getClassLoader()));
 

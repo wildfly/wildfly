@@ -27,11 +27,11 @@ import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
-import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -40,6 +40,7 @@ import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
 import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.conf.XmlConfigurator;
+import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 
@@ -75,7 +76,7 @@ public class ProtocolDefaultsBuilder implements Builder<ProtocolDefaults>, Value
     }
 
     private final String resource;
-    private final Map<String, Map<String, String>> map = new HashMap<>();
+    private final Map<Class<? extends Protocol>, Map<String, String>> map = new IdentityHashMap<>();
 
     public ProtocolDefaultsBuilder() {
         this(DEFAULTS);
@@ -95,22 +96,24 @@ public class ProtocolDefaultsBuilder implements Builder<ProtocolDefaults>, Value
         return new AsynchronousServiceBuilder<>(this.getServiceName(), new ValueService<>(this)).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.msc.value.Value#getValue()
-     */
     @Override
     public ProtocolDefaults getValue() {
         ProtocolStackConfigurator configurator = load(ProtocolDefaultsBuilder.this.resource);
-        for (org.jgroups.conf.ProtocolConfiguration config: configurator.getProtocolStack()) {
-            this.map.put(config.getProtocolName(), Collections.unmodifiableMap(config.getProperties()));
+        try {
+            for (org.jgroups.conf.ProtocolConfiguration config: configurator.getProtocolStack()) {
+                String protocolClassName = String.join(".", org.jgroups.conf.ProtocolConfiguration.protocol_prefix, config.getProtocolName());
+                Class<? extends Protocol> protocolClass = Protocol.class.getClassLoader().loadClass(protocolClassName).asSubclass(Protocol.class);
+                this.map.put(protocolClass, Collections.unmodifiableMap(config.getProperties()));
+            }
+            return this;
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException(e);
         }
-        return this;
     }
 
     @Override
-    public Map<String, String> getProperties(String protocol) {
-        Map<String, String> properties = this.map.get(protocol);
+    public Map<String, String> getProperties(Class<? extends Protocol> protocolClass) {
+        Map<String, String> properties = this.map.get(protocolClass);
         return (properties != null) ? Collections.unmodifiableMap(properties) : Collections.<String, String>emptyMap();
     }
 }

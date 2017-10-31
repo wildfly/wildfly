@@ -460,6 +460,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 org.jboss.jca.common.api.metadata.common.Credential credential, final String jndiName) throws DeployException {
             if (credential == null)
                 return null;
+            // safe assertion because all parsers create Credential
             assert credential instanceof Credential;
             final String securityDomain = credential.getSecurityDomain();
             if (((Credential) credential).isElytronEnabled()) {

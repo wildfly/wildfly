@@ -33,4 +33,9 @@ public interface DefaultableUnaryRequirement extends UnaryRequirement {
     default Class<?> getType() {
         return this.getDefaultRequirement().getType();
     }
+
+    @Override
+    default String resolve(String name) {
+        return (name != null) ? UnaryRequirement.super.resolve(name) : this.getDefaultRequirement().getName();
+    }
 }

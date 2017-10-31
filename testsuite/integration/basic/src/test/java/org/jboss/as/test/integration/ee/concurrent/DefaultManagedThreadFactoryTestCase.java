@@ -22,18 +22,22 @@
 
 package org.jboss.as.test.integration.ee.concurrent;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.util.PropertyPermission;
+import java.util.concurrent.Callable;
+
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
-import org.jboss.security.client.SecurityClient;
-import org.jboss.security.client.SecurityClientFactory;
+import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * Test for EE's default managed thread factory
@@ -43,28 +47,23 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class DefaultManagedThreadFactoryTestCase {
 
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
-    }
-
     @Deployment
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class, DefaultManagedThreadFactoryTestCase.class.getSimpleName() + ".war")
-                .addClasses(DefaultManagedThreadFactoryTestCase.class, DefaultManagedThreadFactoryTestEJB.class, TestEJBRunnable.class);
+                .addClasses(DefaultManagedThreadFactoryTestCase.class, DefaultManagedThreadFactoryTestEJB.class, TestEJBRunnable.class, Util.class, TimeoutUtil.class)
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new ElytronPermission("getSecurityDomain"),
+                        new PropertyPermission("ts.timeout.factor", "read")
+                        ), "permissions.xml");
     }
 
     @Test
     public void testTaskSubmit() throws Exception {
-        SecurityClient client = SecurityClientFactory.getSecurityClient();
-        client.setSimple("guest", "guest");
-        client.login();
-        try {
+        final Callable<Void> callable = () -> {
             final DefaultManagedThreadFactoryTestEJB testEJB = (DefaultManagedThreadFactoryTestEJB) new InitialContext().lookup("java:module/" + DefaultManagedThreadFactoryTestEJB.class.getSimpleName());
             testEJB.run(new TestEJBRunnable());
-        } finally {
-            client.logout();
-        }
-
+            return null;
+        };
+        Util.switchIdentitySCF("guest", "guest", callable);
     }
 }

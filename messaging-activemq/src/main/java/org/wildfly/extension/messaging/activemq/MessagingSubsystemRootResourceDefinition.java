@@ -30,10 +30,7 @@ import static org.jboss.dmr.ModelType.INT;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -43,7 +40,6 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
@@ -58,8 +54,7 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
     public static final SimpleAttributeDefinition GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE = create("global-client-thread-pool-max-size", INT)
             .setAttributeGroup("global-client")
             .setXmlName("thread-pool-max-size")
-            .setAllowNull(true)
-            .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_THREAD_POOL_MAX_SIZE))
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -67,8 +62,7 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
     public static final SimpleAttributeDefinition GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE = create("global-client-scheduled-thread-pool-max-size", INT)
             .setAttributeGroup("global-client")
             .setXmlName("scheduled-thread-pool-max-size")
-            .setAllowNull(true)
-            .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE))
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -84,13 +78,7 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
         super(MessagingExtension.SUBSYSTEM_PATH,
                 MessagingExtension.getResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME),
                 MessagingSubsystemAdd.INSTANCE,
-                new ReloadRequiredRemoveStepHandler() {
-                    @Override
-                    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-                        super.performRuntime(context, operation, model);
-                        context.removeService(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);
-                    }
-                });
+                new ReloadRequiredRemoveStepHandler());
     }
 
     @Override
@@ -114,9 +102,11 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
                 ServerDefinition.JOURNAL_DATASOURCE,
                 ServerDefinition.JOURNAL_MESSAGES_TABLE,
                 ServerDefinition.JOURNAL_BINDINGS_TABLE,
+                ServerDefinition.JOURNAL_JMS_BINDINGS_TABLE,
                 ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE,
                 ServerDefinition.JOURNAL_PAGE_STORE_TABLE,
-                ServerDefinition.JOURNAL_DATABASE
+                ServerDefinition.JOURNAL_DATABASE,
+                ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT
                 );
         server.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.ALWAYS, ServerDefinition.CREDENTIAL_REFERENCE)
@@ -134,7 +124,7 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
         bridge.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.ALWAYS, BridgeDefinition.CREDENTIAL_REFERENCE)
                 .addRejectCheck(DEFINED, BridgeDefinition.CREDENTIAL_REFERENCE);
-        ResourceTransformationDescriptionBuilder httpConnector = server.addChildResource(HTTPConnectorDefinition.INSTANCE);
+        ResourceTransformationDescriptionBuilder httpConnector = server.addChildResource(MessagingExtension.HTTP_CONNECTOR_PATH);
         // reject server-name introduced in management version 2.0.0 if it is defined
         rejectDefinedAttributeWithDefaultValue(httpConnector, HTTPConnectorDefinition.SERVER_NAME);
         // reject producer-window-size introduced in management version 2.0.0 if it is defined and different from the default value.
@@ -145,6 +135,10 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
         ResourceTransformationDescriptionBuilder clusterConnection = server.addChildResource(MessagingExtension.CLUSTER_CONNECTION_PATH);
         // reject producer-window-size introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(clusterConnection, ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE);
+        ResourceTransformationDescriptionBuilder connectionFactory = server.addChildResource(MessagingExtension.CONNECTION_FACTORY_PATH);
+        rejectDefinedAttributeWithDefaultValue(connectionFactory, ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
+                ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST);
+        defaultValueAttributeConverter(connectionFactory, CommonAttributes.CALL_FAILOVER_TIMEOUT);
         ResourceTransformationDescriptionBuilder pooledConnectionFactory = server.addChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
         // reject rebalance-connections introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS);
@@ -152,8 +146,13 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
         rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED);
         // reject max-pool-size whose default value has been changed in  management version 2.0.0
         defaultValueAttributeConverter(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE);
+        defaultValueAttributeConverter(pooledConnectionFactory, CommonAttributes.CALL_FAILOVER_TIMEOUT);
         // reject min-pool-size whose default value has been changed in  management version 2.0.0
         defaultValueAttributeConverter(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE);
+        rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE,
+                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
+                ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                ConnectionFactoryAttributes.Pooled.ALLOW_LOCAL_TRANSACTIONS);
 
         TransformationDescription.Tools.register(subsystem.build(), subsystemRegistration, MessagingExtension.VERSION_1_0_0);
     }

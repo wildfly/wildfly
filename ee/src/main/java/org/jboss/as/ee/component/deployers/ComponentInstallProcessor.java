@@ -153,7 +153,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         // START depends on CREATE
         startBuilder.addDependency(createServiceName, BasicComponent.class, startService.getComponentInjector());
-        Services.addServerExecutorDependency(startBuilder, startService.getExecutorInjector(), false);
+        Services.addServerExecutorDependency(startBuilder, startService.getExecutorInjector());
 
         //don't start components until all bindings are up
         startBuilder.addDependency(bindingDependencyService);

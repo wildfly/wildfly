@@ -80,7 +80,6 @@ import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
@@ -117,6 +116,8 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
 import org.wildfly.extension.undertow.security.sso.DistributableSecurityDomainSingleSignOnManagerBuilderProvider;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
+import org.wildfly.security.auth.server.RealmIdentity;
+import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.authz.AuthorizationFailureException;
@@ -202,7 +203,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
     private static final Set<String> knownApplicationSecurityDomains = Collections.synchronizedSet(new HashSet<>());
 
     private ApplicationSecurityDomainDefinition() {
-        this((Parameters) new Parameters(PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN),
+        this((Parameters) new Parameters(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN,
                 UndertowExtension.getResolver(Constants.APPLICATION_SECURITY_DOMAIN))
                         .setCapabilities(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY)
                         .addAccessConstraints(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN, false, false, false)),
@@ -218,7 +219,9 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         knownApplicationSecurityDomains.clear(); // If we are registering, time for a clean start.
         super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadOnlyAttribute(REFERENCING_DEPLOYMENTS, new ReferencingDeploymentsHandler());
+        if (resourceRegistration.getProcessType().isServer()) {
+            resourceRegistration.registerReadOnlyAttribute(REFERENCING_DEPLOYMENTS, new ReferencingDeploymentsHandler());
+        }
     }
 
     @Override
@@ -230,23 +233,27 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            RuntimeCapability<Void> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
-            ServiceName applicationSecurityDomainName = runtimeCapability.getCapabilityServiceName(BiFunction.class);
+            if (context.isDefaultRequiresRuntime()) {
+                context.addStep((ctx, op) -> {
+                    RuntimeCapability<Void> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(ctx.getCurrentAddressValue());
+                    ServiceName applicationSecurityDomainName = runtimeCapability.getCapabilityServiceName(BiFunction.class);
 
-            ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-            ServiceController<?> controller = serviceRegistry.getRequiredService(applicationSecurityDomainName);
+                    ServiceRegistry serviceRegistry = ctx.getServiceRegistry(false);
+                    ServiceController<?> controller = serviceRegistry.getRequiredService(applicationSecurityDomainName);
 
-            ModelNode deploymentList = new ModelNode();
-            if (controller.getState() == State.UP) {
-                Service service = controller.getService();
-                if (service instanceof ApplicationSecurityDomainService) {
-                    for (String current : ((ApplicationSecurityDomainService)service).getDeployments()) {
-                        deploymentList.add(current);
+                    ModelNode deploymentList = new ModelNode();
+                    if (controller.getState() == State.UP) {
+                        Service service = controller.getService();
+                        if (service instanceof ApplicationSecurityDomainService) {
+                            for (String current : ((ApplicationSecurityDomainService) service).getDeployments()) {
+                                deploymentList.add(current);
+                            }
+                        }
                     }
-                }
-            }
 
-            context.getResult().set(deploymentList);
+                    context.getResult().set(deploymentList);
+                }, OperationContext.Stage.RUNTIME);
+            }
         }
 
     }
@@ -333,19 +340,24 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         @Override
         protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            if (context.isResourceServiceRestartAllowed()) {
-                String securityDomainName = context.getCurrentAddressValue();
-                context.removeService(new SingleSignOnManagerServiceNameProvider(securityDomainName).getServiceName());
-                context.removeService(new SingleSignOnSessionFactoryServiceNameProvider(securityDomainName).getServiceName());
-            }
             super.performRemove(context, operation, model);
             knownApplicationSecurityDomains.remove(context.getCurrentAddressValue());
         }
 
         @Override
+        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+            super.performRuntime(context, operation, model);
+            if (context.isResourceServiceRestartAllowed()) {
+                final String securityDomainName = context.getCurrentAddressValue();
+                context.removeService(new SingleSignOnManagerServiceNameProvider(securityDomainName).getServiceName());
+                context.removeService(new SingleSignOnSessionFactoryServiceNameProvider(securityDomainName).getServiceName());
+            }
+        }
+
+        @Override
         protected ServiceName serviceName(String name) {
             RuntimeCapability<?> dynamicCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(name);
-            return dynamicCapability.getCapabilityServiceName(Function.class);
+            return dynamicCapability.getCapabilityServiceName(BiFunction.class); // no-arg getCapabilityServiceName() would be fine too
         }
 
     }
@@ -482,7 +494,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                 authMethods.forEach(c -> {
                     String name = c.getName();
                     if (availableMechanisms.contains(name) == false) {
-                        throw ROOT_LOGGER.requiredMechanismNotAvailable(name);
+                        throw ROOT_LOGGER.requiredMechanismNotAvailable(name, availableMechanisms);
                     }
 
                     Map<String, String> mechanismConfiguration;
@@ -661,7 +673,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
                 @Override
                 public boolean supportsAttachments() {
-                    return exists();
+                    return true;
                 }
 
                 @Override
@@ -678,7 +690,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
                 @Override
                 public boolean supportsInvalidation() {
-                    return exists();
+                    return true;
                 }
 
                 @Override
@@ -697,7 +709,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
                 @Override
                 public boolean supportsNotifications() {
-                    return exists();
+                    return true;
                 }
 
                 @Override
@@ -731,10 +743,14 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                         newIdentity = newIdentity.createRunAsAnonymous(false);
                     }
                 } else {
-                    try {
-                        newIdentity = newIdentity.createRunAsIdentity(runAsPrincipal);
-                    } catch (AuthorizationFailureException ex) {
-                        newIdentity = newIdentity.createRunAsIdentity(runAsPrincipal, false);
+                    if (! runAsPrincipalExists(securityDomain, runAsPrincipal)) {
+                        newIdentity = securityDomain.createAdHocIdentity(runAsPrincipal);
+                    } else {
+                        try {
+                            newIdentity = newIdentity.createRunAsIdentity(runAsPrincipal);
+                        } catch (AuthorizationFailureException ex) {
+                            newIdentity = newIdentity.createRunAsIdentity(runAsPrincipal, false);
+                        }
                     }
                 }
 
@@ -754,6 +770,20 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             }
 
             return securityIdentity;
+        }
+
+        private boolean runAsPrincipalExists(final SecurityDomain securityDomain, final String runAsPrincipal) {
+            RealmIdentity realmIdentity = null;
+            try {
+                realmIdentity = securityDomain.getIdentity(runAsPrincipal);
+                return realmIdentity.exists();
+            } catch (RealmUnavailableException e) {
+                throw UndertowLogger.ROOT_LOGGER.unableToObtainIdentity(runAsPrincipal, e);
+            } finally {
+                if (realmIdentity != null) {
+                    realmIdentity.dispose();
+                }
+            }
         }
 
         private AuthorizationManager createElytronAuthorizationManager() {

@@ -51,7 +51,7 @@ public class PrincipalPrintingServlet extends HttpServlet {
         if (null == principal) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Principal name is printed only for the authenticated users.");
         } else {
-            writer.write(req.getUserPrincipal().getName());
+            writer.write(principal.getName());
         }
         writer.close();
     }

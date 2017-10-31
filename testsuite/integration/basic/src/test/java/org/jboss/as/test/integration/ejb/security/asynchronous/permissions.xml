@@ -8,4 +8,8 @@
         <class-name>java.lang.RuntimePermission</class-name>
         <name>org.jboss.security.getSecurityContext</name>
     </permission>
+    <permission>
+        <class-name>org.wildfly.security.permission.ElytronPermission</class-name>
+        <name>getSecurityDomain</name>
+    </permission>
 </permissions>

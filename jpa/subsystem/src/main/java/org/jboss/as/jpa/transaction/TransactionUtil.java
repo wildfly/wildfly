@@ -119,26 +119,30 @@ public class TransactionUtil {
     }
 
     /**
-     * Using the TransactionListener, we can detect Synchronization.afterCompletion() being called from a
-     * background thread, while the application may still be actively using the EntityManager.
-     * We need to ensure that the background thread does not close the EntityManager while the application thread
-     * is actively using it.
+     * The AssociationListener helps protect against a non-application thread closing the entity manager at the same
+     * time that the application thread may be using the entity manager.  We only close the entity manager after the
+     * Synchronization.afterCompletion has been triggered and zero threads are associated with the transaction.
      *
      * We know when the application thread is associated with the transaction and can defer closing the EntityManager
      * until both conditions are met:
      *
-     *   1. application is disassociated from transaction
+     *   1. application thread is disassociated from transaction
      *   2. Synchronization.afterCompletion has been called
      *
-     * See discussions for more details about how we arrived at using the TransactionListener:
+     *   Note that entity managers do not get propagated on remote EJB invocations.
+     *
+     * See discussions for more details about how we arrived at using the AssociationListener (TransactionListener):
      *     https://developer.jboss.org/message/919807
      *     https://developer.jboss.org/thread/252572
      */
     private static class SessionSynchronization implements Synchronization, AssociationListener {
         private EntityManager manager;  // the underlying entity manager
         private String scopedPuName;
-        private transient boolean transactionDisassociatedFromApplication = false;
-        private transient boolean afterCompletionCalled = false;
+        private boolean afterCompletionCalled = false;
+        private int associationCounter = 1; // set to one since transaction is associated with current thread already.
+                                            // incremented when a thread is associated with transaction,
+                                            // decremented when a thread is disassociated from transaction.
+                                            // synchronization on this object protects associationCounter.
 
         public SessionSynchronization(EntityManager session, String scopedPuName) {
             this.manager = session;
@@ -149,22 +153,27 @@ public class TransactionUtil {
             afterCompletionCalled = false;
         }
 
-        public synchronized void afterCompletion(int status) {
+        public void afterCompletion(int status) {
             /**
              * Note: synchronization is to protect against two concurrent threads from closing the EntityManager (manager)
              * at the same time.
              */
-            afterCompletionCalled = true;
-            safeCloseEntityManager();
+            synchronized (this) {
+                afterCompletionCalled = true;
+                safeCloseEntityManager();
+            }
         }
 
         /**
          * After the JTA transaction is ended (Synchronization.afterCompletion has been called) and
          * the JTA transaction is no longer associated with application thread (application thread called
          * transaction.rollback/commit/suspend), the entity manager can safely be closed.
+         *
+         * NOTE: caller must call with synchronized(this), where this == instance of SessionSynchronization associated with
+         * the JTA transaction.
          */
         private void safeCloseEntityManager() {
-            if ( afterCompletionCalled == true && transactionDisassociatedFromApplication == true) {
+            if ( afterCompletionCalled == true && associationCounter == 0) {
                 if (manager != null) {
                     try {
                         if (ROOT_LOGGER.isDebugEnabled())
@@ -181,11 +190,27 @@ public class TransactionUtil {
 
         public void associationChanged(final AbstractTransaction transaction, final boolean associated) {
             synchronized (this) {
-                // set to true if application thread is no longer associated with JTA transaction
-                // (EventType.DISASSOCIATING in progress).  We are tracking when the application thread
+                // associationCounter is set to zero when application thread is no longer associated with JTA transaction.
+                // We are tracking when the application thread
                 // is no longer associated with the transaction, as that indicates that it is safe to
                 // close the entity manager (since the application is no longer using the entity manager).
-                transactionDisassociatedFromApplication = ! associated;
+                //
+                // Expected values for associationCounter:
+                // 1 - application thread is associated with transaction
+                // 0 - application thread is not associated with transaction (e.g. tm.suspend called)
+                //
+                // Expected values for TM Reaper thread timing out transaction
+                // 1 - application thread is associated with transaction
+                // 2 - TM reaper thread is associated with transaction (tx timeout handling)
+                // 1 - either TM reaper or application thread disassociated from transaction
+                // 0 - both TM reaper and application thread are disassociated from transaction
+                //
+                // the safeCloseEntityManager() may close the entity manager in the (background) reaper thread or
+                // application thread (whichever thread reaches associationCounter == 0).
+                associationCounter += associated ? 1 : -1;
+                if (ROOT_LOGGER.isTraceEnabled()) {
+                    ROOT_LOGGER.tracef("transaction association counter = %d for %s: ", associationCounter, getEntityManagerDetails(manager, scopedPuName));
+                }
                 safeCloseEntityManager();
             }
         }

@@ -76,7 +76,8 @@ public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
     }
 
     @Override
-    public void undeploy(final DeploymentUnit context) {
+    public void undeploy(final DeploymentUnit deploymentUnit) {
+        deploymentUnit.removeAttachment(Attachments.JNDI_DEPENDENCIES);
     }
 
 }

@@ -37,8 +37,8 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Anil Saldhana
  */
-@WebServlet(name = "SecuredServlet", urlPatterns = { "/secured/" }, loadOnStartup = 1)
-@ServletSecurity(@HttpConstraint(rolesAllowed = { "gooduser" }))
+@WebServlet(name = "SecuredServlet", urlPatterns = {"/secured/"}, loadOnStartup = 1)
+@ServletSecurity(@HttpConstraint(rolesAllowed = {"gooduser"}))
 public class SecuredServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
@@ -46,6 +46,9 @@ public class SecuredServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Writer writer = resp.getWriter();
-        writer.write("GOOD");
+        writer.write("GOOD\n");
+        writer.write("Remote user: " + req.getRemoteUser() + "\n");
+        writer.write("User principal: " + req.getUserPrincipal() + "\n");
+        writer.write("Authentication type: " + req.getAuthType());
     }
 }

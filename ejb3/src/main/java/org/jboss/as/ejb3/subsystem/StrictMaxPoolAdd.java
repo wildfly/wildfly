@@ -24,22 +24,19 @@ package org.jboss.as.ejb3.subsystem;
 
 import static org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService.Derive;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Adds a strict-max-pool to the EJB3 subsystem's bean-instance-pools. The {#performRuntime runtime action}
@@ -69,17 +66,8 @@ public class StrictMaxPoolAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode strictMaxPoolModel,
-                                  ServiceVerificationHandler verificationHandler,
-                                  List<ServiceController<?>> serviceControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode strictMaxPoolModel) throws OperationFailedException {
 
-        final ServiceController<PoolConfig> serviceController = installRuntimeService(context, operation, strictMaxPoolModel, verificationHandler);
-        // add this to the service controllers
-        serviceControllers.add(serviceController);
-    }
-
-    ServiceController<PoolConfig> installRuntimeService(OperationContext context, ModelNode operation, ModelNode strictMaxPoolModel,
-                                            ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         final String poolName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
         final int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.resolveModelAttribute(context, strictMaxPoolModel).asInt();
         final Derive derive = StrictMaxPoolResourceDefinition.parseDeriveSize(context, strictMaxPoolModel);
@@ -91,16 +79,13 @@ public class StrictMaxPoolAdd extends AbstractAddStepHandler {
 
         final ServiceName serviceName = StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName);
         ServiceBuilder<PoolConfig> svcBuilder = context.getServiceTarget().addService(serviceName, poolConfigService);
-        if (verificationHandler != null) {
-            svcBuilder.addListener(verificationHandler);
-        }
 
         if (context.hasOptionalCapability(IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME, null, null)) {
             ServiceName name = context.getCapabilityServiceName(IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME, Integer.class);
             svcBuilder.addDependency(name, Integer.class, poolConfigService.getMaxThreadsInjector());
         }
 
-        return svcBuilder.install();
+        svcBuilder.install();
     }
 
 }

@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>11.0.0.Beta1-SNAPSHOT</version>
+        <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -85,10 +85,12 @@
                                 <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                 <!-- EJB client library hack, see WFLY-4973-->
                                 <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                <jbossas.multinode.client>${basedir}/target/jbossas-multinode-client</jbossas.multinode.client>
+                                <jbossas.multinode.server>${basedir}/target/jbossas-multinode-server</jbossas.multinode.server>
+                                <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} -Dnode0=${node0} -Dnode1=${node1}</server.jvm2.args>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
-
                 </plugins>
             </build>
         </profile>

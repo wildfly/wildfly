@@ -433,15 +433,9 @@ public class JMSTopicManagementTestCase {
         ModelNode response = managementClient.getControllerClient().execute(op);
         final String outcome = response.get("outcome").asString();
         if (expectSuccess) {
-            if (!"success".equals(outcome)) {
-                System.out.println(response);
-            }
             Assert.assertEquals("success", outcome);
             return response.get("result");
         } else {
-            if ("success".equals(outcome)) {
-                System.out.println(response);
-            }
             Assert.assertEquals("failed", outcome);
             return response.get("failure-description");
         }
@@ -458,9 +452,9 @@ public class JMSTopicManagementTestCase {
     static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
         ModelNode result = client.execute(new OperationBuilder(update).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-            if (result.hasDefined("result")) {
+            /*if (result.hasDefined("result")) {
                 System.out.println(result.get("result"));
-            }
+            }*/
         } else if (result.hasDefined("failure-description")) {
             throw new RuntimeException(result.get("failure-description").toString());
         } else {

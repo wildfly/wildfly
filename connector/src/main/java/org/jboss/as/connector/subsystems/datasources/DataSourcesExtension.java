@@ -161,7 +161,7 @@ public class DataSourcesExtension implements Extension {
     public static final String SUBSYSTEM_NAME = Constants.DATASOURCES;
     private static final String RESOURCE_NAME = DataSourcesExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(5, 0, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(5, 0, 0);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -183,31 +183,27 @@ public class DataSourcesExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(DataSourcesSubsystemRootDefinition.createInstance(registerRuntimeOnly));
 
 
-        subsystem.registerXMLElementWriter(DataSourceSubsystemParser.INSTANCE);
+        subsystem.registerXMLElementWriter(new DataSourceSubsystemParser());
 
 
         if (registerRuntimeOnly) {
             subsystem.registerDeploymentModel(DataSourcesSubsystemRootDefinition.createDeployedInstance(registerRuntimeOnly));
         }
-        if (context.isRegisterTransformers()) {
-            DataSourcesSubsystemRootDefinition.registerTransformers(subsystem);
-        }
     }
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_1.getUriString(), DataSourceSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_2.getUriString(), DataSourceSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_2_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_3_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_4_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_5_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_1.getUriString(), DataSourceSubsystemParser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_2.getUriString(), DataSourceSubsystemParser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_2_0.getUriString(), DataSourceSubsystemParser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_3_0.getUriString(), DataSourceSubsystemParser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_4_0.getUriString(), DataSourceSubsystemParser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_5_0.getUriString(), DataSourceSubsystemParser::new);
     }
 
     public static final class DataSourceSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
             XMLElementWriter<SubsystemMarshallingContext> {
 
-        static final DataSourceSubsystemParser INSTANCE = new DataSourceSubsystemParser();
 
         /**
          * {@inheritDoc}

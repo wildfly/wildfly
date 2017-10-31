@@ -72,21 +72,21 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition ALLOW_FAILBACK = create("allow-failback", BOOLEAN)
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition ASYNC_CONNECTION_EXECUTION_ENABLED = create( "async-connection-execution-enabled", BOOLEAN)
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition BACKUP = create("backup", BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -94,39 +94,39 @@ public interface CommonAttributes {
     AttributeDefinition CALL_TIMEOUT = create("call-timeout", LONG)
             .setDefaultValue(new ModelNode(30000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition CALL_FAILOVER_TIMEOUT = create("call-failover-timeout",LONG)
             .setDefaultValue(new ModelNode(-1L))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
             .build();
 
     SimpleAttributeDefinition CHECK_PERIOD = create("check-period", LONG)
             .setDefaultValue(new ModelNode(30000L))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
     SimpleAttributeDefinition CLIENT_ID = create("client-id", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition CHECK_FOR_LIVE_SERVER = create("check-for-live-server", BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition CLUSTERED = create("clustered", BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(false))
             .setDeprecated(VERSION_1_2_0)
             .setRestartAllServices()
@@ -134,7 +134,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition CLUSTER_PASSWORD = create("cluster-password", ModelType.STRING)
             .setDefaultValue(new ModelNode("CHANGE ME!!"))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
@@ -143,7 +143,7 @@ public interface CommonAttributes {
 
         SimpleAttributeDefinition CLUSTER_USER = create("cluster-user", ModelType.STRING)
             .setDefaultValue(new ModelNode("HORNETQ.CLUSTER.ADMIN.USER"))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
@@ -153,14 +153,14 @@ public interface CommonAttributes {
     SimpleAttributeDefinition BRIDGE_CONFIRMATION_WINDOW_SIZE = create("confirmation-window-size", INT)
             .setDefaultValue(new ModelNode(1024 * 1024))
             .setMeasurementUnit(BYTES)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition CONNECTION_TTL = create("connection-ttl", LONG)
             .setDefaultValue(new ModelNode().set(60000L))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
             .setRestartAllServices()
@@ -169,32 +169,32 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CONNECTION_TTL_OVERRIDE = create("connection-ttl-override", LONG)
             .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition CREATE_BINDINGS_DIR = create("create-bindings-dir", BOOLEAN)
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition CREATE_JOURNAL_DIR = create("create-journal-dir", BOOLEAN)
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition DEAD_LETTER_ADDRESS = create("dead-letter-address", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     PrimitiveListAttributeDefinition DESTINATION_ENTRIES = PrimitiveListAttributeDefinition.Builder.of(ENTRIES, ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .setListValidator(noDuplicateElements(new StringLengthValidator(1, false, true)))
             .setAllowExpression(true)
             .setAttributeMarshaller(new AttributeMarshallers.JndiEntriesAttributeMarshaller(true))
@@ -203,7 +203,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition DURABLE = create("durable", BOOLEAN)
             .setDefaultValue(new ModelNode().set(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -214,32 +214,32 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition EXPIRY_ADDRESS = create("expiry-address", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition FAILBACK_DELAY = create("failback-delay", LONG)
             .setDefaultValue(new ModelNode(5000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition FAILOVER_ON_SERVER_SHUTDOWN = create("failover-on-server-shutdown", ModelType.BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDeprecated(VERSION_1_2_0)
             .build();
 
     SimpleAttributeDefinition FAILOVER_ON_SHUTDOWN = create("failover-on-shutdown", BOOLEAN)
             // TODO should be ConfigurationImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN but field is private
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition FILTER = create("filter", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -247,7 +247,7 @@ public interface CommonAttributes {
     // do not allow expressions on deprecated attribute
     @Deprecated
     SimpleAttributeDefinition GROUP_ADDRESS = create("group-address", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
             .setDeprecated(VERSION_1_2_0)
             .setFlags(RESTART_ALL_SERVICES)
@@ -257,7 +257,7 @@ public interface CommonAttributes {
     // do not allow expressions on deprecated attribute
     @Deprecated
     SimpleAttributeDefinition GROUP_PORT = create("group-port", INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
             .setDeprecated(VERSION_1_2_0)
             .setFlags(RESTART_ALL_SERVICES)
@@ -266,21 +266,21 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition HA = create("ha", BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition ID_CACHE_SIZE = create("id-cache-size", INT)
             .setDefaultValue(new ModelNode(20000))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition JMX_DOMAIN = create("jmx-domain", ModelType.STRING)
             .setDefaultValue(new ModelNode("org.hornetq"))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(MESSAGING_MANAGEMENT_DEF)
@@ -288,7 +288,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition JMX_MANAGEMENT_ENABLED = create("jmx-management-enabled", BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(MESSAGING_MANAGEMENT_DEF)
@@ -297,7 +297,7 @@ public interface CommonAttributes {
     // no default values, depends on whether NIO or AIO is used.
     SimpleAttributeDefinition JOURNAL_BUFFER_SIZE = create("journal-buffer-size", LONG)
             .setMeasurementUnit(BYTES)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -305,14 +305,14 @@ public interface CommonAttributes {
     // no default values, depends on whether NIO or AIO is used.
     SimpleAttributeDefinition JOURNAL_BUFFER_TIMEOUT = create("journal-buffer-timeout", LONG)
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition JOURNAL_COMPACT_MIN_FILES = create("journal-compact-min-files", INT)
             .setDefaultValue(new ModelNode(10))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -320,7 +320,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition JOURNAL_COMPACT_PERCENTAGE = create("journal-compact-percentage", INT)
             .setDefaultValue(new ModelNode(30))
             .setMeasurementUnit(PERCENTAGE)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -328,49 +328,49 @@ public interface CommonAttributes {
     SimpleAttributeDefinition JOURNAL_FILE_SIZE = create("journal-file-size", LONG)
             .setDefaultValue(new ModelNode(10485760))
             .setMeasurementUnit(BYTES)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     // no default values, depends on whether NIO or AIO is used.
     SimpleAttributeDefinition JOURNAL_MAX_IO = create("journal-max-io", INT)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition JOURNAL_MIN_FILES = create("journal-min-files", INT)
             .setDefaultValue(new ModelNode(2))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition JOURNAL_SYNC_NON_TRANSACTIONAL = create("journal-sync-non-transactional", BOOLEAN)
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition JOURNAL_SYNC_TRANSACTIONAL = create("journal-sync-transactional", BOOLEAN)
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition JOURNAL_TYPE = create("journal-type", ModelType.STRING)
             .setDefaultValue(new ModelNode(JournalType.ASYNCIO.toString()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setValidator(new EnumValidator<>(JournalType.class, true, true))
             .setRestartAllServices()
             .build();
 
     AttributeDefinition LIVE_CONNECTOR_REF = create("live-connector-ref", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDeprecated(VERSION_1_2_0)
             .setRestartAllServices()
             .setAttributeMarshaller(NOOP_MARSHALLER)
@@ -379,7 +379,7 @@ public interface CommonAttributes {
     // do not allow expressions on deprecated attribute
     @Deprecated
     SimpleAttributeDefinition LOCAL_BIND_ADDRESS = create("local-bind-address", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
             .setDeprecated(VERSION_1_2_0)
             .setFlags(RESTART_ALL_SERVICES)
@@ -390,7 +390,7 @@ public interface CommonAttributes {
     @Deprecated
     SimpleAttributeDefinition LOCAL_BIND_PORT = create("local-bind-port", INT)
             .setDefaultValue(new ModelNode().set(-1))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
             .setDeprecated(VERSION_1_2_0)
             .setFlags(RESTART_ALL_SERVICES)
@@ -398,7 +398,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition JGROUPS_STACK = create("jgroups-stack", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setAlternatives("socket-binding",
                     "group-address", "group-port",
@@ -407,7 +407,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition JGROUPS_CHANNEL = create("jgroups-channel", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setAlternatives("socket-binding",
                     "group-address", "group-port",
@@ -417,14 +417,14 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition LOG_JOURNAL_WRITE_RATE = create("log-journal-write-rate", BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition MANAGEMENT_ADDRESS = create("management-address", ModelType.STRING)
             .setDefaultValue(new ModelNode("jms.queue.hornetq.management"))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(MESSAGING_MANAGEMENT_DEF)
@@ -432,7 +432,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition MANAGEMENT_NOTIFICATION_ADDRESS = create("management-notification-address", ModelType.STRING)
             .setDefaultValue(new ModelNode("hornetq.notifications"))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(MESSAGING_MANAGEMENT_DEF)
@@ -441,14 +441,14 @@ public interface CommonAttributes {
     AttributeDefinition MAX_RETRY_INTERVAL = create("max-retry-interval", LONG)
             .setDefaultValue(new ModelNode(2000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     AttributeDefinition MAX_SAVED_REPLICATED_JOURNAL_SIZE = create("max-saved-replicated-journal-size", INT)
             .setDefaultValue(new ModelNode(2))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -456,7 +456,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition MEMORY_MEASURE_INTERVAL = create("memory-measure-interval", LONG)
             .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -464,20 +464,20 @@ public interface CommonAttributes {
     SimpleAttributeDefinition MEMORY_WARNING_THRESHOLD = create("memory-warning-threshold", INT)
             .setDefaultValue(new ModelNode(25))
             .setMeasurementUnit(PERCENTAGE)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition STATISTICS_ENABLED = create(ModelDescriptionConstants.STATISTICS_ENABLED, BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition MESSAGE_COUNTER_ENABLED = create("message-counter-enabled", BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setDeprecated(ModelVersion.create(2))
             .build();
@@ -485,28 +485,28 @@ public interface CommonAttributes {
     SimpleAttributeDefinition MESSAGE_COUNTER_MAX_DAY_HISTORY = create("message-counter-max-day-history", INT)
             .setDefaultValue(new ModelNode(10))
             .setMeasurementUnit(DAYS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition MESSAGE_COUNTER_SAMPLE_PERIOD = create("message-counter-sample-period", LONG)
             .setDefaultValue(new ModelNode(10000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition MESSAGE_EXPIRY_SCAN_PERIOD = create("message-expiry-scan-period", LONG)
             .setDefaultValue(new ModelNode(30000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition MESSAGE_EXPIRY_THREAD_PRIORITY = create("message-expiry-thread-priority", INT)
             .setDefaultValue(new ModelNode(3))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setValidator(new IntRangeValidator(Thread.MIN_PRIORITY, Thread.MAX_PRIORITY, true, true))
             .setRestartAllServices()
@@ -515,55 +515,55 @@ public interface CommonAttributes {
     AttributeDefinition MIN_LARGE_MESSAGE_SIZE = create("min-large-message-size", INT)
             .setDefaultValue(new ModelNode(102400))
             .setMeasurementUnit(BYTES)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     AttributeDefinition BACKUP_GROUP_NAME = create("backup-group-name", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition OVERRIDE_IN_VM_SECURITY = create("override-in-vm-security", BOOLEAN)
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition PAGE_MAX_CONCURRENT_IO = create("page-max-concurrent-io", INT)
             .setDefaultValue(new ModelNode(5))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition PERF_BLAST_PAGES = create("perf-blast-pages", INT)
             .setDefaultValue(new ModelNode(-1))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = create("persist-delivery-count-before-delivery", BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition PERSISTENCE_ENABLED = create("persistence-enabled", BOOLEAN)
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition PERSIST_ID_CACHE = create("persist-id-cache", BOOLEAN)
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -571,7 +571,7 @@ public interface CommonAttributes {
     @Deprecated
     PrimitiveListAttributeDefinition REMOTING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder("remoting-interceptors", ModelType.STRING)
             .setDeprecated(VERSION_1_2_0)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(false)
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
@@ -581,7 +581,7 @@ public interface CommonAttributes {
             .build();
 
     PrimitiveListAttributeDefinition REMOTING_INCOMING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder("remoting-incoming-interceptors", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(false)
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
@@ -591,7 +591,7 @@ public interface CommonAttributes {
             .build();
 
     PrimitiveListAttributeDefinition REMOTING_OUTGOING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder("remoting-outgoing-interceptors", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(false)
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
@@ -601,7 +601,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition REPLICATION_CLUSTERNAME = create("replication-clustername", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -609,35 +609,35 @@ public interface CommonAttributes {
     AttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
             .setDefaultValue(new ModelNode(2000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", DOUBLE)
             .setDefaultValue(new ModelNode(1.0))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition RUN_SYNC_SPEED_TEST = create("run-sync-speed-test", BOOLEAN)
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     AttributeDefinition SCHEDULED_THREAD_POOL_MAX_SIZE = create("scheduled-thread-pool-max-size", INT)
             .setDefaultValue(new ModelNode().set(5))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition SECURITY_DOMAIN = create("security-domain", ModelType.STRING)
             .setDefaultValue(new ModelNode("other"))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(false) // references the security domain service name
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
@@ -646,7 +646,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition SECURITY_ENABLED = create("security-enabled", BOOLEAN)
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(MESSAGING_SECURITY_DEF)
@@ -655,14 +655,14 @@ public interface CommonAttributes {
     SimpleAttributeDefinition SECURITY_INVALIDATION_INTERVAL = create("security-invalidation-interval", LONG)
             .setDefaultValue(new ModelNode(10000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(MESSAGING_SECURITY_DEF)
             .build();
 
     SimpleAttributeDefinition SELECTOR = create("selector", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setAttributeMarshaller(AttributeMarshallers.SELECTOR_MARSHALLER)
             .setRestartAllServices()
@@ -671,20 +671,20 @@ public interface CommonAttributes {
     SimpleAttributeDefinition SERVER_DUMP_INTERVAL = create("server-dump-interval", LONG)
             .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition SHARED_STORE = create("shared-store", BOOLEAN)
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition SOCKET_BINDING = create("socket-binding", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAlternatives(GROUP_ADDRESS.getName(),
                     GROUP_PORT.getName(),
                     LOCAL_BIND_ADDRESS.getName(),
@@ -697,7 +697,7 @@ public interface CommonAttributes {
 
     AttributeDefinition THREAD_POOL_MAX_SIZE = create("thread-pool-max-size", INT)
             .setDefaultValue(new ModelNode().set(30))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -705,7 +705,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition TRANSACTION_TIMEOUT = create("transaction-timeout", LONG)
             .setDefaultValue(new ModelNode(300000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -713,20 +713,20 @@ public interface CommonAttributes {
     SimpleAttributeDefinition TRANSACTION_TIMEOUT_SCAN_PERIOD = create("transaction-timeout-scan-period", LONG)
             .setDefaultValue(new ModelNode(1000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition TRANSFORMER_CLASS_NAME = create("transformer-class-name", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(false)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition WILD_CARD_ROUTING_ENABLED = create("wild-card-routing-enabled", BOOLEAN)
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

@@ -12,6 +12,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -133,28 +134,20 @@ public class DeploymentOverlayTestCase {
 
         }
 
-        private void removeContentItem(final ManagementClient managementClient, final String w, final String a) throws IOException, MgmtOperationException {
-            final ModelNode op;
-            final ModelNode addr;
-            op = new ModelNode();
-            addr = new ModelNode();
-            addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, w);
-            addr.add(ModelDescriptionConstants.CONTENT, a);
-            op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
+        private void removeContentItem(final ManagementClient managementClient, final String overlayName, final String content) throws IOException, MgmtOperationException {
+            final ModelNode addr = new ModelNode();
+            addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, overlayName);
+            addr.add(ModelDescriptionConstants.CONTENT, content);
+            final ModelNode op = Operations.createRemoveOperation(addr);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         }
 
 
-        private void removeDeploymentItem(final ManagementClient managementClient, final String w, final String a) throws IOException, MgmtOperationException {
-            final ModelNode op;
-            final ModelNode addr;
-            op = new ModelNode();
-            addr = new ModelNode();
-            addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, w);
-            addr.add(ModelDescriptionConstants.DEPLOYMENT, a);
-            op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
+        private void removeDeploymentItem(final ManagementClient managementClient, final String overlayName, final String deploymentRuntimeName) throws IOException, MgmtOperationException {
+            final ModelNode addr = new ModelNode();
+            addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, overlayName);
+            addr.add(ModelDescriptionConstants.DEPLOYMENT, deploymentRuntimeName);
+            final ModelNode op = Operations.createRemoveOperation(addr);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         }
     }

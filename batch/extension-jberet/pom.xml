@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-batch-parent</artifactId>
-        <version>11.0.0.Beta1-SNAPSHOT</version>
+        <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-batch-jberet</artifactId>
@@ -42,6 +42,15 @@
         <dependency>
             <groupId>org.jboss.spec.javax.batch</groupId>
             <artifactId>jboss-batch-api_1.0_spec</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-weld-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-core-impl</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>

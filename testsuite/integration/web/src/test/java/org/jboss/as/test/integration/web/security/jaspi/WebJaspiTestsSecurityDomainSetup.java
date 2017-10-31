@@ -21,21 +21,37 @@
  */
 package org.jboss.as.test.integration.web.security.jaspi;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.Constants.AUTH_MODULE;
+import static org.jboss.as.security.Constants.CODE;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.LOGIN_MODULE;
+import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK;
+import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK_REF;
+import static org.jboss.as.security.Constants.MODULE;
+import static org.jboss.as.security.Constants.MODULE_OPTIONS;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
+import org.jboss.as.test.integration.web.security.WebSecurityCommon;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.wildfly.extension.undertow.security.jaspi.modules.HTTPSchemeServerAuthModule;
-
-import java.util.Arrays;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.security.Constants.*;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.MODULE;
+import org.wildfly.test.security.common.elytron.UserWithRoles;
 
 /**
  * Creates SecurityDomain for JASPI auth tests. Concrete classes use different AuthModules.
@@ -46,15 +62,31 @@ public abstract class WebJaspiTestsSecurityDomainSetup extends AbstractSecurityD
 
     private static final Logger log = Logger.getLogger(WebJaspiTestsSecurityDomainSetup.class);
 
-    protected static final String WEB_SECURITY_DOMAIN = "web-tests";
+    public static final String WEB_SECURITY_DOMAIN = "web-tests";
     protected final String authModuleClassName;
+
+    private static final String GOOD_USER_NAME = "anil";
+    private static final String GOOD_USER_PASSWORD = "anil";
+    private static final String GOOD_USER_ROLE = "gooduser";
+
+    private static final String SUPER_USER_NAME = "marcus";
+    private static final String SUPER_USER_PASSWORD = "marcus";
+    private static final String SUPER_USER_ROLE = "superuser";
+
+    private static final String BAD_GUY_NAME = "peter";
+    private static final String BAD_GUY_PASSWORD = "peter";
+    private static final String BAD_GUY_ROLE = "badguy";
 
     public WebJaspiTestsSecurityDomainSetup(String authModuleClassName) {
         this.authModuleClassName = authModuleClassName;
     }
 
     @Override
-    public void setup(final ManagementClient managementClient, final String containerId) {
+    public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+        setupLegacySecurityDomain(managementClient);
+    }
+
+    private void setupLegacySecurityDomain(ManagementClient managementClient) throws Exception {
         log.debug("start of the domain creation");
 
         final ModelNode compositeOp = new ModelNode();
@@ -73,10 +105,23 @@ public abstract class WebJaspiTestsSecurityDomainSetup extends AbstractSecurityD
         loginModuleStack.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         steps.add(loginModuleStack);
 
-        ModelNode loginModule = Util.createAddOperation(address.append(LOGIN_MODULE_STACK, "lm-stack").append(LOGIN_MODULE, "UsersRoles"));
+        // Prepare properties files with users, passwords and roles
+        List<UserWithRoles> userWithRoles = new ArrayList<UserWithRoles>();
+        userWithRoles.add(UserWithRoles.builder().withName(GOOD_USER_NAME).withPassword(GOOD_USER_PASSWORD).withRoles
+                (GOOD_USER_ROLE).build());
+        userWithRoles.add(UserWithRoles.builder().withName(SUPER_USER_NAME).withPassword(SUPER_USER_PASSWORD)
+                .withRoles(SUPER_USER_ROLE).build());
+        userWithRoles.add(UserWithRoles.builder().withName(BAD_GUY_NAME).withPassword(BAD_GUY_PASSWORD).withRoles
+                (BAD_GUY_ROLE).build());
+        WebSecurityCommon.PropertyFiles propFiles = WebSecurityCommon.createPropertiesFiles(userWithRoles, WEB_SECURITY_DOMAIN);
+
+        ModelNode loginModule = Util.createAddOperation(address.append(LOGIN_MODULE_STACK, "lm-stack").append
+                (LOGIN_MODULE, "UsersRoles"));
         loginModule.get(CODE).set("UsersRoles");
         loginModule.get(FLAG).set("required");
         loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        loginModule.get(MODULE_OPTIONS).get("usersProperties").set(propFiles.getUsers().getAbsolutePath());
+        loginModule.get(MODULE_OPTIONS).get("rolesProperties").set(propFiles.getRoles().getAbsolutePath());
         steps.add(loginModule);
 
         final ModelNode authModule = Util.createAddOperation(address.append(AUTH_MODULE, authModuleClassName));

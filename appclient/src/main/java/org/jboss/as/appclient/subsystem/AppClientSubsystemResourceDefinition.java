@@ -61,7 +61,7 @@ public class AppClientSubsystemResourceDefinition extends SimpleResourceDefiniti
                     .setAllowExpression(true).build();
 
     public static final StringListAttributeDefinition PARAMETERS = new StringListAttributeDefinition.Builder(Constants.PARAMETERS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
 

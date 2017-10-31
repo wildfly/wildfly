@@ -22,9 +22,12 @@
 
 package org.jboss.as.test.integration.batch.chunk;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.io.FilePermission;
 import java.net.URL;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
+import java.util.PropertyPermission;
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.BatchRuntime;
@@ -42,7 +45,7 @@ import org.jboss.as.test.integration.batch.common.AbstractBatchTestCase;
 import org.jboss.as.test.integration.batch.common.CountingItemWriter;
 import org.jboss.as.test.integration.batch.common.JobExecutionMarshaller;
 import org.jboss.as.test.integration.batch.common.StartBatchServlet;
-import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -67,7 +70,14 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
         return createDefaultWar("batch-chunk-partition.war", ChunkPartitionTestCase.class.getPackage(), "chunkPartition.xml", "chunk-suspend.xml")
                 .addPackage(ChunkPartitionTestCase.class.getPackage())
                 .addClass(Operations.class)
-                .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller\n"), "META-INF/MANIFEST.MF");
+                .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller, org.jboss.remoting3\n"), "META-INF/MANIFEST.MF")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new RemotingPermission("createEndpoint"),
+                        new RemotingPermission("connect"),
+                        new PropertyPermission("ts.timeout.factor", "read"),
+                        new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
+                ), "permissions.xml");
+
     }
 
     @RunAsClient
@@ -143,31 +153,6 @@ public class ChunkPartitionTestCase extends AbstractBatchTestCase {
             Assert.assertEquals(20, countingItemWriter.getWrittenItemSize());
         } finally {
             managementClient.getControllerClient().execute(Operations.createOperation("resume"));
-        }
-    }
-
-    private static void waitForTermination(final JobExecution jobExecution, final int timeout) {
-        long waitTimeout = TimeoutUtil.adjust(timeout * 1000);
-        long sleep = 100L;
-        while (true) {
-            switch (jobExecution.getBatchStatus()) {
-                case STARTED:
-                case STARTING:
-                case STOPPING:
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(sleep);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    waitTimeout -= sleep;
-                    sleep = Math.max(sleep / 2, 100L);
-                    break;
-                default:
-                    return;
-            }
-            if (waitTimeout <= 0) {
-                throw new IllegalStateException("Batch job did not complete within allotted time.");
-            }
         }
     }
 

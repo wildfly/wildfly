@@ -48,8 +48,7 @@
             <native-interface security-realm="ManagementRealm">
                 <socket interface="management" port="29999"/>
             </native-interface>
-            <http-interface security-realm="ManagementRealm" console-enabled="false">
-                <http-upgrade enabled="true" />
+            <http-interface security-realm="ManagementRealm" console-enabled="false"  http-upgrade-enabled="true">
                 <socket interface="management" port="29990"/>
             </http-interface>
         </management-interfaces>
@@ -76,6 +75,11 @@
     <jvms>
         <jvm name="default">
             <heap size="64m" max-size="128m"/>
+            <jvm-options>
+                <option value="-ea"/>
+                <option value="--add-exports=java.base/sun.nio.ch=ALL-UNNAMED"/>
+                <option value="--illegal-access=permit"/>
+            </jvm-options>
         </jvm>
     </jvms>
 

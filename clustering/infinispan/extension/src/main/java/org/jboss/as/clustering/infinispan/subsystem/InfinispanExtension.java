@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.EnumSet;
 
 import org.jboss.as.clustering.controller.ContextualSubsystemRegistration;
+import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -41,12 +42,14 @@ public class InfinispanExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "infinispan";
 
+    static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, InfinispanExtension.class);
+
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, InfinispanModel.CURRENT.getVersion());
 
         new InfinispanSubsystemResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));
-        registration.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
+        registration.registerXMLElementWriter(() -> new InfinispanSubsystemXMLWriter());
     }
 
     @Override

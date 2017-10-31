@@ -24,6 +24,7 @@ package org.jboss.as.test.manualmode.ejb.ssl;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
@@ -120,7 +121,7 @@ public class SSLRealmSetupTool {
         operation.get(OP).set(ADD);
         ModelNode result = managementClient.getControllerClient().execute(operation);
         log.infof("Adding security realm %s with result %s", SECURITY_REALM_NAME, result);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // Adding SERVER IDENTITY
         // /core-service=management/security-realm=SSLRealm/server-identity=ssl:add(
@@ -139,7 +140,7 @@ public class SSLRealmSetupTool {
         result = managementClient.getControllerClient().execute(operation);
         log.infof("Setting server-identity ssl for realm %s (password %s, keystore path %s) with result %s", SECURITY_REALM_NAME,
                 SERVER_KEYSTORE_PASSWORD, KEYSTORES_ABSOLUTE_PATH, result.get(OUTCOME));
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // Adding AUTHENTICATION attribute to SSLRealm
         operation = new ModelNode();
@@ -149,30 +150,26 @@ public class SSLRealmSetupTool {
         operation.get("keystore-password").set(SERVER_KEYSTORE_PASSWORD);
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
-        //add https connector
-
-        // Add the HTTPS connector.
+        // make the https connector use our SSL realm
         operation = new ModelNode();
-        operation.get(OP).set(ADD);
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         operation.get(OP_ADDR).add(SUBSYSTEM, "undertow");
         operation.get(OP_ADDR).add("server", "default-server");
-        operation.get(OP_ADDR).add("https-listener", "testConnector");
-        operation.get("socket-binding").set("https");
-        operation.get("enabled").set(true);
-        operation.get("security-realm").set(SECURITY_REALM_NAME);
+        operation.get(OP_ADDR).add("https-listener", "https");
+        operation.get(NAME).set("security-realm");
+        operation.get(VALUE).set(SECURITY_REALM_NAME);
         result = managementClient.getControllerClient().execute(operation);
-        log.trace("creating connector result " + result);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         //add remoting connector
         operation = new ModelNode();
         operation.get(OP_ADDR).set(SSLRealmSetupTool.getRemotingConnectorAddress());
         operation.get(OP).set(ADD);
-        operation.get(SECURITY_REALM).set(SECURITY_REALM_NAME);
+        operation.get(SECURITY_REALM).set("ApplicationRealm");
         operation.get(PROTOCOL).set("https-remoting");
-        operation.get("connector-ref").set("testConnector");
+        operation.get("connector-ref").set("https");
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         result = managementClient.getControllerClient().execute(operation);
         log.infof("Adding HTTPS connector", result);
@@ -196,21 +193,21 @@ public class SSLRealmSetupTool {
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         ModelNode result = managementClient.getControllerClient().execute(operation);
         log.infof("remove HTTPS connector", result);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
 
-        controller.stop(SSLEJBRemoteClientTestCase.DEFAULT_JBOSSAS);
-        controller.start(SSLEJBRemoteClientTestCase.DEFAULT_JBOSSAS);
-
-
+        // restore https connector to previous state
         operation = new ModelNode();
-        operation.get(OP).set(REMOVE);
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         operation.get(OP_ADDR).add(SUBSYSTEM, "undertow");
         operation.get(OP_ADDR).add("server", "default-server");
-        operation.get(OP_ADDR).add("https-listener", "testConnector");
+        operation.get(OP_ADDR).add("https-listener", "https");
+        operation.get(NAME).set("security-realm");
+        operation.get(VALUE).set("ApplicationRealm");
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         result = managementClient.getControllerClient().execute(operation);
-        log.trace("removing connector result " + result);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
 
         // Removing security realm
         ModelNode secRealmAddress = getSecurityRealmsAddress();
@@ -223,8 +220,6 @@ public class SSLRealmSetupTool {
         log.infof("Removing security realm %s with result %s", SECURITY_REALM_NAME, result);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         controller.stop(SSLEJBRemoteClientTestCase.DEFAULT_JBOSSAS);
-
-
     }
 
 }

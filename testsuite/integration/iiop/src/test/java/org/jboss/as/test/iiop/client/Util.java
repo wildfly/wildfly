@@ -45,7 +45,8 @@ import com.sun.corba.se.impl.orbutil.ORBConstants;
 
 public class Util {
     public static final String HOST = NetworkUtils.formatPossibleIpv6Address(System.getProperty("node1", "localhost"));
-    private static ORB orb = null;
+    private static org.omg.CORBA.ORB orb = null;
+    private static ORB arjunaORB = null;
 
     // Recovery manager is needed till the end of orb usage
     private static ExecutorService recoveryManagerPool;
@@ -57,19 +58,19 @@ public class Util {
 
         new ContextPropagationManager();
 
-        org.omg.CORBA.ORB sunOrb = org.omg.CORBA.ORB.init(new String[0], properties);
+        orb = org.omg.CORBA.ORB.init(new String[0], properties);
 
-        orb = com.arjuna.orbportability.ORB.getInstance("ClientSide");
-        orb.setOrb(sunOrb);
+        arjunaORB = com.arjuna.orbportability.ORB.getInstance("ClientSide");
+        arjunaORB.setOrb(orb);
 
-        OA oa = OA.getRootOA(orb);
-        org.omg.PortableServer.POA rootPOA = org.omg.PortableServer.POAHelper.narrow(sunOrb
+        OA oa = OA.getRootOA(arjunaORB);
+        org.omg.PortableServer.POA rootPOA = org.omg.PortableServer.POAHelper.narrow(orb
                 .resolve_initial_references("RootPOA"));
         oa.setPOA(rootPOA);
 
         oa.initOA();
 
-        ORBManager.setORB(orb);
+        ORBManager.setORB(arjunaORB);
         ORBManager.setPOA(oa);
 
         // Recovery manager has to be started on client when we want recovery
@@ -107,13 +108,11 @@ public class Util {
     public static InitialContext getContext() throws NamingException {
         // this is needed to get the iiop call successful
         System.setProperty("com.sun.CORBA.ORBUseDynamicStub", "true");
+
         final Properties prope = new Properties();
-
         prope.put(Context.PROVIDER_URL, "corbaloc::" + HOST + ":3628/JBoss/Naming/root");
-
-        prope.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.iiop.naming:org.jboss.naming.client");
         prope.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.cosnaming.CNCtxFactory");
-        prope.put(Context.OBJECT_FACTORIES, "org.jboss.tm.iiop.client.IIOPClientUserTransactionObjectFactory");
+        prope.put("java.naming.corba.orb", orb);
 
         return new InitialContext(prope);
     }

@@ -44,7 +44,7 @@ public class NoStoreResourceDefinition extends ChildResourceDefinition<Managemen
     }
 
     public NoStoreResourceDefinition() {
-        super(PATH, new InfinispanResourceDescriptionResolver(PATH));
+        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH));
     }
 
     @Override

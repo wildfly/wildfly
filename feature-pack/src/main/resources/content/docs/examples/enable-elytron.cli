@@ -1,0 +1,137 @@
+# This CLI script allows to enable Elytron security framework
+# Run it from JBOSS_HOME as:
+# bin/jboss-cli.sh --file=docs/examples/enable-elytron.cli
+
+embed-server --server-config=standalone.xml
+
+/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
+
+/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
+/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
+
+/core-service=management/access=identity:add(security-domain=ManagementDomain)
+/core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade,value={enabled=true, sasl-authentication-factory=management-sasl-authentication})
+/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory,value=management-http-authentication)
+/core-service=management/management-interface=http-interface:undefine-attribute(name=security-realm)
+/core-service=management/security-realm=ManagementRealm:remove
+/core-service=management/security-realm=ApplicationRealm/authentication=local:remove
+/core-service=management/security-realm=ApplicationRealm/authentication=properties:remove
+/core-service=management/security-realm=ApplicationRealm/authorization=properties:remove
+
+stop-embedded-server
+
+
+embed-server --server-config=standalone-ha.xml
+
+/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
+
+/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
+/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
+
+/core-service=management/access=identity:add(security-domain=ManagementDomain)
+/core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade,value={enabled=true, sasl-authentication-factory=management-sasl-authentication})
+/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory,value=management-http-authentication)
+/core-service=management/management-interface=http-interface:undefine-attribute(name=security-realm)
+/core-service=management/security-realm=ManagementRealm:remove
+/core-service=management/security-realm=ApplicationRealm/authentication=local:remove
+/core-service=management/security-realm=ApplicationRealm/authentication=properties:remove
+/core-service=management/security-realm=ApplicationRealm/authorization=properties:remove
+
+stop-embedded-server
+
+
+embed-server --server-config=standalone-full.xml
+
+/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
+/subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
+/subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
+
+/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
+/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
+
+/core-service=management/access=identity:add(security-domain=ManagementDomain)
+/core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade,value={enabled=true, sasl-authentication-factory=management-sasl-authentication})
+/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory,value=management-http-authentication)
+/core-service=management/management-interface=http-interface:undefine-attribute(name=security-realm)
+/core-service=management/security-realm=ManagementRealm:remove
+/core-service=management/security-realm=ApplicationRealm/authentication=local:remove
+/core-service=management/security-realm=ApplicationRealm/authentication=properties:remove
+/core-service=management/security-realm=ApplicationRealm/authorization=properties:remove
+
+stop-embedded-server
+
+
+embed-server --server-config=standalone-full-ha.xml
+
+/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
+/subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
+/subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
+
+/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
+/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
+
+/core-service=management/access=identity:add(security-domain=ManagementDomain)
+/core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade,value={enabled=true, sasl-authentication-factory=management-sasl-authentication})
+/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory,value=management-http-authentication)
+/core-service=management/management-interface=http-interface:undefine-attribute(name=security-realm)
+/core-service=management/security-realm=ManagementRealm:remove
+/core-service=management/security-realm=ApplicationRealm/authentication=local:remove
+/core-service=management/security-realm=ApplicationRealm/authentication=properties:remove
+/core-service=management/security-realm=ApplicationRealm/authorization=properties:remove
+
+stop-embedded-server
+
+
+embed-host-controller
+
+/profile=default/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/profile=default/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+/profile=default/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
+/profile=default/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
+/profile=default/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
+
+/profile=full/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/profile=full/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+/profile=full/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
+/profile=full/subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
+/profile=full/subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
+/profile=full/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
+/profile=full/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
+
+/profile=full-ha/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/profile=full-ha/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+/profile=full-ha/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
+/profile=full-ha/subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
+/profile=full-ha/subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
+/profile=full-ha/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
+/profile=full-ha/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
+
+/profile=ha/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/profile=ha/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+/profile=ha/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
+/profile=ha/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
+/profile=ha/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
+
+/host=master/core-service=management/access=identity:add(security-domain=ManagementDomain)
+/host=master/core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade,value={enabled=true, sasl-authentication-factory=management-sasl-authentication})
+/host=master/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory,value=management-http-authentication)
+/host=master/core-service=management/management-interface=http-interface:undefine-attribute(name=security-realm)
+
+/host=master/core-service=management/management-interface=native-interface:write-attribute(name=sasl-authentication-factory,value=management-sasl-authentication)
+/host=master/core-service=management/management-interface=native-interface:undefine-attribute(name=security-realm)
+
+/host=master/core-service=management/security-realm=ManagementRealm:remove
+/host=master/core-service=management/security-realm=ApplicationRealm/authentication=local:remove
+/host=master/core-service=management/security-realm=ApplicationRealm/authentication=properties:remove
+/host=master/core-service=management/security-realm=ApplicationRealm/authorization=properties:remove
+
+stop-embedded-host-controller
+

@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>11.0.0.Beta1-SNAPSHOT</version>
+        <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-servlet-build</artifactId>
@@ -90,7 +90,7 @@
                                 <descriptor>assembly.xml</descriptor>
                             </descriptors>
                             <recompressZippedFiles>true</recompressZippedFiles>
-                            <finalName>${server.output.dir.prefix}-web-${project.version}</finalName>
+                            <finalName>${project.build.finalName}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                             <workDirectory>${project.build.directory}/assembly/work</workDirectory>

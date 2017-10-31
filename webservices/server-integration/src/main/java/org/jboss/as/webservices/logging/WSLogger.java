@@ -241,8 +241,8 @@ public interface WSLogger extends BasicLogger {
     @Message(id = 52, value = "Unsupported handler chain type: %s. Supported types are either %s or %s")
     StartException wrongHandlerChainType(String unknownChainType, String knownChainType1, String knownChainType2);
 
-    @Message(id = 53, value = "Cannot add new handler chain of type %s with id %s. This id is already used in config %s for another chain.")
-    StartException multipleHandlerChainsWithSameId(String chainType, String handlerChainId, String configId);
+//    @Message(id = 53, value = "Cannot add new handler chain of type %s with id %s. This id is already used in config %s for another chain.")
+//    StartException multipleHandlerChainsWithSameId(String chainType, String handlerChainId, String configId);
 
     @Message(id = 54, value = "Config %s: %s handler chain with id %s doesn't exist")
     OperationFailedException missingHandlerChain(String configName, String handlerChainType, String handlerChainId);
@@ -296,8 +296,8 @@ public interface WSLogger extends BasicLogger {
     @Message(id = 68, value = "Service %s not available")
     OperationFailedException serviceNotAvailable(String serviceName);
 
-    @Message(id = 69, value = "String format password is required")
-    IllegalArgumentException invalidPasswordType();
+//    @Message(id = 69, value = "String format password is required")
+//    IllegalArgumentException invalidPasswordType();
 
     @LogMessage(level = DEBUG)
     @Message(id = 70, value = "Authorization failed for user: %s")

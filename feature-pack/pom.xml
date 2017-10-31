@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>11.0.0.Beta1-SNAPSHOT</version>
+        <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-feature-pack</artifactId>
@@ -40,6 +40,7 @@
 
     <properties>
         <project.version>${project.version}</project.version>
+        <license.directory>${project.build.directory}/${project.build.finalName}/content/docs/licenses</license.directory>
     </properties>
 
     <build>
@@ -300,21 +301,45 @@
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
             <artifactId>wildfly-http-ejb-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>*</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
             <artifactId>wildfly-http-client-common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>*</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
             <artifactId>wildfly-http-naming-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>*</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
             <artifactId>wildfly-http-transaction-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>*</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -812,6 +837,23 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-ejb-client-legacy</artifactId>
+            <!--
+                This should not be part of the feature pack since this legacy client will never be used inside a server,
+                it's sole intent is for usage outside of the server. So we use the provided scope to not pollute the
+                testsuite classpath. While the artifact being part of the maven repo and license generation should
+                still work.
+            -->
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <dependency>
             <groupId>org.jboss.ejb3</groupId>
@@ -1139,17 +1181,6 @@
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-json-p-provider</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1809,11 +1840,6 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.qpid</groupId>
-            <artifactId>proton-jms</artifactId>
         </dependency>
 
         <dependency>
@@ -2961,12 +2987,117 @@
                                 </goals>
                                 <phase>prepare-package</phase>
                                 <configuration>
-                                    <licensesOutputDirectory>
-                                        ${project.build.directory}/${project.build.finalName}/content/docs/licenses
-                                    </licensesOutputDirectory>
-                                    <licensesOutputFile>
-                                        ${project.build.directory}/${project.build.finalName}/content/docs/licenses/licenses.xml
-                                    </licensesOutputFile>
+                                    <licensesOutputDirectory>${project.build.directory}/${project.build.finalName}/content/docs/licenses</licensesOutputDirectory>
+                                    <licensesOutputFile>${project.build.directory}/${project.build.finalName}/content/docs/licenses/licenses.xml</licensesOutputFile>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+
+        <profile>
+            <id>update-licenses-xml</id>
+            <activation>
+                <property>
+                    <name>!skip-update-licenses-xml</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-licenses-xml</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${license.directory}</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${project.basedir}/src/license</directory>
+                                            <includes>
+                                                <include>*licenses.xml</include>
+                                            </includes>
+                                            <filtering>false</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.maven.plugins</groupId>
+                        <artifactId>licenses-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>update-licenses-xml</id>
+                                <goals>
+                                    <goal>insert-versions</goal>
+                                </goals>
+                                <phase>prepare-package</phase>
+                                <configuration>
+                                    <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
+                                    <licensesOutputDirectory>${license.directory}</licensesOutputDirectory>
+                                    <licensesOutputFile>${license.directory}/full-feature-pack-licenses.xml</licensesOutputFile>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>generate-licenses-html</id>
+            <activation>
+                <property>
+                    <name>!skip-generate-licenses-html</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>xml-maven-plugin</artifactId>
+                        <version>1.0.1</version>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>generate-licenses-html</id>
+                                <goals>
+                                    <goal>transform</goal>
+                                </goals>
+                                <phase>prepare-package</phase>
+                                <configuration>
+                                    <transformationSets>
+                                        <transformationSet>
+                                            <dir>${license.directory}</dir>
+                                            <includes>
+                                                <include>*licenses.xml</include>
+                                            </includes>
+                                            <stylesheet>src/main/resources/content/docs/licenses/licenses.xsl</stylesheet>
+                                            <outputDir>${license.directory}</outputDir>
+                                            <fileMappers>
+                                                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                                                    <targetExtension>.html</targetExtension>
+                                                </fileMapper>
+                                            </fileMappers>
+                                            <parameters>
+                                                <parameter>
+                                                    <name>version</name>
+                                                    <value>${project.version}</value>
+                                                </parameter>
+                                            </parameters>
+                                        </transformationSet>
+                                    </transformationSets>
                                 </configuration>
                             </execution>
                         </executions>

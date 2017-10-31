@@ -75,13 +75,14 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
 
     static final RuntimeCapability<Void> MOD_CLUSTER_FILTER_CAPABILITY = RuntimeCapability
             .Builder.of(CAPABILITY_MOD_CLUSTER_FILTER, true, FilterService.class)
-            .addDynamicOptionalRequirements(REF_SSL_CONTEXT)
+            //.addDynamicOptionalRequirements(REF_SSL_CONTEXT) -- has no function so don't use it
             .build();
 
     public static final AttributeDefinition MANAGEMENT_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.MANAGEMENT_SOCKET_BINDING, ModelType.STRING)
             .setAllowExpression(true)
             .setRequired(true)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .setCapabilityReference(Capabilities.REF_SOCKET_BINDING)
             .setRestartAllServices()
             .build();
 

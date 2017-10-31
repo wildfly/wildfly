@@ -43,6 +43,11 @@ public class RestartParentResourceStepHandler<T> extends RestartParentResourceHa
     }
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.isDefaultRequiresRuntime();
+    }
+
+    @Override
     protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
     }
 

@@ -52,25 +52,25 @@ public class SharedTldsMetaDataBuilder {
 
     private static final String[] JSTL_TAGLIBS = { "c-1_0-rt.tld", "c-1_0.tld", "c.tld", "fmt-1_0-rt.tld", "fmt-1_0.tld", "fmt.tld", "fn.tld", "permittedTaglibs.tld", "scriptfree.tld", "sql-1_0-rt.tld", "sql-1_0.tld", "sql.tld", "x-1_0-rt.tld", "x-1_0.tld", "x.tld" };
 
-    private final ArrayList<TldMetaData> jstlTlds = new ArrayList<TldMetaData>();
-
     // Not used right now due to hardcoding
     /** The common container config. */
     private final ModelNode containerConfig;
 
     public SharedTldsMetaDataBuilder(final ModelNode containerConfig) {
         this.containerConfig = containerConfig;
-        init();
     }
 
-    private void init() {
+    public List<TldMetaData> getSharedTlds(DeploymentUnit deploymentUnit) {
+
+        final List<TldMetaData> metadata = new ArrayList<TldMetaData>();
+
         try {
             ModuleClassLoader jstl = Module.getModuleFromCallerModuleLoader(ModuleIdentifier.create("javax.servlet.jstl.api")).getClassLoader();
             for (String tld : JSTL_TAGLIBS) {
                 InputStream is = jstl.getResourceAsStream("META-INF/" + tld);
                 if (is != null) {
-                    TldMetaData tldMetaData = parseTLD(tld, is);
-                    jstlTlds.add(tldMetaData);
+                    TldMetaData tldMetaData = parseTLD(is);
+                    metadata.add(tldMetaData);
                 }
             }
         } catch (ModuleLoadException e) {
@@ -78,11 +78,6 @@ public class SharedTldsMetaDataBuilder {
         } catch (Exception e) {
             // Ignore
         }
-    }
-
-    public List<TldMetaData> getSharedTlds(DeploymentUnit deploymentUnit) {
-        final List<TldMetaData> metadata = new ArrayList<TldMetaData>();
-        metadata.addAll(jstlTlds);
 
         List<TldMetaData> additionalSharedTlds = deploymentUnit.getAttachment(ATTACHMENT_KEY);
         if (additionalSharedTlds != null) {
@@ -92,7 +87,7 @@ public class SharedTldsMetaDataBuilder {
         return metadata;
     }
 
-    private TldMetaData parseTLD(String tld, InputStream is)
+    private TldMetaData parseTLD(InputStream is)
     throws Exception {
         try {
             final XMLInputFactory inputFactory = XMLInputFactory.newInstance();

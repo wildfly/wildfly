@@ -83,7 +83,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
 
     ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime) {
         PathElement path = pathElement(name);
-        this.definition = new SimpleResourceDefinition(path, new InfinispanResourceDescriptionResolver(path, pathElement(PathElement.WILDCARD_VALUE)));
+        this.definition = new SimpleResourceDefinition(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, pathElement(PathElement.WILDCARD_VALUE)));
         this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.queueLength = new SimpleAttribute(createBuilder("queue-length", ModelType.INT, new ModelNode(defaultQueueLength), new IntRangeValidatorBuilder().min(0)).build());
@@ -91,14 +91,14 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     }
 
     private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder) {
-        return new SimpleAttributeDefinitionBuilder(name, type)
+        SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, type)
                 .setAllowExpression(true)
                 .setRequired(false)
                 .setDefaultValue(defaultValue)
                 .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                 .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-                .setValidator(validatorBuilder.allowExpression(true).allowUndefined(true).build())
                 ;
+        return builder.setValidator(validatorBuilder.configure(builder).build());
     }
 
     @Override

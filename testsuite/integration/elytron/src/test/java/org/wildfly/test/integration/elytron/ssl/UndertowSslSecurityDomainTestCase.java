@@ -61,11 +61,11 @@ import org.wildfly.test.security.common.elytron.ConstantPrincipalDecoder;
 import org.wildfly.test.security.common.elytron.CredentialReference;
 import org.wildfly.test.security.common.elytron.Path;
 import org.wildfly.test.security.common.elytron.PropertyFileAuthzBasedDomain;
-import org.wildfly.test.security.common.elytron.SimpleKeyManagers;
+import org.wildfly.test.security.common.elytron.SimpleKeyManager;
 import org.wildfly.test.security.common.elytron.SimpleKeyStore;
 import org.wildfly.test.security.common.elytron.KeyStoreRealm;
 import org.wildfly.test.security.common.elytron.SimpleServerSslContext;
-import org.wildfly.test.security.common.elytron.SimpleTrustManagers;
+import org.wildfly.test.security.common.elytron.SimpleTrustManager;
 import org.wildfly.test.security.common.elytron.X500AttributePrincipalDecoder;
 import org.wildfly.test.security.common.elytron.UndertowSslContext;
 import org.wildfly.test.security.common.elytron.UserWithRoles;
@@ -219,11 +219,11 @@ public class UndertowSslSecurityDomainTestCase {
                         .withPath(Path.builder().withPath(SERVER_TRUSTSTORE_FILE.getPath()).build())
                         .withCredentialReference(CredentialReference.builder().withClearText(PASSWORD).build())
                         .build(),
-                SimpleKeyManagers.builder().withName(NAME)
+                SimpleKeyManager.builder().withName(NAME)
                         .withKeyStore(NAME + SecurityTestConstants.SERVER_KEYSTORE)
                         .withCredentialReference(CredentialReference.builder().withClearText(PASSWORD).build())
                         .build(),
-                SimpleTrustManagers.builder().withName(NAME)
+                SimpleTrustManager.builder().withName(NAME)
                         .withKeyStore(NAME + SecurityTestConstants.SERVER_TRUSTSTORE)
                         .build(),
                 KeyStoreRealm.builder().withName(NAME)

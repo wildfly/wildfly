@@ -55,7 +55,7 @@ public class GroupingHandlerDefinition extends ModelOnlyResourceDefinition {
     public static final SimpleAttributeDefinition TIMEOUT = create("timeout", INT)
             .setDefaultValue(new ModelNode(5000))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -63,7 +63,7 @@ public class GroupingHandlerDefinition extends ModelOnlyResourceDefinition {
     public static final SimpleAttributeDefinition GROUP_TIMEOUT = create("group-timeout", LONG)
             .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -71,7 +71,7 @@ public class GroupingHandlerDefinition extends ModelOnlyResourceDefinition {
     public static final SimpleAttributeDefinition REAPER_PERIOD = create("reaper-period", LONG)
             .setDefaultValue(new ModelNode(30000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>11.0.0.Beta1-SNAPSHOT</version>
+        <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -113,6 +113,7 @@
                             <systemPropertyVariables combine.children="append">
                                 <arquillian.launch>xts-servers</arquillian.launch>
                             </systemPropertyVariables>
+                            <!--<argLine>${surefire.system.args}</argLine>-->
                         </configuration>
                     </plugin>
                 </plugins>
@@ -135,6 +136,7 @@
                                 <!-- This test uses Byteman and requires permission on a random port every time -->
                                 <exclude>**/BAParticipantCompletionTestCase.java</exclude>
                             </excludes>
+                            <!--<argLine>${surefire.system.args}</argLine>-->
                         </configuration>
                     </plugin>
                 </plugins>

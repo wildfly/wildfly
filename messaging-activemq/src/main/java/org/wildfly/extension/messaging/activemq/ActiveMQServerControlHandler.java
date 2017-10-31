@@ -44,12 +44,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -70,11 +68,12 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
             .setStorageRuntime()
             .build();
 
-    public static final AttributeDefinition STARTED = new SimpleAttributeDefinition(CommonAttributes.STARTED, ModelType.BOOLEAN,
-            false, AttributeAccess.Flag.STORAGE_RUNTIME);
+    public static final AttributeDefinition STARTED = new SimpleAttributeDefinitionBuilder(CommonAttributes.STARTED, ModelType.BOOLEAN,
+            false).setStorageRuntime().build();
 
-    public static final AttributeDefinition VERSION = new SimpleAttributeDefinition(CommonAttributes.VERSION, ModelType.STRING,
-            true, AttributeAccess.Flag.STORAGE_RUNTIME);
+
+    public static final AttributeDefinition VERSION = new SimpleAttributeDefinitionBuilder(CommonAttributes.VERSION, ModelType.STRING,
+            true).setStorageRuntime().build();
 
     private static final AttributeDefinition[] ATTRIBUTES = { STARTED, VERSION, ACTIVE };
     public static final String GET_CONNECTORS_AS_JSON = "get-connectors-as-json";
@@ -110,7 +109,7 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
     public static final AttributeDefinition CONNECTION_ID = createNonEmptyStringAttribute("connection-id");
     public static final AttributeDefinition REQUIRED_IP_ADDRESS = createNonEmptyStringAttribute("ip-address");
     public static final AttributeDefinition OPTIONAL_IP_ADDRESS = SimpleAttributeDefinitionBuilder.create("ip-address", ModelType.STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .build();
 

@@ -84,7 +84,8 @@ public class VaultInteractiveSession {
             VaultInteraction vaultInteraction = new VaultInteraction(vaultNISession);
             vaultInteraction.start();
         } catch (Exception e) {
-            System.out.println(SecurityLogger.ROOT_LOGGER.exceptionEncountered() + e.getLocalizedMessage());
+            System.out.println(SecurityLogger.ROOT_LOGGER.exceptionEncountered());
+            e.printStackTrace(System.err);
         }
     }
 

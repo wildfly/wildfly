@@ -29,8 +29,8 @@ import java.util.EnumSet;
 import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
-import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -46,7 +46,7 @@ import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
 /**
  * @author Paul Ferraro
  */
-public class ForkServiceHandler extends ParentResourceServiceHandler<ChannelFactory> {
+public class ForkServiceHandler extends SimpleResourceServiceHandler<ChannelFactory> {
 
     ForkServiceHandler(ResourceServiceBuilderFactory<ChannelFactory> factory) {
         super(factory);
@@ -66,7 +66,7 @@ public class ForkServiceHandler extends ParentResourceServiceHandler<ChannelFact
         new AliasServiceBuilder<>(FORK_CHANNEL_SOURCE.getServiceName(address), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, channel), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
         new AliasServiceBuilder<>(FORK_CHANNEL_MODULE.getServiceName(address), JGroupsRequirement.CHANNEL_MODULE.getServiceName(context, channel), JGroupsRequirement.CHANNEL_MODULE.getType()).build(target).install();
         new AliasServiceBuilder<>(FORK_CHANNEL_CLUSTER.getServiceName(address), JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, channel), JGroupsRequirement.CHANNEL_CLUSTER.getType()).build(target).install();
-        new ChannelBuilder(FORK_CHANNEL.getServiceName(address), name).configure(context, model).build(target).install();
+        new ChannelBuilder(FORK_CHANNEL, address).configure(context, model).build(target).install();
 
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), JGroupsRequirement.CHANNEL.getServiceName(context, name), JGroupsRequirement.CHANNEL.getType()).build(target).install();
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();

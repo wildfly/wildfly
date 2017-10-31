@@ -40,12 +40,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.PropertiesValueResolver;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,11 +52,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class TransactionIIOPInvocationTestCase {
-
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
 
     @Deployment(name = "server", testable = false)
     @TargetsContainer("iiop-server")

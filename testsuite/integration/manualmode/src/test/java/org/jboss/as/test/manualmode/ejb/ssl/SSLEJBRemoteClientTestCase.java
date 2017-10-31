@@ -44,7 +44,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -63,7 +62,6 @@ import java.util.concurrent.Future;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("WFLY-1836")
 public class SSLEJBRemoteClientTestCase {
     private static final Logger log = Logger.getLogger(SSLEJBRemoteClientTestCase.class);
     private static final String MODULE_NAME_STATELESS = "ssl-remote-ejb-client-test";
@@ -98,16 +96,10 @@ public class SSLEJBRemoteClientTestCase {
 
     @BeforeClass
     public static void prepare() throws Exception {
-        log.trace("*** BEFORE CLASS ***");
         log.trace("*** javax.net.ssl.trustStore="+System.getProperty("javax.net.ssl.trustStore"));
         log.trace("*** javax.net.ssl.trustStorePassword="+System.getProperty("javax.net.ssl.trustStorePassword"));
         log.trace("*** javax.net.ssl.keyStore="+System.getProperty("javax.net.ssl.keyStore"));
         log.trace("*** javax.net.ssl.keyStorePassword="+System.getProperty("javax.net.ssl.keyStorePassword"));
-        // probably not required, we get these properties from maven
-        /*System.setProperty("javax.net.ssl.trustStore", client_truststore_path);
-        System.setProperty("javax.net.ssl.trustStorePassword", SSLRealmSetupTool.CLIENT_KEYSTORE_PASSWORD);
-        System.setProperty("javax.net.ssl.keyStore", client_keystore_path);
-        System.setProperty("javax.net.ssl.keyStorePassword", SSLRealmSetupTool.CLIENT_KEYSTORE_PASSWORD);*/
         System.setProperty("jboss.ejb.client.properties.skip.classloader.scan", "true");
     }
 

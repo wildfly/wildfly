@@ -22,7 +22,7 @@
   ~
   -->
 
-<subsystem xmlns="urn:jboss:domain:security:3.0">
+<subsystem xmlns="urn:jboss:domain:security:2.0">
     <security-domains>
         <security-domain name="other" cache-type="default">
             <authentication>

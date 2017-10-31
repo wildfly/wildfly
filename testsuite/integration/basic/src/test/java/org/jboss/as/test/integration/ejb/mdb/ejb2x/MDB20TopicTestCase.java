@@ -23,12 +23,17 @@ package org.jboss.as.test.integration.ejb.mdb.ejb2x;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -42,6 +47,7 @@ import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
+import java.io.FilePermission;
 import java.util.PropertyPermission;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
@@ -54,6 +60,9 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 @RunWith(Arquillian.class)
 @ServerSetup({MDB20TopicTestCase.JmsQueueSetup.class})
 public class MDB20TopicTestCase extends AbstractMDB2xTestCase {
+
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     private Topic topic;
     private Queue replyQueueA;
@@ -85,13 +94,21 @@ public class MDB20TopicTestCase extends AbstractMDB2xTestCase {
     @Deployment
     public static Archive getDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "MDB20TopicTestCase.jar");
+        final String tempDir = TestSuiteEnvironment.getTmpDir();
+
         ejbJar.addClasses(EJB2xMDB.class, AbstractMDB2xTestCase.class);
         ejbJar.addPackage(JMSOperations.class.getPackage());
         ejbJar.addClasses(JmsQueueSetup.class, TimeoutUtil.class);
         ejbJar.addAsManifestResource(MDB20TopicTestCase.class.getPackage(), "ejb-jar-20-topic.xml", "ejb-jar.xml");
         ejbJar.addAsManifestResource(MDB20TopicTestCase.class.getPackage(), "jboss-ejb3-topic.xml", "jboss-ejb3.xml");
-        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
-        ejbJar.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml");
+        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.jboss.remoting3\n"), "MANIFEST.MF");
+        ejbJar.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission("ts.timeout.factor", "read"),
+                new RemotingPermission("createEndpoint"),
+                new RemotingPermission("connect"),
+                new FilePermission(tempDir+"/-", "read")
+        ), "jboss-permissions.xml");
+
         return ejbJar;
     }
 
@@ -113,11 +130,54 @@ public class MDB20TopicTestCase extends AbstractMDB2xTestCase {
      * Tests 2 MDBs both listening on a topic.
      */
     @Test
-    public void testEjb20TopicMDBs() {
+    public void testEjb20TopicMDBs() throws Exception {
+        // make sure that 2 MDBs created 2 subscriptions on topic - wait 5 seconds
+        Assert.assertTrue("MDBs did not created 2 subscriptions on topic in 5s timeout.",
+                waitUntilAtLeastGivenNumberOfSubscriptionIsCreatedOnTopic("ejb2x/topic", 2, 5000));
         sendTextMessage("Say hello to the topic", topic);
         final Message replyA = receiveMessage(replyQueueA, TimeoutUtil.adjust(5000));
         Assert.assertNotNull("Reply message was null on reply queue: " + replyQueueA, replyA);
         final Message replyB = receiveMessage(replyQueueB, TimeoutUtil.adjust(5000));
         Assert.assertNotNull("Reply message was null on reply queue: " + replyQueueB, replyB);
+    }
+
+    /**
+     * Waits given time out in ms for subscription to be created on topic
+     *
+     * @param topicCoreName         core name of the topic
+     * @param numberOfSubscriptions number of subscriptions
+     * @param timeout               timeout in ms
+     * @return true if subscription was created in given timeout, false if not
+     * @throws Exception
+     */
+    private boolean waitUntilAtLeastGivenNumberOfSubscriptionIsCreatedOnTopic(String topicCoreName,
+                                                                              int numberOfSubscriptions,
+                                                                              long timeout) throws Exception {
+        long startTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() - startTime < timeout) {
+            if (getNumberOfAllSubscriptions(topicCoreName) >= numberOfSubscriptions) {
+                return true;
+            }
+            Thread.sleep(100);
+        }
+        return false;
+    }
+
+    /**
+     * Returns number of all subscriptions on topic
+     *
+     * @param topicCoreName name of topic
+     * @return number of subscriptions on topic
+     * @throws Exception
+     */
+    private int getNumberOfAllSubscriptions(String topicCoreName) throws Exception {
+        ModelNode model = new ModelNode();
+        model.get(ClientConstants.OP).set("list-all-subscriptions");
+        model.get(ClientConstants.OP_ADDR).add("subsystem", "messaging-activemq");
+        model.get(ClientConstants.OP_ADDR).add("server", "default");
+        model.get(ClientConstants.OP_ADDR).add("jms-topic", topicCoreName);
+
+        ModelNode result = managementClient.getControllerClient().execute(model);
+        return result.get("result").asList().size();
     }
 }

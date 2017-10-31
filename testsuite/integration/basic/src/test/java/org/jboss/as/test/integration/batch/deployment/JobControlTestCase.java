@@ -22,8 +22,11 @@
 
 package org.jboss.as.test.integration.batch.deployment;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.io.FilePermission;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
+import java.util.PropertyPermission;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.BatchStatus;
@@ -43,6 +46,7 @@ import org.jboss.as.test.integration.batch.common.CountingItemReader;
 import org.jboss.as.test.integration.batch.common.CountingItemWriter;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -73,7 +77,13 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         return createDefaultWar(DEPLOYMENT_NAME, DeploymentDescriptorTestCase.class.getPackage(), "test-chunk.xml")
                 .addClasses(CountingItemReader.class, CountingItemWriter.class)
                 .addClass(Operations.class)
-                .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller\n"), "META-INF/MANIFEST.MF");
+                .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller, org.jboss.remoting3\n"), "META-INF/MANIFEST.MF")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new RemotingPermission("createEndpoint"),
+                        new RemotingPermission("connect"),
+                        new PropertyPermission("ts.timeout.factor", "read"),
+                        new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
+                ), "permissions.xml");
     }
 
     @Test
@@ -274,31 +284,6 @@ public class JobControlTestCase extends AbstractBatchTestCase {
         Assert.fail(Operations.getFailureDescription(result).asString());
         // Should never be reached
         return new ModelNode();
-    }
-
-    private static void waitForTermination(final JobExecution jobExecution, final int timeout) {
-        long waitTimeout = TimeoutUtil.adjust(timeout * 1000);
-        long sleep = 100L;
-        while (true) {
-            switch (jobExecution.getBatchStatus()) {
-                case STARTED:
-                case STARTING:
-                case STOPPING:
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(sleep);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    waitTimeout -= sleep;
-                    sleep = Math.max(sleep / 2, 100L);
-                    break;
-                default:
-                    return;
-            }
-            if (waitTimeout <= 0) {
-                throw new IllegalStateException("Batch job did not complete within allotted time.");
-            }
-        }
     }
 
 

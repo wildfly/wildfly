@@ -59,7 +59,7 @@ public class JMSBridgeDefinition extends ModelOnlyResourceDefinition {
     public static final String CONTEXT = "context";
 
     public static final SimpleAttributeDefinition MODULE = create("module", STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     public static final SimpleAttributeDefinition SOURCE_CONNECTION_FACTORY = create("source-connection-factory", STRING)
@@ -73,14 +73,14 @@ public class JMSBridgeDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition SOURCE_USER = create("source-user", STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setXmlName("user")
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(MESSAGING_SECURITY_DEF)
             .build();
     public static final SimpleAttributeDefinition SOURCE_PASSWORD = create("source-password", STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setXmlName("password")
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
@@ -104,7 +104,7 @@ public class JMSBridgeDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition TARGET_USER = create("target-user", STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setXmlName("user")
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
@@ -112,7 +112,7 @@ public class JMSBridgeDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition TARGET_PASSWORD = create("target-password", STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setXmlName("password")
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
@@ -148,15 +148,15 @@ public class JMSBridgeDefinition extends ModelOnlyResourceDefinition {
             .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition SUBSCRIPTION_NAME = create("subscription-name", STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition CLIENT_ID = create("client-id", STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition ADD_MESSAGE_ID_IN_HEADER = create("add-messageID-in-header", BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode().set(false))
             .setAllowExpression(true)
             .build();

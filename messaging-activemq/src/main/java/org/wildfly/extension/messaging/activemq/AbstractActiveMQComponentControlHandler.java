@@ -160,10 +160,12 @@ public abstract class AbstractActiveMQComponentControlHandler<T extends ActiveMQ
 
     public void registerOperations(final ManagementResourceRegistration registry, final ResourceDescriptionResolver resolver) {
         final OperationDefinition startOp = new SimpleOperationDefinitionBuilder(START, resolver)
+                .setRuntimeOnly()
                 .build();
         registry.registerOperationHandler(startOp, this);
         final OperationDefinition stopOp = new SimpleOperationDefinitionBuilder(STOP, resolver)
-        .build();
+                .setRuntimeOnly()
+                .build();
         registry.registerOperationHandler(stopOp, this);
     }
 

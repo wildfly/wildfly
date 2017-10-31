@@ -19,15 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.integration.domain.mixed;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
@@ -39,8 +35,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -53,35 +52,33 @@ import org.jboss.as.test.integration.domain.mixed.eap630.DomainAdjuster630;
 import org.jboss.as.test.integration.domain.mixed.eap640.DomainAdjuster640;
 import org.jboss.as.test.integration.domain.mixed.eap700.DomainAdjuster700;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.junit.Assert;
 
-
 /**
- * Adjusts the domain configuration for the legacy server version.
- * The default implementation trims down the domain model to only include the following
- * profiles, socket-binding-groups and server-groups
+ * Adjusts the domain configuration for the legacy server version. The default implementation trims down the domain
+ * model to only include the following profiles, socket-binding-groups and server-groups
  * <uL>
- *     <li>{@code /profile=full-ha}</li>
- *     <li>{@code /socket-binding-group=full-ha-sockets}</li>
- *     <li>{@code /server-group=other-server-group}</li>
- *     <li>{@code /server-group=main-server-group}</li>
+ * <li>{@code /profile=full-ha}</li>
+ * <li>{@code /socket-binding-group=full-ha-sockets}</li>
+ * <li>{@code /server-group=other-server-group}</li>
+ * <li>{@code /server-group=main-server-group}</li>
  * </uL>
- * Subclasses can then further execute operations to put the model in a state which can be transformed
- * to a legacy version.
+ * Subclasses can then further execute operations to put the model in a state which can be transformed to a legacy
+ * version.
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class DomainAdjuster {
 
-    //We only want to test the full ha profile in these tests
-    private final String FULL_HA = "full-ha";
     private final String MAIN_SERVER_GROUP = "main-server-group";
     private final String OTHER_SERVER_GROUP = "other-server-group";
+    private static final Set<String> UNUSED_SERVER_GROUP_ATTRIBUTES = new HashSet<>(Arrays.asList("management-subsystem-endpoint", "deployment", "deployment-overlay", "jvm", "system-property"));
 
     protected DomainAdjuster() {
     }
 
-    static void adjustForVersion(final DomainClient client, final Version.AsVersion asVersion) throws Exception {
+    static void adjustForVersion(final DomainClient client, final Version.AsVersion asVersion, final String profile, final boolean withMasterServers) throws Exception {
 
         final DomainAdjuster adjuster;
         switch (asVersion) {
@@ -100,20 +97,19 @@ public class DomainAdjuster {
             default:
                 adjuster = new DomainAdjuster();
         }
-
-        adjuster.adjust(client);
+        adjuster.adjust(client, profile, withMasterServers);
     }
 
-    final void adjust(final DomainClient client) throws Exception {
+    final void adjust(final DomainClient client, String profile, boolean withMasterServers) throws Exception {
         //Trim it down so we have only
         //profile=full-ha,
         //the main-server-group and other-server-group
         //socket-binding-group = full-ha-sockets
         final List<String> allProfiles = getAllChildrenOfType(client, PathAddress.EMPTY_ADDRESS, PROFILE);
-        final ModelNode serverGroup = removeServerGroups(client);
+        final ModelNode serverGroup = removeServerGroups(client, profile);
 
         for (String profileName : allProfiles) {
-            if (profileName.equals(FULL_HA)) {
+            if (profile.equals(profileName)) {
                 continue;
             }
             removeProfile(client, profileName);
@@ -128,10 +124,10 @@ public class DomainAdjuster {
         removeHostExcludes(client);
 
         //Add a jaspi test security domain used later by the tests
-        addJaspiTestSecurityDomain(client);
+        addJaspiTestSecurityDomain(client, profile);
 
         //Version specific changes
-        final List<ModelNode> adjustments = adjustForVersion(client, PathAddress.pathAddress(PROFILE, FULL_HA));
+        final List<ModelNode> adjustments = adjustForVersion(client, PathAddress.pathAddress(PROFILE, profile), withMasterServers);
         applyVersionAdjustments(client, adjustments);
     }
 
@@ -150,8 +146,12 @@ public class DomainAdjuster {
         }
     }
 
-    protected List<ModelNode> adjustForVersion(final DomainClient client, final PathAddress profileAddress) throws  Exception {
+    protected List<ModelNode> adjustForVersion(final DomainClient client, final PathAddress profileAddress, boolean withMasterServers) throws Exception {
         return Collections.emptyList();
+    }
+
+    protected List<ModelNode> adjustForVersion(final DomainClient client, final PathAddress profileAddress) throws Exception {
+        return adjustForVersion(client, profileAddress, false);
     }
 
     private void removeProfile(final DomainClient client, final String name) throws Exception {
@@ -159,7 +159,7 @@ public class DomainAdjuster {
     }
 
     private List<String> getAllChildrenOfType(final DomainClient client,
-                                              final PathAddress parent, final String type) throws Exception {
+            final PathAddress parent, final String type) throws Exception {
         final ModelNode op = Util.createEmptyOperation(READ_CHILDREN_NAMES_OPERATION, parent);
         op.get(CHILD_TYPE).set(type);
         final ModelNode result = executeForResult(op, client);
@@ -170,14 +170,16 @@ public class DomainAdjuster {
         return childNames;
     }
 
-    private ModelNode removeServerGroups(final DomainClient client) throws  Exception {
+    private ModelNode removeServerGroups(final DomainClient client, String profile) throws Exception {
         final ModelNode op = Util.createEmptyOperation(READ_RESOURCE_OPERATION, PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP)));
-        final ModelNode results =  executeForResult(op, client);
+        final ModelNode results = executeForResult(op, client);
         ModelNode group = null;
         for (ModelNode result : results.asList()) {
             String groupName = PathAddress.pathAddress(result.get(ADDRESS)).getLastElement().getValue();
-            if (groupName.equals(OTHER_SERVER_GROUP)) {
+            if (OTHER_SERVER_GROUP.equals(groupName)) {
                 group = result.get(RESULT);
+            } else if (MAIN_SERVER_GROUP.equals(groupName)) {
+                //We'll update it afterwards because we have servers using it now
             } else {
                 ModelNode remove = Util.createRemoveOperation(PathAddress.pathAddress(result.get(ADDRESS)));
                 executeForResult(remove, client);
@@ -185,17 +187,43 @@ public class DomainAdjuster {
         }
         Assert.assertNotNull(group);
 
-        //Add main-server-group as a copy of other-server-group (cuts down on the amount of profiles needed)
-        final ModelNode addMain = group.clone();
+        //Update main-server-group as a copy of other-server-group (cuts down on the amount of profiles needed)
         final PathAddress mainServerGroupAddress = PathAddress.pathAddress(SERVER_GROUP, MAIN_SERVER_GROUP);
-        addMain.get(OP).set(ADD);
-        addMain.get(OP_ADDR).set(mainServerGroupAddress.toModelNode());
-        executeForResult(addMain, client);
-
+        for (Property property : group.asPropertyList()) {
+            ModelNode updateMain;
+            if (!UNUSED_SERVER_GROUP_ATTRIBUTES.contains(property.getName())) {
+                if (PROFILE.equals(property.getName())) {
+                    updateMain = Util.getWriteAttributeOperation(mainServerGroupAddress, property.getName(), profile);
+                } else {
+                    if (property.getValue().isDefined()) {
+                        updateMain = Util.getWriteAttributeOperation(mainServerGroupAddress, property.getName(), property.getValue());
+                    } else {
+                        updateMain = Util.getUndefineAttributeOperation(mainServerGroupAddress, property.getName());
+                    }
+                }
+                executeForResult(updateMain, client);
+            }
+        }
+        final PathAddress otherServerGroupAddress = PathAddress.pathAddress(SERVER_GROUP, OTHER_SERVER_GROUP);
+        for (Property property : group.asPropertyList()) {
+            ModelNode updateOther;
+            if (!UNUSED_SERVER_GROUP_ATTRIBUTES.contains(property.getName())) {
+                if (PROFILE.equals(property.getName())) {
+                    updateOther = Util.getWriteAttributeOperation(otherServerGroupAddress, property.getName(), profile);
+                } else {
+                    if (property.getValue().isDefined()) {
+                        updateOther = Util.getWriteAttributeOperation(mainServerGroupAddress, property.getName(), property.getValue());
+                    } else {
+                        updateOther = Util.getUndefineAttributeOperation(mainServerGroupAddress, property.getName());
+                    }
+                }
+                executeForResult(updateOther, client);
+            }
+        }
         return group;
     }
 
-    private void removeUnusedSocketBindingGroups(final DomainClient client, final String keepGroup) throws  Exception {
+    private void removeUnusedSocketBindingGroups(final DomainClient client, final String keepGroup) throws Exception {
         final List<String> allGroups = getAllChildrenOfType(client, PathAddress.EMPTY_ADDRESS, SOCKET_BINDING_GROUP);
         for (String groupName : allGroups) {
             if (!keepGroup.equals(groupName)) {
@@ -205,9 +233,9 @@ public class DomainAdjuster {
         }
     }
 
-    private void addJaspiTestSecurityDomain(final DomainClient client) throws Exception {
+    private void addJaspiTestSecurityDomain(final DomainClient client, String profile) throws Exception {
         //Before when this test was configured via xml, there was an extra security domain for testing jaspi.
-        final PathAddress domain = PathAddress.pathAddress(PROFILE, FULL_HA)
+        final PathAddress domain = PathAddress.pathAddress(PROFILE, profile)
                 .append(SUBSYSTEM, SecurityExtension.SUBSYSTEM_NAME).append("security-domain", "jaspi-test");
         DomainTestUtils.executeForResult(Util.createAddOperation(domain), client);
 
@@ -235,8 +263,8 @@ public class DomainAdjuster {
     }
 
     /**
-     * Returns the class name of the http auth module. This uses the wildfly version. Adjusters for AS 7/EAP 6
-     * should override this method and return
+     * Returns the class name of the http auth module. This uses the wildfly version. Adjusters for AS 7/EAP 6 should
+     * override this method and return
      * {@code org.wildfly.extension.undertow.security.jaspi.modules.HTTPSchemeServerAuthModule}
      *
      * @return the auth module
@@ -246,7 +274,7 @@ public class DomainAdjuster {
     }
 
     private void applyVersionAdjustments(DomainClient client, List<ModelNode> operations) throws Exception {
-        if (operations.size() == 0) {
+        if (operations.isEmpty()) {
             return;
         }
         for (ModelNode op : operations) {

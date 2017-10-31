@@ -23,12 +23,17 @@
 package org.jboss.as.clustering.jgroups.logging;
 
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.Map;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
@@ -140,6 +145,16 @@ public interface JGroupsLogger extends BasicLogger {
     @Message(id = 25, value = "Configured credential source does not reference a clear-text password credential")
     IllegalArgumentException unexpectedCredentialSource();
 
-    @Message(id = 26, value = "No %s operation registered at %s")
-    OperationFailedException operationNotDefined(String operation, String address);
+//    @Message(id = 26, value = "No %s operation registered at %s")
+//    OperationFailedException operationNotDefined(String operation, String address);
+
+//    @Message(id = 27, value = "Failed to synthesize key-store add operation due to missing %s property")
+//    OperationFailedException missingKeyStoreProperty(String propertyName);
+
+    @Message(id = 28, value = "Could not resolve destination address for outbound socket binding named '%s'")
+    IllegalArgumentException failedToResolveSocketBinding(@Cause UnknownHostException cause, OutboundSocketBinding binding);
+
+    @LogMessage(level = WARN)
+    @Message(id = 29, value = "Ignoring unrecognized %s properties: %s")
+    void ignoredProperties(String protocol, Map<String, String> properties);
 }

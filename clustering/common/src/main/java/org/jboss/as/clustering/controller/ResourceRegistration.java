@@ -22,6 +22,14 @@
 
 package org.jboss.as.clustering.controller;
 
+import java.util.Optional;
+
+import org.jboss.as.clustering.function.Predicates;
+import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.operations.global.ListOperations;
+import org.jboss.as.controller.operations.global.MapOperations;
+import org.jboss.as.controller.operations.global.WriteAttributeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
@@ -58,5 +66,25 @@ public class ResourceRegistration implements Registration<ManagementResourceRegi
 
         this.addRegistration.register(registration);
         this.removeRegistration.register(registration);
+
+        // Override global operations with transformed operations, if necessary
+        this.registerTransformedOperation(registration, WriteAttributeHandler.DEFINITION, WriteAttributeHandler.INSTANCE);
+
+        this.registerTransformedOperation(registration, MapOperations.MAP_PUT_DEFINITION, MapOperations.MAP_PUT_HANDLER);
+        this.registerTransformedOperation(registration, MapOperations.MAP_GET_DEFINITION, MapOperations.MAP_GET_HANDLER);
+        this.registerTransformedOperation(registration, MapOperations.MAP_REMOVE_DEFINITION, MapOperations.MAP_REMOVE_HANDLER);
+        this.registerTransformedOperation(registration, MapOperations.MAP_CLEAR_DEFINITION, MapOperations.MAP_CLEAR_HANDLER);
+
+        this.registerTransformedOperation(registration, ListOperations.LIST_ADD_DEFINITION, ListOperations.LIST_ADD_HANDLER);
+        this.registerTransformedOperation(registration, ListOperations.LIST_GET_DEFINITION, ListOperations.LIST_GET_HANDLER);
+        this.registerTransformedOperation(registration, ListOperations.LIST_REMOVE_DEFINITION, ListOperations.LIST_REMOVE_HANDLER);
+        this.registerTransformedOperation(registration, ListOperations.LIST_CLEAR_DEFINITION, ListOperations.LIST_CLEAR_HANDLER);
+    }
+
+    private void registerTransformedOperation(ManagementResourceRegistration registration, OperationDefinition definition, OperationStepHandler handler) {
+        // Only override global operation handlers for non-identity transformations
+        Optional.of(handler).map(this.descriptor.getOperationTransformation())
+                .filter(Predicates.same(handler).negate())
+                .ifPresent(transformedHandler -> registration.registerOperationHandler(definition, transformedHandler));
     }
 }

@@ -22,15 +22,13 @@
 
 package org.jboss.as.test.iiop.security;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.AuthPermission;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
 
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.junit.Assert;
@@ -48,6 +46,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * A simple IIOP invocation for one AS7 server to another
@@ -89,36 +88,34 @@ public class IIOPSecurityInvocationTestCase {
                 .addAsManifestResource(IIOPSecurityInvocationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(ejbJar, properties)), "ejb-jar.xml")
                 // the following permission is needed because of usage of LoginContext in the test
-                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new AuthPermission("modifyPrincipals")), "permissions.xml");
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new RuntimePermission("accessDeclaredMembers"), new ElytronPermission("getSecurityDomain"), new AuthPermission("modifyPrincipals")), "permissions.xml");
 
         return jar;
     }
 
     @Test
     @OperateOnDeployment("client")
-    public void testSuccessfulInvocation() throws IOException, NamingException, LoginException {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+    public void testSuccessfulInvocation() throws Exception {
+        Callable<Void> callable = () -> {
             final ClientEjb ejb = client();
             Assert.assertEquals("role1", ejb.testSuccess());
-        } finally {
-            lc.logout();
-        }
+            return null;
+        };
+        Util.switchIdentity("user1", "password1", callable);
     }
 
     @Test
     @OperateOnDeployment("client")
-    public void testFailedInvocation() throws IOException, NamingException, LoginException {
-        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
-        lc.login();
-        try {
+    public void testFailedInvocation() throws Exception {
+        Callable<Void> callable = () -> {
             final ClientEjb ejb = client();
             ejb.testFailure();
+            return null;
+        };
+        try {
+            Util.switchIdentity("user1", "password1", callable);
             Assert.fail("Invocation should have failed");
         } catch (RemoteException expected) {
-        } finally {
-            lc.logout();
         }
     }
 

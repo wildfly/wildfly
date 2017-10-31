@@ -17,6 +17,7 @@ package org.jboss.as.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CODE;
 import static org.jboss.as.security.Constants.*;
+import static org.jboss.as.security.elytron.ElytronIntegrationResourceDefinitions.APPLY_ROLE_MAPPERS;
 import static org.jboss.as.security.elytron.ElytronIntegrationResourceDefinitions.LEGACY_JAAS_CONFIG;
 import static org.jboss.as.security.elytron.ElytronIntegrationResourceDefinitions.LEGACY_JSSE_CONFIG;
 
@@ -284,6 +285,7 @@ public class SecuritySubsystemPersister implements XMLElementWriter<SubsystemMar
                 writer.writeStartElement(ELYTRON_REALM);
                 writer.writeAttribute(NAME, realmName);
                 LEGACY_JAAS_CONFIG.marshallAsAttribute(elytronRealms.require(realmName), writer);
+                APPLY_ROLE_MAPPERS.marshallAsAttribute(elytronRealms.require(realmName), false, writer);
                 writer.writeEndElement();
             }
             writer.writeEndElement();

@@ -146,7 +146,8 @@ public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
 
     ModClusterNodeDefinition() {
-        super(UndertowExtension.NODE, UndertowExtension.getResolver("handler", "mod-cluster", "balancer", "node"), null, null, true);
+        super(new Parameters(UndertowExtension.NODE, UndertowExtension.getResolver("handler", "mod-cluster", "balancer", "node"))
+                .setRuntime());
     }
 
     @Override

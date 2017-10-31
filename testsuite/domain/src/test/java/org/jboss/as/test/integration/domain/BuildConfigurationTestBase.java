@@ -30,6 +30,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,6 +65,7 @@ public abstract class BuildConfigurationTestBase {
                 " -Djboss.management.native.port=" + hostPort);
         configuration.setDomainConfigFile(hackFixDomainConfig(new File(CONFIG_DIR, domainXmlName)).getAbsolutePath());
         configuration.setHostConfigFile(hackFixHostConfig(new File(CONFIG_DIR, hostXmlName), hostName, hostAddress).getAbsolutePath());
+        //configuration.setHostConfigFile(new File(CONFIG_DIR, hostXmlName).getAbsolutePath());
 
         configuration.setHostName(hostName); // TODO this shouldn't be needed
 
@@ -75,12 +78,11 @@ public abstract class BuildConfigurationTestBase {
     }
 
     private static File hackFixHostConfig(File hostConfigFile, String hostName, String hostAddress) {
-        final File file;
+        final Path file;
         final BufferedWriter writer;
         try {
-            file = File.createTempFile("host", ".xml", hostConfigFile.getAbsoluteFile().getParentFile());
-            file.deleteOnExit();
-            writer = new BufferedWriter(new FileWriter(file));
+            file = Files.createTempFile(hostConfigFile.toPath().getParent(),"host", ".xml");
+            writer = Files.newBufferedWriter(file);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -88,6 +90,7 @@ public abstract class BuildConfigurationTestBase {
             BufferedReader reader = new BufferedReader(new FileReader(hostConfigFile));
             try {
                 String line = reader.readLine();
+                boolean processedOpt = false;
                 while (line != null) {
                     int start = line.indexOf("<host");
                     if (start >= 0 && !line.contains(" name=")) {
@@ -108,7 +111,7 @@ public abstract class BuildConfigurationTestBase {
                             writer.write(sb.toString());
                         } else {
                             start = line.indexOf("<option value=\"");
-                            if (start >= 0) {
+                            if (start >= 0 && !processedOpt) {
                                 StringBuilder sb = new StringBuilder();
                                 sb.append(line.substring(0, start));
                                 List<String> opts = new ArrayList<String>();
@@ -120,7 +123,8 @@ public abstract class BuildConfigurationTestBase {
                                 }
 
                                 writer.write(sb.toString());
-                            } else if (!line.contains("java.net.preferIPv4Stack")){
+                                processedOpt = true;
+                            } else if (!line.contains("java.net.")){
                                 writer.write(line);
                             }
                         }
@@ -137,7 +141,7 @@ public abstract class BuildConfigurationTestBase {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-        return file;
+        return file.toFile();
     }
 
     static File hackFixDomainConfig(File hostConfigFile) {

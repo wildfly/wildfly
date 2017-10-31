@@ -206,14 +206,8 @@ concat_lines() {
   fi
 }
 
-# Workaround for JBEAP-8937 - Don't change lines below
-# as it may breaks build on Solaris 10 (Sparc)
-if [ -z "${MAVEN_PROJECTBASEDIR}" ]; then
-  MAVEN_PROJECTBASEDIR=`find_maven_basedir`
-  export MAVEN_PROJECTBASEDIR
-fi
-# End of workaround for JBEAP-8937
-
+MAVEN_PROJECTBASEDIR="${MAVEN_BASEDIR:-`find_maven_basedir`}"
+export MAVEN_PROJECTBASEDIR
 MAVEN_OPTS="`(concat_lines "$MAVEN_PROJECTBASEDIR/.mvn/jvm.config")` $MAVEN_OPTS"
 
 # For Cygwin, switch paths to Windows format before running java

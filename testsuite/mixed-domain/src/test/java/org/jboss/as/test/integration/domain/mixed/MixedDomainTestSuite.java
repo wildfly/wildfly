@@ -32,6 +32,17 @@ import org.junit.AfterClass;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class MixedDomainTestSuite {
+    public static enum Profile {
+        FULL("full"), FULL_HA("full-ha"), DEFAULT("default");
+        private final String profileName;
+        private Profile(String profileName) {
+            this.profileName = profileName;
+        }
+
+        public String getProfile() {
+            return profileName;
+        }
+    }
     private static MixedDomainTestSupport support;
     private static Version.AsVersion version;
 
@@ -54,21 +65,51 @@ public class MixedDomainTestSuite {
      * @param testClass the test/suite class
      */
     protected static MixedDomainTestSupport getSupport(Class<?> testClass) {
+            return getSupport(testClass, Profile.FULL_HA, false);
+    }
+
+protected static MixedDomainTestSupport getSupport(Class<?> testClass,  boolean withMasterServers) {
+            return getSupport(testClass, Profile.FULL_HA, withMasterServers);
+    }
+
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass, Profile profile, boolean withMasterServers) {
         if (support == null) {
             final String copiedDomainXml = MixedDomainTestSupport.copyDomainFile();
-            return getSupport(testClass, copiedDomainXml, true, false);
-        } else {
-            return support;
+            return getSupport(testClass, copiedDomainXml, profile, true, false, withMasterServers);
         }
+        return support;
+    }
+    /**
+     * Call this from a @BeforeClass method
+     *
+     * @param testClass the test/suite class
+     */
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass, String masterConfig, String slaveConfig, Profile profile, boolean withMasterServers) {
+        return getSupport(testClass, masterConfig, slaveConfig, profile, true, false, withMasterServers);
+    }
+
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass, String masterConfig, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) {
+        return getSupport(testClass, masterConfig, null, Profile.FULL_HA, adjustDomain, legacyConfig, withMasterServers);
+    }
+    /**
+     * Call this from a @BeforeClass method
+     *
+     * @param testClass the test/suite class
+     */
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass, String masterConfig, String slaveConfig, Profile profile, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) {
+        if (support == null) {
+            final String copiedDomainXml = MixedDomainTestSupport.copyDomainFile();
+            return getSupport(testClass, copiedDomainXml, masterConfig, slaveConfig, profile, adjustDomain, legacyConfig, withMasterServers);
+        }
+        return support;
     }
 
     protected static MixedDomainTestSupport getSupport(Class<?> testClass, String masterConfig, String slaveConfig) {
         if (support == null) {
             final String copiedDomainXml = MixedDomainTestSupport.copyDomainFile();
-            return getSupport(testClass, copiedDomainXml, masterConfig, slaveConfig, true, false);
-        } else {
-            return support;
+            return getSupport(testClass, copiedDomainXml, masterConfig, slaveConfig, Profile.FULL_HA, true, false, false);
         }
+        return support;
     }
 
     /**
@@ -81,26 +122,26 @@ public class MixedDomainTestSuite {
         if (support == null) {
             final File originalDomainXml = MixedDomainTestSupport.loadLegacyDomainXml(version);
             final String copiedDomainXml = MixedDomainTestSupport.copyDomainFile(originalDomainXml);
-            return getSupport(testClass, copiedDomainXml, true, true);
-        } else {
-            return support;
+            return getSupport(testClass, copiedDomainXml, Profile.FULL_HA, true, true, false);
         }
+        return support;
     }
 
-    static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, boolean adjustDomain, boolean legacyConfig) {
-        return getSupport(testClass, domainConfig, null, null, adjustDomain, legacyConfig);
+    static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, Profile profile, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) {
+        return getSupport(testClass, domainConfig, null, null, profile, adjustDomain, legacyConfig, withMasterServers);
     }
 
-    static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, String masterConfig, String slaveConfig, boolean adjustDomain, boolean legacyConfig) {
+    static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, String masterConfig, String slaveConfig, Profile profile, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) {
+
         if (support == null) {
             final Version.AsVersion version = getVersion(testClass);
             final MixedDomainTestSupport testSupport;
             try {
                 if (domainConfig != null) {
-                    if(masterConfig != null && slaveConfig != null) {
-                        testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, masterConfig, slaveConfig, adjustDomain, legacyConfig);
+                    if(masterConfig != null || slaveConfig != null) {
+                        testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, masterConfig, slaveConfig, profile.getProfile(),  adjustDomain, legacyConfig, withMasterServers);
                     } else {
-                        testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, adjustDomain, legacyConfig);
+                        testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version, domainConfig, profile.getProfile(), adjustDomain, legacyConfig, withMasterServers);
                     }
                 } else {
                     testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version);

@@ -24,13 +24,12 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.PathAddress;
 
 /**
  * @author Paul Ferraro
  */
-public class StoreWriteThroughBuilder extends ComponentBuilder<AsyncStoreConfiguration> implements ResourceServiceBuilder<AsyncStoreConfiguration> {
+public class StoreWriteThroughBuilder extends ComponentBuilder<AsyncStoreConfiguration> {
 
     StoreWriteThroughBuilder(PathAddress cacheAddress) {
         super(CacheComponent.STORE_WRITE, cacheAddress);

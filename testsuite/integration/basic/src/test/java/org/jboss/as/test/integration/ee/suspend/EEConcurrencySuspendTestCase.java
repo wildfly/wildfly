@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ee.suspend;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.net.HttpURLConnection;
+import java.net.SocketPermission;
 import java.net.URL;
 import java.util.PropertyPermission;
 import java.util.concurrent.Callable;
@@ -41,6 +42,7 @@ import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -70,12 +72,15 @@ public class EEConcurrencySuspendTestCase {
         war.addPackage(EEConcurrencySuspendTestCase.class.getPackage());
         war.addPackage(HttpRequest.class.getPackage());
         war.addClass(TestSuiteEnvironment.class);
-        war.addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller\n"), "META-INF/MANIFEST.MF");
+        war.addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller, org.jboss.remoting \n"), "META-INF/MANIFEST.MF");
         war.addAsManifestResource(createPermissionsXmlAsset(
                 new RuntimePermission("modifyThread"),
                 new PropertyPermission("management.address", "read"),
                 new PropertyPermission("node0", "read"),
-                new PropertyPermission("jboss.http.port", "read")),
+                new PropertyPermission("jboss.http.port", "read"),
+                new RemotingPermission("createEndpoint"),
+                new RemotingPermission("connect"),
+                new SocketPermission(TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")),
                 "permissions.xml");
         return war;
     }

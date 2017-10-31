@@ -25,6 +25,7 @@ package org.jboss.as.security.logging;
 import static org.jboss.logging.annotations.Message.NONE;
 
 import java.lang.reflect.Method;
+
 import javax.naming.InvalidNameException;
 import javax.naming.OperationNotSupportedException;
 import javax.security.auth.login.LoginException;
@@ -34,14 +35,13 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.services.security.VaultReaderException;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
-import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.StartException;
 import org.jboss.security.vault.SecurityVaultException;
 
@@ -108,18 +108,18 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * Creates a {@link RuntimeException}
      * @param e the underlying exception
-     * @return
+     * @return the exception
      */
     @Message(id = 7, value = "Runtime Exception:")
     RuntimeException runtimeException(@Cause Throwable e);
 
-    /**
-     * Creates a {@link org.jboss.modules.ModuleLoadException}
-     * @param e the underlying exception
-     * @return
-     */
-    @Message(id = 8, value = "Module Load Exception:")
-    ModuleLoadException moduleLoadException(@Cause Throwable e);
+//    /**
+//     * Creates a {@link org.jboss.modules.ModuleLoadException}
+//     * @param e the underlying exception
+//     * @return
+//     */
+//    @Message(id = 8, value = "Module Load Exception:")
+//    ModuleLoadException moduleLoadException(@Cause Throwable e);
 
     /**
      * Creates an exception indicating that the name passed to jndi is null or empty
@@ -128,13 +128,13 @@ public interface SecurityLogger extends BasicLogger {
     @Message(id = 9, value = "Name cannot be null or empty")
     InvalidNameException nullName();
 
-    /**
-     * Create a {@link javax.security.auth.login.LoginException} to indicate that there was no User Principal even though
-     * a remoting connection existed
-     * @return {@link javax.security.auth.login.LoginException}
-     */
-    @Message(id = 10, value = "Remoting connection found but no UserPrincipal.")
-    LoginException remotingConnectionWithNoUserPrincipal();
+//    /**
+//     * Create a {@link javax.security.auth.login.LoginException} to indicate that there was no User Principal even though
+//     * a remoting connection existed
+//     * @return {@link javax.security.auth.login.LoginException}
+//     */
+//    @Message(id = 10, value = "Remoting connection found but no UserPrincipal.")
+//    LoginException remotingConnectionWithNoUserPrincipal();
 
     /**
      * Create a {@link IllegalArgumentException} when a null argument is passed
@@ -161,14 +161,14 @@ public interface SecurityLogger extends BasicLogger {
     @Message(id = 13, value = "Class not found : %s")
     ClassNotFoundException cnfe(String name);
 
-    /**
-     * Create a {@link ClassNotFoundException} to indicate that a class could not be found
-     * @param name  name of the class
-     * @param t underlying exception
-     * @return {@link ClassNotFoundException}
-     */
-    @Message(id = 14, value = "Class not found : %s")
-    ClassNotFoundException cnfeThrow(String name, @Cause Throwable t);
+//    /**
+//     * Create a {@link ClassNotFoundException} to indicate that a class could not be found
+//     * @param name  name of the class
+//     * @param t underlying exception
+//     * @return {@link ClassNotFoundException}
+//     */
+//    @Message(id = 14, value = "Class not found : %s")
+//    ClassNotFoundException cnfeThrow(String name, @Cause Throwable t);
 
     /**
      * Create a {@link SecurityException}
@@ -178,13 +178,13 @@ public interface SecurityLogger extends BasicLogger {
     @Message(id = 15, value = "Security Exception")
     SecurityException securityException(@Cause Throwable t);
 
-    /**
-     * Create a {@link SecurityException}
-     * @param msg message that is passed in creating the exception
-     * @return {@link SecurityException}
-     */
-    @Message(id = 16, value = "Security Exception: %s")
-    SecurityException securityException(String msg);
+//    /**
+//     * Create a {@link SecurityException}
+//     * @param msg message that is passed in creating the exception
+//     * @return {@link SecurityException}
+//     */
+//    @Message(id = 16, value = "Security Exception: %s")
+//    SecurityException securityException(String msg);
 
     /**
      * Create a {@link org.jboss.as.server.services.security.VaultReaderException} to indicate there was an exception while reading from the vault
@@ -209,22 +209,22 @@ public interface SecurityLogger extends BasicLogger {
     @Message(id = 19, value = "Unsupported Operation")
     UnsupportedOperationException unsupportedOperation();
 
-    /**
-     * Create a {@link IllegalArgumentException} to indicate an argument to a method was illegal
-     * @param str string message to the exception
-     * @return {@link IllegalArgumentException}
-     */
-    @Message(id = 20, value = "Illegal Argument:%s")
-    IllegalArgumentException illegalArgument(String str);
-
-    /**
-     * Create a {@link javax.xml.stream.XMLStreamException} indicating a failure during the stax parsing
-     * @param msg failure description
-     * @param loc current location of the stax parser
-     * @return {@link javax.xml.stream.XMLStreamException}
-     */
-    @Message(id = 21, value = "Illegal Argument:%s")
-    XMLStreamException xmlStreamException(String msg, @Param Location loc);
+//    /**
+//     * Create a {@link IllegalArgumentException} to indicate an argument to a method was illegal
+//     * @param str string message to the exception
+//     * @return {@link IllegalArgumentException}
+//     */
+//    @Message(id = 20, value = "Illegal Argument:%s")
+//    IllegalArgumentException illegalArgument(String str);
+//
+//    /**
+//     * Create a {@link javax.xml.stream.XMLStreamException} indicating a failure during the stax parsing
+//     * @param msg failure description
+//     * @param loc current location of the stax parser
+//     * @return {@link javax.xml.stream.XMLStreamException}
+//     */
+//    @Message(id = 21, value = "Illegal Argument:%s")
+//    XMLStreamException xmlStreamException(String msg, @Param Location loc);
 
     /**
      * Create a {@link XMLStreamException} to indicate that the security domain configuration cannot have both JAAS and JASPI config
@@ -287,10 +287,10 @@ public interface SecurityLogger extends BasicLogger {
     @Message(id = 29, value = "Security realm '%s' not found.")
     SecurityException realmNotFound(final String name);
 
-    /**
-     * Create a {@link SecurityException} to indicate that no password validation mechanism has been identified.
-     * @return {@link SecurityException}
-     */
+//    /**
+//     * Create a {@link SecurityException} to indicate that no password validation mechanism has been identified.
+//     * @return {@link SecurityException}
+//     */
     //@Message(id = 30, value = "No suitable password validation mechanism identified for realm '%s'")
     //SecurityException noPasswordValidationAvailable(final String realmName);
 
@@ -321,15 +321,15 @@ public interface SecurityLogger extends BasicLogger {
     @Message(id = 35, value = "Required security domain is not available '%s'")
     OperationFailedException requiredSecurityDomainServiceNotAvailable(String securityDomainName);
 
-    @Message(id = 36, value = "At least one attribute is to be defined")
-    OperationFailedException requiredJSSEConfigurationAttribute();
+//    @Message(id = 36, value = "At least one attribute is to be defined")
+//    OperationFailedException requiredJSSEConfigurationAttribute();
 
     /**
      * Create an Exception when KeyStore cannot be located with example how to create one.
      *
-     * @param keystoreURL
-     * @param keystoreURLExample
-     * @return
+     * @param keystoreURL nonexistent keystore URL
+     * @param keystoreURLExample  example keystore url
+     * @return the exception
      */
     @Message(id = 37, value = "Keystore '%s' doesn't exist."
             + "\nkeystore could be created: "
@@ -339,8 +339,8 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * Create an Exception when one cannot write to the KeyStore or it is not a file.
      *
-     * @param keystoreURL
-     * @return
+     * @param keystoreURL URL of the keystore
+     * @return the exception
      */
     @Message(id = 38, value = "Keystore [%s] is not writable or not a file.")
     Exception keyStoreNotWritable(final String keystoreURL);
@@ -348,24 +348,24 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * Create an exception when KeyStore password is not specified.
      *
-     * @return
+     * @return the exception
      */
     @Message(id = 39, value = "Keystore password has to be specified.")
     Exception keyStorePasswordNotSpecified();
 
-    /**
-     * Create an exception when encryption directory is not specified.
-     *
-     * @return
-     */
-    @Message(id = 40, value = "Encryption directory has to be specified.")
-    Exception encryptionDirectoryHasToBeSpecified();
+//    /**
+//     * Create an exception when encryption directory is not specified.
+//     *
+//     * @return
+//     */
+//    @Message(id = 40, value = "Encryption directory has to be specified.")
+//    Exception encryptionDirectoryHasToBeSpecified();
 
     /**
      * Create an exception when encryption directory does not exist or is not a directory.
      *
-     * @param directory
-     * @return
+     * @param directory directory name
+     * @return the exception
      */
     @Message(id = 41, value = "Encryption directory is not a directory or doesn't exist. (%s)")
     Exception encryptionDirectoryDoesNotExist(final String directory);
@@ -373,8 +373,8 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * Create an exception when encryption directory cannot be created.
      *
-     * @param directory
-     * @return
+     * @param directory directory name
+     * @return the exception
      */
     @Message(id = 42, value = "Cannot create encryption directory %s")
     Exception cannotCreateEncryptionDirectory(final String directory);
@@ -382,8 +382,8 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * Create an exception when iteration count is out of range.
      *
-     * @param iteration
-     * @return
+     * @param iteration iteration count
+     * @return the exception
      */
     @Message(id = 43, value = "Iteration count has to be within 1 - " + Integer.MAX_VALUE + ", but it is %s.")
     Exception iterationCountOutOfRange(final String iteration);
@@ -391,7 +391,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * Create an exception when salt has different length than 8.
      *
-     * @return
+     * @return the exception
      */
     @Message(id = 44, value = "Salt has to be exactly 8 characters long.")
     Exception saltWrongLength();
@@ -399,16 +399,15 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * Unspecified exception encountered.
      *
-     * @param e
-     * @return
+     * @return the exception
      */
     @Message(id = 45, value = "Exception encountered:")
-    Exception securityVaultException(@Cause SecurityVaultException e);
+    Exception securityVaultException(@Cause SecurityVaultException cause);
 
     /**
      * Create an exception when Vault alias is not specified.
      *
-     * @return
+     * @return the exception
      */
     @Message(id = 46, value = "Vault alias has to be specified.")
     Exception vaultAliasNotSpecified();
@@ -416,10 +415,10 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * Display string at the end of successful attribute creation.
      *
-     * @param VaultBlock
-     * @param attributeName
-     * @param configurationString
-     * @return
+     * @param VaultBlock  name of vault block
+     * @param attributeName name of value attribute
+     * @param configurationString configuration details
+     * @return the localized text
      */
     @Message(id = 47, value =
             "Secured attribute value has been stored in Vault.\n" +
@@ -434,15 +433,15 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
-    @Message(id = 48, value = "Vault Configuration in WildFly configuration file:")
+    @Message(id = 48, value = "Vault Configuration commands in WildFly for CLI:")
     String vaultConfigurationTitle();
 
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = 49, value = "No console.")
     String noConsole();
@@ -450,7 +449,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return  the localized text
      */
     @Message(id = NONE, value = "Enter directory to store encrypted files:")
     String enterEncryptionDirectory();
@@ -458,7 +457,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Enter Keystore URL:")
     String enterKeyStoreURL();
@@ -466,7 +465,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Enter Keystore password:")
     String enterKeyStorePassword();
@@ -474,7 +473,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Enter 8 character salt:")
     String enterSalt();
@@ -482,7 +481,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Enter iteration count as a number (e.g.: 44):")
     String enterIterationCount();
@@ -490,7 +489,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Enter Keystore Alias:")
     String enterKeyStoreAlias();
@@ -498,7 +497,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = 56, value = "Initializing Vault")
     String initializingVault();
@@ -506,7 +505,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = 57, value = "Vault is initialized and ready for use")
     String vaultInitialized();
@@ -514,7 +513,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = 58, value = "Handshake with Vault complete")
     String handshakeComplete();
@@ -522,7 +521,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = 59, value = "Exception encountered:")
     String exceptionEncountered();
@@ -530,7 +529,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Enter your password:")
     String enterYourPassword();
@@ -540,7 +539,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @deprecated do not use this message to build confirmation message
      *
-     * @return
+     * @return the localized text
      */
     @Deprecated
     @Message(id = 61, value = " again: ")
@@ -549,7 +548,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Values entered don't match")
     String passwordsDoNotMatch();
@@ -557,7 +556,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Values match")
     String passwordsMatch();
@@ -565,7 +564,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Problem occurred:")
     String problemOcurred();
@@ -573,7 +572,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Please enter a Digit::   0: Start Interactive Session   1: Remove Interactive Session  2: Exit")
     String interactiveCommandString();
@@ -581,7 +580,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Starting an interactive session")
     String startingInteractiveSession();
@@ -589,7 +588,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Removing the current interactive session")
     String removingInteractiveSession();
@@ -597,7 +596,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = 68, value = "Problem while parsing command line parameters:")
     String problemParsingCommandLineParameters();
@@ -605,7 +604,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Keystore URL")
     String cmdLineKeyStoreURL();
@@ -613,7 +612,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Keystore password")
     String cmdLineKeyStorePassword();
@@ -621,7 +620,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Directory containing encrypted files")
     String cmdLineEncryptionDirectory();
@@ -629,7 +628,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "8 character salt")
     String cmdLineSalt();
@@ -637,7 +636,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Iteration count")
     String cmdLineIterationCount();
@@ -645,7 +644,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Vault keystore alias")
     String cmdLineVaultKeyStoreAlias();
@@ -653,7 +652,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Vault block")
     String cmdLineVaultBlock();
@@ -661,7 +660,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Attribute name")
     String cmdLineAttributeName();
@@ -669,7 +668,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Secured attribute value (such as password) to store")
     String cmdLineSecuredAttribute();
@@ -677,7 +676,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Check whether the secured attribute already exists in the Vault")
     String cmdLineCheckAttribute();
@@ -685,7 +684,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Help")
     String cmdLineHelp();
@@ -693,7 +692,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = 80, value = "Secured attribute (password) already exists.")
     String cmdLineSecuredAttributeAlreadyExists();
@@ -701,7 +700,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = 81, value = "Secured attribute (password) doesn't exist.")
     String cmdLineSecuredAttributeDoesNotExist();
@@ -709,7 +708,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * Password confirmation
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Enter your password again:")
     String enterYourPasswordAgain();
@@ -717,23 +716,23 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * Keystore password confirmation
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Enter Keystore password again:")
     String enterKeyStorePasswordAgain();
 
-    /**
-     * Keystore parameter type checking
-     *
-     * @return
-     */
-    @Message(id = 84, value = "'%s' parameter type or length is incorrect")
-    IllegalArgumentException incorrectKeystoreParameters(final String keystoreName);
+//    /**
+//     * Keystore parameter type checking
+//     *
+//     * @return
+//     */
+//    @Message(id = 84, value = "'%s' parameter type or length is incorrect")
+//    IllegalArgumentException incorrectKeystoreParameters(final String keystoreName);
 
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Remove secured attribute from the Vault")
     String cmdLineRemoveSecuredAttribute();
@@ -741,7 +740,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Automatically create keystore when it doesn't exist")
     String cmdLineAutomaticallyCreateKeystore();
@@ -749,7 +748,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Secured attribute %s has been successfuly removed from vault")
     String messageAttributeRemovedSuccessfuly(String displayFormattedAttribute);
@@ -757,7 +756,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Secured attribute %s was not removed from vault, check whether it exist")
     String messageAttributeNotRemoved(String displayFormattedAttribute);
@@ -765,7 +764,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Please enter a Digit::  0: Store a secured attribute  1: Check whether a secured attribute exists  2: Remove secured attribute  3: Exit")
     String interactionCommandOptions();
@@ -773,7 +772,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Task: Store a secured attribute")
     String taskStoreSecuredAttribute();
@@ -781,7 +780,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Please enter secured attribute value (such as password)")
     String interactivePromptSecureAttributeValue();
@@ -789,7 +788,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Please enter secured attribute value again")
     String interactivePromptSecureAttributeValueAgain();
@@ -797,7 +796,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Enter Vault Block:")
     String interactivePromptVaultBlock();
@@ -805,7 +804,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Enter Attribute Name:")
     String interactivePromptAttributeName();
@@ -813,7 +812,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Task: Verify whether a secured attribute exists")
     String taskVerifySecuredAttributeExists();
@@ -821,7 +820,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "No value has been stored for %s")
     String interactiveMessageNoValueStored(String displayFormattedAttribute);
@@ -829,7 +828,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "A value exists for %s")
     String interactiveMessageValueStored(String displayFormattedAttribute);
@@ -837,7 +836,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Task: Remove secured attribute")
     String taskRemoveSecuredAttribute();
@@ -845,7 +844,7 @@ public interface SecurityLogger extends BasicLogger {
     /**
      * i18n version of string from Vault Tool utility
      *
-     * @return
+     * @return the localized text
      */
     @Message(id = NONE, value = "Action not specified")
     String actionNotSpecified();
@@ -860,10 +859,33 @@ public interface SecurityLogger extends BasicLogger {
 
     /**
      * Creates an exception indicating the inability to find a component (keystore, truststore, keymanager, etc) in
-     * the specified JSSE-enabled domain.
+     * the specified JSSE security domain.
      *
      * @return a {@link StartException} instance.
      */
-    @Message(id = 101, value = "Unable to find a %s configuration in JSSE-enabled domain %s")
+    @Message(id = 101, value = "Unable to find a %s configuration in JSSE security domain %s")
     StartException unableToLocateComponentInJSSEDomain(final String componentName, final String legacyDomainName);
+
+    /**
+     * Creates an exception indicating that the expected manager type was not found in the JSSE security domain.
+     *
+     * @param managerName the name of the manager being retrieved (KeyManager or TrustManager).
+     * @param managerType the expected type.
+     * @return a {@link StartException} instance.
+     */
+    @Message(id = 102, value = "Could not find a %s of type %s in the JSSE security domain %s")
+    StartException expectedManagerTypeNotFound(final String managerName, final String managerType, final String legacyDomainName);
+
+    /**
+     * Creates an exception indicating that an {@link org.wildfly.security.authz.AuthorizationIdentity} could not be created
+     * because a valid authenticated Subject was not established yet.
+     *
+     * @return a {@link IllegalStateException} instance.
+     */
+    @Message(id = 103, value = "Unable to create AuthorizationIdentity: no authenticated Subject was found")
+    IllegalStateException unableToCreateAuthorizationIdentity();
+
+    @LogMessage(level = Level.WARN)
+    @Message(id = 104, value = "Default %s cache capability missing.  Assuming %s as default-cache.")
+    void defaultCacheRequirementMissing(String containerName, String legacyCacheName);
 }

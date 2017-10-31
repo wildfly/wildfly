@@ -147,8 +147,8 @@ public class CommandLineMain {
 
     private static void printJdrReportInfo(JdrReport report) {
         if(report != null) {
-            System.out.println("JDR started: " + report.getStartTime().toString());
-            System.out.println("JDR ended: " + report.getEndTime().toString());
+            System.out.println("JDR started: " + report.getFormattedStartTime());
+            System.out.println("JDR ended: " + report.getFormattedEndTime());
             System.out.println("JDR location: " + report.getLocation());
             System.out.flush();
         }

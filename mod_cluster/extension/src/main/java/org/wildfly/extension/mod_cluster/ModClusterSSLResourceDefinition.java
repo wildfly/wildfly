@@ -112,12 +112,13 @@ public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
         // Nothing to transform since 1.4.0
     }
 
-    public ModClusterSSLResourceDefinition() {
+    ModClusterSSLResourceDefinition() {
         super(PATH,
                 ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION, CommonAttributes.SSL),
                 ModClusterAddSSL.INSTANCE,
                 new ReloadRequiredRemoveStepHandler()
         );
+        this.setDeprecated(ModClusterModel.VERSION_5_0_0.getVersion());
         this.accessConstraints = ModClusterExtension.MOD_CLUSTER_SECURITY_DEF.wrapAsList();
     }
 

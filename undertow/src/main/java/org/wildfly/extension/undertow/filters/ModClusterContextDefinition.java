@@ -75,7 +75,7 @@ class ModClusterContextDefinition extends SimpleResourceDefinition {
 
             @Override
             public void handleContext(OperationContext context, ModClusterStatus.Context ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.isEnabled() ? "enabled" : "disabled"));
+                context.getResult().set(new ModelNode(ctx.isEnabled() ? "enabled" : ctx.isStopped() ? "stopped" : "disabled"));
             }
         });
         resourceRegistration.registerReadOnlyAttribute(REQUESTS, new AbstractContextOperation() {

@@ -25,11 +25,14 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author Paul Ferraro
  */
-public class NoTransportBuilder extends ComponentBuilder<TransportConfiguration> {
+public class NoTransportBuilder extends GlobalComponentBuilder<TransportConfiguration> {
 
     NoTransportBuilder(PathAddress containerAddress) {
         super(CacheContainerComponent.TRANSPORT, containerAddress);
@@ -38,5 +41,10 @@ public class NoTransportBuilder extends ComponentBuilder<TransportConfiguration>
     @Override
     public TransportConfiguration getValue() {
         return new GlobalConfigurationBuilder().transport().transport(null).create();
+    }
+
+    @Override
+    public ServiceBuilder<TransportConfiguration> build(ServiceTarget target) {
+        return super.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

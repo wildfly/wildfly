@@ -29,6 +29,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -355,8 +356,8 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 84, value = "There are no mechanisms available from the HttpAuthenticationFactory.")
     IllegalStateException noMechanismsAvailable();
 
-    @Message(id = 85, value = "The required mechanism '%s' is not available from the HttpAuthenticationFactory.")
-    IllegalStateException requiredMechanismNotAvailable(String mechanismName);
+    @Message(id = 85, value = "The required mechanism '%s' is not available in mechanisms %s from the HttpAuthenticationFactory.")
+    IllegalStateException requiredMechanismNotAvailable(String mechanismName, Collection<String> availableMechanisms);
 
     @Message(id = 86, value = "No authentication mechanisms have been selected.")
     IllegalStateException noMechanismsSelected();
@@ -387,4 +388,12 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = WARN)
     void configurationOptionIgnoredWhenUsingElytron(String option);
 
+    @Message(id = 95, value = "the path ['%s'] doesn't exist on file system")
+    String unableAddHandlerForPath(String path);
+
+    @Message(id = 96, value = "Unable to obtain identity for name %s")
+    IllegalStateException unableToObtainIdentity(String name, @Cause Throwable cause);
+
+    @Message(id = 97, value = "If http-upgrade is enabled, remoting worker and http(s) worker must be the same. Please adjust values if need be.")
+    String workerValueInHTTPListenerMustMatchRemoting();
 }

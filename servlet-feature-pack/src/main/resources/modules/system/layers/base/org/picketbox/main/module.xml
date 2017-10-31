@@ -48,5 +48,6 @@
         <module name="org.infinispan"  optional="true"/>
         <module name="org.jboss.security.xacml"  optional="true"/>
         <module name="org.jboss.modules" optional="true"/>
+        <module name="sun.jdk" />
     </dependencies>
 </module>

@@ -78,7 +78,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
                 .addDependency(ActiveMQActivationService.getServiceName(activeMQServiceName))
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(activeMQServiceName), JMSServerManager.class, service.getJmsServer())
                 .setInitialMode(Mode.PASSIVE);
-        org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.getExecutorInjector(), false);
+        org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.getExecutorInjector());
         serviceBuilder.install();
     }
 
@@ -144,6 +144,14 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         final ModelNode clientProtocolManagerFactory = Common.PROTOCOL_MANAGER_FACTORY.resolveModelAttribute(context, model);
         if (clientProtocolManagerFactory.isDefined()) {
             config.setProtocolManagerFactoryStr(clientProtocolManagerFactory.asString());
+        }
+        List<String> deserializationBlackList = Common.DESERIALIZATION_BLACKLIST.unwrap(context, model);
+        if (deserializationBlackList.size() > 0) {
+            config.setDeserializationBlackList(String.join(",", deserializationBlackList));
+        }
+        List<String> deserializationWhiteList = Common.DESERIALIZATION_WHITELIST.unwrap(context, model);
+        if (deserializationWhiteList.size() > 0) {
+            config.setDeserializationWhiteList(String.join(",", deserializationWhiteList));
         }
         JMSFactoryType jmsFactoryType = ConnectionFactoryType.valueOf(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.resolveModelAttribute(context, model).asString()).getType();
         config.setFactoryType(jmsFactoryType);

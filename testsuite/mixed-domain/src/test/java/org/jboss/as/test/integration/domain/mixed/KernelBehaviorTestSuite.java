@@ -35,8 +35,9 @@ public class KernelBehaviorTestSuite extends MixedDomainTestSuite {
      * Call this from a @BeforeClass method
      *
      * @param testClass the test/suite class
+     * @return
      */
     protected static MixedDomainTestSupport getSupport(Class<?> testClass) {
-        return getSupport(testClass, "master-config/domain-minimal.xml", false, false);
+        return getSupport(testClass, "master-config/domain-minimal.xml", null, null, Profile.DEFAULT, false, false, false);
     }
 }

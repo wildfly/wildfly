@@ -41,6 +41,7 @@ import org.junit.runners.Suite;
         DatasourceTestCase.class,
         DeploymentManagementTestCase.class,
         DeploymentOverlayTestCase.class,
+        JcaCCMRuntimeOnlyProfileOpsTestCase.class,
         ModelPersistenceTestCase.class,
         ReadEnvironmentVariablesTestCase.class,
 })

@@ -107,7 +107,7 @@ public class SingletonXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, Attribute attribute) throws XMLStreamException {
-        attribute.getDefinition().getAttributeMarshaller().marshallAsAttribute(attribute.getDefinition(), model, false, writer);
+        attribute.getDefinition().getMarshaller().marshallAsAttribute(attribute.getDefinition(), model, false, writer);
     }
 
     private static <A extends Enum<A> & Attribute> void writeElements(XMLExtendedStreamWriter writer, ModelNode model, Class<A> attributeClass) throws XMLStreamException {
@@ -121,6 +121,6 @@ public class SingletonXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeElement(XMLExtendedStreamWriter writer, ModelNode model, Attribute attribute) throws XMLStreamException {
-        attribute.getDefinition().getAttributeMarshaller().marshallAsElement(attribute.getDefinition(), model, false, writer);
+        attribute.getDefinition().getMarshaller().marshallAsElement(attribute.getDefinition(), model, false, writer);
     }
 }

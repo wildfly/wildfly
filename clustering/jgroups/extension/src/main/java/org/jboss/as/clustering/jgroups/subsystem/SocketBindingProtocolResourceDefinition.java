@@ -23,19 +23,16 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -50,36 +47,18 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
  */
 public class SocketBindingProtocolResourceDefinition<P extends Protocol> extends ProtocolResourceDefinition<P> {
 
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        SOCKET_BINDING("org.wildfly.clustering.protocol.socket-binding"),
-        ;
-        private final RuntimeCapability<Void> definition;
-
-        Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(name, true).build();
-        }
-
-        @Override
-        public RuntimeCapability<Void> getDefinition() {
-            return this.definition;
-        }
-
-        @Override
-        public RuntimeCapability<Void> resolve(PathAddress address) {
-            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue(), address.getLastElement().getValue());
-        }
-    }
-
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        SOCKET_BINDING(ModelDescriptionConstants.SOCKET_BINDING, ModelType.STRING, SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF, new CapabilityReference(Capability.SOCKET_BINDING, CommonUnaryRequirement.SOCKET_BINDING)),
+        SOCKET_BINDING(ModelDescriptionConstants.SOCKET_BINDING, ModelType.STRING, builder -> builder
+                .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                .setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.SOCKET_BINDING))),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, AccessConstraintDefinition constraint, CapabilityReferenceRecorder reference) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setRequired(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setAccessConstraints(constraint).setCapabilityReference(reference).build();
+                    ).build();
         }
 
         @Override
@@ -96,7 +75,6 @@ public class SocketBindingProtocolResourceDefinition<P extends Protocol> extends
     SocketBindingProtocolResourceDefinition(String name, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ProtocolConfiguration<P>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
-                .addCapabilities(Capability.class)
-            ), builderFactory, parentBuilderFactory);
+                ), builderFactory, parentBuilderFactory);
     }
 }

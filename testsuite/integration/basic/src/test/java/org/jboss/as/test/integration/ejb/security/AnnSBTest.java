@@ -37,16 +37,16 @@ import org.jboss.as.test.integration.ejb.security.authorization.AnnOnlyCheckSLSB
 import org.jboss.as.test.integration.ejb.security.authorization.ParentAnnOnlyCheck;
 import org.jboss.as.test.integration.ejb.security.authorization.SimpleAuthorizationRemote;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
+import org.wildfly.security.auth.principal.AnonymousPrincipal;
+import org.wildfly.security.sasl.SaslMechanismSelector;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Property;
@@ -61,11 +61,6 @@ public abstract class AnnSBTest {
 
     @ContainerResource
     private ManagementClient managementClient;
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileTestsEnabled();
-    }
 
     public static Archive<JavaArchive> testAppDeployment(final Logger LOG, final String MODULE, final Class SB_TO_TEST) {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE + ".jar")
@@ -106,7 +101,7 @@ public abstract class AnnSBTest {
      */
     public void testSingleMethodAnnotationsNoUserTemplate(final String MODULE, final Logger log, final Class SB_CLASS) throws Exception {
         final Context ctx = Util.createNamingContext();
-        final AuthenticationContext authenticationContext = setupAuthenticationContext("$local", null);
+        final AuthenticationContext authenticationContext = AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.EMPTY.useAuthorizationPrincipal(AnonymousPrincipal.getInstance()));
         authenticationContext.runCallable(() -> {
             String echoValue = getBean(MODULE, log, SB_CLASS, ctx).defaultAccess("alohomora");
             Assert.assertEquals(echoValue, "alohomora");
@@ -283,7 +278,7 @@ public abstract class AnnSBTest {
                                 .useName(username == null ? "$local" : username)
                                 .usePassword(password)
                                 .useRealm(null)
-                                .allowSaslMechanisms(password != null ? "DIGEST-MD5" : "JBOSS-LOCAL-USER")
+                                .setSaslMechanismSelector(SaslMechanismSelector.fromString(password != null ? "DIGEST-MD5" : "JBOSS-LOCAL-USER"))
                                 .useMechanismProperties(getSaslProperties(builder.getMap()))
                                 .useProvidersFromClassLoader(AnnSBTest.class.getClassLoader()));
         return authenticationContext;

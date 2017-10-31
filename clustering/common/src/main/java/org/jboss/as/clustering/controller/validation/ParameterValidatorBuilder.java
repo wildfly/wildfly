@@ -32,20 +32,6 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 public interface ParameterValidatorBuilder {
 
     /**
-     * Indicates whether {@link org.jboss.dmr.ModelType#UNDEFINED} is allowed
-     * @param allowsUndefined indicates whether {@link org.jboss.dmr.ModelType#UNDEFINED} is allowed
-     * @return a reference to this builder
-     */
-    ParameterValidatorBuilder allowUndefined(boolean allowsUndefined);
-
-    /**
-     * Indicates whether {@link org.jboss.dmr.ModelType#EXPRESSION} is allowed
-     * @param allowExpressions whether {@link org.jboss.dmr.ModelType#EXPRESSION} is allowed
-     * @return a reference to this builder
-     */
-    ParameterValidatorBuilder allowExpression(boolean allowsExpressions);
-
-    /**
      * Configures this validator builder using the configuration of the specified attribute definition
      * @param definition an attribute definition
      * @return a reference to this builder

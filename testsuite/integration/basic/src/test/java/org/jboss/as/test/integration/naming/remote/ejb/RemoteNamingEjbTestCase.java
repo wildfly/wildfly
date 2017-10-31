@@ -61,7 +61,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//TODO Elytron
 public class RemoteNamingEjbTestCase {
     private static final String ARCHIVE_NAME = "test";
 

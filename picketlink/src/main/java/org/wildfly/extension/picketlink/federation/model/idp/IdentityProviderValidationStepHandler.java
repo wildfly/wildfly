@@ -43,8 +43,6 @@ public class IdentityProviderValidationStepHandler extends ElementMaxOccurrenceV
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validateSecurityDomain(context);
         validateOccurrence(context, operation);
-
-        context.stepCompleted();
     }
 
     private void validateSecurityDomain(OperationContext context) throws OperationFailedException {

@@ -1,0 +1,84 @@
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:2.0">
+    <global-client thread-pool-max-size="${global.client.thread-pool-max-size:32}"
+                   scheduled-thread-pool-max-size="${global.client.scheduled.thread-pool-max-size:54}" />
+    <server name="default">
+
+        <security elytron-domain="elytronDomain"/>
+        <cluster user="testuser">
+            <credential-reference store="cs1" alias="testuser"/>
+        </cluster>
+        <journal datasource="fooDS"
+                 database="mysql"
+                 jdbc-network-timeout="4567"
+                 messages-table="MY_MESSAGES"
+                 bindings-table="MY_BINDINGS"
+                 jms-bindings-table="MY_JMS_BINDINGS"
+                 large-messages-table="MY_LARGE_MESSAGES"
+                 page-store-table="MY_PAGE_STORE" />
+
+        <replication-colocated>
+            <master />
+        </replication-colocated>
+
+        <http-connector name="http"
+                        socket-binding="http"
+                        endpoint="http"
+                        server-name="=foo">
+            <param name="batch-delay" value="${batch.delay:50}"/>
+        </http-connector>
+
+        <cluster-connection name="cc1"
+                            address="${address:cc1-address}"
+                            connector-name="netty"
+                            producer-window-size="${producer.windows.size:5678}"
+                            static-connectors="in-vm netty" />
+
+        <bridge name="bridge1"
+                queue-name="${queue.name:coreQueueA}"
+                forwarding-address="${forwarding.address:forwardingaddress1}"
+                producer-window-size="${producer.windows.size:5678}"
+                static-connectors="in-vm netty"
+                user="${user:Brian}">
+            <credential-reference clear-text="secret1"/>
+        </bridge>
+        <bridge name="bridge2"
+                queue-name="${queue.name:coreQueueA}"
+                forwarding-address="${forwarding.address:forwardingaddress1}"
+                producer-window-size="${producer.windows.size:5678}"
+                static-connectors="in-vm netty"
+                user="${user:Brian}"
+                password="${password:secret}">
+        </bridge>
+
+        <connection-factory name="otherConnectionFactory"
+                            discovery-group="groupC"
+                            entries="otherConnectionFactory"
+                            deserialization-black-list="org.foo.Bar org.foo.Baz"
+                            deserialization-white-list="org.bar.Bar org.baz.Baz" />
+
+        <pooled-connection-factory name="hornetq-ra-local"
+                                   transaction="local"
+                                   user="alice"
+                                   password="alicepassword"
+                                   connectors="in-vm"
+                                   entries="java:/JmsLocal"
+                                   statistics-enabled="true">
+            <inbound-config
+                    rebalance-connections="true" />
+            <outbound-config
+                    allow-local-transactions="true" />
+
+        </pooled-connection-factory>
+        <pooled-connection-factory name="pcf-with-credential-reference"
+                                   entries="java:/JmsLocal2"
+                                   connectors="in-vm"
+                                   user="foo"
+                                   deserialization-black-list="org.foo.Bar org.foo.Baz"
+                                   deserialization-white-list="org.bar.Bar org.baz.Baz">
+            <credential-reference clear-text="passwordOut!"/>
+        </pooled-connection-factory>
+    </server>
+    <server name="other">
+        <replication-master />
+    </server>
+</subsystem>

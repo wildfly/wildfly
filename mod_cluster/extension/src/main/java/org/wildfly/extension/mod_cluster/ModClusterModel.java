@@ -36,9 +36,9 @@ public enum ModClusterModel implements Model {
     VERSION_2_0_0(2, 0, 0),
     VERSION_3_0_0(3, 0, 0),
     VERSION_4_0_0(4, 0, 0),
-    VERSION_4_1_0(4, 1, 0),
+    VERSION_5_0_0(5, 0, 0),
     ;
-    public static final ModClusterModel CURRENT = VERSION_4_1_0;
+    public static final ModClusterModel CURRENT = VERSION_5_0_0;
 
     private final ModelVersion version;
 

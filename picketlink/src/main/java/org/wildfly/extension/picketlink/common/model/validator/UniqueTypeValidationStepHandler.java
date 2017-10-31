@@ -31,7 +31,6 @@ import org.wildfly.extension.picketlink.common.model.ModelElement;
 import java.util.Set;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
@@ -48,17 +47,15 @@ public abstract class UniqueTypeValidationStepHandler implements ModelValidation
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validateType(context, operation);
-        context.stepCompleted();
     }
 
     protected void validateType(OperationContext context, ModelNode operation) throws OperationFailedException {
-        PathAddress pathAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-        String elementName = pathAddress.getLastElement().getValue();
+        PathAddress pathAddress = context.getCurrentAddress();
+        String elementName = context.getCurrentAddressValue();
         ModelNode typeNode = context.readResource(EMPTY_ADDRESS, false).getModel();
         String type = getType(context, typeNode);
-        PathAddress parentAddress = pathAddress.subAddress(0, pathAddress.size() - 1);
-        Resource parentResource = context.readResourceFromRoot(parentAddress);
-        Set<Resource.ResourceEntry> children = parentResource.getChildren(this.element.getName());
+        PathAddress parentAddress = pathAddress.getParent();
+        Set<Resource.ResourceEntry> children = context.readResourceFromRoot(parentAddress, true).getChildren(this.element.getName());
 
         for (Resource.ResourceEntry child : children) {
             String existingResourceName = child.getName();

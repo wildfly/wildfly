@@ -109,4 +109,6 @@ interface CommonAttributes {
     String ADD_CUSTOM_METRIC = "add-custom-metric";
     String REMOVE_METRIC = "remove-metric";
     String REMOVE_CUSTOM_METRIC = "remove-custom-metric";
+
+    String SESSION_DRAINING_COMPLETE = "session-draining-complete";
 }

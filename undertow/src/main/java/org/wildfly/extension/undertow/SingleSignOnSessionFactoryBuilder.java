@@ -78,7 +78,7 @@ public class SingleSignOnSessionFactoryBuilder extends SingleSignOnSessionFactor
         String keyStore = KEY_STORE.resolveModelAttribute(context, model).asString();
         this.keyStore = new InjectedValueDependency<>(CommonUnaryRequirement.KEY_STORE.getServiceName(context, keyStore), KeyStore.class);
         this.keyAlias = KEY_ALIAS.resolveModelAttribute(context, model).asString();
-        this.credentialSource = new CredentialSourceDependency(context, model);
+        this.credentialSource = new CredentialSourceDependency(context, CREDENTIAL, model);
         Optional<String> sslContext = ModelNodes.optionalString(SSL_CONTEXT.resolveModelAttribute(context, model));
         this.sslContext = sslContext.map(value -> new InjectedValueDependency<>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, value), SSLContext.class)).orElse(null);
         return this;
@@ -98,18 +98,18 @@ public class SingleSignOnSessionFactoryBuilder extends SingleSignOnSessionFactor
         CredentialSource source = this.credentialSource.getValue();
         try {
             if (!store.containsAlias(alias)) {
-                UndertowLogger.ROOT_LOGGER.missingKeyStoreEntry(alias);
+                throw UndertowLogger.ROOT_LOGGER.missingKeyStoreEntry(alias);
             }
             if (!store.entryInstanceOf(alias, KeyStore.PrivateKeyEntry.class)) {
-                UndertowLogger.ROOT_LOGGER.keyStoreEntryNotPrivate(alias);
+                throw UndertowLogger.ROOT_LOGGER.keyStoreEntryNotPrivate(alias);
             }
             PasswordCredential credential = source.getCredential(PasswordCredential.class);
             if (credential == null) {
-                UndertowLogger.ROOT_LOGGER.missingCredential(source.toString());
+                throw UndertowLogger.ROOT_LOGGER.missingCredential(source.toString());
             }
             ClearPassword password = credential.getPassword(ClearPassword.class);
             if (password == null) {
-                UndertowLogger.ROOT_LOGGER.credentialNotClearPassword(credential.toString());
+                throw UndertowLogger.ROOT_LOGGER.credentialNotClearPassword(credential.toString());
             }
             KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) store.getEntry(alias, new KeyStore.PasswordProtection(password.getPassword()));
             KeyPair keyPair = new KeyPair(entry.getCertificate().getPublicKey(), entry.getPrivateKey());

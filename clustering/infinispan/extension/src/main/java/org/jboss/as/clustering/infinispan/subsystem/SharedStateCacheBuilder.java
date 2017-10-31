@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.stream.Stream;
+
 import org.infinispan.configuration.cache.BackupForConfiguration;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
@@ -33,33 +35,32 @@ import org.infinispan.configuration.cache.StateTransferConfiguration;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * @author Paul Ferraro
  */
 public class SharedStateCacheBuilder extends ClusteredCacheBuilder {
 
-    private final InjectedValue<PartitionHandlingConfiguration> partitionHandling = new InjectedValue<>();
-    private final InjectedValue<StateTransferConfiguration> stateTransfer = new InjectedValue<>();
-    private final InjectedValue<BackupForConfiguration> backupFor = new InjectedValue<>();
-    private final InjectedValue<SitesConfiguration> backups = new InjectedValue<>();
-
-    private final PathAddress address;
+    private final ValueDependency<PartitionHandlingConfiguration> partitionHandling;
+    private final ValueDependency<StateTransferConfiguration> stateTransfer;
+    private final ValueDependency<BackupForConfiguration> backupFor;
+    private final ValueDependency<SitesConfiguration> backups;
 
     SharedStateCacheBuilder(PathAddress address, CacheMode mode) {
         super(address, mode);
-        this.address = address;
+        this.partitionHandling = new InjectedValueDependency<>(CacheComponent.PARTITION_HANDLING.getServiceName(address), PartitionHandlingConfiguration.class);
+        this.stateTransfer = new InjectedValueDependency<>(CacheComponent.STATE_TRANSFER.getServiceName(address), StateTransferConfiguration.class);
+        this.backupFor = new InjectedValueDependency<>(CacheComponent.BACKUP_FOR.getServiceName(address), BackupForConfiguration.class);
+        this.backups = new InjectedValueDependency<>(CacheComponent.BACKUPS.getServiceName(address), SitesConfiguration.class);
     }
 
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
-        return super.build(target)
-                .addDependency(CacheComponent.PARTITION_HANDLING.getServiceName(this.address), PartitionHandlingConfiguration.class, this.partitionHandling)
-                .addDependency(CacheComponent.STATE_TRANSFER.getServiceName(this.address), StateTransferConfiguration.class, this.stateTransfer)
-                .addDependency(CacheComponent.BACKUPS.getServiceName(this.address), SitesConfiguration.class, this.backups)
-                .addDependency(CacheComponent.BACKUP_FOR.getServiceName(this.address), BackupForConfiguration.class, this.backupFor)
-        ;
+        ServiceBuilder<Configuration> builder = super.build(target);
+        Stream.of(this.partitionHandling, this.stateTransfer, this.backupFor, this.backups).forEach(dependency -> dependency.register(builder));
+        return builder;
     }
 
     @Override

@@ -46,7 +46,7 @@ public class HTTPAcceptorDefinition extends ModelOnlyResourceDefinition {
     public static final PathElement PATH = PathElement.pathElement(HTTP_ACCEPTOR);
 
     static final SimpleAttributeDefinition HTTP_LISTENER = create(CommonAttributes.HTTP_LISTENER, ModelType.STRING)
-            .setAllowNull(false)
+            .setRequired(true)
             .build();
 
     static AttributeDefinition[] ATTRIBUTES = { HTTP_LISTENER };

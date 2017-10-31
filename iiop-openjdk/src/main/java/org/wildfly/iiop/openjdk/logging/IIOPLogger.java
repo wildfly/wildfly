@@ -22,17 +22,6 @@
 
 package org.wildfly.iiop.openjdk.logging;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-
-import javax.naming.ConfigurationException;
-import javax.naming.InvalidNameException;
-import javax.naming.NamingException;
-
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -43,13 +32,20 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 import org.jboss.msc.service.StartException;
 import org.omg.CORBA.BAD_INV_ORDER;
-import org.omg.CORBA.COMM_FAILURE;
 import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.INTERNAL;
 import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.NO_PERMISSION;
 import org.wildfly.iiop.openjdk.rmi.RMIIIOPViolationException;
 import org.wildfly.iiop.openjdk.rmi.ir.IRConstructionException;
+
+import javax.naming.ConfigurationException;
+import javax.naming.InvalidNameException;
+import javax.naming.NamingException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+
+import static org.jboss.logging.Logger.Level.*;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -384,32 +380,31 @@ public interface IIOPLogger extends BasicLogger {
     @Message(id = 103, value = "IOR settings imply ssl connections usage, but secure connections have not been configured")
     OperationFailedException sslNotConfigured();
 
-    @Message(id = 104, value = "Inconsistent transport-config configuration: %s is supported but it is configured with NONE value")
-    OperationFailedException inconsistentSupportedTransportConfig(final String transportAttributeName);
+    @Message(id = 104, value = "Inconsistent transport-config configuration: %s is supported, please configure it to %s value")
+    String inconsistentSupportedTransportConfig(final String transportAttributeName, final String suggested);
 
-    @Message(id = 105, value = "Inconsistent transport-config configuration: %s is not supported but it is not configured with NONE value")
-    OperationFailedException inconsistentUnsupportedTransportConfig(final String transportAttributeName);
+    @Message(id = 105, value = "Inconsistent transport-config configuration: %s is not supported, please remove it or configure it to none value")
+    String inconsistentUnsupportedTransportConfig(final String transportAttributeName);
 
-    @Message(id = 106, value = "Inconsistent transport-config configuration: %s is set to true, but %s is not configured as required")
-    OperationFailedException inconsistentRequiredTransportConfig(final String requiredAttributeName, final String transportAttributeName);
+    @Message(id = 106, value = "Inconsistent transport-config configuration: %s is set to true, please configure %s as required")
+    String inconsistentRequiredTransportConfig(final String requiredAttributeName, final String transportAttributeName);
 
-    @Message(id = 107, value = "Inconsistent transport-config configuration: %s is set to false, but %s is configured as required")
-    OperationFailedException inconsistentNotRequiredTransportConfig(final String requiredAttributeName, final String transportAttributeName);
 
-    @Message(id = 108, value = "Security attribute server-requires-ssl is not supported in previous iiop-openjdk versions and can't be converted")
-    String serverRequiresSslNotSupportedInPreviousVersions();
+//    @Message(id = 108, value = "Security attribute server-requires-ssl is not supported in previous iiop-openjdk versions and can't be converted")
+//    String serverRequiresSslNotSupportedInPreviousVersions();
 
+    @LogMessage(level = WARN)
     @Message(id = 109, value = "SSL socket is required by server but secure connections have not been configured")
-    COMM_FAILURE cannotCreateSSLSocket();
+    void cannotCreateSSLSocket();
 
     @Message(id = 110, value = "Client requires SSL but server does not support it")
     IllegalStateException serverDoesNotSupportSsl();
 
-    @Message(id = 111, value = "SSL has not been configured but ssl-port property has been specified")
-    OperationFailedException sslPortWithoutSslConfiguration();
+    @Message(id = 111, value = "SSL has not been configured but ssl-port property has been specified - the connection will use clear-text protocol")
+    String sslPortWithoutSslConfiguration();
 
-    @Message(id = 112, value = "Security initializer was set to 'elytron' but no authentication-context has been specified")
-    OperationFailedException elytronInitializerMissingAuthContext();
+//    @Message(id = 112, value = "Security initializer was set to 'elytron' but no authentication-context has been specified")
+//    OperationFailedException elytronInitializerMissingAuthContext();
 
     @Message(id = 113, value = "Authentication context has been defined but it is ineffective because the security initializer is not set to 'elytron'")
     OperationFailedException ineffectiveAuthenticationContextConfiguration();

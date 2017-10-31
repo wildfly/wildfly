@@ -33,7 +33,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -84,7 +83,6 @@ public class EjbRefLookupTestCase {
     }
 
     @Test
-    @Ignore("WFLY-7150")
     public void testEjbRefInRest() throws Exception {
         Assert.assertEquals("1", doGetReq("rest/first/text"));
     }

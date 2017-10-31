@@ -22,7 +22,6 @@
 
 package org.wildfly.iiop.openjdk;
 
-import static org.wildfly.iiop.openjdk.IIOPExtension.VERSION_1;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,7 +32,6 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -41,9 +39,6 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -262,6 +257,15 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(IIOP_SECURITY_DEF)
             .build();
 
+    public static final AttributeDefinition INTEROP_IONA = new SimpleAttributeDefinitionBuilder(
+            Constants.INTEROP_IONA, ModelType.BOOLEAN, true)
+            .setAttributeGroup(Constants.INTEROP)
+            .setDefaultValue(new ModelNode(false))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .build();
+
+
     protected static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(
             Constants.PROPERTIES, true)
             .setAllowExpression(true)
@@ -382,6 +386,9 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             SERVER_SSL_CONTEXT, CLIENT_SSL_CONTEXT, SERVER_REQUIRES_SSL, CLIENT_REQUIRES_SSL,
             ADD_COMPONENT_INTERCEPTOR, CLIENT_SUPPORTS, CLIENT_REQUIRES, SERVER_SUPPORTS, SERVER_REQUIRES);
 
+    // list that contains interoperability attributes definitions
+    static final List<AttributeDefinition> INTEROP_ATTRIBUTES = Arrays.asList(INTEROP_IONA);
+
     //list that contains tcp attributes definitions
     protected static final List<AttributeDefinition> TCP_ATTRIBUTES = Arrays.asList(HIGH_WATER_MARK,
             NUMBER_TO_RECLAIM);
@@ -405,6 +412,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
         CONFIG_ATTRIBUTES.addAll(INITIALIZERS_ATTRIBUTES);
         CONFIG_ATTRIBUTES.addAll(NAMING_ATTRIBUTES);
         CONFIG_ATTRIBUTES.addAll(SECURITY_ATTRIBUTES);
+        CONFIG_ATTRIBUTES.addAll(INTEROP_ATTRIBUTES);
         CONFIG_ATTRIBUTES.add(PROPERTIES);
 
         IOR_ATTRIBUTES.addAll(IOR_TRANSPORT_CONFIG_ATTRIBUTES);
@@ -425,16 +433,6 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return ALL_ATTRIBUTES;
-    }
-
-    static void registerTransformers(SubsystemRegistration subsystemRegistration) {
-        registerTransformers_1_0_0(subsystemRegistration);
-    }
-
-    private static void registerTransformers_1_0_0(SubsystemRegistration subsystemRegistration) {
-        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, VERSION_1);
     }
 
     private enum AuthMethodValues {

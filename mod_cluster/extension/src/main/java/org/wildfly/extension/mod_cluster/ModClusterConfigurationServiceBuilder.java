@@ -163,7 +163,19 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
                             trimmedContext = parts[1].trim();
                         }
 
-                        String path = trimmedContext.equals("ROOT") ? "" : "/" + trimmedContext;
+                        String path;
+                        switch (trimmedContext) {
+                            case "ROOT":
+                                ROOT_LOGGER.excludedContextsUseSlashInsteadROOT();
+                            case "/":
+                                path = "";
+                                break;
+                            default:
+                                // normalize the context by pre-pending or removing trailing slash
+                                trimmedContext = trimmedContext.startsWith("/") ? trimmedContext : ("/" + trimmedContext);
+                                path = trimmedContext.endsWith("/") ? trimmedContext.substring(0, trimmedContext.length() - 1) : trimmedContext;
+                                break;
+                        }
 
                         Set<String> paths = excludedContextsPerHost.computeIfAbsent(host, k -> new HashSet<>());
 

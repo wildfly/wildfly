@@ -33,7 +33,6 @@ import java.util.Set;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Security;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -47,9 +46,6 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.threads.BoundedQueueThreadPoolAdd;
 import org.jboss.as.threads.BoundedQueueThreadPoolRemove;
 import org.jboss.as.threads.BoundedQueueThreadPoolResourceDefinition;
@@ -82,10 +78,8 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
 
-        for (final WmParameters parameter : WmParameters.values()) {
-            AttributeDefinition ad = parameter.getAttribute();
-            resourceRegistration.registerReadOnlyAttribute(ad, ReadResourceNameOperationStepHandler.INSTANCE);
-        }
+        resourceRegistration.registerReadOnlyAttribute(WmParameters.NAME.getAttribute(), ReadResourceNameOperationStepHandler.INSTANCE);
+        resourceRegistration.registerReadOnlyAttribute(WmParameters.ELYTRON_ENABLED.getAttribute(), null);
 
     }
 
@@ -145,27 +139,17 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
     private static void checkThreadPool(final OperationContext context, final ModelNode operation, final String type) throws OperationFailedException {
         PathAddress threadPoolPath = context.getCurrentAddress();
         PathAddress workManagerPath = threadPoolPath.getParent();
-        Set<Resource.ResourceEntry> entrySet = context.readResourceFromRoot(workManagerPath).getChildren(type);
+        Set<String> entrySet = context.readResourceFromRoot(workManagerPath, false).getChildrenNames(type);
         if (entrySet.size() > 0
-                && !entrySet.iterator().next().getName().equals(threadPoolPath.getLastElement().getValue())) {
+                && !entrySet.iterator().next().equals(threadPoolPath.getLastElement().getValue())) {
             throw ConnectorLogger.ROOT_LOGGER.oneThreadPoolWorkManager(threadPoolPath.getLastElement().getValue(), type, workManagerPath.getLastElement().getValue());
         }
-    }
-
-    static void registerElytronTransformers(ResourceTransformationDescriptionBuilder parentBuilder) {
-        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_WORK_MANAGER);
-        builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
-                        WmParameters.ELYTRON_ENABLED.getAttribute())
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WmParameters.ELYTRON_ENABLED.getAttribute())
-                .end();
-
     }
 
     public enum WmParameters {
         NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
                 .setAllowExpression(false)
-                .setAllowNull(false)
+                .setRequired(true)
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName("name")
@@ -176,7 +160,7 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
                 .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
                 .build());
 
-        private WmParameters(SimpleAttributeDefinition attribute) {
+        WmParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 

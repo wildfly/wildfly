@@ -82,7 +82,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
             new AliasServiceBuilder<>(moduleServiceName, CacheContainerComponent.MODULE.getServiceName(containerAddress), Module.class).build(target).install();
         }
 
-        this.builderFactory.createBuilder(cacheAddress).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        this.builderFactory.createBuilder(cacheAddress).configure(context, model).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         new CacheBuilder<>(CACHE.getServiceName(cacheAddress), containerName, cacheName).configure(context).build(target).install();
         new XAResourceRecoveryBuilder(cacheAddress).build(target).install();

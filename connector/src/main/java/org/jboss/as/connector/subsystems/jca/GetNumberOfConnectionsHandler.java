@@ -64,11 +64,8 @@ public class GetNumberOfConnectionsHandler implements OperationStepHandler {
                     result.get(Constants.NON_TX).set(nonTxResult);
 
                     context.getResult().set(result);
-                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-
-        context.stepCompleted();
     }
 }

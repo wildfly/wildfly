@@ -29,7 +29,7 @@
     <parent>
         <artifactId>wildfly-testsuite</artifactId>
         <groupId>org.wildfly</groupId>
-        <version>11.0.0.Beta1-SNAPSHOT</version>
+        <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite-compat</artifactId>
@@ -51,6 +51,8 @@
         <!-- This value is overridden in submodules with the correct relative path. -->
         <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
         <surefire.excludeTests />
+
+        <ts.elytron.cli>../shared/enable-elytron.cli</ts.elytron.cli>
     </properties>
 
     <!--
@@ -231,6 +233,50 @@
                 <surefire.excludeTests>**/OpenJPASharedModuleProviderTestCase.java</surefire.excludeTests>
             </properties>
         </profile>
+
+        <profile>
+            <id>elytron.profile</id>
+            <activation>
+                <property>
+                    <name>elytron</name>
+                </property>
+                <file>
+                    <exists>${ts.elytron.cli}</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>enable-elytron-cli</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${java.home}/bin/java</executable>
+                                    <arguments>
+                                        <argument>-jar</argument>
+                                        <argument>${project.build.directory}/jbossas/jboss-modules.jar</argument>
+                                        <argument>-mp</argument>
+                                        <argument>${jboss.dist}/modules</argument>
+                                        <argument>org.jboss.as.cli</argument>
+                                        <argument>--file=${ts.elytron.cli}</argument>
+                                    </arguments>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/jbossas</JBOSS_HOME>
+                                    </environmentVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
     </profiles>
 
 

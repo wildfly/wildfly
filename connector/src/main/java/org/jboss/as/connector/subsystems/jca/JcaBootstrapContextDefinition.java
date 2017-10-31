@@ -66,24 +66,24 @@ public class JcaBootstrapContextDefinition extends SimpleResourceDefinition {
     }
 
 
-    public static enum BootstrapCtxParameters {
+    public enum BootstrapCtxParameters {
         NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
                 .setAllowExpression(false)
-                .setAllowNull(false)
+                .setRequired(true)
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName("name")
                 .build()),
         WORKMANAGER(SimpleAttributeDefinitionBuilder.create("workmanager", ModelType.STRING)
                 .setAllowExpression(true)
-                .setAllowNull(false)
+                .setRequired(true)
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName("workmanager")
                 .build());
 
 
-        private BootstrapCtxParameters(SimpleAttributeDefinition attribute) {
+        BootstrapCtxParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 

@@ -208,7 +208,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
             // Validate an unbounded queue
             if (!queueLength.isDefined() || queueLength.asInt() == Integer.MAX_VALUE) {
                 if (coreThreads.isDefined() && coreThreads.asInt() <= 0) {
-                    throw EeLogger.ROOT_LOGGER.invalidCoreThreadsSize(coreThreads.asString());
+                    throw EeLogger.ROOT_LOGGER.invalidCoreThreadsSize(queueLength.asString());
                 }
 
             }
@@ -216,7 +216,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
             // Validate a hand-off queue
             if (queueLength.isDefined() && queueLength.asInt() == 0) {
                 if (coreThreads.isDefined() && coreThreads.asInt() <= 0) {
-                    throw EeLogger.ROOT_LOGGER.invalidCoreThreadsSize(coreThreads.asString());
+                    throw EeLogger.ROOT_LOGGER.invalidCoreThreadsSize(queueLength.asString());
                 }
             }
 

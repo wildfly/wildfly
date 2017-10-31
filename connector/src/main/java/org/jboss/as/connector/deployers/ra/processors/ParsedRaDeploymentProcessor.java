@@ -136,6 +136,8 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
             if (bootstrapCtx == null)
                 bootstrapCtx = "default";
+
+            builder.addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootstrapCtx));
             //Register an empty override model regardless of we're enabled or not - the statistics listener will add the relevant childresources
             if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnit.getName()) == null) {
                 registration.registerOverrideModel(deploymentUnit.getName(), new OverrideDescriptionProvider() {
@@ -206,7 +208,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
             // Create the service
             ServiceBuilder<ResourceAdapterDeployment> builder = Services.addServerExecutorDependency(
                     serviceTarget.addService(deployerServiceName, raDeploymentService),
-                    raDeploymentService.getExecutorServiceInjector(), false)
+                    raDeploymentService.getExecutorServiceInjector())
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, raDeploymentService.getMdrInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, raDeploymentService.getRaRepositoryInjector())
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class, raDeploymentService.getManagementRepositoryInjector())

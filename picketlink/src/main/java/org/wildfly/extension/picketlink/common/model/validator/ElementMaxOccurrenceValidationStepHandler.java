@@ -21,18 +21,17 @@
  */
 package org.wildfly.extension.picketlink.common.model.validator;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
+
+import java.util.Set;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
-
-import java.util.Set;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author Pedro Igor
@@ -52,14 +51,12 @@ public class ElementMaxOccurrenceValidationStepHandler implements ModelValidatio
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         validateOccurrence(context, operation);
-        context.stepCompleted();
     }
 
     protected void validateOccurrence(OperationContext context, ModelNode operation) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         PathAddress parentAddress = Util.getParentAddressByKey(address, this.parentElement.getName());
-        Resource parentResource = context.readResourceFromRoot(parentAddress);
-        Set<String> elements = parentResource.getChildrenNames(this.element.getName());
+        Set<String> elements = context.readResourceFromRoot(parentAddress, false).getChildrenNames(this.element.getName());
 
         if (elements.size() > this.maxOccurs) {
             throw ROOT_LOGGER.invalidChildTypeOccurrence(parentAddress.getLastElement().toString(), this.maxOccurs, this.element

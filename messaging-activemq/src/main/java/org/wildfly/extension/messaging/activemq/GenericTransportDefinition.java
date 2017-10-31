@@ -37,17 +37,22 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 public class GenericTransportDefinition extends AbstractTransportDefinition {
 
     public static final SimpleAttributeDefinition SOCKET_BINDING = create("socket-binding", STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
     static AttributeDefinition[] ATTRIBUTES = { CommonAttributes.FACTORY_CLASS, SOCKET_BINDING, CommonAttributes.PARAMS };
 
-    static final GenericTransportDefinition CONNECTOR_INSTANCE = new GenericTransportDefinition(false, CommonAttributes.CONNECTOR);
-    static final GenericTransportDefinition ACCEPTOR_INSTANCE = new GenericTransportDefinition(true, CommonAttributes.ACCEPTOR);
+    static GenericTransportDefinition createAcceptorDefinition(boolean registerRuntimeOnly) {
+        return new GenericTransportDefinition(true, registerRuntimeOnly, CommonAttributes.ACCEPTOR);
+    }
 
-    private GenericTransportDefinition(boolean isAcceptor, String specificType) {
-        super(isAcceptor, specificType, ATTRIBUTES);
+    static GenericTransportDefinition createConnectorDefinition(boolean registerRuntimeOnly) {
+        return new GenericTransportDefinition(false, registerRuntimeOnly, CommonAttributes.CONNECTOR);
+    }
+
+    private GenericTransportDefinition(boolean isAcceptor, boolean registerRuntimeOnly, String specificType) {
+        super(isAcceptor, specificType, registerRuntimeOnly, ATTRIBUTES);
     }
 }

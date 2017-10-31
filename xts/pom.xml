@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>11.0.0.Beta1-SNAPSHOT</version>
+        <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-xts</artifactId>
@@ -58,6 +58,10 @@
             <artifactId>wildfly-security</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-network</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
             <artifactId>narayana-jts-idlj</artifactId>
         </dependency>
@@ -81,7 +85,7 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
-						<type>pom</type>
+            <type>pom</type>
             <scope>test</scope>
         </dependency>
         <dependency>

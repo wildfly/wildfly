@@ -22,22 +22,21 @@
 
 package org.jboss.as.jsf.logging;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 05.11.2011
@@ -87,14 +86,14 @@ public interface JSFLogger extends BasicLogger {
     @Message(id = 9, value = "Annotation %s in class %s is only allowed on classes")
     String invalidAnnotationLocation(Object annotation, AnnotationTarget classInfo);
 
-    @Message(id = 10, value = "Instance creation failed")
-    RuntimeException instanceCreationFailed(@Cause Throwable t);
-
-    @Message(id = 11, value = "Instance destruction failed")
-    RuntimeException instanceDestructionFailed(@Cause Throwable t);
-
-    @Message(id = 12, value = "Thread local injection container not set")
-    IllegalStateException noThreadLocalInjectionContainer();
+//    @Message(id = 10, value = "Instance creation failed")
+//    RuntimeException instanceCreationFailed(@Cause Throwable t);
+//
+//    @Message(id = 11, value = "Instance destruction failed")
+//    RuntimeException instanceDestructionFailed(@Cause Throwable t);
+//
+//    @Message(id = 12, value = "Thread local injection container not set")
+//    IllegalStateException noThreadLocalInjectionContainer();
 
     @Message(id = 13, value = "@ManagedBean is only allowed at class level %s")
     String invalidManagedBeanAnnotation(AnnotationTarget target);

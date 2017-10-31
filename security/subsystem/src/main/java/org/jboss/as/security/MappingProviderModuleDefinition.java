@@ -26,10 +26,6 @@ package org.jboss.as.security;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
 
 /**
  * This class should better be called {@code AuditProviderModuleDefinition} rather than {@code MappingProviderModuleDefinition},
@@ -51,12 +47,5 @@ public class MappingProviderModuleDefinition extends MappingModuleDefinition {
         return ATTRIBUTES;
     }
 
-    static void registerTransformers_1_3_0(ResourceTransformationDescriptionBuilder parentBuilder) {
-        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_PROVIDER_MODULE);
-        builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true,
-                        new ModelNode(ModuleName.PICKETBOX.getName())), MODULE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, MODULE).end();
-    }
 
 }

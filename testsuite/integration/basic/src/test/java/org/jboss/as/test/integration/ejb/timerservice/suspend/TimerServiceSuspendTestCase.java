@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.suspend;
 
+import java.io.FilePermission;
 import java.io.IOException;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
@@ -32,6 +33,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -39,6 +41,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests suspend/resume for non-calendar based timers
@@ -55,7 +59,12 @@ public class TimerServiceSuspendTestCase {
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "testTimerServiceSimple.war");
         war.addPackage(TimerServiceSuspendTestCase.class.getPackage());
-        war.addAsManifestResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller-client\n"), "MANIFEST.MF");
+        war.addAsManifestResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller-client, org.jboss.remoting3\n"), "MANIFEST.MF");
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new RemotingPermission("createEndpoint"),
+                new RemotingPermission("connect"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
+        ), "permissions.xml");
         return war;
     }
 

@@ -66,7 +66,7 @@ public class BroadcastGroupDefinition extends ModelOnlyResourceDefinition {
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.BROADCAST_GROUP);
 
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = PrimitiveListAttributeDefinition.Builder.of(CONNECTORS, STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setElementValidator(new StringLengthValidator(1))
             .setXmlName(CONNECTOR_REF_STRING)
             .setAttributeMarshaller(new AttributeMarshallers.WrappedListAttributeMarshaller(null))
@@ -78,7 +78,7 @@ public class BroadcastGroupDefinition extends ModelOnlyResourceDefinition {
     public static final SimpleAttributeDefinition BROADCAST_PERIOD = create("broadcast-period", LONG)
             .setDefaultValue(new ModelNode(2000L))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -136,7 +136,7 @@ public class BroadcastGroupDefinition extends ModelOnlyResourceDefinition {
 
     private static Set<String> getAvailableConnectors(final OperationContext context,final ModelNode operation) throws OperationFailedException{
         PathAddress hornetqServer = context.getCurrentAddress().getParent();
-        Resource hornetQServerResource = context.readResourceFromRoot(hornetqServer);
+        Resource hornetQServerResource = context.readResourceFromRoot(hornetqServer, false);
         Set<String> availableConnectors = new HashSet<String>();
         availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.HTTP_CONNECTOR));
         availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.IN_VM_CONNECTOR));

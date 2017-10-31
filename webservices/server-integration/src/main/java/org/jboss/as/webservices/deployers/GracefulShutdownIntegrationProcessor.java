@@ -34,8 +34,7 @@ import org.wildfly.extension.undertow.deployment.UndertowAttachments;
  * DUP for telling Undertow to let WS deal with blocking requests to
  * serve XTS requirements.
  *
- * @autor <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
- *
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 public class GracefulShutdownIntegrationProcessor implements DeploymentUnitProcessor {
 
@@ -49,7 +48,8 @@ public class GracefulShutdownIntegrationProcessor implements DeploymentUnitProce
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
+    public void undeploy(DeploymentUnit deploymentUnit) {
+        deploymentUnit.getAttachmentList(UndertowAttachments.ALLOW_REQUEST_WHEN_SUSPENDED).removeIf(predicate -> predicate instanceof AllowWSRequestPredicate);
     }
 
 }

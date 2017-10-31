@@ -48,7 +48,6 @@ public abstract class RemotingProfileChildResourceHandlerBase extends RestartPar
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         RemotingProfileAdd.INSTANCE.installServices(context, parentAddress, parentModel);
-                        context.stepCompleted();
                     }
                 }, OperationContext.Stage.RUNTIME);
             break;
@@ -57,7 +56,6 @@ public abstract class RemotingProfileChildResourceHandlerBase extends RestartPar
                 RemotingProfileAdd.INSTANCE.installServices(context, parentAddress, parentModel);
                 break;
         }
-        context.stepCompleted();
     }
 
     @Override

@@ -50,7 +50,6 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.dmr.ModelNode;
@@ -123,7 +122,9 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         for (AttributeDefinition attribute: ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attribute,  null, handler);
         }
-        resourceRegistration.registerReadOnlyAttribute(REFERENCING_DEPLOYMENTS, new ReferencingDeploymentsHandler());
+        if (resourceRegistration.getProcessType().isServer()) {
+            resourceRegistration.registerReadOnlyAttribute(REFERENCING_DEPLOYMENTS, new ReferencingDeploymentsHandler());
+        }
     }
 
     private static class AddHandler extends AbstractAddStepHandler {
@@ -196,37 +197,29 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            RuntimeCapability<Void> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
-            ServiceName serviceName = runtimeCapability.getCapabilityServiceName(ApplicationSecurityDomain.class);
-            ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-            ServiceController<?> controller = serviceRegistry.getRequiredService(serviceName);
+            if (context.isDefaultRequiresRuntime()) {
+                context.addStep((ctx, op) -> {
+                    RuntimeCapability<Void> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(context.getCurrentAddressValue());
+                    ServiceName serviceName = runtimeCapability.getCapabilityServiceName(ApplicationSecurityDomain.class);
+                    ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+                    ServiceController<?> controller = serviceRegistry.getRequiredService(serviceName);
 
-            ModelNode deploymentList = new ModelNode();
-            if (controller.getState() == State.UP) {
-                Service service = controller.getService();
-                if (service instanceof ApplicationSecurityDomainService) {
-                    for (String current : ((ApplicationSecurityDomainService) service).getDeployments()) {
-                        deploymentList.add(current);
+                    ModelNode deploymentList = new ModelNode();
+                    if (controller.getState() == State.UP) {
+                        Service service = controller.getService();
+                        if (service instanceof ApplicationSecurityDomainService) {
+                            for (String current : ((ApplicationSecurityDomainService) service).getDeployments()) {
+                                deploymentList.add(current);
+                            }
+                        }
                     }
-                }
+                    context.getResult().set(deploymentList);
+                }, OperationContext.Stage.RUNTIME);
             }
-            context.getResult().set(deploymentList);
         }
     }
 
     Function<String, ApplicationSecurityDomainConfig> getKnownSecurityDomainFunction() {
         return name -> knownApplicationSecurityDomains.stream().filter(applicationSecurityDomainConfig -> applicationSecurityDomainConfig.isSameDomain(name)).findFirst().orElse(null);
-    }
-
-    static void registerTransformers_1_2_0_and_1_3_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN));
-    }
-
-    static void registerTransformers_3_0_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN));
-    }
-
-    static void registerTransformers_4_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN));
     }
 }

@@ -232,14 +232,6 @@ public class DatabaseTimerServiceMultiNodeTestCase {
 
 
     public Context getRemoteContext(ManagementClient managementClient) throws Exception {
-        // TODO Elytron - WFLY-7373
-        // This test relies on specifying the "jboss.naming.client.ejb.context" property during InitialContext creation in
-        // order to ensure that an EJBClientContext will get set up properly with an appropriate EJBReceiver. Since the new
-        // WildFly naming client doesn't currently handle this property, we need to manually set the EJBClientConfiguration
-        // in this test for now. We need to revisit this modification when the new WildFly naming client and EJB client are
-        // being integrated.
-        final Properties ejbClientProperties = createEJBClientConfiguration(managementClient);
-
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
         URI webUri = managementClient.getWebUri();
@@ -248,16 +240,7 @@ public class DatabaseTimerServiceMultiNodeTestCase {
         env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
         env.put("jboss.naming.client.security.callback.handler.class", CallbackHandler.class.getName());
         env.put("jboss.naming.client.ejb.context", true);
-        env.putAll(ejbClientProperties);
         return new InitialContext(env);
     }
 
-    private Properties createEJBClientConfiguration(ManagementClient managementClient) {
-        final Properties config = new Properties();
-        config.put("remote.connections", "default");
-        config.put("remote.connection.default.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "false");
-        config.put("remote.connection.default.host", managementClient.getWebUri().getHost());
-        config.put("remote.connection.default.port", String.valueOf(managementClient.getWebUri().getPort()));
-        return config;
-    }
 }

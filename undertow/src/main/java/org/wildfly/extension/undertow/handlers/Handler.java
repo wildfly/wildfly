@@ -48,7 +48,8 @@ import org.wildfly.extension.undertow.UndertowService;
 abstract class Handler extends PersistentResourceDefinition {
 
     static final RuntimeCapability CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HANDLER, true, HttpHandler.class)
-            .addOptionalRequirements(Capabilities.REF_REQUEST_CONTROLLER).build();
+            //.addRuntimeOnlyRequirements(Capabilities.REF_REQUEST_CONTROLLER) -- has no function so don't use it
+            .build();
 
     private static final List<AccessConstraintDefinition> CONSTRAINTS = new SensitiveTargetAccessConstraintDefinition(
             new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "undertow-handler", false, false, false)

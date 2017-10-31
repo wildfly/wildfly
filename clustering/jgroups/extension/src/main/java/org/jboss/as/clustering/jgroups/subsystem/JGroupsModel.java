@@ -34,10 +34,13 @@ public enum JGroupsModel implements Model {
     VERSION_1_3_0(1, 3, 0),
     VERSION_2_0_0(2, 0, 0),
     VERSION_3_0_0(3, 0, 0),
+    //EAP 7.0
     VERSION_4_0_0(4, 0, 0),
+    // WildFly 10.1
     VERSION_4_1_0(4, 1, 0),
+    VERSION_5_0_0(5, 0, 0),
     ;
-    static final JGroupsModel CURRENT = VERSION_4_1_0;
+    static final JGroupsModel CURRENT = VERSION_5_0_0;
 
     private final ModelVersion version;
 

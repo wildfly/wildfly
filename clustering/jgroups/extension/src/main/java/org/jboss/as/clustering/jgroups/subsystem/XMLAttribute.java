@@ -31,6 +31,7 @@ public enum XMLAttribute {
     // must be first
     UNKNOWN(""),
 
+    ALGORITHM(DigestAuthTokenResourceDefinition.Attribute.ALGORITHM),
     CHANNEL(RemoteSiteResourceDefinition.Attribute.CHANNEL),
     CLUSTER(ChannelResourceDefinition.Attribute.CLUSTER),
     DATA_SOURCE(JDBCProtocolResourceDefinition.Attribute.DATA_SOURCE),
@@ -47,6 +48,7 @@ public enum XMLAttribute {
     MODULE(AbstractProtocolResourceDefinition.Attribute.MODULE),
     NAME(ModelDescriptionConstants.NAME),
     @Deprecated OOB_EXECUTOR(TransportResourceDefinition.ThreadingAttribute.OOB_EXECUTOR),
+    OUTBOUND_SOCKET_BINDINGS(SocketDiscoveryProtocolResourceDefinition.Attribute.OUTBOUND_SOCKET_BINDINGS),
     QUEUE_LENGTH(ThreadPoolResourceDefinition.DEFAULT.getQueueLength()),
     RACK(TransportResourceDefinition.Attribute.RACK),
     @Deprecated SHARED(TransportResourceDefinition.Attribute.SHARED),

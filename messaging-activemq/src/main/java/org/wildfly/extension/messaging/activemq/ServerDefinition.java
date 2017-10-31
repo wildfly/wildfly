@@ -27,6 +27,7 @@ import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.DAYS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PERCENTAGE;
+import static org.jboss.as.controller.client.helpers.MeasurementUnit.SECONDS;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
@@ -98,7 +99,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("cluster")
             .setXmlName("user")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterUser()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
@@ -106,7 +107,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .build();
     public static final AttributeDefinition SCHEDULED_THREAD_POOL_MAX_SIZE = create("scheduled-thread-pool-max-size", INT)
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -120,7 +121,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
-            .setDeprecated(MessagingExtension.VERSION_1_1_0)
+            .setDeprecated(MessagingExtension.VERSION_2_0_0)
             .build();
     public static final SimpleAttributeDefinition ELYTRON_DOMAIN = create("elytron-domain", ModelType.STRING)
             .setAttributeGroup("security")
@@ -134,20 +135,20 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .build();
     public static final AttributeDefinition THREAD_POOL_MAX_SIZE = create("thread-pool-max-size", INT)
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultThreadPoolMaxSize()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition OVERRIDE_IN_VM_SECURITY = create("override-in-vm-security", BOOLEAN)
             .setAttributeGroup("security")
             .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition WILD_CARD_ROUTING_ENABLED = create("wild-card-routing-enabled", BOOLEAN)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultWildcardRoutingEnabled()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -155,7 +156,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("statistics")
             .setXmlName("enabled")
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
     // no default values, depends on whether NIO or AIO is used.
@@ -163,7 +164,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("journal")
             .setXmlName("buffer-size")
             .setMeasurementUnit(BYTES)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setValidator(new LongRangeValidator(0,Long.MAX_VALUE,true,true))
             .setRestartAllServices()
@@ -173,7 +174,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("journal")
             .setXmlName("buffer-timeout")
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -181,7 +182,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("journal")
             .setXmlName("compact-min-files")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJournalCompactMinFiles()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -191,7 +192,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJournalCompactPercentage()))
             .setMeasurementUnit(PERCENTAGE)
             .setValidator(new IntRangeValidator(0, 100, true, true))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -200,7 +201,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition JOURNAL_DATASOURCE = create("journal-datasource", STRING)
             .setAttributeGroup("journal")
             .setXmlName("datasource")
-            .setAllowNull(true)
+            .setRequired(false)
             // references another resource
             .setAllowExpression(false)
             .setRestartAllServices()
@@ -209,8 +210,17 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition JOURNAL_BINDINGS_TABLE  = create("journal-bindings-table", STRING)
             .setAttributeGroup("journal")
             .setXmlName("bindings-table")
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultBindingsTableName()))
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final SimpleAttributeDefinition JOURNAL_JMS_BINDINGS_TABLE  = create("journal-jms-bindings-table", STRING)
+            .setAttributeGroup("journal")
+            .setXmlName("jms-bindings-table")
+            .setRequired(false)
+            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJMSBindingsTableName()))
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -218,7 +228,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition JOURNAL_LARGE_MESSAGES_TABLE  = create("journal-large-messages-table", STRING)
             .setAttributeGroup("journal")
             .setXmlName("large-messages-table")
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultLargeMessagesTableName()))
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -227,7 +237,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition JOURNAL_MESSAGES_TABLE = create("journal-messages-table", STRING)
             .setAttributeGroup("journal")
             .setXmlName("messages-table")
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultMessageTableName()))
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -250,13 +260,23 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final AttributeDefinition JOURNAL_JDBC_NETWORK_TIMEOUT = create("journal-jdbc-network-timeout", INT)
+            .setAttributeGroup("journal")
+            .setXmlName("jdbc-network-timeout")
+            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJdbcNetworkTimeout()))
+            .setMeasurementUnit(SECONDS)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     public static final SimpleAttributeDefinition JOURNAL_FILE_SIZE = create("journal-file-size", LONG)
             .setAttributeGroup("journal")
             .setXmlName("file-size")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJournalFileSize()))
             .setMeasurementUnit(BYTES)
-            .setValidator(new ModularLongRangeParameterValidator(512, 1024, Long.MAX_VALUE, true, true))
-            .setAllowNull(true)
+            .setValidator(new LongRangeValidator(1024, Long.MAX_VALUE, true, true))
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -264,7 +284,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition JOURNAL_MAX_IO = create("journal-max-io", INT)
             .setAttributeGroup("journal")
             .setXmlName("max-io")
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -272,7 +292,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("journal")
             .setXmlName("min-files")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJournalMinFiles()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .setValidator(new IntRangeValidator(2, true, true))
@@ -281,7 +301,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("journal")
             .setXmlName("pool-files")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJournalPoolFiles()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -289,7 +309,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("journal")
             .setXmlName("sync-non-transactional")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultJournalSyncNonTransactional()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -297,7 +317,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("journal")
             .setXmlName("sync-transactional")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultJournalSyncTransactional()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -315,20 +335,20 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("journal")
             .setXmlName("log-write-rate")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultJournalLogWriteRate()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition CONNECTION_TTL_OVERRIDE = create("connection-ttl-override", LONG)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultConnectionTtlOverride()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition ASYNC_CONNECTION_EXECUTION_ENABLED = create("async-connection-execution-enabled", BOOLEAN)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultAsyncConnectionExecutionEnabled()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -336,14 +356,14 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("statistics")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultMessageCounterMaxDayHistory()))
             .setMeasurementUnit(DAYS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition MESSAGE_COUNTER_SAMPLE_PERIOD = create("message-counter-sample-period", LONG)
             .setAttributeGroup("statistics")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultMessageCounterSamplePeriod()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition TRANSACTION_TIMEOUT = create("transaction-timeout", LONG)
@@ -351,7 +371,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setXmlName("timeout")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultTransactionTimeout()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -360,7 +380,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setXmlName("scan-period")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultTransactionTimeoutScanPeriod()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -369,7 +389,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setXmlName("scan-period")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultMessageExpiryScanPeriod()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -377,7 +397,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("message-expiry")
             .setXmlName("thread-priority")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultMessageExpiryThreadPriority()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setValidator(new IntRangeValidator(Thread.MIN_PRIORITY, Thread.MAX_PRIORITY, true, true))
             .setRestartAllServices()
@@ -385,14 +405,14 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition PERF_BLAST_PAGES = create("perf-blast-pages", INT)
             .setAttributeGroup("debug")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJournalPerfBlastPages()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition RUN_SYNC_SPEED_TEST = create("run-sync-speed-test", BOOLEAN)
             .setAttributeGroup("debug")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultRunSyncSpeedTest()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -400,7 +420,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("debug")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultServerDumpInterval()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -408,7 +428,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("debug")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultMemoryMeasureInterval()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -416,7 +436,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("debug")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultMemoryWarningThreshold()))
             .setMeasurementUnit(PERCENTAGE)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -425,7 +445,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setXmlName("invalidation-interval")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultSecurityInvalidationInterval()))
             .setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
@@ -434,14 +454,14 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("security")
             .setXmlName("enabled")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultSecurityEnabled()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
             .build();
     public static final SimpleAttributeDefinition PERSISTENCE_ENABLED = create("persistence-enabled", BOOLEAN)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultPersistenceEnabled()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -449,7 +469,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("management")
             .setXmlName("notification-address")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultManagementNotificationAddress().toString()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(MessagingExtension.MESSAGING_MANAGEMENT_SENSITIVE_TARGET)
@@ -458,7 +478,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("management")
             .setXmlName("address")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultManagementAddress().toString()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(MessagingExtension.MESSAGING_MANAGEMENT_SENSITIVE_TARGET)
@@ -467,7 +487,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup("management")
             .setXmlName("jmx-enabled")
             .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(MessagingExtension.MESSAGING_MANAGEMENT_SENSITIVE_TARGET)
@@ -475,7 +495,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition JMX_DOMAIN = create("jmx-domain", ModelType.STRING)
             .setAttributeGroup("management")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJmxDomain()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(MessagingExtension.MESSAGING_MANAGEMENT_SENSITIVE_TARGET)
@@ -483,39 +503,39 @@ public class ServerDefinition extends PersistentResourceDefinition {
 
     public static final SimpleAttributeDefinition PERSIST_ID_CACHE = create("persist-id-cache", BOOLEAN)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultPersistIdCache()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = create("persist-delivery-count-before-delivery", BOOLEAN)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultPersistDeliveryCountBeforeDelivery()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition ID_CACHE_SIZE = create("id-cache-size", INT)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultIdCacheSize()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition PAGE_MAX_CONCURRENT_IO = create("page-max-concurrent-io", INT)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultMaxConcurrentPageIo()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition CREATE_BINDINGS_DIR = create("create-bindings-dir", BOOLEAN)
             .setAttributeGroup("journal")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultCreateBindingsDir()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition CREATE_JOURNAL_DIR = create("create-journal-dir", BOOLEAN)
             .setAttributeGroup("journal")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultCreateJournalDir()))
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -530,8 +550,8 @@ public class ServerDefinition extends PersistentResourceDefinition {
             PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY,
             PAGE_MAX_CONCURRENT_IO, CREATE_BINDINGS_DIR, CREATE_JOURNAL_DIR, JOURNAL_TYPE, JOURNAL_BUFFER_TIMEOUT,
             JOURNAL_BUFFER_SIZE,
-            JOURNAL_DATASOURCE, JOURNAL_DATABASE,
-            JOURNAL_MESSAGES_TABLE, JOURNAL_BINDINGS_TABLE, JOURNAL_LARGE_MESSAGES_TABLE, JOURNAL_PAGE_STORE_TABLE,
+            JOURNAL_DATASOURCE, JOURNAL_DATABASE, JOURNAL_JDBC_NETWORK_TIMEOUT,
+            JOURNAL_MESSAGES_TABLE, JOURNAL_BINDINGS_TABLE, JOURNAL_JMS_BINDINGS_TABLE, JOURNAL_LARGE_MESSAGES_TABLE, JOURNAL_PAGE_STORE_TABLE,
             JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
             JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_POOL_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,
@@ -597,22 +617,10 @@ public class ServerDefinition extends PersistentResourceDefinition {
                 AddressSettingDefinition.INSTANCE,
                 SecuritySettingDefinition.INSTANCE,
 
-                // Connectors
-                HTTPConnectorDefinition.INSTANCE,
-                RemoteTransportDefinition.CONNECTOR_INSTANCE,
-                InVMTransportDefinition.CONNECTOR_INSTANCE,
-                GenericTransportDefinition.CONNECTOR_INSTANCE,
-
                 // Acceptors
                 HTTPAcceptorDefinition.INSTANCE,
-                RemoteTransportDefinition.ACCEPTOR_INSTANCE,
-                InVMTransportDefinition.ACCEPTOR_INSTANCE,
-                GenericTransportDefinition.ACCEPTOR_INSTANCE,
 
-                BroadcastGroupDefinition.INSTANCE,
                 DiscoveryGroupDefinition.INSTANCE,
-                BridgeDefinition.INSTANCE,
-                ClusterConnectionDefinition.INSTANCE,
                 DivertDefinition.INSTANCE,
                 ConnectorServiceDefinition.INSTANCE,
                 GroupingHandlerDefinition.INSTANCE,
@@ -622,6 +630,19 @@ public class ServerDefinition extends PersistentResourceDefinition {
                 PooledConnectionFactoryDefinition.INSTANCE));
 
         // Dynamic resources (depending on registerRuntimeOnly)
+        // acceptors
+        children.add(GenericTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
+        children.add(InVMTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
+        children.add(RemoteTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
+        // connectors
+        children.add(GenericTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        children.add(InVMTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        children.add(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        children.add(new HTTPConnectorDefinition(registerRuntimeOnly));
+
+        children.add(new BridgeDefinition(registerRuntimeOnly));
+        children.add(new BroadcastGroupDefinition(registerRuntimeOnly));
+        children.add(new ClusterConnectionDefinition(registerRuntimeOnly));
         children.add(new QueueDefinition(registerRuntimeOnly, MessagingExtension.QUEUE_PATH));
         children.add(new JMSQueueDefinition(false, registerRuntimeOnly));
         children.add(new JMSTopicDefinition(false, registerRuntimeOnly));

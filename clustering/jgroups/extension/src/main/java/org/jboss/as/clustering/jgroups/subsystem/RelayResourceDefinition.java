@@ -81,7 +81,7 @@ public class RelayResourceDefinition extends AbstractProtocolResourceDefinition<
     }
 
     private RelayResourceDefinition(ResourceServiceBuilderFactory<RelayConfiguration> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(new Parameters(PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), descriptor -> descriptor.addAttributes(Attribute.class), builderFactory, parentBuilderFactory, (parent, registration) -> {
+        super(new Parameters(PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), descriptor -> descriptor.addAttributes(Attribute.class), builderFactory, parentBuilderFactory, (parent, registration) -> {
             parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
             new RemoteSiteResourceDefinition(builderFactory).register(registration);

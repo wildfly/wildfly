@@ -77,7 +77,7 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
     }
 
     ForkResourceDefinition() {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH));
+        super(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
 
     @Override
@@ -88,10 +88,10 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
                 .addCapabilities(Capability.class)
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 ;
-        ResourceServiceBuilderFactory<ChannelFactory> builderFactory = address -> new ForkChannelFactoryBuilder(Capability.FORK_CHANNEL_FACTORY.getServiceName(address), address.getParent().getLastElement().getValue());
+        ResourceServiceBuilderFactory<ChannelFactory> builderFactory = address -> new ForkChannelFactoryBuilder(Capability.FORK_CHANNEL_FACTORY, address);
         ResourceServiceHandler handler = new ForkServiceHandler(builderFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-        new ProtocolRegistration(builderFactory, new ForkProtocolResourceRegistrationHandler()).register(registration);
+        new ProtocolRegistration(builderFactory, new ForkProtocolRuntimeResourceRegistration()).register(registration);
     }
 }

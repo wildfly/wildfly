@@ -320,7 +320,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
 
-        if (ModClusterModel.VERSION_4_1_0.requiresTransformation(version)) {
+        if (ModClusterModel.VERSION_5_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, SSL_CONTEXT)
                     .addRejectCheck(RejectAttributeChecker.DEFINED, SSL_CONTEXT)
@@ -395,19 +395,15 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
 
         final OperationDefinition addMetricDef = new SimpleOperationDefinitionBuilder(CommonAttributes.ADD_METRIC, rootResolver)
                 .setParameters(LoadMetricDefinition.ATTRIBUTES)
-                .setRuntimeOnly()
                 .build();
         final OperationDefinition addCustomDef = new SimpleOperationDefinitionBuilder(CommonAttributes.ADD_CUSTOM_METRIC, rootResolver)
                 .setParameters(CustomLoadMetricDefinition.ATTRIBUTES)
-                .setRuntimeOnly()
                 .build();
         final OperationDefinition removeMetricDef = new SimpleOperationDefinitionBuilder(CommonAttributes.REMOVE_METRIC, rootResolver)
                 .setParameters(LoadMetricDefinition.TYPE)
-                .setRuntimeOnly()
                 .build();
         final OperationDefinition removeCustomDef = new SimpleOperationDefinitionBuilder(CommonAttributes.REMOVE_CUSTOM_METRIC, rootResolver)
                 .setParameters(CustomLoadMetricDefinition.CLASS)
-                .setRuntimeOnly()
                 .build();
 
         resourceRegistration.registerOperationHandler(addMetricDef, ModClusterAddMetric.INSTANCE);

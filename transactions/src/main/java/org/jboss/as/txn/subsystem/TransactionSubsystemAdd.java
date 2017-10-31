@@ -233,11 +233,11 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         boolean jts = model.hasDefined(JTS) && model.get(JTS).asBoolean();
 
-        final Resource subsystemResource = context.readResourceFromRoot(PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH));
+        final Resource subsystemResource = context.readResourceFromRoot(PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH), false);
         final List<ServiceName> deps = new LinkedList<>();
 
-        for (Resource.ResourceEntry re : subsystemResource.getChildren(CM_RESOURCE)) {
-            deps.add(TxnServices.JBOSS_TXN_CMR.append(re.getName()));
+        for (String name : subsystemResource.getChildrenNames(CM_RESOURCE)) {
+            deps.add(TxnServices.JBOSS_TXN_CMR.append(name));
         }
 
         //recovery environment
@@ -434,7 +434,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
             context.getServiceTarget().addService(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, remoteTransactionServiceService)
                 .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, remoteTransactionServiceService.getLocalTransactionContextInjector())
                 .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, remoteTransactionServiceService.getEndpointInjector())
-                .setInitialMode(Mode.ACTIVE)
+                .setInitialMode(Mode.LAZY)
                 .install();
         }
 
@@ -527,7 +527,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String defaultNodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.getDefaultValue().asString();
 
         if (defaultNodeIdentifier.equals(nodeIdentifier)) {
-            TransactionLogger.ROOT_LOGGER.nodeIdentifierIsSetToDefault();
+            TransactionLogger.ROOT_LOGGER.nodeIdentifierIsSetToDefault(CommonAttributes.NODE_IDENTIFIER, context.getCurrentAddress().toCLIStyleString());
         }
     }
 

@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>11.0.0.Beta1-SNAPSHOT</version>
+        <version>12.0.0.Alpha1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -82,6 +82,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.threads</groupId>
+            <artifactId>jboss-threads</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.xnio</groupId>
             <artifactId>xnio-api</artifactId>
         </dependency>
@@ -106,6 +111,55 @@
             <artifactId>wildfly-elytron</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly.discovery</groupId>
+            <artifactId>wildfly-discovery-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.transaction</groupId>
+            <artifactId>wildfly-transaction-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.client</groupId>
+            <artifactId>wildfly-client-config</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.resource</groupId>
+            <artifactId>jboss-connector-api_1.7_spec</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.wildfly-http-client</groupId>
+            <artifactId>wildfly-http-ejb-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.wildfly-http-client</groupId>
+            <artifactId>wildfly-http-client-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.wildfly-http-client</groupId>
+            <artifactId>wildfly-http-naming-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.wildfly-http-client</groupId>
+            <artifactId>wildfly-http-transaction-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-core</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

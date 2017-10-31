@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.ControlledProcessStateService;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -38,7 +38,7 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemotingConnectorClientMappingsEntryProviderService;
-import org.jboss.as.ejb3.remote.RegistryInstallerService;
+import org.jboss.as.ejb3.remote.ClientMappingsRegistryBuilder;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.txn.service.TxnServices;
@@ -65,14 +65,14 @@ import org.xnio.Options;
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
+public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
     static final EJB3RemoteServiceAdd INSTANCE = new EJB3RemoteServiceAdd();
 
     private EJB3RemoteServiceAdd() {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         installRuntimeServices(context, model);
     }
 
@@ -89,12 +89,12 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
 
-        new RegistryInstallerService(clientMappingsClusterName).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        new ClientMappingsRegistryBuilder(clientMappingsClusterName).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         // Handle case where no infinispan subsystem exists or does not define an ejb cache-container
-        Resource rootResource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
         PathElement infinispanPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan");
-        if (!rootResource.hasChild(infinispanPath) || !rootResource.getChild(infinispanPath).hasChild(PathElement.pathElement("cache-container", clientMappingsClusterName))) {
+        Resource infinispanResource = safeGetResource(context, infinispanPath);
+        if (infinispanResource == null || !infinispanResource.hasChild(PathElement.pathElement("cache-container", clientMappingsClusterName))) {
             // Install services that would normally be installed by this container/cache
             CapabilityServiceSupport support = context.getCapabilityServiceSupport();
             for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
@@ -113,17 +113,16 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
         // Install the EJB remoting connector service which will listen for client connections on the remoting channel
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
         final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService(channelCreationOptions);
-        ServiceBuilder<EJBRemoteConnectorService> builder = target.addService(EJBRemoteConnectorService.SERVICE_NAME, ejbRemoteConnectorService);
-        builder
+        ServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY, ejbRemoteConnectorService)
+                .addAliases(EJBRemoteConnectorService.SERVICE_NAME)
                 // add dependency on the Remoting subsystem endpoint
                 .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector())
                 // add rest of the dependencies
                 .addDependency(remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, ejbRemoteConnectorService.getRemotingConnectorInfoInjectedValue())
                 .addDependency(AssociationService.SERVICE_NAME, AssociationService.class, ejbRemoteConnectorService.getAssociationServiceInjector())
                 .addDependency(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, RemotingTransactionService.class, ejbRemoteConnectorService.getRemotingTransactionServiceInjector())
-                .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, ejbRemoteConnectorService.getControlledProcessStateServiceInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE);
-        if(!executeInWorker) {
+                .setInitialMode(ServiceController.Mode.LAZY);
+        if (!executeInWorker) {
             builder.addDependency(EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName), ExecutorService.class, ejbRemoteConnectorService.getExecutorService());
         }
         builder.install();
@@ -167,5 +166,14 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
             return Options.class.getName();
         }
         throw EjbLogger.ROOT_LOGGER.unknownChannelCreationOptionType(optionType);
+    }
+
+    private static Resource safeGetResource(OperationContext context, PathElement path) {
+        try {
+            return context.readResourceFromRoot(PathAddress.pathAddress(path), false);
+        } catch (RuntimeException e) {
+            // No such resource
+            return null;
+        }
     }
 }

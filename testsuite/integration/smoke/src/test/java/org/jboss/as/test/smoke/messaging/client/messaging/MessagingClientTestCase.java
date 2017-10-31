@@ -22,15 +22,6 @@
 
 package org.jboss.as.test.smoke.messaging.client.messaging;
 
-import static org.junit.Assert.assertNotNull;
-
-import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.resource.spi.IllegalStateException;
-
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
@@ -47,14 +38,29 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
-import org.junit.Ignore;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.resource.spi.IllegalStateException;
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
+import static org.jboss.as.controller.client.helpers.ClientConstants.REMOVE_OPERATION;
+import static org.junit.Assert.assertNotNull;
+
 /**
- * Demo using the AS management API to create and destroy a HornetQ core queue.
+ * Demo using the AS management API to create and destroy a Artemis core queue.
  *
  * @author Emanuel Muckenhuber
  * @author Kabir Khan
@@ -63,20 +69,27 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class MessagingClientTestCase {
 
+    private final String queueName = "queue.standalone";
+    private final int messagingPort = 5445;
+
+    private String messagingSocketBindingName = "messaging";
+    private String remoteAcceptorName = "netty";
+
     @ContainerResource
     private ManagementClient managementClient;
 
-    @Ignore
     @Test
     public void testMessagingClientUsingMessagingPort() throws Exception {
-        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getWebUri().getHost(), 5445, false);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getWebUri().getHost(), messagingPort,
+                false);
         doMessagingClient(sf);
         sf.close();
     }
 
     @Test
     public void testMessagingClientUsingHTTPPort() throws Exception {
-        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getWebUri().getHost(), managementClient.getWebUri().getPort(), true);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getWebUri().getHost(), managementClient.getWebUri().getPort(),
+                true);
         doMessagingClient(sf);
         sf.close();
     }
@@ -89,23 +102,7 @@ public class MessagingClientTestCase {
     }
 
     private void doMessagingClient(ClientSessionFactory sf) throws Exception {
-        final String queueName = "queue.standalone";
 
-        final ModelControllerClient client = managementClient.getControllerClient();
-
-        // Check that the queue does not exists
-        if (queueExists(queueName, sf)) {
-            throw new IllegalStateException();
-        }
-
-        // Create a new core queue using the standalone client
-        ModelNode op = new ModelNode();
-        op.get("operation").set("add");
-        op.get("address").add("subsystem", "messaging-activemq");
-        op.get("address").add("server", "default");
-        op.get("address").add("queue", queueName);
-        op.get("queue-address").set(queueName);
-        applyUpdate(op, client);
         // Check if the queue exists
         if (!queueExists(queueName, sf)) {
             throw new IllegalStateException();
@@ -132,34 +129,9 @@ public class MessagingClientTestCase {
                 session.close();
             }
         }
-
-        op = new ModelNode();
-        op.get("operation").set("remove");
-        op.get("address").add("subsystem", "messaging-activemq");
-        op.get("address").add("server", "default");
-        op.get("address").add("queue", queueName);
-        applyUpdate(op, client);
-
-        // Check that the queue does not exists
-        if(queueExists(queueName, sf)) {
-            throw new IllegalStateException();
-        }
     }
 
-    static void applyUpdate(ModelNode update, final ModelControllerClient client) throws IOException {
-        ModelNode result = client.execute(new OperationBuilder(update).build());
-        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
-            if (result.hasDefined("result")) {
-                System.out.println(result.get("result"));
-            }
-        } else if (result.hasDefined("failure-description")) {
-            throw new RuntimeException(result.get("failure-description").toString());
-        } else {
-            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
-        }
-    }
-
-    static boolean queueExists(final String queueName, final ClientSessionFactory sf) throws ActiveMQException {
+    private boolean queueExists(final String queueName, final ClientSessionFactory sf) throws ActiveMQException {
         final ClientSession session = sf.createSession("guest", "guest", false, false, false, false, 1);
         try {
             final ClientSession.QueueQuery query = session.queueQuery(new SimpleString(queueName));
@@ -169,7 +141,7 @@ public class MessagingClientTestCase {
         }
     }
 
-    static ClientSessionFactory createClientSessionFactory(String host, int port, boolean httpUpgradeEnabled) throws Exception {
+    private ClientSessionFactory createClientSessionFactory(String host, int port, boolean httpUpgradeEnabled) throws Exception {
         final Map<String, Object> properties = new HashMap<String, Object>();
         properties.put(TransportConstants.HOST_PROP_NAME, host);
         properties.put(TransportConstants.PORT_PROP_NAME, port);
@@ -181,4 +153,77 @@ public class MessagingClientTestCase {
         return ActiveMQClient.createServerLocatorWithoutHA(configuration).createSessionFactory();
     }
 
+    @Before
+    public void setup() throws Exception {
+
+        createSocketBinding(managementClient.getControllerClient(), messagingSocketBindingName, messagingPort);
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+        jmsOperations.createRemoteAcceptor(remoteAcceptorName, messagingSocketBindingName, null);
+        jmsOperations.addCoreQueue(queueName, queueName, true);
+
+        ServerReload.reloadIfRequired(managementClient.getControllerClient());
+    }
+
+    @After
+    public void tearDown() throws Exception {
+
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+        jmsOperations.removeRemoteAcceptor(remoteAcceptorName);
+        jmsOperations.removeCoreQueue(queueName);
+        removeSocketBinding(managementClient.getControllerClient(), messagingSocketBindingName);
+
+        ServerReload.reloadIfRequired(managementClient.getControllerClient());
+    }
+
+    public final void createSocketBinding(final ModelControllerClient modelControllerClient, final String name, int port) {
+
+        ModelNode model = new ModelNode();
+        model.get(ClientConstants.OP).set(ADD);
+        model.get(ClientConstants.OP_ADDR).add("socket-binding-group", "standard-sockets");
+        model.get(ClientConstants.OP_ADDR).add("socket-binding", name);
+        model.get("interface").set("public");
+        model.get("port").set(port);
+        model.get(ModelDescriptionConstants.OPERATION_HEADERS).get("allow-resource-service-restart").set(true);
+
+        try {
+            execute(modelControllerClient, model);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public final void removeSocketBinding(final ModelControllerClient modelControllerClient, final String name) {
+        ModelNode model = new ModelNode();
+        model.get(ClientConstants.OP).set(REMOVE_OPERATION);
+        model.get(ClientConstants.OP_ADDR).add("socket-binding-group", "standard-sockets");
+        model.get(ClientConstants.OP_ADDR).add("socket-binding", name);
+        model.get(ModelDescriptionConstants.OPERATION_HEADERS).get("allow-resource-service-restart").set(true);
+        try {
+            execute(modelControllerClient, model);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Executes the operation and returns the result if successful. Else throws an exception
+     *
+     * @param modelControllerClient
+     * @param operation
+     * @return
+     * @throws IOException
+     */
+    private ModelNode execute(final ModelControllerClient modelControllerClient, final ModelNode operation) throws IOException {
+        final ModelNode result = modelControllerClient.execute(operation);
+        if (result.hasDefined(ClientConstants.OUTCOME) && ClientConstants.SUCCESS.equals(result.get(ClientConstants.OUTCOME).asString())) {
+            //logger.trace("Operation " + operation.toString() + " successful");
+            return result;
+        } else if (result.hasDefined(ClientConstants.FAILURE_DESCRIPTION)) {
+            final String failureDesc = result.get(ClientConstants.FAILURE_DESCRIPTION).toString();
+            throw new RuntimeException(failureDesc);
+        } else {
+            throw new RuntimeException("Operation not successful; outcome = " + result.get(ClientConstants.OUTCOME));
+        }
+    }
 }

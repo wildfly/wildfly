@@ -22,9 +22,16 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import java.util.function.Consumer;
+
 import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.PathAddress;
@@ -33,6 +40,7 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 
 /**
  * Definition of an election policy resource.
@@ -47,12 +55,12 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
     }
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        SOCKET_BINDING_PREFERENCE("org.wildfly.clustering.singleton.singleton-policy.election-policy.socket-binding-preference"),
+        ELECTION_POLICY("org.wildfly.clustering.singleton.policy.election", SingletonElectionPolicy.class),
         ;
         private final RuntimeCapability<Void> definition;
 
-        Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(name, true).build();
+        Capability(String name, Class<?> type) {
+            this.definition = RuntimeCapability.Builder.of(name, true, type).build();
         }
 
         @Override
@@ -68,7 +76,7 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         NAME_PREFERENCES("name-preferences", "socket-binding-preferences"),
-        SOCKET_BINDING_PREFERENCES("socket-binding-preferences", "name-preferences", new CapabilityReference(Capability.SOCKET_BINDING_PREFERENCE, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING)),
+        SOCKET_BINDING_PREFERENCES("socket-binding-preferences", "name-preferences", new CapabilityReference(Capability.ELECTION_POLICY, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING)),
         ;
         private final AttributeDefinition definition;
 
@@ -96,7 +104,25 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
         }
     }
 
-    ElectionPolicyResourceDefinition(PathElement path, ResourceDescriptionResolver resolver) {
+    private final Consumer<ResourceDescriptor> configurator;
+    private final ResourceServiceBuilderFactory<SingletonElectionPolicy> builderFactory;
+
+    ElectionPolicyResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, Consumer<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<SingletonElectionPolicy> builderFactory) {
         super(path, resolver);
+        this.configurator = configurator;
+        this.builderFactory = builderFactory;
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(ElectionPolicyResourceDefinition.Attribute.class)
+                .addCapabilities(ElectionPolicyResourceDefinition.Capability.class)
+                ;
+        this.configurator.accept(descriptor);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(this.builderFactory);
+        new SimpleResourceRegistration(descriptor, handler).register(registration);
     }
 }

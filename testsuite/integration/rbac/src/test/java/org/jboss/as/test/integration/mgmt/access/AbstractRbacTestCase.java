@@ -52,7 +52,7 @@ public class AbstractRbacTestCase {
             try {
                 client.close();
             } catch (Exception e) {
-                e.printStackTrace(System.out);
+
             }
         }
         clients.clear();

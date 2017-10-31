@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2013, Red Hat, Inc., and individual contributors
+  ~ Copyright 2017, Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -26,12 +26,12 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>22</version>
+      <version>24</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-parent</artifactId>
-    <version>11.0.0.Beta1-SNAPSHOT</version>
+    <version>12.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly: Parent Aggregator</name>
     <description>WildFly: Parent Aggregator</description>
@@ -40,7 +40,7 @@
 
     <licenses>
         <license>
-            <name>lgpl</name>
+            <name>GNU Lesser General Public License v2.1 or later</name>
             <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
             <distribution>repo</distribution>
         </license>
@@ -83,12 +83,12 @@
         <version.asm>3.3.1</version.asm>
         <version.ch.qos.cal10n>0.8.1</version.ch.qos.cal10n>
         <version.com.fasterxml.classmate>1.3.3</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.8.6</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.8.9</version.com.fasterxml.jackson>
         <version.com.github.relaxng>2011.1</version.com.github.relaxng>
         <version.com.google.guava>20.0</version.com.google.guava>
         <version.com.h2database>1.4.193</version.com.h2database>
         <version.com.microsoft.azure>5.0.0</version.com.microsoft.azure>
-        <version.com.sun.faces>2.2.13.SP3</version.com.sun.faces>
+        <version.com.sun.faces>2.2.13.SP4</version.com.sun.faces>
         <version.com.sun.istack>2.21</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
         <version.com.sun.xsom>20140925</version.com.sun.xsom>
@@ -102,8 +102,8 @@
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.groovy-all>2.4.7</version.groovy-all>
         <version.httpunit>1.7.2</version.httpunit>
-        <version.io.netty>4.1.5.Final</version.io.netty>
-        <version.io.undertow.jastow>2.0.1.Final</version.io.undertow.jastow>
+        <version.io.netty>4.1.9.Final</version.io.netty>
+        <version.io.undertow.jastow>2.0.2.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.2</version.javax.enterprise>
@@ -116,23 +116,23 @@
         <version.jsoup>1.8.3</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>7.1.1</version.net.shibboleth.utilities.java-support>
-        <version.org.apache.activemq.artemis>1.5.4.jbossorg-002</version.org.apache.activemq.artemis>
-        <version.org.apache.avro>1.8.1</version.org.apache.avro>
-        <version.org.apache.cxf>3.1.10</version.org.apache.cxf>
+        <version.org.apache.activemq.artemis>1.5.5.jbossorg-008</version.org.apache.activemq.artemis>
+        <version.org.apache.avro>1.7.6</version.org.apache.avro>
+        <version.org.apache.cxf>3.1.12</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.0.5</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M20</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.2</version.org.apache.httpcomponents.httpasyncclient>
-        <version.org.apache.jstl>1.2.5</version.org.apache.jstl>
+        <version.org.apache.jstl>1.2.6-RC1</version.org.apache.jstl>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.lucene>5.3.1</version.org.apache.lucene>
         <version.org.apache.myfaces.core>2.2.11</version.org.apache.myfaces.core>
         <version.org.apache.openjpa>2.4.1</version.org.apache.openjpa>
         <version.org.eclipselink.version>2.6.3</version.org.eclipselink.version>
         <version.org.apache.neethi>3.0.3</version.org.apache.neethi>
-        <version.org.apache.qpid.proton>0.8</version.org.apache.qpid.proton>
+        <version.org.apache.qpid.proton>0.16.0</version.org.apache.qpid.proton>
         <version.org.apache.santuario>2.0.8</version.org.apache.santuario>
         <version.org.apache.velocity>1.7</version.org.apache.velocity>
-        <version.org.apache.ws.security>2.1.8</version.org.apache.ws.security>
+        <version.org.apache.ws.security>2.1.10</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.2.1</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-4</version.org.apache.xalan>
         <version.org.bouncycastle>1.56</version.org.bouncycastle>
@@ -143,38 +143,39 @@
         <version.org.glassfish.javax.el>3.0.1-b08-jbossorg-1</version.org.glassfish.javax.el>
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
         <version.org.glassfish.javax.json>1.0.4</version.org.glassfish.javax.json>
-        <version.org.hibernate>5.1.5.Final</version.org.hibernate>
+        <version.org.hibernate>5.1.10.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.1.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.validator>5.3.5.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
-        <version.org.hibernate.search>5.5.5.Final</version.org.hibernate.search>
+        <version.org.hibernate.search>5.5.8.Final</version.org.hibernate.search>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
-        <version.org.infinispan>8.2.6.Final</version.org.infinispan>
+        <version.org.infinispan>8.2.8.Final</version.org.infinispan>
         <version.org.jasypt>1.9.2</version.org.jasypt>
-        <version.org.javassist>3.18.1-GA</version.org.javassist>
-        <version.org.jberet>1.2.3.Final</version.org.jberet>
+        <version.org.javassist>3.20.0-GA</version.org.javassist>
+        <version.org.jberet>1.2.4.Final</version.org.jberet>
         <version.org.jdom>1.1.3</version.org.jdom>
         <version.org.jboss.activemq.artemis.integration>1.0.2</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.common.jboss-common-beans>2.0.0.Final</version.org.jboss.common.jboss-common-beans>
-        <version.org.jboss.hal.release-stream>2.9.6.Final</version.org.jboss.hal.release-stream>
-        <version.org.jboss.ejb-client>4.0.0.Beta24</version.org.jboss.ejb-client>
+        <version.org.jboss.hal.release-stream>2.9.15.Final</version.org.jboss.hal.release-stream>
+        <version.org.jboss.ejb-client>4.0.8.Final</version.org.jboss.ejb-client>
+        <version.org.jboss.ejb-client-legacy>3.0.2.Final</version.org.jboss.ejb-client-legacy>
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
-        <version.org.jboss.genericjms>2.0.0.Alpha2</version.org.jboss.genericjms>
-        <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
-        <version.org.jboss.ironjacamar>1.4.3.Final</version.org.jboss.ironjacamar>
-        <version.org.jboss.jboss-transaction-spi>7.5.2.Final</version.org.jboss.jboss-transaction-spi>
-        <version.org.jboss.metadata>10.0.0.Final</version.org.jboss.metadata>
-        <version.org.jboss.narayana>5.5.6.Final</version.org.jboss.narayana>
-        <version.org.jboss.mod_cluster>1.3.6.Final</version.org.jboss.mod_cluster>
-        <version.org.jboss.openjdk-orb>8.0.7.Final</version.org.jboss.openjdk-orb>
+        <version.org.jboss.genericjms>2.0.1.Final</version.org.jboss.genericjms>
+        <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
+        <version.org.jboss.ironjacamar>1.4.6.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
+        <version.org.jboss.metadata>10.0.2.Final</version.org.jboss.metadata>
+        <version.org.jboss.narayana>5.5.30.Final</version.org.jboss.narayana>
+        <version.org.jboss.mod_cluster>1.3.7.Final</version.org.jboss.mod_cluster>
+        <version.org.jboss.openjdk-orb>8.0.8.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.2.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
-        <version.org.jboss.resteasy>3.0.22.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.0.24.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>3.0.4.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
-        <version.org.jboss.shrinkwrap.descriptors>2.0.0-alpha-8</version.org.jboss.shrinkwrap.descriptors>
+        <version.org.jboss.shrinkwrap.descriptors>2.0.0-alpha-10</version.org.jboss.shrinkwrap.descriptors>
         <!-- Include the artifactId for org.jboss.spec project versions because artifactId contains the API spec version -->
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>1.0.0.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.2_spec>
         <version.org.jboss.spec.javax.batch.jboss-batch-api_1.0_spec>1.0.0.Final</version.org.jboss.spec.javax.batch.jboss-batch-api_1.0_spec>
@@ -182,7 +183,7 @@
         <version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>1.0.9.Final</version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>
         <version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>1.0.0.Final</version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>
         <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>2.2.13</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>
-        <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
+        <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>1.0.1.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>1.0.0.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>
         <version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>1.0.5.Final</version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>
@@ -193,16 +194,16 @@
         <version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec>1.0.0.Final</version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec>
         <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>1.0.4.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>
         <version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>
-        <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.3.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
-        <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>2.0.3.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>
+        <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.4.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
+        <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>2.0.4.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>
         <version.org.jboss.spec.javax.websockets>1.1.1.Final</version.org.jboss.spec.javax.websockets>
         <version.org.jboss.weld.weld>2.4.3.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>2.4.SP1</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.3.Final</version.org.jboss.ws.api>
         <version.org.jboss.ws.spi>3.1.4.Final</version.org.jboss.ws.spi>
         <version.org.jboss.ws.common>3.1.5.Final</version.org.jboss.ws.common>
-        <version.org.jboss.ws.common.tools>1.2.3.Final</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>5.1.8.Final</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.common.tools>1.2.4.Final</version.org.jboss.ws.common.tools>
+        <version.org.jboss.ws.cxf>5.1.9.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jgroups>3.6.13.Final</version.org.jgroups>
         <version.org.jgroups.azure>1.1.0.Final</version.org.jgroups.azure>
@@ -210,17 +211,18 @@
         <version.org.kohsuke.metainf-services>1.7</version.org.kohsuke.metainf-services>
         <version.org.opensaml.opensaml>3.1.1</version.org.opensaml.opensaml>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
-        <version.org.picketlink>2.5.5.SP7</version.org.picketlink>
+        <version.org.picketlink>2.5.5.SP8</version.org.picketlink>
         <version.org.slf4j>1.7.22</version.org.slf4j>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
-        <version.org.wildfly.build-tools>1.1.8.Final</version.org.wildfly.build-tools>
+        <version.org.wildfly.arquillian>2.1.0.Final</version.org.wildfly.arquillian>
+        <version.org.wildfly.build-tools>1.2.2.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>3.0.0.Beta14</version.org.wildfly.core>
-        <version.org.wildfly.plugin>1.2.0.Alpha4</version.org.wildfly.plugin>
-        <version.org.wildfly.arquillian>2.1.0.Alpha1</version.org.wildfly.arquillian>
-        <version.org.wildfly.http-client>1.0.0.Alpha4</version.org.wildfly.http-client>
-        <version.org.wildfly.naming-client>1.0.0.Beta13</version.org.wildfly.naming-client>
-        <version.org.wildfly.transaction.client>1.0.0.Beta19</version.org.wildfly.transaction.client>
+        <version.org.wildfly.core>4.0.0.Alpha2</version.org.wildfly.core>
+        <version.org.wildfly.plugin>1.2.0.Final</version.org.wildfly.plugin>
+        <version.org.wildfly.http-client>1.0.8.Final</version.org.wildfly.http-client>
+        <version.org.wildfly.maven.plugins>1.0.0</version.org.wildfly.maven.plugins>
+        <version.org.wildfly.naming-client>1.0.7.Final</version.org.wildfly.naming-client>
+        <version.org.wildfly.transaction.client>1.0.2.Final</version.org.wildfly.transaction.client>
         <version.org.yaml.snakeyaml>1.17</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.11.jbossorg-1</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
@@ -232,9 +234,10 @@
         <!-- Non-default maven plugin versions and configuration -->
         <version.org.zanata.plugin>3.9.1</version.org.zanata.plugin>
         <version.help.plugin>2.2</version.help.plugin>
-        <version.jacoco.plugin>0.6.3.201306030806</version.jacoco.plugin> <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
+        <version.jacoco.plugin>0.7.9</version.jacoco.plugin>
         <version.properties.plugin>2.0.1</version.properties.plugin>
         <version.xml.plugin>1.0.1</version.xml.plugin>
+        <version.verifier.plugin>1.1</version.verifier.plugin>
 
         <!-- Modularized JDK support (various workarounds) - activated via profile -->
         <modular.jdk.args/>
@@ -244,7 +247,7 @@
         <!-- Surefire args -->
         <surefire.jpda.args/>
         <surefire.extra.args/>
-        <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} -ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=256m ${surefire.jpda.args} ${surefire.extra.args}</surefire.system.args>
+        <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} -ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=256m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.system.args>
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
 
@@ -270,6 +273,7 @@
         <module>bean-validation</module>
         <module>build</module>
         <module>client/ejb</module>
+        <module>client/ejb-legacy</module>
         <module>client/jms</module>
         <module>client/shade</module>
         <module>clustering</module>
@@ -809,11 +813,6 @@
                     </dependencies>
                 </plugin>
                 <plugin>
-                    <groupId>org.wildfly.core</groupId>
-                    <artifactId>wildfly-build-plugin</artifactId>
-                    <version>${version.org.wildfly.core}</version>
-                </plugin>
-                <plugin>
                     <groupId>org.wildfly.build</groupId>
                     <artifactId>wildfly-feature-pack-build-maven-plugin</artifactId>
                     <version>${version.org.wildfly.build-tools}</version>
@@ -823,17 +822,31 @@
                     <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
                     <version>${version.org.wildfly.build-tools}</version>
                 </plugin>
-            </plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-verifier-plugin</artifactId>
+                    <version>${version.verifier.plugin}</version>
+                    <configuration>
+                        <verificationFile>target/verifier/verifications.xml</verificationFile>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>main</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly.maven.plugins</groupId>
+                    <artifactId>licenses-plugin</artifactId>
+                    <version>${version.org.wildfly.maven.plugins}</version>
+                </plugin>
+           </plugins>
         </pluginManagement>
     </build>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.wildfly.checkstyle</groupId>
-            <artifactId>wildfly-checkstyle-config</artifactId>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
 
     <dependencyManagement>
         <dependencies>
@@ -1581,77 +1594,18 @@
                 <groupId>org.wildfly.wildfly-http-client</groupId>
                 <artifactId>wildfly-http-ejb-client</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.undertow</groupId>
-                        <artifactId>undertow-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.marshalling</groupId>
-                        <artifactId>jboss-marshalling-river</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
                 <artifactId>wildfly-http-client-common</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.undertow</groupId>
-                        <artifactId>undertow-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.marshalling</groupId>
-                        <artifactId>jboss-marshalling-river</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly.common</groupId>
-                        <artifactId>wildfly-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly.client</groupId>
-                        <artifactId>wildfly-client-config</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly.security</groupId>
-                        <artifactId>wildfly-elytron</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.wildfly.wildfly-http-client</groupId>
                 <artifactId>wildfly-http-naming-client</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
-
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.undertow</groupId>
-                        <artifactId>undertow-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.marshalling</groupId>
-                        <artifactId>jboss-marshalling-river</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly.common</groupId>
-                        <artifactId>wildfly-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly.client</groupId>
-                        <artifactId>wildfly-client-config</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly.security</groupId>
-                        <artifactId>wildfly-elytron</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.ejb</groupId>
-                        <artifactId>jboss-ejb-api_3.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -1659,32 +1613,6 @@
                 <artifactId>wildfly-http-transaction-client</artifactId>
                 <version>${version.org.wildfly.http-client}</version>
 
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.undertow</groupId>
-                        <artifactId>undertow-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.marshalling</groupId>
-                        <artifactId>jboss-marshalling-river</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly.common</groupId>
-                        <artifactId>wildfly-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly.client</groupId>
-                        <artifactId>wildfly-client-config</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly.security</groupId>
-                        <artifactId>wildfly-elytron</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.ejb</groupId>
-                        <artifactId>jboss-ejb-api_3.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
 
@@ -3817,12 +3745,6 @@
 
             <dependency>
                 <groupId>org.apache.qpid</groupId>
-                <artifactId>proton-jms</artifactId>
-                <version>${version.org.apache.qpid.proton}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.qpid</groupId>
                 <artifactId>proton-j</artifactId>
                 <version>${version.org.apache.qpid.proton}</version>
                 <exclusions>
@@ -4412,6 +4334,22 @@
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-ejb-client</artifactId>
                 <version>${version.org.jboss.ejb-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.remoting3</groupId>
+                        <artifactId>jboss-remoting</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-ejb-client-legacy</artifactId>
+                <version>${version.org.jboss.ejb-client-legacy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.remoting3</groupId>
@@ -6346,30 +6284,18 @@
             <properties>
                 <modular.jdk.args>
                     --add-exports=java.base/sun.nio.ch=ALL-UNNAMED
-                    --add-opens=java.base/java.lang=ALL-UNNAMED
-                    --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
-                    --add-opens=java.base/java.security=ALL-UNNAMED
-                    --add-opens=java.base/java.math=ALL-UNNAMED
-                    --add-opens=java.base/java.io=ALL-UNNAMED
-                    --add-opens=java.base/java.net=ALL-UNNAMED
-                    --add-opens=java.base/java.util=ALL-UNNAMED
-                    --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
-                    --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
-                    --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED
-                    --add-opens=java.base/jdk.internal.reflect=ALL-UNNAMED
-                    --add-opens=java.management/javax.management=ALL-UNNAMED
-                    --add-opens=java.management/javax.management.openmbean=ALL-UNNAMED
-                    --add-opens=java.naming/javax.naming=ALL-UNNAMED
                     --add-exports=jdk.unsupported/sun.reflect=ALL-UNNAMED
                     --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED
+                    --illegal-access=permit
+                    --add-modules=java.xml.bind
                 </modular.jdk.args>
                 <!-- [WFCORE-1494] remove JUL workaround -->
-                <modular.jdk.props>-Dsun.util.logging.disableCallerCheck=true -Dsun.reflect.debugModuleAccessChecks=true</modular.jdk.props>
+                <modular.jdk.props>-Dsun.util.logging.disableCallerCheck=true -Djdk.attach.allowAttachSelf=true</modular.jdk.props>
                 <!-- There are lots of issues with checkstyle runtime on JDK9, it somewhat works but really slows down build, disabling it for now-->
                 <checkstyle.skip>true</checkstyle.skip>
                 <!-- we override javassist to version that works on JDK9 -->
-                <version.org.javassist>3.22.0-CR1</version.org.javassist>
-                <version.org.jboss.byteman>4.0.0-BETA3</version.org.jboss.byteman>
+                <version.org.javassist>3.22.0-CR2</version.org.javassist>
+                <version.org.jboss.openjdk-orb>8.0.8.Final</version.org.jboss.openjdk-orb>
             </properties>
             <build>
                 <plugins>
@@ -6378,9 +6304,6 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>${version.compiler.plugin}</version>
                         <configuration>
-                            <!-- fork is needed so compiler args can be used -->
-                          <!--  <release>8</release>-->
-                            <fork>true</fork>
                             <!-- jdk.unsupported is needed for security subsystem FastConcurrentDirectDeque-->
                             <compilerArgument>-J--add-modules=java.xml.ws.annotation,jdk.unsupported</compilerArgument>
                         </configuration>
@@ -6446,6 +6369,202 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <!-- JaCoCo test coverage. Will set ${surefire.jacoco.args} to be used in Arquillian config and as surefire jvm argument. -->
+        <profile>
+            <id>ts.jacoco.profile</id>
+            <activation><property><name>coverage</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>${version.jacoco.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>ts.jacoco-prepare</id>
+                                <phase>process-test-classes</phase>
+                                <goals><goal>prepare-agent</goal></goals>
+                                <configuration>
+                                    <append>true</append>
+                                    <destFile>target/jacoco.exec</destFile>
+                                    <includes>
+                                        <include>*</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>org.jboss.as.test.*</exclude>
+                                    </excludes>
+                                    <output>file</output>
+                                    <propertyName>surefire.jacoco.args</propertyName>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Ant plugin. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <!-- DEBUG -->
+                            <execution>
+                                <id>ts.jacoco.debug</id>
+                                <phase>post-integration-test</phase>
+                                <goals><goal>run</goal></goals>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <target>
+                                        <echo>Jacoco jvm args: ${surefire.jacoco.args}</echo>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <!-- Must be run using Ant due to https://sourceforge.net/tracker/?func=detail&aid=3474708&group_id=177969&atid=883354 -->
+                            <!-- mvn antrun:run@ts.jacoco.report-ant -Dcoverage -Dtarget=report -Djboss.dist=$JBOSS_DIST -->
+                            <execution>
+                                <id>ts.jacoco.report-ant</id>
+                                <phase>none</phase>
+                                <goals><goal>run</goal></goals>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <target>
+                                        <taskdef name="report" classname="org.jacoco.ant.ReportTask"/>
+                                        <echo>Creating JaCoCo test coverage reports...</echo>
+                                        <mkdir dir="${basedir}/target/coverage-report"></mkdir>
+                                        <report>
+                                            <executiondata>
+                                                <fileset dir="${basedir}">
+                                                    <include name="**/target/jacoco.exec"></include>
+                                                </fileset>
+                                            </executiondata>
+                                            <structure name="AS 7 project">
+                                                <classfiles>
+                                                    <fileset dir="${jboss.dist}/modules">
+                                                        <include name="**/*.jar"></include>
+                                                        <!-- Excludes solve "Can't add different class with same name: ..." -->
+                                                        <!-- We have 2.x in main. -->
+                                                        <exclude name="com/sun/jsf-impl/1.*/**/*"></exclude>
+                                                        <!--  Wildfly-3383 - com/sun/codemodel vs. /1.0/com/sun/codemodel -->
+                                                        <exclude name="com/sun/xml/**/*"></exclude>
+                                                        <exclude name="javax/faces/api/1.2/**/*"></exclude>
+                                                        <!-- Wildfly-3390 -->
+                                                        <exclude name="org/apache/commons/beanutils/**/*"></exclude>
+                                                        <!-- others -->
+                                                        <exclude name="**/jipijapa-hibernate4-3/**/*"></exclude>
+                                                        <exclude name="**/hornetq-core-client*"></exclude>
+                                                        <exclude name="**/jboss-marshalling*"></exclude>
+                                                        <!-- Wildfly-3389 -->
+                                                    </fileset>
+                                                </classfiles>
+                                                <sourcefiles encoding="UTF-8">
+                                                    <!--
+                                                         for i in $(find . -path './*/src/main/java' | sort); do
+                                                             DIR=`echo $i | sed 's|./||'`;
+                                                             echo "<fileset dir=\"$DIR\"><include name=\"**/*.java\"></include></fileset>";
+                                                         done
+                                                    -->
+                                                    <fileset dir="appclient/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="batch/extension-jberet/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="batch/extension/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="bean-validation/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/api/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/common/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/ee/infinispan/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/ee/spi/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/ejb/infinispan/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/ejb/spi/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/infinispan/extension/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/infinispan/spi/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/jgroups/api/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/jgroups/extension/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/jgroups/spi/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/marshalling/api/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/marshalling/infinispan/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/marshalling/jboss/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/marshalling/spi/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/server/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/service/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/singleton/api/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/singleton/extension/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/spi/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/web/api/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/web/infinispan/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/web/spi/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="clustering/web/undertow/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="connector/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="ee/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="ejb3/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="iiop-openjdk/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="jaxrs/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="jdr/jboss-as-jdr/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="jpa/eclipselink/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="jpa/hibernate4_1/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="jpa/hibernate4_3/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="jpa/hibernate5/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="jpa/openjpa/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="jpa/spi/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="jpa/subsystem/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="jsf/injection/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="jsf/subsystem/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="jsr77/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="legacy/cmp/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="legacy/configadmin/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="legacy/jacorb/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="legacy/jaxr/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="legacy/messaging/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="legacy/web/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="mail/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="messaging-activemq/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="mod_cluster/extension/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="mod_cluster/undertow/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="naming/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="picketlink/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="pojo/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="rts/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="sar/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="security/api/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="security/subsystem/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="system-jmx/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="testsuite/shared/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="transactions/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="undertow/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="web-common/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="webservices/server-integration/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="weld/bean-validation/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="weld/common/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="weld/ejb/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="weld/jpa/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="weld/spi/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="weld/subsystem/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="weld/transactions/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="weld/webservices/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="xts/src/main/java"><include name="**/*.java"></include></fileset>
+                                                </sourcefiles>
+                                            </structure>
+                                            <html destdir="${basedir}/target/coverage-report/html"></html>
+                                            <xml destfile="${basedir}/target/coverage-report/coverage-report.xml"></xml>
+                                            <csv destfile="${basedir}/target/coverage-report/coverage-report.csv"></csv>
+                                        </report>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.jacoco</groupId>
+                                <artifactId>org.jacoco.ant</artifactId>
+                                <version>${version.jacoco.plugin}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile> <!-- surefire.jacoco.args property needs to be set correctly, if coverage profile is not enabled -->
+            <id>ts.jacoco.profile.not.enabled</id>
+            <activation><property><name>!coverage</name></property></activation>
+            <properties>
+                <surefire.jacoco.args></surefire.jacoco.args>
+            </properties>
         </profile>
     </profiles>
 </project>

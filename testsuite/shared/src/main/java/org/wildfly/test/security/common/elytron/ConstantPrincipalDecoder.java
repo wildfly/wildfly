@@ -21,37 +21,25 @@
  */
 package org.wildfly.test.security.common.elytron;
 
-import java.util.Objects;
-import org.jboss.as.test.integration.management.util.CLIWrapper;
-
 /**
  * Elytron constant-principal-decoder configuration implementation.
  *
  * @author Ondrej Kotek
  */
-public class ConstantPrincipalDecoder extends AbstractConfigurableElement {
-
-    private final String constant;
+public class ConstantPrincipalDecoder extends AbstractConstantHelper {
 
     private ConstantPrincipalDecoder(Builder builder) {
         super(builder);
-        this.constant = Objects.requireNonNull(builder.constant, "Constant for principal has to be provided");
     }
 
-    @Override
-    public void create(CLIWrapper cli) throws Exception {
-        // /subsystem=elytron/constant-principal-decoder=test:add(constant=testPrincipal)
-        cli.sendLine(String.format("/subsystem=elytron/constant-principal-decoder=%s:add(constant=\"%s\")",
-                name, constant));
-    }
 
     @Override
-    public void remove(CLIWrapper cli) throws Exception {
-        cli.sendLine(String.format("/subsystem=elytron/constant-principal-decoder=%s:remove()", name));
+    protected String getConstantElytronType() {
+        return "constant-principal-decoder";
     }
 
     /**
-     * Creates builder to build {@link ConstantPrincipalDecoder}.
+     * Creates builder.
      *
      * @return created builder
      */
@@ -60,17 +48,11 @@ public class ConstantPrincipalDecoder extends AbstractConfigurableElement {
     }
 
     /**
-     * Builder to build {@link ConstantPrincipalDecoder}.
+     * Builder pattern for the class.
      */
-    public static final class Builder extends AbstractConfigurableElement.Builder<Builder> {
-        private String constant;
+    public static final class Builder extends AbstractConstantHelper.Builder<Builder> {
 
         private Builder() {
-        }
-
-        public Builder withConstant(String constant) {
-            this.constant = constant;
-            return this;
         }
 
         public ConstantPrincipalDecoder build() {
@@ -82,4 +64,5 @@ public class ConstantPrincipalDecoder extends AbstractConfigurableElement {
             return this;
         }
     }
+
 }

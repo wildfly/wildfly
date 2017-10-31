@@ -31,13 +31,13 @@ import org.jboss.as.clustering.dmr.ModelNodes;
 import io.undertow.security.impl.InMemorySingleSignOnManager;
 import io.undertow.security.impl.SingleSignOnManager;
 
+import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerBuilderProvider;
 
 /**
@@ -63,7 +63,7 @@ class HostSingleSignOnServiceHandler implements ResourceServiceHandler {
         ServiceName serviceName = UndertowService.ssoServiceName(serverName, hostName);
         ServiceName virtualHostServiceName = HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(serverName,hostName);
 
-        ServiceTarget target = context.getServiceTarget();
+        CapabilityServiceTarget target = context.getCapabilityServiceTarget();
 
         ServiceName managerServiceName = serviceName.append("manager");
         DistributableHostSingleSignOnManagerBuilderProvider.INSTANCE.map(provider -> provider.getBuilder(managerServiceName, serverName, hostName))
@@ -71,7 +71,8 @@ class HostSingleSignOnServiceHandler implements ResourceServiceHandler {
                 .configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         SingleSignOnService service = new SingleSignOnService(domain, path, httpOnly, secure, cookieName);
-        target.addService(serviceName, service)
+        target.addCapability(HostSingleSignOnDefinition.HOST_SSO_CAPABILITY, service)
+                .addAliases(serviceName)
                 .addDependency(virtualHostServiceName, Host.class, service.getHost())
                 .addDependency(managerServiceName, SingleSignOnManager.class, service.getSingleSignOnSessionManager())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -87,8 +88,8 @@ class HostSingleSignOnServiceHandler implements ResourceServiceHandler {
         String serverName = serverAddress.getLastElement().getValue();
 
         ServiceName serviceName = UndertowService.ssoServiceName(serverName, hostName);
-
-        context.removeService(serviceName);
         context.removeService(serviceName.append("manager"));
+        context.removeService(HostSingleSignOnDefinition.HOST_SSO_CAPABILITY.getCapabilityServiceName(address));
     }
+
 }

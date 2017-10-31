@@ -21,15 +21,16 @@
  */
 package org.wildfly.test.integration.elytron.ejb;
 
-import static org.jboss.as.test.shared.integration.ejb.security.Util.getCLMLoginContext;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.concurrent.Callable;
+
 import javax.annotation.security.DeclareRoles;
 import javax.ejb.EJB;
-import javax.ejb.EJBAccessException;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
+import javax.ejb.EJBException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
@@ -37,6 +38,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.jboss.as.test.shared.integration.ejb.security.Util;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -46,11 +49,15 @@ import javax.servlet.http.HttpServletResponse;
 @ServletSecurity(@HttpConstraint(rolesAllowed = { "Users" }))
 @DeclareRoles("Users")
 public class WhoAmIServlet extends HttpServlet {
+
+    private static final long serialVersionUID = 1L;
+
     @EJB
     private Entry bean;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("text/plain");
         Writer writer = resp.getWriter();
         String method = req.getParameter("method");
         String username = req.getParameter("username");
@@ -58,23 +65,15 @@ public class WhoAmIServlet extends HttpServlet {
         String role = req.getParameter("role");
 
         if ("whoAmI".equals(method)) {
-            LoginContext lc = null;
             try {
-                if (username != null && password != null) {
-                    lc = getCLMLoginContext(username, password);
-                    lc.login();
-                }
-                try {
+                Callable<Void> callable = () -> {
                     writer.write(bean.whoAmI());
-                } finally {
-                    if (lc != null) {
-                        lc.logout();
-                    }
-                }
-            } catch (LoginException le) {
-                throw new IOException("Unexpected failure", le);
+                    return null;
+                };
+                Util.switchIdentity(username, password, callable);
+            } catch (Exception e) {
+                throw new IOException("Unexpected failure", e);
             }
-
         } else if ("doubleWhoAmI".equals(method)) {
             String[] response;
             try {
@@ -83,29 +82,23 @@ public class WhoAmIServlet extends HttpServlet {
                 } else {
                     response = bean.doubleWhoAmI();
                 }
-            } catch (EJBAccessException e) {
-                resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.toString());
+            } catch (EJBException e) {
+                resp.setStatus(SC_FORBIDDEN);
+                e.printStackTrace(new PrintWriter(writer));
                 return;
-            } catch (LoginException e) {
+            } catch (Exception e) {
                 throw new ServletException("Unexpected failure", e);
             }
             writer.write(response[0] + "," + response[1]);
         } else if ("doIHaveRole".equals(method)) {
-            LoginContext lc = null;
             try {
-                if (username != null && password != null) {
-                    lc = getCLMLoginContext(username, password);
-                    lc.login();
-                }
-                try {
+                Callable<Void> callable = () -> {
                     writer.write(String.valueOf(bean.doIHaveRole(role)));
-                } finally {
-                    if (lc != null) {
-                        lc.logout();
-                    }
-                }
-            } catch (LoginException le) {
-                throw new IOException("Unexpected failure", le);
+                    return null;
+                };
+                Util.switchIdentity(username, password, callable);
+            } catch (Exception e) {
+                throw new IOException("Unexpected failure", e);
             }
         } else if ("doubleDoIHaveRole".equals(method)) {
             try {

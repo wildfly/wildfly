@@ -25,12 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.Set;
 
 import org.jboss.as.clustering.controller.DefaultableCapabilityReference;
-import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.UnaryRequirementCapability;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter.Converter;
 import org.jboss.as.clustering.controller.transform.SimpleRejectAttributeChecker;
@@ -47,12 +43,13 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource.NoSuchResourceException;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.jgroups.Channel;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 
@@ -69,7 +66,7 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
     static final PathElement PATH = pathElement("jgroups");
 
     enum Requirement implements UnaryRequirement {
-        CHANNEL_FACTORY("org.wildfly.clustering.infinispan.transport.channel-factory", ChannelFactory.class),
+        CHANNEL("org.wildfly.clustering.infinispan.transport.channel", Channel.class),
         ;
         private final String name;
         private final Class<?> type;
@@ -91,7 +88,7 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
     }
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        TRANSPORT_CHANNEL_FACTORY(Requirement.CHANNEL_FACTORY),
+        TRANSPORT_CHANNEL(Requirement.CHANNEL),
         ;
         private final RuntimeCapability<Void> definition;
 
@@ -111,7 +108,7 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CHANNEL("channel", ModelType.STRING, new DefaultableCapabilityReference(Capability.TRANSPORT_CHANNEL_FACTORY, JGroupsRequirement.CHANNEL_FACTORY)),
+        CHANNEL("channel", ModelType.STRING, new DefaultableCapabilityReference(Capability.TRANSPORT_CHANNEL, JGroupsRequirement.CHANNEL_FACTORY)),
         LOCK_TIMEOUT("lock-timeout", ModelType.LONG, new ModelNode(240000L)),
         ;
         private final AttributeDefinition definition;
@@ -279,22 +276,19 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
     }
 
     JGroupsTransportResourceDefinition() {
-        super(PATH);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+        super(PATH, descriptor -> descriptor
                 .addAttributes(Attribute.class)
                 .addAttributes(ExecutorAttribute.class)
                 .addAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
-                .addCapabilities(CLUSTERING_CAPABILITIES.values())
-                ;
-        ResourceServiceHandler handler = new JGroupsTransportServiceHandler();
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+            , new JGroupsTransportServiceHandler());
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration parentRegistration) {
+        super.register(parentRegistration);
+
+        ManagementResourceRegistration registration = parentRegistration.getSubModel(PathAddress.pathAddress(PATH));
+        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
     }
 }

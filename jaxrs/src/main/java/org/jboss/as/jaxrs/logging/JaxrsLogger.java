@@ -22,29 +22,27 @@
 
 package org.jboss.as.jaxrs.logging;
 
-import org.jboss.as.jaxrs.deployment.JaxrsSpringProcessor;
-
-import javax.ws.rs.core.Application;
-
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageLogger;
-
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.util.List;
 
+import org.jboss.as.jaxrs.deployment.JaxrsSpringProcessor;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
+
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
+@SuppressWarnings("deprecation")
 @MessageLogger(projectCode = "WFLYRS", length = 4)
 public interface JaxrsLogger extends BasicLogger {
 
@@ -86,24 +84,24 @@ public interface JaxrsLogger extends BasicLogger {
     @Message(id = 3, value = "More than one mapping found for JAX-RS servlet: %s the second mapping %s will not work")
     void moreThanOneServletMapping(String servletName, String pattern);
 
-    /**
-     * Logs a warning message indicating no servlet mappings found for the JAX-RS application, represented by the
-     * {@code servletName} parameter, either annotate with {@link javax.ws.rs.ApplicationPath @ApplicationPath} or add
-     * a {@code servlet-mapping} in the web.xml.
-     *
-     * @param servletName the servlet name.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 4, value = "No Servlet mappings found for JAX-RS application: %s either annotate it with @ApplicationPath or add a servlet-mapping in web.xml")
-    void noServletMappingFound(String servletName);
-
-    /**
-     * Logs a warning message indicating that {@code resteasy.scan} was found in the {@code web.xml} and is not
-     * necessary.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 5, value = "%s found and ignored in web.xml. This is not necessary, as Resteasy will use the container integration in the JAX-RS 1.1 specification in section 2.3.2")
-    void resteasyScanWarning(String param);
+//    /**
+//     * Logs a warning message indicating no servlet mappings found for the JAX-RS application, represented by the
+//     * {@code servletName} parameter, either annotate with {@link javax.ws.rs.ApplicationPath @ApplicationPath} or add
+//     * a {@code servlet-mapping} in the web.xml.
+//     *
+//     * @param servletName the servlet name.
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 4, value = "No Servlet mappings found for JAX-RS application: %s either annotate it with @ApplicationPath or add a servlet-mapping in web.xml")
+//    void noServletMappingFound(String servletName);
+//
+//    /**
+//     * Logs a warning message indicating that {@code resteasy.scan} was found in the {@code web.xml} and is not
+//     * necessary.
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 5, value = "%s found and ignored in web.xml. This is not necessary, as Resteasy will use the container integration in the JAX-RS 1.1 specification in section 2.3.2")
+//    void resteasyScanWarning(String param);
 
     /**
      * Creates an exception indicating the JAX-RS application class could not be loaded.
@@ -114,32 +112,32 @@ public interface JaxrsLogger extends BasicLogger {
     @Message(id = 6, value = "Could not load JAX-RS Application class")
     DeploymentUnitProcessingException cannotLoadApplicationClass(@Cause Throwable cause);
 
-    /**
-     * Creates an exception indicating more than one application class found in deployment.
-     *
-     * @param app1 the first application.
-     * @param app2 the second application.
-     * @return a {@link DeploymentUnitProcessingException} for the error.
-     */
-    @Message(id = 7, value = "More than one Application class found in deployment %s and %s")
-    DeploymentUnitProcessingException moreThanOneApplicationClassFound(Class<? extends Application> app1, Class<? extends Application> app2);
-
-    /**
-     * A message indicating only one JAX-RS application class is allowed.
-     *
-     * @param sb a builder with application classes.
-     * @return the message.
-     */
-    @Message(id = 8, value = "Only one JAX-RS Application Class allowed. %s")
-    String onlyOneApplicationClassAllowed(StringBuilder sb);
-
-    /**
-     * A message indicating the incorrect mapping config.
-     *
-     * @return the message.
-     */
-    @Message(id = 9, value = "Please use either @ApplicationPath or servlet mapping for url path config.")
-    String conflictUrlMapping();
+//    /**
+//     * Creates an exception indicating more than one application class found in deployment.
+//     *
+//     * @param app1 the first application.
+//     * @param app2 the second application.
+//     * @return a {@link DeploymentUnitProcessingException} for the error.
+//     */
+//    @Message(id = 7, value = "More than one Application class found in deployment %s and %s")
+//    DeploymentUnitProcessingException moreThanOneApplicationClassFound(Class<? extends Application> app1, Class<? extends Application> app2);
+//
+//    /**
+//     * A message indicating only one JAX-RS application class is allowed.
+//     *
+//     * @param sb a builder with application classes.
+//     * @return the message.
+//     */
+//    @Message(id = 8, value = "Only one JAX-RS Application Class allowed. %s")
+//    String onlyOneApplicationClassAllowed(StringBuilder sb);
+//
+//    /**
+//     * A message indicating the incorrect mapping config.
+//     *
+//     * @return the message.
+//     */
+//    @Message(id = 9, value = "Please use either @ApplicationPath or servlet mapping for url path config.")
+//    String conflictUrlMapping();
 
     /**
      * JAX-RS resource @Path annotation is on a class or interface that is not a view
@@ -147,7 +145,7 @@ public interface JaxrsLogger extends BasicLogger {
      *
      * @param type    The class with the annotation
      * @param ejbName The ejb
-     * @return
+     * @return  the exception
      */
     @Message(id = 10, value = "JAX-RS resource %s does not correspond to a view on the EJB %s. @Path annotations can only be placed on classes or interfaces that represent a local, remote or no-interface view of an EJB.")
     DeploymentUnitProcessingException typeNameNotAnEjbView(List<Class<?>> type, String ejbName);

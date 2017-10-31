@@ -47,7 +47,9 @@ import org.omg.IOP.CodecPackage.InvalidTypeForEncoding;
 import org.omg.IOP.CodecPackage.TypeMismatch;
 import org.omg.PortableInterceptor.ServerRequestInfo;
 import org.omg.PortableInterceptor.ServerRequestInterceptor;
+import org.wildfly.iiop.openjdk.Constants;
 import org.wildfly.iiop.openjdk.logging.IIOPLogger;
+import org.wildfly.iiop.openjdk.service.CorbaORBService;
 
 /**
  * <p>
@@ -431,7 +433,8 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         // accept (CompleteEstablishContext) reply together with an exception.
         //
         // The CSIv2 spec does not explicitly disallow an SAS accept in an IIOP exception reply.
-        if (threadLocal.sasReply != null) {
+        boolean interopIONA = Boolean.valueOf(CorbaORBService.getORBProperty(Constants.INTEROP_IONA));
+        if (threadLocal.sasReply != null && !interopIONA) {
             try {
                 ServiceContext sc = new ServiceContext(sasContextId, codec.encode_value(threadLocal.sasReply));
                 ri.add_reply_service_context(sc, true);

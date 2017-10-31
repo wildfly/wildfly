@@ -23,13 +23,11 @@
 package org.jboss.as.test.multinode.remotecall.scoped.context;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.util.DisableInvocationTestUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -38,8 +36,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.naming.InitialContext;
+import java.io.FilePermission;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * A test case for testing the feature introduced in https://issues.jboss.org/browse/EJBCLIENT-34 which
@@ -58,11 +59,6 @@ public class DynamicJNDIContextEJBInvocationTestCase {
 
     private static final String REMOTE_SERVER_DEPLOYMENT_NAME = "deployment-on-other-server";
 
-    @BeforeClass
-    public static void beforeClass() {
-        DisableInvocationTestUtil.disable();
-    }
-
     @Deployment(name = "local-server-deployment")
     @TargetsContainer("multinode-client")
     public static Archive<?> createLocalDeployment() {
@@ -71,6 +67,10 @@ public class DynamicJNDIContextEJBInvocationTestCase {
         jar.addClasses(StatefulRemoteHomeForBeanOnOtherServer.class);
         jar.addAsManifestResource(DynamicJNDIContextEJBInvocationTestCase.class.getPackage(), "MANIFEST.MF", "MANIFEST.MF");
         jar.addAsManifestResource(DynamicJNDIContextEJBInvocationTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new FilePermission(System.getProperty("jbossas.multinode.server") + "/standalone/tmp/auth/*", "read")),
+                "permissions.xml"
+        );
         return jar;
     }
 

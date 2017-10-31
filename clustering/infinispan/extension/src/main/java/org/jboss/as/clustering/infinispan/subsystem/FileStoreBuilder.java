@@ -27,7 +27,6 @@ import static org.jboss.as.clustering.infinispan.subsystem.FileStoreResourceDefi
 
 import java.io.File;
 
-import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.SingleFileStoreConfiguration;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
@@ -56,7 +55,7 @@ public class FileStoreBuilder extends StoreBuilder<SingleFileStoreConfiguration,
     private volatile String relativeTo;
 
     FileStoreBuilder(PathAddress cacheAddress) {
-        super(cacheAddress, (context, model) -> new ConfigurationBuilder().persistence().addSingleFileStore());
+        super(cacheAddress, SingleFileStoreConfigurationBuilder.class);
         this.containerName = cacheAddress.getParent().getLastElement().getValue();
     }
 

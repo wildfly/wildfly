@@ -63,5 +63,6 @@
         <module name="org.jboss.narayana.compensations"/>
         <module name="io.undertow.core"/>
         <module name="org.wildfly.http-client.transaction" />
+        <module name="org.wildfly.security.manager"/>
     </dependencies>
 </module>

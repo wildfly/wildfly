@@ -43,7 +43,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common;
@@ -114,12 +113,11 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
             txSupport = XA_TX;
         }
 
-        ServiceTarget serviceTarget = context.getServiceTarget();
         List<String> connectors = Common.CONNECTORS.unwrap(context, model);
         String discoveryGroupName = getDiscoveryGroup(resolvedModel);
         String jgroupsChannelName = null;
         if (discoveryGroupName != null) {
-            Resource dgResource = context.readResourceFromRoot(MessagingServices.getActiveMQServerPathAddress(address).append(CommonAttributes.DISCOVERY_GROUP, discoveryGroupName));
+            Resource dgResource = context.readResourceFromRoot(MessagingServices.getActiveMQServerPathAddress(address).append(CommonAttributes.DISCOVERY_GROUP, discoveryGroupName), false);
             ModelNode dgModel = dgResource.getModel();
             jgroupsChannelName = JGROUPS_CHANNEL.resolveModelAttribute(context, dgModel).asString();
         }
@@ -128,9 +126,9 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
         final PathAddress serverAddress = MessagingServices.getActiveMQServerPathAddress(address);
 
-        PooledConnectionFactoryService.installService(serviceTarget,
+        PooledConnectionFactoryService.installService(context,
                 name, serverAddress.getLastElement().getValue(), connectors, discoveryGroupName, jgroupsChannelName,
-                adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
+                adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
 
         boolean statsEnabled = ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
@@ -155,8 +153,16 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
             AttributeDefinition definition = nodeAttribute.getDefinition();
             ModelNode node = definition.resolveModelAttribute(context, model);
             if (node.isDefined()) {
-                String value = node.asString();
-                configs.add(new PooledConnectionFactoryConfigProperties(nodeAttribute.getPropertyName(), value, nodeAttribute.getClassType()));
+                String attributeName = definition.getName();
+                final String value;
+                if (attributeName.equals(Common.DESERIALIZATION_BLACKLIST.getName())) {
+                    value = String.join(",", Common.DESERIALIZATION_BLACKLIST.unwrap(context, model));
+                } else if (attributeName.equals(Common.DESERIALIZATION_WHITELIST.getName())) {
+                    value = String.join(",", Common.DESERIALIZATION_WHITELIST.unwrap(context, model));
+                } else {
+                    value = node.asString();
+                }
+                configs.add(new PooledConnectionFactoryConfigProperties(nodeAttribute.getPropertyName(), value, nodeAttribute.getClassType(), nodeAttribute.getConfigType()));
             }
         }
         return configs;

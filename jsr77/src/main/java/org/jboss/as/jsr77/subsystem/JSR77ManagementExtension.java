@@ -71,7 +71,7 @@ public class JSR77ManagementExtension  implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE, parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE, () -> parser);
     }
 
     static class J2EEManagementSubsystemParser extends PersistentResourceXMLParser {

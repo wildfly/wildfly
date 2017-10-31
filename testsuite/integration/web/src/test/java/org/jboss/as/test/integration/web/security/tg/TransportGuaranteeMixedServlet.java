@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.web.security.tg;
 
+import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
@@ -30,18 +32,14 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * Testing servlet which enables transport guarantee security constraint.
  *
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>
  */
-
-
-
-@WebServlet(name = "TG_MIXED_servlet", urlPatterns = { TransportGuaranteeMixedServlet.servletContext }, loadOnStartup = 1)
-@ServletSecurity(@HttpConstraint(rolesAllowed = { "gooduser" }, transportGuarantee = TransportGuarantee.NONE) )
+@WebServlet(name = "TG_MIXED_servlet", urlPatterns = {TransportGuaranteeMixedServlet.servletContext}, loadOnStartup = 1)
+@ServletSecurity(@HttpConstraint(rolesAllowed = {"gooduser"}, transportGuarantee = TransportGuarantee.NONE))
 public class TransportGuaranteeMixedServlet extends HttpServlet {
 
     private static final long serialVersionUID = 3L;
@@ -53,9 +51,9 @@ public class TransportGuaranteeMixedServlet extends HttpServlet {
         resp.getWriter().write("TransportGuaranteedGet");
     }
 
-   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-      resp.getWriter().write("TransportGuaranteedPost");
-   }
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.getWriter().write("TransportGuaranteedPost");
+    }
 
 }
 

@@ -52,6 +52,6 @@ public class TrustDomainRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        TrustDomainAddHandler.launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model, null, null);
+        TrustDomainAddHandler.launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model);
     }
 }

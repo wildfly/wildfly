@@ -23,40 +23,32 @@
 package org.jboss.as.test.clustering.ejb;
 
 import java.util.Properties;
-import javax.naming.InitialContext;
 
 import javax.naming.NamingException;
 
 /**
+ * {@link EJBDirectory} that uses local JNDI.
  * @author Paul Ferraro
  */
-public class LocalEJBDirectory extends AbstractEJBDirectory {
-    private final String module;
+public class LocalEJBDirectory extends NamingEJBDirectory {
 
     public LocalEJBDirectory(String module) throws NamingException {
-        super(new Properties());
-        this.module = module;
+        this(module, new Properties());
     }
 
-    public LocalEJBDirectory(String module, InitialContext context) {
-        super(context);
-        this.module = module;
+    public LocalEJBDirectory(String module, Properties properties) throws NamingException {
+        super(properties, "java:app", module, "java:comp/UserTransaction");
     }
 
-    public <T> T lookupStateful(Class<T> beanClass) throws NamingException {
+    public <T> T lookupStateful(Class<T> beanClass) throws Exception {
         return this.lookupStateful(beanClass, beanClass);
     }
 
-    public <T> T lookupStateless(Class<T> beanClass) throws NamingException {
+    public <T> T lookupStateless(Class<T> beanClass) throws Exception {
         return this.lookupStateless(beanClass, beanClass);
     }
 
-    public <T> T lookupSingleton(Class<T> beanClass) throws NamingException {
+    public <T> T lookupSingleton(Class<T> beanClass) throws Exception {
         return this.lookupSingleton(beanClass, beanClass);
-    }
-
-    @Override
-    protected <T> String createJndiName(String beanName, Class<T> beanInterface, Type type) {
-        return String.format("java:app/%s/%s!%s", this.module, beanName, beanInterface.getName());
     }
 }

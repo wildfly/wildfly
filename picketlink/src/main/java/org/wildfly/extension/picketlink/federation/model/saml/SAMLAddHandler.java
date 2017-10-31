@@ -27,17 +27,13 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.picketlink.config.federation.STSType;
 import org.wildfly.extension.picketlink.federation.service.FederationService;
 import org.wildfly.extension.picketlink.federation.service.SAMLService;
-
-import java.util.List;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -58,28 +54,18 @@ public class SAMLAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
-                                     final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        launchServices(context, operation, model, verificationHandler, newControllers);
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        launchServices(context, operation, model);
     }
 
-    static void launchServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    static void launchServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
         String federationAlias = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
         SAMLService service = new SAMLService(toSAMLConfig(context, model));
-        ServiceBuilder<SAMLService> serviceBuilder = context.getServiceTarget().addService(SAMLService.createServiceName(federationAlias), service);
-
-        serviceBuilder.addDependency(FederationService.createServiceName(federationAlias), FederationService.class, service.getFederationService());
-
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-
-        ServiceController<SAMLService> controller = serviceBuilder.setInitialMode(ServiceController.Mode.PASSIVE).install();
-
-        if (newControllers != null) {
-            newControllers.add(controller);
-        }
+        context.getServiceTarget().addService(SAMLService.createServiceName(federationAlias), service)
+                .addDependency(FederationService.createServiceName(federationAlias), FederationService.class, service.getFederationService())
+                .setInitialMode(ServiceController.Mode.PASSIVE)
+                .install();
     }
 
     static STSType toSAMLConfig(OperationContext context, ModelNode fromModel) throws OperationFailedException {

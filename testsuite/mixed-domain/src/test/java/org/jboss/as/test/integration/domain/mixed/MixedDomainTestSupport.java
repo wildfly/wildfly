@@ -61,16 +61,21 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     private final Version.AsVersion version;
     private final boolean adjustDomain;
     private final boolean legacyConfig;
+    private final boolean withMasterServers;
+    private final String profile;
 
 
     private MixedDomainTestSupport(Version.AsVersion version, String testClass, String domainConfig, String masterConfig, String slaveConfig,
-                                   String jbossHome, boolean adjustDomain, boolean legacyConfig)
+                                   String jbossHome, String profile, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers)
             throws Exception {
         super(testClass, domainConfig, masterConfig, slaveConfig, configWithDisabledAsserts(null), configWithDisabledAsserts(jbossHome));
         this.version = version;
         this.adjustDomain = adjustDomain;
         this.legacyConfig = legacyConfig;
+        this.withMasterServers = withMasterServers;
+        this.profile = profile;
     }
+
     private static WildFlyManagedConfiguration configWithDisabledAsserts(String jbossHome){
         WildFlyManagedConfiguration config = new WildFlyManagedConfiguration(jbossHome);
         config.setEnableAssertions(false);
@@ -78,14 +83,27 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version) throws Exception {
-        return create(testClass, version, STANDARD_DOMAIN_CONFIG, true, false);
+        return create(testClass, version, STANDARD_DOMAIN_CONFIG, "master-config/host.xml",
+                "slave-config/host-slave.xml", "full-ha", true, false, false);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig,
                                                 boolean adjustDomain, boolean legacyConfig) throws Exception {
+        return create(testClass, version, domainConfig, "master-config/host.xml",
+                "slave-config/host-slave.xml", "full-ha", adjustDomain, legacyConfig, false);
+    }
+
+    public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String profile,
+                                                boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) throws Exception {
+        return create(testClass, version, domainConfig, "master-config/host.xml",
+                "slave-config/host-slave.xml", profile, adjustDomain, legacyConfig, withMasterServers);
+    }
+
+    public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String masterConfig, String slaveConfig,
+                                                 String profile, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) throws Exception {
         final File dir = OldVersionCopier.expandOldVersion(version);
-        return new MixedDomainTestSupport(version, testClass, domainConfig, "master-config/host.xml",
-                "slave-config/host-slave.xml", dir.getAbsolutePath(), adjustDomain, legacyConfig);
+        return new MixedDomainTestSupport(version, testClass, domainConfig, masterConfig,
+                slaveConfig, dir.getAbsolutePath(), profile, adjustDomain, legacyConfig, withMasterServers);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig,
@@ -93,7 +111,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
                                                 boolean legacyConfig) throws Exception {
         final File dir = OldVersionCopier.expandOldVersion(version);
         return new MixedDomainTestSupport(version, testClass, domainConfig, masterConfig,
-                slaveConfig, dir.getAbsolutePath(), adjustDomain, legacyConfig);
+                slaveConfig, dir.getAbsolutePath(), "full-ha", adjustDomain, legacyConfig, false);
     }
 
     public void start() {
@@ -168,7 +186,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             if (legacyConfig) {
                 LegacyConfigAdjuster.adjustForVersion(masterUtil.getDomainClient(), version);
             } else {
-                DomainAdjuster.adjustForVersion(masterUtil.getDomainClient(), version);
+                DomainAdjuster.adjustForVersion(masterUtil.getDomainClient(), version, profile, withMasterServers);
             }
 
             //Now reload the master in normal mode

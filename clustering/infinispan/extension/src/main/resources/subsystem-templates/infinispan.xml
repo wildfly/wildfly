@@ -18,25 +18,12 @@
                     <transaction mode="BATCH"/>
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
-                <local-cache name="persistent">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
-                    <file-store passivation="false" purge="false"/>
-                </local-cache>
-                <local-cache name="concurrent">
-                    <file-store passivation="true" purge="false"/>
-                </local-cache>
             </cache-container>
             <cache-container name="ejb" aliases="sfsb" default-cache="passivation" module="org.wildfly.clustering.ejb.infinispan">
                 <local-cache name="passivation">
                     <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
                     <file-store passivation="true" purge="false"/>
-                </local-cache>
-                <local-cache name="persistent">
-                    <locking isolation="REPEATABLE_READ"/>
-                    <transaction mode="BATCH"/>
-                    <file-store passivation="false" purge="false"/>
                 </local-cache>
             </cache-container>
             <cache-container name="hibernate" module="org.hibernate.infinispan">
@@ -66,9 +53,6 @@
                 <distributed-cache name="dist">
                     <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
-                    <file-store/>
-                </distributed-cache>
-                <distributed-cache name="concurrent">
                     <file-store/>
                 </distributed-cache>
             </cache-container>

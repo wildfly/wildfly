@@ -24,16 +24,25 @@ package org.jboss.as.ejb3.remote;
 
 import static java.security.AccessController.doPrivileged;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
 import java.security.PrivilegedAction;
 import java.util.List;
+import java.util.Properties;
 
 import org.jboss.as.ejb3.subsystem.EJBClientConfiguratorService;
+import org.jboss.ejb.client.ClusterNodeSelector;
 import org.jboss.ejb.client.DeploymentNodeSelector;
 import org.jboss.ejb.client.EJBClientCluster;
 import org.jboss.ejb.client.EJBClientConnection;
 import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBClientInterceptor;
 import org.jboss.ejb.client.EJBTransportProvider;
+import org.jboss.ejb.client.legacy.JBossEJBProperties;
+import org.jboss.ejb.client.legacy.LegacyPropertiesConfiguration;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -52,6 +61,7 @@ import org.wildfly.security.auth.client.AuthenticationContext;
 public final class EJBClientContextService implements Service<EJBClientContextService> {
 
     public static final ServiceName APP_CLIENT_URI_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "ejbClientContext", "appClientUri");
+    public static final ServiceName APP_CLIENT_EJB_PROPERTIES_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "ejbClientContext", "appClientEjbProperties");
 
     private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "ejbClientContext");
 
@@ -65,6 +75,7 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
     private final InjectedValue<EJBTransportProvider> localProviderInjector = new InjectedValue<>();
     private final InjectedValue<RemotingProfileService> profileServiceInjector = new InjectedValue<>();
     private InjectedValue<URI> appClientUri = new InjectedValue<>();
+    private InjectedValue<String> appClientEjbProperties = new InjectedValue<>();
     /**
      * TODO: possibly move to using a per-thread solution for embedded support
      */
@@ -73,6 +84,7 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
     private DeploymentNodeSelector deploymentNodeSelector;
     private List<EJBClientCluster> clientClusters = null;
     private AuthenticationContext clustersAuthenticationContext = null;
+    private List<EJBClientInterceptor> clientInterceptors = null;
 
     public EJBClientContextService(final boolean makeGlobal) {
         this.makeGlobal = makeGlobal;
@@ -110,13 +122,31 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
         }
 
         if (clientClusters != null) {
+            boolean firstSelector = true;
             for (EJBClientCluster clientCluster : clientClusters) {
                 builder.addClientCluster(clientCluster);
+                ClusterNodeSelector selector = clientCluster.getClusterNodeSelector();
+                if (firstSelector && selector != null) {
+                    builder.setClusterNodeSelector(selector);
+                    // Currently only one selector is supported per client context
+                    firstSelector = false;
+                }
             }
         }
 
         if (deploymentNodeSelector != null) {
             builder.setDeploymentNodeSelector(deploymentNodeSelector);
+        }
+
+        if(appClientEjbProperties.getOptionalValue() != null) {
+            setupEjbClientProps(appClientEjbProperties.getOptionalValue());
+            LegacyPropertiesConfiguration.configure(builder);
+        }
+
+        if (clientInterceptors != null) {
+            for (EJBClientInterceptor clientInterceptor : clientInterceptors) {
+                builder.addInterceptor(clientInterceptor);
+            }
         }
 
         clientContext = builder.build();
@@ -136,6 +166,39 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
                 return null;
             });
         }
+    }
+
+
+    private void setupEjbClientProps(String connectionPropertiesUrl) throws StartException {
+
+        try {
+            final File file = new File(connectionPropertiesUrl);
+            final URL url;
+            if (file.exists()) {
+                url = file.toURI().toURL();
+            } else {
+                url = new URL(connectionPropertiesUrl);
+            }
+            Properties properties = new Properties();
+            InputStream stream = null;
+            try {
+                stream = url.openStream();
+                properties.load(stream);
+            } finally {
+                if (stream != null) {
+                    try {
+                        stream.close();
+                    } catch (IOException e) {
+                        //ignore
+                    }
+                }
+            }
+            JBossEJBProperties ejbProps = JBossEJBProperties.fromProperties(connectionPropertiesUrl, properties);
+            JBossEJBProperties.getContextManager().setGlobalDefault(ejbProps);
+        } catch (Exception e) {
+            throw new StartException(e);
+        }
+
     }
 
     public EJBClientContextService getValue() throws IllegalStateException, IllegalArgumentException {
@@ -163,6 +226,10 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
         return appClientUri;
     }
 
+    public InjectedValue<String> getAppClientEjbProperties() {
+        return appClientEjbProperties;
+    }
+
     public void setInvocationTimeout(final long invocationTimeout) {
         this.invocationTimeout = invocationTimeout;
     }
@@ -177,6 +244,10 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
 
     public void setClustersAuthenticationContext(final AuthenticationContext clustersAuthenticationContext) {
         this.clustersAuthenticationContext = clustersAuthenticationContext;
+    }
+
+    public void setClientInterceptors(final List<EJBClientInterceptor> clientInterceptors) {
+        this.clientInterceptors = clientInterceptors;
     }
 
     public AuthenticationContext getClustersAuthenticationContext() {

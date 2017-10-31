@@ -22,14 +22,14 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.PersistenceConfiguration;
-import org.jboss.as.clustering.controller.AttributeMarshallers;
-import org.jboss.as.clustering.controller.AttributeParsers;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -43,9 +43,10 @@ import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperation
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleMapAttributeDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.global.MapOperations;
@@ -68,31 +69,51 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         return PathElement.pathElement("store", value);
     }
 
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        PERSISTENCE("org.wildfly.clustering.infinispan.cache.store", PersistenceConfiguration.class),
+        ;
+        private final RuntimeCapability<Void> definition;
+
+        Capability(String name, Class<?> type) {
+            this.definition = RuntimeCapability.Builder.of(name, true, type).build();
+        }
+
+        @Override
+        public RuntimeCapability<Void> getDefinition() {
+            return this.definition;
+        }
+
+        @Override
+        public RuntimeCapability<Void> resolve(PathAddress address) {
+            PathAddress cacheAddress = address.getParent();
+            PathAddress containerAddress = cacheAddress.getParent();
+            return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue(), cacheAddress.getLastElement().getValue());
+        }
+    }
+
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        FETCH_STATE("fetch-state", true),
-        PASSIVATION("passivation", true),
-        PRELOAD("preload", false),
-        PURGE("purge", true),
-        SHARED("shared", false),
-        SINGLETON("singleton", false),
+        FETCH_STATE("fetch-state", true, UnaryOperator.identity()),
+        PASSIVATION("passivation", true, UnaryOperator.identity()),
+        PRELOAD("preload", false, UnaryOperator.identity()),
+        PURGE("purge", true, UnaryOperator.identity()),
+        SHARED("shared", false, UnaryOperator.identity()),
+        SINGLETON("singleton", false, builder -> builder.setDeprecated(InfinispanModel.VERSION_5_0_0.getVersion())),
         PROPERTIES("properties"),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, boolean defaultValue) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.BOOLEAN)
+        Attribute(String name, boolean defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, ModelType.BOOLEAN)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(new ModelNode(defaultValue))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .build();
+                    ).build();
         }
 
         Attribute(String name) {
-            this.definition = new SimpleMapAttributeDefinition.Builder(name, true)
+            this.definition = new PropertiesAttributeDefinition.Builder(name)
                     .setAllowExpression(true)
-                    .setAttributeMarshaller(AttributeMarshallers.PROPERTY_LIST)
-                    .setAttributeParser(AttributeParsers.COLLECTION)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
         }
@@ -141,6 +162,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         this.legacyPath = legacyPath;
         this.descriptorConfigurator = descriptorConfigurator.andThen(descriptor -> descriptor
                 .addAttributes(StoreResourceDefinition.Attribute.class)
+                .addCapabilities(Capability.class)
                 .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
         );
         this.handler = new SimpleResourceServiceHandler<>(builderFactory);

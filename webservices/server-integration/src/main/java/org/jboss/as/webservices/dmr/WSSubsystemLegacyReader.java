@@ -60,15 +60,9 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 final class WSSubsystemLegacyReader implements XMLElementReader<List<ModelNode>> {
 
-    private static final WSSubsystemLegacyReader INSTANCE = new WSSubsystemLegacyReader();
-
-    private WSSubsystemLegacyReader() {
-        // forbidden instantiation
+    WSSubsystemLegacyReader() {
     }
 
-    static WSSubsystemLegacyReader getInstance() {
-        return INSTANCE;
-    }
 
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {

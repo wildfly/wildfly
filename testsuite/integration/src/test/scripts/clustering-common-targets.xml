@@ -123,48 +123,6 @@
     </macrodef>
 
     <!--
-        Add jgroups transport stack for tunneling.
-    -->
-    <macrodef name="ts.config-as.add-tunnel-transport-stack" description="Add jgroups transport stack for tunneling.">
-
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
-
-        <attribute name="stack" default="tunnel"/>
-        <attribute name="router-inet-address" default="127.0.0.1"/>
-        <attribute name="router-port" default="12001"/>
-
-        <sequential>
-            <echo message="Adding tunneling JGroups transport stack for config @{name}"/>
-
-            <!-- Process *.xml to *.xml.mod. -->
-            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
-                  style="${jbossas.ts.integ.dir}/src/test/xslt/addTunnelingTransportStack.xsl"
-                  extension=".xml.mod"
-                  useImplicitFileset="false">
-                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone-ha.xml"/>
-                    <include name="**/standalone-full-ha.xml"/>
-                </fileset>
-                <param name="stack" expression="@{stack}"/>
-                <param name="router-inet-address" expression="@{router-inet-address}"/>
-                <param name="router-port" expression="@{router-port}"/>
-            </xslt>
-
-            <!-- Move processed files back. -->
-            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
-                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone-ha.xml.mod"/>
-                    <include name="**/standalone.xml.mod"/>
-                    <include name="**/standalone-full.xml.mod"/>
-                </fileset>
-                <mapper type="glob" from="*.mod" to="*"/>
-            </move>
-        </sequential>
-    </macrodef>
-
-    <!--
         Change default cache mode in clustering server profiles.
     -->
     <macrodef name="ts.config-as.change-cache-mode" description="Change default cache mode in clustering server profiles.">

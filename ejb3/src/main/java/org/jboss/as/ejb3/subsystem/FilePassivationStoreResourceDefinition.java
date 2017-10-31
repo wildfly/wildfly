@@ -30,7 +30,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -94,7 +93,4 @@ public class FilePassivationStoreResourceDefinition extends LegacyPassivationSto
         super(EJB3SubsystemModel.FILE_PASSIVATION_STORE, ADD, REMOVE, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES, WRITE_HANDLER, ATTRIBUTES);
     }
 
-    static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
-        LegacyPassivationStoreResourceDefinition.registerTransformers_1_1_0(INSTANCE.getPathElement(), parent);
-    }
 }

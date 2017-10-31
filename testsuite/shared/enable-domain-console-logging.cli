@@ -1,0 +1,20 @@
+embed-host-controller
+batch
+
+/profile=default/subsystem=logging/console-handler=CONSOLE:add(level=INFO, named-formatter=COLOR-PATTERN, autoflush=true,target=System.out)
+/profile=default/subsystem=logging/root-logger=ROOT:add-handler(name=CONSOLE)
+
+/profile=full/subsystem=logging/console-handler=CONSOLE:add(level=INFO, named-formatter=COLOR-PATTERN, autoflush=true,target=System.out)
+/profile=full/subsystem=logging/root-logger=ROOT:add-handler(name=CONSOLE)
+
+/profile=full-ha/subsystem=logging/console-handler=CONSOLE:add(level=INFO, named-formatter=COLOR-PATTERN, autoflush=true,target=System.out)
+/profile=full-ha/subsystem=logging/root-logger=ROOT:add-handler(name=CONSOLE)
+
+/profile=ha/subsystem=logging/console-handler=CONSOLE:add(level=INFO, named-formatter=COLOR-PATTERN, autoflush=true,target=System.out)
+/profile=ha/subsystem=logging/root-logger=ROOT:add-handler(name=CONSOLE)
+
+/profile=load-balancer/subsystem=logging/console-handler=CONSOLE:add(level=INFO, named-formatter=COLOR-PATTERN, autoflush=true,target=System.out)
+/profile=load-balancer/subsystem=logging/root-logger=ROOT:add-handler(name=CONSOLE)
+
+run-batch
+stop-embedded-host-controller

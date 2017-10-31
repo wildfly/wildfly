@@ -23,9 +23,9 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL;
 import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition.CAPABILITIES;
 import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition.CLUSTERING_CAPABILITIES;
-import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition.Attribute.*;
 
 import java.util.ServiceLoader;
 
@@ -39,7 +39,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Version;
@@ -63,8 +62,7 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
         // Handle case where JGroups subsystem is added to a running server
         // In this case, the Infinispan subsystem may have already registered default group capabilities
         if (context.getProcessType().isServer() && !context.isBooting()) {
-            Resource rootResource = context.readResourceFromRoot(address.getParent());
-            if (rootResource.hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan"))) {
+            if (context.readResourceFromRoot(address.getParent(),false).hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan"))) {
                 // Following restart, default group services will be installed by this handler, rather than the infinispan subsystem handler
                 context.addStep((ctx, operation) -> {
                     ctx.reloadRequired();

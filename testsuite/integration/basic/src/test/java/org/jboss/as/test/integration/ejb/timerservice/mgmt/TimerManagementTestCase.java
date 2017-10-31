@@ -17,6 +17,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.hamcrest.CoreMatchers.containsString;
+
 /**
  *
  * Test non persistent interval timer.
@@ -69,7 +71,7 @@ public class TimerManagementTestCase extends AbstractTimerManagementTestCase {
             getTimerDetails();
         } catch (OperationFailedException ofe) {
             final ModelNode failureDescription = ofe.getFailureDescription();
-            Assert.assertTrue(failureDescription.toString(), failureDescription.toString().contains("not found"));
+            Assert.assertThat("Wrong failure description", failureDescription.toString(), containsString("WFLYCTL0216"));
         }
     }
 
@@ -82,7 +84,7 @@ public class TimerManagementTestCase extends AbstractTimerManagementTestCase {
             getTimerDetails();
         } catch (OperationFailedException ofe) {
             final ModelNode failureDescription = ofe.getFailureDescription();
-            Assert.assertTrue(failureDescription.toString(), failureDescription.toString().contains("not found"));
+            Assert.assertThat("Wrong failure description", failureDescription.toString(), containsString("WFLYCTL0216"));
         }
     }
 

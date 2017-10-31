@@ -30,10 +30,6 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.jboss.logging.Logger;
-
-// Security related imports
-
 /**
  * Returns hola greeting for INTERNAL_ROLE.
  *
@@ -44,25 +40,18 @@ import org.jboss.logging.Logger;
 @Remote(Hola.class)
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class HolaBean implements Hola {
-    private static final Logger log = Logger.getLogger(HowdyBean.class);
+    public static final String SAYING = "Hola";
 
     @Resource
     private SessionContext context;
 
     @RolesAllowed("INTERNAL_ROLE")
     public String sayHola() {
-        log.trace("HolaBean.sayHola(). Caller name: " + context.getCallerPrincipal().getName());
-
-        if (context.isCallerInRole("JBossAdmin")) {
-            log.trace("User is in role!!");
-        }
-
-        String name = getName();
-        return "Hola " + name + "!";
+        return String.format("%s %s", SAYING, getName());
     }
 
     private String getName() {
-        return "Fred";
+        return context.getCallerPrincipal().getName();
     }
 
 }

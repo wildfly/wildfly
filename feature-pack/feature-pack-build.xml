@@ -51,7 +51,7 @@
         <standalone
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-load-balancer.xml"
-                output-file="docs/examples/configs/standalone-load-balancer.xml"/>
+                output-file="standalone/configuration/standalone-load-balancer.xml"/>
         <standalone
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/examples/subsystems-activemq-colocated.xml"
@@ -70,6 +70,13 @@
             <property name="jgroups.supplement" value="ec2" />
             <property name="mod_cluster.supplement" value="no-multicast" />
         </standalone>
+        <domain
+                template="configuration/domain/template.xml"
+                subsystems="configuration/domain/subsystems.xml"
+                output-file="docs/examples/configs/domain-ec2.xml">
+            <property name="jgroups.supplement" value="ec2" />
+            <property name="mod_cluster.supplement" value="no-multicast" />
+        </domain>
         <!-- azure.AZURE_PING -->
         <standalone
                 template="configuration/standalone/template.xml"
@@ -123,7 +130,10 @@
         <domain
                 template="configuration/domain/template.xml"
                 subsystems="configuration/domain/subsystems.xml"
-                output-file="domain/configuration/domain.xml"/>
+                output-file="domain/configuration/domain.xml">
+            <property name="jgroups.supplement" value="" />
+            <property name="mod_cluster.supplement" value="" />
+        </domain>
         <host
                 template="configuration/host/host.xml"
                 subsystems="configuration/host/subsystems.xml"
@@ -139,7 +149,7 @@
     </config>
     <copy-artifacts>
         <copy-artifact artifact="org.jboss.resteasy:resteasy-spring" to-location="modules/system/layers/base/org/jboss/resteasy/resteasy-spring/main/bundled/resteasy-spring-jar/"/>
-        <copy-artifact artifact="org.jboss.seam.integration:jboss-seam-int-jbossas" to-location="modules/system/layers/base/org/jboss/integration/ext-content/main/bundled/jboss-seam-int.jar"/>
+        <copy-artifact artifact="org.jboss.seam.integration:jboss-seam-int-jbossas" to-location="modules/system/layers/base/org/jboss/integration/ext-content/main/bundled/jboss-seam-int-jbossas.jar"/>
         <copy-artifact artifact="org.wildfly:wildfly-client-all" to-location="bin/client/jboss-client.jar"/>
         <copy-artifact artifact="org.wildfly.core:wildfly-cli::client" to-location="bin/client/jboss-cli-client.jar"/>
         <copy-artifact artifact="org.apache.activemq:artemis-native" to-location="modules/system/layers/base/org/apache/activemq/artemis/journal/main" extract="true" >

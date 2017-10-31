@@ -52,6 +52,7 @@ import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -101,7 +102,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
     private static final AttributeDefinition OTHER_QUEUE_NAME = createNonEmptyStringAttribute("other-queue-name");
     private static final AttributeDefinition REJECT_DUPLICATES = SimpleAttributeDefinitionBuilder.create("reject-duplicates", BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
     private static final AttributeDefinition NEW_PRIORITY = SimpleAttributeDefinitionBuilder.create("new-priority", INT)
             .setValidator(PRIORITY_VALIDATOR)
@@ -248,7 +249,8 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
         final String queueName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         final ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-        ServiceController<?> activeMQService = context.getServiceRegistry(false).getService(activeMQServiceName);
+        boolean readOnly = context.getResourceRegistration().getOperationFlags(PathAddress.EMPTY_ADDRESS, operationName).contains(OperationEntry.Flag.READ_ONLY);
+        ServiceController<?> activeMQService = context.getServiceRegistry(!readOnly).getService(activeMQServiceName);
         ActiveMQServer server = ActiveMQServer.class.cast(activeMQService.getValue());
         final DelegatingQueueControl<T> control = getQueueControl(server, queueName);
 

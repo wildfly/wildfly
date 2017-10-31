@@ -33,11 +33,13 @@ public final class Capabilities {
     public static final String CAPABILITY_LISTENER = "org.wildfly.undertow.listener";
     public static final String CAPABILITY_SERVER = "org.wildfly.undertow.server";
     public static final String CAPABILITY_HOST = "org.wildfly.undertow.host";
+    public static final String CAPABILITY_HOST_SSO = "org.wildfly.undertow.host.sso";
     public static final String CAPABILITY_LOCATION = "org.wildfly.undertow.host.location";
     public static final String CAPABILITY_ACCESS_LOG = "org.wildfly.undertow.host.access-log";
     public static final String CAPABILITY_HANDLER = "org.wildfly.extension.undertow.handler";
     public static final String CAPABILITY_MOD_CLUSTER_FILTER = "org.wildfly.undertow.mod_cluster-filter";
     public static final String CAPABILITY_SERVLET_CONTAINER = "org.wildfly.undertow.servlet-container";
+    public static final String CAPABILITY_WEBSOCKET = "org.wildfly.undertow.servlet-container.websocket";
     public static final String CAPABILITY_HTTP_INVOKER = "org.wildfly.undertow.http-invoker";
     public static final String CAPABILITY_HTTP_INVOKER_HOST = "org.wildfly.undertow.http-invoker.host";
     public static final String CAPABILITY_APPLICATION_SECURITY_DOMAIN = "org.wildfly.undertow.application-security-domain";

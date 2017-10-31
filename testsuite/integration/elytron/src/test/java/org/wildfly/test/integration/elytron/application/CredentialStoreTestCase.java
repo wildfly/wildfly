@@ -22,31 +22,23 @@
 
 package org.wildfly.test.integration.elytron.application;
 
-import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.CharBuffer;
-import java.security.KeyStore;
 
-import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
-import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.dmr.ModelNode;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.extension.elytron._private.ElytronSubsystemMessages;
+import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.CredentialReference;
@@ -90,58 +82,6 @@ public class CredentialStoreTestCase extends AbstractCredentialStoreTestCase {
     }
 
     /**
-     * Tests credential store with automatically created PKCS12 keystore.
-     */
-    @Test
-    @Ignore
-    public void testCredentialStoreCreating() throws Exception {
-        String storeName = NAME;
-        File tempFolder = Utils.createTemporaryFolder(storeName);
-        String fileName = System.currentTimeMillis() + ".p12";
-        File ksFile = new File(tempFolder, fileName);
-        assertTrue(tempFolder.isDirectory());
-        assertFalse(ksFile.exists());
-        try {
-            try (CLIWrapper cli = new CLIWrapper(true)) {
-                cli.sendLine(String.format("/path=%s:add(path=\"%s\")", storeName, asAbsolutePath(tempFolder)));
-                SimpleCredentialStore storeConfig = SimpleCredentialStore.builder().withName(storeName)
-                        .withKeyStorePath(Path.builder().withPath(fileName).withRelativeTo(storeName).build())
-                        .withCredential(CredentialReference.builder().withClearText("pkcs12pass").build())
-                        .withKeyStoreType("PKCS12").withModifiable(true).withCreate(true).withAlias("elytron", "rocks!")
-                        .build();
-                try {
-                    storeConfig.create(cli);
-
-                    assertContainsAliases(cli, storeName, "elytron");
-
-                    assertTrue(ksFile.exists());
-
-                    cli.sendLine(String.format(
-                            "/subsystem=elytron/credential-store=%s/alias=another-secret:add(secret-value=\"%1$s\")",
-                            storeName));
-
-                    assertCredentialValue(storeName, "elytron", "rocks!");
-                    assertCredentialValue(storeName, "another-secret", storeName);
-                } finally {
-                    // this should remove alias "elytron" from KeyStore file and remove credential {@value NAME} from domain
-                    // model
-                    storeConfig.remove(cli);
-                }
-                // KeyStore file should not be removed after
-                assertTrue(ksFile.exists());
-                KeyStore ks = KeyStore.getInstance("PKCS12");
-                try (FileInputStream fis = new FileInputStream(ksFile)) {
-                    ks.load(fis, "pkcs12pass".toCharArray());
-                    assertEquals(1, ks.size());
-                    assertTrue(ks.aliases().nextElement().contains("another-secret"));
-                }
-            }
-        } finally {
-            FileUtils.deleteQuietly(tempFolder);
-        }
-    }
-
-    /**
      * Tests reload operation on credential store instance.
      */
     @Test
@@ -149,7 +89,7 @@ public class CredentialStoreTestCase extends AbstractCredentialStoreTestCase {
         final String alias = "cs-reload-test";
         try (CLIWrapper cli = new CLIWrapper(true)) {
             try {
-                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add(secret-value=\"%s\"",
+                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:add-alias(alias=%s, secret-value=\"%s\")",
                         CS_NAME_MODIFIABLE, alias, alias));
                 assertCredentialNotFound(CS_NAME_CLEAR, alias);
                 assertCredentialNotFound(CS_NAME_CRED_REF, alias);
@@ -160,7 +100,7 @@ public class CredentialStoreTestCase extends AbstractCredentialStoreTestCase {
                 assertCredentialValue(CS_NAME_CLEAR, alias, alias);
             } finally {
                 cli.sendLine(
-                        String.format("/subsystem=elytron/credential-store=%s/alias=%s:remove()", CS_NAME_MODIFIABLE, alias));
+                        String.format("/subsystem=elytron/credential-store=%s:remove-alias(alias=%s)", CS_NAME_MODIFIABLE, alias));
             }
         }
     }
@@ -175,15 +115,15 @@ public class CredentialStoreTestCase extends AbstractCredentialStoreTestCase {
         final String updatedPassword = "passw0rd!";
         try (CLIWrapper cli = new CLIWrapper(true)) {
             try {
-                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add(secret-value=\"%s\"",
+                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:add-alias(alias=%s, secret-value=\"%s\")",
                         CS_NAME_MODIFIABLE, alias, alias));
                 assertCredentialValue(CS_NAME_MODIFIABLE, alias, alias);
-                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:write-attribute(name=secret-value, value=\"%s\")",
+                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:set-secret(alias=%s, secret-value=\"%s\")",
                         CS_NAME_MODIFIABLE, alias, updatedPassword));
                 assertCredentialValue(CS_NAME_MODIFIABLE, alias, updatedPassword);
             } finally {
                 cli.sendLine(
-                        String.format("/subsystem=elytron/credential-store=%s/alias=%s:remove()", CS_NAME_MODIFIABLE, alias), true);
+                        String.format("/subsystem=elytron/credential-store=%s:remove-alias(alias=%s)", CS_NAME_MODIFIABLE, alias), true);
             }
         }
     }
@@ -196,22 +136,22 @@ public class CredentialStoreTestCase extends AbstractCredentialStoreTestCase {
         final String alias = "addremoveadd";
         try (CLIWrapper cli = new CLIWrapper(true)) {
             try {
-                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add(secret-value=\"%s\"",
+                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:add-alias(alias=%s, secret-value=\"%s\")",
                         CS_NAME_MODIFIABLE, alias, alias));
                 assertCredentialValue(CS_NAME_MODIFIABLE, alias, alias);
                 cli.sendLine(
-                        String.format("/subsystem=elytron/credential-store=%s/alias=%s:remove()", CS_NAME_MODIFIABLE, alias));
-                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add(secret-value=\"%s\"",
+                        String.format("/subsystem=elytron/credential-store=%s:remove-alias(alias=%s)", CS_NAME_MODIFIABLE, alias));
+                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:add-alias(alias=%s, secret-value=\"%s\")",
                         CS_NAME_MODIFIABLE, alias, alias + alias));
                 assertCredentialValue(CS_NAME_MODIFIABLE, alias, alias + alias);
-                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%s:add(secret-value=\"%s\"",
+                cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:add-alias(alias=%s, secret-value=\"%s\")",
                         CS_NAME_MODIFIABLE, alias, alias), true);
                 ModelNode result = ModelNode.fromString(cli.readOutput());
-                assertEquals("result " + result, result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).asString(), ControllerLogger.ROOT_LOGGER.duplicateResourceAddress(PathAddress.parseCLIStyleAddress(String.format("/subsystem=elytron/credential-store=%s/alias=%s",
-                        CS_NAME_MODIFIABLE, alias))).getMessage());
+                assertEquals("result " + result, result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).asString(),
+                        ElytronSubsystemMessages.ROOT_LOGGER.credentialAlreadyExists(alias, PasswordCredential.class.getName()).getMessage());
             } finally {
                 cli.sendLine(
-                        String.format("/subsystem=elytron/credential-store=%s/alias=%s:remove()", CS_NAME_MODIFIABLE, alias));
+                        String.format("/subsystem=elytron/credential-store=%s:remove-alias(alias=%s)", CS_NAME_MODIFIABLE, alias));
             }
         }
     }
@@ -248,7 +188,7 @@ public class CredentialStoreTestCase extends AbstractCredentialStoreTestCase {
 
             assertContainsAliases(cli, csName, ALIAS_PASSWORD, ALIAS_SECRET);
 
-            cli.sendLine(String.format("/subsystem=elytron/credential-store=%s/alias=%1$s:add(secret-value=%1$s)", csName),
+            cli.sendLine(String.format("/subsystem=elytron/credential-store=%s:add-alias(alias=%1$s, secret-value=%1$s)", csName),
                     true);
             final CLIOpResult opResult = cli.readAllAsOpResult();
             assertFalse("Adding alias to non-modifiable credential store should fail.", opResult.isIsOutcomeSuccess());

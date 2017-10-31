@@ -21,6 +21,9 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.ArrayList;
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.SimpleAttribute;
@@ -41,10 +44,17 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.PlaceholderResource;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -94,8 +104,40 @@ public class PropertyResourceDefinition extends ChildResourceDefinition<Manageme
         }
     };
 
+    private static final UnaryOperator<OperationStepHandler> LEGACY_PROTOCOL_OPERATION_TRANSFORMATION = handler -> {
+        return (context, operation) -> {
+            PathAddress address = context.getCurrentAddress();
+            PathAddress protocolAddress = address.getParent();
+            PathAddress parentAddress = protocolAddress.getParent();
+            PathElement protocolPath = protocolAddress.getLastElement();
+            String protocolName = protocolPath.getValue();
+            PathElement legacyProtocolPath = GenericProtocolResourceDefinition.pathElement(protocolName);
+            ImmutableManagementResourceRegistration protocolRegistration = context.getResourceRegistration().getParent().getParent().getSubModel(PathAddress.pathAddress(legacyProtocolPath));
+            // If legacy protocol is registered, transform this operation using the property resource of the legacy protocol as the target resource
+            if ((protocolRegistration != null) && !protocolRegistration.getPathAddress().getLastElement().isWildcard()) {
+                PathAddress legacyProtocolAddress = parentAddress.append(legacyProtocolPath);
+                Resource parent = context.readResourceFromRoot(parentAddress, false);
+                // If legacy protocol resource does not exist, we need to delete the protocol and re-add the legacy protocol
+                if (!parent.hasChild(legacyProtocolPath)) {
+                    // Determine index of protocol
+                    int index = new ArrayList<>(parent.getChildrenNames(protocolPath.getKey())).indexOf(protocolName);
+                    ModelNode addOperation = protocolRegistration.isOrderedChildResource() ? Operations.createAddOperation(legacyProtocolAddress, index) : Util.createAddOperation(legacyProtocolAddress);
+                    // Remove first, then add
+                    context.addStep(addOperation, context.getRootResourceRegistration().getOperationHandler(legacyProtocolAddress, ModelDescriptionConstants.ADD), OperationContext.Stage.MODEL, true);
+                    context.addStep(Util.createRemoveOperation(protocolAddress), context.getRootResourceRegistration().getOperationHandler(protocolAddress, ModelDescriptionConstants.REMOVE), OperationContext.Stage.MODEL, true);
+                }
+                PathAddress legacyAddress = legacyProtocolAddress.append(address.getLastElement());
+                Operations.setPathAddress(operation, legacyAddress);
+                String operationName = Operations.getName(operation);
+                context.addStep(operation, context.getRootResourceRegistration().getOperationHandler(legacyAddress, operationName), OperationContext.Stage.MODEL);
+            } else {
+                handler.execute(context, operation);
+            }
+        };
+    };
+
     PropertyResourceDefinition() {
-        super(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH));
+        super(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
         this.setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion());
     }
 
@@ -107,36 +149,39 @@ public class PropertyResourceDefinition extends ChildResourceDefinition<Manageme
         AbstractAddStepHandler addHandler = new AbstractAddStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) {
-                this.createResource(context);
+                operationDeprecated(context, operation);
+                context.addResource(PathAddress.EMPTY_ADDRESS, PlaceholderResource.INSTANCE);
                 String name = context.getCurrentAddressValue();
                 String value = operation.get(VALUE.getName()).asString();
-                PathAddress storeAddress = context.getCurrentAddress().getParent();
-                ModelNode putOperation = Operations.createMapPutOperation(storeAddress, AbstractProtocolResourceDefinition.Attribute.PROPERTIES, name, value);
+                PathAddress protocolAddress = context.getCurrentAddress().getParent();
+                ModelNode putOperation = Operations.createMapPutOperation(protocolAddress, AbstractProtocolResourceDefinition.Attribute.PROPERTIES, name, value);
                 context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
             }
         };
-        this.registerAddOperation(registration, addHandler);
+        registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, this.getResourceDescriptionResolver()).addParameter(VALUE).withFlag(OperationEntry.Flag.RESTART_NONE).build(), LEGACY_PROTOCOL_OPERATION_TRANSFORMATION.apply(addHandler));
 
         // Delegate remove of property to "properties" attribute of parent protocol
         AbstractRemoveStepHandler removeHandler = new AbstractRemoveStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) {
+                operationDeprecated(context, operation);
                 context.removeResource(PathAddress.EMPTY_ADDRESS);
                 String name = context.getCurrentAddressValue();
-                PathAddress storeAddress = context.getCurrentAddress().getParent();
-                ModelNode putOperation = Operations.createMapRemoveOperation(storeAddress, AbstractProtocolResourceDefinition.Attribute.PROPERTIES, name);
+                PathAddress protocolAddress = context.getCurrentAddress().getParent();
+                ModelNode putOperation = Operations.createMapRemoveOperation(protocolAddress, AbstractProtocolResourceDefinition.Attribute.PROPERTIES, name);
                 context.addStep(putOperation, MapOperations.MAP_REMOVE_HANDLER, context.getCurrentStage());
             }
         };
-        this.registerRemoveOperation(registration, removeHandler);
+        registration.registerOperationHandler(new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REMOVE, this.getResourceDescriptionResolver()).withFlag(OperationEntry.Flag.RESTART_RESOURCE_SERVICES).build(), LEGACY_PROTOCOL_OPERATION_TRANSFORMATION.apply(removeHandler));
 
         // Delegate read of property value to "properties" attribute of parent protocol
         OperationStepHandler readHandler = new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) {
-                PathAddress address = context.getCurrentAddress().getParent();
+                operationDeprecated(context, operation);
+                PathAddress protocolAddress = context.getCurrentAddress().getParent();
                 String key = context.getCurrentAddressValue();
-                ModelNode getOperation = Operations.createMapGetOperation(address, AbstractProtocolResourceDefinition.Attribute.PROPERTIES, key);
+                ModelNode getOperation = Operations.createMapGetOperation(protocolAddress, AbstractProtocolResourceDefinition.Attribute.PROPERTIES, key);
                 context.addStep(getOperation, MapOperations.MAP_GET_HANDLER, context.getCurrentStage());
             }
         };
@@ -144,14 +189,18 @@ public class PropertyResourceDefinition extends ChildResourceDefinition<Manageme
         OperationStepHandler writeHandler = new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) {
-                PathAddress address = context.getCurrentAddress().getParent();
+                operationDeprecated(context, operation);
+                PathAddress protocolAddress = context.getCurrentAddress().getParent();
                 String key = context.getCurrentAddressValue();
                 String value = Operations.getAttributeValue(operation).asString();
-                ModelNode putOperation = Operations.createMapPutOperation(address, AbstractProtocolResourceDefinition.Attribute.PROPERTIES, key, value);
+                ModelNode putOperation = Operations.createMapPutOperation(protocolAddress, AbstractProtocolResourceDefinition.Attribute.PROPERTIES, key, value);
                 context.addStep(putOperation, MapOperations.MAP_PUT_HANDLER, context.getCurrentStage());
             }
         };
-        registration.registerReadWriteAttribute(VALUE, readHandler, writeHandler);
+        registration.registerReadWriteAttribute(VALUE, LEGACY_PROTOCOL_OPERATION_TRANSFORMATION.apply(readHandler), LEGACY_PROTOCOL_OPERATION_TRANSFORMATION.apply(writeHandler));
     }
 
+    static void operationDeprecated(OperationContext context, ModelNode operation) {
+        ControllerLogger.DEPRECATED_LOGGER.operationDeprecated(Operations.getName(operation), context.getCurrentAddress().toCLIStyleString());
+    }
 }

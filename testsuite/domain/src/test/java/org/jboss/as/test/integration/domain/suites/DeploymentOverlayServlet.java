@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * @author Stuart Douglas
  */
-@WebServlet(urlPatterns = "/*")
+@WebServlet(urlPatterns = "/servlet")
 public class DeploymentOverlayServlet extends HttpServlet {
 
     @Override

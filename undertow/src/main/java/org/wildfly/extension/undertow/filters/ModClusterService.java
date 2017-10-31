@@ -305,7 +305,7 @@ public class ModClusterService extends FilterService {
             serviceBuilder.addCapabilityRequirement(REF_SSL_CONTEXT, SSLContext.class, service.sslContext, sslContext.asString());
         }
         if(securityRealm.isDefined()) {
-            SecurityRealm.ServiceUtil.addDependency(serviceBuilder, service.securityRealm, securityRealm.asString(), false);
+            SecurityRealm.ServiceUtil.addDependency(serviceBuilder, service.securityRealm, securityRealm.asString());
         }
         serviceBuilder.addAliases(UndertowService.FILTER.append(name));
         serviceBuilder.install();

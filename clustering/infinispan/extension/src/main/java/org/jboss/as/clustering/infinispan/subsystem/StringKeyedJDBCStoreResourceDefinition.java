@@ -79,7 +79,7 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
                 }
             }
             this.definition = ObjectTypeAttributeDefinition.Builder.of(name, definitions.toArray(new AttributeDefinition[size]))
-                    .setAllowNull(true)
+                    .setRequired(false)
                     .setDeprecated(InfinispanModel.VERSION_4_0_0.getVersion())
                     .setSuffix("table")
                     .build();
@@ -92,7 +92,7 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : InfinispanModel.VERSION_4_2_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, STRING_JDBC_PATH) : parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : InfinispanModel.VERSION_5_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, STRING_JDBC_PATH) : parent.addChildResource(PATH);
 
         JDBCStoreResourceDefinition.buildTransformation(version, builder, PATH);
 
@@ -120,11 +120,11 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     }
 
     StringKeyedJDBCStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, WILDCARD_PATH), descriptor -> descriptor
+        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), descriptor -> descriptor
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addRequiredChildren(StringTableResourceDefinition.PATH)
                 // Translate deprecated TABLE attribute into separate add table operation
-                .addOperationTranslator(new TableAttributeTranslator(DeprecatedAttribute.TABLE, StringTableResourceDefinition.PATH))
+                .setAddOperationTransformation(new TableAttributeTransformation(DeprecatedAttribute.TABLE, StringTableResourceDefinition.PATH))
             , address -> new StringKeyedJDBCStoreBuilder(address.getParent()), registration -> {
                 registration.registerReadWriteAttribute(DeprecatedAttribute.TABLE.getDefinition(), LEGACY_READ_TABLE_HANDLER, LEGACY_WRITE_TABLE_HANDLER);
 

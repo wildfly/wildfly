@@ -43,7 +43,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
-import org.jboss.as.connector.metadata.api.common.SecurityMetadata;
 import org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.security.CallbackImpl;
@@ -65,6 +64,7 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.jca.common.api.metadata.common.SecurityMetadata;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.spec.ConfigProperty;
 import org.jboss.jca.common.api.metadata.spec.Connector;
@@ -618,12 +618,12 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
         @Override
         protected org.jboss.jca.core.spi.security.SubjectFactory getSubjectFactory(
-                org.jboss.jca.common.api.metadata.common.SecurityMetadata securityMetadata, final String jndiName) throws DeployException {
+                SecurityMetadata securityMetadata, final String jndiName) throws DeployException {
             if (securityMetadata == null)
                 return null;
-            assert securityMetadata instanceof SecurityMetadata;
             final String securityDomain = securityMetadata.resolveSecurityDomain();
-            if (((SecurityMetadata)securityMetadata).isElytronEnabled()) {
+            if (securityMetadata instanceof org.jboss.as.connector.metadata.api.common.SecurityMetadata &&
+                    ((org.jboss.as.connector.metadata.api.common.SecurityMetadata)securityMetadata).isElytronEnabled()) {
                 try {
                     return new ElytronSubjectFactory(null, new URI(jndiName));
                 } catch (URISyntaxException e) {

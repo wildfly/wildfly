@@ -42,9 +42,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 class EESubsystemParser40 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
-    public static final EESubsystemParser40 INSTANCE = new EESubsystemParser40();
-
-    private EESubsystemParser40() {
+    EESubsystemParser40() {
 
     }
 

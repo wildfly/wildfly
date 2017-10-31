@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -45,7 +47,11 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jgroups.util.StackType;
+import org.jgroups.util.Util;
 import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -103,6 +109,17 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
         war.setWebXML(XSiteSimpleTestCase.class.getPackage(), "web.xml");
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan\n"));
         return war;
+    }
+
+    @BeforeClass
+    public static void beforeClass() {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+            @Override
+            public Void run() {
+                Assume.assumeFalse("Disable on Windows+IPv6 until CI environment is fixed", Util.checkForWindows() && (Util.getIpStackType() == StackType.IPv6));
+                return null;
+            }
+        });
     }
 
     /**

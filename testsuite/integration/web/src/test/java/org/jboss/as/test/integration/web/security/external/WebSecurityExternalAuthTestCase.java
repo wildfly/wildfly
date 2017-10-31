@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.integration.web.security.external;
 
+import static org.junit.Assert.assertEquals;
+
+import java.net.URL;
+
 import io.undertow.servlet.ServletExtension;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -42,12 +46,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import java.net.URL;
-
-import static org.junit.Assert.assertEquals;
-
 /**
- * Unit Test the BASIC authentication
+ * Unit Test to test external custom login module.
  *
  * @author Anil Saldhana
  */
@@ -55,7 +55,7 @@ import static org.junit.Assert.assertEquals;
 @RunAsClient
 @ServerSetup(ExternalAuthSecurityDomainSetup.class)
 @Category(CommonCriteria.class)
-public class WebSecurityExternalAuthTestCase  {
+public class WebSecurityExternalAuthTestCase {
 
     @Deployment
     public static WebArchive deployment() throws Exception {
@@ -90,14 +90,20 @@ public class WebSecurityExternalAuthTestCase  {
             EntityUtils.consume(entity);
         }
     }
+
+    /**
+     * Test with user 'anil' who has right role to be authenticated by our external login module.
+     *
+     * @throws Exception
+     */
     @Test
-    public void testSucess() throws Exception {
-        makeCall("anil",  200);
+    public void testSucessfulAuth() throws Exception {
+        makeCall("anil", 200);
     }
 
     /**
      * <p>
-     * Test with user "marcus" who has the right password but does not have the right role
+     * Test with user "marcus" who does not have the right role to be authenticated by our external login module.
      * </p>
      * <p>
      * Should be a HTTP/403
@@ -106,7 +112,7 @@ public class WebSecurityExternalAuthTestCase  {
      * @throws Exception
      */
     @Test
-    public void testFailed() throws Exception {
+    public void testUnsuccessfulAuth() throws Exception {
         makeCall("marcus", 403);
     }
 }

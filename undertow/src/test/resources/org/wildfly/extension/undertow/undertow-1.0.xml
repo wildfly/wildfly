@@ -88,7 +88,7 @@
     </error-pages>
 
     <handlers>
-        <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
+        <file name="welcome-content" path="${jboss.home.dir}" directory-listing="true"/>
         <!-- this doesn't work since WildFly 9 anymore -->
         <!--<reverse-proxy name="reverse-proxy" connections-per-thread="30">
             <host name="ajp://localhost:8080" instance-id="myRoute" />

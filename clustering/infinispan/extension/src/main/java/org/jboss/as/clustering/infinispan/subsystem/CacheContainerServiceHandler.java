@@ -22,8 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.DEFAULT_CLUSTERING_CAPABILITIES;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.DEFAULT_CAPABILITIES;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.DEFAULT_CLUSTERING_CAPABILITIES;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.*;
 
 import java.util.EnumSet;
@@ -46,6 +46,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
@@ -66,9 +67,9 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         // Handle case where ejb subsystem has already installed services for this cache-container
         // This can happen if the ejb cache-container is added to a running server
         if (context.getProcessType().isServer() && !context.isBooting() && name.equals("ejb")) {
-            Resource rootResource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
             PathElement ejbPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "ejb3");
-            if (rootResource.hasChild(ejbPath) && rootResource.getChild(ejbPath).hasChild(PathElement.pathElement("service", "remote"))) {
+            Resource ejbResource = safeGetResource(context, ejbPath);
+            if (ejbResource != null && ejbResource.hasChild(PathElement.pathElement("service", "remote"))) {
                 // Following restart, these services will be installed by this handler, rather than the ejb remote handler
                 context.addStep(new OperationStepHandler() {
                     @Override
@@ -83,11 +84,11 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
         ServiceTarget target = context.getServiceTarget();
 
-        new ModuleBuilder(CacheContainerComponent.MODULE.getServiceName(address), MODULE).configure(context, model).build(target).install();
-        new GlobalConfigurationBuilder(address).configure(context, model).build(target).install();
+        new ModuleBuilder(CacheContainerComponent.MODULE.getServiceName(address), MODULE).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        new GlobalConfigurationBuilder(address).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         CacheContainerBuilder containerBuilder = new CacheContainerBuilder(address).configure(context, model);
-        containerBuilder.build(target).install();
+        containerBuilder.build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         new KeyAffinityServiceFactoryBuilder(address).build(target).install();
 
@@ -137,5 +138,14 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         context.removeService(CacheContainerComponent.MODULE.getServiceName(address));
 
         EnumSet.allOf(CacheContainerResourceDefinition.Capability.class).stream().map(component -> component.getServiceName(address)).forEach(serviceName -> context.removeService(serviceName));
+    }
+
+    private static Resource safeGetResource(OperationContext context, PathElement path) {
+        try {
+            return context.readResourceFromRoot(PathAddress.pathAddress(path), false);
+        } catch (RuntimeException e) {
+            // No such resource
+            return null;
+        }
     }
 }

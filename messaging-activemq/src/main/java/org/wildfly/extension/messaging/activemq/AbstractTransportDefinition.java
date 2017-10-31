@@ -43,10 +43,11 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public abstract class AbstractTransportDefinition extends PersistentResourceDefinition {
 
+    private final boolean registerRuntimeOnly;
     private final AttributeDefinition[] attrs;
     protected final boolean isAcceptor;
 
-    protected AbstractTransportDefinition(final boolean isAcceptor, final String specificType, AttributeDefinition... attrs) {
+    protected AbstractTransportDefinition(final boolean isAcceptor, final String specificType, final boolean registerRuntimeOnly, AttributeDefinition... attrs) {
         super(PathElement.pathElement(specificType),
                 new StandardResourceDescriptionResolver((isAcceptor ? CommonAttributes.ACCEPTOR : CommonAttributes.CONNECTOR),
                         MessagingExtension.RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, false) {
@@ -58,6 +59,7 @@ public abstract class AbstractTransportDefinition extends PersistentResourceDefi
                 new ActiveMQReloadRequiredHandlers.AddStepHandler(attrs),
                 new ActiveMQReloadRequiredHandlers.RemoveStepHandler());
         this.isAcceptor = isAcceptor;
+        this.registerRuntimeOnly = registerRuntimeOnly;
         this.attrs = attrs;
     }
 
@@ -82,7 +84,7 @@ public abstract class AbstractTransportDefinition extends PersistentResourceDefi
 
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
-        if (isAcceptor) {
+        if (isAcceptor && registerRuntimeOnly) {
             AcceptorControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
         }
 

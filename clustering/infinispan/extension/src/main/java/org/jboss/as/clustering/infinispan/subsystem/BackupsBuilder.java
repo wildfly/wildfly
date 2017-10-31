@@ -36,7 +36,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.SitesConfiguration;
 import org.infinispan.configuration.cache.SitesConfigurationBuilder;
 import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -45,27 +44,26 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * @author Paul Ferraro
  */
-public class BackupsBuilder extends ComponentBuilder<SitesConfiguration> implements ResourceServiceBuilder<SitesConfiguration> {
+public class BackupsBuilder extends ComponentBuilder<SitesConfiguration> {
 
-    private final InjectedValue<BackupForConfiguration> backupFor = new InjectedValue<>();
+    private final ValueDependency<BackupForConfiguration> backupFor;
     private final Map<String, BackupConfiguration> backups = new HashMap<>();
-
-    private final PathAddress cacheAddress;
 
     BackupsBuilder(PathAddress cacheAddress) {
         super(CacheComponent.BACKUPS, cacheAddress);
-        this.cacheAddress = cacheAddress;
+        this.backupFor = new InjectedValueDependency<>(CacheComponent.BACKUP_FOR.getServiceName(cacheAddress), BackupForConfiguration.class);
     }
 
     @Override
     public ServiceBuilder<SitesConfiguration> build(ServiceTarget target) {
-        return super.build(target).addDependency(CacheComponent.BACKUP_FOR.getServiceName(this.cacheAddress), BackupForConfiguration.class, this.backupFor);
+        return this.backupFor.register(super.build(target));
     }
 
     @Override

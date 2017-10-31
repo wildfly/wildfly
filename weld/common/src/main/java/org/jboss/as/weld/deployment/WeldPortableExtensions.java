@@ -26,7 +26,7 @@ import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
  */
 public class WeldPortableExtensions {
 
-    private static final AttachmentKey<WeldPortableExtensions> ATTACHMENT_KEY = AttachmentKey.create(WeldPortableExtensions.class);
+    public static final AttachmentKey<WeldPortableExtensions> ATTACHMENT_KEY = AttachmentKey.create(WeldPortableExtensions.class);
 
     public static WeldPortableExtensions getPortableExtensions(final DeploymentUnit deploymentUnit) {
         if (deploymentUnit.getParent() == null) {

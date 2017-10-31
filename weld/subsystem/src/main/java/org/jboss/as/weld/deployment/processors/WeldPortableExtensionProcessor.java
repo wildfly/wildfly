@@ -54,8 +54,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
 
-    private static final String[] EMPTY_STRING_ARRAY = {};
-
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -138,8 +136,10 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
-
+    public void undeploy(DeploymentUnit deploymentUnit) {
+        if (deploymentUnit.getParent() == null) {
+            deploymentUnit.removeAttachment(WeldPortableExtensions.ATTACHMENT_KEY);
+        }
     }
 
 }

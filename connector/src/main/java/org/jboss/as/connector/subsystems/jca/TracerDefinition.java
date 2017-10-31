@@ -59,16 +59,16 @@ public class TracerDefinition extends SimpleResourceDefinition {
 
     }
 
-    public static enum TracerParameters {
+    public enum TracerParameters {
         TRACER_ENABLED(SimpleAttributeDefinitionBuilder.create("enabled", ModelType.BOOLEAN)
                 .setAllowExpression(true)
-                .setAllowNull(true)
+                .setRequired(false)
                 .setDefaultValue(new ModelNode().set(false))
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .build());
 
-        private TracerParameters(SimpleAttributeDefinition attribute) {
+        TracerParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 

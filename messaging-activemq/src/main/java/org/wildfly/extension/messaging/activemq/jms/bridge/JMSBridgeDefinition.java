@@ -70,7 +70,7 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
     private static final String TARGET_CREDENTIAL_REFERENCE_NAME = "target-" + CredentialReference.CREDENTIAL_REFERENCE;
 
     public static final SimpleAttributeDefinition MODULE = create("module", STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .build();
 
     public static final SimpleAttributeDefinition SOURCE_CONNECTION_FACTORY = create("source-connection-factory", STRING)
@@ -86,7 +86,7 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition SOURCE_USER = create("source-user", STRING)
             .setAttributeGroup(SOURCE)
             .setXmlName("user")
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
@@ -129,7 +129,7 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition TARGET_USER = create("target-user", STRING)
             .setAttributeGroup(TARGET)
             .setXmlName("user")
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
@@ -182,15 +182,15 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition SUBSCRIPTION_NAME = create("subscription-name", STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition CLIENT_ID = create("client-id", STRING)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition ADD_MESSAGE_ID_IN_HEADER = create("add-messageID-in-header", BOOLEAN)
-            .setAllowNull(true)
+            .setRequired(false)
             .setDefaultValue(new ModelNode().set(false))
             .setAllowExpression(true)
             .build();

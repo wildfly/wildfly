@@ -220,7 +220,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
         final ServiceBuilder<?> dataSourceServiceBuilder =
                 Services.addServerExecutorDependency(
                         serviceTarget.addService(dataSourceServiceName, dataSourceService),
-                        dataSourceService.getExecutorServiceInjector(), false)
+                        dataSourceService.getExecutorServiceInjector())
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector())
                 .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME))

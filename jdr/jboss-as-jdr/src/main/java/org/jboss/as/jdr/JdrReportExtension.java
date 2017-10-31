@@ -45,7 +45,7 @@ public class JdrReportExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jdr";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 2, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 0, 0);
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
@@ -78,7 +78,7 @@ public class JdrReportExtension implements Extension {
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), JdrReportSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), () -> JdrReportSubsystemParser.INSTANCE);
     }
 
 }

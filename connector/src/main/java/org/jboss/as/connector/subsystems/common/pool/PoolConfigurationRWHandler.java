@@ -79,8 +79,6 @@ public class PoolConfigurationRWHandler {
             final ModelNode currentValue = submodel.hasDefined(parameterName) ? submodel.get(parameterName).clone() : new ModelNode();
 
             context.getResult().set(currentValue);
-
-            context.stepCompleted();
         }
     }
 

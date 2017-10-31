@@ -101,13 +101,11 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
     }
 
     MixedKeyedJDBCStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, new InfinispanResourceDescriptionResolver(PATH, JDBCStoreResourceDefinition.PATH, WILDCARD_PATH), descriptor -> descriptor
+        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, JDBCStoreResourceDefinition.PATH, WILDCARD_PATH), descriptor -> descriptor
                 .addExtraParameters(DeprecatedAttribute.class)
                 .addRequiredChildren(BinaryTableResourceDefinition.PATH, StringTableResourceDefinition.PATH)
                 // Translate deprecated BINARY_TABLE attribute into separate add table operation
-                .addOperationTranslator(new TableAttributeTranslator(DeprecatedAttribute.BINARY_TABLE, BinaryTableResourceDefinition.PATH))
-                // Translate deprecated STRING_TABLE attribute into separate add table operation
-                .addOperationTranslator(new TableAttributeTranslator(DeprecatedAttribute.STRING_TABLE, StringTableResourceDefinition.PATH))
+                .setAddOperationTransformation(new TableAttributeTransformation(DeprecatedAttribute.BINARY_TABLE, BinaryTableResourceDefinition.PATH).andThen(new TableAttributeTransformation(DeprecatedAttribute.STRING_TABLE, StringTableResourceDefinition.PATH)))
             , address -> new MixedKeyedJDBCStoreBuilder(address.getParent()), registration -> {
                 registration.registerReadWriteAttribute(DeprecatedAttribute.BINARY_TABLE.getDefinition(), BinaryKeyedJDBCStoreResourceDefinition.LEGACY_READ_TABLE_HANDLER, BinaryKeyedJDBCStoreResourceDefinition.LEGACY_WRITE_TABLE_HANDLER);
                 registration.registerReadWriteAttribute(DeprecatedAttribute.STRING_TABLE.getDefinition(), StringKeyedJDBCStoreResourceDefinition.LEGACY_READ_TABLE_HANDLER, StringKeyedJDBCStoreResourceDefinition.LEGACY_WRITE_TABLE_HANDLER);
@@ -115,6 +113,6 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
                 new BinaryTableResourceDefinition().register(registration);
                 new StringTableResourceDefinition().register(registration);
             });
-        this.setDeprecated(InfinispanModel.VERSION_4_2_0.getVersion());
+        this.setDeprecated(InfinispanModel.VERSION_5_0_0.getVersion());
     }
 }

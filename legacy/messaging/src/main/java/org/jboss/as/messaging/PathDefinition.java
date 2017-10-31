@@ -51,13 +51,13 @@ public class PathDefinition extends ModelOnlyResourceDefinition {
     // each one define a different default values. Their respective attributes are accessed through the PATHS map.
     private static final SimpleAttributeDefinition PATH_BASE = create(PathResourceDefinition.PATH)
             .setAllowExpression(true)
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition RELATIVE_TO = create(PathResourceDefinition.RELATIVE_TO)
             .setDefaultValue(new ModelNode(DEFAULT_RELATIVE_TO))
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .build();
 

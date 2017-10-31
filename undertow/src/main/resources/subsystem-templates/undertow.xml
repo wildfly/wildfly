@@ -34,6 +34,7 @@
                 <location name="/" handler="welcome-content" />
                 <filter-ref name="server-header"/>
                 <filter-ref name="x-powered-by-header"/>
+                <http-invoker security-realm="ApplicationRealm"/>
             </host>
         </server>
         <servlet-container name="default">
@@ -44,7 +45,7 @@
             <file name="welcome-content" path="${jboss.home.dir}/welcome-content" />
         </handlers>
         <filters>
-            <response-header name="server-header" header-name="Server" header-value="WildFly/10"/>
+            <response-header name="server-header" header-name="Server" header-value="WildFly/11"/>
             <response-header name="x-powered-by-header" header-name="X-Powered-By" header-value="Undertow/1"/>
         </filters>
     </subsystem>

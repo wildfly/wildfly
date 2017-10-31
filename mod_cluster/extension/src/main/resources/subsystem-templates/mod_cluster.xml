@@ -17,7 +17,7 @@
     </supplement>
     <supplement name="no-multicast">
         <replacement placeholder="SUBSYSTEM">
-            <mod-cluster-config proxies="" advertise="false" connector="ajp">
+            <mod-cluster-config advertise="false" proxies="" connector="ajp">
                 <dynamic-load-provider>
                     <load-metric type="cpu"/>
                 </dynamic-load-provider>

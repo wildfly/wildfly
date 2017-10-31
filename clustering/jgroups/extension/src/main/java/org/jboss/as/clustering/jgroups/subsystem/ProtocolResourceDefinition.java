@@ -23,7 +23,12 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.EnumSet;
+import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -32,16 +37,19 @@ import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTr
 import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
@@ -57,19 +65,23 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
         return PathElement.pathElement("protocol", name);
     }
 
-    @Deprecated
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        SOCKET_BINDING("socket-binding", ModelType.STRING, JGroupsModel.VERSION_4_1_0), // socket-binding is now a required attribute of SocketBindingProtocolResourceDefinition
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        PROTOCOL("org.wildfly.clustering.jgroups.protocol"),
         ;
-        private final AttributeDefinition definition;
+        private final RuntimeCapability<Void> definition;
 
-        DeprecatedAttribute(String name, ModelType type, JGroupsModel deprecation) {
-            this.definition = createBuilder(name, type, null).setDeprecated(deprecation.getVersion()).build();
+        Capability(String name) {
+            this.definition = RuntimeCapability.Builder.of(name, true).setAllowMultipleRegistrations(true).build();
         }
 
         @Override
-        public AttributeDefinition getDefinition() {
+        public RuntimeCapability<?> getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public RuntimeCapability<?> resolve(PathAddress address) {
+            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue(), address.getLastElement().getValue());
         }
     }
 
@@ -125,15 +137,67 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
         }
     }
 
-    ProtocolResourceDefinition(Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ProtocolConfiguration<P>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(new Parameters(WILDCARD_PATH, new JGroupsResourceDescriptionResolver(WILDCARD_PATH)).setOrderedChild(), descriptor -> descriptor
-                .addExtraParameters(DeprecatedAttribute.class)
-            , builderFactory, parentBuilderFactory, (parent, registration) -> {
-                EnumSet.allOf(DeprecatedAttribute.class).forEach(attribute -> registration.registerReadOnlyAttribute(attribute.getDefinition(), null));
-            });
+    static final UnaryOperator<OperationStepHandler> LEGACY_OPERATION_TRANSFORMER = handler -> (context, operation) -> {
+        PathAddress address = context.getCurrentAddress();
+        PathAddress parentAddress = address.getParent();
+        Resource parent = context.readResourceFromRoot(parentAddress, false);
+        PathElement legacyPath = GenericProtocolResourceDefinition.pathElement(address.getLastElement().getValue());
+        // If legacy protocol exists, transform this operation using the legacy protocol as the target resource
+        if (parent.hasChild(legacyPath)) {
+            PathAddress legacyAddress = parentAddress.append(legacyPath);
+            Operations.setPathAddress(operation, legacyAddress);
+            String operationName = Operations.getName(operation);
+            context.addStep(operation, context.getRootResourceRegistration().getOperationHandler(legacyAddress, operationName), OperationContext.Stage.MODEL);
+        } else {
+            handler.execute(context, operation);
+        }
+    };
+
+    static class LegacyAddOperationTransformation implements UnaryOperator<OperationStepHandler> {
+        private final Predicate<ModelNode> legacy;
+
+        <E extends Enum<E> & org.jboss.as.clustering.controller.Attribute> LegacyAddOperationTransformation(Class<E> attributeClass) {
+            this(EnumSet.allOf(attributeClass));
+        }
+
+        LegacyAddOperationTransformation(Set<? extends org.jboss.as.clustering.controller.Attribute> attributes) {
+            // If none of the specified attributes are defined, then this is a legacy operation
+            this(operation -> attributes.stream().noneMatch(attribute -> operation.hasDefined(attribute.getName())));
+        }
+
+        LegacyAddOperationTransformation(String... legacyProperties) {
+            // If any of the specified properties are defined, then this is a legacy operation
+            this(operation -> operation.hasDefined(Attribute.PROPERTIES.getName()) && Stream.of(legacyProperties).anyMatch(legacyProperty -> operation.get(Attribute.PROPERTIES.getName()).hasDefined(legacyProperty)));
+        }
+
+        LegacyAddOperationTransformation(Predicate<ModelNode> legacy) {
+            this.legacy = legacy;
+        }
+
+        @Override
+        public OperationStepHandler apply(OperationStepHandler handler) {
+            return (context, operation) -> {
+                if (this.legacy.test(operation)) {
+                    PathElement path = context.getCurrentAddress().getLastElement();
+                    // This is a legacy add operation - process it using the generic handler
+                    OperationStepHandler genericHandler = context.getResourceRegistration().getParent().getOperationHandler(PathAddress.pathAddress(ProtocolResourceDefinition.WILDCARD_PATH), ModelDescriptionConstants.ADD);
+                    Operations.setPathAddress(operation, context.getCurrentAddress().getParent().append(GenericProtocolResourceDefinition.pathElement(path.getValue())));
+                    // Process this step first to preserve protocol order
+                    context.addStep(operation, genericHandler, OperationContext.Stage.MODEL, true);
+                } else {
+                    handler.execute(context, operation);
+                }
+            };
+        }
     }
 
     ProtocolResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ProtocolConfiguration<P>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(new Parameters(path, new JGroupsResourceDescriptionResolver(path, WILDCARD_PATH)).setOrderedChild(), descriptorConfigurator, builderFactory, parentBuilderFactory, (parent, registration) -> {});
+        this(path, descriptorConfigurator, builderFactory, parentBuilderFactory, (parent, registration) -> {});
+    }
+
+    ProtocolResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ProtocolConfiguration<P>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory, BiConsumer<ManagementResourceRegistration, ManagementResourceRegistration> registrationConfigurator) {
+        super(new Parameters(path, path.isWildcard() ? JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path) : JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH)).setOrderedChild(), descriptorConfigurator.andThen(descriptor -> descriptor
+                .addCapabilities(Capability.class)
+                ), builderFactory, parentBuilderFactory, registrationConfigurator);
     }
 }

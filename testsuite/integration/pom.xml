@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-testsuite</artifactId>
-        <version>11.0.0.Beta1-SNAPSHOT</version>
+        <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -67,6 +67,7 @@
                 <module>picketlink</module>
                 <module>secman</module>
                 <module>legacy</module>
+                <module>legacy-ejb-client</module>
                 <module>elytron</module>
             </modules>
         </profile>
@@ -89,6 +90,7 @@
                 <module>picketlink</module>
                 <module>secman</module>
                 <module>legacy</module>
+                <module>legacy-ejb-client</module>
                 <module>elytron</module>
             </modules>
         </profile>
@@ -211,7 +213,25 @@
                 <module>legacy</module>
             </modules>
         </profile>
-        
+
+        <!-- -Dts.legacy.ejb.client -->
+        <profile>
+            <id>ts.integ.group.legacy.ejb.client</id>
+            <activation><property><name>ts.legacy.ejb.client</name></property></activation>
+            <modules>
+                <module>legacy-ejb-client</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.elytron -->
+        <profile>
+            <id>ts.integ.group.elytron</id>
+            <activation><property><name>ts.elytron</name></property></activation>
+            <modules>
+                <module>elytron</module>
+            </modules>
+        </profile>
+
         <!-- profile to configure WildFly to use Elytron instead of legacy security: -Delytron -->
         <profile>
             <id>elytron.profile</id>
@@ -244,6 +264,7 @@
                             </scripts>
                             <jboss-home>${project.build.directory}/jbossas</jboss-home>
                             <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
                             <system-properties>
                                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
                                 <module.path>${jboss.dist}/modules</module.path>
@@ -325,6 +346,7 @@
                     <!-- System properties passed to test cases -->
                     <systemPropertyVariables combine.children="append">
                         <node0>${node0}</node0>
+                        <node0.escaped>${node0.escaped}</node0.escaped>
                         <node1>${node1}</node1>
                         <mcast>${mcast}</mcast>
                         <mcast.ttl>${mcast.ttl}</mcast.ttl>
@@ -342,7 +364,7 @@
                             Used in arquillian.xml - arguments for all JBoss AS instances.
                             System properties are duplicated here until ARQ-647 is implemented.
                         -->
-                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.jacoco} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs}</server.jvm.args>
+                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs}</server.jvm.args>
                         <modular.jdk.args>${modular.jdk.args}</modular.jdk.args>
                     </systemPropertyVariables>
 

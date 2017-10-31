@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +38,8 @@ import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.ColumnAttribute;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Element;
@@ -141,9 +144,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
                 case ALIASES: {
                     if (this.schema.since(InfinispanSchema.VERSION_1_1)) {
-                        for (String value : reader.getListAttributeValue(i)) {
-                            setAttribute(reader, value, operation, CacheContainerResourceDefinition.Attribute.ALIASES);
-                        }
+                        readAttribute(reader, i, operation, CacheContainerResourceDefinition.Attribute.ALIASES);
                         break;
                     }
                 }
@@ -169,12 +170,14 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             operation.get(CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName()).set(true);
         }
 
+        List<String> aliases = new LinkedList<>();
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
                 case ALIAS: {
                     if (InfinispanSchema.VERSION_1_0.since(this.schema)) {
-                        readElement(reader, operation, CacheContainerResourceDefinition.Attribute.ALIASES);
+                        aliases.add(reader.getElementText());
                         break;
                     }
                     throw ParseUtils.unexpectedElement(reader);
@@ -245,6 +248,11 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     throw ParseUtils.unexpectedElement(reader);
                 }
             }
+        }
+
+        if (!aliases.isEmpty()) {
+            // Adapt aliases parsed from legacy schema into format expected by the current attribute parser
+            setAttribute(reader, String.join(" ", aliases), operation, CacheContainerResourceDefinition.Attribute.ALIASES);
         }
     }
 
@@ -975,7 +983,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             switch (element) {
                 case PROPERTY: {
                     ParseUtils.requireSingleAttribute(reader, XMLAttribute.NAME.getLocalName());
-                    readAttribute(reader, 0, operation, CacheResourceDefinition.DeprecatedAttribute.INDEXING_PROPERTIES);
+                    readElement(reader, operation, CacheResourceDefinition.DeprecatedAttribute.INDEXING_PROPERTIES);
                     break;
                 }
                 default: {
@@ -1076,9 +1084,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
                 case REMOTE_SERVERS: {
                     if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
-                        for (String value : reader.getListAttributeValue(i)) {
-                            setAttribute(reader, value, operation, RemoteStoreResourceDefinition.Attribute.SOCKET_BINDINGS);
-                        }
+                        readAttribute(reader, i, operation, RemoteStoreResourceDefinition.Attribute.SOCKET_BINDINGS);
                         break;
                     }
                 }
@@ -1442,7 +1448,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         switch (element) {
             case PROPERTY: {
                 ParseUtils.requireSingleAttribute(reader, XMLAttribute.NAME.getLocalName());
-                readAttribute(reader, 0, operation, StoreResourceDefinition.Attribute.PROPERTIES);
+                readElement(reader, operation, StoreResourceDefinition.Attribute.PROPERTIES);
                 break;
             }
             case WRITE_BEHIND: {
@@ -1505,7 +1511,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     }
 
     private static ModelNode readAttribute(XMLExtendedStreamReader reader, int index, Attribute attribute) throws XMLStreamException {
-        return attribute.getDefinition().getParser().parse(attribute.getDefinition(), reader.getAttributeValue(index), reader);
+        AttributeDefinition definition = attribute.getDefinition();
+        return definition.getParser().parse(definition, reader.getAttributeValue(index), reader);
     }
 
     private static void readAttribute(XMLExtendedStreamReader reader, int index, ModelNode operation, Attribute attribute) throws XMLStreamException {
@@ -1513,11 +1520,18 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     }
 
     private static void setAttribute(XMLExtendedStreamReader reader, String value, ModelNode operation, Attribute attribute) throws XMLStreamException {
-        attribute.getDefinition().getParser().parseAndSetParameter(attribute.getDefinition(), value, operation, reader);
+        AttributeDefinition definition = attribute.getDefinition();
+        definition.getParser().parseAndSetParameter(definition, value, operation, reader);
     }
 
     private static void readElement(XMLExtendedStreamReader reader, ModelNode operation, Attribute attribute) throws XMLStreamException {
-        attribute.getDefinition().getParser().parseAndSetParameter(attribute.getDefinition(), reader.getElementText(), operation, reader);
+        AttributeDefinition definition = attribute.getDefinition();
+        AttributeParser parser = definition.getParser();
+        if (parser.isParseAsElement()) {
+            parser.parseElement(definition, reader, operation);
+        } else {
+            parser.parseAndSetParameter(definition, reader.getElementText(), operation, reader);
+        }
     }
 
     private void parseThreadPool(ThreadPoolResourceDefinition pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {

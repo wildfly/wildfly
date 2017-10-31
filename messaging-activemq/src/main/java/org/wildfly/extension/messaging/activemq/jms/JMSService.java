@@ -52,6 +52,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.messaging.activemq.ActiveMQActivationService;
 import org.wildfly.extension.messaging.activemq.DefaultCredentials;
+import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -71,8 +72,9 @@ public class JMSService implements Service<JMSServerManager> {
         final JMSService service = new JMSService(serverServiceName, overrideInVMSecurity);
         ServiceBuilder<JMSServerManager> builder = target.addService(JMSServices.getJmsManagerBaseServiceName(serverServiceName), service)
                 .addDependency(serverServiceName, ActiveMQServer.class, service.activeMQServer)
+                .addDependency(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL)
                 .setInitialMode(Mode.ACTIVE);
-        addServerExecutorDependency(builder, service.serverExecutor, false);
+        addServerExecutorDependency(builder, service.serverExecutor);
         return builder.install();
     }
 
@@ -135,6 +137,10 @@ public class JMSService implements Service<JMSServerManager> {
         try {
             jmsServer = new JMSServerManagerImpl(activeMQServer.getValue(), new WildFlyBindingRegistry(context.getController().getServiceContainer()));
 
+            activeMQServer.getValue().registerActivationFailureListener(e -> {
+                StartException se = new StartException(e);
+                context.failed(se);
+            });
             activeMQServer.getValue().registerActivateCallback(new ActivateCallback() {
                 private volatile ServiceController<Void> activeMQActivationController;
 

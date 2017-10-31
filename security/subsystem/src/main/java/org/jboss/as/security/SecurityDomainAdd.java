@@ -57,6 +57,8 @@ import static org.jboss.as.security.Constants.SERVICE_AUTH_TOKEN;
 import static org.jboss.as.security.Constants.TRUST_MODULE;
 import static org.jboss.as.security.Constants.TYPE;
 import static org.jboss.as.security.Constants.URL;
+import static org.jboss.as.security.SecurityDomainResourceDefinition.CACHE_CONTAINER_NAME;
+import static org.jboss.as.security.SecurityDomainResourceDefinition.LEGACY_SECURITY_DOMAIN;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -65,6 +67,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
@@ -85,6 +88,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.JBossJSSESecurityDomain;
@@ -107,8 +111,11 @@ import org.jboss.security.config.MappingInfo;
 import org.jboss.security.identitytrust.config.IdentityTrustModuleEntry;
 import org.jboss.security.mapping.MappingType;
 import org.jboss.security.mapping.config.MappingModuleEntry;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
+import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
+import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
 
 /**
  * Add a security domain configuration.
@@ -120,6 +127,7 @@ import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 class SecurityDomainAdd extends AbstractAddStepHandler {
 
     private static final String DEFAULT_MODULE = "org.picketbox";
+    private static final String LEGACY_CACHE_NAME = "auth-cache";
 
     static final SecurityDomainAdd INSTANCE = new SecurityDomainAdd();
 
@@ -152,7 +160,9 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         super.recordCapabilitiesAndRequirements(context, operation, resource);
         String cacheType = getAuthenticationCacheType(resource.getModel());
         if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {
-            context.registerAdditionalCapabilityRequirement(InfinispanDefaultCacheRequirement.CONFIGURATION.resolve(SecurityDomainResourceDefinition.CACHE_CONTAINER_NAME), SecurityDomainResourceDefinition.CACHE_CONTAINER.getDynamicName(context.getCurrentAddressValue()), SecurityDomainResourceDefinition.CACHE_TYPE.getName());
+            context.registerAdditionalCapabilityRequirement(InfinispanRequirement.CONTAINER.resolve(CACHE_CONTAINER_NAME),
+                    LEGACY_SECURITY_DOMAIN.getDynamicName(context.getCurrentAddressValue()),
+                    SecurityDomainResourceDefinition.CACHE_TYPE.getName());
         }
     }
 
@@ -166,15 +176,32 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         final ServiceTarget target = context.getServiceTarget();
         ServiceBuilder<SecurityDomainContext> builder = target
                 .addService(SecurityDomainService.SERVICE_NAME.append(securityDomain), securityDomainService)
+                .addAliases(LEGACY_SECURITY_DOMAIN.getCapabilityServiceName(securityDomain))
                 .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class,
                         securityDomainService.getSecurityManagementInjector())
                 .addDependency(JaasConfigurationService.SERVICE_NAME, Configuration.class,
                         securityDomainService.getConfigurationInjector());
 
         if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {
-            builder.addDependency(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), SecurityDomainResourceDefinition.CACHE_CONTAINER_NAME),
-                    Object.class, securityDomainService.getCacheManagerInjector());
-            builder.addDependency(InfinispanDefaultCacheRequirement.CONFIGURATION.getServiceName(context, SecurityDomainResourceDefinition.CACHE_CONTAINER_NAME));
+            String defaultCacheRequirementName = InfinispanDefaultCacheRequirement.CONFIGURATION.resolve(CACHE_CONTAINER_NAME);
+            String legacyCacheRequirementName = InfinispanCacheRequirement.CONFIGURATION.resolve(CACHE_CONTAINER_NAME, LEGACY_CACHE_NAME);
+            String capabilityName = LEGACY_SECURITY_DOMAIN.getDynamicName(context.getCurrentAddress());
+            String cacheTypeAttributeName = SecurityDomainResourceDefinition.CACHE_TYPE.getName();
+            String templateCacheName = null;
+
+            if (!context.hasOptionalCapability(defaultCacheRequirementName, capabilityName, cacheTypeAttributeName) && context.hasOptionalCapability(legacyCacheRequirementName, capabilityName, cacheTypeAttributeName)) {
+                SecurityLogger.ROOT_LOGGER.defaultCacheRequirementMissing(CACHE_CONTAINER_NAME, LEGACY_CACHE_NAME);
+                templateCacheName = LEGACY_CACHE_NAME;
+            }
+
+            context.requireOptionalCapability(InfinispanCacheRequirement.CONFIGURATION.resolve(CACHE_CONTAINER_NAME, templateCacheName), capabilityName, cacheTypeAttributeName);
+
+            ServiceName configurationServiceName = InfinispanCacheRequirement.CONFIGURATION.getServiceName(context, CACHE_CONTAINER_NAME, securityDomain);
+            new TemplateConfigurationBuilder(configurationServiceName, CACHE_CONTAINER_NAME, securityDomain, templateCacheName).configure(context).build(target).install();
+            ServiceName cacheServiceName = InfinispanCacheRequirement.CACHE.getServiceName(context, CACHE_CONTAINER_NAME, securityDomain);
+            new CacheBuilder<>(cacheServiceName, CACHE_CONTAINER_NAME, securityDomain).configure(context).build(target).install();
+
+            builder.addDependency(cacheServiceName, ConcurrentMap.class, securityDomainService.getCacheInjector());
         }
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();

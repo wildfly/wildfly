@@ -28,7 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
-import java.net.SocketPermission;
+import java.io.FilePermission;
 import java.sql.Connection;
 
 import javax.annotation.Resource;
@@ -47,7 +47,6 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
@@ -191,10 +190,8 @@ public class DatasourceNonCcmTestCase extends JcaMgmtBase {
 
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 new RemotingPermission("createEndpoint"),
-                new RemotingPermission("addConnectionProvider"),
                 new RemotingPermission("connect"),
-                new RuntimePermission("createXnioWorker"),
-                new SocketPermission(TestSuiteEnvironment.getServerAddress(), "connect,resolve")
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
         ), "permissions.xml");
 
         return jar;

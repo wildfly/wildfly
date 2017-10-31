@@ -21,8 +21,6 @@
  */
 package org.wildfly.clustering.infinispan.spi.distribution;
 
-import org.infinispan.Cache;
-import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.remoting.transport.Address;
 
@@ -35,14 +33,6 @@ public class ConsistentHashLocality implements Locality {
     private final Address localAddress;
     private final ConsistentHash hash;
 
-    public ConsistentHashLocality(Cache<?, ?> cache) {
-        this(cache.getCacheManager().getAddress(), cache.getAdvancedCache().getDistributionManager());
-    }
-
-    private ConsistentHashLocality(Address localAddress, DistributionManager dist) {
-        this(localAddress, (dist != null) ? dist.getConsistentHash() : null);
-    }
-
     public ConsistentHashLocality(Address localAddress, ConsistentHash hash) {
         this.localAddress = localAddress;
         this.hash = hash;
@@ -50,8 +40,6 @@ public class ConsistentHashLocality implements Locality {
 
     @Override
     public boolean isLocal(Object key) {
-        if (this.localAddress == null) return true;
-        if (this.hash == null) return true;
         return this.localAddress.equals(this.hash.locatePrimaryOwner(key));
     }
 }

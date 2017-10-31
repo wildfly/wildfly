@@ -48,7 +48,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -206,11 +205,9 @@ public class EJBClientAPIUsageTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("No longer appropriate, since a proxy can no longer be created without a session, for a SFSB. " +
-            "Need to think if there's a different way to test this. Else just remove this test")
     public void testSFSBAccessFailureWithoutSession() throws Exception {
         // create a locator without a session
-        final StatefulEJBLocator<Counter> locator = new StatefulEJBLocator<Counter>(Counter.class, APP_NAME, MODULE_NAME, CounterBean.class.getSimpleName(), "", null, Affinity.NONE);
+        final StatelessEJBLocator<Counter> locator = new StatelessEJBLocator<Counter>(Counter.class, APP_NAME, MODULE_NAME, CounterBean.class.getSimpleName(), "", Affinity.NONE);
         final Counter counter = EJBClient.createProxy(locator);
         Assert.assertNotNull("Received a null proxy", counter);
         // invoke the bean without creating a session

@@ -32,14 +32,14 @@ public class TOwner {
     private Set<TInjectee> injectees = new HashSet<TInjectee>();
 
     public void addInjectee(TInjectee i) {
-        System.out.println("add #i-b = " + injectees.size());
+        //System.out.println("add #i-b = " + injectees.size());
         injectees.add(i);
-        System.out.println("add #i-a = " + injectees.size());
+        //System.out.println("add #i-a = " + injectees.size());
     }
 
     public void removeInjectee(TInjectee i) {
-        System.out.println("remove #i-b = " + injectees.size());
+        //System.out.println("remove #i-b = " + injectees.size());
         injectees.remove(i);
-        System.out.println("remove #i-a = " + injectees.size());
+        //System.out.println("remove #i-a = " + injectees.size());
     }
 }

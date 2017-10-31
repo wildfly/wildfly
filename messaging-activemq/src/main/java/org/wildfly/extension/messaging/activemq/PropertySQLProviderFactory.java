@@ -140,11 +140,6 @@ public class PropertySQLProviderFactory implements SQLProvider.Factory {
         private final String tableName;
 
         public PropertySQLProvider(String tableName, DatabaseStoreType storeType) {
-            if (ORACLE.equals(database)
-                    && tableName.length() > 10
-                    && storeType == DatabaseStoreType.PAGE) {
-                throw MessagingLogger.ROOT_LOGGER.tableNameIsTooLong();
-            }
             this.tableName = tableName;
         }
 

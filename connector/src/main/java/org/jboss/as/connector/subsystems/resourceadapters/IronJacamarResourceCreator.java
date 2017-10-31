@@ -75,17 +75,17 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RE
 
 import java.util.Map;
 
-import org.jboss.as.connector.metadata.api.common.Credential;
-import org.jboss.as.connector.metadata.api.common.Security;
 import org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.Pool;
 import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.common.Security;
 import org.jboss.jca.common.api.metadata.common.TimeOut;
 import org.jboss.jca.common.api.metadata.common.Validation;
 import org.jboss.jca.common.api.metadata.common.XaPool;
@@ -212,11 +212,12 @@ public class IronJacamarResourceCreator {
                 setAttribute(model, NOTXSEPARATEPOOL, xaPool.isNoTxSeparatePool());
             }
         }
-        final Security security = (Security) connDef.getSecurity();
+        final Security security = connDef.getSecurity();
         if (security != null) {
             setAttribute(model, APPLICATION, security.isApplication());
 
-            if (security.isElytronEnabled()) {
+            if (security instanceof org.jboss.as.connector.metadata.api.common.Security &&
+                    ((org.jboss.as.connector.metadata.api.common.Security) security).isElytronEnabled()) {
                 setAttribute(model, ELYTRON_ENABLED, true);
                 setAttribute(model, AUTHENTICATION_CONTEXT, security.getSecurityDomain());
                 setAttribute(model, AUTHENTICATION_CONTEXT_AND_APPLICATION, security.getSecurityDomainAndApplication());
@@ -259,10 +260,11 @@ public class IronJacamarResourceCreator {
                     }
                 }
             }
-            final Credential recoveryCredential =  (Credential) recovery.getCredential();
+            final Credential recoveryCredential =  recovery.getCredential();
             if (recoveryCredential != null) {
                 setAttribute(model, RECOVERY_PASSWORD, recoveryCredential.getPassword());
-                if (recoveryCredential.isElytronEnabled()) {
+                if (recoveryCredential instanceof org.jboss.as.connector.metadata.api.common.Credential &&
+                        ((org.jboss.as.connector.metadata.api.common.Credential) recoveryCredential).isElytronEnabled()) {
                     setAttribute(model, RECOVERY_ELYTRON_ENABLED, true);
                     setAttribute(model, RECOVERY_AUTHENTICATION_CONTEXT, recoveryCredential.getSecurityDomain());
                 } else {

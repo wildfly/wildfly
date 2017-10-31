@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.EnumSet;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
@@ -33,8 +34,7 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
-import org.jboss.as.clustering.controller.validation.EnumValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -61,27 +61,18 @@ public class EvictionResourceDefinition extends ComponentResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "EVICTION");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        STRATEGY("strategy", ModelType.STRING, new ModelNode(EvictionStrategy.NONE.name()), new EnumValidatorBuilder<>(EvictionStrategy.class, EnumSet.complementOf(EnumSet.of(EvictionStrategy.MANUAL)))),
-        MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L)),
+        STRATEGY("strategy", ModelType.STRING, new ModelNode(EvictionStrategy.NONE.name()), builder -> builder.setValidator(new EnumValidator<>(EvictionStrategy.class, EnumSet.complementOf(EnumSet.of(EvictionStrategy.MANUAL))))),
+        MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L), UnaryOperator.identity()),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type, defaultValue).build();
-        }
-
-        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
-            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
-            this.definition = builder.setValidator(validator.configure(builder).build()).build();
-        }
-
-        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
-            return new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    ;
+                    ).build();
         }
 
         @Override

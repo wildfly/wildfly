@@ -51,7 +51,7 @@ class HostDefinition extends PersistentResourceDefinition {
 
     static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HOST, true, Host.class)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
-            .addDynamicRequirements(Capabilities.CAPABILITY_SERVER)
+            //addDynamicRequirements(Capabilities.CAPABILITY_SERVER) -- has no function so don't use it
             .setDynamicNameMapper(pathElements -> new String[]{
                     pathElements.getParent().getLastElement().getValue(),
                     pathElements.getLastElement().getValue()})

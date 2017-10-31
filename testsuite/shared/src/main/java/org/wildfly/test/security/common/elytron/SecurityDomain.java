@@ -23,11 +23,7 @@
 package org.wildfly.test.security.common.elytron;
 
 /**
- * Interface representing Elytron Security domain and resources related to it (e.g. realms, mappers, external resources).
- * <p>
- * The Security domains represented by this interface should be based on scenario point of view and should provide a simple
- * quick way to be configured. (They should provide reasonable defaults for values.)
- * </p>
+ * Marker interface representing Elytron Security domain configuration.
  *
  * @author Josef Cacek
  */

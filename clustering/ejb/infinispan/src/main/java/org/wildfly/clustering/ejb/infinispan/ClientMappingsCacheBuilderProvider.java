@@ -59,6 +59,8 @@ public class ClientMappingsCacheBuilderProvider implements CacheBuilderProvider,
             builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, aliasCacheName, builder -> {
                 CacheMode mode = builder.clustering().cacheMode();
                 builder.clustering().cacheMode(mode.isClustered() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
+                // don't use DefaultConsistentHashFactory for REPL caches (WFLY-9276)
+                builder.clustering().hash().consistentHashFactory(null);
                 builder.clustering().l1().disable();
                 builder.persistence().clearStores();
             }));

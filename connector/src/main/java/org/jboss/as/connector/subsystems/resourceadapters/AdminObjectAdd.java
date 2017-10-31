@@ -72,7 +72,7 @@ public class AdminObjectAdd extends AbstractAddStepHandler {
         PathAddress path = PathAddress.pathAddress(address);
         final String raName = context.getCurrentAddress().getParent().getLastElement().getValue();
         final String archiveOrModuleName;
-        ModelNode raModel = context.readResourceFromRoot(path.subAddress(0, path.size() - 1)).getModel();
+        ModelNode raModel = context.readResourceFromRoot(path.subAddress(0, path.size() - 1), false).getModel();
         final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, raModel).asBoolean();
 
         if (!raModel.hasDefined(ARCHIVE.getName()) && !raModel.hasDefined(MODULE.getName())) {

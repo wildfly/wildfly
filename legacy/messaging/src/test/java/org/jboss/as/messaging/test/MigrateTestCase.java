@@ -82,7 +82,7 @@ public class MigrateTestCase extends AbstractSubsystemTest {
 
         ModelNode response = services.executeOperation(migrateOp);
 
-        System.out.println("response = " + response);
+        //System.out.println("response = " + response);
         checkOutcome(response);
 
         ModelNode warnings = response.get(RESULT, "migration-warnings");
@@ -92,7 +92,7 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         assertEquals(warnings.toString(), 1 + 1 + 3, warnings.asList().size());
 
         model = services.readWholeModel();
-        System.out.println("model = " + model);
+        //System.out.println("model = " + model);
 
         assertFalse(model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "unmigrated-backup", "ha-policy").isDefined());
         assertFalse(model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "unmigrated-shared-store", "ha-policy").isDefined());
@@ -153,7 +153,6 @@ public class MigrateTestCase extends AbstractSubsystemTest {
 
         ModelNode response = services.executeOperation(migrateOp);
 
-        System.out.println("response = " + response);
         checkOutcome(response);
 
         ModelNode warnings = response.get(RESULT, "migration-warnings");
@@ -185,6 +184,7 @@ public class MigrateTestCase extends AbstractSubsystemTest {
 
         assertEquals("STRICT", newServer.get("cluster-connection", "cc2", "message-load-balancing-type").asString());
         assertEquals("ON_DEMAND", newServer.get("cluster-connection", "cc3", "message-load-balancing-type").asString());
+        assertEquals(true, newServer.get("pooled-connection-factory", "hornetq-ra", "allow-local-transactions").asBoolean());
 
         if (addLegacyEntries) {
             // check that legacy entries were added to JMS resources

@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
-@WebServlet(name = "LoginServlet", urlPatterns = { "/login/" }, loadOnStartup = 1)
+@WebServlet(name = "LoginServlet", urlPatterns = {"/login/"}, loadOnStartup = 1)
 public class LoginServlet extends HttpServlet {
 
     private static final long serialVersionUID = 5442257117956926577L;
@@ -52,7 +52,7 @@ public class LoginServlet extends HttpServlet {
         if (remoteUser == null)
             throw new ServletException("getRemoteUser returned null");
         String authType = req.getAuthType();
-        if (authType == null || !authType.equals("BASIC"))
+        if (authType == null || !authType.equals("Programatic"))
             throw new ServletException(String.format("getAuthType returned wrong type '%s'", authType));
         if (!req.isUserInRole("gooduser")) {
             resp.sendError(403);

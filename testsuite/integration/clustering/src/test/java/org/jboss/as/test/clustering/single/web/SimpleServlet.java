@@ -48,11 +48,19 @@ public class SimpleServlet extends HttpServlet {
     private static final String ATTRIBUTE = "test";
 
     public static URI createURI(URL baseURL) throws URISyntaxException {
-        return baseURL.toURI().resolve(SERVLET_NAME);
+        return createURI(baseURL.toURI());
+    }
+
+    public static URI createURI(URI baseURI) throws URISyntaxException {
+        return baseURI.resolve(SERVLET_NAME);
     }
 
     public static URI createURI(URL baseURL, int requestDuration) throws URISyntaxException {
-        return baseURL.toURI().resolve(SERVLET_NAME + '?' + REQUEST_DURATION_PARAM + '=' + requestDuration);
+        return createURI(baseURL.toURI(), requestDuration);
+    }
+
+    public static URI createURI(URI baseURI, int requestDuration) throws URISyntaxException {
+        return baseURI.resolve(SERVLET_NAME + '?' + REQUEST_DURATION_PARAM + '=' + requestDuration);
     }
 
     @Override

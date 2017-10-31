@@ -439,6 +439,6 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         protected RunningMode getRunningMode() {
             return RunningMode.ADMIN_ONLY;
         }
-    };
+    }
 
 }

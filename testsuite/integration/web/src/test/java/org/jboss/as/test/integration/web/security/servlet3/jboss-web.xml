@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
 <jboss-web>
-    <security-domain>web-programmatic-login</security-domain>
+    <security-domain>web-tests</security-domain>
 </jboss-web>

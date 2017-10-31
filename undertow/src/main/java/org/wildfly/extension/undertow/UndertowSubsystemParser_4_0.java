@@ -49,10 +49,9 @@ import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerHost;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
-    protected static final UndertowSubsystemParser_4_0 INSTANCE = new UndertowSubsystemParser_4_0();
-    private static final PersistentResourceXMLDescription xmlDescription;
+    private final PersistentResourceXMLDescription xmlDescription;
 
-    static {
+    UndertowSubsystemParser_4_0() {
         xmlDescription = builder(UndertowRootDefinition.INSTANCE.getPathElement(), Namespace.UNDERTOW_4_0.getUriString())
                 .addAttributes(
                         UndertowRootDefinition.DEFAULT_SERVER,
@@ -92,6 +91,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                 ).addChild(
                                         listenerBuilder(HttpsListenerResourceDefinition.INSTANCE)
                                                 // xsd https-listener-type
+                                                .setMarshallDefaultValues(true)
                                                 .addAttributes(
                                                         HttpsListenerResourceDefinition.SSL_CONTEXT,
                                                         HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING,
@@ -140,7 +140,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         .addAttribute(SingleSignOnDefinition.Attribute.SECURE.getDefinition())
                                                         .addAttribute(SingleSignOnDefinition.Attribute.COOKIE_NAME.getDefinition())
                                         ).addChild(builder(HttpInvokerDefinition.INSTANCE.getPathElement())
-                                            .addAttributes(HttpInvokerDefinition.PATH, HttpInvokerDefinition.HTTP_AUTHENTICATION_FACTORY))
+                                            .addAttributes(HttpInvokerDefinition.PATH, HttpInvokerDefinition.HTTP_AUTHENTICATION_FACTORY, HttpInvokerDefinition.SECURITY_REALM))
                                         )
                 )
                 .addChild(
@@ -159,6 +159,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                 .addAttribute(ServletContainerDefinition.SESSION_ID_LENGTH)
                                 .addAttribute(ServletContainerDefinition.MAX_SESSIONS)
                                 .addAttribute(ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
+                                .addAttribute(ServletContainerDefinition.DISABLE_SESSION_ID_REUSE)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE.getPathElement())
                                                 .setXmlElementName(Constants.JSP_CONFIG)
@@ -204,6 +205,7 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                 )
                                 .addChild(
                                         builder(WebsocketsDefinition.INSTANCE.getPathElement())
+                                                .setMarshallDefaultValues(true)
                                                 .addAttributes(
                                                         WebsocketsDefinition.WORKER,
                                                         WebsocketsDefinition.BUFFER_POOL,
@@ -256,7 +258,8 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                                 ReverseProxyHandlerHost.PATH,
                                                                 ReverseProxyHandlerHost.INSTANCE_ID,
                                                                 ReverseProxyHandlerHost.SSL_CONTEXT,
-                                                                ReverseProxyHandlerHost.SECURITY_REALM))
+                                                                ReverseProxyHandlerHost.SECURITY_REALM,
+                                                                ReverseProxyHandlerHost.ENABLE_HTTP2))
                                 )
 
 
@@ -343,9 +346,6 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                 .build();
     }
 
-    private UndertowSubsystemParser_4_0() {
-    }
-
     @Override
     public PersistentResourceXMLDescription getParserDescription() {
                 return xmlDescription;
@@ -386,7 +386,8 @@ public class UndertowSubsystemParser_4_0 extends PersistentResourceXMLParser {
                         ListenerResourceDefinition.NO_REQUEST_TIMEOUT,
                         ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT,
                         ListenerResourceDefinition.DISALLOWED_METHODS,
-                        ListenerResourceDefinition.SECURE);
+                        ListenerResourceDefinition.SECURE,
+                        ListenerResourceDefinition.RFC6265_COOKIE_VALIDATION);
     }
 
     private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder filterRefBuilder() {

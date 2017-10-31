@@ -37,7 +37,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
-import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -67,37 +66,6 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXsdPath() throws Exception {
         return "schema/jboss-as-ee_4_0.xsd";
     }
-
-
-
-    //@Test don't test as we dont have test controller
-    public void testTransformers800() throws Exception {
-        final ModelVersion legacyModelVersion = ModelVersion.create(3, 0, 0);
-        final ModelTestControllerVersion controllerVersion = ModelTestControllerVersion.WILDFLY_8_2_0_FINAL;
-
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
-
-        // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, legacyModelVersion)
-                .addMavenResourceURL("org.wildfly:wildfly-ee:" + controllerVersion.getMavenGavVersion());
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(legacyModelVersion);
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
-        List<ModelNode> bootOps = builder.parseXmlResource("subsystem-wf8-transformer.xml");
-        ModelTestUtils.checkFailedTransformedBootOperations(
-                mainServices,
-                legacyModelVersion,
-                bootOps,
-                new FailedOperationTransformationConfig()
-                        .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, ManagedExecutorServiceResourceDefinition.INSTANCE.getPathElement()),
-                                new RejectUndefinedAttribute(new ModelNode(Integer.MAX_VALUE), ManagedExecutorServiceResourceDefinition.CORE_THREADS_AD.getName()))
-                        .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, ManagedScheduledExecutorServiceResourceDefinition.INSTANCE.getPathElement()),
-                                new RejectUndefinedAttribute(new ModelNode(Integer.MAX_VALUE), ManagedScheduledExecutorServiceResourceDefinition.CORE_THREADS_AD.getName())));
-    }
-
 
     @Test
     public void testTransformersEAP620() throws Exception {
@@ -233,29 +201,26 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXml(subsystemXml);
 
         // Add legacy subsystems
+        // The regular model will have the new attributes because they are in the xml,
+        // but the reverse controller model will not because transformation strips them
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-ee:" + controllerVersion.getMavenGavVersion())
-                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, new ModelFixer() {
-                    // The regular model will have the new attributes because they are in the xml,
-                    // but the reverse controller model will not because transformation strips them
-                    @Override
-                    public ModelNode fixModel(ModelNode modelNode) {
-                        for(ModelNode node : modelNode.get(GLOBAL_MODULES).asList()) {
-                            if ("org.apache.log4j".equals(node.get(NAME).asString())) {
-                                if (!node.has(ANNOTATIONS)) {
-                                    node.get(ANNOTATIONS).set(false);
-                                }
-                                if (!node.has(META_INF)) {
-                                    node.get(META_INF).set(false);
-                                }
-                                if (!node.has(SERVICES)) {
-                                    node.get(SERVICES).set(true);
-                                }
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, modelNode -> {
+                    for(ModelNode node : modelNode.get(GLOBAL_MODULES).asList()) {
+                        if ("org.apache.log4j".equals(node.get(NAME).asString())) {
+                            if (!node.has(ANNOTATIONS)) {
+                                node.get(ANNOTATIONS).set(false);
+                            }
+                            if (!node.has(META_INF)) {
+                                node.get(META_INF).set(false);
+                            }
+                            if (!node.has(SERVICES)) {
+                                node.get(SERVICES).set(true);
                             }
                         }
-
-                        return modelNode;
                     }
+
+                    return modelNode;
                 });
 
         KernelServices mainServices = builder.build();
@@ -322,30 +287,6 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
                 module.remove(SERVICES);
             }
             return toResolve;
-        }
-    }
-
-    private static class RejectUndefinedAttribute extends AttributesPathAddressConfig<RejectUndefinedAttribute> {
-        private final ModelNode replacementValue;
-
-        private RejectUndefinedAttribute(final ModelNode replacementValue, final String... attributes) {
-            super(attributes);
-            this.replacementValue = replacementValue;
-        }
-
-        @Override
-        protected boolean isAttributeWritable(final String attributeName) {
-            return true;
-        }
-
-        @Override
-        protected boolean checkValue(final String attrName, final ModelNode attribute, final boolean isWriteAttribute) {
-            return !attribute.isDefined();
-        }
-
-        @Override
-        protected ModelNode correctValue(final ModelNode toResolve, final boolean isWriteAttribute) {
-            return replacementValue.clone();
         }
     }
 

@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.subsystem.SocketBindingProtocolResourceDefinition.Attribute.*;
 import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.*;
 
 import java.net.InetSocketAddress;

@@ -42,12 +42,6 @@ import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
 
 /**
  * The web extension.
@@ -101,7 +95,7 @@ public class WebExtension extends AbstractLegacyExtension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WebDefinition.INSTANCE);
-        subsystem.registerXMLElementWriter(WebSubsystemParser.getInstance());
+        subsystem.registerXMLElementWriter(new WebSubsystemParser());
 
         // connectors
         final ManagementResourceRegistration connectors = registration.registerSubModel(WebConnectorDefinition.INSTANCE);
@@ -144,13 +138,6 @@ public class WebExtension extends AbstractLegacyExtension {
         // Global valve.
         registration.registerSubModel(WebValveDefinition.INSTANCE);
 
-        //noinspection deprecation
-        if (context.isRegisterTransformers()) {
-            registerTransformers_1_3_0(subsystem);
-            registerTransformers_1_4_0(subsystem);
-            registerTransformers_2_x_0(subsystem, 0);
-            registerTransformers_2_x_0(subsystem, 1);
-        }
         return Collections.singleton(registration);
     }
 
@@ -158,84 +145,10 @@ public class WebExtension extends AbstractLegacyExtension {
     protected void initializeLegacyParsers(ExtensionParsingContext context) {
         for (Namespace ns : Namespace.values()) {
             if (ns.getUriString() != null) {
-                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ns.getUriString(), WebSubsystemParser.getInstance());
+                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ns.getUriString(), WebSubsystemParser::new);
             }
         }
         context.setProfileParsingCompletionHandler(new DefaultJsfProfileCompletionHandler());
-    }
-
-    private void registerTransformers_1_3_0(SubsystemRegistration registration) {
-        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        subsystemRoot.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(30)), WebDefinition.DEFAULT_SESSION_TIMEOUT)
-                .end();
-
-        final ResourceTransformationDescriptionBuilder hostBuilder = subsystemRoot.addChildResource(HOST_PATH);
-        final ResourceTransformationDescriptionBuilder ssoBuilder = hostBuilder.addChildResource(SSO_PATH);
-        ssoBuilder.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSODefinition.HTTP_ONLY)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(true)), WebSSODefinition.HTTP_ONLY)
-                .end();
-
-        final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
-        connectorBuilder.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
-                .end();
-
-        connectorBuilder.addChildResource(SSL_PATH).getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, WebSSLDefinition.CIPHER_SUITE)
-                .end();
-
-        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 3, 0));
-    }
-
-    private void registerTransformers_1_4_0(SubsystemRegistration registration) {
-        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        subsystemRoot.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(30)), WebDefinition.DEFAULT_SESSION_TIMEOUT)
-                .end();
-
-        final ResourceTransformationDescriptionBuilder hostBuilder = subsystemRoot.addChildResource(HOST_PATH);
-        final ResourceTransformationDescriptionBuilder ssoBuilder = hostBuilder.addChildResource(SSO_PATH);
-        ssoBuilder.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSODefinition.HTTP_ONLY)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(true)), WebSSODefinition.HTTP_ONLY)
-                .end();
-
-        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 4, 0));
-    }
-
-    //todo, could probably be removed as 2_x was never in EAP 6.x
-    private void registerTransformers_2_x_0(SubsystemRegistration registration, int minor) {
-        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        subsystemRoot.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(30)), WebDefinition.DEFAULT_SESSION_TIMEOUT)
-                .end();
-
-        final ResourceTransformationDescriptionBuilder hostBuilder = subsystemRoot.addChildResource(HOST_PATH);
-        final ResourceTransformationDescriptionBuilder ssoBuilder = hostBuilder.addChildResource(SSO_PATH);
-        ssoBuilder.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSODefinition.HTTP_ONLY)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(true)), WebSSODefinition.HTTP_ONLY)
-                .end();
-
-        if (minor == 0) {
-            final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
-            connectorBuilder.getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
-                    .end();
-
-            connectorBuilder.addChildResource(SSL_PATH).getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, WebSSLDefinition.CIPHER_SUITE)
-                    .end();
-        }
-
-        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(2, minor, 0));
     }
 
     private static class StandardWebExtensionAliasEntry extends AliasEntry {

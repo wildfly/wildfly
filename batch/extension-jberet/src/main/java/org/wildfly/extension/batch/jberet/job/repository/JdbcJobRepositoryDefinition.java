@@ -61,8 +61,12 @@ public class JdbcJobRepositoryDefinition extends SimpleResourceDefinition {
             .build();
 
     public JdbcJobRepositoryDefinition() {
-        super(PATH, BatchResourceDescriptionResolver.getResourceDescriptionResolver(NAME), new JdbcRepositoryAddHandler(),
-                new ReloadRequiredRemoveStepHandler(Capabilities.JOB_REPOSITORY_CAPABILITY));
+        super(
+                new Parameters(PATH, BatchResourceDescriptionResolver.getResourceDescriptionResolver(NAME))
+                        .setAddHandler(new JdbcRepositoryAddHandler())
+                        .setRemoveHandler(new ReloadRequiredRemoveStepHandler(Capabilities.JOB_REPOSITORY_CAPABILITY))
+                        .setCapabilities(Capabilities.JOB_REPOSITORY_CAPABILITY)
+        );
     }
 
     @Override
@@ -86,7 +90,7 @@ public class JdbcJobRepositoryDefinition extends SimpleResourceDefinition {
             final JdbcJobRepositoryService service = new JdbcJobRepositoryService();
             Services.addServerExecutorDependency(
                     target.addService(context.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), name, JobRepository.class), service),
-                    service.getExecutorServiceInjector(), false)
+                    service.getExecutorServiceInjector())
                     .addDependency(context.getCapabilityServiceName(Capabilities.DATA_SOURCE_CAPABILITY, dsName, DataSource.class), DataSource.class, service.getDataSourceInjector())
                     .install();
         }

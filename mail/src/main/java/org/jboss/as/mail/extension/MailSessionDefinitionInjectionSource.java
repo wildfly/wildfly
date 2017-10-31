@@ -82,7 +82,7 @@ class MailSessionDefinitionInjectionSource extends ResourceDefinitionInjectionSo
                                   final ServiceBuilder<?> valueSourceServiceBuilder, final Injector<ManagedReferenceFactory> injector) {
 
 
-        final ServiceName mailSessionServiceName = MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("MailSessionDefinition", moduleDescription.getApplicationName(), moduleDescription.getModuleName(), jndiName);
+        final ServiceName mailSessionServiceName = MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName().append("MailSessionDefinition", moduleDescription.getApplicationName(), moduleDescription.getModuleName(), jndiName);
         final ServiceBuilder<?> mailSessionServiceBuilder = serviceTarget
                 .addService(mailSessionServiceName, mailSessionService);
 
@@ -91,11 +91,12 @@ class MailSessionDefinitionInjectionSource extends ResourceDefinitionInjectionSo
         final MailSessionManagedReferenceFactory referenceFactoryService = new MailSessionManagedReferenceFactory(mailSessionService);
 
         final BinderService binderService = new BinderService(bindInfo.getBindName(), this);
-        final ServiceBuilder<?> binderBuilder = serviceTarget
+        final ServiceBuilder<ManagedReferenceFactory> binderBuilder = serviceTarget
                 .addService(bindInfo.getBinderServiceName(), binderService)
                 .addInjection(binderService.getManagedObjectInjector(), referenceFactoryService)
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
-                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<ManagedReferenceFactory>() {
+                    @Override
+                    public void transition(final ServiceController<? extends ManagedReferenceFactory> controller, final ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {
                                 MailLogger.ROOT_LOGGER.boundMailSession(jndiName);
