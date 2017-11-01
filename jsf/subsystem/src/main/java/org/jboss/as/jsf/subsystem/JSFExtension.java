@@ -47,13 +47,14 @@ public class JSFExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jsf";
     public static final String NAMESPACE_1_0 = "urn:jboss:domain:jsf:1.0";
+    public static final String NAMESPACE_1_1 = "urn:jboss:domain:jsf:1.1";
 
     static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
 
     private static final String RESOURCE_NAME = JSFExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 1, 0);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -69,13 +70,14 @@ public class JSFExtension implements Extension {
         JSFLogger.ROOT_LOGGER.debug("Activating JSF(Mojarra) Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystem.registerSubsystemModel(JSFResourceDefinition.INSTANCE);
-        subsystem.registerXMLElementWriter(JSFSubsystemParser_1_0.INSTANCE);
+        subsystem.registerXMLElementWriter(JSFSubsystemParser_1_1.INSTANCE);
     }
 
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JSFExtension.NAMESPACE_1_0, () -> JSFSubsystemParser_1_0.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JSFExtension.NAMESPACE_1_1, () -> JSFSubsystemParser_1_1.INSTANCE);
     }
 
     static class JSFSubsystemParser_1_0 extends PersistentResourceXMLParser {
@@ -96,4 +98,21 @@ public class JSFExtension implements Extension {
         }
     }
 
+    static class JSFSubsystemParser_1_1 extends PersistentResourceXMLParser {
+
+        private static final JSFSubsystemParser_1_1 INSTANCE = new JSFSubsystemParser_1_1();
+        private static final PersistentResourceXMLDescription xmlDescription;
+
+        static {
+            xmlDescription = builder(JSFResourceDefinition.INSTANCE, NAMESPACE_1_1)
+                    .addAttributes(JSFResourceDefinition.DEFAULT_JSF_IMPL_SLOT)
+                    .addAttributes(JSFResourceDefinition.DISALLOW_DOCTYPE_DECL)
+                    .build();
+        }
+
+        @Override
+        public PersistentResourceXMLDescription getParserDescription() {
+            return xmlDescription;
+        }
+    }
 }
