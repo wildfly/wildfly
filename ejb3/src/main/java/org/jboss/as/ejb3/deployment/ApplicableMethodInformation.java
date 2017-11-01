@@ -320,6 +320,45 @@ public class ApplicableMethodInformation<T> {
     }
 
     /**
+     * Returns true if the given transaction specification was expliitly specified at a method level, returns
+     * false if it was inherited from the default
+     */
+    public boolean isMethodLevel(MethodIntf methodIntf, Method method, MethodIntf defaultMethodIntf) {
+        assert methodIntf != null : "methodIntf is null";
+        assert method != null : "method is null";
+
+        Method classMethod = resolveRealMethod(method);
+        String[] methodParams = MethodInfoHelper.getCanonicalParameterTypes(classMethod);
+        final String methodName = classMethod.getName();
+        final String className = classMethod.getDeclaringClass().getName();
+
+        ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
+        T attr = get(get(get(perViewStyle3, methodIntf), methodName), methodParamsKey);
+        if (attr != null)
+            return true;
+        attr = get(get(perViewStyle2, methodIntf), methodName);
+        if (attr != null)
+            return true;
+        attr = get(perViewStyle1, methodIntf);
+        if (attr != null)
+            return false;
+        attr = get(get(get(style3, className), methodName), methodParamsKey);
+        if (attr != null)
+            return true;
+        attr = get(style2, methodName);
+        if (attr != null)
+            return true;
+        attr = get(style1, className);
+        if (attr != null)
+            return false;
+        if(defaultMethodIntf == null) {
+            return false;
+        } else {
+            return isMethodLevel(defaultMethodIntf, method, null);
+        }
+    }
+
+    /**
      * Makes an array usable as a key.
      *
      * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

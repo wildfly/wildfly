@@ -164,7 +164,9 @@ public class LifecycleCMTTxInterceptor extends CMTTxInterceptor {
             if(!treatRequiredAsRequiresNew ) {
                 if(txAttr != TransactionAttributeType.NOT_SUPPORTED &&
                         txAttr != TransactionAttributeType.REQUIRES_NEW) {
-                    EjbLogger.ROOT_LOGGER.invalidTransactionTypeForSfsbLifecycleMethod(txAttr, methodIdentifier, ejb.getComponentClass());
+                    if(ejb.isTransactionAttributeTypeExplicit(MethodIntf.BEAN, methodIdentifier)) {
+                        EjbLogger.ROOT_LOGGER.invalidTransactionTypeForSfsbLifecycleMethod(txAttr, methodIdentifier, ejb.getComponentClass());
+                    }
                     txAttr = TransactionAttributeType.NOT_SUPPORTED;
                 }
             }
