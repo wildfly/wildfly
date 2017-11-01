@@ -64,6 +64,7 @@ public class BeanWithTimeoutValue implements TimeoutRemoteView, TimeoutLocalView
     /**
      * This method has method-level timeout specified on remote-view
      */
+    @TransactionTimeout(value=7, unit=TimeUnit.SECONDS)
     public int getRemoteMethodTimeout() {
         return getTimeout();
     }
