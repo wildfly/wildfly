@@ -97,6 +97,8 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final String AUTH_CONTEXT_CAPABILITY = "org.wildfly.security.authentication-context";
 
+    private static final ServiceName SECURITY_DOMAIN_SERVICE_PREFIX = ServiceName.JBOSS.append("security").append("security-domain");
+
     public IIOPSubsystemAdd(final Collection<? extends AttributeDefinition> attributes) {
         super(attributes);
     }
@@ -164,13 +166,13 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // setup the ORB initializers using the configured properties.
         this.setupInitializers(props);
 
-        // setup the SSL socket factories, if necessary.
-        final boolean sslConfigured = this.setupSSLFactories(props);
-
         // create the service that initializes and starts the CORBA ORB.
         CorbaORBService orbService = new CorbaORBService(props);
         final ServiceBuilder<ORB> builder = context.getServiceTarget().addService(CorbaORBService.SERVICE_NAME, orbService);
         org.jboss.as.server.Services.addServerExecutorDependency(builder, orbService.getExecutorInjector());
+
+        // setup the SSL socket factories, if necessary.
+        final boolean sslConfigured = this.setupSSLFactories(props, builder);
 
         // if a security domain has been specified, add a dependency to the domain service.
         String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
@@ -359,7 +361,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
      * @throws OperationFailedException if the SSL setup has not been done correctly (SSL support has been turned on but no
      *         security domain has been specified).
      */
-    private boolean setupSSLFactories(final Properties props) throws OperationFailedException {
+    private boolean setupSSLFactories(final Properties props, final ServiceBuilder<ORB> builder) throws OperationFailedException {
         final boolean supportSSL = "true".equalsIgnoreCase(props.getProperty(Constants.SECURITY_SUPPORT_SSL));
 
         final boolean sslConfigured;
@@ -376,6 +378,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 // if the config only has a legacy JSSE domain reference, install the LegacySSLSocketFactory.
                 final String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
                 LegacySSLSocketFactory.setSecurityDomain(securityDomain);
+                builder.addDependency(SECURITY_DOMAIN_SERVICE_PREFIX.append(securityDomain));
                 props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, LegacySSLSocketFactory.class.getName());
             }
             sslConfigured = true;
