@@ -36,6 +36,19 @@ public interface Group extends Registrar<GroupListener> {
      * @deprecated Replaced by {@link GroupListener}.
      */
     @Deprecated interface Listener extends GroupListener {
+        /**
+         * Indicates that the membership of the group has changed.
+         *
+         * @param previousMembers previous group members
+         * @param members new group members
+         * @param merged indicates whether the membership change is the result of a merge view
+         */
+        void membershipChanged(List<Node> previousMembers, List<Node> members, boolean merged);
+
+        @Override
+        default void membershipChanged(Membership previousMembership, Membership membership, boolean merged) {
+            this.membershipChanged(previousMembership.getMembers(), membership.getMembers(), merged);
+        }
     }
 
     /**
@@ -57,7 +70,7 @@ public interface Group extends Registrar<GroupListener> {
     @Deprecated void removeListener(Listener listener);
 
     /**
-     * Returns the name of this group.
+     * Returns the logical name of this group.
      *
      * @return the group name
      */
@@ -67,8 +80,11 @@ public interface Group extends Registrar<GroupListener> {
      * Indicates whether or not we are the group coordinator.
      *
      * @return true, if we are the group coordinator, false otherwise
+     * @deprecated Replaced by {@link Membership#isCoordinator()}.
      */
-    boolean isCoordinator();
+    @Deprecated default boolean isCoordinator() {
+        return this.getMembership().isCoordinator();
+    }
 
     /**
      * Returns the local node.
@@ -81,15 +97,27 @@ public interface Group extends Registrar<GroupListener> {
      * Returns the group coordinator node.
      *
      * @return the group coordinator node
+     * @deprecated Replaced by {@link Membership#getCoordinator()}.
      */
-    Node getCoordinatorNode();
+    @Deprecated default Node getCoordinatorNode() {
+        return this.getMembership().getCoordinator();
+    }
 
     /**
      * Returns the list of nodes that are members of this group.
      *
      * @return a list of nodes
+     * @deprecated Replaced by {@link Membership#getNodes()}.
      */
-    List<Node> getNodes();
+    @Deprecated default List<Node> getNodes() {
+        return this.getMembership().getMembers();
+    }
+
+    /**
+     * Gets the current membership of this group
+     * @return the group membership
+     */
+    Membership getMembership();
 
     /**
      * Indicates whether this is a local group.  A local group only ever contains a single member.

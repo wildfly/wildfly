@@ -22,8 +22,6 @@
 
 package org.wildfly.clustering.group;
 
-import java.util.List;
-
 /**
  * Listener for {@link Group} membership changes.
  * @author Paul Ferraro
@@ -32,9 +30,9 @@ public interface GroupListener {
     /**
      * Indicates that the membership of the group has changed.
      *
-     * @param previousMembers previous group members
-     * @param members new group members
+     * @param previousMembership previous group membership
+     * @param membership new group membership
      * @param merged indicates whether the membership change is the result of a merge view
      */
-    void membershipChanged(List<Node> previousMembers, List<Node> members, boolean merged);
+    void membershipChanged(Membership previousMembership, Membership membersip, boolean merged);
 }

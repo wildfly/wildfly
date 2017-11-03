@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,57 +19,56 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.group;
 
-import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.GroupListener;
+import java.util.Collections;
+import java.util.List;
+
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 
 /**
- * Non-clustered {@link Group} implementation
+ * A membership that only ever contains a single member.
  * @author Paul Ferraro
  */
-public class LocalGroup implements Group {
+public class SingletonMembership implements Membership {
 
-    private final String name;
-    private final Membership membership;
+    private final Node member;
 
-    public LocalGroup(String name, Node node) {
-        this.name = name;
-        this.membership = new SingletonMembership(node);
+    public SingletonMembership(Node member) {
+        this.member = member;
     }
 
     @Override
-    public Registration register(GroupListener object) {
-        // membership of a non-clustered group will never change
-        return () -> {};
-    }
-
-    @Deprecated
-    @Override
-    public void removeListener(Listener listener) {
-        // membership of a non-clustered group will never change
-    }
-
-    @Override
-    public String getName() {
-        return this.name;
-    }
-
-    @Override
-    public Node getLocalNode() {
-        return this.membership.getCoordinator();
-    }
-
-    @Override
-    public Membership getMembership() {
-        return this.membership;
-    }
-
-    @Override
-    public boolean isLocal() {
+    public boolean isCoordinator() {
         return true;
+    }
+
+    @Override
+    public Node getCoordinator() {
+        return this.member;
+    }
+
+    @Override
+    public List<Node> getMembers() {
+        return Collections.singletonList(this.member);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.member.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof SingletonMembership)) return false;
+        SingletonMembership membership = (SingletonMembership) object;
+        return this.member.equals(membership.member);
+    }
+
+    @Override
+    public String toString() {
+        return this.member.toString();
     }
 }

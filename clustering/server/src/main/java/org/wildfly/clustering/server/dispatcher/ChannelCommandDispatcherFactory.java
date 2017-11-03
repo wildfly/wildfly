@@ -24,8 +24,6 @@ package org.wildfly.clustering.server.dispatcher;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -58,6 +56,7 @@ import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.GroupListener;
+import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
@@ -192,8 +191,8 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
     }
 
     @Override
-    public boolean isCoordinator() {
-        return this.dispatcher.getChannel().getAddress().equals(this.getCoordinatorAddress());
+    public Membership getMembership() {
+        return new ViewMembership(this.dispatcher.getChannel().getAddress(), this.view.get(), this.nodeFactory);
     }
 
     @Override
@@ -202,62 +201,37 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
     }
 
     @Override
-    public Node getCoordinatorNode() {
-        return this.nodeFactory.createNode(this.getCoordinatorAddress());
-    }
-
-    @Override
-    public List<Node> getNodes() {
-        return getNodes(this.view.get());
-    }
-
-    @Override
     public boolean isLocal() {
         return false;
-    }
-
-    private Address getCoordinatorAddress() {
-        List<Address> members = this.view.get().getMembers();
-        return !members.isEmpty() ? members.get(0) : null;
-    }
-
-    private List<Node> getNodes(View view) {
-        return (view != null) ? this.getNodes(view.getMembers()) : Collections.<Node>emptyList();
-    }
-
-    private List<Node> getNodes(List<Address> addresses) {
-        List<Node> nodes = new ArrayList<>(addresses.size());
-        for (Address address: addresses) {
-            nodes.add(this.nodeFactory.createNode(address));
-        }
-        return nodes;
     }
 
     @Override
     public void viewAccepted(View view) {
         View oldView = this.view.getAndSet(view);
         if (oldView != null) {
-            List<Node> oldNodes = this.getNodes(oldView);
-            List<Node> newNodes = this.getNodes(view);
-
             List<Address> leftMembers = View.leftMembers(oldView, view);
             if (leftMembers != null) {
                 this.nodeFactory.invalidate(leftMembers);
             }
 
-            for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
-                try {
+            if (this.listeners.isEmpty()) {
+                Address localAddress = this.dispatcher.getChannel().getAddress();
+                ViewMembership oldMembership = new ViewMembership(localAddress, oldView, this.nodeFactory);
+                ViewMembership membership = new ViewMembership(localAddress, view, this.nodeFactory);
+                for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
                     GroupListener listener = entry.getKey();
                     ExecutorService executor = entry.getValue();
-                    executor.submit(() -> {
-                        try {
-                            listener.membershipChanged(oldNodes, newNodes, view instanceof MergeView);
-                        } catch (Throwable e) {
-                            ClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-                        }
-                    });
-                } catch (RejectedExecutionException e) {
-                    // Executor was shutdown
+                    try {
+                        executor.submit(() -> {
+                            try {
+                                listener.membershipChanged(oldMembership, membership, view instanceof MergeView);
+                            } catch (Throwable e) {
+                                ClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+                            }
+                        });
+                    } catch (RejectedExecutionException e) {
+                        // Executor was shutdown
+                    }
                 }
             }
         }

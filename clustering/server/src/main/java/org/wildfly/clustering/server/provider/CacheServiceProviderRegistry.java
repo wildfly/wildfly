@@ -52,6 +52,7 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.GroupListener;
+import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistration.Listener;
@@ -182,19 +183,21 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
     }
 
     @Override
-    public void membershipChanged(List<Node> previousMembers, List<Node> members, final boolean merged) {
-        if (this.getGroup().isCoordinator()) {
-            Set<Node> deadNodes = new HashSet<>(previousMembers);
-            deadNodes.removeAll(members);
-            Set<Node> newNodes = new HashSet<>(members);
-            newNodes.removeAll(previousMembers);
-            if (!deadNodes.isEmpty()) {
+    public void membershipChanged(Membership previousMembership, Membership membership, final boolean merged) {
+        if (membership.isCoordinator()) {
+            List<Node> previousMembers = previousMembership.getMembers();
+            List<Node> members = membership.getMembers();
+            Set<Node> leftMembers = new HashSet<>(previousMembers);
+            leftMembers.removeAll(members);
+            Set<Node> joinedMembers = new HashSet<>(members);
+            joinedMembers.removeAll(previousMembers);
+            if (!leftMembers.isEmpty()) {
                 try (Batch batch = this.batcher.createBatch()) {
                     try (CloseableIterator<Map.Entry<T, Set<Node>>> entries = this.cache.entrySet().iterator()) {
                         while (entries.hasNext()) {
                             Map.Entry<T, Set<Node>> entry = entries.next();
                             Set<Node> nodes = entry.getValue();
-                            if (nodes.removeAll(deadNodes)) {
+                            if (nodes.removeAll(leftMembers)) {
                                 entry.setValue(nodes);
                             }
                         }
@@ -203,11 +206,11 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
             }
             if (merged) {
                 // Re-assert services for new members following merge since these may have been lost following split
-                for (Node node: newNodes) {
+                for (Node joinedMember : joinedMembers) {
                     try {
-                        Collection<T> services = this.dispatcher.executeOnNode(new GetLocalServicesCommand<>(), node).get();
+                        Collection<T> services = this.dispatcher.executeOnNode(new GetLocalServicesCommand<>(), joinedMember).get();
                         try (Batch batch = this.batcher.createBatch()) {
-                            services.forEach(service -> this.register(node, service));
+                            services.forEach(service -> this.register(joinedMember, service));
                         }
                     } catch (Exception e) {
                         ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);

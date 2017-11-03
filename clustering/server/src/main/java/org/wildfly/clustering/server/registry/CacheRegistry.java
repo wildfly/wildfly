@@ -156,7 +156,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
 
     @Override
     public Map<K, V> getEntries() {
-        Set<Node> nodes = this.group.getNodes().stream().collect(Collectors.toSet());
+        Set<Node> nodes = new HashSet<>(this.group.getMembership().getMembers());
         try (Batch batch = this.batcher.createBatch()) {
             return this.cache.getAdvancedCache().getAll(nodes).values().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
         }

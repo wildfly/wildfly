@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,27 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.group;
 
-import java.net.InetSocketAddress;
+import java.util.List;
 
 /**
- * Identifies a member of a cluster.
- *
+ * Encapsulates an immutable membership of a group.
  * @author Paul Ferraro
  */
-public interface Node {
+public interface Membership {
     /**
-     * Returns the logical name of this node.
+     * Indicates whether or not the local node is the coordinator of this group membership.
+     * Semantically equivalent to:
+     * {@code group.getLocalNode().equals(#getCoordinator())}
      *
-     * @return a unique name
+     * @return true, if we are the group membership coordinator, false otherwise
      */
-    String getName();
+    boolean isCoordinator();
 
     /**
-     * Returns the unique socking binding address of this node.
+     * Returns the coordinator node of this group membership.
+     * All nodes of this membership will always agree on which node is the coordinator.
      *
-     * @return a socket binding address, or null if this node is a member of a singleton group.
+     * @return the group coordinator node
      */
-    InetSocketAddress getSocketAddress();
+    Node getCoordinator();
+
+    /**
+     * Returns the nodes that comprise this group membership.
+     * The membership order will be consistent on each node in the group.
+     *
+     * @return a list of nodes ordered by descending age.
+     */
+    List<Node> getMembers();
 }

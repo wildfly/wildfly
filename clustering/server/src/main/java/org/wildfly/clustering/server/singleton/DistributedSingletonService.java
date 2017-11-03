@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.server.singleton;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -105,7 +106,7 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
     @Override
     public void providersChanged(Set<Node> nodes) {
         Group group = this.registry.getValue().getGroup();
-        List<Node> candidates = group.getNodes();
+        List<Node> candidates = new ArrayList<>(group.getMembership().getMembers());
         candidates.retainAll(nodes);
 
         // Only run election on a single node

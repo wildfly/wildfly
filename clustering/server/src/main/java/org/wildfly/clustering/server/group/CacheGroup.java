@@ -22,7 +22,6 @@
 package org.wildfly.clustering.server.group;
 
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +37,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
@@ -45,10 +46,12 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.Merged;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.remoting.transport.Transport;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.GroupListener;
+import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
@@ -92,12 +95,9 @@ public class CacheGroup implements Group, AutoCloseable {
 
     @Override
     public String getName() {
-        return this.cache.getCacheManager().getClusterName();
-    }
-
-    @Override
-    public boolean isCoordinator() {
-        return this.cache.getCacheManager().getAddress().equals(this.getCoordinator());
+        GlobalConfiguration global = this.cache.getCacheManager().getCacheManagerConfiguration();
+        TransportConfiguration transport = global.transport();
+        return transport.transport() != null ? transport.clusterName() : global.globalJmxStatistics().cacheManagerName();
     }
 
     @Override
@@ -106,72 +106,75 @@ public class CacheGroup implements Group, AutoCloseable {
     }
 
     @Override
-    public Node getCoordinatorNode() {
-        return this.factory.createNode(this.getCoordinator());
-    }
-
-    private Address getCoordinator() {
-        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        return (dist != null) ? dist.getConsistentHash().getMembers().get(0) : this.cache.getCacheManager().getCoordinator();
-    }
-
-    @Override
-    public List<Node> getNodes() {
-        List<Address> addresses = this.getAddresses();
-        if (addresses == null) return Collections.singletonList(this.getLocalNode());
-        List<Node> nodes = new ArrayList<>(addresses.size());
-        for (Address address: addresses) {
-            nodes.add(this.factory.createNode(address));
+    public Membership getMembership() {
+        Transport transport = this.cache.getCacheManager().getTransport();
+        if (transport == null) {
+            return new SingletonMembership(this.getLocalNode());
         }
-        return nodes;
+        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
+        return (dist != null) ? new CacheMembership(transport.getAddress(), dist.getConsistentHash(), this.factory) : new CacheMembership(transport, this.factory);
     }
 
     @Merged
     @ViewChanged
     public void viewChanged(ViewChangedEvent event) {
-        // Record view status for use by @TopologyChanged event
-        this.views.put(event.getViewId(), event.isMergeView());
+        if (this.cache.getAdvancedCache().getDistributionManager() != null) {
+            // Record view status for use by @TopologyChanged event
+            this.views.put(event.getViewId(), event.isMergeView());
+        } else if (!this.listeners.isEmpty()) {
+            Membership previousMembership = new CacheMembership(event.getLocalAddress(), event.getOldMembers(), this.factory);
+            Membership membership = new CacheMembership(event.getLocalAddress(), event.getNewMembers(), this.factory);
+            for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
+                GroupListener listener = entry.getKey();
+                ExecutorService executor = entry.getValue();
+                try {
+                    executor.submit(() -> {
+                        try {
+                            listener.membershipChanged(previousMembership, membership, event.isMergeView());
+                        } catch (Throwable e) {
+                            ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+                        }
+                    });
+                } catch (RejectedExecutionException e) {
+                    // Listener was unregistered
+                }
+            }
+        }
     }
 
     @TopologyChanged
     public void topologyChanged(TopologyChangedEvent<?, ?> event) {
         if (event.isPre()) return;
 
-        List<Address> oldAddresses = event.getConsistentHashAtStart().getMembers();
-        List<Node> oldNodes = this.getNodes(oldAddresses);
-        List<Address> newAddresses = event.getConsistentHashAtEnd().getMembers();
-        List<Node> newNodes = this.getNodes(newAddresses);
-
-        Set<Address> obsolete = new HashSet<>(oldAddresses);
-        obsolete.removeAll(newAddresses);
+        Set<Address> obsolete = new HashSet<>(event.getConsistentHashAtStart().getMembers());
+        obsolete.removeAll(event.getConsistentHashAtEnd().getMembers());
         this.factory.invalidate(obsolete);
 
         int viewId = event.getCache().getCacheManager().getTransport().getViewId();
-        Boolean status = this.views.get(viewId);
-        boolean merged = (status != null) ? status.booleanValue() : false;
-        this.listeners.forEach((listener, executor) -> {
-            try {
-                executor.submit(() -> {
-                    try {
-                        listener.membershipChanged(oldNodes, newNodes, merged);
-                    } catch (Throwable e) {
-                        ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-                    }
-                });
-            } catch (RejectedExecutionException e) {
-                // Listener was unregistered
+        if (!this.listeners.isEmpty()) {
+            Address localAddress = event.getCache().getCacheManager().getAddress();
+            Membership previousMembership = new CacheMembership(localAddress, event.getConsistentHashAtStart(), this.factory);
+            Membership membership = new CacheMembership(localAddress, event.getConsistentHashAtEnd(), this.factory);
+            Boolean status = this.views.get(viewId);
+            boolean merged = (status != null) ? status.booleanValue() : false;
+            for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
+                GroupListener listener = entry.getKey();
+                ExecutorService executor = entry.getValue();
+                try {
+                    executor.submit(() -> {
+                        try {
+                            listener.membershipChanged(previousMembership, membership, merged);
+                        } catch (Throwable e) {
+                            ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+                        }
+                    });
+                } catch (RejectedExecutionException e) {
+                    // Listener was unregistered
+                }
             }
-        });
+        }
         // Purge obsolete views
         this.views.headMap(viewId).clear();
-    }
-
-    private List<Node> getNodes(List<Address> addresses) {
-        List<Node> nodes = new ArrayList<>(addresses.size());
-        for (Address address: addresses) {
-            nodes.add(this.factory.createNode(address));
-        }
-        return nodes;
     }
 
     @Override
@@ -199,13 +202,8 @@ public class CacheGroup implements Group, AutoCloseable {
         this.unregister(listener);
     }
 
-    private List<Address> getAddresses() {
-        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        return (dist != null) ? dist.getConsistentHash().getMembers() : this.cache.getCacheManager().getMembers();
-    }
-
     @Override
     public boolean isLocal() {
-        return !this.cache.getCacheConfiguration().clustering().cacheMode().isClustered();
+        return this.cache.getCacheManager().getTransport() == null;
     }
 }
