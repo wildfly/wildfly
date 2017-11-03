@@ -58,8 +58,10 @@ import org.jboss.ejb.server.Request;
 import org.jboss.ejb.server.SessionOpenRequest;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.remoting3.Connection;
+import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.registry.RegistryListener;
 import org.wildfly.common.annotation.NotNull;
 import org.wildfly.security.auth.server.SecurityIdentity;
 
@@ -402,13 +404,14 @@ final class AssociationImpl implements Association, AutoCloseable {
         return moduleDeployment.getEjbs().get(beanName);
     }
 
-    private class ClusterTopologyRegistrar implements Registry.Listener<String, List<ClientMapping>> {
+    private class ClusterTopologyRegistrar implements RegistryListener<String, List<ClientMapping>> {
         private final Set<ClusterTopologyListener> clusterTopologyListeners = ConcurrentHashMap.newKeySet();
         private final Registry<String, List<ClientMapping>> clientMappingRegistry;
+        private final Registration listenerRegistration;
 
         ClusterTopologyRegistrar(Registry<String, List<ClientMapping>> clientMappingRegistry) {
             this.clientMappingRegistry = clientMappingRegistry;
-            this.clientMappingRegistry.addListener(this);
+            this.listenerRegistration = clientMappingRegistry.register(this);
         }
 
         @Override
@@ -448,7 +451,7 @@ final class AssociationImpl implements Association, AutoCloseable {
         }
 
         void close() {
-            this.clientMappingRegistry.removeListener(this);
+            this.listenerRegistration.close();
             this.clusterTopologyListeners.clear();
         }
 
