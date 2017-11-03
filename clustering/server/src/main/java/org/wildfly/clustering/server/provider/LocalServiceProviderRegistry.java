@@ -62,7 +62,7 @@ public class LocalServiceProviderRegistry<T> implements ServiceProviderRegistry<
 
     @Override
     public Set<Node> getProviders(T service) {
-        return this.services.contains(service) ? Collections.singleton(this.getGroup().getLocalNode()) : Collections.emptySet();
+        return this.services.contains(service) ? Collections.singleton(this.getGroup().getLocalMember()) : Collections.emptySet();
     }
 
     @Override

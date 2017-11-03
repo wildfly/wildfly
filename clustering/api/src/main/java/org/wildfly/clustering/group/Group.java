@@ -88,10 +88,18 @@ public interface Group extends Registrar<GroupListener> {
 
     /**
      * Returns the local node.
-     *
-     * @return the local node
+     * @deprecated Replaced by {@link #getLocalMember()}.
      */
-    Node getLocalNode();
+    @Deprecated default Node getLocalNode() {
+        return this.getLocalMember();
+    }
+
+    /**
+     * Returns the local member.
+     *
+     * @return the local member
+     */
+    Node getLocalMember();
 
     /**
      * Returns the group coordinator node.

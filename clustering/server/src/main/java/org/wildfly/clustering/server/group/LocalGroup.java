@@ -59,7 +59,7 @@ public class LocalGroup implements Group {
     }
 
     @Override
-    public Node getLocalNode() {
+    public Node getLocalMember() {
         return this.membership.getCoordinator();
     }
 

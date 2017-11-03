@@ -101,14 +101,14 @@ public class CacheGroup implements Group, AutoCloseable {
     }
 
     @Override
-    public Node getLocalNode() {
+    public Node getLocalMember() {
         return this.factory.createNode(this.cache.getCacheManager().getAddress());
     }
 
     @Override
     public Membership getMembership() {
         if (this.isSingleton()) {
-            return new SingletonMembership(this.getLocalNode());
+            return new SingletonMembership(this.getLocalMember());
         }
         Transport transport = this.cache.getCacheManager().getTransport();
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();

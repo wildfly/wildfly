@@ -132,10 +132,10 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
             throw new IllegalArgumentException(service.toString());
         }
         try (Batch batch = this.batcher.createBatch()) {
-            this.register(this.group.getLocalNode(), service);
+            this.register(this.group.getLocalMember(), service);
         }
         return new SimpleServiceProviderRegistration<>(service, this, () -> {
-            Node node = this.getGroup().getLocalNode();
+            Node node = this.getGroup().getLocalMember();
             try (Batch batch = this.batcher.createBatch()) {
                 Set<Node> nodes = this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).get(service);
                 if ((nodes != null) && nodes.remove(node)) {

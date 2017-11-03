@@ -103,7 +103,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
 
     private void populateRegistry() {
         try (Batch batch = this.batcher.createBatch()) {
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(this.group.getLocalNode(), this.entry);
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(this.group.getLocalMember(), this.entry);
         }
     }
 
@@ -116,7 +116,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     public void close() {
         this.cache.removeListener(this);
         this.shutdown(this.topologyChangeExecutor);
-        Node node = this.getGroup().getLocalNode();
+        Node node = this.getGroup().getLocalMember();
         try (Batch batch = this.batcher.createBatch()) {
             // If this remove fails, the entry will be auto-removed on topology change by the new primary owner
             this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).remove(node);

@@ -110,7 +110,7 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
         candidates.retainAll(nodes);
 
         // Only run election on a single node
-        if (candidates.isEmpty() || candidates.get(0).equals(group.getLocalNode())) {
+        if (candidates.isEmpty() || candidates.get(0).equals(group.getLocalMember())) {
             // First validate that quorum was met
             int size = candidates.size();
             boolean quorumMet = size >= this.quorum;

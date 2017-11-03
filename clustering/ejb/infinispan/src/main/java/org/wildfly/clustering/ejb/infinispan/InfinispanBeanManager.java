@@ -208,7 +208,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     @Override
     public Affinity getStrictAffinity() {
         Group group = this.registry.getGroup();
-        return this.cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new ClusterAffinity(group.getName()) : new NodeAffinity(this.registry.getEntry(group.getLocalNode()).getKey());
+        return this.cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new ClusterAffinity(group.getName()) : new NodeAffinity(this.registry.getEntry(group.getLocalMember()).getKey());
     }
 
     @Override
@@ -250,7 +250,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     Node locatePrimaryOwner(I id) {
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
         Address address = (dist != null) ? dist.getPrimaryLocation(id) : null;
-        return (address != null) ? this.nodeFactory.createNode(address) : this.registry.getGroup().getLocalNode();
+        return (address != null) ? this.nodeFactory.createNode(address) : this.registry.getGroup().getLocalMember();
     }
 
     @Override

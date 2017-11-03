@@ -154,7 +154,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
     public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
         this.contexts.put(id, Optional.ofNullable(context));
         CommandMarshaller<C> marshaller = new CommandDispatcherMarshaller<>(this.marshallingContext, id);
-        CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalNode(), context);
+        CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalMember(), context);
         return new ChannelCommandDispatcher<>(this.dispatcher, marshaller, this.nodeFactory, this.timeout, localDispatcher, () -> {
             localDispatcher.close();
             this.contexts.remove(id);
@@ -196,7 +196,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
     }
 
     @Override
-    public Node getLocalNode() {
+    public Node getLocalMember() {
         return this.nodeFactory.createNode(this.dispatcher.getChannel().getAddress());
     }
 

@@ -52,7 +52,7 @@ public class InfinispanRouteLocator implements RouteLocator {
 
     @Override
     public String locate(String sessionId) {
-        Node node = Optional.ofNullable(this.locatePrimaryOwner(sessionId)).map(address -> this.factory.createNode(address)).orElse(this.registry.getGroup().getLocalNode());
+        Node node = Optional.ofNullable(this.locatePrimaryOwner(sessionId)).map(address -> this.factory.createNode(address)).orElse(this.registry.getGroup().getLocalMember());
         Map.Entry<String, Void> entry = this.registry.getEntry(node);
         return (entry != null) ? entry.getKey() : null;
     }

@@ -221,7 +221,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     private Node locatePrimaryOwner(String sessionId) {
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
         Address address = (dist != null) ? dist.getPrimaryLocation(new Key<>(sessionId)) : null;
-        return (address != null) ? this.nodeFactory.createNode(address) : this.dispatcherFactory.getGroup().getLocalNode();
+        return (address != null) ? this.nodeFactory.createNode(address) : this.dispatcherFactory.getGroup().getLocalMember();
     }
 
     @Override
