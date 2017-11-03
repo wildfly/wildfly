@@ -61,6 +61,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@org.junit.Ignore // [WFCORE-3402] Disable temporarily due to pending MSC upgrade
 public class CertificateRolesLoginModuleTestCase extends AbstractCertificateLoginModuleTestCase {
 
     private static Logger LOGGER = Logger.getLogger(CertificateRolesLoginModuleTestCase.class);

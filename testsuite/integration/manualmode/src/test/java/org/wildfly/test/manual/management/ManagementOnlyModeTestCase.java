@@ -48,6 +48,7 @@ import org.wildfly.core.testrunner.WildflyTestRunner;
  */
 @ServerControl(manual = true)
 @RunWith(WildflyTestRunner.class)
+@org.junit.Ignore // [WFCORE-3402] Disable temporarily due to pending MSC upgrade
 public class ManagementOnlyModeTestCase {
 
     private static final int TEST_PORT = 9091;
