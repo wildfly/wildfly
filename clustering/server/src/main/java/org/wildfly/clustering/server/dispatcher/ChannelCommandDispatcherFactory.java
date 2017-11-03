@@ -201,7 +201,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
     }
 
     @Override
-    public boolean isLocal() {
+    public boolean isSingleton() {
         return false;
     }
 

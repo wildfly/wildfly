@@ -69,7 +69,7 @@ public class LocalGroup implements Group {
     }
 
     @Override
-    public boolean isLocal() {
+    public boolean isSingleton() {
         return true;
     }
 }

@@ -122,6 +122,15 @@ public interface Group extends Registrar<GroupListener> {
     /**
      * Indicates whether this is a local group.  A local group only ever contains a single member.
      * @return true, if this is a local group, false otherwise.
+     * @deprecated Replaced by {@link #isSingleton()}.
      */
-    boolean isLocal();
+    @Deprecated default boolean isLocal() {
+        return this.isSingleton();
+    }
+
+    /**
+     * Indicates whether or not this is a singleton group.  The membership of a singleton group contains only the local member and never changes.
+     * @return true, if this is a singleton group, false otherwise.
+     */
+    boolean isSingleton();
 }

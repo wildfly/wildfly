@@ -107,12 +107,17 @@ public class CacheGroup implements Group, AutoCloseable {
 
     @Override
     public Membership getMembership() {
-        Transport transport = this.cache.getCacheManager().getTransport();
-        if (transport == null) {
+        if (this.isSingleton()) {
             return new SingletonMembership(this.getLocalNode());
         }
+        Transport transport = this.cache.getCacheManager().getTransport();
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
         return (dist != null) ? new CacheMembership(transport.getAddress(), dist.getConsistentHash(), this.factory) : new CacheMembership(transport, this.factory);
+    }
+
+    @Override
+    public boolean isSingleton() {
+        return this.cache.getCacheManager().getTransport() == null;
     }
 
     @Merged
@@ -200,10 +205,5 @@ public class CacheGroup implements Group, AutoCloseable {
     @Override
     public void removeListener(Listener listener) {
         this.unregister(listener);
-    }
-
-    @Override
-    public boolean isLocal() {
-        return this.cache.getCacheManager().getTransport() == null;
     }
 }
