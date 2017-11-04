@@ -196,14 +196,14 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         for (ComponentIntegrator componentIntegrator : componentIntegrators) {
             Supplier<ServiceName> bindingServiceNameSupplier = () -> {
                 if (componentInterceptorSupport == null) {
-                    WeldLogger.DEPLOYMENT_LOGGER.componentInterceptorSupportNotAvailable(componentClass);
+                    throw WeldLogger.DEPLOYMENT_LOGGER.componentInterceptorSupportNotAvailable(componentClass);
                 }
                 return addWeldInterceptorBindingService(target, configuration, componentClass, beanName, weldServiceName, weldStartService,
                         beanDeploymentArchiveId, componentInterceptorSupport);
             };
             DefaultInterceptorIntegrationAction integrationAction = (bindingServiceName) -> {
                 if (componentInterceptorSupport == null) {
-                    WeldLogger.DEPLOYMENT_LOGGER.componentInterceptorSupportNotAvailable(componentClass);
+                    throw WeldLogger.DEPLOYMENT_LOGGER.componentInterceptorSupportNotAvailable(componentClass);
                 }
                 addJsr299BindingsCreateInterceptor(configuration, description, beanName, weldServiceName, builder, bindingServiceName,
                         componentInterceptorSupport);
