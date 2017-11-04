@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
@@ -57,8 +56,8 @@ public class DistributableSessionIdentifierCodecBuilderProvider implements org.w
         Collection<CapabilityServiceBuilder<?>> builders = new LinkedList<>();
         CapabilityServiceBuilder<String> routeBuilder = new RouteBuilder(serverName);
         builders.add(routeBuilder);
-        Supplier<ValueDependency<String>> routeDependencyProvider = () -> new InjectedValueDependency<>(routeBuilder, String.class);
-        PROVIDER.ifPresent(provider -> builders.addAll(provider.getRouteLocatorConfigurationBuilders(serverName, routeDependencyProvider)));
+        ValueDependency<String> routeDependency = new InjectedValueDependency<>(routeBuilder, String.class);
+        PROVIDER.ifPresent(provider -> builders.addAll(provider.getRouteLocatorConfigurationBuilders(serverName, routeDependency)));
         return builders;
     }
 }
