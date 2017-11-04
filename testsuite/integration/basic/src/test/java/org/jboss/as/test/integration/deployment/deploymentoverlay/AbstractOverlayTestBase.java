@@ -31,7 +31,6 @@ import java.util.Set;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.ManagementOperations;
@@ -44,7 +43,8 @@ import org.jboss.logging.Logger;
  * @author baranowb
  * @author lgao
  */
-@ServerSetup(AbstractOverlayTestBase.TraceLoggingSetup.class)
+// Uncomment if TRACE logging is necessary. Don't leave it on all the time; CI resources aren't free.
+//@ServerSetup(AbstractOverlayTestBase.TraceLoggingSetup.class)
 public abstract class AbstractOverlayTestBase {
 
     protected static final Logger LOGGER = Logger.getLogger(AbstractOverlayTestBase.class);

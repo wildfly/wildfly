@@ -342,7 +342,8 @@ public class HTTPSWebConnectorTestCase {
         WORK_DIR.mkdirs();
         Utils.createKeyMaterial(WORK_DIR);
 
-        TRACE_SECURITY.setup(managementClient, null);
+        // Uncomment if TRACE logging is necessary. Don't leave it on all the time; CI resources aren't free.
+        //TRACE_SECURITY.setup(managementClient, null);
 
         SecurityDomainsSetup.INSTANCE.setup(managementClient, null);
 
@@ -414,7 +415,8 @@ public class HTTPSWebConnectorTestCase {
         Utils.applyUpdate(operation, client);
 
         FileUtils.deleteDirectory(WORK_DIR);
-        TRACE_SECURITY.tearDown(managementClient, null);
+        // Uncomment if TRACE logging is necessary. Don't leave it on all the time; CI resources aren't free.
+        //TRACE_SECURITY.tearDown(managementClient, null);
     }
 
     private void rmHttpsConnector(String httpsName, ModelControllerClient client) throws Exception {
