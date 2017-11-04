@@ -1098,12 +1098,19 @@
                                                 <exclude>**/*.log</exclude>
                                             </excludes>
                                         </fileset>
+                                        <!-- Skip target/old-versions which is in testsuite/mixed-domain
+                                             1) That's the last test module so cleaning it after its done
+                                                doesn't gain anything; nothing else will take advantage of the space
+                                             2) On windows jobs on CI we keep seeing stuff like this for hundreds of files
+                                                taking many minutes and often causing test runs to time out
+                                                [20:10:55][Step 4/5] [WARNING] Failed to delete C:\BuildAgent\work\5768cf3a0bee5b47\full\testsuite\mixed-domain\target\old-versions\jboss-eap-7.0.0\jboss-eap-7.0\modules\system\layers\base\org\wildfly\security\elytron\main\wildfly-elytron-1.0.2.Final-redhat-1.jar
                                         <fileset>
                                             <directory>target/old-versions</directory>
                                             <excludes>
                                                 <exclude>**/*.log</exclude>
                                             </excludes>
                                         </fileset>
+                                        -->
                                         <fileset>
                                             <directory>target/domains</directory>
                                             <excludes>
