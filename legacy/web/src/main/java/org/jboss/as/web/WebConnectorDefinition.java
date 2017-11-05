@@ -128,7 +128,7 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
     protected static final SimpleAttributeDefinition MAX_SAVE_POST_SIZE =
             new SimpleAttributeDefinitionBuilder(Constants.MAX_SAVE_POST_SIZE, ModelType.INT)
                     .setRequired(false)
-                    .setValidator(new IntRangeValidator(0, true))
+                    .setValidator(new IntRangeValidator(-1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(4096))
                     .setAllowExpression(true)
