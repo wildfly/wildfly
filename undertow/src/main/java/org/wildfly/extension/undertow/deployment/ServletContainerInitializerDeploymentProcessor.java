@@ -114,7 +114,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                     }
                 }
             } catch (ModuleLoadException e) {
-                if (dependency.isOptional() == false) {
+                if (!dependency.isOptional()) {
                     throw UndertowLogger.ROOT_LOGGER.errorLoadingSCIFromModule(dependency.getIdentifier().toString(), e);
                 }
             }
@@ -130,6 +130,15 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                 }
             }
         }
+
+        //SCI's deployed in the war itself
+        if(localScis != null) {
+            VirtualFile warDeployedScis = localScis.get("classes");
+            if(warDeployedScis != null) {
+                scis.addAll(loadSci(classLoader, warDeployedScis, deploymentUnit.getName(), true, sciClasses));
+            }
+        }
+
         // Process HandlesTypes for ServletContainerInitializer
         Map<Class<?>, Set<ServletContainerInitializer>> typesMap = new HashMap<Class<?>, Set<ServletContainerInitializer>>();
         for (ServletContainerInitializer service : scis) {
