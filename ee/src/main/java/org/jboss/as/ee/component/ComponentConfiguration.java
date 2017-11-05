@@ -525,7 +525,7 @@ public class ComponentConfiguration {
      */
     public void setComponentCreateServiceFactory(final ComponentCreateServiceFactory componentCreateServiceFactory) {
         if (componentCreateServiceFactory == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("componentCreateServiceFactory");
+            throw EeLogger.ROOT_LOGGER.nullVar("componentCreateServiceFactory", "component", getComponentName());
         }
         this.componentCreateServiceFactory = componentCreateServiceFactory;
     }

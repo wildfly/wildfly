@@ -44,10 +44,10 @@ public final class BindingConfiguration {
      */
     public BindingConfiguration(final String name, final InjectionSource source) {
         if (name == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("name");
+            throw EeLogger.ROOT_LOGGER.nullName("binding");
         }
         if (source == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("source");
+            throw EeLogger.ROOT_LOGGER.nullVar("source","binding", "");
         }
         this.name = name;
         this.source = source;

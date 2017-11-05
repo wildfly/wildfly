@@ -108,16 +108,16 @@ public class ComponentDescription implements ResourceInjectionTarget {
     public ComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName) {
         this.moduleDescription = moduleDescription;
         if (componentName == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("name");
+            throw EeLogger.ROOT_LOGGER.nullName("component");
         }
         if (componentClassName == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("componentClassName");
+            throw EeLogger.ROOT_LOGGER.nullVar("componentClassName", "component", componentName);
         }
         if (moduleDescription == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("moduleDescription");
+            throw EeLogger.ROOT_LOGGER.nullVar("moduleDescription", "component", componentName);
         }
         if (deploymentUnitServiceName == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("deploymentUnitServiceName");
+            throw EeLogger.ROOT_LOGGER.nullVar("deploymentUnitServiceName", "component", componentName);
         }
         serviceName = BasicComponent.serviceNameOf(deploymentUnitServiceName, componentName);
         this.componentName = componentName;
@@ -411,7 +411,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
      */
     public void setNamingMode(final ComponentNamingMode namingMode) {
         if (namingMode == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("namingMode");
+            throw EeLogger.ROOT_LOGGER.nullVar("namingMode", "component", componentName);
         }
         this.namingMode = namingMode;
     }
@@ -432,10 +432,10 @@ public class ComponentDescription implements ResourceInjectionTarget {
      */
     public void addDependency(ServiceName serviceName, ServiceBuilder.DependencyType type) {
         if (serviceName == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("serviceName");
+            throw EeLogger.ROOT_LOGGER.nullVar("serviceName", "component", componentName);
         }
         if (type == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("type");
+            throw EeLogger.ROOT_LOGGER.nullVar("type", "component", componentName);
         }
         final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = this.dependencies;
         final ServiceBuilder.DependencyType dependencyType = dependencies.get(serviceName);

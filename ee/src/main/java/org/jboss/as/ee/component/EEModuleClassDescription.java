@@ -71,7 +71,7 @@ public final class EEModuleClassDescription {
 
     public void setInterceptorClassDescription(final InterceptorClassDescription interceptorClassDescription) {
         if(interceptorClassDescription == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("interceptorClassDescription");
+            throw EeLogger.ROOT_LOGGER.nullVar("interceptorClassDescription", "module class", className);
         }
         this.interceptorClassDescription = interceptorClassDescription;
     }
