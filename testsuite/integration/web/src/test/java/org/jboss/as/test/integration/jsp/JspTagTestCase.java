@@ -43,12 +43,12 @@ import java.util.concurrent.TimeUnit;
 @RunAsClient
 public class JspTagTestCase {
 
-    private static final String RESULT = "This is a header\n" +
-            "\n" +
-            "\n" +
-            "<div>tag</div>\n" +
-            "\n" +
-            "Static content\n";
+    private static final String RESULT = "This is a header" + System.lineSeparator() +
+            System.lineSeparator() +
+            System.lineSeparator() +
+            "<div>tag</div>" + System.lineSeparator() +
+            System.lineSeparator() +
+            "Static content" + System.lineSeparator();
 
     @Deployment
     public static WebArchive deploy() {
