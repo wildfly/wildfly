@@ -76,6 +76,15 @@ CLASSPATH=$JAVA_HOME/lib/jconsole.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
 CLASSPATH=$CLASSPATH:./bin/client/jboss-cli-client.jar
 
+echo JBOSS_HOME $JBOSS_HOME
+
+# Do some sanity checking of our classpath
+if [ ! -f "$JBOSS_HOME/bin/client/jboss-cli-client.jar" ]; then
+    echo "Jar not found: \"$JBOSS_HOME/bin/client/jboss-cli-client.jar\""
+    echo "If this jar is missing, jconsole will fail to connect to Wildfly."
+    exit 2
+fi
+
 echo CLASSPATH $CLASSPATH
 
 cd "$JBOSS_HOME"
