@@ -239,4 +239,7 @@ public interface Constants {
     String SECURITY_DOMAIN = "security-domain";
     String ENABLE_JACC = "enable-jacc";
 
+    String FILE_CACHE_MAX_FILE_SIZE = "file-cache-max-file-size";
+    String FILE_CACHE_METADATA_SIZE = "file-cache-metadata-size";
+    String FILE_CACHE_TIME_TO_LIVE =  "file-cache-time-to-live";
 }

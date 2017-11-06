@@ -39,12 +39,13 @@ enum Namespace {
     UNDERTOW_2_0("urn:jboss:domain:undertow:2.0"),
     UNDERTOW_3_0("urn:jboss:domain:undertow:3.0"),
     UNDERTOW_3_1("urn:jboss:domain:undertow:3.1"),
-    UNDERTOW_4_0("urn:jboss:domain:undertow:4.0");
+    UNDERTOW_4_0("urn:jboss:domain:undertow:4.0"),
+    UNDERTOW_5_0("urn:jboss:domain:undertow:5.0");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = UNDERTOW_4_0;
+    public static final Namespace CURRENT = UNDERTOW_5_0;
 
     private final String name;
 

@@ -77,7 +77,7 @@ public class UndertowExtension implements Extension {
     static final AccessConstraintDefinition LISTENER_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
                     new SensitivityClassification(SUBSYSTEM_NAME, "web-connector", false, false, false));
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(5, 0, 0);
 
 
     public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
@@ -97,6 +97,7 @@ public class UndertowExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_3_0.getUriString(), UndertowSubsystemParser_3_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_3_1.getUriString(), UndertowSubsystemParser_3_1::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_4_0.getUriString(), UndertowSubsystemParser_4_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_5_0.getUriString(), UndertowSubsystemParser_5_0::new);
     }
 
     @Override
@@ -109,7 +110,7 @@ public class UndertowExtension implements Extension {
         deployments.registerSubModel(DeploymentServletDefinition.INSTANCE);
         deployments.registerSubModel(DeploymentWebSocketDefinition.INSTANCE);
 
-        subsystem.registerXMLElementWriter(new UndertowSubsystemParser_4_0());
+        subsystem.registerXMLElementWriter(UndertowSubsystemParser_5_0::new);
     }
 
 }

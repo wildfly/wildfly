@@ -22,42 +22,35 @@
 
 package org.wildfly.extension.undertow;
 
-import java.io.IOException;
-
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Test;
+
+import java.io.IOException;
 
 /**
  * This is the barebone test example that tests subsystem
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class UndertowSubsystemTestCase extends AbstractUndertowSubsystemTestCase {
+public class UndertowSubsystem40TestCase extends AbstractUndertowSubsystemTestCase {
 
     private final String virtualHostName = "some-server";
     private final int flag = 1;
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-5.0.xml");
+        return readResource("undertow-4.0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_5_0.xsd";
+        return "schema/wildfly-undertow_4_0.xsd";
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{"/subsystem-templates/undertow.xml"};
-    }
-
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
     }
 
     @Test
