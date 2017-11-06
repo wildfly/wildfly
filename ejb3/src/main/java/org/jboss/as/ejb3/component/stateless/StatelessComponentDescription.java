@@ -47,6 +47,7 @@ import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfigService;
+import org.jboss.as.ejb3.component.session.CreateExceptionInterceptor;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.StatelessRemoteViewInstanceFactory;
 import org.jboss.as.ejb3.component.session.StatelessWriteReplaceInterceptor;
@@ -118,6 +119,13 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
                     configuration.addTimeoutViewInterceptor(TimerCMTTxInterceptor.FACTORY, InterceptorOrder.View.CMT_TRANSACTION_INTERCEPTOR);
                 }
                 configuration.addTimeoutViewInterceptor(StatelessComponentInstanceAssociatingFactory.instance(), InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
+            }
+        });
+
+        getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.addPostConstructInterceptor(CreateExceptionInterceptor.INSTANCE, InterceptorOrder.ComponentPostConstruct.CREATE_EXCEPTION_INTERCEPTOR);
             }
         });
 
