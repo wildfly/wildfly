@@ -50,7 +50,7 @@
         <enforcer.skip>true</enforcer.skip>
         <jbossas.ts.dir>${basedir}/..</jbossas.ts.dir>
 
-        <ts.elytron.cli>../shared/enable-elytron.cli</ts.elytron.cli>
+        <ts.elytron.cli>../shared/enable-elytron-domain.cli</ts.elytron.cli>
     </properties>
 
     <!--
@@ -188,37 +188,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>xml-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>adjust-default-server-configuration-for-basic-tests</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>transform</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <transformationSets>
-                        <transformationSet>
-                            <dir>${basedir}/target/test-classes/domain-configs</dir>
-                            <skipDefaultExcludes>true</skipDefaultExcludes>
-                            <includes>
-                                <include>domain*.xml</include>
-                            </includes>
-                            <stylesheet>${basedir}/../integration/src/test/xslt/enableRbac.xsl</stylesheet>
-                            <outputDir>${basedir}/target/test-classes/domain-configs</outputDir>
-                            <fileMappers>
-                                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
-                                    <targetExtension>.rbac</targetExtension>
-                                </fileMapper>
-                            </fileMappers>
-                        </transformationSet>
-                    </transformationSets>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -246,34 +215,7 @@
                     </includes>
                 </configuration>
             </plugin>
-            <!-- Add the console-handler to each profile for the test server -->
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-maven-plugin</artifactId>
-                <version>${version.org.wildfly.plugin}</version>
-                <executions>
-                    <execution>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>execute-commands</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <offline>true</offline>
-                    <fail-on-error>true</fail-on-error>
-                    <jboss-home>${project.build.directory}/jbossas</jboss-home>
-                    <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
-                    <java-opts>${modular.jdk.args}</java-opts>
-                    <scripts>
-                        <script>${project.basedir}/../shared/enable-domain-console-logging.cli</script>
-                    </scripts>
-                    <system-properties>
-                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                        <module.path>${jboss.home}/modules</module.path>
-                    </system-properties>
-                </configuration>
-            </plugin>
+           
         </plugins>
     </build>
 
@@ -336,31 +278,32 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
-                                <id>enable-elytron-cli</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-resources</phase>
                                 <goals>
-                                    <goal>exec</goal>
+                                    <goal>execute-commands</goal>
                                 </goals>
-                                <configuration>
-                                    <executable>${java.home}/bin/java</executable>
-                                    <arguments>
-                                        <argument>-jar</argument>
-                                        <argument>${project.build.directory}/jbossas/jboss-modules.jar</argument>
-                                        <argument>-mp</argument>
-                                        <argument>${jboss.dist}/modules</argument>
-                                        <argument>org.jboss.as.cli</argument>
-                                        <argument>--file=${ts.elytron.cli}</argument>
-                                    </arguments>
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${project.build.directory}/jbossas</JBOSS_HOME>
-                                    </environmentVariables>
-                                </configuration>
                             </execution>
                         </executions>
+                        <configuration>
+                            <offline>true</offline>
+                            <scripts>
+                                <script>${ts.elytron.cli}</script>
+                            </scripts>
+                            <jboss-home>${project.build.directory}/jbossas</jboss-home>
+                            <stdout>none</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
+                            <system-properties>
+                                <public.ip>${node0}</public.ip>
+                                <management.ip>${node0}</management.ip>
+                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${jboss.dist}/modules</module.path>
+                            </system-properties>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

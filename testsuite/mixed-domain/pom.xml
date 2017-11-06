@@ -46,8 +46,8 @@
         <!-- This value is overridden in submodules with the correct relative path. -->
         <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
 
-        <ts.elytron.cli>../shared/enable-elytron.cli</ts.elytron.cli>
-	<ts.skipTests>${skipTests}</ts.skipTests>
+        <ts.elytron.cli>../shared/enable-elytron-domain.cli</ts.elytron.cli>
+        <ts.skipTests>${skipTests}</ts.skipTests>
     </properties>
 
     <!--
@@ -56,11 +56,11 @@
     -->
 
     <dependencies>
-       <dependency>
-         <groupId>org.wildfly.core</groupId>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-model-test</artifactId>
-         <scope>test</scope>
-       </dependency>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.wildfly.build</groupId>
             <artifactId>wildfly-server-provisioning-standalone</artifactId>
@@ -68,19 +68,32 @@
             <version>${version.org.wildfly.build-tools}</version>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-testsuite-shared</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-testsuite-shared</artifactId>
+            <artifactId>wildfly-messaging</artifactId>
             <exclusions>
-                <!-- exclude woodstox as it is doesn't work right with adding new lines after document end -->
                 <exclusion>
-                    <groupId>org.codehaus.woodstox</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.woodstox</groupId>
+                    <groupId>*</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-security</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
         </dependency>
     </dependencies>
     <build>
@@ -112,37 +125,9 @@
                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Djboss.default.multicast.address=${mcast} -Djboss.messaging.cluster.password=ILoveWildfly ${extra.server.jvm.args}</server.jvm.args>
                     </systemPropertyVariables>
                     <includes>
-                         <!-- include>**/*TestCase.java</include -->
-                         <include>**/*TestSuite.java</include>
+                        <!-- include>**/*TestCase.java</include -->
+                        <include>**/*TestSuite.java</include>
                     </includes>
-                </configuration>
-            </plugin>
-            <!-- Add the console-handler to each profile for the test server -->
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-maven-plugin</artifactId>
-                <version>${version.org.wildfly.plugin}</version>
-                <executions>
-                    <execution>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>execute-commands</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <offline>true</offline>
-                    <fail-on-error>true</fail-on-error>
-                    <jboss-home>${project.build.directory}/jbossas</jboss-home>
-                    <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
-                    <java-opts>${modular.jdk.args}</java-opts>
-                    <scripts>
-                        <script>${project.basedir}/../shared/enable-domain-console-logging.cli</script>
-                    </scripts>
-                    <system-properties>
-                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                        <module.path>${jboss.dist}/modules</module.path>
-                    </system-properties>
                 </configuration>
             </plugin>
         </plugins>
@@ -162,31 +147,32 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
-                                <id>enable-elytron-cli</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-resources</phase>
                                 <goals>
-                                    <goal>exec</goal>
+                                    <goal>execute-commands</goal>
                                 </goals>
-                                <configuration>
-                                    <executable>${java.home}/bin/java</executable>
-                                    <arguments>
-                                        <argument>-jar</argument>
-                                        <argument>${project.build.directory}/jbossas/jboss-modules.jar</argument>
-                                        <argument>-mp</argument>
-                                        <argument>${jboss.dist}/modules</argument>
-                                        <argument>org.jboss.as.cli</argument>
-                                        <argument>--file=${ts.elytron.cli}</argument>
-                                    </arguments>
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${project.build.directory}/jbossas</JBOSS_HOME>
-                                    </environmentVariables>
-                                </configuration>
                             </execution>
                         </executions>
+                        <configuration>
+                            <offline>true</offline>
+                            <scripts>
+                                <script>${ts.elytron.cli}</script>
+                            </scripts>
+                            <jboss-home>${project.build.directory}/jbossas</jboss-home>
+                            <stdout>none</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
+                            <system-properties>
+                                <public.ip>${node0}</public.ip>
+                                <management.ip>${node0}</management.ip>
+                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${jboss.dist}/modules</module.path>
+                            </system-properties>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

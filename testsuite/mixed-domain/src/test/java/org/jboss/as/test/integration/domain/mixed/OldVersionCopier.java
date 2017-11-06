@@ -21,123 +21,171 @@
 */
 package org.jboss.as.test.integration.domain.mixed;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import org.xnio.IoUtils;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Tomaz Cerar
  */
-public class OldVersionCopier {
+class OldVersionCopier {
 
-    private static String OLD_VERSIONS_DIR = "jboss.test.mixed.domain.dir";
+    private static final String OLD_VERSIONS_DIR = "jboss.test.mixed.domain.dir";
 
     private final Version.AsVersion version;
-    private final File oldVersionsBaseDir;
-    private final File targetOldVersions = new File("target/old-versions/");
+    private final Path oldVersionsBaseDir;
+    private final Path targetOldVersions = Paths.get("target/old-versions/");
 
 
-    private OldVersionCopier(Version.AsVersion version, File oldVersionsBaseDir) {
+    private OldVersionCopier(Version.AsVersion version, Path oldVersionsBaseDir) {
         this.version = version;
         this.oldVersionsBaseDir = oldVersionsBaseDir;
     }
 
-    static File expandOldVersion(Version.AsVersion version) {
+    static Path getOldVersionDir(Version.AsVersion version) {
+
         OldVersionCopier copier = new OldVersionCopier(version, obtainOldVersionsDir());
+        Path result = copier.getExpandedPath();
+        if (Files.exists(result) && Files.isDirectory(result) && Files.exists(result.resolve("jboss-modules.jar"))) { //verify expanded version is proper
+            return result;
+        }
         return copier.expandAsInstance(version);
     }
 
-
-    private static File obtainOldVersionsDir() {
+    private static Path obtainOldVersionsDir() {
         String error = "System property '" + OLD_VERSIONS_DIR + "' must be set to a directory containing old versions";
         String oldVersionsDir = System.getProperty(OLD_VERSIONS_DIR);
         if (oldVersionsDir == null) {
             throw new RuntimeException(error);
         }
-        File file = new File(oldVersionsDir);
-        if (!file.exists() || !file.isDirectory()) {
+        Path file = Paths.get(oldVersionsDir);
+        if (Files.notExists(file) || !Files.isDirectory(file)) {
             throw new RuntimeException(error);
         }
         return file;
     }
 
+    private Path getExpandedPath() {
+        return targetOldVersions.resolve(version.getFullVersionName());
+    }
 
-    private File expandAsInstance(Version.AsVersion version) {
+    private Path expandAsInstance(Version.AsVersion version) {
         createIfNotExists(targetOldVersions);
 
-        File file = new File(oldVersionsBaseDir, version.getZipFileName());
-        if (!file.exists()) {
-            throw new RuntimeException("Old version not found in " + file.getAbsolutePath());
+        Path file = oldVersionsBaseDir.resolve(version.getZipFileName());
+        if (Files.notExists(file)) {
+            throw new RuntimeException("Old version not found in " + file.toAbsolutePath().toString());
         }
         try {
-            File expanded = expandAsInstance(file);
-            return expanded;
-        } catch(Exception e) {
+            return expandAsInstance(file);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private File expandAsInstance(final File file) throws Exception {
-        File versionDir = new File(targetOldVersions, version.getFullVersionName());
+    private Path expandAsInstance(final Path file) throws Exception {
+        Path versionDir = getExpandedPath();
         createIfNotExists(versionDir);
-
-        final ZipFile zipFile = new ZipFile(file);
-        try {
-            for (Enumeration<? extends ZipEntry> en = zipFile.entries() ; en.hasMoreElements() ; ) {
-                final ZipEntry entry = en.nextElement();
-                final File output = new File(versionDir, entry.getName());
-                if (entry.isDirectory()) {
-                    createIfNotExists(output);
-                } else {
-                    inputStreamToFile(zipFile.getInputStream(entry), output);
-                }
-
-            }
-        } finally {
-            IoUtils.safeClose(zipFile);
-        }
-
-        File[] files = versionDir.listFiles();
-        if (files.length != 1) {
-            //If this really becomes a problem, inspect the directory structures
-            throw new RuntimeException("The unzipped file contains more than one file in " + versionDir.getAbsolutePath() + ". Unable to determine the true distribution");
-        }
-        return files[0];
+        unzip(file, versionDir);
+        return versionDir;
     }
 
-    private void inputStreamToFile(InputStream input, File output) throws Exception {
-        final InputStream in = new BufferedInputStream(input);
-        try {
-            final OutputStream out = new BufferedOutputStream(new FileOutputStream(output));
+    private static boolean shouldSkip(Path path) {
+        String entryName = path.toString();
+        if (entryName.endsWith("/docs/") || entryName.endsWith("/bundles/")) {
+            return true;
+        } else if (entryName.endsWith("/bin/") || entryName.endsWith("/welcome-content/")) {
+            return true;
+        } else if (entryName.endsWith("/eap/dir/")) { //console files
+            return true;
+        }
+        return false;
+    }
+
+    private void createIfNotExists(Path file) {
+        if (Files.notExists(file)) {
             try {
-                byte[] buf = new byte[1024];
-                int len = in.read(buf);
-                while (len != -1) {
-                    out.write(buf, 0, len);
-                    len = in.read(buf);
-                }
-            } finally {
-                IoUtils.safeClose(out);
+                Files.createDirectories(file);
+            } catch (IOException e) {
+                throw new RuntimeException("Could not create " + targetOldVersions, e);
             }
-        } finally {
-            IoUtils.safeClose(in);
         }
     }
 
-    private void createIfNotExists(File file) {
-        if (!file.exists()) {
-            if (!file.mkdirs() && file.exists()) {
-                throw new RuntimeException("Could not create " + targetOldVersions);
-            }
+    private static FileSystem createZipFileSystem(Path zipFilename) throws IOException {
+        // convert the filename to a URI
+        final URI uri = URI.create("jar:file:" + zipFilename.toUri().getPath());
+
+        final Map<String, String> env = new HashMap<>();
+        return FileSystems.newFileSystem(uri, env);
+    }
+
+    /**
+     * Unzips the specified zip file to the specified destination directory.
+     * Replaces any files in the destination, if they already exist.
+     */
+    private void unzip(Path zipFilename, Path destDir) throws IOException {
+        if (Files.notExists(destDir)) {
+            Files.createDirectories(destDir);
+        }
+
+        try (FileSystem zipFileSystem = createZipFileSystem(zipFilename)) {
+            final Path root = zipFileSystem.getPath("/");
+
+            Files.walkFileTree(verifyZipContents(root), new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    final Path destFile = (Paths.get(destDir.toString(), file.subpath(1, file.getNameCount()).toString()));  //we skip first folder
+                    /*if (!destFile.toString().endsWith(".jar")&&!destFile.toString().endsWith(".xml")) {
+                        System.out.printf("Extracting file %s to %s\n", file, destFile);
+                    }*/
+                    Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    if (dir.getNameCount() == 1) {
+                        return FileVisitResult.CONTINUE;
+                    }
+                    final Path dirToCreate = Paths.get(destDir.toString(), dir.subpath(1, dir.getNameCount()).toString());
+                    if (shouldSkip(dir)) {
+                        //System.out.println("skipping, " + dir);
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                    if (Files.notExists(dirToCreate)) {
+                        Files.createDirectory(dirToCreate);
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         }
     }
+
+    private static Path verifyZipContents(Path root) throws IOException {
+        boolean read = false;
+        Path result = root;
+        for (Path c : Files.newDirectoryStream(root)) {
+            if (!read) {
+                result = c;
+                read = true;
+            } else {
+                throw new RuntimeException("Zip contains more than one directory, something is wrong!");
+            }
+
+        }
+        return result;
+    }
+
 }
