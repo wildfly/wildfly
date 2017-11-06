@@ -164,6 +164,12 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         if (index == null) {
             throw UndertowLogger.ROOT_LOGGER.unableToResolveAnnotationIndex(deploymentUnit);
         }
+        final CompositeIndex parent;
+        if(deploymentUnit.getParent() != null) {
+            parent = deploymentUnit.getParent().getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        } else {
+            parent = null;
+        }
         //WFLY-4205, look in the parent as well as the war
         CompositeIndex parentIndex = deploymentUnit.getParent() == null ? null : deploymentUnit.getParent().getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
 
@@ -171,9 +177,9 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         for (Class<?> type : typesArray) {
             DotName className = DotName.createSimple(type.getName());
             Set<ClassInfo> classInfos = new HashSet<>();
-            classInfos.addAll(processHandlesType(className, type, index));
+            classInfos.addAll(processHandlesType(className, type, index, parent));
             if(parentIndex != null) {
-                classInfos.addAll(processHandlesType(className, type, parentIndex));
+                classInfos.addAll(processHandlesType(className, type, parentIndex, parent));
             }
             Set<Class<?>> classes = loadClassInfoSet(classInfos, classLoader);
             Set<ServletContainerInitializer> sciSet = typesMap.get(type);
@@ -237,7 +243,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         return scis;
     }
 
-    private Set<ClassInfo> processHandlesType(DotName typeName, Class<?> type, CompositeIndex index) throws DeploymentUnitProcessingException {
+    private Set<ClassInfo> processHandlesType(DotName typeName, Class<?> type, CompositeIndex index, CompositeIndex parent) throws DeploymentUnitProcessingException {
         Set<ClassInfo> classes = new HashSet<ClassInfo>();
         if (type.isAnnotation()) {
             List<AnnotationInstance> instances = index.getAnnotations(typeName);
@@ -256,6 +262,16 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         } else {
             classes.addAll(index.getAllKnownSubclasses(typeName));
             classes.addAll(index.getAllKnownImplementors(typeName));
+            if(parent != null) {
+                Set<ClassInfo> parentImplementors = new HashSet<>();
+                parentImplementors.addAll(parent.getAllKnownImplementors(typeName));
+                parentImplementors.addAll(parent.getAllKnownSubclasses(typeName));
+                for(ClassInfo pc: parentImplementors) {
+                    classes.addAll(index.getAllKnownSubclasses(pc.name()));
+                    classes.addAll(index.getAllKnownImplementors(pc.name()));
+                }
+            }
+
         }
         return classes;
     }
