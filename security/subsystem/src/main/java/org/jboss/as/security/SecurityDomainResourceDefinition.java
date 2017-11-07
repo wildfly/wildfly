@@ -185,7 +185,7 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
                 SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN))
                 .setEntryType(OperationEntry.EntryType.PUBLIC)
                 .setRuntimeOnly()
-                .addParameter(new SimpleAttributeDefinition(Constants.PRINCIPAL_ARGUMENT, ModelType.STRING, true))
+                .addParameter(new SimpleAttributeDefinitionBuilder(Constants.PRINCIPAL_ARGUMENT, ModelType.STRING).setRequired(false).build())
                 .build();
 
         @Override

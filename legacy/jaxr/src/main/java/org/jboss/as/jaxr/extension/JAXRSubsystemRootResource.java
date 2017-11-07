@@ -42,7 +42,9 @@ class JAXRSubsystemRootResource extends ModelOnlyResourceDefinition {
                     .build();
 
     static SimpleAttributeDefinition CONNECTION_FACTORY_IMPL_ATTRIBUTE =
-            new SimpleAttributeDefinition("class", ModelType.STRING, true);
+            new SimpleAttributeDefinitionBuilder("class", ModelType.STRING)
+                    .setRequired(false)
+                    .build();
 
     JAXRSubsystemRootResource() {
         super(JAXRExtension.SUBSYSTEM_PATH,
