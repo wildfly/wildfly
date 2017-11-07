@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,40 +19,47 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb.infinispan;
+
+package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Base64;
+import java.util.Calendar;
+import java.util.TimeZone;
 
-import org.jboss.ejb.client.SessionID;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class SessionIDExternalizer extends SimpleKeyFormat<SessionID> implements Externalizer<SessionID> {
+public class CalendarExternalizer implements Externalizer<Calendar> {
 
-    public SessionIDExternalizer() {
-        super(SessionID.class, value -> SessionID.createSessionID(Base64.getDecoder().decode(value)), id -> Base64.getEncoder().encodeToString(id.getEncodedForm()));
+    @Override
+    public void writeObject(ObjectOutput output, Calendar calendar) throws IOException {
+        output.writeUTF(calendar.getCalendarType());
+        output.writeLong(calendar.getTimeInMillis());
+        output.writeBoolean(calendar.isLenient());
+        output.writeUTF(calendar.getTimeZone().getID());
+        output.writeInt(calendar.getFirstDayOfWeek());
+        output.writeInt(calendar.getMinimalDaysInFirstWeek());
     }
 
     @Override
-    public void writeObject(ObjectOutput output, SessionID id) throws IOException {
-        byte[] encoded = id.getEncodedForm();
-        IndexExternalizer.UNSIGNED_BYTE.writeData(output, encoded.length);
-        output.write(encoded);
+    public Calendar readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return new Calendar.Builder()
+                .setCalendarType(input.readUTF())
+                .setInstant(input.readLong())
+                .setLenient(input.readBoolean())
+                .setTimeZone(TimeZone.getTimeZone(input.readUTF()))
+                .setWeekDefinition(input.readInt(), input.readInt())
+                .build();
     }
 
     @Override
-    public SessionID readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        byte[] encoded = new byte[IndexExternalizer.UNSIGNED_BYTE.readData(input)];
-        input.readFully(encoded);
-        return SessionID.createSessionID(encoded);
+    public Class<Calendar> getTargetClass() {
+        return Calendar.class;
     }
 }

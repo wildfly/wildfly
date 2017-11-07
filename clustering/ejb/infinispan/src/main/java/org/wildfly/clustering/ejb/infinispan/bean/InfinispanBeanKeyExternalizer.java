@@ -38,7 +38,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
 @MetaInfServices({ Externalizer.class, KeyFormat.class })
 public class InfinispanBeanKeyExternalizer extends SimpleKeyFormat<InfinispanBeanKey<SessionID>> implements Externalizer<InfinispanBeanKey<SessionID>> {
 
-    private static final SessionIDExternalizer<SessionID> EXTERNALIZER = new SessionIDExternalizer<>(SessionID.class);
+    private static final SessionIDExternalizer EXTERNALIZER = new SessionIDExternalizer();
 
     @SuppressWarnings("unchecked")
     public InfinispanBeanKeyExternalizer() {

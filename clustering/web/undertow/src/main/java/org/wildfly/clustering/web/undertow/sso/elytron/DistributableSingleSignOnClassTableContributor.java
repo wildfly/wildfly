@@ -22,8 +22,8 @@
 
 package org.wildfly.clustering.web.undertow.sso.elytron;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
@@ -35,7 +35,7 @@ import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
 public class DistributableSingleSignOnClassTableContributor implements ClassTableContributor {
 
     @Override
-    public Collection<Class<?>> getKnownClasses() {
-        return Collections.singleton(ElytronAuthentication.class);
+    public List<Class<?>> getKnownClasses() {
+        return Collections.singletonList(ElytronAuthentication.class);
     }
 }

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -42,6 +43,8 @@ public class UtilExternalizerTestCase {
         ExternalizerTestUtil.test(new CurrencyExternalizer(), Currency.getInstance(Locale.US));
         ExternalizerTestUtil.test(new LocaleExternalizer(), Locale.US);
         ExternalizerTestUtil.test(new OptionalExternalizer(), Optional.empty());
+        ExternalizerTestUtil.test(new TimeZoneExternalizer(), TimeZone.getDefault());
+        ExternalizerTestUtil.test(new TimeZoneExternalizer(), TimeZone.getTimeZone("America/New_York"));
         ExternalizerTestUtil.test(new UUIDExternalizer(), UUID.randomUUID());
     }
 }

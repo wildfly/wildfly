@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,25 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.dispatcher;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+package org.wildfly.clustering.marshalling.spi.util;
+
+import java.util.TimeZone;
 
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
+import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.StringExternalizer;
 
 /**
- * ClassTable contributor for the marshaller of a {@link org.wildfly.clustering.dispatcher.CommandDispatcher}.
  * @author Paul Ferraro
  */
-@MetaInfServices(ClassTableContributor.class)
-public class CommandDispatcherClassTableContributor implements ClassTableContributor {
+@MetaInfServices(Externalizer.class)
+public class TimeZoneExternalizer extends StringExternalizer<TimeZone> {
 
-    @Override
-    public List<Class<?>> getKnownClasses() {
-        return Arrays.<Class<?>>asList(Command.class, NoSuchService.class, ExecutionException.class);
+    public TimeZoneExternalizer() {
+        super(TimeZone.class, TimeZone::getTimeZone, TimeZone::getID);
     }
 }

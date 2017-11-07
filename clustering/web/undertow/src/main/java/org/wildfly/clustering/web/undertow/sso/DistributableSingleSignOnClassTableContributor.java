@@ -24,7 +24,7 @@ package org.wildfly.clustering.web.undertow.sso;
 
 import java.security.Principal;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
@@ -40,7 +40,7 @@ import io.undertow.security.idm.Account;
 public class DistributableSingleSignOnClassTableContributor implements ClassTableContributor {
 
     @Override
-    public Collection<Class<?>> getKnownClasses() {
+    public List<Class<?>> getKnownClasses() {
         return Arrays.asList(
                 AuthenticatedSession.class,
                 Account.class,

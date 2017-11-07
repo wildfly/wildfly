@@ -37,7 +37,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
 @MetaInfServices(Externalizer.class)
 public class InfinispanBeanEntryExternalizer implements Externalizer<InfinispanBeanEntry<SessionID>> {
 
-    private static final Externalizer<SessionID> EXTERNALIZER = new SessionIDExternalizer<>(SessionID.class);
+    private static final Externalizer<SessionID> EXTERNALIZER = new SessionIDExternalizer();
 
     @Override
     public void writeObject(ObjectOutput output, InfinispanBeanEntry<SessionID> entry) throws IOException {
