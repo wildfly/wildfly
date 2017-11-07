@@ -92,7 +92,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
                         componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
                     }
                     moduleConfiguration.addComponentConfiguration(componentConfiguration);
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     if (componentDescription.isOptional()) {
                         // https://issues.jboss.org/browse/WFLY-924 Just log a WARN summary of which component failed and then log the cause at DEBUG level
                         ROOT_LOGGER.componentInstallationFailure(componentDescription.getComponentName());
