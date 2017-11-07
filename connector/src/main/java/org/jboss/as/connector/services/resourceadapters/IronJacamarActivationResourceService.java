@@ -64,8 +64,6 @@ import org.jboss.msc.value.InjectedValue;
 public class IronJacamarActivationResourceService implements Service<ManagementResourceRegistration> {
 
     private static PathElement SUBSYSTEM_PATH_ELEMENT = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
-    private static PathElement IJ_PATH_ELEMENT = PathElement.pathElement(Constants.IRONJACAMAR_NAME, Constants.IRONJACAMAR_NAME);
-
 
     private final ManagementResourceRegistration registration;
     private final Resource deploymentResource;
@@ -93,6 +91,8 @@ public class IronJacamarActivationResourceService implements Service<ManagementR
         final CommonDeployment deploymentMD = deployment.getValue().getDeployment();
         ROOT_LOGGER.debugf("Starting IronJacamarActivationResourceService %s", deploymentMD.getDeploymentName());
 
+        // TODO -- adding and removing this "subRegistration" and "ijRegistration" in a service is wrong.
+        // It should be done by the Extension and all we do in this service is the service-specific override
         try {
             ResourceBuilder resourceBuilder = ResourceBuilder.Factory.create(SUBSYSTEM_PATH_ELEMENT,
                     new StandardResourceDescriptionResolver(Constants.STATISTICS_NAME, CommonAttributes.RESOURCE_NAME, CommonAttributes.class.getClassLoader()));
@@ -272,16 +272,10 @@ public class IronJacamarActivationResourceService implements Service<ManagementR
 
     @Override
     public void stop(StopContext context) {
-        ManagementResourceRegistration subsystemResourceRegistration;
+        // TODO -- adding and removing this registration in a service is wrong.
+        // It should be done by the Extension and all we do in this service is the service-specific override added in start()
+        registration.unregisterSubModel(SUBSYSTEM_PATH_ELEMENT);
 
-        subsystemResourceRegistration = registration.getSubModel(PathAddress.pathAddress(SUBSYSTEM_PATH_ELEMENT));
-
-        if (subsystemResourceRegistration != null) {
-            if (subsystemResourceRegistration.getSubModel(PathAddress.pathAddress(IJ_PATH_ELEMENT)) != null) {
-                subsystemResourceRegistration.unregisterSubModel(IJ_PATH_ELEMENT);
-            }
-            registration.unregisterSubModel(SUBSYSTEM_PATH_ELEMENT);
-        }
         deploymentResource.removeChild(SUBSYSTEM_PATH_ELEMENT);
     }
 
