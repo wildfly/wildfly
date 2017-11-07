@@ -75,8 +75,8 @@ import org.jboss.as.ee.component.ResourceInjectionTarget;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
 import org.jboss.as.ejb3.component.EJBViewDescription;
+import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
-import org.jboss.as.ejb3.concurrency.LockableComponent;
 import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.ejb3.subsystem.deployment.InstalledComponent;
@@ -1531,7 +1531,7 @@ public interface EjbLogger extends BasicLogger {
      * @return a {@link IllegalStateException} for the error.
      */
     @Message(id = 242, value = "Illegal lock type %s on %s for component %s")
-    IllegalStateException failToObtainLockIllegalType(LockType lockType, Method method, LockableComponent lockableComponent);
+    IllegalStateException failToObtainLockIllegalType(LockType lockType, Method method, SingletonComponent lockableComponent);
 
     /**
      * Creates an exception indicating the inability to call the method as something is missing for the invocation.
