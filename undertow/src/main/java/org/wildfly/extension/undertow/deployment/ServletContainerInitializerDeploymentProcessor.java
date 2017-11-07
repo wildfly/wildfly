@@ -105,6 +105,10 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         }
         // Find the SCIs from shared modules
         for (ModuleDependency dependency : moduleSpecification.getAllDependencies()) {
+            // Should not include SCI if services is not included
+            if (!dependency.isImportServices()) {
+                continue;
+            }
             try {
                 Module depModule = loader.loadModule(dependency.getIdentifier());
                 ServiceLoader<ServletContainerInitializer> serviceLoader = depModule.loadService(ServletContainerInitializer.class);
