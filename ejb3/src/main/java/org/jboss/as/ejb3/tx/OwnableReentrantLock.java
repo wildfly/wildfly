@@ -23,6 +23,9 @@
 package org.jboss.as.ejb3.tx;
 
 
+import org.wildfly.common.Assert;
+
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,8 +55,9 @@ public class OwnableReentrantLock {
     }
 
     public void lock(Object owner) {
+        Assert.checkNotNullParam("owner", owner);
         synchronized (this.lock) {
-            if (owner == this.owner) {
+            if (Objects.equals(owner, this.owner)) {
                 lockCount++;
             } else if (this.owner == null) {
                 this.owner = owner;
@@ -80,8 +84,9 @@ public class OwnableReentrantLock {
 
 
     public boolean tryLock(long timeValue, TimeUnit timeUnit, Object owner) {
+        Assert.checkNotNullParam("owner", owner);
         synchronized (this.lock) {
-            if (owner == this.owner) {
+            if (Objects.equals(owner, this.owner)) {
                 lockCount++;
                 return true;
             } else if (this.owner == null) {
@@ -115,8 +120,9 @@ public class OwnableReentrantLock {
     }
 
     public void unlock(Object owner) {
+        Assert.checkNotNullParam("owner", owner);
         synchronized (this.lock) {
-            if (owner != this.owner) {
+            if (!Objects.equals(owner,this.owner)) {
                 throw new IllegalMonitorStateException();
             } else {
                 if (--lockCount == 0) {
