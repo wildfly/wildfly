@@ -25,6 +25,7 @@ package org.jboss.as.connector.services.resourceadapters;
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -37,7 +38,6 @@ import org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes;
 import org.jboss.as.connector.subsystems.resourceadapters.Constants;
 import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResource;
 import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResourceCreator;
-import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResourceDefinition;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
@@ -51,6 +51,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.api.management.AdminObject;
 import org.jboss.jca.core.api.management.ConnectionFactory;
+import org.jboss.jca.core.api.management.Connector;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 import org.jboss.jca.deployers.common.CommonDeployment;
@@ -64,9 +65,9 @@ import org.jboss.msc.value.InjectedValue;
 public class IronJacamarActivationResourceService implements Service<ManagementResourceRegistration> {
 
     private static PathElement SUBSYSTEM_PATH_ELEMENT = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
-    private static PathElement IJ_PATH_ELEMENT = PathElement.pathElement(Constants.IRONJACAMAR_NAME, Constants.IRONJACAMAR_NAME);
-
-
+    private static PathAddress RA_ADDRESS = PathAddress.pathAddress(SUBSYSTEM_PATH_ELEMENT,
+            PathElement.pathElement(Constants.IRONJACAMAR_NAME, Constants.IRONJACAMAR_NAME),
+            PathElement.pathElement(Constants.RESOURCEADAPTER_NAME));
     private final ManagementResourceRegistration registration;
     private final Resource deploymentResource;
     private final boolean statsEnabled;
@@ -89,37 +90,18 @@ public class IronJacamarActivationResourceService implements Service<ManagementR
 
     @Override
     public void start(StartContext context) throws StartException {
-        ManagementResourceRegistration subRegistration;
         final CommonDeployment deploymentMD = deployment.getValue().getDeployment();
         ROOT_LOGGER.debugf("Starting IronJacamarActivationResourceService %s", deploymentMD.getDeploymentName());
 
-        try {
-            ResourceBuilder resourceBuilder = ResourceBuilder.Factory.create(SUBSYSTEM_PATH_ELEMENT,
-                    new StandardResourceDescriptionResolver(Constants.STATISTICS_NAME, CommonAttributes.RESOURCE_NAME, CommonAttributes.class.getClassLoader()));
-            subRegistration = registration.registerSubModel(resourceBuilder.build());
-
-        } catch (IllegalArgumentException iae) {
-            subRegistration = registration.getSubModel(PathAddress.pathAddress(SUBSYSTEM_PATH_ELEMENT));
-        }
-        ManagementResourceRegistration ijRegistration;
-
-        try {
-            ijRegistration = subRegistration.registerSubModel(new IronJacamarResourceDefinition());
-
-        } catch (IllegalArgumentException iae) {
-            ijRegistration = subRegistration.getSubModel(PathAddress.pathAddress(Constants.IRONJACAMAR_NAME, Constants.IRONJACAMAR_NAME));
-
-        }
 
         try {
             if (deploymentResource != null) {
 
-
                 PathElement peLocalStats = PathElement.pathElement(Constants.STATISTICS_NAME, "extended");
 
                 if (deploymentMD.getConnector() != null && deploymentMD.getConnector().getResourceAdapter() != null) {
-                    ManagementResourceRegistration raRegistration = ijRegistration.
-                            getSubModel(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(Constants.RESOURCEADAPTER_NAME)))
+                    ManagementResourceRegistration raRegistration = registration.
+                            getSubModel(RA_ADDRESS)
                             .registerOverrideModel(deploymentMD.getDeploymentName(), new OverrideDescriptionProvider() {
                                 @Override
                                 public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
@@ -272,16 +254,51 @@ public class IronJacamarActivationResourceService implements Service<ManagementR
 
     @Override
     public void stop(StopContext context) {
-        ManagementResourceRegistration subsystemResourceRegistration;
 
-        subsystemResourceRegistration = registration.getSubModel(PathAddress.pathAddress(SUBSYSTEM_PATH_ELEMENT));
+        final CommonDeployment deploymentMD = deployment.getValue().getDeployment();
+        final String deploymentName = deploymentMD.getDeploymentName();
 
-        if (subsystemResourceRegistration != null) {
-            if (subsystemResourceRegistration.getSubModel(PathAddress.pathAddress(IJ_PATH_ELEMENT)) != null) {
-                subsystemResourceRegistration.unregisterSubModel(IJ_PATH_ELEMENT);
+        ROOT_LOGGER.debugf("Stopping IronJacamarActivationResourceService %s", deploymentName);
+
+        Connector connector = deploymentMD.getConnector();
+        if (connector != null && connector.getResourceAdapter() != null) {
+
+            // We may have registered override resource registrations so we need to remove those
+            ManagementResourceRegistration raReg = registration.getSubModel(RA_ADDRESS.getParent().append(Constants.RESOURCEADAPTER_NAME, deploymentName));
+            ManagementResourceRegistration cdefReg = raReg.getSubModel(PathAddress.pathAddress(PathElement.pathElement(Constants.CONNECTIONDEFINITIONS_NAME)));
+
+            List<ConnectionFactory> connectionFactories = connector.getConnectionFactories();
+            if (connectionFactories != null) { // code reads that it won't be null but it's not documented, so...
+                for (ConnectionFactory cf : connectionFactories) {
+                    // We might not have registered an override for this one but it's no harm to remove
+                    // and simpler to just do it vs analyzing to see if we did
+                    cdefReg.unregisterOverrideModel(cf.getJndiName());
+                }
             }
-            registration.unregisterSubModel(SUBSYSTEM_PATH_ELEMENT);
+
+            ConnectionManager[] connectionManagers = deploymentMD.getConnectionManagers();
+            if (connectionManagers != null) {
+                for (ConnectionManager cm : connectionManagers) {
+                    // We might not have registered an override for this one but it's no harm to remove
+                    // and simpler to just do it vs analyzing to see if we did
+                    cdefReg.unregisterOverrideModel(cm.getJndiName());
+                }
+            }
+
+            List<AdminObject> adminObjects = connector.getAdminObjects();
+            if (adminObjects != null) { // code reads that it won't be null but it's not documented, so...
+                ManagementResourceRegistration aoReg = raReg.getSubModel(PathAddress.pathAddress(PathElement.pathElement(Constants.ADMIN_OBJECTS_NAME)));
+                for (AdminObject ao : adminObjects) {
+                    // We might not have registered an override for this one but it's no harm to remove
+                    // and simpler to just do it vs analyzing to see if we did
+                    aoReg.unregisterOverrideModel(ao.getJndiName());
+                }
+            }
+
+            ManagementResourceRegistration raBaseReg = registration.getSubModel(RA_ADDRESS);
+            raBaseReg.unregisterOverrideModel(deploymentName);
         }
+
         deploymentResource.removeChild(SUBSYSTEM_PATH_ELEMENT);
     }
 
