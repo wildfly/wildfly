@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ejb.remote.client.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -36,10 +37,10 @@ import javax.ejb.NoSuchEJBException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
+import org.jboss.ejb.client.UUIDSessionID;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -200,25 +201,23 @@ public class EJBClientAPIUsageTestCase {
 
 
     /**
-     * Tests that invocation on a stateful session bean fails, if a session hasn't been created
+     * Tests that if a stateful EJB is invoked using a stateless locator, then the invocation is allowed to proceed
+     * and a session gets (auto) created for the invocation and subsequent invocations on the proxy use that session
      *
      * @throws Exception
      */
     @Test
-    public void testSFSBAccessFailureWithoutSession() throws Exception {
+    public void testSFSBAccessWithoutSession() throws Exception {
         // create a locator without a session
-        final StatelessEJBLocator<Counter> locator = new StatelessEJBLocator<Counter>(Counter.class, APP_NAME, MODULE_NAME, CounterBean.class.getSimpleName(), "", Affinity.NONE);
-        final Counter counter = EJBClient.createProxy(locator);
-        Assert.assertNotNull("Received a null proxy", counter);
-        // invoke the bean without creating a session
-        try {
-            final int initialCount = counter.getCount();
-            Assert.fail("Expected an EJBException for calling a stateful session bean without creating a session");
-        } catch (EJBException ejbe) {
-            // expected
-            logger.trace("Received the expected exception", ejbe);
-
+        final StatelessEJBLocator<Counter> statelessLocator = new StatelessEJBLocator<>(Counter.class, APP_NAME, MODULE_NAME, CounterBean.class.getSimpleName());
+        final Counter statefulEJB = EJBClient.createProxy(statelessLocator);
+        Assert.assertEquals("Unexpected initial count from stateful bean", 0, statefulEJB.getCount());
+        final int numTimes = 5;
+        for (int i = 0; i < numTimes; i++) {
+            final int currentSum = statefulEJB.incrementAndGetCount();
+            Assert.assertEquals("Unexpected counter value returned by stateful bean", (i + 1), currentSum);
         }
+        Assert.assertEquals("Unexpected counter value returned by stateful bean", numTimes, statefulEJB.getCount());
     }
 
     /**
@@ -366,9 +365,8 @@ public class EJBClientAPIUsageTestCase {
 
     /**
      * AS7-3402
-     *
+     * <p>
      * Tests that a NonSerializableException does not break the channel
-     *
      */
     @Test
     public void testNonSerializableResponse() throws InterruptedException, ExecutionException {
@@ -406,4 +404,24 @@ public class EJBClientAPIUsageTestCase {
         }
 
     }
+
+    /**
+     * Tests that if a stateless EJB is invoked using a stateful locator, then the invocation fails
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSLSBInvocationUsingStatefulLocator() throws Exception {
+        final StatefulEJBLocator<EchoRemote> statefulLocator = new StatefulEJBLocator<>(EchoRemote.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), new UUIDSessionID(UUID.randomUUID()));
+        final EchoRemote statelessEJB = EJBClient.createProxy(statefulLocator);
+        try {
+            final String echo = statelessEJB.echo("I expect no echo");
+            Assert.fail("Invocation on a stateless EJB, through a stateful locator was expected to fail");
+        } catch (EJBException ejbe) {
+            // expected to fail
+            logger.debug("Invocation on stateless EJB failed as expected with " + ejbe.getClass(), ejbe);
+        }
+    }
+
 }
+

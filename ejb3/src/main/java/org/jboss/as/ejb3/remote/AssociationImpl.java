@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentIsStoppedException;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
+import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
@@ -146,6 +147,38 @@ final class AssociationImpl implements Association, AutoCloseable {
         if (invokedMethod == null) {
             invocationRequest.writeNoSuchMethod();
             return CancelHandle.NULL;
+        }
+
+        final EJBComponent ejbComponent = ejbDeploymentInformation.getEjbComponent();
+        if (ejbComponent instanceof StatelessSessionComponent && ejbLocator.isStateful()) {
+            // if the incoming call is backed a stateful locator, then this stateless EJB
+            // can't support it
+            invocationRequest.writeNotStateful();
+            return CancelHandle.NULL;
+        }
+        if (ejbComponent instanceof StatefulSessionComponent && ejbLocator.isStateless()) {
+            // the bean is stateful but the incoming call is backed by a stateless locator.
+            // we create a (new) session and pass it back through the incoming request and move ahead
+            // with processing the invocation
+            final SessionID newSession;
+            try {
+                // create the session on this same thread instead of doing the session creation as a separate
+                // task, since session creation is more of a pre-requisite for the actual invocation task
+                newSession = ((StatefulSessionComponent) ejbComponent).createSessionRemote();
+            } catch (Exception e) {
+                EjbLogger.REMOTE_LOGGER.exceptionGeneratingSessionId(e, ejbComponent.getComponentName(), ejbIdentifier);
+                invocationRequest.writeException(e);
+                return CancelHandle.NULL;
+            }
+            invocationRequest.convertToStateful(newSession);
+            // add the session as a private attachment so that it gets used/recognized by the interceptors
+            // responsible for handling stateful EJBs
+            Map privateAttachments = (Map) requestContent.getAttachments().get(EJBClientInvocationContext.PRIVATE_ATTACHMENTS_KEY);
+            if (privateAttachments == null) {
+                privateAttachments = new HashMap<>();
+                requestContent.getAttachments().put(EJBClientInvocationContext.PRIVATE_ATTACHMENTS_KEY, privateAttachments);
+            }
+            privateAttachments.put(SessionID.class, newSession);
         }
 
         final boolean isAsync = componentView.isAsynchronous(invokedMethod);
