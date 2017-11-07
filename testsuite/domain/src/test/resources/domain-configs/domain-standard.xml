@@ -407,9 +407,6 @@
                     <file relative-to="jboss.server.log.dir" path="server.log"/>
                     <suffix value=".yyyy-MM-dd"/>
                 </periodic-rotating-file-handler>
-                <logger category="org.jboss.as.controller">
-                    <level name="TRACE"/>
-                </logger>
                 <root-logger>
                     <level name="INFO"/>
                     <handlers>

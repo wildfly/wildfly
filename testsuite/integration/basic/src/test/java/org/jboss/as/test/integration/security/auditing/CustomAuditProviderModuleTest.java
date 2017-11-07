@@ -169,7 +169,7 @@ public class CustomAuditProviderModuleTest {
 
             ModelNode addAuditLogOp = Util.createAddOperation(PathAddress.pathAddress().append(SUBSYSTEM, "logging")
                     .append("periodic-rotating-file-handler", AUDIT_HANDLER_NAME));
-            addAuditLogOp.get("level").set("TRACE");
+            addAuditLogOp.get("level").set("INFO");
             addAuditLogOp.get("append").set("true");
             addAuditLogOp.get("suffix").set(".yyyy-MM-dd");
             ModelNode file = new ModelNode();
@@ -181,7 +181,7 @@ public class CustomAuditProviderModuleTest {
 
             ModelNode addAuditLoggerOp = Util.createAddOperation(PathAddress.pathAddress().append(SUBSYSTEM, "logging")
                     .append("logger", CustomAuditProviderModule.class.getName()));
-            addAuditLoggerOp.get("level").set("TRACE");
+            addAuditLoggerOp.get("level").set("INFO");
             addAuditLoggerOp.get("handlers").add(AUDIT_HANDLER_NAME);
             steps.add(addAuditLoggerOp);
             applyUpdates(managementClient.getControllerClient(), Arrays.asList(compositeOp));

@@ -179,7 +179,8 @@ public abstract class AbstractCertificateLoginModuleTestCase {
             WORK_DIR.mkdirs();
             Utils.createKeyMaterial(WORK_DIR);
 
-            TRACE_SECURITY.setup(managementClient, null);
+            // Uncomment if TRACE logging is necessary. Don't leave it on all the time; CI resources aren't free.
+            //TRACE_SECURITY.setup(managementClient, null);
 
             final ModelControllerClient client = managementClient.getControllerClient();
 
@@ -230,7 +231,8 @@ public abstract class AbstractCertificateLoginModuleTestCase {
             Utils.applyUpdate(operation, managementClient.getControllerClient());
 
             FileUtils.deleteDirectory(WORK_DIR);
-            TRACE_SECURITY.tearDown(managementClient, null);
+            // Uncomment if TRACE logging is necessary. Don't leave it on all the time; CI resources aren't free.
+            //TRACE_SECURITY.tearDown(managementClient, null);
 
         }
     }
