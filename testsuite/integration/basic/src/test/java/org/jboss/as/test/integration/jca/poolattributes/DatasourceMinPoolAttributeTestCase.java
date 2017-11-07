@@ -28,10 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
-import java.io.FilePermission;
-import java.lang.reflect.ReflectPermission;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
@@ -58,7 +55,6 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.adapters.jdbc.WrapperDataSource;
 import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
-import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -73,8 +69,8 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:thofman@redhat.com">Tomas Hofman</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(DatasourcePoolAttributesTestCase.DatasourceServerSetupTask.class)
-public class DatasourcePoolAttributesTestCase extends JcaMgmtBase {
+@ServerSetup(DatasourceMinPoolAttributeTestCase.DatasourceServerSetupTask.class)
+public class DatasourceMinPoolAttributeTestCase extends JcaMgmtBase {
 
     private static final String DS_NAME = "DS";
     private static final ModelNode DS_ADDRESS = new ModelNode().add(SUBSYSTEM, "datasources")
@@ -94,7 +90,7 @@ public class DatasourcePoolAttributesTestCase extends JcaMgmtBase {
                 WildFlyDataSource.class,
                 WrapperDataSource.class,
                 JcaMgmtServerSetupTask.class,
-                DatasourcePoolAttributesTestCase.class,
+                DatasourceMinPoolAttributeTestCase.class,
                 AbstractMgmtServerSetupTask.class,
                 AbstractMgmtTestBase.class,
                 JcaMgmtBase.class,
@@ -109,19 +105,10 @@ public class DatasourcePoolAttributesTestCase extends JcaMgmtBase {
                 "org.jboss.as.controller," +
                 "org.jboss.dmr," +
                 "org.jboss.as.cli," +
-                "org.jboss.remoting3," +
                 "org.jboss.staxmapper," +
                 "org.jboss.ironjacamar.api," +
                 "org.jboss.ironjacamar.impl," +
                 "org.jboss.ironjacamar.jdbcadapters\n"), "MANIFEST.MF");
-
-        jar.addAsManifestResource(createPermissionsXmlAsset(
-                new RemotingPermission("connect"),
-                new RemotingPermission("createEndpoint"),
-                new RuntimePermission("accessDeclaredMembers"),
-                new ReflectPermission("suppressAccessChecks"),
-                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")),
-                "permissions.xml");
 
         return jar;
     }
@@ -140,36 +127,27 @@ public class DatasourcePoolAttributesTestCase extends JcaMgmtBase {
         return managementClient.getControllerClient();
     }
 
-    /**
-     * Checks that attributes not requiring reload can be set.
-     */
     @Test
-    public void testModifyNonReloadAttributes() throws Exception {
+    public void testModifyMinPoolAttribute() throws Exception {
         WrapperDataSource wrapperDataSource = JcaTestsUtil.extractWrapperDatasource((WildFlyDataSource) datasource);
         PoolConfiguration poolConfiguration = JcaTestsUtil.exctractPoolConfiguration(wrapperDataSource);
 
         // check initial values
         Assert.assertNotNull(poolConfiguration);
-        Assert.assertEquals(0, poolConfiguration.getInitialSize());
-        Assert.assertEquals(30000, poolConfiguration.getBlockingTimeout());
-        Assert.assertEquals(true, poolConfiguration.isFair());
-        Assert.assertEquals(false, poolConfiguration.isStrictMin());
+        Assert.assertEquals(0, poolConfiguration.getMinSize());
 
         // modify values
-        writeAttribute(DS_ADDRESS, Constants.INITIAL_POOL_SIZE.getName(), "4");
-        writeAttribute(DS_ADDRESS, Constants.BLOCKING_TIMEOUT_WAIT_MILLIS.getName(), "10000");
-        writeAttribute(DS_ADDRESS, Constants.POOL_FAIR.getName(), "false");
-        writeAttribute(DS_ADDRESS, Constants.POOL_USE_STRICT_MIN.getName(), "true");
+        writeAttribute(DS_ADDRESS, Constants.MIN_POOL_SIZE.getName(), "4");
 
-        // check that server is not in reload-required state
+        // check that server is in reload-required state
         ModelNode serverState = readAttribute(new ModelNode(), "server-state");
-        Assert.assertEquals("running", serverState.asString());
+        Assert.assertEquals("reload-required", serverState.asString());
+
         // check that runtime was updated
-        Assert.assertEquals(4, poolConfiguration.getInitialSize());
-        Assert.assertEquals(10000, poolConfiguration.getBlockingTimeout());
-        Assert.assertEquals(false, poolConfiguration.isFair());
-        Assert.assertEquals(true, poolConfiguration.isStrictMin());
+        Assert.assertEquals(4, poolConfiguration.getMinSize());
+
     }
+
 
     static class DatasourceServerSetupTask extends JcaMgmtServerSetupTask {
 
