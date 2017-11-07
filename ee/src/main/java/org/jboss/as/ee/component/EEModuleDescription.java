@@ -113,7 +113,7 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
      */
     public EEModuleClassDescription addOrGetLocalClassDescription(final String className) {
         if (className == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("name");
+            throw EeLogger.ROOT_LOGGER.nullVar("className", "module", moduleName);
         }
         EEModuleClassDescription ret = classDescriptions.get(className);
         if (ret == null) {
@@ -158,10 +158,10 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
         final String componentName = description.getComponentName();
         final String componentClassName = description.getComponentClassName();
         if (componentName == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("componentName");
+            throw EeLogger.ROOT_LOGGER.nullVar("componentName", "module", moduleName);
         }
         if (componentClassName == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("componentClassName");
+            throw EeLogger.ROOT_LOGGER.nullVar("componentClassName","module", moduleName);
         }
         if (componentsByName.containsKey(componentName)) {
             throw EeLogger.ROOT_LOGGER.componentAlreadyDefined(componentName);
@@ -242,7 +242,7 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
 
     public void setDistinctName(String distinctName) {
         if (distinctName == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("distinctName");
+            throw EeLogger.ROOT_LOGGER.nullVar("distinctName", "module", moduleName);
         }
         this.distinctName = distinctName;
     }

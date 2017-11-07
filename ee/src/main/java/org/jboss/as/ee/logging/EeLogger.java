@@ -879,6 +879,7 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 78, value = "%s is null")
     IllegalArgumentException nullVar(String name);
 
+
     /**
      * Creates an exception indicating the item cannot be added because the priority is already taken.
      *
@@ -1109,4 +1110,25 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 114, value = "Class does not implement all of the provided interfaces")
     IllegalArgumentException classDoesNotImplementAllInterfaces();
 
+    /**
+     * Creates an exception indicating the name of the @{code objectType}, is {@code null}.
+     *
+     * @param objectType the type of the object.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 115, value = "The name of the %s is null")
+    IllegalArgumentException nullName(String objectType);
+
+    /**
+     * Creates an exception indicating the variable, represented by the {@code variable} parameter in the @{code objectType} {@code objectName}, is {@code null}.
+     *
+     * @param variable the name of the variable.
+     * @param objectType the type of the object.
+     * @param objectName the name of the object.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 116, value = "%s is null in the %s %s")
+    IllegalArgumentException nullVar(String variable, String objectType, String objectName);
 }
