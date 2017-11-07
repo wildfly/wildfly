@@ -20,22 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.twoclusters.bean.forwarding;
+package org.jboss.as.test.clustering.twoclusters;
 
-import javax.ejb.Stateful;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import org.jboss.as.test.clustering.ejb.ClientEJBDirectory;
 
-import org.jboss.as.test.clustering.twoclusters.bean.stateful.RemoteStatefulSB;
+/**
+ * Tests concurrent fail-over without a managed transaction context on the forwarder and using the client "API".
+ *
+ * @author Radoslav Husar
+ */
+public class NonTxClientEJBTwoClusterTestCase extends NonTxRemoteEJBTwoClusterTestCase {
 
-@Stateful
-@TransactionAttribute(TransactionAttributeType.REQUIRED) // this is the default anyway
-public class ForwardingStatefulSBImpl extends AbstractForwardingStatefulSBImpl implements RemoteStatefulSB {
-
-    // We need to override these methods so that the TransactionAttribute gets processed on this class!
-
-    @Override
-    public int getSerialAndIncrement() {
-        return super.getSerialAndIncrement();
+    public NonTxClientEJBTwoClusterTestCase() {
+        super(() -> new ClientEJBDirectory(MODULE_NAME));
     }
 }

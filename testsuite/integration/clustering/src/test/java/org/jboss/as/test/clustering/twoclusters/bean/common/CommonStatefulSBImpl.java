@@ -1,49 +1,58 @@
-package org.jboss.as.test.clustering.twoclusters.bean.common;
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2017, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 
-import org.jboss.as.test.clustering.twoclusters.bean.SerialBean;
+package org.jboss.as.test.clustering.twoclusters.bean.common;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Remove;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+
 import org.jboss.logging.Logger;
 
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class CommonStatefulSBImpl implements CommonStatefulSB {
 
-    private SerialBean bean;
+    private int serial;
     private static final Logger log = Logger.getLogger(CommonStatefulSBImpl.class.getName());
 
     @PostConstruct
     private void init() {
-        bean = new SerialBean();
-        log.tracef("New SFSB created: %s.", this);
-    }
-
-    @Override
-    public int getSerial() {
-        log.trace("getSerial() called on non-forwarding node " + getCurrentNode());
-        return bean.getSerial();
+        serial = 0;
+        log.infof("New SFSB created: %s.", this);
     }
 
     @Override
     public int getSerialAndIncrement() {
-        log.trace("getSerialAndIncrement() called on non-forwarding node " + getCurrentNode());
-        return bean.getSerialAndIncrement();
-    }
-
-    @Override
-    public byte[] getCargo() {
-        log.trace("getCargo() called on non-forwarding node " + getCurrentNode());
-        return bean.getCargo();
+        log.infof("getSerialAndIncrement() called on non-forwarding node %s", getCurrentNode());
+        return serial++;
     }
 
     @Remove
     private void destroy() {
-        // Let the container do the work.
+        serial = -1;
     }
 
-    private String getCurrentNode() {
+    private static String getCurrentNode() {
         return System.getProperty("jboss.node.name", "unknown");
     }
 }

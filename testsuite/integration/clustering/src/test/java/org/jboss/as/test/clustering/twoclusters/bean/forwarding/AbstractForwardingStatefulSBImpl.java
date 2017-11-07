@@ -1,62 +1,65 @@
-package org.jboss.as.test.clustering.twoclusters.bean.forwarding;
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2017, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 
-import org.jboss.as.test.clustering.twoclusters.bean.stateful.RemoteStatefulSB;
-import org.jboss.as.test.clustering.twoclusters.bean.stateful.RemoteStatefulSBImpl;
+package org.jboss.as.test.clustering.twoclusters.bean.forwarding;
 
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import java.util.Hashtable;
+
+import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.twoclusters.bean.stateful.RemoteStatefulSB;
 import org.jboss.logging.Logger;
 
+/**
+ * @author Radoslav Husar
+ */
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-public class AbstractForwardingStatefulSBImpl {
+public abstract class AbstractForwardingStatefulSBImpl {
 
     private static final Logger log = Logger.getLogger(AbstractForwardingStatefulSBImpl.class.getName());
+    public static final String MODULE_NAME = "twocluster-terminus";
 
     private RemoteStatefulSB bean;
-
-    private final String appName = "";
-    private final String moduleName = "clusterbench-ee6-ejb";
-    private final String distinctName = "" ;
-    private final String beanName = RemoteStatefulSBImpl.class.getSimpleName();
-    private final String viewClassName = RemoteStatefulSB.class.getName() ;
-
-    private final String EJB_NAME = "ejb:" + appName + "/" + moduleName + "/" + distinctName + "/" + beanName +  "!" + viewClassName + "?stateful";
 
     @SuppressWarnings("unchecked")
     private RemoteStatefulSB forward() {
         if (bean == null) {
-            try {
-                Hashtable props = new Hashtable();
-                props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-                Context context = new InitialContext(props);
-                bean = (RemoteStatefulSB) context.lookup(EJB_NAME);
+            try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
+                bean = directory.lookupStateful("RemoteStatefulSBImpl", RemoteStatefulSB.class);
             } catch (Exception e) {
-                log.info("exception occurred looking up name " + EJB_NAME + " on forwarding node " + getCurrentNode());
+                log.infof("exception occurred looking up ejb on forwarding node %s", getCurrentNode());
                 throw new RuntimeException(e);
             }
         }
         return bean;
     }
 
-    public int getSerial() {
-        log.trace("getSerial() called on forwarding node " + getCurrentNode());
-        return forward().getSerial();
-    }
-
     public int getSerialAndIncrement() {
-        log.trace("getSerialAndIncrement() called on forwarding node " + getCurrentNode());
+        log.infof("getSerialAndIncrement() called on forwarding node %s", getCurrentNode());
         return forward().getSerialAndIncrement();
     }
 
-    public byte[] getCargo() {
-        log.trace("getCargo() called on forwarding node " + getCurrentNode());
-        return forward().getCargo();
-    }
-
-    private String getCurrentNode() {
+    private static String getCurrentNode() {
         return System.getProperty("jboss.node.name", "unknown");
     }
 }

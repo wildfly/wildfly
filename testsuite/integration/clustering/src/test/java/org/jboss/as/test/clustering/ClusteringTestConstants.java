@@ -27,7 +27,6 @@ import org.jboss.as.test.shared.TimeoutUtil;
  * Test constants statically imported used across the clustering tests.
  *
  * @author Radoslav Husar
- * @version Feb 2012
  */
 public interface ClusteringTestConstants {
 
@@ -66,11 +65,6 @@ public interface ClusteringTestConstants {
     String[] NODES = new String[] { NODE_1, NODE_2 };
 
     String NODE_NAME_PROPERTY = "jboss.node.name";
-
-    /**
-     * Name of cluster for remote client.
-     */
-    String CLUSTER_NAME = "ejb";
 
     /**
      * Timeouts.
