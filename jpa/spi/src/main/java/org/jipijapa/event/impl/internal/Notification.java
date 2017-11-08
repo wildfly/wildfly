@@ -98,13 +98,12 @@ public class Notification {
 
     /**
      * Stop cache
-     *
+     * @param cacheType
      * @param wrapper
-     * @param skipStop will be true if the cache shouldn't be stopped
      */
-    public static void stopCache(Classification cacheType, Wrapper wrapper, boolean skipStop) {
+    public static void stopCache(Classification cacheType, Wrapper wrapper) {
         for(EventListener eventListener: eventListeners) {
-            eventListener.stopCache(cacheType, wrapper, skipStop);
+            eventListener.stopCache(cacheType, wrapper);
         }
     }
 

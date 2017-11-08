@@ -82,7 +82,7 @@ public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.Infi
     @Override
     protected void stopCacheManager() {
         // stop the private cache
-        Notification.stopCache(Classification.INFINISPAN, wrapper, false );
+        Notification.stopCache(Classification.INFINISPAN, wrapper);
     }
 
     @SuppressWarnings("rawtypes")

@@ -132,7 +132,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
     }
 
     @Override
-    public void stopCache(Classification classification, Wrapper wrapper, boolean ignoreStop) {
+    public void stopCache(Classification classification, Wrapper wrapper) {
         // Remove services created in startCache(...)
         CacheWrapper cacheWrapper = (CacheWrapper) wrapper;
         ServiceRegistry registry = currentServiceContainer();
