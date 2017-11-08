@@ -105,10 +105,6 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
             return methodIdentifier;
         }
 
-        public boolean isRetainIfException() {
-            return retainIfException;
-        }
-
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -205,11 +201,6 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         addStatefulSessionSynchronizationInterceptor();
 
         return statefulComponentConfiguration;
-    }
-
-    @Override
-    public boolean allowsConcurrentAccess() {
-        return true;
     }
 
     public Method getAfterBegin() {

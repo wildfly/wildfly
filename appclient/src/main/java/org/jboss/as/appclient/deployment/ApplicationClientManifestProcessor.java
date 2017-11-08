@@ -67,7 +67,7 @@ public class ApplicationClientManifestProcessor implements DeploymentUnitProcess
                     try {
                         final Class<?> clazz = module.getClassLoader().loadClass(mainClass);
                         deploymentUnit.putAttachment(AppClientAttachments.MAIN_CLASS, clazz);
-                        final ApplicationClientComponentDescription description = new ApplicationClientComponentDescription(clazz.getName(), moduleDescription, deploymentUnit.getServiceName(), applicationClasses);
+                        final ApplicationClientComponentDescription description = new ApplicationClientComponentDescription(clazz.getName(), moduleDescription, deploymentUnit.getServiceName());
                         moduleDescription.addComponent(description);
                         deploymentUnit.putAttachment(AppClientAttachments.APPLICATION_CLIENT_COMPONENT, description);
 

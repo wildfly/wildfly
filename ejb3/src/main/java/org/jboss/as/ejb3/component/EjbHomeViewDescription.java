@@ -21,11 +21,6 @@
  */
 package org.jboss.as.ejb3.component;
 
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.as.ee.component.ComponentDescription;
 
 /**
@@ -33,18 +28,8 @@ import org.jboss.as.ee.component.ComponentDescription;
  */
 public class EjbHomeViewDescription extends EJBViewDescription {
 
-    private final Set<Method> createMethods = new HashSet<Method>();
-
     public EjbHomeViewDescription(final ComponentDescription componentDescription, final String viewClassName, final MethodIntf methodIntf) {
         super(componentDescription, viewClassName, methodIntf, false);
-    }
-
-    public void addCreateMethod(Method method) {
-        this.createMethods.add(method);
-    }
-
-    public Set<Method> getCreateMethods() {
-        return Collections.unmodifiableSet(createMethods);
     }
 
 }

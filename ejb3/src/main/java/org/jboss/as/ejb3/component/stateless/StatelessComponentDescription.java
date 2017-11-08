@@ -125,11 +125,6 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
     }
 
     @Override
-    public boolean allowsConcurrentAccess() {
-        return false;
-    }
-
-    @Override
     public SessionBeanType getSessionBeanType() {
         return SessionBeanComponentDescription.SessionBeanType.STATELESS;
     }

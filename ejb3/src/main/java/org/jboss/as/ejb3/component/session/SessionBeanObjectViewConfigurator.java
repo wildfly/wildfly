@@ -43,7 +43,6 @@ import org.jboss.as.ejb3.component.interceptors.GetHomeInterceptorFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -142,18 +141,4 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
         }
     });
 
-
-    protected Method resolveRemoveMethod(final Class<?> componentClass, final DeploymentReflectionIndex index, final String ejbName) throws DeploymentUnitProcessingException {
-
-        Class<?> clazz = componentClass;
-        while (clazz != Object.class) {
-            final ClassReflectionIndex classIndex = index.getClassIndex(clazz);
-            Method ret = classIndex.getMethod(Void.TYPE, "ejbRemove");
-            if (ret != null) {
-                return ret;
-            }
-            clazz = clazz.getSuperclass();
-        }
-        return null;
-    }
 }

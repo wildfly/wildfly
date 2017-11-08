@@ -22,9 +22,6 @@
 
 package org.jboss.as.cmp.subsystem;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author John Bailey
  */
@@ -47,21 +44,5 @@ enum Namespace {
 
     public String getUriString() {
         return name;
-    }
-
-    private static final Map<String, Namespace> MAP;
-
-    static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        for (Namespace namespace : values()) {
-            final String name = namespace.getUriString();
-            if (name != null) map.put(name, namespace);
-        }
-        MAP = map;
-    }
-
-    public static Namespace forUri(String uri) {
-        final Namespace element = MAP.get(uri);
-        return element == null ? UNKNOWN : element;
     }
 }

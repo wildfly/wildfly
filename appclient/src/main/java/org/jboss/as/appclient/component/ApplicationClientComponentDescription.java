@@ -26,7 +26,6 @@ package org.jboss.as.appclient.component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentFactory;
-import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
@@ -42,7 +41,7 @@ public final class ApplicationClientComponentDescription extends ComponentDescri
 
     public static final String APP_CLIENT_COMPONENT_NAME = "AppClientComponent";
 
-    public ApplicationClientComponentDescription( final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName, final EEApplicationClasses applicationClassesDescription) {
+    public ApplicationClientComponentDescription(final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName) {
         super(APP_CLIENT_COMPONENT_NAME, componentClassName, moduleDescription, deploymentUnitServiceName);
         setExcludeDefaultInterceptors(true);
 

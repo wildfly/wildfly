@@ -22,18 +22,12 @@
 
 package org.jboss.as.ejb3.deployment;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 
 /**
  * User: jpai
@@ -44,20 +38,17 @@ public class EjbJarDescription {
 
     private final Set<String> applicationLevelSecurityRoles = new HashSet<String>();
 
-    private final EEApplicationClasses applicationClassesDescription;
-
     /**
      * True if this represents EJB's packaged in a war
      */
     private final boolean war;
 
-    public EjbJarDescription(EEModuleDescription eeModuleDescription, final EEApplicationClasses applicationClassesDescription, boolean war) {
+    public EjbJarDescription(EEModuleDescription eeModuleDescription, boolean war) {
         this.war = war;
         if (eeModuleDescription == null) {
             throw EjbLogger.ROOT_LOGGER.paramCannotBeNull("EE module description");
         }
         this.eeModuleDescription = eeModuleDescription;
-        this.applicationClassesDescription = applicationClassesDescription;
     }
 
     public void addSecurityRole(final String role) {
@@ -90,45 +81,8 @@ public class EjbJarDescription {
     }
 
 
-
-    /**
-     * Returns the {@link SessionBeanComponentDescription session beans} belonging to this {@link EjbJarDescription}.
-     * <p/>
-     * Returns an empty collection if no session beans exist
-     *
-     * @return
-     */
-    public Collection<SessionBeanComponentDescription> getSessionBeans() {
-        Collection<SessionBeanComponentDescription> sessionBeans = new ArrayList<SessionBeanComponentDescription>();
-        for (ComponentDescription componentDescription : this.eeModuleDescription.getComponentDescriptions()) {
-            if (componentDescription instanceof SessionBeanComponentDescription) {
-                sessionBeans.add((SessionBeanComponentDescription) componentDescription);
-            }
-        }
-        return sessionBeans;
-    }
-
-    public Collection<MessageDrivenComponentDescription> getMessageDrivenBeans() {
-        Collection<MessageDrivenComponentDescription> mdbs = new ArrayList<MessageDrivenComponentDescription>();
-        for (ComponentDescription componentDescription : this.eeModuleDescription.getComponentDescriptions()) {
-            if (componentDescription instanceof MessageDrivenComponentDescription) {
-                mdbs.add((MessageDrivenComponentDescription) componentDescription);
-            }
-        }
-        return mdbs;
-    }
-
-    public void addSessionBeans(Collection<SessionBeanComponentDescription> sessionBeans) {
-        for (SessionBeanComponentDescription sessionBean : sessionBeans) {
-            this.eeModuleDescription.addComponent(sessionBean);
-        }
-    }
-
     public boolean isWar() {
         return war;
     }
 
-    public EEApplicationClasses getApplicationClassesDescription() {
-        return applicationClassesDescription;
-    }
 }

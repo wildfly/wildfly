@@ -34,12 +34,10 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
-import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -53,9 +51,6 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodApplicableAccessTimeouts;
 
     private final InjectedValue<ExecutorService> asyncExecutorService = new InjectedValue<ExecutorService>();
-
-    private final ServiceName ejbObjectview;
-    private final ServiceName ejbLocalObjectView;
 
     /**
      * Construct a new instance.
@@ -104,11 +99,6 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
             this.processTxAttr(sessionBeanComponentDescription, MethodIntf.TIMER,
                     sessionBeanComponentDescription.getTimeoutMethod());
         }
-
-        final EJBViewDescription local = sessionBeanComponentDescription.getEjbLocalView();
-        ejbLocalObjectView = local == null ? null : local.getServiceName();
-        final EJBViewDescription remote = sessionBeanComponentDescription.getEjbRemoteView();
-        ejbObjectview = remote == null ? null : remote.getServiceName();
     }
 
     public Map<String, LockType> getBeanLockType() {
@@ -148,13 +138,5 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
 
     public InjectedValue<ExecutorService> getAsyncExecutorService() {
         return asyncExecutorService;
-    }
-
-    public ServiceName getEjbLocalObjectView() {
-        return ejbLocalObjectView;
-    }
-
-    public ServiceName getEjbObjectview() {
-        return ejbObjectview;
     }
 }

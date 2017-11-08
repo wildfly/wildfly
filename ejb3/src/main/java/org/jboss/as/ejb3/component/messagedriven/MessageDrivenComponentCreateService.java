@@ -56,7 +56,6 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     private final ServiceName deliveryControllerName;
     private final InjectedValue<ResourceAdapter> resourceAdapterInjectedValue = new InjectedValue<ResourceAdapter>();
     private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
-    private final InjectedValue<DefaultResourceAdapterService> defaultResourceAdapterServiceInjectedValue = new InjectedValue<DefaultResourceAdapterService>();
     private final InjectedValue<EJBUtilities> ejbUtilitiesInjectedValue = new InjectedValue<EJBUtilities>();
     private final InjectedValue<SuspendController> suspendControllerInjectedValue = new InjectedValue<>();
     private final ClassLoader moduleClassLoader;
@@ -89,12 +88,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
     @Override
     protected BasicComponent createComponent() {
-        String configuredResourceAdapterName;
-        if (resourceAdapterName == null) {
-            configuredResourceAdapterName = defaultResourceAdapterServiceInjectedValue.getValue().getDefaultResourceAdapterName();
-        } else {
-            configuredResourceAdapterName = resourceAdapterName;
-        }
+        String configuredResourceAdapterName = resourceAdapterName;
 
         // Match configured value to the actual RA names
         final String activeResourceAdapterName = searchActiveResourceAdapterName(configuredResourceAdapterName);
@@ -127,11 +121,6 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
         }
 
         return result;
-    }
-
-
-    Injector<DefaultResourceAdapterService> getDefaultResourceAdapterServiceInjector() {
-        return defaultResourceAdapterServiceInjectedValue;
     }
 
     PoolConfig getPoolConfig() {

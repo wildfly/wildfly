@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.tx;
 import static org.jboss.as.ejb3.tx.util.StatusHelper.statusAsString;
 
 import java.rmi.RemoteException;
-import java.util.Random;
 
 import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRolledbackException;
@@ -65,7 +64,6 @@ import org.jboss.tm.TransactionTimeoutConfiguration;
 public class CMTTxInterceptor implements Interceptor {
 
     private static final int MAX_RETRIES = 5;
-    private static final Random RANDOM = new Random();
 
     public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new CMTTxInterceptor());
 

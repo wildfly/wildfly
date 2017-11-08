@@ -29,12 +29,8 @@ import java.util.Properties;
 import java.util.Set;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
 
 import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.common.beans.property.BeanUtils;
@@ -65,10 +61,6 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "utilities");
 
     private final InjectedValue<ResourceAdapterRepository> resourceAdapterRepositoryValue = new InjectedValue<ResourceAdapterRepository>();
-    private final InjectedValue<ServerSecurityManager> securityManagerValue = new InjectedValue<ServerSecurityManager>();
-    private final InjectedValue<TransactionManager> transactionManagerValue = new InjectedValue<TransactionManager>();
-    private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
-    private final InjectedValue<UserTransaction> userTransactionValue = new InjectedValue<UserTransaction>();
 
     private volatile boolean statisticsEnabled = false;
 
@@ -157,50 +149,10 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
         return resourceAdapterRepositoryValue;
     }
 
-    public ServerSecurityManager getSecurityManager() {
-        final ServerSecurityManager securityManager = securityManagerValue.getOptionalValue();
-        if (securityManager == null)
-            throw EjbLogger.ROOT_LOGGER.securityNotEnabled();
-        return securityManager;
-    }
-
-    public Injector<ServerSecurityManager> getSecurityManagerInjector() {
-        return securityManagerValue;
-    }
-
-    public TransactionManager getTransactionManager() {
-        return transactionManagerValue.getOptionalValue();
-    }
-
-    public Injector<TransactionManager> getTransactionManagerInjector() {
-        return transactionManagerValue;
-    }
-
-    public InjectedValue<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistryInjector() {
-        return transactionSynchronizationRegistryValue;
-    }
-
-    public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
-        return transactionSynchronizationRegistryValue.getOptionalValue();
-    }
-
-    public UserTransaction getUserTransaction() {
-        return userTransactionValue.getOptionalValue();
-    }
-
-    public Injector<UserTransaction> getUserTransactionInjector() {
-        return userTransactionValue;
-    }
-
     @Override
     public EJBUtilities getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
-
-    public boolean hasSecurityManager() {
-        return securityManagerValue.getOptionalValue() != null;
-    }
-
     public boolean isStatisticsEnabled() {
         return statisticsEnabled;
     }

@@ -34,8 +34,6 @@ import org.jboss.invocation.Interceptor;
 public abstract class EjbComponentInstance extends BasicComponentInstance {
 
     private volatile boolean discarded = false;
-
-    private static final Object[] EMPTY_OBJECT_ARRAY = {};
     /**
      * Construct a new instance.
      *

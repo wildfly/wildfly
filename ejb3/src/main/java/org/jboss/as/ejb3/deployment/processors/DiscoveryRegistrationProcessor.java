@@ -58,7 +58,6 @@ public final class DiscoveryRegistrationProcessor implements DeploymentUnitProce
         if (deploymentUnit.getParent() != null) {
             return;
         }
-        final ServiceName clientContextName = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME);
         final ServiceName profileServiceName = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME);
 
         final DiscoveryService discoveryService = new DiscoveryService();

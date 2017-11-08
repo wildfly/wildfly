@@ -68,7 +68,7 @@ public class PassivationAnnotationParsingProcessor implements DeploymentUnitProc
         for (DotName annotationName : PASSIVATION_ANNOTATIONS) {
             final List<AnnotationInstance> lifecycles = index.getAnnotations(annotationName);
             for (AnnotationInstance annotation : lifecycles) {
-                processPassivation(eeModuleDescription, annotation.target(), annotationName, applicationClasses);
+                processPassivation(eeModuleDescription, annotation.target(), annotationName);
             }
         }
     }
@@ -76,7 +76,7 @@ public class PassivationAnnotationParsingProcessor implements DeploymentUnitProc
     public void undeploy(DeploymentUnit context) {
     }
 
-    private void processPassivation(final EEModuleDescription eeModuleDescription, final AnnotationTarget target, final DotName annotationType, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+    private void processPassivation(final EEModuleDescription eeModuleDescription, final AnnotationTarget target, final DotName annotationType) throws DeploymentUnitProcessingException {
         if (!(target instanceof MethodInfo)) {
             throw EeLogger.ROOT_LOGGER.methodOnlyAnnotation(annotationType);
         }

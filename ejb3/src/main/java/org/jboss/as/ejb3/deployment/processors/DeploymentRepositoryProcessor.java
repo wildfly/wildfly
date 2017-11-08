@@ -119,7 +119,7 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
         }
 
         final StartupCountdown countdown = deploymentUnit.getAttachment(Attachments.STARTUP_COUNTDOWN);
-        final ModuleDeployment deployment = new ModuleDeployment(identifier, deploymentInformationMap, countdown);
+        final ModuleDeployment deployment = new ModuleDeployment(identifier, deploymentInformationMap);
         ServiceName moduleDeploymentService = deploymentUnit.getServiceName().append(ModuleDeployment.SERVICE_NAME);
         final ServiceBuilder<ModuleDeployment> builder = phaseContext.getServiceTarget().addService(moduleDeploymentService, deployment);
         for (Map.Entry<ServiceName, InjectedValue<?>> entry : injectedValues.entrySet()) {
