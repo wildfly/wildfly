@@ -37,9 +37,9 @@
       <xs:complexContent>
          <xs:extension base="javaee:jboss-assembly-descriptor-bean-entryType">
             <xs:sequence>
-               <xs:element name="security-domain" type="xs:string"/>
-               <xs:element name="run-as-principal" type="xs:string"/>
-               <xs:element name="missing-method-permissions-deny-access" type="xs:boolean">
+               <xs:element name="security-domain" type="xs:string" minOccurs="0"/>
+               <xs:element name="run-as-principal" type="xs:string" minOccurs="0"/>
+               <xs:element name="missing-method-permissions-deny-access" type="xs:boolean" minOccurs="0">
                     <xs:annotation>
                         <xs:documentation>
                             <![CDATA[
