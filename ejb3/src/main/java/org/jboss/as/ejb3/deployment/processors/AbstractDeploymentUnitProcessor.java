@@ -84,7 +84,7 @@ public abstract class AbstractDeploymentUnitProcessor implements DeploymentUnitP
         final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         if (ejbJarDescription == null) {
             final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-            ejbJarDescription = new EjbJarDescription(moduleDescription, applicationClassesDescription, deploymentUnit.getName().endsWith(".war"));
+            ejbJarDescription = new EjbJarDescription(moduleDescription, deploymentUnit.getName().endsWith(".war"));
             deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION, ejbJarDescription);
         }
         return ejbJarDescription;

@@ -540,14 +540,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         return ejbLocalObjectViewServiceName;
     }
 
-    public ServiceName getEjbLocalHomeViewServiceName() {
-        return ejbLocalHomeViewServiceName;
-    }
-
-    public ServiceName getEjbHomeViewServiceName() {
-        return ejbHomeViewServiceName;
-    }
-
     public ServiceName getEjbObjectViewServiceName() {
         return ejbObjectViewServiceName;
     }

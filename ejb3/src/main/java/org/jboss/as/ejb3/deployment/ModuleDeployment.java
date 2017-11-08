@@ -46,16 +46,10 @@ public class ModuleDeployment implements Service<ModuleDeployment> {
     private final DeploymentModuleIdentifier identifier;
     private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<DeploymentRepository>();
     private final Map<String, EjbDeploymentInformation> ejbs;
-    private final StartupCountdown startupCountdown;
 
     public ModuleDeployment(DeploymentModuleIdentifier identifier, Map<String, EjbDeploymentInformation> ejbs) {
-        this(identifier, ejbs, null);
-    }
-
-    public ModuleDeployment(DeploymentModuleIdentifier identifier, Map<String, EjbDeploymentInformation> ejbs, StartupCountdown startupCountdown) {
         this.identifier = identifier;
         this.ejbs = Collections.unmodifiableMap(ejbs);
-        this.startupCountdown = startupCountdown;
     }
 
 

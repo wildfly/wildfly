@@ -28,10 +28,8 @@ import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.ejb.client.Affinity;
-import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.group.Group;
 
 /**
  * @author Stuart Douglas
@@ -39,7 +37,6 @@ import org.wildfly.clustering.group.Group;
 public class StatelessSessionComponentCreateService extends SessionBeanComponentCreateService {
 
     private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<>();
-    private final InjectedValue<Group> group = new InjectedValue<>();
 
     /**
      * Construct a new instance.
@@ -64,11 +61,7 @@ public class StatelessSessionComponentCreateService extends SessionBeanComponent
     }
 
     public Affinity getWeakAffinity() {
-        Group group = this.group.getOptionalValue();
-        return (group != null) && !group.isLocal() ? new ClusterAffinity(group.getName()) : Affinity.NONE;
+        return Affinity.NONE;
     }
 
-    public Injector<Group> getGroupInjector() {
-        return this.group;
-    }
 }

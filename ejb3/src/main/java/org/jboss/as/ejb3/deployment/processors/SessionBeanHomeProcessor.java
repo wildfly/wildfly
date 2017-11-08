@@ -75,17 +75,17 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
             if (ejbComponentDescription.getEjbLocalHomeView() != null) {
                 final EJBViewDescription view = ejbComponentDescription.getEjbLocalHomeView();
                 final EJBViewDescription ejbLocalView = ejbComponentDescription.getEjbLocalView();
-                configureHome(phaseContext, componentDescription, ejbComponentDescription, view, ejbLocalView);
+                configureHome(componentDescription, ejbComponentDescription, view, ejbLocalView);
             }
             if (ejbComponentDescription.getEjbHomeView() != null) {
                 final EJBViewDescription view = ejbComponentDescription.getEjbHomeView();
                 final EJBViewDescription ejbRemoteView = ejbComponentDescription.getEjbRemoteView();
-                configureHome(phaseContext, componentDescription, ejbComponentDescription, view, ejbRemoteView);
+                configureHome(componentDescription, ejbComponentDescription, view, ejbRemoteView);
             }
         }
     }
 
-    private void configureHome(final DeploymentPhaseContext phaseContext, final ComponentDescription componentDescription, final SessionBeanComponentDescription ejbComponentDescription, final EJBViewDescription homeView, final EJBViewDescription ejbObjectView) {
+    private void configureHome(final ComponentDescription componentDescription, final SessionBeanComponentDescription ejbComponentDescription, final EJBViewDescription homeView, final EJBViewDescription ejbObjectView) {
         homeView.getConfigurators().add(new ViewConfigurator() {
 
             @Override

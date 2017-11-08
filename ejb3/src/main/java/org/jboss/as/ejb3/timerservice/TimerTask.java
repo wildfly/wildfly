@@ -23,7 +23,6 @@ package org.jboss.as.ejb3.timerservice;
 
 import java.util.Date;
 
-import org.jboss.as.ejb3.timerservice.spi.BeanRemovedException;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
@@ -158,9 +157,6 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                 try {
                     // invoke timeout
                     this.callTimeout(timer);
-                } catch (BeanRemovedException e) {
-                    EJB3_TIMER_LOGGER.debugf("Removing timer %s as EJB has been removed ", timer);
-                    timer.cancel();
                 } catch (Exception e) {
                     EJB3_TIMER_LOGGER.errorInvokeTimeout(timer, e);
                     try {

@@ -78,8 +78,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class StatefulSessionComponent extends SessionBeanComponent implements StatefulObjectFactory<StatefulSessionComponentInstance>, PassivationListener<StatefulSessionComponentInstance>, IdentifierFactory<SessionID> {
 
-    public static final Object SESSION_ID_REFERENCE_KEY = new Object();
-
     private volatile Cache<SessionID, StatefulSessionComponentInstance> cache;
 
     private final InterceptorFactory afterBegin;

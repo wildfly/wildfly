@@ -859,10 +859,10 @@ public interface EjbLogger extends BasicLogger {
 //    @LogMessage(level = ERROR)
 //    @Message(id = 155, value = "Error during transaction management of transaction id %s")
 //    void errorDuringTransactionManagement(@Cause Throwable cause, XidTransactionID id);
-
-    @LogMessage(level = WARN)
-    @Message(id = 156, value = "%s retrying %d")
-    void retrying(String message, int count);
+//
+//    @LogMessage(level = WARN)
+//    @Message(id = 156, value = "%s retrying %d")
+//    void retrying(String message, int count);
 
     @LogMessage(level = ERROR)
     @Message(id = 157, value = "Failed to get status")
@@ -1702,8 +1702,8 @@ public interface EjbLogger extends BasicLogger {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 263, value = "Could not load EJB view class ")
-    RuntimeException failToLoadEjbViewClass(@Cause Throwable e);
+//    @Message(id = 263, value = "Could not load EJB view class ")
+//    RuntimeException failToLoadEjbViewClass(@Cause Throwable e);
 
 
     /**

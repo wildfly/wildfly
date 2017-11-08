@@ -81,7 +81,7 @@ public class EjbContextJndiBindingProcessor implements DeploymentUnitProcessor {
         for (ComponentDescription componentConfiguration : componentConfigurations) {
             final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
             if (index != null) {
-                processComponentConfig(deploymentUnit, phaseContext, index, componentConfiguration);
+                processComponentConfig(componentConfiguration);
             }
         }
     }
@@ -92,7 +92,7 @@ public class EjbContextJndiBindingProcessor implements DeploymentUnitProcessor {
     }
 
 
-    protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
+    protected void processComponentConfig(final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         if (!(componentDescription instanceof EJBComponentDescription)) {
             return;  // Only process EJBs
         }
