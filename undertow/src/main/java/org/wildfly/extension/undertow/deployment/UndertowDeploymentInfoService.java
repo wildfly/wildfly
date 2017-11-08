@@ -577,7 +577,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
                 ResourceManager resourceManager = new ServletResourceManager(deploymentRoot, overlays, explodedDeployment, mergedMetaData.isSymbolicLinkingEnabled(), servletContainer.isDisableFileWatchService(), externalOverlays);
 
-                resourceManager = new CachingResourceManager(100, 10 * 1024 * 1024, servletContainer.getBufferCache(), resourceManager, explodedDeployment ? 2000 : -1);
+                resourceManager = new CachingResourceManager(servletContainer.getFileCacheMetadataSize(), servletContainer.getFileCacheMaxFileSize(), servletContainer.getBufferCache(), resourceManager, servletContainer.getFileCacheTimeToLive() == null ? (explodedDeployment ? 2000 : -1) : servletContainer.getFileCacheTimeToLive());
                 if(externalResources != null && !externalResources.isEmpty()) {
                     //TODO: we don't cache external deployments, as they are intended for development use
                     //should be make this configurable or something?

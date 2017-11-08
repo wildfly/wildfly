@@ -87,6 +87,10 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final boolean eagerFilterInit = ServletContainerDefinition.EAGER_FILTER_INIT.resolveModelAttribute(context, model).asBoolean();
         final boolean disableCachingForSecuredPages = ServletContainerDefinition.DISABLE_CACHING_FOR_SECURED_PAGES.resolveModelAttribute(context, model).asBoolean();
         final int sessionIdLength = ServletContainerDefinition.SESSION_ID_LENGTH.resolveModelAttribute(context, model).asInt();
+        final int fileCacheMetadataSize = ServletContainerDefinition.FILE_CACHE_METADATA_SIZE.resolveModelAttribute(context, model).asInt();
+        final int fileCacheMaxFileSize = ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE.resolveModelAttribute(context, model).asInt();
+        final ModelNode fileCacheTtlNode = ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE.resolveModelAttribute(context, model);
+        final Integer fileCacheTimeToLive = fileCacheTtlNode.isDefined()  ? fileCacheTtlNode.asInt() : null;
 
         Boolean directoryListingEnabled = null;
         if(model.hasDefined(Constants.DIRECTORY_LISTING)) {
@@ -133,7 +137,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 disableCachingForSecuredPages, webSocketInfo != null, webSocketInfo != null && webSocketInfo.isDispatchToWorker(),
                 webSocketInfo != null && webSocketInfo.isPerMessageDeflate(), webSocketInfo == null ? -1 : webSocketInfo.getDeflaterLevel(),
                 mimeMappings,
-                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms, maxSessions, crawlerSessionManagerConfig, disableFileWatchService, disableSessionIdReususe);
+                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms, maxSessions, crawlerSessionManagerConfig, disableFileWatchService, disableSessionIdReususe, fileCacheMetadataSize, fileCacheMaxFileSize, fileCacheTimeToLive);
 
 
         final CapabilityServiceBuilder<ServletContainerService> builder = context.getCapabilityServiceTarget()
