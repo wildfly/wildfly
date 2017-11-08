@@ -25,10 +25,14 @@ package org.jboss.as.jpa.processor.secondLevelCache;
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import java.security.AccessController;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.stream.Stream;
 
+import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -38,6 +42,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 import org.jipijapa.cache.spi.Classification;
 import org.jipijapa.cache.spi.Wrapper;
 import org.jipijapa.event.spi.EventListener;
@@ -57,15 +62,8 @@ public class InfinispanCacheDeploymentListener implements EventListener {
     public static final String CACHE_TYPE = "cachetype";    // shared (jpa) or private (for native applications)
     public static final String CACHE_PRIVATE = "private";
     public static final String CONTAINER = "container";
-    public static final String COLLECTION = "collection";
-    public static final String ENTITY = "entity";
-    public static final String IMMUTABLE_ENTITY = "immutable-entity";
     public static final String NAME = "name";
-    public static final String NATURAL_ID = "natural-id";
-    public static final String QUERY = "query";
-    public static final String TIMESTAMPS = "timestamps";
-    public static final String PENDING_PUTS = "pending-puts";
-    public static final String CUSTOM = "custom";
+    public static final String CACHES = "caches";
 
     public static final String DEFAULT_CACHE_CONTAINER = "hibernate";
 
@@ -85,95 +83,87 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         String container = properties.getProperty(CONTAINER);
         // TODO Figure out how to access CapabilityServiceSupport from here
         ServiceName containerServiceName = ServiceName.parse(InfinispanRequirement.CONTAINER.resolve(container));
+        List<ServiceName> serviceNames = new LinkedList<>();
         EmbeddedCacheManager embeddedCacheManager;
-        ServiceName serviceName;
         if (CACHE_PRIVATE.equals(cache_type)) {
             // need a private cache for non-jpa application use
-            String name = properties.getProperty(NAME);
-            serviceName = ServiceName.JBOSS.append(DEFAULT_CACHE_CONTAINER, (name != null) ? name : UUID.randomUUID().toString());
+            String name = properties.getProperty(NAME, UUID.randomUUID().toString());
+            ServiceName serviceName = ServiceName.JBOSS.append(DEFAULT_CACHE_CONTAINER, name);
+            serviceNames.add(serviceName);
+            ServiceTarget target = currentServiceContainer();
 
-            ServiceContainer target = currentServiceContainer();
+            String[] caches = properties.getProperty(CACHES).split("\\s+");
+            List<ServiceController<Configuration>> controllers = new ArrayList<>(caches.length);
+            for (String cache : caches) {
+                ServiceName aliasServiceName = serviceName.append(cache);
+                ServiceName configServiceName = ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(container, cache));
+                controllers.add(new AliasServiceBuilder<>(aliasServiceName, configServiceName, Configuration.class).build(target)
+                        .setInitialMode(ServiceController.Mode.ACTIVE)
+                        .install());
+            }
+
             // Create a mock service that represents this session factory instance
-            ServiceBuilder<EmbeddedCacheManager> builder = new AliasServiceBuilder<>(serviceName, containerServiceName, EmbeddedCacheManager.class).build(target)
+            embeddedCacheManager = new AliasServiceBuilder<>(serviceName, containerServiceName, EmbeddedCacheManager.class).build(target)
                     .setInitialMode(ServiceController.Mode.ACTIVE)
-            ;
-            embeddedCacheManager = ServiceContainerHelper.getValue(builder.install());
+                    .install()
+                    .awaitValue();
 
+            // Ensure cache configuration services are started
+            for (ServiceController<Configuration> controller : controllers) {
+                serviceNames.add(controller.getName());
+                controller.awaitValue();
+            }
         } else {
             // need a shared cache for jpa applications
-            serviceName = containerServiceName;
             ServiceRegistry registry = currentServiceContainer();
-            embeddedCacheManager = (EmbeddedCacheManager) registry.getRequiredService(serviceName).getValue();
+            embeddedCacheManager = (EmbeddedCacheManager) registry.getRequiredService(containerServiceName).getValue();
         }
-        return new CacheWrapper(embeddedCacheManager, serviceName);
+        return new CacheWrapper(embeddedCacheManager, serviceNames);
     }
 
     @Override
     public void addCacheDependencies(Classification classification, Properties properties) {
+        ServiceBuilder<?> builder = CacheDeploymentListener.getInternalDeploymentServiceBuilder();
         CapabilityServiceSupport support = CacheDeploymentListener.getInternalDeploymentCapablityServiceSupport();
         String container = properties.getProperty(CONTAINER);
-        String entity = properties.getProperty(ENTITY);
-        String immutableEntity = properties.getProperty(IMMUTABLE_ENTITY);
-        String naturalId = properties.getProperty(NATURAL_ID);
-        String collection = properties.getProperty(COLLECTION);
-        String query = properties.getProperty(QUERY);
-        String timestamps  = properties.getProperty(TIMESTAMPS);
-        String pendingPuts = properties.getProperty(PENDING_PUTS);
-        String custom = properties.getProperty(CUSTOM);
-        addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, entity));
-        addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, immutableEntity));
-        addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, collection));
-        addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, naturalId));
-        if (pendingPuts != null) {
-            addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, pendingPuts));
+        for (String cache : properties.getProperty(CACHES).split("\\s+")) {
+            builder.addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, cache));
         }
-        if (query != null) {
-            addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, timestamps));
-            addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, query));
-        }
-        if (custom != null) {
-            Stream.of(custom.split("\\s+")).forEach(config -> addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, config)));
-        }
-    }
-
-    private void addDependency(ServiceName dependency) {
-        if(ROOT_LOGGER.isTraceEnabled()) {
-            ROOT_LOGGER.tracef("add second level cache dependency on service '%s'", dependency.getCanonicalName());
-        }
-        CacheDeploymentListener.getInternalDeploymentServiceBuilder().addDependency(dependency);
     }
 
     @Override
     public void stopCache(Classification classification, Wrapper wrapper, boolean ignoreStop) {
-        if (!ignoreStop) {
-            // Remove the service created in createCacheManager(...)
-            CacheWrapper cacheWrapper = (CacheWrapper) wrapper;
-            if(ROOT_LOGGER.isTraceEnabled()) {
-                ROOT_LOGGER.tracef("stop second level cache by removing dependency on service '%s'", cacheWrapper.serviceName.getCanonicalName());
+        // Remove services created in startCache(...)
+        CacheWrapper cacheWrapper = (CacheWrapper) wrapper;
+        ServiceRegistry registry = currentServiceContainer();
+        for (ServiceName serviceName : cacheWrapper.getServiceNames()) {
+            if (ROOT_LOGGER.isTraceEnabled()) {
+                ROOT_LOGGER.tracef("stop second level cache by removing dependency on service '%s'", serviceName.getCanonicalName());
             }
-            ServiceController<?> service = currentServiceContainer().getService(cacheWrapper.serviceName);
+            ServiceController<?> service = registry.getService(serviceName);
             if (service != null) {
                 ServiceContainerHelper.remove(service);
             }
-        } else if(ROOT_LOGGER.isTraceEnabled()){
-            CacheWrapper cacheWrapper = (CacheWrapper) wrapper;
-            ROOT_LOGGER.tracef("skipping stop of second level cache, will keep dependency on service '%s'", cacheWrapper.serviceName.getCanonicalName());
         }
     }
 
     private static class CacheWrapper implements Wrapper {
 
-        public CacheWrapper(EmbeddedCacheManager embeddedCacheManager, ServiceName serviceName) {
+        CacheWrapper(EmbeddedCacheManager embeddedCacheManager, Collection<ServiceName> serviceNames) {
             this.embeddedCacheManager = embeddedCacheManager;
-            this.serviceName = serviceName;
+            this.serviceNames = serviceNames;
         }
 
         private final EmbeddedCacheManager embeddedCacheManager;
-        private final ServiceName serviceName;
+        private final Collection<ServiceName> serviceNames;
 
         @Override
         public Object getValue() {
             return embeddedCacheManager;
+        }
+
+        Collection<ServiceName> getServiceNames() {
+            return this.serviceNames;
         }
     }
 
