@@ -336,8 +336,8 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     }
 
     @Override
-    public void start() {
-        super.start();
+    public void init() {
+        super.init();
 
         this.cache = this.cacheFactory.getValue().createCache(this, this, this);
         this.cache.start();
@@ -417,10 +417,5 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
             }
         }
         return false;
-    }
-
-    @Override
-    protected void waitForComponentStart() {
-        super.waitForComponentStart();
     }
 }

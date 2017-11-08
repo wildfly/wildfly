@@ -295,6 +295,7 @@ final class AssociationImpl implements Association, AutoCloseable {
             return CancelHandle.NULL;
         }
         final Component component = ejbDeploymentInformation.getEjbComponent();
+        component.waitForComponentStart();
         if (!(component instanceof StatefulSessionComponent)) {
             sessionOpenRequest.writeNotStateful();
             return CancelHandle.NULL;
