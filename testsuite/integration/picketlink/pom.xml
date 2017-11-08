@@ -188,7 +188,7 @@
                                 <include>org/wildfly/test/integration/security/picketlink/**/*TestCase.java</include>
                             </includes>
                             <systemPropertyVariables>
-                                <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.dirs} -Dnode0=${node0} -Dnode1=${node1}</server.jvm.args>
+                                <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.dirs} -Dnode0=${node0} -Dnode1=${node1} ${extra.server.jvm.args}</server.jvm.args>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

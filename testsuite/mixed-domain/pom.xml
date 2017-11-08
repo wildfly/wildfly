@@ -109,7 +109,7 @@
                         <jboss.test.host.slave.address>${node1}</jboss.test.host.slave.address>
                         <jboss.default.multicast.address>${mcast}</jboss.default.multicast.address>
                         <jboss.modcluster.multicast.address>${mcast1}</jboss.modcluster.multicast.address>
-                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Djboss.default.multicast.address=${mcast} -Djboss.messaging.cluster.password=ILoveWildfly </server.jvm.args>
+                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Djboss.default.multicast.address=${mcast} -Djboss.messaging.cluster.password=ILoveWildfly ${extra.server.jvm.args}</server.jvm.args>
                     </systemPropertyVariables>
                     <includes>
                          <!-- include>**/*TestCase.java</include -->
