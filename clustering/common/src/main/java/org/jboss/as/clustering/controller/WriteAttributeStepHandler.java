@@ -107,15 +107,10 @@ public class WriteAttributeStepHandler extends ReloadRequiredWriteAttributeHandl
     }
 
     @Override
-    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode resolvedValue, Void handback) {
+    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode resolvedValue, Void handback) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
         if (context.isResourceServiceRestartAllowed() && this.getAttributeDefinition(attributeName).getFlags().contains(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES) && context.revertResourceRestarted(address, this.handler)) {
-            try {
-                this.restartServices(context);
-            } catch (OperationFailedException e) {
-                // AbstractWriterAttributeHandler.revertUpdateToRuntime(...) throws this exception, but the super implementation does not :(
-                throw new RuntimeException(e);
-            }
+            this.restartServices(context);
         }
     }
 

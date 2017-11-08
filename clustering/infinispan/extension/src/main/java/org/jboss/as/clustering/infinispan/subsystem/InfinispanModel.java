@@ -30,16 +30,12 @@ import org.jboss.as.controller.ModelVersion;
  */
 public enum InfinispanModel implements Model {
 
-    VERSION_1_4_1(1, 4, 1),
-    VERSION_1_5_0(1, 5, 0),
-    VERSION_1_6_0(1, 6, 0),
-    VERSION_2_0_0(2, 0, 0),
-    VERSION_3_0_0(3, 0, 0),
-    // WildFly 10 / EAP 7.0
-    VERSION_4_0_0(4, 0, 0),
-    //wildfly 10.1
-    VERSION_4_1_0(4, 1, 0),
-    VERSION_5_0_0(5, 0, 0),
+    VERSION_1_6_0(1, 6, 0), // EAP 6.4
+    VERSION_2_0_0(2, 0, 0), // WildFly 8
+    VERSION_3_0_0(3, 0, 0), // WildFly 9
+    VERSION_4_0_0(4, 0, 0), // WildFly 10, EAP 7.0
+    VERSION_4_1_0(4, 1, 0), // WildFly 10.1
+    VERSION_5_0_0(5, 0, 0), // WildFly 11, EAP 7.1
     ;
     static final InfinispanModel CURRENT = VERSION_5_0_0;
 
