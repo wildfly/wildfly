@@ -30,7 +30,7 @@ import org.jboss.as.clustering.controller.UnaryServiceNameFactoryProvider;
 import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
- * @author paul
+ * @author Paul Ferraro
  */
 public enum InfinispanDefaultCacheRequirement implements UnaryRequirement, UnaryServiceNameFactoryProvider {
 

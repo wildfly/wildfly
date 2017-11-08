@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,37 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.jboss.as.clustering.infinispan.subsystem.remote;
 
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import java.util.stream.Stream;
+
 import org.jboss.as.clustering.controller.ResourceServiceNameFactory;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
+import org.jboss.as.controller.PathElement;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.Value;
 
 /**
- * Builds a service that provides the configuration of a component.
- * @author Paul Ferraro
+ * Enumerates components of the remote cache container.
+ *
+ * @author Radoslav Husar
  */
-public abstract class ComponentBuilder<C> implements ResourceServiceBuilder<C>, Value<C> {
+public enum RemoteCacheContainerComponent implements ResourceServiceNameFactory {
 
-    private final ServiceName name;
+    CONNECTION_POOL(ConnectionPoolResourceDefinition.PATH),
+    NEAR_CACHE(NearCacheResourceDefinition.WILDCARD_PATH),
+    ;
 
-    public ComponentBuilder(ResourceServiceNameFactory factory, PathAddress address) {
-        this.name = factory.getServiceName(address.getParent());
+    private final String[] components;
+
+    RemoteCacheContainerComponent(PathElement... paths) {
+        this(Stream.of(paths).map(path -> path.isWildcard() ? path.getKey() : path.getValue()).toArray(String[]::new));
+    }
+
+    RemoteCacheContainerComponent(String... components) {
+        this.components = components;
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.name;
-    }
-
-    @Override
-    public ServiceBuilder<C> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(this)).setInitialMode(ServiceController.Mode.ON_DEMAND);
+    public ServiceName getServiceName(PathAddress remoteContainerAddress) {
+        return RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION.getServiceName(remoteContainerAddress).append(this.components);
     }
 }

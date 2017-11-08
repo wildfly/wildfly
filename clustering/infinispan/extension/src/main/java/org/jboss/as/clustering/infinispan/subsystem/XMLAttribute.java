@@ -26,6 +26,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
 /**
@@ -112,7 +115,6 @@ public enum XMLAttribute {
     SINGLETON(StoreResourceDefinition.Attribute.SINGLETON),
     SITE("site"),
     SIZE(ObjectMemoryResourceDefinition.Attribute.SIZE),
-    SOCKET_TIMEOUT(RemoteStoreResourceDefinition.Attribute.SOCKET_TIMEOUT),
     @Deprecated STACK(JGroupsTransportResourceDefinition.DeprecatedAttribute.STACK),
     @Deprecated START(CacheContainerResourceDefinition.DeprecatedAttribute.START),
     STATISTICS_ENABLED(CacheResourceDefinition.Attribute.STATISTICS_ENABLED),
@@ -121,11 +123,37 @@ public enum XMLAttribute {
     STRIPING(LockingResourceDefinition.Attribute.STRIPING),
     TAKE_OFFLINE_AFTER_FAILURES(BackupResourceDefinition.TakeOfflineAttribute.AFTER_FAILURES),
     TAKE_OFFLINE_MIN_WAIT(BackupResourceDefinition.TakeOfflineAttribute.MIN_WAIT),
-    TCP_NO_DELAY(RemoteStoreResourceDefinition.Attribute.TCP_NO_DELAY),
     THREAD_POOL_SIZE(StoreWriteBehindResourceDefinition.Attribute.THREAD_POOL_SIZE),
     TIMEOUT(StateTransferResourceDefinition.Attribute.TIMEOUT),
     TYPE(TableResourceDefinition.ColumnAttribute.ID.getColumnType()),
     @Deprecated VIRTUAL_NODES("virtual-nodes"),
+
+    // remote-cache-container
+    CONNECTION_TIMEOUT(RemoteCacheContainerResourceDefinition.Attribute.CONNECTION_TIMEOUT),
+    DEFAULT_REMOTE_CLUSTER(RemoteCacheContainerResourceDefinition.Attribute.DEFAULT_REMOTE_CLUSTER),
+    KEY_SIZE_ESTIMATE(RemoteCacheContainerResourceDefinition.Attribute.KEY_SIZE_ESTIMATE),
+    MAX_RETRIES(RemoteCacheContainerResourceDefinition.Attribute.MAX_RETRIES),
+    PROTOCOL_VERSION(RemoteCacheContainerResourceDefinition.Attribute.PROTOCOL_VERSION),
+    SOCKET_TIMEOUT(RemoteCacheContainerResourceDefinition.Attribute.SOCKET_TIMEOUT),
+    TCP_NO_DELAY(RemoteCacheContainerResourceDefinition.Attribute.TCP_NO_DELAY),
+    TCP_KEEP_ALIVE(RemoteCacheContainerResourceDefinition.Attribute.TCP_KEEP_ALIVE),
+    VALUE_SIZE_ESTIMATE(RemoteCacheContainerResourceDefinition.Attribute.VALUE_SIZE_ESTIMATE),
+
+    // remote-cache-container -> connection-pool
+    EXHAUSTED_ACTION(ConnectionPoolResourceDefinition.Attribute.EXHAUSTED_ACTION),
+    MAX_ACTIVE(ConnectionPoolResourceDefinition.Attribute.MAX_ACTIVE),
+    MAX_TOTAL(ConnectionPoolResourceDefinition.Attribute.MAX_TOTAL),
+    MAX_WAIT(ConnectionPoolResourceDefinition.Attribute.MAX_WAIT),
+    MIN_EVICTABLE_IDLE_TIME(ConnectionPoolResourceDefinition.Attribute.MIN_EVICTABLE_IDLE_TIME),
+    MIN_IDLE(ConnectionPoolResourceDefinition.Attribute.MIN_IDLE),
+    NUM_TESTS_PER_EVICTION_RUN(ConnectionPoolResourceDefinition.Attribute.NUM_TESTS_PER_EVICTION_RUN),
+    TEST_ON_BORROW(ConnectionPoolResourceDefinition.Attribute.TEST_ON_BORROW),
+    TEST_ON_RETURN(ConnectionPoolResourceDefinition.Attribute.TEST_ON_RETURN),
+    TEST_WHILE_IDLE(ConnectionPoolResourceDefinition.Attribute.TEST_WHILE_IDLE),
+    TIME_BETWEEN_EVICTION_RUNS(ConnectionPoolResourceDefinition.Attribute.TIME_BETWEEN_EVICTION_RUNS),
+
+    // remote-cache-container -> remote-clusters
+    SOCKET_BINDINGS(RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS)
     ;
     private final String name;
 

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
+package org.jboss.as.clustering.infinispan.subsystem.remote;
 
+import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
+import org.infinispan.client.hotrod.configuration.NearCacheMode;
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.infinispan.subsystem.ComponentBuilder;
 import org.jboss.as.controller.PathAddress;
 
 /**
- * Create a service builder that can be configured via a resource model.
- * @author Paul Ferraro
+ * @author Radoslav Husar
  */
-@FunctionalInterface
-public interface ResourceServiceBuilderFactory<T> {
+public class NoNearCacheBuilder extends ComponentBuilder<NearCacheConfiguration> implements ResourceServiceBuilder<NearCacheConfiguration> {
 
-    /**
-     * Creates a builder for this resource's service.
-     * @param address the path address of this resource
-     * @return a builder
-     */
-    ResourceServiceBuilder<T> createBuilder(PathAddress address);
+    NoNearCacheBuilder(PathAddress cacheAddress) {
+        super(RemoteCacheContainerComponent.NEAR_CACHE, cacheAddress);
+    }
+
+    @Override
+    public NearCacheConfiguration getValue() {
+        return new ConfigurationBuilder().nearCache().mode(NearCacheMode.DISABLED).create();
+    }
 }

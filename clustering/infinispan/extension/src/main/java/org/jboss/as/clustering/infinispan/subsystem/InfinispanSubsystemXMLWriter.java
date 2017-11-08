@@ -28,6 +28,10 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
@@ -43,10 +47,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemMarshallingContext> {
 
-    /**
-     * {@inheritDoc}
-     * @see org.jboss.staxmapper.XMLElementWriter#writeContent(org.jboss.staxmapper.XMLExtendedStreamWriter, java.lang.Object)
-     */
     @SuppressWarnings("deprecation")
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
@@ -153,6 +153,53 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                             writer.writeEndElement();
                         }
                     }
+                    writer.writeEndElement();
+                }
+            }
+
+            if (model.hasDefined(RemoteCacheContainerResourceDefinition.WILDCARD_PATH.getKey())) {
+                for (Property entry : model.get(RemoteCacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+
+                    String remoteContainerName = entry.getName();
+                    ModelNode remoteContainer = entry.getValue();
+
+                    writer.writeStartElement(XMLElement.REMOTE_CACHE_CONTAINER.getLocalName());
+                    writer.writeAttribute(XMLAttribute.NAME.getLocalName(), remoteContainerName);
+
+                    writeAttributes(writer, remoteContainer, EnumSet.allOf(RemoteCacheContainerResourceDefinition.Attribute.class));
+
+                    writeThreadPoolElements(XMLElement.ASYNC_THREAD_POOL, ThreadPoolResourceDefinition.CLIENT, writer, remoteContainer);
+
+                    ModelNode connectionPool = remoteContainer.get(ConnectionPoolResourceDefinition.PATH.getKeyValuePair());
+                    final EnumSet<ConnectionPoolResourceDefinition.Attribute> attributes = EnumSet.allOf(ConnectionPoolResourceDefinition.Attribute.class);
+                    if (hasDefined(connectionPool, attributes)) {
+                        writer.writeStartElement(XMLElement.CONNECTION_POOL.getLocalName());
+                        writeAttributes(writer, connectionPool, attributes);
+                        writer.writeEndElement();
+                    }
+
+                    if (remoteContainer.hasDefined(InvalidationNearCacheResourceDefinition.PATH.getKeyValuePair())) {
+                        writer.writeStartElement(XMLElement.INVALIDATION_NEAR_CACHE.getLocalName());
+                        ModelNode nearCache = remoteContainer.get(InvalidationNearCacheResourceDefinition.PATH.getKeyValuePair());
+                        writeAttributes(writer, nearCache, EnumSet.allOf(InvalidationNearCacheResourceDefinition.Attribute.class));
+                        writer.writeEndElement();
+                    }
+
+                    writer.writeStartElement(XMLElement.REMOTE_CLUSTERS.getLocalName());
+
+                    for (Property clusterEntry : remoteContainer.get(RemoteClusterResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                        writer.writeStartElement(XMLElement.REMOTE_CLUSTER.getLocalName());
+
+                        String remoteClusterName = clusterEntry.getName();
+                        ModelNode remoteCluster = clusterEntry.getValue();
+
+                        writer.writeAttribute(XMLAttribute.NAME.getLocalName(), remoteClusterName);
+                        writeAttributes(writer, remoteCluster, RemoteClusterResourceDefinition.Attribute.class);
+                        writer.writeEndElement();
+                    }
+
+                    writer.writeEndElement();
+
                     writer.writeEndElement();
                 }
             }

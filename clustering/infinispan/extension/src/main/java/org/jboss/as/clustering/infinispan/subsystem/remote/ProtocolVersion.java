@@ -20,29 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.service;
+package org.jboss.as.clustering.infinispan.subsystem.remote;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.Locale;
 
 /**
- * Generic {@link org.jboss.msc.service.Service} whose provided value is a mapping of a supplied value.
- * @author Paul Ferraro
+ * Temporary copy of {@link org.infinispan.client.hotrod.ProtocolVersion} until Infinispan 9.x upgrade.
+ * TODO remove the class completely with 9.x upgrade
+ *
+ * @author Radoslav Husar
  */
-public class SuppliedValueService<T, V> extends FunctionalValueService<T, V> {
+public enum ProtocolVersion {
 
-    /**
-     * Constructs a new supplied value service.
-     * @param mapper a function that maps the supplied value to the service value
-     * @param supplier produces the supplied value
-     * @param destroyer a consumer that destroys the supplied value
-     */
-    public SuppliedValueService(Function<T, V> mapper, Supplier<T> supplier, Consumer<T> destroyer) {
-        super(mapper, context -> supplier.get(), (context, value) -> {
-            if (destroyer != null) {
-                destroyer.accept(value);
-            }
-        });
+    PROTOCOL_VERSION_10(1, 0),
+    PROTOCOL_VERSION_11(1, 1),
+    PROTOCOL_VERSION_12(1, 2),
+    PROTOCOL_VERSION_13(1, 3),
+    PROTOCOL_VERSION_20(2, 0),
+    PROTOCOL_VERSION_21(2, 1),
+    PROTOCOL_VERSION_22(2, 2),
+    PROTOCOL_VERSION_23(2, 3),
+    PROTOCOL_VERSION_24(2, 4),
+    PROTOCOL_VERSION_25(2, 5),
+    ;
+
+    public static final ProtocolVersion DEFAULT_PROTOCOL_VERSION = PROTOCOL_VERSION_25;
+
+    private final String version;
+
+    ProtocolVersion(int major, int minor) {
+        version = String.format(Locale.ROOT, "%d.%d", major, minor);
+    }
+
+    @Override
+    public String toString() {
+        return version;
     }
 }

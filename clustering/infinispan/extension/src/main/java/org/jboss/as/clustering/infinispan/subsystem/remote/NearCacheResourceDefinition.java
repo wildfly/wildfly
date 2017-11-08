@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
+package org.jboss.as.clustering.infinispan.subsystem.remote;
 
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
+import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
+import org.jboss.as.controller.PathElement;
 
 /**
- * Create a service builder that can be configured via a resource model.
- * @author Paul Ferraro
+ * /subsystem=infinispan/remote-cache-container=X/near-cache=*
+ *
+ * @author Radoslav Husar
  */
-@FunctionalInterface
-public interface ResourceServiceBuilderFactory<T> {
+public abstract class NearCacheResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
-    /**
-     * Creates a builder for this resource's service.
-     * @param address the path address of this resource
-     * @return a builder
-     */
-    ResourceServiceBuilder<T> createBuilder(PathAddress address);
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+
+    static PathElement pathElement(String value) {
+        return PathElement.pathElement("near-cache", value);
+    }
+
+    NearCacheResourceDefinition(PathElement path) {
+        super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path));
+    }
 }

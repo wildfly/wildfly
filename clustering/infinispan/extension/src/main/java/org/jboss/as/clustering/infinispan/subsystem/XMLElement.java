@@ -26,6 +26,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
@@ -44,7 +47,7 @@ public enum XMLElement {
     ASYNC_OPERATIONS_THREAD_POOL("async-operations-thread-pool"),
     BACKUP(BackupResourceDefinition.WILDCARD_PATH),
     @Deprecated BACKUP_FOR(BackupForResourceDefinition.PATH),
-    BACKUPS("backups"),
+    BACKUPS(BackupsResourceDefinition.PATH),
     BINARY_KEYED_TABLE("binary-keyed-table"),
     @Deprecated BUCKET_TABLE("bucket-table"),
     CACHE_CONTAINER(CacheContainerResourceDefinition.WILDCARD_PATH),
@@ -88,6 +91,14 @@ public enum XMLElement {
     TRANSPORT(TransportResourceDefinition.WILDCARD_PATH),
     TRANSPORT_THREAD_POOL("transport-thread-pool"),
     WRITE_BEHIND("write-behind"),
+
+    // remote-cache-container
+    REMOTE_CACHE_CONTAINER(RemoteCacheContainerResourceDefinition.WILDCARD_PATH),
+    ASYNC_THREAD_POOL("async-thread-pool"),
+    CONNECTION_POOL(ConnectionPoolResourceDefinition.PATH),
+    INVALIDATION_NEAR_CACHE("invalidation-near-cache"),
+    REMOTE_CLUSTERS("remote-clusters"),
+    REMOTE_CLUSTER(RemoteClusterResourceDefinition.WILDCARD_PATH),
     ;
 
     private final String name;

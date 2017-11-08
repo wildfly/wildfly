@@ -36,6 +36,10 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.ColumnAttribute;
+import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
@@ -77,6 +81,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 case CACHE_CONTAINER: {
                     this.parseContainer(reader, address, operations);
                     break;
+                }
+                case REMOTE_CACHE_CONTAINER: {
+                    if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                        this.parseRemoteContainer(reader, address, operations);
+                        break;
+                    }
                 }
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
@@ -1691,38 +1701,6 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         ParseUtils.requireNoContent(reader);
     }
 
-    private static String require(XMLExtendedStreamReader reader, XMLAttribute attribute) throws XMLStreamException {
-        String value = reader.getAttributeValue(null, attribute.getLocalName());
-        if (value == null) {
-            throw ParseUtils.missingRequired(reader, attribute.getLocalName());
-        }
-        return value;
-    }
-
-    private static ModelNode readAttribute(XMLExtendedStreamReader reader, int index, Attribute attribute) throws XMLStreamException {
-        AttributeDefinition definition = attribute.getDefinition();
-        return definition.getParser().parse(definition, reader.getAttributeValue(index), reader);
-    }
-
-    private static void readAttribute(XMLExtendedStreamReader reader, int index, ModelNode operation, Attribute attribute) throws XMLStreamException {
-        setAttribute(reader, reader.getAttributeValue(index), operation, attribute);
-    }
-
-    private static void setAttribute(XMLExtendedStreamReader reader, String value, ModelNode operation, Attribute attribute) throws XMLStreamException {
-        AttributeDefinition definition = attribute.getDefinition();
-        definition.getParser().parseAndSetParameter(definition, value, operation, reader);
-    }
-
-    private static void readElement(XMLExtendedStreamReader reader, ModelNode operation, Attribute attribute) throws XMLStreamException {
-        AttributeDefinition definition = attribute.getDefinition();
-        AttributeParser parser = definition.getParser();
-        if (parser.isParseAsElement()) {
-            parser.parseElement(definition, reader, operation);
-        } else {
-            parser.parseAndSetParameter(definition, reader.getElementText(), operation, reader);
-        }
-    }
-
     private void parseThreadPool(ThreadPoolResourceDefinition pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         PathAddress address = parentAddress.append(pool.getPathElement());
         ModelNode operation = Util.createAddOperation(address);
@@ -1779,5 +1757,249 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
 
         ParseUtils.requireNoContent(reader);
+    }
+
+    private void parseRemoteContainer(XMLExtendedStreamReader reader, PathAddress subsystemAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        String name = require(reader, XMLAttribute.NAME);
+        PathAddress address = subsystemAddress.append(RemoteCacheContainerResourceDefinition.pathElement(name));
+        ModelNode operation = Util.createAddOperation(address);
+        operations.put(address, operation);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            ParseUtils.requireNoNamespaceAttribute(reader, i);
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    // Already parsed
+                    break;
+                }
+                case CONNECTION_TIMEOUT: {
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.CONNECTION_TIMEOUT);
+                    break;
+                }
+                case DEFAULT_REMOTE_CLUSTER: {
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.DEFAULT_REMOTE_CLUSTER);
+                    break;
+                }
+                case KEY_SIZE_ESTIMATE: {
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.KEY_SIZE_ESTIMATE);
+                    break;
+                }
+                case MAX_RETRIES: {
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.MAX_RETRIES);
+                    break;
+                }
+                case PROTOCOL_VERSION: {
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.PROTOCOL_VERSION);
+                    break;
+                }
+                case SOCKET_TIMEOUT: {
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.SOCKET_TIMEOUT);
+                    break;
+                }
+                case TCP_NO_DELAY: {
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.TCP_NO_DELAY);
+                    break;
+                }
+                case TCP_KEEP_ALIVE: {
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.TCP_KEEP_ALIVE);
+                    break;
+                }
+                case VALUE_SIZE_ESTIMATE: {
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.VALUE_SIZE_ESTIMATE);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            XMLElement element = XMLElement.forName(reader.getLocalName());
+            switch (element) {
+                case ASYNC_THREAD_POOL: {
+                    this.parseThreadPool(ThreadPoolResourceDefinition.CLIENT, reader, address, operations);
+                    break;
+                }
+                case CONNECTION_POOL: {
+                    this.parseConnectionPool(reader, address, operations);
+                    break;
+                }
+                case INVALIDATION_NEAR_CACHE: {
+                    this.parseInvalidationNearCache(reader, address, operations);
+                    break;
+                }
+                case REMOTE_CLUSTERS: {
+                    this.parseRemoteClusters(reader, address, operations);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseInvalidationNearCache(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        PathAddress address = cacheAddress.append(InvalidationNearCacheResourceDefinition.PATH);
+        ModelNode operation = Util.createAddOperation(address);
+        operations.put(address, operation);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case MAX_ENTRIES: {
+                    readAttribute(reader, i, operation, InvalidationNearCacheResourceDefinition.Attribute.MAX_ENTRIES);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        ParseUtils.requireNoContent(reader);
+    }
+
+    private void parseConnectionPool(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        PathAddress address = cacheAddress.append(ConnectionPoolResourceDefinition.PATH);
+        ModelNode operation = Util.createAddOperation(address);
+        operations.put(address, operation);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case EXHAUSTED_ACTION: {
+                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.EXHAUSTED_ACTION);
+                    break;
+                }
+                case STRATEGY: {
+                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.STRATEGY);
+                    break;
+                }
+                case MAX_ACTIVE: {
+                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.MAX_ACTIVE);
+                    break;
+                }
+                case MAX_IDLE: {
+                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.MAX_IDLE);
+                    break;
+                }
+                case MAX_TOTAL: {
+                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.MAX_TOTAL);
+                    break;
+                }
+                case MAX_WAIT: {
+                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.MAX_WAIT);
+                    break;
+                }
+                case MIN_EVICTABLE_IDLE_TIME: {
+                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.MIN_EVICTABLE_IDLE_TIME);
+                    break;
+                }
+                case MIN_IDLE: {
+                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.MIN_IDLE);
+                    break;
+                }
+                case NUM_TESTS_PER_EVICTION_RUN: {
+                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.NUM_TESTS_PER_EVICTION_RUN);
+                    break;
+                }
+                case TEST_ON_BORROW: {
+                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.TEST_ON_BORROW);
+                    break;
+                }
+                case TEST_ON_RETURN: {
+                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.TEST_ON_RETURN);
+                    break;
+                }
+                case TEST_WHILE_IDLE: {
+                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.TEST_WHILE_IDLE);
+                    break;
+                }
+                case TIME_BETWEEN_EVICTION_RUNS: {
+                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.TIME_BETWEEN_EVICTION_RUNS);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        ParseUtils.requireNoContent(reader);
+    }
+
+    private void parseRemoteClusters(XMLExtendedStreamReader reader, PathAddress containerAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        ParseUtils.requireNoAttributes(reader);
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            XMLElement element = XMLElement.forName(reader.getLocalName());
+            switch (element) {
+                case REMOTE_CLUSTER: {
+                    this.parseRemoteCluster(reader, containerAddress, operations);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseRemoteCluster(XMLExtendedStreamReader reader, PathAddress clustersAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        String remoteCluster = require(reader, XMLAttribute.NAME);
+        PathAddress address = clustersAddress.append(RemoteClusterResourceDefinition.pathElement(remoteCluster));
+        ModelNode operation = Util.createAddOperation(address);
+        operations.put(address, operation);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    // Already parsed
+                    break;
+                }
+                case SOCKET_BINDINGS: {
+                    readAttribute(reader, i, operation, RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        ParseUtils.requireNoContent(reader);
+    }
+
+    private static String require(XMLExtendedStreamReader reader, XMLAttribute attribute) throws XMLStreamException {
+        String value = reader.getAttributeValue(null, attribute.getLocalName());
+        if (value == null) {
+            throw ParseUtils.missingRequired(reader, attribute.getLocalName());
+        }
+        return value;
+    }
+
+    private static ModelNode readAttribute(XMLExtendedStreamReader reader, int index, Attribute attribute) throws XMLStreamException {
+        AttributeDefinition definition = attribute.getDefinition();
+        return definition.getParser().parse(definition, reader.getAttributeValue(index), reader);
+    }
+
+    private static void readAttribute(XMLExtendedStreamReader reader, int index, ModelNode operation, Attribute attribute) throws XMLStreamException {
+        setAttribute(reader, reader.getAttributeValue(index), operation, attribute);
+    }
+
+    private static void setAttribute(XMLExtendedStreamReader reader, String value, ModelNode operation, Attribute attribute) throws XMLStreamException {
+        AttributeDefinition definition = attribute.getDefinition();
+        definition.getParser().parseAndSetParameter(definition, value, operation, reader);
+    }
+
+    private static void readElement(XMLExtendedStreamReader reader, ModelNode operation, Attribute attribute) throws XMLStreamException {
+        AttributeDefinition definition = attribute.getDefinition();
+        AttributeParser parser = definition.getParser();
+        if (parser.isParseAsElement()) {
+            parser.parseElement(definition, reader, operation);
+        } else {
+            parser.parseAndSetParameter(definition, reader.getElementText(), operation, reader);
+        }
     }
 }

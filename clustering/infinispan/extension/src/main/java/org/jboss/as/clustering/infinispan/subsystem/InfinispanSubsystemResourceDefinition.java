@@ -38,6 +38,7 @@ import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.infinispan.deployment.ClusteringDependencyProcessor;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -82,6 +83,11 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         CacheContainerResourceDefinition.buildTransformation(version, builder);
+        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
+            builder.rejectChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
+        } else {
+            RemoteCacheContainerResourceDefinition.buildTransformation(version, builder);
+        }
 
         return builder.build();
     }
@@ -104,6 +110,7 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
         new DeploymentChainContributingResourceRegistration(descriptor, handler, this).register(registration);
 
         new CacheContainerResourceDefinition().register(registration);
+        new RemoteCacheContainerResourceDefinition().register(registration);
     }
 
     @Override
