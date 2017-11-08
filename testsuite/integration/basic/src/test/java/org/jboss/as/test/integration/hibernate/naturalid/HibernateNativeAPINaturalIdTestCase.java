@@ -22,7 +22,13 @@
 
 package org.jboss.as.test.integration.hibernate.naturalid;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.io.FilePermission;
+import java.lang.reflect.ReflectPermission;
+import java.util.PropertyPermission;
 
 import javax.ejb.EJB;
 import javax.naming.InitialContext;
@@ -49,6 +55,8 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class HibernateNativeAPINaturalIdTestCase {
+
+    private static final String WILDCARD = "*";
 
     private static final String ARCHIVE_NAME = "hibernate4naturalid_test";
 
@@ -117,7 +125,22 @@ public class HibernateNativeAPINaturalIdTestCase {
                 + " <module name=\"com.h2database.h2\" />" + " <module name=\"org.slf4j\"/>" + " </dependencies>"
                 + " </deployment>" + "</jboss-deployment-structure>"), "jboss-deployment-structure.xml");
 
+        final String baseModulesPath = System.getProperty("jboss.dist") + turnToPath("/modules/system/layers/base/");
+        final String basedir = System.getProperty("basedir");
+        ear.addAsManifestResource(
+                createPermissionsXmlAsset(new ReflectPermission("suppressAccessChecks"), new RuntimePermission(
+                        "createClassLoader"), new RuntimePermission("setContextClassLoader"), new RuntimePermission(
+                        "getClassLoader"), new RuntimePermission("accessDeclaredMembers"), new RuntimePermission(
+                        "getProtectionDomain"), new PropertyPermission("user.dir", "read"), new FilePermission(basedir
+                        + File.separator + "target" + File.separator + "workdir", "read"), new FilePermission(baseModulesPath
+                        + turnToPath("/com/sun/xml/bind/main/") + WILDCARD, "read"), new FilePermission(baseModulesPath
+                        + turnToPath("/org/hibernate/infinispan/main/") + WILDCARD, "read"), new FilePermission(baseModulesPath
+                        + turnToPath("/org/hibernate/main/") + WILDCARD, "read")), "permissions.xml");
         return ear;
+    }
+
+    private static String turnToPath(String path) {
+        return path.replaceAll("/", File.separator);
     }
 
     @Test
