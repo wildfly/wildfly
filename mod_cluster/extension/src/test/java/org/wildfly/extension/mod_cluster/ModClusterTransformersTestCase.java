@@ -63,9 +63,6 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
     private static ModClusterModel getModelVersion(ModelTestControllerVersion controllerVersion) {
         switch (controllerVersion) {
-            case EAP_6_2_0:
-                return ModClusterModel.VERSION_1_4_0;
-            case EAP_6_3_0:
             case EAP_6_4_0:
             case EAP_6_4_7:
                 return ModClusterModel.VERSION_1_5_0;
@@ -77,10 +74,6 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
     private static String[] getDependencies(ModelTestControllerVersion version) {
         switch (version) {
-            case EAP_6_2_0:
-                return new String[] {formatEAP6SubsystemArtifact(version), "org.jboss.mod_cluster:mod_cluster-core:1.2.6.Final-redhat-1"};
-            case EAP_6_3_0:
-                return new String[] {formatEAP6SubsystemArtifact(version), "org.jboss.mod_cluster:mod_cluster-core:1.2.9.Final-redhat-1"};
             case EAP_6_4_0:
             case EAP_6_4_7:
                 return new String[] {formatEAP6SubsystemArtifact(version), "org.jboss.mod_cluster:mod_cluster-core:1.2.11.Final-redhat-1"};
@@ -88,16 +81,6 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
                 return new String[] {formatEAP7SubsystemArtifact(version), "org.jboss.mod_cluster:mod_cluster-core:1.3.2.Final-redhat-1"};
         }
         throw new IllegalArgumentException();
-    }
-
-    @Test
-    public void testTransformerEAP_6_2_0() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_6_2_0);
-    }
-
-    @Test
-    public void testTransformerEAP_6_3_0() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test
@@ -132,16 +115,6 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, modelVersion, null, false);
-    }
-
-    @Test
-    public void testRejectionsEAP_6_2_0() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_6_2_0);
-    }
-
-    @Test
-    public void testRejectionsEAP_6_3_0() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test

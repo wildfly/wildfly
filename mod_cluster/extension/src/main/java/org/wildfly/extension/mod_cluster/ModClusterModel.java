@@ -31,12 +31,12 @@ import org.jboss.as.controller.ModelVersion;
  */
 public enum ModClusterModel implements Model {
 
-    VERSION_1_4_0(1, 4, 0),
-    VERSION_1_5_0(1, 5, 0),
-    VERSION_2_0_0(2, 0, 0),
-    VERSION_3_0_0(3, 0, 0),
-    VERSION_4_0_0(4, 0, 0),
-    VERSION_5_0_0(5, 0, 0),
+    VERSION_1_4_0(1, 4, 0), // EAP 6.2
+    VERSION_1_5_0(1, 5, 0), // EAP 6.3, 6.4
+    VERSION_2_0_0(2, 0, 0), // WildFly 8.0
+    VERSION_3_0_0(3, 0, 0), // WildFly 9.0, 10.0
+    VERSION_4_0_0(4, 0, 0), // EAP 7.0
+    VERSION_5_0_0(5, 0, 0), // EAP 7.1
     ;
     public static final ModClusterModel CURRENT = VERSION_5_0_0;
 
