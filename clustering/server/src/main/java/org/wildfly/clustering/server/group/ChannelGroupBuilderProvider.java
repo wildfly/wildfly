@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.server.group;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 
@@ -28,6 +29,7 @@ import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
  * Provides the requisite builders for a channel-based {@link Group} service.
  * @author Paul Ferraro
  */
+@MetaInfServices(DistributedGroupBuilderProvider.class)
 public class ChannelGroupBuilderProvider extends GroupBuilderProvider implements DistributedGroupBuilderProvider {
 
     public ChannelGroupBuilderProvider() {

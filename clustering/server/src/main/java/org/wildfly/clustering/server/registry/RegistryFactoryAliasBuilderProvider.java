@@ -28,6 +28,8 @@ import java.util.List;
 
 import org.jboss.as.clustering.controller.BinaryRequirementAliasBuilder;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.spi.CacheAliasBuilderProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.server.CacheRequirementAliasBuilderProvider;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
@@ -35,6 +37,7 @@ import org.wildfly.clustering.spi.ServiceNameRegistry;
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(CacheAliasBuilderProvider.class)
 public class RegistryFactoryAliasBuilderProvider extends CacheRequirementAliasBuilderProvider {
 
     public RegistryFactoryAliasBuilderProvider() {

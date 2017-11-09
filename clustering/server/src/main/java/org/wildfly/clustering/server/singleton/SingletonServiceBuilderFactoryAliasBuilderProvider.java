@@ -22,12 +22,15 @@
 
 package org.wildfly.clustering.server.singleton;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.server.CacheRequirementAliasBuilderProvider;
+import org.wildfly.clustering.spi.CacheAliasBuilderProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(CacheAliasBuilderProvider.class)
 public class SingletonServiceBuilderFactoryAliasBuilderProvider extends CacheRequirementAliasBuilderProvider {
 
     public SingletonServiceBuilderFactoryAliasBuilderProvider() {

@@ -22,13 +22,16 @@
 
 package org.wildfly.clustering.server.dispatcher;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.server.GroupJndiNameFactory;
 import org.wildfly.clustering.server.GroupRequirementAliasBuilderProvider;
 import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(GroupAliasBuilderProvider.class)
 public class CommandDispatcherFactoryAliasBuilderProvider extends GroupRequirementAliasBuilderProvider {
 
     public CommandDispatcherFactoryAliasBuilderProvider() {
