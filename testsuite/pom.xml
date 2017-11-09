@@ -227,7 +227,16 @@
                                    <resource>
                                        <directory>${jboss.home}</directory>
                                        <excludes>
+                                           <exclude>bin/client/</exclude>
+                                           <exclude>bin/*.jar</exclude>
+                                           <exclude>bin/*.sh</exclude>
+                                           <exclude>bin/*.bat</exclude>
+                                           <exclude>bin/*.ps1</exclude>
+                                           <exclude>docs/schema/</exclude>
+                                           <exclude>docs/licenses/</exclude>
+                                           <exclude>docs/contrib/</exclude>
                                            <exclude>modules/</exclude>
+                                           <exclude>welcome-content/*.png</exclude>
                                            <exclude>standalone/data</exclude>
                                            <exclude>standalone/log</exclude>
                                            <exclude>standalone/tmp</exclude>

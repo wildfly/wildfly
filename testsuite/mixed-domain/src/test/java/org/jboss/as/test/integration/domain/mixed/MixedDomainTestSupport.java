@@ -101,7 +101,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String masterConfig, String slaveConfig,
                                                  String profile, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) throws Exception {
-        final File dir = OldVersionCopier.expandOldVersion(version);
+        final File dir = OldVersionCopier.getOldVersionDir(version).toFile();
         return new MixedDomainTestSupport(version, testClass, domainConfig, masterConfig,
                 slaveConfig, dir.getAbsolutePath(), profile, adjustDomain, legacyConfig, withMasterServers);
     }
@@ -109,7 +109,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig,
                                                 String masterConfig, String slaveConfig, boolean adjustDomain,
                                                 boolean legacyConfig) throws Exception {
-        final File dir = OldVersionCopier.expandOldVersion(version);
+        final File dir = OldVersionCopier.getOldVersionDir(version).toFile();
         return new MixedDomainTestSupport(version, testClass, domainConfig, masterConfig,
                 slaveConfig, dir.getAbsolutePath(), "full-ha", adjustDomain, legacyConfig, false);
     }

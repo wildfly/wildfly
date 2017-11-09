@@ -37,27 +37,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsExtension;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.ee.subsystem.EeExtension;
-import org.jboss.as.ejb3.subsystem.EJB3Extension;
-import org.jboss.as.remoting.RemotingExtension;
 import org.jboss.as.test.integration.domain.mixed.LegacySubsystemConfigurationUtil;
 import org.jboss.as.test.integration.domain.mixed.eap700.DomainAdjuster700;
-import org.jboss.as.weld.WeldExtension;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.batch.jberet.BatchSubsystemDefinition;
-import org.wildfly.extension.beanvalidation.BeanValidationExtension;
-import org.wildfly.extension.clustering.singleton.SingletonExtension;
-import org.wildfly.extension.io.IOExtension;
-import org.wildfly.extension.messaging.activemq.MessagingExtension;
-import org.wildfly.extension.requestcontroller.RequestControllerExtension;
-import org.wildfly.extension.security.manager.SecurityManagerExtension;
-import org.wildfly.extension.undertow.UndertowExtension;
-import org.wildfly.iiop.openjdk.IIOPExtension;
 
 /**
  * Does adjustments to the domain model for 6.4.0 legacy slaves.
@@ -71,35 +56,35 @@ public class DomainAdjuster640 extends DomainAdjuster700 {
         final List<ModelNode> list = super.adjustForVersion(client, profileAddress, withMasterServers);
         switch(profileAddress.getElement(0).getValue()) {
             case "full-ha":
-                list.addAll(adjustJGroups(profileAddress.append(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME)));
-                list.addAll(adjustInfinispan(true, profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
-                list.addAll(replaceActiveMqWithMessaging(profileAddress, profileAddress.append(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME)));
-                list.addAll(replaceIiopOpenJdk(client, profileAddress.append(SUBSYSTEM, IIOPExtension.SUBSYSTEM_NAME)));
+                list.addAll(adjustJGroups(profileAddress.append(SUBSYSTEM, "jgroups")));
+                list.addAll(adjustInfinispan(true, profileAddress.append(SUBSYSTEM, "infinispan")));
+                list.addAll(replaceActiveMqWithMessaging(profileAddress, profileAddress.append(SUBSYSTEM, "messaging-activemq")));
+                list.addAll(replaceIiopOpenJdk(client, profileAddress.append(SUBSYSTEM, "iiop-openjdk")));
                 break;
             case "full":
-                list.addAll(adjustInfinispan(false, profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
-                list.addAll(replaceActiveMqWithMessaging(profileAddress, profileAddress.append(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME)));
-                list.addAll(replaceIiopOpenJdk(client, profileAddress.append(SUBSYSTEM, IIOPExtension.SUBSYSTEM_NAME)));
+                list.addAll(adjustInfinispan(false, profileAddress.append(SUBSYSTEM, "infinispan")));
+                list.addAll(replaceActiveMqWithMessaging(profileAddress, profileAddress.append(SUBSYSTEM, "messaging-activemq")));
+                list.addAll(replaceIiopOpenJdk(client, profileAddress.append(SUBSYSTEM, "iiop-openjdk")));
                 break;
             default:
-                list.addAll(adjustInfinispan(false, profileAddress.append(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME)));
+                list.addAll(adjustInfinispan(false, profileAddress.append(SUBSYSTEM, "infinispan")));
                 list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.messaging-activemq")));
                 list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.iiop-openjdk")));
                 break;
         }
-        list.addAll(removeBatch(profileAddress.append(SUBSYSTEM, BatchSubsystemDefinition.NAME)));
-        list.addAll(removeBeanValidation(profileAddress.append(SUBSYSTEM, BeanValidationExtension.SUBSYSTEM_NAME)));
-        list.addAll(adjustEe(profileAddress.append(SUBSYSTEM, EeExtension.SUBSYSTEM_NAME)));
-        list.addAll(adjustEjb3(profileAddress.append(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME)));
-        list.addAll(adjustRemoting(profileAddress.append(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME)));
-        list.addAll(removeRequestController(profileAddress.append(SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME)));
-        list.addAll(removeSecurityManager(profileAddress.append(SecurityManagerExtension.SUBSYSTEM_PATH)));
-        list.addAll(removeSingletonDeployer(profileAddress.append(SUBSYSTEM, SingletonExtension.SUBSYSTEM_NAME)));
-        list.addAll(replaceUndertowWithWeb(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME)));
-        list.addAll(adjustWeld(profileAddress.append(SUBSYSTEM, WeldExtension.SUBSYSTEM_NAME)));
+        list.addAll(removeBatch(profileAddress.append(SUBSYSTEM, "batch-jberet")));
+        list.addAll(removeBeanValidation(profileAddress.append(SUBSYSTEM, "bean-validation")));
+        list.addAll(adjustEe(profileAddress.append(SUBSYSTEM, "ee")));
+        list.addAll(adjustEjb3(profileAddress.append(SUBSYSTEM, "ejb3")));
+        list.addAll(adjustRemoting(profileAddress.append(SUBSYSTEM, "remoting")));
+        list.addAll(removeRequestController(profileAddress.append(SUBSYSTEM, "request-controller")));
+        list.addAll(removeSecurityManager(profileAddress.append(SUBSYSTEM, "security-manager")));
+        list.addAll(removeSingletonDeployer(profileAddress.append(SUBSYSTEM, "singleton")));
+        list.addAll(replaceUndertowWithWeb(profileAddress.append(SUBSYSTEM, "undertow")));
+        list.addAll(adjustWeld(profileAddress.append(SUBSYSTEM, "weld")));
 
         //io must be removed after undertow due to capabilities/requirements
-        list.addAll(removeIo(profileAddress.append(SUBSYSTEM, IOExtension.SUBSYSTEM_NAME)));
+        list.addAll(removeIo(profileAddress.append(SUBSYSTEM, "io")));
 
         return list;
     }

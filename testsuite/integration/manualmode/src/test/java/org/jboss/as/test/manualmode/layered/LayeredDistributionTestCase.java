@@ -25,6 +25,11 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -191,11 +196,13 @@ public class LayeredDistributionTestCase {
         manifestStream.close();
 
         // set product.conf
-        File binDir = new File(AS_PATH, "bin");
-        Assert.assertTrue(binDir.exists());
-        File productConf = new File(binDir, "product.conf");
-        if (productConf.exists()) { productConf.delete(); }
-        FileUtils.writeStringToFile(productConf, "slot=test" + System.getProperty("line.separator"));
+        Path binDir = Paths.get(AS_PATH, "bin");
+        if (Files.notExists(binDir)){
+            Files.createDirectory(binDir);
+        }
+        Path productConf = binDir.resolve("product.conf");
+        Files.deleteIfExists(productConf);
+        Files.write(productConf, Collections.singleton("slot=test"), StandardCharsets.UTF_8);
 
     }
 

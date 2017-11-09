@@ -39,9 +39,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.core.management.CoreManagementExtension;
-import org.wildfly.extension.elytron.ElytronExtension;
-import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
  * Does adjustments to the domain model for 7.0.0 legacy slaves.
@@ -54,10 +51,10 @@ public class DomainAdjuster700 extends DomainAdjuster {
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
 
-        list.addAll(removeCoreManagement(profileAddress.append(SUBSYSTEM, CoreManagementExtension.SUBSYSTEM_NAME)));
-        adjustUndertow(profileAddress.append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), list);
-        list.addAll(removeElytron(profileAddress.append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)));
-        if(withMasterServers) {
+        list.addAll(removeCoreManagement(profileAddress.append(SUBSYSTEM, "core-management")));
+        adjustUndertow(profileAddress.append(SUBSYSTEM, "undertow"), list);
+        list.addAll(removeElytron(profileAddress.append(SUBSYSTEM, "elytron")));
+        if (withMasterServers) {
             list.addAll(reconfigureServers());
         }
         return list;
@@ -68,7 +65,7 @@ public class DomainAdjuster700 extends DomainAdjuster {
         // for SSL by default, which automatically generates certs.
         // This could be removed if all hosts were configured to contain a security domain with SSL
         // enabled.
-        final PathAddress httpsListener  = undertow
+        final PathAddress httpsListener = undertow
                 .append("server", "default-server")
                 .append("https-listener", "https");
         ops.add(Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, httpsListener.toModelNode()));
