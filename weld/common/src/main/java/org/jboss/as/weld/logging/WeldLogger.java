@@ -250,4 +250,12 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 53, value = "Component interceptor support not available for: %s")
     IllegalStateException componentInterceptorSupportNotAvailable(Object componentClass);
 
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 54, value = "Could not read provided index of an external bean archive: %s")
+    void cannotLoadAnnotationIndexOfExternalBeanArchive(Object indexUrl);
+
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 55, value = "Could not index class [%s] from an external bean archive: %s")
+    void cannotIndexClassName(Object name, Object bda);
+
 }
