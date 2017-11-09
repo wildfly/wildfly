@@ -172,7 +172,7 @@
                     <systemPropertyVariables>
                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                         <jboss.inst>${wildfly.dir}</jboss.inst>
-                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts}</server.jvm.args>
+                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} ${extra.server.jvm.args}</server.jvm.args>
                         <node0>${node0}</node0>
 
                         <!-- let's override the module.path parent configuration with dummy value, to avoid the "IllegalStateException: Duplicate layer 'base'" -->

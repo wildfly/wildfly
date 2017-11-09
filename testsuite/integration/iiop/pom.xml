@@ -106,8 +106,8 @@
                                 <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                                 <!-- EJB client library hack, see WFLY-4973-->
                                 <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
-                                <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} -Dnode1=${node1}</server.jvm.args>
-                                <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1}</server.jvm2.args>
+                                <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} -Dnode1=${node1} ${extra.server.jvm.args}</server.jvm.args>
+                                <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} ${extra.server.jvm.args}</server.jvm2.args>
                             </systemPropertyVariables>
                             <argLine>
                                 ${modular.jdk.args} ${iiop.endorsed.argline}

@@ -458,7 +458,7 @@
                                         <arquillian.launch>clustering-xsite</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                         <!--bit of a workaround, we don't include ${jvm.args.ip.server} as clustering does custom binding-->
-                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs}</server.jvm.args>
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -546,7 +546,7 @@
                                         <arquillian.launch>clustering-xsite-simple</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                         <!--bit of a workaround, we don't include ${jvm.args.ip.server} as clustering does custom binding-->
-                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs}</server.jvm.args>
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>

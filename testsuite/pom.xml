@@ -150,6 +150,7 @@
         <as.debug.port>8787</as.debug.port>
         <modular.jdk.testsuite.args />
         <surefire.system.args>${modular.jdk.testsuite.args} -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist} ${surefire.jacoco.args}</surefire.system.args>
+        <extra.server.jvm.args />
 
         <!-- If servers should be killed before the test suite is run-->
         <org.wildfly.test.kill-servers-before-test>false</org.wildfly.test.kill-servers-before-test>

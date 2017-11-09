@@ -214,7 +214,7 @@
                             Used in arquillian.xml - arguments for all JBoss AS instances.
                             System properties are duplicated here until ARQ-647 is implemented.
                         -->
-                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Declipselink.archive.factory=org.jipijapa.eclipselink.JBossArchiveFactoryImpl</server.jvm.args>
+                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Declipselink.archive.factory=org.jipijapa.eclipselink.JBossArchiveFactoryImpl ${extra.server.jvm.args}</server.jvm.args>
                     </systemPropertyVariables>
 
                 </configuration>
