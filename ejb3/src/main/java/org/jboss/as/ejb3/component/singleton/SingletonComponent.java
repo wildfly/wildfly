@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
 
 import javax.ejb.LockType;
 
@@ -37,7 +38,6 @@ import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
-import org.jboss.as.ejb3.concurrency.LockableComponent;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.invocation.Interceptor;
 import org.jboss.msc.service.ServiceContainer;
@@ -51,7 +51,7 @@ import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
  *
  * @author Jaikiran Pai
  */
-public class SingletonComponent extends SessionBeanComponent implements LockableComponent {
+public class SingletonComponent extends SessionBeanComponent {
 
     private volatile SingletonComponentInstance singletonComponentInstance;
 
@@ -67,13 +67,16 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
 
-    private Interceptor interceptor;
-
     /**
      * We can't lock on <code>this</code> because the {@link org.jboss.as.ee.component.BasicComponent#waitForComponentStart()}
      * also synchronizes on it, and calls {@link #wait()}.
      */
     private final Object creationLock = new Object();
+
+    /**
+     * A spec compliant {@link EJBReadWriteLock}
+     */
+    private final ReadWriteLock readWriteLock = new EJBReadWriteLock();
 
     /**
      * Construct a new instance.
@@ -145,7 +148,6 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         super.done();
     }
 
-    @Override
     public LockType getLockType(Method method) {
         final EJBBusinessMethod ejbMethod = new EJBBusinessMethod(method);
         final LockType lockType = this.methodLockTypes.get(ejbMethod);
@@ -161,7 +163,6 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         return LockType.WRITE;
     }
 
-    @Override
     public AccessTimeoutDetails getAccessTimeout(Method method) {
         final EJBBusinessMethod ejbMethod = new EJBBusinessMethod(method);
         final AccessTimeoutDetails accessTimeout = this.methodAccessTimeouts.get(ejbMethod);
@@ -176,19 +177,12 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         return getDefaultAccessTimeout();
     }
 
-    @Override
     public AccessTimeoutDetails getDefaultAccessTimeout() {
         return defaultAccessTimeoutProvider.getDefaultAccessTimeout();
     }
 
-    @Override
-    public void setConcurrencyManagementInterceptor(Interceptor interceptor) {
-        this.interceptor = interceptor;
-    }
-
-    @Override
-    public Interceptor getConcurrencyManagementInterceptor() {
-        return this.interceptor;
+    public ReadWriteLock getLock() {
+        return readWriteLock;
     }
 
     private void destroySingletonInstance() {

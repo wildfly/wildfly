@@ -20,8 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.concurrency;
+package org.jboss.as.ejb3.component.singleton;
 
+import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -32,39 +33,34 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 /**
  * @author Jaikiran Pai
  */
-public class ContainerManagedConcurrencyInterceptor implements Interceptor {
+class ContainerManagedConcurrencyInterceptor implements Interceptor {
 
-    /**
-     * A spec compliant {@link org.jboss.as.ejb3.concurrency.EJBReadWriteLock}
-     */
-    private final ReadWriteLock readWriteLock = new EJBReadWriteLock();
 
-    private final LockableComponent lockableComponent;
+    private final SingletonComponent lockableComponent;
 
     private final Map<Method, Method> viewMethodToComponentMethodMap;
 
-    public ContainerManagedConcurrencyInterceptor(LockableComponent component, Map<Method, Method> viewMethodToComponentMethodMap) {
+    public ContainerManagedConcurrencyInterceptor(SingletonComponent component, Map<Method, Method> viewMethodToComponentMethodMap) {
         this.viewMethodToComponentMethodMap = viewMethodToComponentMethodMap;
         if (component == null) {
-            throw EjbLogger.ROOT_LOGGER.componentIsNull(LockableComponent.class.getName());
+            throw EjbLogger.ROOT_LOGGER.componentIsNull(SingletonComponent.class.getName());
         }
         this.lockableComponent = component;
     }
 
-    protected LockableComponent getLockableComponent() {
+    protected SingletonComponent getLockableComponent() {
         return this.lockableComponent;
     }
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
         final InvocationContext invocationContext = context.getInvocationContext();
-        LockableComponent lockableComponent = this.getLockableComponent();
+        SingletonComponent lockableComponent = this.getLockableComponent();
         // get the invoked method
         Method method = invocationContext.getMethod();
         if (method == null) {
@@ -113,13 +109,13 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
         }
     }
 
-    private Lock getLock(LockableComponent lockableComponent, Method method) {
+    private Lock getLock(SingletonComponent lockableComponent, Method method) {
         LockType lockType = lockableComponent.getLockType(method);
         switch (lockType) {
             case READ:
-                return readWriteLock.readLock();
+                return lockableComponent.getLock().readLock();
             case WRITE:
-                return readWriteLock.writeLock();
+                return lockableComponent.getLock().writeLock();
         }
         throw EjbLogger.ROOT_LOGGER.failToObtainLockIllegalType(lockType, method, lockableComponent);
     }

@@ -21,6 +21,7 @@
 */
 package org.jboss.as.ejb3.concurrency;
 
+import org.jboss.as.ejb3.component.singleton.EJBReadWriteLock;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
