@@ -24,6 +24,7 @@ import javax.resource.spi.work.WorkListener;
 
 import org.jboss.as.connector.security.CallbackImpl;
 import org.jboss.as.connector.security.ElytronSecurityContext;
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.jca.core.spi.security.SecurityIntegration;
 import org.jboss.jca.core.workmanager.WorkManagerImpl;
 
@@ -61,7 +62,7 @@ public class WildflyWorkWrapper extends org.jboss.jca.core.workmanager.WorkWrapp
                 try {
                     WildflyWorkWrapper.super.runWork();
                 } catch (WorkCompletedException e) {
-                    e.printStackTrace();
+                    ConnectorLogger.ROOT_LOGGER.unexceptedWorkerCompletionError(e.getLocalizedMessage(),e);
                 }
             });
         // delegate to super class if there is no elytron enabled
