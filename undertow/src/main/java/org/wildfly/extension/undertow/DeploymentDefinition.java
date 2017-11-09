@@ -22,11 +22,16 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -44,9 +49,11 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentService;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
+
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionManager;
 import io.undertow.server.session.SessionManagerStatistics;
@@ -64,15 +71,75 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
     public static final AttributeDefinition SERVER = new SimpleAttributeDefinitionBuilder("server", ModelType.STRING).setStorageRuntime().build();
     public static final AttributeDefinition CONTEXT_ROOT = new SimpleAttributeDefinitionBuilder("context-root", ModelType.STRING).setStorageRuntime().build();
     public static final AttributeDefinition VIRTUAL_HOST = new SimpleAttributeDefinitionBuilder("virtual-host", ModelType.STRING).setStorageRuntime().build();
-    static final AttributeDefinition SESSIOND_ID = new SimpleAttributeDefinitionBuilder("session-id", ModelType.STRING)
+    static final AttributeDefinition SESSIOND_ID = new SimpleAttributeDefinitionBuilder(Constants.SESSION_ID, ModelType.STRING)
             .setRequired(true)
             .setAllowExpression(false)
             .build();
 
-    static final OperationDefinition INVALIDATE_SESSION = new SimpleOperationDefinitionBuilder("invalidate-session", DEFAULT_RESOLVER)
+    static final AttributeDefinition ATTRIBUTE = new SimpleAttributeDefinitionBuilder(Constants.ATTRIBUTE, ModelType.STRING)
+            .setRequired(true)
+            .setAllowExpression(false)
+            .build();
+
+
+    static final OperationDefinition INVALIDATE_SESSION = new SimpleOperationDefinitionBuilder(Constants.INVALIDATE_SESSION, DEFAULT_RESOLVER)
             .addParameter(SESSIOND_ID)
             .setRuntimeOnly()
             .setReplyType(ModelType.BOOLEAN)
+            .build();
+
+    static final OperationDefinition LIST_SESSIONS = new SimpleOperationDefinitionBuilder(Constants.LIST_SESSIONS, DEFAULT_RESOLVER)
+            .setRuntimeOnly()
+            .setReplyType(ModelType.LIST)
+            .setReplyValueType(ModelType.STRING)
+            .build();
+
+    static final OperationDefinition LIST_SESSION_ATTRIBUTE_NAMES = new SimpleOperationDefinitionBuilder(Constants.LIST_SESSION_ATTRIBUTE_NAMES, DEFAULT_RESOLVER)
+            .setRuntimeOnly()
+            .addParameter(SESSIOND_ID)
+            .setReplyType(ModelType.LIST)
+            .setReplyValueType(ModelType.STRING)
+            .build();
+
+    static final OperationDefinition LIST_SESSION_ATTRIBUTES = new SimpleOperationDefinitionBuilder(Constants.LIST_SESSION_ATTRIBUTES, DEFAULT_RESOLVER)
+            .setRuntimeOnly()
+            .addParameter(SESSIOND_ID)
+            .setReplyType(ModelType.LIST)
+            .setReplyValueType(ModelType.PROPERTY)
+            .build();
+
+    static final OperationDefinition GET_SESSION_ATTRIBUTE = new SimpleOperationDefinitionBuilder(Constants.GET_SESSION_ATTRIBUTE, DEFAULT_RESOLVER)
+            .setRuntimeOnly()
+            .addParameter(SESSIOND_ID)
+            .addParameter(ATTRIBUTE)
+            .setReplyType(ModelType.STRING)
+            .setReplyValueType(ModelType.PROPERTY)
+            .build();
+
+    static final OperationDefinition GET_SESSION_LAST_ACCESSED_TIME = new SimpleOperationDefinitionBuilder(Constants.GET_SESSION_LAST_ACCESSED_TIME, DEFAULT_RESOLVER)
+            .setRuntimeOnly()
+            .addParameter(SESSIOND_ID)
+            .setReplyType(ModelType.STRING)
+            .build();
+
+
+    static final OperationDefinition GET_SESSION_LAST_ACCESSED_TIME_MILLIS = new SimpleOperationDefinitionBuilder(Constants.GET_SESSION_LAST_ACCESSED_TIME_MILLIS, DEFAULT_RESOLVER)
+            .setRuntimeOnly()
+            .addParameter(SESSIOND_ID)
+            .setReplyType(ModelType.LONG)
+            .build();
+
+    static final OperationDefinition GET_SESSION_CREATION_TIME = new SimpleOperationDefinitionBuilder(Constants.GET_SESSION_CREATION_TIME, DEFAULT_RESOLVER)
+            .setRuntimeOnly()
+            .addParameter(SESSIOND_ID)
+            .setReplyType(ModelType.STRING)
+            .build();
+
+
+    static final OperationDefinition GET_SESSION_CREATION_TIME_MILLIS = new SimpleOperationDefinitionBuilder(Constants.GET_SESSION_CREATION_TIME_MILLIS, DEFAULT_RESOLVER)
+            .setRuntimeOnly()
+            .addParameter(SESSIOND_ID)
+            .setReplyType(ModelType.LONG)
             .build();
 
     private DeploymentDefinition() {
@@ -94,7 +161,110 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(INVALIDATE_SESSION, SessionInvalidateHandler.getInstance());
+        SessionManagerOperationHandler handler = new SessionManagerOperationHandler();
+
+        resourceRegistration.registerOperationHandler(INVALIDATE_SESSION, handler);
+        resourceRegistration.registerOperationHandler(LIST_SESSIONS, handler);
+        resourceRegistration.registerOperationHandler(LIST_SESSION_ATTRIBUTE_NAMES, handler);
+        resourceRegistration.registerOperationHandler(LIST_SESSION_ATTRIBUTES, handler);
+        resourceRegistration.registerOperationHandler(GET_SESSION_ATTRIBUTE, handler);
+        resourceRegistration.registerOperationHandler(GET_SESSION_LAST_ACCESSED_TIME, handler);
+        resourceRegistration.registerOperationHandler(GET_SESSION_LAST_ACCESSED_TIME_MILLIS, handler);
+        resourceRegistration.registerOperationHandler(GET_SESSION_CREATION_TIME, handler);
+        resourceRegistration.registerOperationHandler(GET_SESSION_CREATION_TIME_MILLIS, handler);
+    }
+
+    static class SessionManagerOperationHandler extends AbstractRuntimeOnlyHandler {
+
+        @Override
+        protected void executeRuntimeStep(OperationContext operationContext, ModelNode modelNode) throws OperationFailedException {
+            ModelNode result = new ModelNode();
+            SessionManager sessionManager = getSessionManager(operationContext, modelNode);
+
+            String name = modelNode.get(OP).asString();
+            //list-sessions does not take a session id param
+            if (name.equals(Constants.LIST_SESSIONS)) {
+                result.setEmptyList();
+                Set<String> sessions = sessionManager.getAllSessions();
+                for (String s : sessions) {
+                    result.add(s);
+                }
+                operationContext.getResult().set(result);
+                return;
+            }
+            String sessionId = SESSIOND_ID.resolveModelAttribute(operationContext, modelNode).asString();
+            Session session = sessionManager.getSession(sessionId);
+            if (session == null && !name.equals(Constants.INVALIDATE_SESSION)) {
+                throw UndertowLogger.ROOT_LOGGER.sessionNotFound(sessionId);
+            }
+
+            switch (name) {
+                case Constants.INVALIDATE_SESSION: {
+                    if(session == null) {
+                        result.set(false);
+                    } else {
+                        session.invalidate(null);
+                        result.set(true);
+                    }
+                    break;
+                }
+                case Constants.LIST_SESSION_ATTRIBUTE_NAMES: {
+                    result.setEmptyList();
+                    Set<String> sessions = session.getAttributeNames();
+                    for (String s : sessions) {
+                        result.add(s);
+                    }
+                    break;
+                }
+                case Constants.LIST_SESSION_ATTRIBUTES: {
+                    result.setEmptyList();
+                    Set<String> sessions = session.getAttributeNames();
+                    for (String s : sessions) {
+                        Object attribute = session.getAttribute(s);
+                        ModelNode m = new ModelNode();
+                        if (attribute != null) {
+                            m.set(attribute.toString());
+                        }
+                        result.add(new Property(s, m));
+                    }
+                    break;
+                }
+                case Constants.GET_SESSION_ATTRIBUTE: {
+                    String a = ATTRIBUTE.resolveModelAttribute(operationContext, modelNode).asString();
+                    Object attribute = session.getAttribute(a);
+                    if (attribute != null) {
+                        result.set(attribute.toString());
+                    }
+                    break;
+                }
+                case Constants.GET_SESSION_LAST_ACCESSED_TIME: {
+                    long accessTime = session.getLastAccessedTime();
+                    result.set(DateTimeFormatter.ISO_DATE_TIME
+                            .withZone(ZoneId.systemDefault())
+                            .format(Instant.ofEpochMilli(accessTime)));
+                    break;
+                }
+                case Constants.GET_SESSION_LAST_ACCESSED_TIME_MILLIS: {
+                    long accessTime = session.getLastAccessedTime();
+                    result.set(accessTime);
+                    break;
+                }
+                case Constants.GET_SESSION_CREATION_TIME: {
+                    long accessTime = session.getCreationTime();
+                    result.set(DateTimeFormatter.ISO_DATE_TIME
+                            .withZone(ZoneId.systemDefault())
+                            .format(Instant.ofEpochMilli(accessTime)));
+                    break;
+                }
+                case Constants.GET_SESSION_CREATION_TIME_MILLIS: {
+                    long accessTime = session.getCreationTime();
+                    result.set(accessTime);
+                    break;
+                }
+            }
+
+            operationContext.getResult().set(result);
+        }
     }
 
     static class SessionManagerStatsHandler extends AbstractRuntimeOnlyHandler {
@@ -143,48 +313,48 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
                         result.set(sessionManager.getActiveSessions().size());
                         break;
                     case EXPIRED_SESSIONS:
-                        if(sms == null) {
+                        if (sms == null) {
                             result.set(0);
                         } else {
-                            result.set((int)sms.getExpiredSessionCount());
+                            result.set((int) sms.getExpiredSessionCount());
                         }
                         break;
                     case MAX_ACTIVE_SESSIONS:
-                        if(sms == null) {
+                        if (sms == null) {
                             result.set(0);
                         } else {
-                            result.set((int)sms.getMaxActiveSessions());
+                            result.set((int) sms.getMaxActiveSessions());
                         }
                         break;
                     case SESSIONS_CREATED:
-                        if(sms == null) {
+                        if (sms == null) {
                             result.set(0);
                         } else {
-                            result.set((int)sms.getCreatedSessionCount());
+                            result.set((int) sms.getCreatedSessionCount());
                         }
                         break;
                     //case DUPLICATED_SESSION_IDS:
                     //    result.set(sm.getDuplicates());
                     //    break;
                     case SESSION_AVG_ALIVE_TIME:
-                        if(sms == null) {
+                        if (sms == null) {
                             result.set(0);
                         } else {
                             result.set((int) sms.getAverageSessionAliveTime() / 1000);
                         }
                         break;
                     case SESSION_MAX_ALIVE_TIME:
-                        if(sms == null) {
+                        if (sms == null) {
                             result.set(0);
                         } else {
                             result.set((int) sms.getMaxSessionAliveTime() / 1000);
                         }
                         break;
                     case REJECTED_SESSIONS:
-                        if(sms == null) {
+                        if (sms == null) {
                             result.set(0);
                         } else {
-                            result.set((int)sms.getRejectedSessions());
+                            result.set((int) sms.getRejectedSessions());
                         }
                         break;
                     default:
@@ -195,53 +365,26 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
         }
     }
 
+    private static SessionManager getSessionManager(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+        final Resource web = context.readResourceFromRoot(address.subAddress(0, address.size()), false);
+        final ModelNode subModel = web.getModel();
+        final String host = VIRTUAL_HOST.resolveModelAttribute(context, subModel).asString();
+        final String path = CONTEXT_ROOT.resolveModelAttribute(context, subModel).asString();
+        final String server = SERVER.resolveModelAttribute(context, subModel).asString();
 
-    static class SessionInvalidateHandler extends AbstractRuntimeOnlyHandler {
-
-        static SessionInvalidateHandler INSTANCE = new SessionInvalidateHandler();
-
-        private SessionInvalidateHandler() {
-        }
-
-        public static SessionInvalidateHandler getInstance() {
-            return INSTANCE;
-        }
-
-        @Override
-        protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-            final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-
-            final Resource web = context.readResourceFromRoot(address.subAddress(0, address.size()), false);
-            final ModelNode subModel = web.getModel();
-
-            final String host = VIRTUAL_HOST.resolveModelAttribute(context, subModel).asString();
-            final String path = CONTEXT_ROOT.resolveModelAttribute(context, subModel).asString();
-            final String server = SERVER.resolveModelAttribute(context, subModel).asString();
-
-            String sessionId = SESSIOND_ID.resolveModelAttribute(context, operation).asString();
-            ModelNode result = new ModelNode();
-            final ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(server, host, path));
-            if (controller != null && controller.getState() != ServiceController.State.UP) {//check if deployment is active at all
-                result.set(false);
-            } else {
-                final UndertowDeploymentService deploymentService = (UndertowDeploymentService) controller.getService();
-                if (deploymentService == null || deploymentService.getDeployment() == null) { //we might be in shutdown and it is possible
-                    result.set(false);
-                } else {
-                    Deployment deployment = deploymentService.getDeployment();
-                    SessionManager sessionManager = deployment.getSessionManager();
-                    Session session = sessionManager.getSession(sessionId);
-                    if (session == null) {
-                        result.set(false);
-                    } else {
-                        session.invalidate(null);
-                        result.set(true);
-                    }
-                }
+        final UndertowDeploymentService deploymentService;
+        final ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(server, host, path));
+        if (controller != null && controller.getState() != ServiceController.State.UP) {//check if deployment is active at all
+            throw UndertowLogger.ROOT_LOGGER.sessionManagerNotAvailable();
+        } else {
+            deploymentService = (UndertowDeploymentService) controller.getService();
+            if (deploymentService == null || deploymentService.getDeployment() == null) { //we might be in shutdown and it is possible
+                throw UndertowLogger.ROOT_LOGGER.sessionManagerNotAvailable();
             }
-            context.getResult().set(result);
         }
+        Deployment deployment = deploymentService.getDeployment();
+        return deployment.getSessionManager();
     }
 
     public enum SessionStat {
@@ -271,7 +414,7 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
 
         final AttributeDefinition definition;
 
-        private SessionStat(final AttributeDefinition definition) {
+        SessionStat(final AttributeDefinition definition) {
             this.definition = definition;
         }
 
