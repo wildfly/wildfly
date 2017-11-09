@@ -72,6 +72,7 @@ import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.SHARED_STORE;
+import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.EXPRESSION;
@@ -493,14 +494,23 @@ public class MigrateOperation implements OperationStepHandler {
     private void migrateDiscoveryGroup(ModelNode newAddOp, List<String> warnings) {
         // These attributes are not present in the messaging-activemq subsystem.
         // Instead a socket-binding must be used to configure the broadcast-group.
+        boolean mandatorySocketBinding = false;
         for (String property : asList(LOCAL_BIND_ADDRESS.getName(), GROUP_ADDRESS.getName(), GROUP_PORT.getName())) {
             if (newAddOp.has(property)) {
                 newAddOp.remove(property);
                 warnings.add(ROOT_LOGGER.couldNotMigrateDiscoveryGroupAttribute(property, pathAddress(newAddOp.get(OP_ADDR))));
+                mandatorySocketBinding = true;
             }
         }
+        if (mandatorySocketBinding) {
+            newAddOp.get(SOCKET_BINDING.getName()).set("group-s-binding");
+        }
         // These attributes no longer accept expressions in the messaging-activemq subsystem.
-        removePropertiesWithExpression(newAddOp, warnings, JGROUPS_CHANNEL.getName(), JGROUPS_STACK.getName());
+        List<String> removed = removePropertiesWithExpression(newAddOp, warnings, JGROUPS_CHANNEL.getName(), JGROUPS_STACK.getName());
+        if (!removed.isEmpty() && !mandatorySocketBinding) {
+            // jgroups-channel or jgroups-stack in expression is found and removed
+            newAddOp.get(SOCKET_BINDING.getName()).set("group-s-binding");
+        }
     }
 
     private void migrateBroadcastGroup(ModelNode newAddOp, List<String> warnings) {
@@ -510,23 +520,35 @@ public class MigrateOperation implements OperationStepHandler {
                 LOCAL_BIND_PORT.getName(),
                 GROUP_ADDRESS.getName(),
                 GROUP_PORT.getName());
+        boolean mandatorySocketBinding = false;
         for (Property property : newAddOp.asPropertyList()) {
             if (unmigratedProperties.contains(property.getName())) {
                 warnings.add(ROOT_LOGGER.couldNotMigrateBroadcastGroupAttribute(property.getName(), pathAddress(newAddOp.get(OP_ADDR))));
+                mandatorySocketBinding = true;
             }
         }
+        if (mandatorySocketBinding) {
+            newAddOp.get(SOCKET_BINDING.getName()).set("group-s-binding");
+        }
         // These attributes no longer accept expressions in the messaging-activemq subsystem.
-        removePropertiesWithExpression(newAddOp, warnings, JGROUPS_CHANNEL.getName(), JGROUPS_STACK.getName());
+        List<String> removed = removePropertiesWithExpression(newAddOp, warnings, JGROUPS_CHANNEL.getName(), JGROUPS_STACK.getName());
+        if (!removed.isEmpty() && !mandatorySocketBinding) {
+            // jgroups-channel or jgroups-stack in expression is found and removed
+            newAddOp.get(SOCKET_BINDING.getName()).set("group-s-binding");
+        }
     }
 
 
-    private void removePropertiesWithExpression(ModelNode newAddOp, List<String> warnings, String... properties) {
+    private List<String> removePropertiesWithExpression(ModelNode newAddOp, List<String> warnings, String... properties) {
+        List<String> removed = new ArrayList<>();
         for (String property : properties) {
             if (newAddOp.hasDefined(property) && newAddOp.get(property).getType() == EXPRESSION) {
                 newAddOp.remove(property);
                 warnings.add(ROOT_LOGGER.couldNotMigrateResourceAttributeWithExpression(property, pathAddress(newAddOp.get(OP_ADDR))));
+                removed.add(property);
             }
         }
+        return removed;
     }
 
     private void addLegacyEntries(ModelNode newAddOp) {
