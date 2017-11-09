@@ -113,11 +113,16 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 if (overlay.exists()) {
                     overlays.add(overlay);
                 }
-                // Find ServletContainerInitializer services
-                VirtualFile sci = resourceRoot.getRoot().getChild("META-INF/services/javax.servlet.ServletContainerInitializer");
-                if (sci.exists()) {
-                    scis.put(resourceRoot.getRootName(), sci);
-                }
+            }
+
+
+            //we load SCI's directly from the war not just from jars
+            //not required by spec but other containers do it
+            //see WFLY-9081
+            // Find ServletContainerInitializer services
+            VirtualFile sci = resourceRoot.getRoot().getChild("META-INF/services/javax.servlet.ServletContainerInitializer");
+            if (sci.exists()) {
+                scis.put(resourceRoot.getRootName(), sci);
             }
         }
 
