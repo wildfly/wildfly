@@ -1,4 +1,4 @@
-= Documentation
+= WildFly Documentation
 :ext-relative: {outfilesuffix}
 
 image:images/splash_wildflylogo_small.png[WildFly, align="center"]
@@ -68,6 +68,9 @@ into WildFly.
 
 * The link:WildFly_Elytron_Security{outfilesuffix}[WildFly Elytron Security] guide walks you trough new security layer of of WildFly
 
+== Client Guide
+
+* The link:Client_Guide{outfilesuffix}[WildFly Client Configuration] guide walks you trough new wildfly client and how to use it.
 
 [[quickstarts]]
 == Quickstarts
