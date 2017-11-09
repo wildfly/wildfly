@@ -32,11 +32,11 @@ import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
-import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueMarshaller;
+import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
@@ -68,7 +68,7 @@ public class InfinispanSessionManagerFactory<C extends Marshallability> implemen
         final CacheProperties properties = new InfinispanCacheProperties(cache.getCacheConfiguration());
         final IdentifierFactory<String> factory = new AffinityIdentifierFactory<>(configuration.getIdentifierFactory(), cache, this.config.getKeyAffinityServiceFactory());
         final CommandDispatcherFactory dispatcherFactory = this.config.getCommandDispatcherFactory();
-        final NodeFactory<Address> nodeFactory = this.config.getNodeFactory();
+        final NodeFactory<Address> memberFactory = this.config.getMemberFactory();
         final int maxActiveSessions = this.config.getSessionManagerFactoryConfiguration().getMaxActiveSessions();
         InfinispanSessionManagerConfiguration config = new InfinispanSessionManagerConfiguration() {
             @Override
@@ -107,8 +107,8 @@ public class InfinispanSessionManagerFactory<C extends Marshallability> implemen
             }
 
             @Override
-            public NodeFactory<Address> getNodeFactory() {
-                return nodeFactory;
+            public NodeFactory<Address> getMemberFactory() {
+                return memberFactory;
             }
 
             @Override

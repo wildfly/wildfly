@@ -23,10 +23,8 @@ package org.wildfly.clustering.server.group;
 
 import java.security.PrivilegedAction;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,9 +45,10 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.Transport;
+import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
@@ -62,7 +61,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Paul Ferraro
  */
 @org.infinispan.notifications.Listener
-public class CacheGroup implements Group, AutoCloseable {
+public class CacheGroup implements Group<Address>, AutoCloseable {
 
     private static ThreadFactory createThreadFactory(Class<?> targetClass) {
         PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
@@ -71,12 +70,12 @@ public class CacheGroup implements Group, AutoCloseable {
 
     private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final Cache<?, ?> cache;
-    private final InfinispanNodeFactory factory;
+    private final NodeFactory<org.jgroups.Address> nodeFactory;
     private final SortedMap<Integer, Boolean> views = Collections.synchronizedSortedMap(new TreeMap<>());
 
     public CacheGroup(CacheGroupConfiguration config) {
         this.cache = config.getCache();
-        this.factory = config.getNodeFactory();
+        this.nodeFactory = config.getMemberFactory();
         this.cache.getCacheManager().addListener(this);
         this.cache.addListener(this);
     }
@@ -102,7 +101,7 @@ public class CacheGroup implements Group, AutoCloseable {
 
     @Override
     public Node getLocalMember() {
-        return this.factory.createNode(this.cache.getCacheManager().getAddress());
+        return this.createNode(this.cache.getCacheManager().getAddress());
     }
 
     @Override
@@ -112,12 +111,26 @@ public class CacheGroup implements Group, AutoCloseable {
         }
         Transport transport = this.cache.getCacheManager().getTransport();
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        return (dist != null) ? new CacheMembership(transport.getAddress(), dist.getConsistentHash(), this.factory) : new CacheMembership(transport, this.factory);
+        return (dist != null) ? new CacheMembership(transport.getAddress(), dist.getConsistentHash(), this) : new CacheMembership(transport, this);
     }
 
     @Override
     public boolean isSingleton() {
         return this.cache.getCacheManager().getTransport() == null;
+    }
+
+    @Override
+    public Node createNode(Address address) {
+        return this.nodeFactory.createNode(toJGroupsAddress(address));
+    }
+
+    private static org.jgroups.Address toJGroupsAddress(Address address) {
+        if (address == null) return null;
+        if (address instanceof JGroupsAddress) {
+            JGroupsAddress jgroupsAddress = (JGroupsAddress) address;
+            return jgroupsAddress.getJGroupsAddress();
+        }
+        throw new IllegalArgumentException(address.toString());
     }
 
     @Merged
@@ -127,8 +140,8 @@ public class CacheGroup implements Group, AutoCloseable {
             // Record view status for use by @TopologyChanged event
             this.views.put(event.getViewId(), event.isMergeView());
         } else if (!this.listeners.isEmpty()) {
-            Membership previousMembership = new CacheMembership(event.getLocalAddress(), event.getOldMembers(), this.factory);
-            Membership membership = new CacheMembership(event.getLocalAddress(), event.getNewMembers(), this.factory);
+            Membership previousMembership = new CacheMembership(event.getLocalAddress(), event.getOldMembers(), this);
+            Membership membership = new CacheMembership(event.getLocalAddress(), event.getNewMembers(), this);
             for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
                 GroupListener listener = entry.getKey();
                 ExecutorService executor = entry.getValue();
@@ -151,15 +164,11 @@ public class CacheGroup implements Group, AutoCloseable {
     public void topologyChanged(TopologyChangedEvent<?, ?> event) {
         if (event.isPre()) return;
 
-        Set<Address> obsolete = new HashSet<>(event.getConsistentHashAtStart().getMembers());
-        obsolete.removeAll(event.getConsistentHashAtEnd().getMembers());
-        this.factory.invalidate(obsolete);
-
         int viewId = event.getCache().getCacheManager().getTransport().getViewId();
         if (!this.listeners.isEmpty()) {
             Address localAddress = event.getCache().getCacheManager().getAddress();
-            Membership previousMembership = new CacheMembership(localAddress, event.getConsistentHashAtStart(), this.factory);
-            Membership membership = new CacheMembership(localAddress, event.getConsistentHashAtEnd(), this.factory);
+            Membership previousMembership = new CacheMembership(localAddress, event.getConsistentHashAtStart(), this);
+            Membership membership = new CacheMembership(localAddress, event.getConsistentHashAtEnd(), this);
             Boolean status = this.views.get(viewId);
             boolean merged = (status != null) ? status.booleanValue() : false;
             for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {

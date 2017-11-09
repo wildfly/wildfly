@@ -41,7 +41,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
-import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
@@ -53,6 +52,7 @@ import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
@@ -69,7 +69,7 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability> i
     private final CapabilityServiceBuilder<?> cacheBuilder;
 
     @SuppressWarnings("rawtypes")
-    private volatile ValueDependency<NodeFactory> nodeFactory;
+    private volatile ValueDependency<NodeFactory> group;
     private volatile ValueDependency<KeyAffinityServiceFactory> affinityFactory;
     private volatile ValueDependency<CommandDispatcherFactory> dispatcherFactory;
 
@@ -118,7 +118,7 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability> i
 
         this.affinityFactory = new InjectedValueDependency<>(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(support, this.containerName), KeyAffinityServiceFactory.class);
         this.dispatcherFactory = new InjectedValueDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, this.containerName), CommandDispatcherFactory.class);
-        this.nodeFactory = new InjectedValueDependency<>(ClusteringCacheRequirement.NODE_FACTORY.getServiceName(support, this.containerName, this.configuration.getServerName()), NodeFactory.class);
+        this.group = new InjectedValueDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, this.containerName, this.configuration.getServerName()), NodeFactory.class);
         return this;
     }
 
@@ -132,7 +132,7 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability> i
                 .addDependency(this.cacheBuilder.getServiceName(), Cache.class, this.cache)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 ;
-        Stream.of(this.nodeFactory, this.affinityFactory, this.dispatcherFactory).forEach(dependency -> dependency.register(builder));
+        Stream.of(this.group, this.affinityFactory, this.dispatcherFactory).forEach(dependency -> dependency.register(builder));
         return builder;
     }
 
@@ -157,7 +157,7 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability> i
     }
 
     @Override
-    public NodeFactory<Address> getNodeFactory() {
-        return this.nodeFactory.getValue();
+    public NodeFactory<Address> getMemberFactory() {
+        return this.group.getValue();
     }
 }

@@ -1,4 +1,3 @@
-org.wildfly.clustering.server.group.CacheNodeFactoryBuilderProvider
 org.wildfly.clustering.server.group.LocalCacheGroupBuilderProvider
 org.wildfly.clustering.server.provider.LocalServiceProviderRegistryBuilderProvider
 org.wildfly.clustering.server.registry.LocalRegistryFactoryBuilderProvider

@@ -71,12 +71,12 @@ import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.RetryingInvoker;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality;
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
+import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableHttpSessionAdapter;
@@ -109,7 +109,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     private final SessionFactory<MV, AV, L> factory;
     private final IdentifierFactory<String> identifierFactory;
     private final CommandDispatcherFactory dispatcherFactory;
-    private final NodeFactory<Address> nodeFactory;
+    private final NodeFactory<Address> memberFactory;
     private final int maxActiveSessions;
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private final Invoker invoker = new RetryingInvoker(0, 10, 100);
@@ -130,7 +130,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         this.identifierFactory = configuration.getIdentifierFactory();
         this.batcher = configuration.getBatcher();
         this.dispatcherFactory = configuration.getCommandDispatcherFactory();
-        this.nodeFactory = configuration.getNodeFactory();
+        this.memberFactory = configuration.getMemberFactory();
         this.maxActiveSessions = configuration.getMaxActiveSessions();
         this.recorder = configuration.getInactiveSessionRecorder();
         this.context = configuration.getServletContext();
@@ -221,7 +221,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     private Node locatePrimaryOwner(String sessionId) {
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
         Address address = (dist != null) ? dist.getPrimaryLocation(new Key<>(sessionId)) : null;
-        return (address != null) ? this.nodeFactory.createNode(address) : this.dispatcherFactory.getGroup().getLocalMember();
+        return (address != null) ? this.memberFactory.createNode(address) : this.dispatcherFactory.getGroup().getLocalMember();
     }
 
     @Override

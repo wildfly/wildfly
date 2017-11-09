@@ -22,7 +22,6 @@
 package org.wildfly.clustering.server.group;
 
 import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
@@ -31,13 +30,12 @@ import org.wildfly.clustering.group.Node;
  * Non-clustered {@link Group} implementation
  * @author Paul Ferraro
  */
-public class LocalGroup implements Group {
+public class LocalGroup implements Group<Void> {
+    private static final String NAME = "local";
 
-    private final String name;
     private final Membership membership;
 
-    public LocalGroup(String name, Node node) {
-        this.name = name;
+    public LocalGroup(Node node) {
         this.membership = new SingletonMembership(node);
     }
 
@@ -55,7 +53,7 @@ public class LocalGroup implements Group {
 
     @Override
     public String getName() {
-        return this.name;
+        return NAME;
     }
 
     @Override
@@ -71,5 +69,10 @@ public class LocalGroup implements Group {
     @Override
     public boolean isSingleton() {
         return true;
+    }
+
+    @Override
+    public Node createNode(Void address) {
+        return this.getLocalMember();
     }
 }

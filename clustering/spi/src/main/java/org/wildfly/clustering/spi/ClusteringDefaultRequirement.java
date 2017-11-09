@@ -26,7 +26,6 @@ import org.jboss.as.clustering.controller.ServiceNameFactory;
 import org.jboss.as.clustering.controller.ServiceNameFactoryProvider;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.service.Requirement;
 
 /**
@@ -35,7 +34,7 @@ import org.wildfly.clustering.service.Requirement;
 public enum ClusteringDefaultRequirement implements Requirement, ServiceNameFactoryProvider {
     COMMAND_DISPATCHER_FACTORY("org.wildfly.clustering.default-command-dispatcher-factory", CommandDispatcherFactory.class),
     GROUP("org.wildfly.clustering.default-group", Group.class),
-    NODE_FACTORY("org.wildfly.clustering.default-node-factory", NodeFactory.class),
+    @Deprecated NODE_FACTORY("org.wildfly.clustering.default-node-factory", org.wildfly.clustering.group.NodeFactory.class),
     ;
     private final String name;
     private final Class<?> type;

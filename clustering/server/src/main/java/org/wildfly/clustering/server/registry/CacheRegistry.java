@@ -57,11 +57,10 @@ import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryListener;
+import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -85,8 +84,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     private final Map<RegistryListener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final Cache<Node, Map.Entry<K, V>> cache;
     private final Batcher<? extends Batch> batcher;
-    private final Group group;
-    private final NodeFactory<Address> factory;
+    private final Group<Address> group;
     private final Runnable closeTask;
     private final Map.Entry<K, V> entry;
 
@@ -94,7 +92,6 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
         this.cache = config.getCache();
         this.batcher = config.getBatcher();
         this.group = config.getGroup();
-        this.factory = config.getNodeFactory();
         this.closeTask = closeTask;
         this.entry = new AbstractMap.SimpleImmutableEntry<>(entry);
         this.populateRegistry();
@@ -150,7 +147,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     }
 
     @Override
-    public Group getGroup() {
+    public org.wildfly.clustering.group.Group getGroup() {
         return this.group;
     }
 
@@ -187,7 +184,10 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
             this.topologyChangeExecutor.submit(() -> {
                 if (!addresses.isEmpty()) {
                     // We're only interested in the entries for which we are the primary owner
-                    List<Node> nodes = addresses.stream().filter(address -> hash.locatePrimaryOwner(address).equals(localAddress)).map(address -> this.factory.createNode(address)).collect(Collectors.toList());
+                    List<Node> nodes = addresses.stream()
+                            .filter(address -> hash.locatePrimaryOwner(address).equals(localAddress))
+                            .map(address -> this.group.createNode(address))
+                            .collect(Collectors.toList());
 
                     if (!nodes.isEmpty()) {
                         Cache<Node, Map.Entry<K, V>> cache = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);

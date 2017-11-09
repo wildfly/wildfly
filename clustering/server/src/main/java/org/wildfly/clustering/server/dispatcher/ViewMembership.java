@@ -29,7 +29,7 @@ import org.jgroups.Address;
 import org.jgroups.View;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.spi.NodeFactory;
 
 /**
  * A group membership based on a JGroups view.

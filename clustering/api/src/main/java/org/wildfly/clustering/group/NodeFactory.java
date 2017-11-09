@@ -26,7 +26,9 @@ package org.wildfly.clustering.group;
  *
  * @param <A> address type
  * @author Paul Ferraro
+ * @deprecated To be removed from API without replacement
  */
+@Deprecated
 public interface NodeFactory<A> {
     /**
      * Creates a node instance from the address.

@@ -33,13 +33,13 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
-import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.session.RouteLocator;
 
 /**
@@ -71,7 +71,7 @@ public class InfinispanRouteLocatorBuilder implements CapabilityServiceBuilder<R
 
     @Override
     public Builder<RouteLocator> configure(CapabilityServiceSupport support) {
-        this.factory = new InjectedValueDependency<>(ClusteringCacheRequirement.NODE_FACTORY.getServiceName(support, this.containerName, this.serverName), NodeFactory.class);
+        this.factory = new InjectedValueDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, this.containerName, this.serverName), NodeFactory.class);
         this.registry = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY.getServiceName(support, this.containerName, this.serverName), Registry.class);
         this.cache = new InjectedValueDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, this.containerName, this.deploymentName), Cache.class);
         return this;
@@ -96,7 +96,7 @@ public class InfinispanRouteLocatorBuilder implements CapabilityServiceBuilder<R
     }
 
     @Override
-    public NodeFactory<Address> getNodeFactory() {
+    public NodeFactory<Address> getMemberFactory() {
         return this.factory.getValue();
     }
 }

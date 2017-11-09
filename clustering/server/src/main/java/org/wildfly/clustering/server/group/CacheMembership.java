@@ -30,7 +30,7 @@ import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.Transport;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.spi.NodeFactory;
 
 /**
  * @author Paul Ferraro
