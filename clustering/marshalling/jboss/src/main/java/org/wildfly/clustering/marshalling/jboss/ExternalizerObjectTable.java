@@ -44,7 +44,7 @@ import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
  */
 public class ExternalizerObjectTable implements ObjectTable {
 
-    private final Externalizer<?>[] externalizers;
+    private final Externalizer<Object>[] externalizers;
     private final Map<Class<?>, Writer> writers = new IdentityHashMap<>();
     private final IndexExternalizer indexExternalizer;
 
@@ -53,16 +53,17 @@ public class ExternalizerObjectTable implements ObjectTable {
                 .toArray(Externalizer[]::new));
     }
 
-    public ExternalizerObjectTable(Externalizer<?>... externalizers) {
+    @SafeVarargs
+    public ExternalizerObjectTable(Externalizer<Object>... externalizers) {
         this(IndexExternalizer.select(externalizers.length), externalizers);
     }
 
-    private ExternalizerObjectTable(IndexExternalizer indexExternalizer, Externalizer<?>... externalizers) {
+    @SafeVarargs
+    private ExternalizerObjectTable(IndexExternalizer indexExternalizer, Externalizer<Object>... externalizers) {
         this.indexExternalizer = indexExternalizer;
         this.externalizers = externalizers;
         for (int i = 0; i < externalizers.length; ++i) {
-            @SuppressWarnings("unchecked")
-            final Externalizer<Object> externalizer = (Externalizer<Object>) externalizers[i];
+            final Externalizer<Object> externalizer = externalizers[i];
             final int index = i;
             Class<?> targetClass = externalizer.getTargetClass();
             if (!this.writers.containsKey(targetClass)) {
