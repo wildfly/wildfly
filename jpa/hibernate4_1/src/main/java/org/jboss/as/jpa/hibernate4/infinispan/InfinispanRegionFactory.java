@@ -62,12 +62,12 @@ public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.Infi
         HibernateSecondLevelCache.addSecondLevelCacheDependencies(properties, null);
 
         Properties cacheSettings = new Properties();
-        cacheSettings.put(HibernateSecondLevelCache.CACHE_TYPE,CACHE_PRIVATE);
-        cacheSettings.put(HibernateSecondLevelCache.CONTAINER, container);
+        cacheSettings.setProperty(HibernateSecondLevelCache.CACHE_TYPE, CACHE_PRIVATE);
+        cacheSettings.setProperty(HibernateSecondLevelCache.CONTAINER, container);
         if (name != null) {
-            cacheSettings.put(HibernateSecondLevelCache.NAME, name);
+            cacheSettings.setProperty(HibernateSecondLevelCache.NAME, name);
         }
-
+        cacheSettings.setProperty(HibernateSecondLevelCache.CACHES, String.join(" ", HibernateSecondLevelCache.findCaches(properties)));
 
         try {
             // start a private cache for non-JPA use and return the started cache.
