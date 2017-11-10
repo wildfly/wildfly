@@ -55,6 +55,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -146,6 +147,7 @@ public enum DefaultExternalizer implements Externalizer<Object> {
     SQL_DATE(new DateExternalizer<>(java.sql.Date.class, java.sql.Date::new)),
     SQL_TIME(new DateExternalizer<>(java.sql.Time.class, java.sql.Time::new)),
     SQL_TIMESTAMP(new DateExternalizer.SqlTimestampExternalizer()),
+    TIME_UNIT(new EnumExternalizer<>(TimeUnit.class)),
     TIME_ZONE(new StringExternalizer<>(TimeZone.class, TimeZone::getTimeZone, TimeZone::getID)),
     TREE_MAP(new SortedMapExternalizer<>(TreeMap.class, TreeMap::new)),
     TREE_SET(new SortedSetExternalizer<>(TreeSet.class, TreeSet::new)),
