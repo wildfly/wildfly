@@ -36,6 +36,7 @@ import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Currency;
 import java.util.Date;
 import java.util.HashMap;
@@ -137,8 +138,10 @@ public enum DefaultExternalizer implements Externalizer<Object> {
     LINKED_HASH_SET(new CollectionExternalizer<>(LinkedHashSet.class, LinkedHashSet::new)),
     LINKED_LIST(new CollectionExternalizer<>(LinkedList.class, size -> new LinkedList<>())),
     LOCALE(new StringExternalizer<>(Locale.class, Locale::forLanguageTag, Locale::toLanguageTag)),
+    NATURAL_ORDER_COMPARATOR(new ValueExternalizer<>(Comparator.naturalOrder())),
     @SuppressWarnings("unchecked")
     OPTIONAL(new ObjectExternalizer<>(Optional.class, Optional::ofNullable, optional -> optional.orElse(null))),
+    REVERSE_ORDER_COMPARATOR(new ValueExternalizer<>(Collections.reverseOrder())),
     SIMPLE_ENTRY(new MapEntryExternalizer<>(AbstractMap.SimpleEntry.class, AbstractMap.SimpleEntry::new)),
     SIMPLE_IMMUTABLE_ENTRY(new MapEntryExternalizer<>(AbstractMap.SimpleImmutableEntry.class, AbstractMap.SimpleImmutableEntry::new)),
     SINGLETON_LIST(new SingletonCollectionExternalizer<>(Collections::singletonList)),

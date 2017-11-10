@@ -23,6 +23,7 @@
 package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.Optional;
@@ -44,7 +45,9 @@ public class UtilExternalizerTestCase {
     public void test() throws ClassNotFoundException, IOException {
         ExternalizerTestUtil.test(DefaultExternalizer.CURRENCY.cast(Currency.class), Currency.getInstance(Locale.US));
         ExternalizerTestUtil.test(DefaultExternalizer.LOCALE.cast(Locale.class), Locale.US);
+        ExternalizerTestUtil.test(DefaultExternalizer.NATURAL_ORDER_COMPARATOR.cast(Comparator.class), Comparator.naturalOrder());
         ExternalizerTestUtil.test(DefaultExternalizer.OPTIONAL.cast(Optional.class), Optional.empty());
+        ExternalizerTestUtil.test(DefaultExternalizer.REVERSE_ORDER_COMPARATOR.cast(Comparator.class), Comparator.reverseOrder());
         ExternalizerTestUtil.test(DefaultExternalizer.TIME_UNIT.cast(TimeUnit.class));
         ExternalizerTestUtil.test(DefaultExternalizer.TIME_ZONE.cast(TimeZone.class), TimeZone.getDefault());
         ExternalizerTestUtil.test(DefaultExternalizer.TIME_ZONE.cast(TimeZone.class), TimeZone.getTimeZone("America/New_York"));
