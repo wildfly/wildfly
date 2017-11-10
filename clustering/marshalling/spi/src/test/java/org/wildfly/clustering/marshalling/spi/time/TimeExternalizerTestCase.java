@@ -38,7 +38,6 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
 import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
@@ -51,8 +50,8 @@ public class TimeExternalizerTestCase {
     @Test
     public void test() throws ClassNotFoundException, IOException {
 
-        test(DefaultExternalizer.DAY_OF_WEEK.cast(DayOfWeek.class));
-        test(DefaultExternalizer.MONTH.cast(Month.class));
+        ExternalizerTestUtil.test(DefaultExternalizer.DAY_OF_WEEK.cast(DayOfWeek.class));
+        ExternalizerTestUtil.test(DefaultExternalizer.MONTH.cast(Month.class));
 
         ExternalizerTestUtil.test(DefaultExternalizer.DURATION.cast(Duration.class), Duration.between(Instant.EPOCH, Instant.now()));
         ExternalizerTestUtil.test(DefaultExternalizer.INSTANT.cast(Instant.class), Instant.now());
@@ -65,11 +64,5 @@ public class TimeExternalizerTestCase {
         ExternalizerTestUtil.test(DefaultExternalizer.YEAR_MONTH.cast(YearMonth.class), YearMonth.now());
         ExternalizerTestUtil.test(DefaultExternalizer.ZONE_OFFSET.cast(ZoneOffset.class), ZoneOffset.UTC);
         ExternalizerTestUtil.test(DefaultExternalizer.ZONE_ID, ZoneId.of("America/New_York"));
-    }
-
-    private static <E extends Enum<E>> void test(Externalizer<E> externalizer) throws ClassNotFoundException, IOException {
-        for (E value : externalizer.getTargetClass().getEnumConstants()) {
-            ExternalizerTestUtil.test(externalizer, value);
-        }
     }
 }
