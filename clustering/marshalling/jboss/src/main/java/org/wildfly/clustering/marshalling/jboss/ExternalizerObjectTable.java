@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling.jboss;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.util.EnumSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -35,6 +36,7 @@ import org.jboss.marshalling.ObjectTable;
 import org.jboss.marshalling.Unmarshaller;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * {@link ObjectTable} implementation that dynamically loads {@link Externalizer} instances available from a given {@link ClassLoader}.
@@ -47,12 +49,8 @@ public class ExternalizerObjectTable implements ObjectTable {
     private final IndexExternalizer indexExternalizer;
 
     public ExternalizerObjectTable(ClassLoader loader) {
-        this(Stream.concat(loadExternalizers(ExternalizerObjectTable.class.getClassLoader()), loadExternalizers(loader)).toArray(Externalizer[]::new));
-    }
-
-    @SuppressWarnings("rawtypes")
-    private static Stream<Externalizer> loadExternalizers(ClassLoader loader) {
-        return StreamSupport.stream(ServiceLoader.load(Externalizer.class, loader).spliterator(), false);
+        this(Stream.concat(EnumSet.allOf(DefaultExternalizer.class).stream(), StreamSupport.stream(ServiceLoader.load(Externalizer.class, loader).spliterator(), false))
+                .toArray(Externalizer[]::new));
     }
 
     public ExternalizerObjectTable(Externalizer<?>... externalizers) {

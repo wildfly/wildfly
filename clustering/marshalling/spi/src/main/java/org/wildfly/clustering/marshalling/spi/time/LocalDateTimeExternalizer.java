@@ -29,29 +29,25 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * Externalizer for a {@link LocalDateTime}.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
 public class LocalDateTimeExternalizer implements Externalizer<LocalDateTime> {
-
-    private static final Externalizer<LocalDate> DATE_EXTERNALIZER = new LocalDateExternalizer();
-    private static final Externalizer<LocalTime> TIME_EXTERNALIZER = new LocalTimeExternalizer();
 
     @Override
     public void writeObject(ObjectOutput output, LocalDateTime dateTime) throws IOException {
-        DATE_EXTERNALIZER.writeObject(output, dateTime.toLocalDate());
-        TIME_EXTERNALIZER.writeObject(output, dateTime.toLocalTime());
+        DefaultExternalizer.LOCAL_DATE.cast(LocalDate.class).writeObject(output, dateTime.toLocalDate());
+        DefaultExternalizer.LOCAL_TIME.cast(LocalTime.class).writeObject(output, dateTime.toLocalTime());
     }
 
     @Override
     public LocalDateTime readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        LocalDate date = DATE_EXTERNALIZER.readObject(input);
-        LocalTime time = TIME_EXTERNALIZER.readObject(input);
+        LocalDate date = DefaultExternalizer.LOCAL_DATE.cast(LocalDate.class).readObject(input);
+        LocalTime time = DefaultExternalizer.LOCAL_TIME.cast(LocalTime.class).readObject(input);
         return LocalDateTime.of(date, time);
     }
 

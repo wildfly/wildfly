@@ -29,22 +29,19 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * Externalizer for a {@link URL}.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
 public class URLExternalizer implements Externalizer<URL> {
-
-    private static final Externalizer<URI> URI_EXTERNALIZER = new URIExternalizer();
 
     @Override
     public void writeObject(ObjectOutput output, URL url) throws IOException {
         try {
-            URI_EXTERNALIZER.writeObject(output, url.toURI());
+            DefaultExternalizer.URI.cast(URI.class).writeObject(output, url.toURI());
         } catch (URISyntaxException e) {
             throw new IOException(e);
         }
@@ -52,7 +49,7 @@ public class URLExternalizer implements Externalizer<URL> {
 
     @Override
     public URL readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return URI_EXTERNALIZER.readObject(input).toURL();
+        return DefaultExternalizer.URI.cast(URI.class).readObject(input).toURL();
     }
 
     @Override

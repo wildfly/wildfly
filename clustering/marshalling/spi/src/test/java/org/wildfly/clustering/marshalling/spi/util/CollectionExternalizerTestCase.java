@@ -37,6 +37,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NavigableSet;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -49,6 +54,7 @@ import java.util.function.BiConsumer;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * Unit test for {@link CollectionExternalizer} externalizers.
@@ -56,36 +62,37 @@ import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
  */
 public class CollectionExternalizerTestCase {
 
+    @SuppressWarnings("unchecked")
     @Test
     public void test() throws ClassNotFoundException, IOException {
         Collection<Object> basis = Arrays.<Object>asList(1, 2, 3, 4, 5);
-        test(new CollectionExternalizer.ArrayDequeExternalizer(), new ArrayDeque<>(basis));
-        test(new CollectionExternalizer.ArrayListExternalizer(), new ArrayList<>(basis));
-        test(new CollectionExternalizer.ConcurrentLinkedDequeExternalizer(), new ConcurrentLinkedDeque<>(basis));
-        test(new CollectionExternalizer.ConcurrentLinkedQueueExternalizer(), new ConcurrentLinkedQueue<>(basis));
-        test(new CollectionExternalizer.HashSetExternalizer(), new HashSet<>(basis));
-        test(new CollectionExternalizer.LinkedHashSetExternalizer(), new LinkedHashSet<>(basis));
-        test(new CollectionExternalizer.LinkedListExternalizer(), new LinkedList<>(basis));
+        test(DefaultExternalizer.ARRAY_DEQUE.cast(ArrayDeque.class), new ArrayDeque<>(basis));
+        test(DefaultExternalizer.ARRAY_LIST.cast(ArrayList.class), new ArrayList<>(basis));
+        test(DefaultExternalizer.CONCURRENT_LINKED_DEQUE.cast(ConcurrentLinkedDeque.class), new ConcurrentLinkedDeque<>(basis));
+        test(DefaultExternalizer.CONCURRENT_LINKED_QUEUE.cast(ConcurrentLinkedQueue.class), new ConcurrentLinkedQueue<>(basis));
+        test(DefaultExternalizer.HASH_SET.cast(HashSet.class), new HashSet<>(basis));
+        test(DefaultExternalizer.LINKED_HASH_SET.cast(LinkedHashSet.class), new LinkedHashSet<>(basis));
+        test(DefaultExternalizer.LINKED_LIST.cast(LinkedList.class), new LinkedList<>(basis));
         ConcurrentHashMap.KeySetView<Object, Boolean> keySetView = ConcurrentHashMap.newKeySet();
         keySetView.addAll(basis);
-        test(new CollectionExternalizer.ConcurrentHashSetExternalizer(), keySetView);
+        test(DefaultExternalizer.CONCURRENT_HASH_SET.cast(ConcurrentHashMap.KeySetView.class), keySetView);
 
-        test(new CopyOnWriteCollectionExternalizer.CopyOnWriteArrayListExternalizer(), new CopyOnWriteArrayList<>(basis));
-        test(new CopyOnWriteCollectionExternalizer.CopyOnWriteArraySetExternalizer(), new CopyOnWriteArraySet<>(basis));
+        test(DefaultExternalizer.COPY_ON_WRITE_ARRAY_LIST.cast(CopyOnWriteArrayList.class), new CopyOnWriteArrayList<>(basis));
+        test(DefaultExternalizer.COPY_ON_WRITE_ARRAY_SET.cast(CopyOnWriteArraySet.class), new CopyOnWriteArraySet<>(basis));
 
-        test(new EmptyCollectionExternalizer.EmptyEnumerationExternalizer(), Collections.emptyEnumeration());
-        test(new EmptyCollectionExternalizer.EmptyIteratorExternalizer(), Collections.emptyIterator());
-        test(new EmptyCollectionExternalizer.EmptyListExternalizer(), Collections.emptyList());
-        test(new EmptyCollectionExternalizer.EmptyListIteratorExternalizer(), Collections.emptyListIterator());
-        test(new EmptyCollectionExternalizer.EmptyNavigableSetExternalizer(), Collections.emptyNavigableSet());
-        test(new EmptyCollectionExternalizer.EmptySetExternalizer(), Collections.emptySet());
-        test(new EmptyCollectionExternalizer.EmptySortedSetExternalizer(), Collections.emptySortedSet());
+        test(DefaultExternalizer.EMPTY_ENUMERATION.cast(Enumeration.class), Collections.emptyEnumeration());
+        test(DefaultExternalizer.EMPTY_ITERATOR.cast(Iterator.class), Collections.emptyIterator());
+        test(DefaultExternalizer.EMPTY_LIST.cast(List.class), Collections.emptyList());
+        test(DefaultExternalizer.EMPTY_LIST_ITERATOR.cast(ListIterator.class), Collections.emptyListIterator());
+        test(DefaultExternalizer.EMPTY_NAVIGABLE_SET.cast(NavigableSet.class), Collections.emptyNavigableSet());
+        test(DefaultExternalizer.EMPTY_SET.cast(Set.class), Collections.emptySet());
+        test(DefaultExternalizer.EMPTY_SORTED_SET.cast(SortedSet.class), Collections.emptySortedSet());
 
-        test(new SingletonCollectionExternalizer.SingletonListExternalizer(), Collections.singletonList(1));
-        test(new SingletonCollectionExternalizer.SingletonSetExternalizer(), Collections.singleton(1));
+        test(DefaultExternalizer.SINGLETON_LIST.cast(List.class), Collections.singletonList(1));
+        test(DefaultExternalizer.SINGLETON_SET.cast(Set.class), Collections.singleton(1));
 
-        test(new SortedSetExternalizer.ConcurrentSkipListSetExternalizer(), new ConcurrentSkipListSet<>(basis));
-        test(new SortedSetExternalizer.TreeSetExternalizer(), new TreeSet<>(basis));
+        test(DefaultExternalizer.CONCURRENT_SKIP_LIST_SET.cast(ConcurrentSkipListSet.class), new ConcurrentSkipListSet<>(basis));
+        test(DefaultExternalizer.TREE_SET.cast(TreeSet.class), new TreeSet<>(basis));
     }
 
     public static <T extends Collection<Object>> void test(Externalizer<T> externalizer, T collection) throws ClassNotFoundException, IOException {

@@ -20,36 +20,42 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.util;
+package org.wildfly.clustering.marshalling.spi;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * {@link Externalizer} for an {@link AtomicReference>
+ * Base {@link Externalizer} for object wrapper externalization.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class AtomicReferenceExternalizer implements Externalizer<AtomicReference<Object>> {
+public class ObjectExternalizer<T> implements Externalizer<T> {
+    private final Function<Object, T> reader;
+    private final Function<T, Object> writer;
+    private final Class<T> targetClass;
 
-    @Override
-    public void writeObject(ObjectOutput output, AtomicReference<Object> reference) throws IOException {
-        output.writeObject(reference.get());
+    public ObjectExternalizer(Class<T> targetClass, Function<Object, T> reader, Function<T, Object> writer) {
+        this.targetClass = targetClass;
+        this.reader = reader;
+        this.writer = writer;
     }
 
     @Override
-    public AtomicReference<Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new AtomicReference<>(input.readObject());
+    public void writeObject(ObjectOutput output, T object) throws IOException {
+        output.writeObject(this.writer.apply(object));
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public Class<AtomicReference<Object>> getTargetClass() {
-        return (Class<AtomicReference<Object>>) (Class<?>) AtomicReference.class;
+    public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return this.reader.apply(input.readObject());
+    }
+
+    @Override
+    public Class<T> getTargetClass() {
+        return this.targetClass;
     }
 }

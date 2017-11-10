@@ -25,13 +25,9 @@ package org.wildfly.clustering.marshalling.spi.util;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.IntFunction;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
@@ -45,7 +41,7 @@ public class MapExternalizer<T extends Map<Object, Object>> implements Externali
     private final IntFunction<T> factory;
 
     @SuppressWarnings("unchecked")
-    MapExternalizer(Class<?> targetClass, IntFunction<T> factory) {
+    public MapExternalizer(Class<?> targetClass, IntFunction<T> factory) {
         this.targetClass = (Class<T>) targetClass;
         this.factory = factory;
     }
@@ -79,26 +75,5 @@ public class MapExternalizer<T extends Map<Object, Object>> implements Externali
     @Override
     public Class<T> getTargetClass() {
         return this.targetClass;
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class ConcurrentHashMapExternalizer extends MapExternalizer<ConcurrentHashMap<Object, Object>> {
-        public ConcurrentHashMapExternalizer() {
-            super(ConcurrentHashMap.class, ConcurrentHashMap::new);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class HashMapExternalizer extends MapExternalizer<HashMap<Object, Object>> {
-        public HashMapExternalizer() {
-            super(HashMap.class, HashMap::new);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class LinkedHashMapExternalizer extends MapExternalizer<LinkedHashMap<Object, Object>> {
-        public LinkedHashMapExternalizer() {
-            super(LinkedHashMap.class, LinkedHashMap::new);
-        }
     }
 }
