@@ -112,9 +112,10 @@ public enum IndexExternalizer implements Externalizer<Integer> {
      * @return an index externalizer
      */
     public static final IndexExternalizer select(int size) {
-        if (size <= (Byte.MAX_VALUE - Byte.MIN_VALUE)) return UNSIGNED_BYTE;
-        if (size <= (Short.MAX_VALUE - Short.MIN_VALUE)) return UNSIGNED_SHORT;
-        return VARIABLE;
+        if (size < 256) return UNSIGNED_BYTE;
+        if (size < 65536) return UNSIGNED_SHORT;
+        if (size < 268435456) return VARIABLE;
+        return INTEGER;
     }
 
     /**
