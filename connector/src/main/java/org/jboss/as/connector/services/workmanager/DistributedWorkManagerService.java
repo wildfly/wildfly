@@ -27,7 +27,6 @@ import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 import java.util.concurrent.Executor;
 
 import org.jboss.as.connector.security.ElytronSecurityIntegration;
-import org.jboss.as.connector.services.workmanager.transport.ForkChannelTransport;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.txn.integration.JBossContextXATerminator;
 import org.jboss.jca.core.security.picketbox.PicketBoxSecurityIntegration;
@@ -83,7 +82,7 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
         ROOT_LOGGER.debugf("Starting JCA DistributedWorkManager: ", value.getName());
 
         ChannelFactory factory = this.jGroupsChannelFactory.getValue();
-        JGroupsTransport transport = new ForkChannelTransport(factory);
+        JGroupsTransport transport = new JGroupsTransport();
         try {
             transport.setChannel(factory.createChannel(this.value.getName()));
             transport.setClusterName(this.value.getName());
