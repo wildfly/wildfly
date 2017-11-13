@@ -414,7 +414,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             final EJBUtilities utilities = new EJBUtilities();
             ServiceBuilder<EJBUtilities> ejbUtilsBuilder = serviceTarget.addService(EJBUtilities.SERVICE_NAME, utilities)
                     .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, utilities.getResourceAdapterRepositoryInjector())
-                    .setInitialMode(ServiceController.Mode.ACTIVE);
+                    .setInitialMode(ServiceController.Mode.PASSIVE);
             ejbUtilsBuilder.install();
 
 

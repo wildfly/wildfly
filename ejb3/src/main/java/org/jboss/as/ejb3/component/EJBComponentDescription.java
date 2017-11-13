@@ -301,8 +301,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         getConfigurators().add(new EjbJarConfigurationConfigurator());
         getConfigurators().add(new SecurityDomainDependencyConfigurator(this));
 
-        // setup a dependency on the EJBUtilities service
-        this.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
+
         // setup a current invocation interceptor
         this.addCurrentInvocationContextFactory();
         // setup a dependency on EJB remote tx repository service, if this EJB exposes at least one remote view
