@@ -60,7 +60,7 @@
                 <write-behind modification-queue-size="2048" thread-pool-size="1"/>
             </file-store>
         </local-cache>
-        <invalidation-cache name="invalid" mode="ASYNC" queue-flush-interval="10" queue-size="1000" statistics-enabled="true">
+        <invalidation-cache name="invalid" queue-flush-interval="10" queue-size="1000" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
             <transaction mode="NON_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <binary-memory size="20000" eviction-type="MEMORY"/>
@@ -70,7 +70,7 @@
                 <property name="valueSizeEstimate">100</property>
             </remote-store>
         </invalidation-cache>
-        <replicated-cache name="repl" mode="ASYNC" queue-flush-interval="10" queue-size="1000" statistics-enabled="true">
+        <replicated-cache name="repl" queue-flush-interval="10" queue-size="1000" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <off-heap-memory size="20000" eviction-type="MEMORY" capacity="1024"/>
@@ -82,7 +82,7 @@
             <partition-handling enabled="false"/>
             <state-transfer timeout="60000" chunk-size="10000"/>
         </replicated-cache>
-        <distributed-cache name="dist" mode="SYNC" l1-lifespan="1200000" owners="4" remote-timeout="35000" segments="2" capacity-factor="1.0" consistent-hash-strategy="INTRA_CACHE" statistics-enabled="true">
+        <distributed-cache name="dist" l1-lifespan="1200000" owners="4" remote-timeout="35000" segments="2" capacity-factor="1.0" consistent-hash-strategy="INTRA_CACHE" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <object-memory size="20000"/>
