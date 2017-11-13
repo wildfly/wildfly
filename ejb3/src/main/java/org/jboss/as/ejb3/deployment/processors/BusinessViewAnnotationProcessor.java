@@ -23,6 +23,8 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,6 +49,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarVersion;
 import org.jboss.modules.Module;
+import org.wildfly.common.Assert;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
@@ -123,12 +126,14 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
     private void processViewAnnotations(final DeploymentUnit deploymentUnit, final Class<?> sessionBeanClass, final SessionBeanComponentDescription sessionBeanComponentDescription) throws DeploymentUnitProcessingException {
         final Collection<Class<?>> remoteBusinessInterfaces = this.getRemoteBusinessInterfaces(deploymentUnit, sessionBeanClass);
         if (remoteBusinessInterfaces != null && !remoteBusinessInterfaces.isEmpty()) {
+            verifyViewMethodsNotDeclaredFinal(sessionBeanClass, remoteBusinessInterfaces);
             sessionBeanComponentDescription.addRemoteBusinessInterfaceViews(this.toString(remoteBusinessInterfaces));
         }
 
         // fetch the local business interfaces of the bean
         Collection<Class<?>> localBusinessInterfaces = this.getLocalBusinessInterfaces(deploymentUnit, sessionBeanClass);
         if (localBusinessInterfaces != null && !localBusinessInterfaces.isEmpty()) {
+            verifyViewMethodsNotDeclaredFinal(sessionBeanClass, remoteBusinessInterfaces);
             sessionBeanComponentDescription.addLocalBusinessInterfaceViews(this.toString(localBusinessInterfaces));
         }
 
@@ -193,7 +198,24 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
             }
             return interfaces;
         }
+
         return Arrays.asList(localViews);
+    }
+
+    // EJB3.2 FR 4.9.6
+    private void verifyViewMethodsNotDeclaredFinal(final Class<?> sessionBeanClass, final Collection<Class<?>> businessInterfaces) throws DeploymentUnitProcessingException {
+        for (Class<?> ifce : businessInterfaces) {
+            for (Method ifceMethod : ifce.getMethods()) {
+                try {
+                    final Method beanMethod = sessionBeanClass.getMethod(ifceMethod.getName(), ifceMethod.getParameterTypes());
+                    if ((beanMethod.getModifiers() & Modifier.FINAL) == Modifier.FINAL) {
+                        throw EjbLogger.ROOT_LOGGER.businessViewMethodDeclaredFinal(beanMethod.getName(), sessionBeanClass.getName());
+                    }
+                } catch (NoSuchMethodException e) {
+                    Assert.unreachableCode();
+                }
+            }
+        }
     }
 
     private static Collection<Class<?>> getBusinessInterfacesFromInterfaceAnnotations(Class<?> sessionBeanClass, Class<? extends Annotation> annotation) {
