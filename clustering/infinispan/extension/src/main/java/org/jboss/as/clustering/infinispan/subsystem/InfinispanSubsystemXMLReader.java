@@ -527,7 +527,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(index));
         switch (attribute) {
             case MODE: {
-                readAttribute(reader, index, operation, ClusteredCacheResourceDefinition.Attribute.MODE);
+                if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                    throw ParseUtils.unexpectedAttribute(reader, index);
+                }
                 break;
             }
             case QUEUE_SIZE: {
