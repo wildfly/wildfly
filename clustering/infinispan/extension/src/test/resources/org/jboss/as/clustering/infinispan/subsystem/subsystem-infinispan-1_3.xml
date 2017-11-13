@@ -34,7 +34,7 @@
                 <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1"/>
             </file-store>
         </local-cache>
-        <invalidation-cache name="invalid" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="1000" start="LAZY" async-marshalling="true">
+        <invalidation-cache name="invalid" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="0" start="LAZY" async-marshalling="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
             <transaction mode="NON_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="LRU"/>
@@ -46,7 +46,7 @@
                 <remote-server outbound-socket-binding="hotrod-server-2"/>
             </remote-store>
         </invalidation-cache>
-        <replicated-cache name="repl" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="1000" start="LAZY" async-marshalling="false">
+        <replicated-cache name="repl" mode="ASYNC" batching="true" indexing="NONE" queue-flush-interval="10" queue-size="0" start="LAZY" async-marshalling="false">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="FIFO"/>
