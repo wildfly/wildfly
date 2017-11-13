@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.hibernate.secondlevelcache;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.Connection;
@@ -135,11 +136,11 @@ public class HibernateSecondLevelCacheTestCase {
                 SFSB.class);
         // setup Configuration and SessionFactory
         sfsb.setupConfig();
+        DataSource ds = rawLookup("java:jboss/datasources/ExampleDS", DataSource.class);
         try {
             Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
             Student s2 = sfsb.getStudent(1);
 
-            DataSource ds = rawLookup("java:jboss/datasources/ExampleDS", DataSource.class);
             Connection conn = ds.getConnection();
             int updated = conn.prepareStatement("update Student set first_name='hacked' where student_id=1").executeUpdate();
             assertTrue("was able to update added Student.  update count=" + updated, updated > 0);
@@ -147,10 +148,51 @@ public class HibernateSecondLevelCacheTestCase {
             // read updated (dirty) data from second level cache
             s2 = sfsb.getStudent(1);
             assertTrue("was able to read updated Student entity", s2 != null);
-            //assertEquals("Student first name was read from second level cache = " + s2.getFirstName(), "MADHUMITA", s2.getFirstName());
-        } finally {
-            sfsb.cleanup();
-        }
+            assertEquals("Student first name was read from second level cache = " + s2.getFirstName(), "MADHUMITA", s2.getFirstName());
 
+            // clear dirty data from second level cache and verify that updated data is read from database
+            sfsb.clearCache();
+            s2 = sfsb.getStudent(1);
+            assertTrue("was able to read updated Student entity from database after clearing cache", s2 != null);
+            assertEquals("Updated Student first name was read from database = " + s2.getFirstName(), "hacked", s2.getFirstName());
+
+        } finally {
+            Connection conn = ds.getConnection();
+            conn.prepareStatement("delete from Student").executeUpdate();
+            conn.close();
+            try {
+                sfsb.cleanup();
+            } catch (Throwable ignore) {}
+        }
+    }
+
+    @Test
+    public void testReadDeletedRowFrom2lc() throws Exception {
+        SFSB sfsb = lookup("SFSB",
+                SFSB.class);
+        // setup Configuration and SessionFactory
+        sfsb.setupConfig();
+        DataSource ds = rawLookup("java:jboss/datasources/ExampleDS", DataSource.class);
+        try {
+            Student s1 = sfsb.createStudent("Hope", "Solo", "6415 NE 138th Pl. Kirkland, WA 98034 USA", 1);
+            Student s2 = sfsb.getStudent(1);
+
+            Connection conn = ds.getConnection();
+            int updated = conn.prepareStatement("delete from Student where student_id=1").executeUpdate();
+            assertTrue("was able to delete row from Student.  update count=" + updated, updated > 0);
+            conn.close();
+            // read updated (dirty) data from second level cache
+            s2 = sfsb.getStudent(1);
+            assertTrue("was able to read deleted Student entity", s2 != null);
+            assertEquals("deleted Student first name was read from second level cache = " + s2.getFirstName(), "Hope", s2.getFirstName());
+        } finally {
+            Connection conn = ds.getConnection();
+            conn.prepareStatement("delete from Student").executeUpdate();
+            conn.close();
+            try {
+                sfsb.cleanup();
+            } catch (Throwable ignore) {}
+
+        }
     }
 }

@@ -31,11 +31,13 @@ import javax.ejb.TransactionManagementType;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.transaction.jta.platform.internal.JBossAppServerJtaPlatform;
 import org.hibernate.internal.util.config.ConfigurationHelper;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 /**
  * @author Madhumita Sadhukhan
@@ -87,10 +89,13 @@ public class SFSB {
 
         try {
             Session session = sessionFactory.openSession();
-            //Transaction trans = session.beginTransaction();
+            Transaction ormTransaction = session.beginTransaction(); // join the current JTA transaction
+            TransactionStatus status = ormTransaction.getStatus();
+            if(status.isNotOneOf(TransactionStatus.ACTIVE)) {
+                throw new RuntimeException("Hibernate Transaction is not active after joining Hibernate to JTA transaction: " + status.name());
+            }
             session.save(student);
-            session.flush();
-            //trans.commit();
+            // trans.commit();
             session.close();
         } catch (Exception e) {
 
@@ -107,6 +112,11 @@ public class SFSB {
 
         try {
             Session session = sessionFactory.openSession();
+            Transaction ormTransaction = session.beginTransaction(); // join the current JTA transaction
+            TransactionStatus status = ormTransaction.getStatus();
+            if(status.isNotOneOf(TransactionStatus.ACTIVE)) {
+                throw new RuntimeException("Hibernate Transaction is not active after joining Hibernate to JTA transaction: " + status.name());
+            }
             student = session.load(Student.class, id);
             session.close();
 
@@ -119,4 +129,9 @@ public class SFSB {
         return student;
     }
 
+
+    public void clearCache() {
+        sessionFactory.getCache().evictAllRegions();
+
+    }
 }
