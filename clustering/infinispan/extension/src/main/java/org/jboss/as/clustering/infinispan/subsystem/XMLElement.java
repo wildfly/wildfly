@@ -43,7 +43,7 @@ public enum XMLElement {
     ALIAS("alias"),
     ASYNC_OPERATIONS_THREAD_POOL("async-operations-thread-pool"),
     BACKUP(BackupResourceDefinition.WILDCARD_PATH),
-    BACKUP_FOR(BackupForResourceDefinition.PATH),
+    @Deprecated BACKUP_FOR(BackupForResourceDefinition.PATH),
     BACKUPS("backups"),
     BINARY_KEYED_TABLE("binary-keyed-table"),
     @Deprecated BUCKET_TABLE("bucket-table"),

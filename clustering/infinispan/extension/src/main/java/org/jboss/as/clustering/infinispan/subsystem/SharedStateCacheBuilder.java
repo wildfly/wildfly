@@ -24,7 +24,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.stream.Stream;
 
-import org.infinispan.configuration.cache.BackupForConfiguration;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -45,21 +44,19 @@ public class SharedStateCacheBuilder extends ClusteredCacheBuilder {
 
     private final ValueDependency<PartitionHandlingConfiguration> partitionHandling;
     private final ValueDependency<StateTransferConfiguration> stateTransfer;
-    private final ValueDependency<BackupForConfiguration> backupFor;
     private final ValueDependency<SitesConfiguration> backups;
 
     SharedStateCacheBuilder(PathAddress address, CacheMode mode) {
         super(address, mode);
         this.partitionHandling = new InjectedValueDependency<>(CacheComponent.PARTITION_HANDLING.getServiceName(address), PartitionHandlingConfiguration.class);
         this.stateTransfer = new InjectedValueDependency<>(CacheComponent.STATE_TRANSFER.getServiceName(address), StateTransferConfiguration.class);
-        this.backupFor = new InjectedValueDependency<>(CacheComponent.BACKUP_FOR.getServiceName(address), BackupForConfiguration.class);
         this.backups = new InjectedValueDependency<>(CacheComponent.BACKUPS.getServiceName(address), SitesConfiguration.class);
     }
 
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
         ServiceBuilder<Configuration> builder = super.build(target);
-        Stream.of(this.partitionHandling, this.stateTransfer, this.backupFor, this.backups).forEach(dependency -> dependency.register(builder));
+        Stream.of(this.partitionHandling, this.stateTransfer, this.backups).forEach(dependency -> dependency.register(builder));
         return builder;
     }
 
@@ -72,6 +69,5 @@ public class SharedStateCacheBuilder extends ClusteredCacheBuilder {
 
         SitesConfigurationBuilder sitesBuilder = builder.sites();
         sitesBuilder.read(this.backups.getValue());
-        sitesBuilder.backupFor().read(this.backupFor.getValue());
     }
 }

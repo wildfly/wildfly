@@ -26,14 +26,13 @@ import org.infinispan.commons.api.BasicCacheContainer;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -44,6 +43,7 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
+@Deprecated
 public class BackupForResourceDefinition extends ComponentResourceDefinition {
 
     static final PathElement PATH = pathElement("backup-for");
@@ -57,7 +57,7 @@ public class BackupForResourceDefinition extends ComponentResourceDefinition {
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
+                    .setAllowExpression(false)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -71,13 +71,15 @@ public class BackupForResourceDefinition extends ComponentResourceDefinition {
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            parent.addChildRedirection(PATH, LEGACY_PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
+        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.CACHE.getDefinition(), Attribute.SITE.getDefinition());
         }
     }
 
     BackupForResourceDefinition() {
         super(PATH);
+        this.setDeprecated(InfinispanModel.VERSION_6_0_0.getVersion());
     }
 
     @Override
@@ -86,7 +88,6 @@ public class BackupForResourceDefinition extends ComponentResourceDefinition {
         parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new BackupForBuilder(address.getParent()));
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistration(descriptor, null).register(registration);
     }
 }
