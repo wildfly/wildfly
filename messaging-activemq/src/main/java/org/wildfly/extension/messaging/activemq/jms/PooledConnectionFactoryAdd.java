@@ -56,18 +56,8 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
     public static final PooledConnectionFactoryAdd INSTANCE = new PooledConnectionFactoryAdd();
 
-    @Override
-    protected void populateModel(final OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        ModelNode model = resource.getModel();
-
-        for(final AttributeDefinition attribute : getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES)) {
-            attribute.validateAndSet(operation, model);
-        }
-
-        if (context.getProcessType().isServer()) {
-            // register the runtime statistics=pool child resource
-            PooledConnectionFactoryStatisticsService.registerStatisticsResources(resource);
-        }
+    private PooledConnectionFactoryAdd() {
+        super(getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES));
     }
 
     @Override
@@ -133,6 +123,12 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         boolean statsEnabled = ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         if (statsEnabled) {
+            // Add the stats resource. This is kind of a hack as we are modifying the resource
+            // in runtime, but oh well. We don't use readResourceForUpdate for this reason.
+            // This only runs in this add op anyway, and because it's an add we know readResource
+            // is going to be returning the current write snapshot of the model, i.e. the one we want
+            PooledConnectionFactoryStatisticsService.registerStatisticsResources(resource);
+
             installStatistics(context, name);
         }
     }
