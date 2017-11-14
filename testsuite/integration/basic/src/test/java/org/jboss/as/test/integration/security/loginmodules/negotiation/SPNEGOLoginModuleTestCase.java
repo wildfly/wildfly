@@ -84,6 +84,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
+import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.integration.security.common.KDCServerAnnotationProcessor;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
@@ -179,6 +180,7 @@ public class SPNEGOLoginModuleTestCase {
                 new PropertyPermission(GSSTestConstants.PROPERTY_PASSWORD, "read"),
                 // Permissions for GSSTestClient to connect to GSSTestServer
                 new SocketPermission(TestSuiteEnvironment.getServerAddress(), "resolve,connect"),
+                new SocketPermission(CoreUtils.getCannonicalHost(TestSuiteEnvironment.getServerAddress()), "resolve,connect"),
                 // Permissions for GSSTestClient to initiate gss context
                 new ServicePermission(GSSTestConstants.PRINCIPAL, "initiate"),
                 new ServicePermission("krbtgt/JBOSS.ORG@JBOSS.ORG", "initiate")),
