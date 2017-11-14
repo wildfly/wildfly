@@ -3132,4 +3132,7 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 497, value = "Failed to persist timer %s on startup. This is likely due to another cluster member making the same change, and should not affect operation.")
     void failedToPersistTimerOnStartup(TimerImpl activeTimer, @Cause  Exception e);
+
+    @Message(id = 498, value = "Business view method %s declared final in %s")
+    DeploymentUnitProcessingException businessViewMethodDeclaredFinal(String method, String bean);
 }
