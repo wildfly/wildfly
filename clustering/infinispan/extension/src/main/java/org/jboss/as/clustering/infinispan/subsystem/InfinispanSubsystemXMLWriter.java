@@ -300,16 +300,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                 writer.writeEndElement();
             }
         }
-
-        if (cache.hasDefined(BackupForResourceDefinition.PATH.getKeyValuePair())) {
-            ModelNode backupFor = cache.get(BackupForResourceDefinition.PATH.getKeyValuePair());
-            Set<BackupForResourceDefinition.Attribute> attributes = EnumSet.allOf(BackupForResourceDefinition.Attribute.class);
-            if (hasDefined(backupFor, attributes)) {
-                writer.writeStartElement(XMLElement.BACKUP_FOR.getLocalName());
-                writeAttributes(writer, backupFor, attributes);
-                writer.writeEndElement();
-            }
-        }
     }
 
     private static void writeJDBCStoreTable(XMLExtendedStreamWriter writer, XMLElement element, ModelNode store, PathElement path, Attribute prefixAttribute) throws XMLStreamException {

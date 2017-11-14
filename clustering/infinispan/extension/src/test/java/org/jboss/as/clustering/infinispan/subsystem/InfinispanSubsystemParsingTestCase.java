@@ -69,10 +69,10 @@ public class InfinispanSubsystemParsingTestCase extends ClusteringSubsystemTest 
             { InfinispanSchema.VERSION_1_3, 37 },
             { InfinispanSchema.VERSION_1_4, 37 },
             { InfinispanSchema.VERSION_1_5, 37 },
-            { InfinispanSchema.VERSION_2_0, 42 },
-            { InfinispanSchema.VERSION_3_0, 42 },
-            { InfinispanSchema.VERSION_4_0, 51 },
-            { InfinispanSchema.VERSION_5_0, 51 },
+            { InfinispanSchema.VERSION_2_0, 41 },
+            { InfinispanSchema.VERSION_3_0, 41 },
+            { InfinispanSchema.VERSION_4_0, 50 },
+            { InfinispanSchema.VERSION_5_0, 50 },
         };
         return Arrays.asList(data);
     }

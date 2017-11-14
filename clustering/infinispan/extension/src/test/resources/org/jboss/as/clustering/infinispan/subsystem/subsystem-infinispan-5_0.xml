@@ -81,7 +81,6 @@
             </store>
             <partition-handling enabled="false"/>
             <state-transfer timeout="60000" chunk-size="10000"/>
-            <backup-for remote-cache="users" remote-site="LON"/>
         </replicated-cache>
         <distributed-cache name="dist" mode="SYNC" l1-lifespan="1200000" owners="4" remote-timeout="35000" segments="2" capacity-factor="1.0" consistent-hash-strategy="INTRA_CACHE" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>

@@ -384,36 +384,6 @@
         </sequential>
     </macrodef>
 
-    <!--
-        Add a backup-for element to a cache in the Infinispan subsystem.
-    -->
-    <macrodef name="ts.config-as.add-xsite-backup-for" description="Add a backup-for element to a cache in the Infinispan subsystem">
-
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
-
-        <attribute name="container" default="web"/>
-        <attribute name="cache-type" default="replicated-cache"/>
-        <attribute name="cache" default="repl"/>
-        <attribute name="remote-site" default="LON"/>
-        <attribute name="remote-cache" default="repl"/>
-
-        <sequential>
-            <echo message="Adding backup-for element to cache @{cache} in container @{container} in Infinispan subsystem for config @{name}"/>
-
-            <execute-xslt-transform transform="addXsiteBackupFor.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="container" expression="@{container}"/>
-                    <param name="cache-type" expression="@{cache-type}"/>
-                    <param name="cache" expression="@{cache}"/>
-                    <param name="remote-site" expression="@{remote-site}"/>
-                    <param name="remote-cache" expression="@{remote-cache}"/>
-                </transform-params>
-            </execute-xslt-transform>
-        </sequential>
-    </macrodef>
-
     <macrodef name="ts.config-as.change-cluster-name" description="Change the cluster name of the 'ee' channel">
         <attribute name="name" default="wildfly"/>
         <attribute name="output.dir" default="${project.build.directory}"/>

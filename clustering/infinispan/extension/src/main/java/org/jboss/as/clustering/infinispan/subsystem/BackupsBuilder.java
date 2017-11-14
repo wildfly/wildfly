@@ -31,7 +31,6 @@ import java.util.Map;
 import org.infinispan.configuration.cache.BackupConfiguration;
 import org.infinispan.configuration.cache.BackupConfigurationBuilder;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
-import org.infinispan.configuration.cache.BackupForConfiguration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.SitesConfiguration;
 import org.infinispan.configuration.cache.SitesConfigurationBuilder;
@@ -42,28 +41,17 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * @author Paul Ferraro
  */
 public class BackupsBuilder extends ComponentBuilder<SitesConfiguration> {
 
-    private final ValueDependency<BackupForConfiguration> backupFor;
     private final Map<String, BackupConfiguration> backups = new HashMap<>();
 
     BackupsBuilder(PathAddress cacheAddress) {
         super(CacheComponent.BACKUPS, cacheAddress);
-        this.backupFor = new InjectedValueDependency<>(CacheComponent.BACKUP_FOR.getServiceName(cacheAddress), BackupForConfiguration.class);
-    }
-
-    @Override
-    public ServiceBuilder<SitesConfiguration> build(ServiceTarget target) {
-        return this.backupFor.register(super.build(target));
     }
 
     @Override
@@ -93,7 +81,6 @@ public class BackupsBuilder extends ComponentBuilder<SitesConfiguration> {
     @Override
     public SitesConfiguration getValue() {
         SitesConfigurationBuilder builder = new ConfigurationBuilder().sites();
-        builder.backupFor().read(this.backupFor.getValue());
         builder.disableBackups(this.backups.isEmpty());
         for (Map.Entry<String, BackupConfiguration> backup : this.backups.entrySet()) {
             builder.addBackup().read(backup.getValue());
