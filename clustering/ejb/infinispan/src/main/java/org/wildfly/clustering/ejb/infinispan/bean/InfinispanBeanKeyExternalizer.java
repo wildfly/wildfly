@@ -38,20 +38,18 @@ import org.wildfly.clustering.marshalling.Externalizer;
 @MetaInfServices({ Externalizer.class, KeyFormat.class })
 public class InfinispanBeanKeyExternalizer extends SimpleKeyFormat<InfinispanBeanKey<SessionID>> implements Externalizer<InfinispanBeanKey<SessionID>> {
 
-    private static final SessionIDExternalizer EXTERNALIZER = new SessionIDExternalizer();
-
     @SuppressWarnings("unchecked")
     public InfinispanBeanKeyExternalizer() {
-        super((Class<InfinispanBeanKey<SessionID>>) (Class<?>) InfinispanBeanKey.class, value -> new InfinispanBeanKey<>(EXTERNALIZER.parse(value)), key -> EXTERNALIZER.format(key.getId()));
+        super((Class<InfinispanBeanKey<SessionID>>) (Class<?>) InfinispanBeanKey.class, value -> new InfinispanBeanKey<>(SessionIDExternalizer.INSTANCE.parse(value)), key -> SessionIDExternalizer.INSTANCE.format(key.getId()));
     }
 
     @Override
     public void writeObject(ObjectOutput output, InfinispanBeanKey<SessionID> key) throws IOException {
-        EXTERNALIZER.writeObject(output, key.getId());
+        SessionIDExternalizer.INSTANCE.writeObject(output, key.getId());
     }
 
     @Override
     public InfinispanBeanKey<SessionID> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new InfinispanBeanKey<>(EXTERNALIZER.readObject(input));
+        return new InfinispanBeanKey<>(SessionIDExternalizer.INSTANCE.readObject(input));
     }
 }
