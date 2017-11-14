@@ -69,6 +69,7 @@ import org.wildfly.security.auth.server.SecurityDomain;
 public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final Map<MethodTransactionAttributeKey, TransactionAttributeType> txAttrs;
+    private final Map<MethodTransactionAttributeKey, Boolean> txExplicitAttrs;
 
     private final Map<MethodTransactionAttributeKey, Integer> txTimeouts;
 
@@ -131,9 +132,11 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         if (transactionManagementType.equals(TransactionManagementType.CONTAINER)) {
             this.txAttrs = new HashMap<MethodTransactionAttributeKey, TransactionAttributeType>();
             this.txTimeouts = new HashMap<MethodTransactionAttributeKey, Integer>();
+            this.txExplicitAttrs = new HashMap<>();
         } else {
             this.txAttrs = null;
             this.txTimeouts = null;
+            this.txExplicitAttrs = null;
         }
         // Setup the security metadata for the bean
         this.securityMetaData = new EJBSecurityMetaData(componentConfiguration);
@@ -250,6 +253,10 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return txAttrs;
     }
 
+    Map<MethodTransactionAttributeKey, Boolean> getExplicitTxAttrs() {
+        return txExplicitAttrs;
+    }
+
     Map<MethodTransactionAttributeKey, Integer> getTxTimeouts() {
         return txTimeouts;
     }
@@ -270,12 +277,14 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
         MethodIntf defaultMethodIntf = (ejbComponentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
         TransactionAttributeType txAttr = ejbComponentDescription.getTransactionAttributes().getAttribute(methodIntf, method, defaultMethodIntf);
+        MethodTransactionAttributeKey key = new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method));
         if(txAttr != null) {
-            txAttrs.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txAttr);
+            txAttrs.put(key, txAttr);
+            txExplicitAttrs.put(key, ejbComponentDescription.getTransactionAttributes().isMethodLevel(methodIntf, method, defaultMethodIntf));
         }
         Integer txTimeout = ejbComponentDescription.getTransactionTimeouts().getAttribute(methodIntf, method, defaultMethodIntf);
         if (txTimeout != null) {
-            txTimeouts.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txTimeout);
+            txTimeouts.put(key, txTimeout);
         }
     }
 

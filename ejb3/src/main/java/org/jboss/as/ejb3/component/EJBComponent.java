@@ -94,6 +94,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     private final Map<MethodTransactionAttributeKey, TransactionAttributeType> txAttrs;
     private final Map<MethodTransactionAttributeKey, Integer> txTimeouts;
+    private final Map<MethodTransactionAttributeKey, Boolean> txExplicitAttrs;
 
     private final EJBUtilities utilities;
     private final boolean isBeanManagedTransaction;
@@ -152,8 +153,10 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         final Map<MethodTransactionAttributeKey, TransactionAttributeType> txAttrs = ejbComponentCreateService.getTxAttrs();
         if (txAttrs == null || txAttrs.isEmpty()) {
             this.txAttrs = Collections.emptyMap();
+            this.txExplicitAttrs = Collections.emptyMap();
         } else {
             this.txAttrs = txAttrs;
+            this.txExplicitAttrs = ejbComponentCreateService.getExplicitTxAttrs();
         }
         final Map<MethodTransactionAttributeKey, Integer> txTimeouts = ejbComponentCreateService.getTxTimeouts();
         if (txTimeouts == null || txTimeouts.isEmpty()) {
@@ -397,6 +400,18 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             return defaultType;
         return txAttr;
     }
+
+    public boolean isTransactionAttributeTypeExplicit(final MethodIntf methodIntf, final MethodIdentifier method) {
+        Boolean txAttr = txExplicitAttrs.get(new MethodTransactionAttributeKey(methodIntf, method));
+        //fall back to type bean if not found
+        if (txAttr == null && methodIntf != MethodIntf.BEAN) {
+            txAttr = txExplicitAttrs.get(new MethodTransactionAttributeKey(MethodIntf.BEAN, method));
+        }
+        if (txAttr == null)
+            return false;
+        return txAttr;
+    }
+
     public TransactionManager getTransactionManager() {
         return this.transactionManager;
     }
