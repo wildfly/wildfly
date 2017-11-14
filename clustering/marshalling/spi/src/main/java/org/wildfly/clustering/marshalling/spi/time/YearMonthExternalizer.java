@@ -28,26 +28,25 @@ import java.io.ObjectOutput;
 import java.time.Month;
 import java.time.YearMonth;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * Externalizer for a {@link YearMonth}.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
 public class YearMonthExternalizer implements Externalizer<YearMonth> {
 
     @Override
     public void writeObject(ObjectOutput output, YearMonth value) throws IOException {
         output.writeInt(value.getYear());
-        MonthExternalizer.INSTANCE.writeObject(output, value.getMonth());
+        DefaultExternalizer.MONTH.cast(Month.class).writeObject(output, value.getMonth());
     }
 
     @Override
     public YearMonth readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         int year = input.readInt();
-        Month month = MonthExternalizer.INSTANCE.readObject(input);
+        Month month = DefaultExternalizer.MONTH.cast(Month.class).readObject(input);
         return YearMonth.of(year, month);
     }
 

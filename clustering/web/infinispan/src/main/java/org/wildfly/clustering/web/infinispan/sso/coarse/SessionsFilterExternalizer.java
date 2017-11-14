@@ -22,33 +22,17 @@
 
 package org.wildfly.clustering.web.infinispan.sso.coarse;
 
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
 
 /**
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class SessionsFilterExternalizer<D, S> implements Externalizer<SessionsFilter<D, S>> {
+public class SessionsFilterExternalizer<D, S> extends ValueExternalizer<SessionsFilter<D, S>> {
 
-    private final SessionsFilter<D, S> filter = new SessionsFilter<>();
-
-    @Override
-    public void writeObject(ObjectOutput output, SessionsFilter<D, S> filter) {
-        // Do nothing
-    }
-
-    @Override
-    public SessionsFilter<D, S> readObject(ObjectInput input) {
-        return this.filter;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Class<SessionsFilter<D, S>> getTargetClass() {
-        return (Class<SessionsFilter<D, S>>) (Class<?>) SessionsFilter.class;
+    public SessionsFilterExternalizer() {
+        super(new SessionsFilter<>());
     }
 }

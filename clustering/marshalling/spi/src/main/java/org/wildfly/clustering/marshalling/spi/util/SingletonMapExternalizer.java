@@ -28,13 +28,11 @@ import java.io.ObjectOutput;
 import java.util.Collections;
 import java.util.Map;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
 public class SingletonMapExternalizer implements Externalizer<Map<Object, Object>> {
 
     @Override

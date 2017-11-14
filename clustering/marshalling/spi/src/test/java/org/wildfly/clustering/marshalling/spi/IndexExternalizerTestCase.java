@@ -24,10 +24,14 @@ package org.wildfly.clustering.marshalling.spi;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.stream.IntStream;
 
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * Unit test for {@link IndexExternalizer}.
@@ -36,27 +40,53 @@ import org.wildfly.clustering.marshalling.Externalizer;
 public class IndexExternalizerTestCase {
 
     @Test
-    public void test() throws IOException, ClassNotFoundException {
-        ExternalizerTestUtil.test(IndexExternalizer.UNSIGNED_BYTE, Byte.MAX_VALUE - Byte.MIN_VALUE);
-        illegal(IndexExternalizer.UNSIGNED_BYTE, Byte.MAX_VALUE - Byte.MIN_VALUE + 1);
-        ExternalizerTestUtil.test(IndexExternalizer.UNSIGNED_SHORT, Byte.MAX_VALUE - Byte.MIN_VALUE + 1);
-        ExternalizerTestUtil.test(IndexExternalizer.UNSIGNED_SHORT, Short.MAX_VALUE - Short.MIN_VALUE);
-        illegal(IndexExternalizer.UNSIGNED_SHORT, Short.MAX_VALUE - Short.MIN_VALUE + 1);
-        ExternalizerTestUtil.test(IndexExternalizer.INTEGER, Short.MAX_VALUE - Short.MIN_VALUE + 1);
+    public void test() throws IOException {
+        // Test marshalling of incrementing powers of 2
         for (int i = 0; i < Integer.SIZE - 2; ++i) {
-            int value = 2 << i;
-            ExternalizerTestUtil.test(IndexExternalizer.VARIABLE, value - 1);
-            ExternalizerTestUtil.test(IndexExternalizer.VARIABLE, value);
+            int index = 2 << i;
+            test(index - 1);
+            test(index);
         }
-        ExternalizerTestUtil.test(IndexExternalizer.VARIABLE, Integer.MAX_VALUE);
+        test(Integer.MAX_VALUE);
     }
 
-    private static void illegal(Externalizer<Integer> externalizer, int index) {
+    private static void test(int index) throws IOException {
+        IntStream.Builder builder = IntStream.builder();
+
         try {
-            ExternalizerTestUtil.test(externalizer, index);
-            fail(String.format("%d should not be marshallable by %s", index, externalizer.getClass().getName()));
-        } catch (Throwable e) {
-            assertTrue(e.toString(), e instanceof IndexOutOfBoundsException);
+            builder.add(size(IndexExternalizer.UNSIGNED_BYTE, index));
+        } catch (IndexOutOfBoundsException e) {
+            assertTrue(index > Byte.MAX_VALUE - Byte.MIN_VALUE);
         }
+
+        try {
+            builder.add(size(IndexExternalizer.UNSIGNED_SHORT, index));
+        } catch (IndexOutOfBoundsException e) {
+            assertTrue(index > Short.MAX_VALUE - Short.MIN_VALUE);
+        }
+
+        builder.add(size(IndexExternalizer.VARIABLE, index));
+
+        builder.add(size(IndexExternalizer.INTEGER, index));
+
+        // Ensure that our IndexExternalizer.select(...) chooses the optimal externalizer
+        assertEquals(builder.build().min().getAsInt(), size(IndexExternalizer.select(index), index));
+    }
+
+    public static int size(IndexExternalizer externalizer, int index) throws IOException {
+
+        ByteArrayOutputStream externalizedOutput = new ByteArrayOutputStream();
+        try (DataOutputStream output = new DataOutputStream(externalizedOutput)) {
+            externalizer.writeData(output, index);
+        }
+
+        byte[] externalizedBytes = externalizedOutput.toByteArray();
+
+        try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(externalizedBytes))) {
+            int result = externalizer.readData(input);
+            assertEquals(index, result);
+        }
+
+        return externalizedBytes.length;
     }
 }

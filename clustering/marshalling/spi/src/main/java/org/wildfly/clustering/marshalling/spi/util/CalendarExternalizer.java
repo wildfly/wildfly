@@ -28,13 +28,11 @@ import java.io.ObjectOutput;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
 public class CalendarExternalizer implements Externalizer<Calendar> {
 
     @Override

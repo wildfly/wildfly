@@ -23,11 +23,13 @@
 package org.wildfly.clustering.marshalling.spi.time;
 
 import java.io.IOException;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
 import java.time.MonthDay;
 import java.time.Period;
 import java.time.Year;
@@ -36,8 +38,8 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * Unit test for java.time.* externalizers
@@ -48,25 +50,19 @@ public class TimeExternalizerTestCase {
     @Test
     public void test() throws ClassNotFoundException, IOException {
 
-        test(new DayOfWeekExternalizer());
-        test(new MonthExternalizer());
+        ExternalizerTestUtil.test(DefaultExternalizer.DAY_OF_WEEK.cast(DayOfWeek.class));
+        ExternalizerTestUtil.test(DefaultExternalizer.MONTH.cast(Month.class));
 
-        ExternalizerTestUtil.test(new DurationExternalizer(), Duration.between(Instant.EPOCH, Instant.now()));
-        ExternalizerTestUtil.test(new InstantExternalizer(), Instant.now());
-        ExternalizerTestUtil.test(new LocalDateExternalizer(), LocalDate.now());
-        ExternalizerTestUtil.test(new LocalDateTimeExternalizer(), LocalDateTime.now());
-        ExternalizerTestUtil.test(new LocalTimeExternalizer(), LocalTime.now());
-        ExternalizerTestUtil.test(new MonthDayExternalizer(), MonthDay.now());
-        ExternalizerTestUtil.test(new PeriodExternalizer(), Period.between(LocalDate.ofEpochDay(0), LocalDate.now()));
-        ExternalizerTestUtil.test(new YearExternalizer(), Year.now());
-        ExternalizerTestUtil.test(new YearMonthExternalizer(), YearMonth.now());
-        ExternalizerTestUtil.test(new ZoneOffsetExternalizer(), ZoneOffset.UTC);
-        ExternalizerTestUtil.test(new ZoneIdExternalizer(), ZoneId.of("America/New_York"));
-    }
-
-    private static <E extends Enum<E>> void test(Externalizer<E> externalizer) throws ClassNotFoundException, IOException {
-        for (E value : externalizer.getTargetClass().getEnumConstants()) {
-            ExternalizerTestUtil.test(externalizer, value);
-        }
+        ExternalizerTestUtil.test(DefaultExternalizer.DURATION.cast(Duration.class), Duration.between(Instant.EPOCH, Instant.now()));
+        ExternalizerTestUtil.test(DefaultExternalizer.INSTANT.cast(Instant.class), Instant.now());
+        ExternalizerTestUtil.test(DefaultExternalizer.LOCAL_DATE.cast(LocalDate.class), LocalDate.now());
+        ExternalizerTestUtil.test(DefaultExternalizer.LOCAL_DATE_TIME.cast(LocalDateTime.class), LocalDateTime.now());
+        ExternalizerTestUtil.test(DefaultExternalizer.LOCAL_TIME.cast(LocalTime.class), LocalTime.now());
+        ExternalizerTestUtil.test(DefaultExternalizer.MONTH_DAY.cast(MonthDay.class), MonthDay.now());
+        ExternalizerTestUtil.test(DefaultExternalizer.PERIOD.cast(Period.class), Period.between(LocalDate.ofEpochDay(0), LocalDate.now()));
+        ExternalizerTestUtil.test(DefaultExternalizer.YEAR.cast(Year.class), Year.now());
+        ExternalizerTestUtil.test(DefaultExternalizer.YEAR_MONTH.cast(YearMonth.class), YearMonth.now());
+        ExternalizerTestUtil.test(DefaultExternalizer.ZONE_OFFSET.cast(ZoneOffset.class), ZoneOffset.UTC);
+        ExternalizerTestUtil.test(DefaultExternalizer.ZONE_ID, ZoneId.of("America/New_York"));
     }
 }

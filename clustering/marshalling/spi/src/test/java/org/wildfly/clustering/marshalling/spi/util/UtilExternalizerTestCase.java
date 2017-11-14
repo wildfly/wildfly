@@ -23,14 +23,17 @@
 package org.wildfly.clustering.marshalling.spi.util;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * Unit test for java.util.* externalizers.
@@ -40,11 +43,14 @@ public class UtilExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        ExternalizerTestUtil.test(new CurrencyExternalizer(), Currency.getInstance(Locale.US));
-        ExternalizerTestUtil.test(new LocaleExternalizer(), Locale.US);
-        ExternalizerTestUtil.test(new OptionalExternalizer(), Optional.empty());
-        ExternalizerTestUtil.test(new TimeZoneExternalizer(), TimeZone.getDefault());
-        ExternalizerTestUtil.test(new TimeZoneExternalizer(), TimeZone.getTimeZone("America/New_York"));
-        ExternalizerTestUtil.test(new UUIDExternalizer(), UUID.randomUUID());
+        ExternalizerTestUtil.test(DefaultExternalizer.CURRENCY.cast(Currency.class), Currency.getInstance(Locale.US));
+        ExternalizerTestUtil.test(DefaultExternalizer.LOCALE.cast(Locale.class), Locale.US);
+        ExternalizerTestUtil.test(DefaultExternalizer.NATURAL_ORDER_COMPARATOR.cast(Comparator.class), Comparator.naturalOrder());
+        ExternalizerTestUtil.test(DefaultExternalizer.OPTIONAL.cast(Optional.class), Optional.empty());
+        ExternalizerTestUtil.test(DefaultExternalizer.REVERSE_ORDER_COMPARATOR.cast(Comparator.class), Comparator.reverseOrder());
+        ExternalizerTestUtil.test(DefaultExternalizer.TIME_UNIT.cast(TimeUnit.class));
+        ExternalizerTestUtil.test(DefaultExternalizer.TIME_ZONE.cast(TimeZone.class), TimeZone.getDefault());
+        ExternalizerTestUtil.test(DefaultExternalizer.TIME_ZONE.cast(TimeZone.class), TimeZone.getTimeZone("America/New_York"));
+        ExternalizerTestUtil.test(DefaultExternalizer.UUID.cast(UUID.class), UUID.randomUUID());
     }
 }

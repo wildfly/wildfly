@@ -28,6 +28,7 @@ import java.net.URL;
 
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * Unit test for {@link URIExternalizer}.
@@ -37,7 +38,7 @@ public class NetExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        ExternalizerTestUtil.test(new URIExternalizer(), URI.create("http://wildfly.org/news/"));
-        ExternalizerTestUtil.test(new URLExternalizer(), new URL("http://wildfly.org/news/"));
+        ExternalizerTestUtil.test(DefaultExternalizer.URI.cast(URI.class), URI.create("http://wildfly.org/news/"));
+        ExternalizerTestUtil.test(DefaultExternalizer.URL.cast(URL.class), new URL("http://wildfly.org/news/"));
     }
 }

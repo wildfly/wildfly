@@ -20,22 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.util;
+package org.wildfly.clustering.marshalling.spi;
 
-import java.util.Locale;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.StringExternalizer;
 
 /**
- * Externalizer for a {@link Locale}.
+ * Trivial {@link Externalizer} for a constant value.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
-public class LocaleExternalizer extends StringExternalizer<Locale> {
+public class ValueExternalizer<T> implements Externalizer<T> {
 
-    public LocaleExternalizer() {
-        super(Locale.class, Locale::forLanguageTag, Locale::toLanguageTag);
+    private final T value;
+
+    public ValueExternalizer(T value) {
+        this.value = value;
+    }
+
+    @Override
+    public void writeObject(ObjectOutput output, T object) throws IOException {
+        // Nothing to write
+    }
+
+    @Override
+    public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return this.value;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Class<T> getTargetClass() {
+        return (Class<T>) this.value.getClass();
     }
 }

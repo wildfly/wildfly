@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.EnumSet;
 import java.util.function.BiConsumer;
 
 import org.junit.Assert;
@@ -39,8 +40,14 @@ import org.wildfly.clustering.marshalling.Externalizer;
  */
 public class ExternalizerTestUtil {
 
+    public static <E extends Enum<E>> void test(Externalizer<E> externalizer) throws IOException, ClassNotFoundException {
+        for (E value : EnumSet.allOf(externalizer.getTargetClass())) {
+            test(externalizer, value);
+        }
+    }
+
     public static <T> void test(Externalizer<T> externalizer, T subject) throws IOException, ClassNotFoundException {
-        test(externalizer, subject, (expected, actual) -> assertEquals(expected, actual));
+        test(externalizer, subject, Assert::assertEquals);
     }
 
     public static <T> void test(Externalizer<T> externalizer, T subject, BiConsumer<T, T> assertion) throws IOException, ClassNotFoundException {

@@ -38,6 +38,10 @@ public class StringExternalizer<T> implements Externalizer<T> {
     private final Function<T, String> writer;
     private final Class<T> targetClass;
 
+    public StringExternalizer(Class<T> targetClass, Function<String, T> reader) {
+        this(targetClass, reader, Object::toString);
+    }
+
     public StringExternalizer(Class<T> targetClass, Function<String, T> reader, Function<T, String> writer) {
         this.reader = reader;
         this.writer = writer;

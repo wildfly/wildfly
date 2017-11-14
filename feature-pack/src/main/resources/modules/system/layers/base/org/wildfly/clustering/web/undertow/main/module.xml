@@ -47,7 +47,7 @@
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
-        <module name="org.wildfly.clustering.marshalling.spi" services="import"/>
+        <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.web.api"/>
         <module name="org.wildfly.clustering.web.spi" services="import"/>

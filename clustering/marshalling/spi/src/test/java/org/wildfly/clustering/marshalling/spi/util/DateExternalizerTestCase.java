@@ -34,10 +34,7 @@ import java.util.TimeZone;
 
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
-import org.wildfly.clustering.marshalling.spi.util.DateExternalizer.SqlDateExternalizer;
-import org.wildfly.clustering.marshalling.spi.util.DateExternalizer.SqlTimeExternalizer;
-import org.wildfly.clustering.marshalling.spi.util.DateExternalizer.SqlTimestampExternalizer;
-import org.wildfly.clustering.marshalling.spi.util.DateExternalizer.UtilDateExternalizer;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * Unit test for {@link Date} externalizers.
@@ -47,18 +44,18 @@ public class DateExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        ExternalizerTestUtil.test(new UtilDateExternalizer(), Date.from(Instant.now()));
-        ExternalizerTestUtil.test(new SqlDateExternalizer(), java.sql.Date.valueOf(LocalDate.now()));
-        ExternalizerTestUtil.test(new SqlTimeExternalizer(), java.sql.Time.valueOf(LocalTime.now()));
-        ExternalizerTestUtil.test(new SqlTimestampExternalizer(), java.sql.Timestamp.valueOf(LocalDateTime.now()));
+        ExternalizerTestUtil.test(DefaultExternalizer.DATE.cast(Date.class), Date.from(Instant.now()));
+        ExternalizerTestUtil.test(DefaultExternalizer.SQL_DATE.cast(java.sql.Date.class), java.sql.Date.valueOf(LocalDate.now()));
+        ExternalizerTestUtil.test(DefaultExternalizer.SQL_TIME.cast(java.sql.Time.class), java.sql.Time.valueOf(LocalTime.now()));
+        ExternalizerTestUtil.test(DefaultExternalizer.SQL_TIMESTAMP.cast(java.sql.Timestamp.class), java.sql.Timestamp.valueOf(LocalDateTime.now()));
 
         // Validate default calendar
-        ExternalizerTestUtil.test(new CalendarExternalizer(), Calendar.getInstance());
+        ExternalizerTestUtil.test(DefaultExternalizer.CALENDAR.cast(Calendar.class), Calendar.getInstance());
         // Validate Gregorian calendar w/locale
-        ExternalizerTestUtil.test(new CalendarExternalizer(), new Calendar.Builder().setLenient(false).setLocale(Locale.FRANCE).build());
+        ExternalizerTestUtil.test(DefaultExternalizer.CALENDAR.cast(Calendar.class), new Calendar.Builder().setLenient(false).setLocale(Locale.FRANCE).build());
         // Validate Japanese Imperial calendar
-        ExternalizerTestUtil.test(new CalendarExternalizer(), Calendar.getInstance(TimeZone.getTimeZone("Asia/Tokyo"), Locale.JAPAN));
+        ExternalizerTestUtil.test(DefaultExternalizer.CALENDAR.cast(Calendar.class), Calendar.getInstance(TimeZone.getTimeZone("Asia/Tokyo"), Locale.JAPAN));
         // Validate Buddhist calendar
-        ExternalizerTestUtil.test(new CalendarExternalizer(), Calendar.getInstance(TimeZone.getTimeZone("Asia/Bangkok"), Locale.forLanguageTag("th_TH")));
+        ExternalizerTestUtil.test(DefaultExternalizer.CALENDAR.cast(Calendar.class), Calendar.getInstance(TimeZone.getTimeZone("Asia/Bangkok"), Locale.forLanguageTag("th_TH")));
     }
 }

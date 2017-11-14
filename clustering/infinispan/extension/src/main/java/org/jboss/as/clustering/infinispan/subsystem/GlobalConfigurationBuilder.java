@@ -30,6 +30,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.management.MBeanServer;
 
@@ -59,6 +60,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.infinispan.AdvancedExternalizerAdapter;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
@@ -115,7 +117,11 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
         builder.serialization().classResolver(ModularClassResolver.getInstance(this.loader.getValue()));
         builder.classLoader(module.getClassLoader());
         int id = Ids.MAX_ID;
-        for (Externalizer<?> externalizer : module.loadService(Externalizer.class)) {
+        Stream<? extends Externalizer<?>> commonExternalizers = EnumSet.allOf(DefaultExternalizer.class).stream();
+        @SuppressWarnings("unchecked")
+        Stream<Externalizer<?>> moduleExternalizers = (Stream<Externalizer<?>>) (Stream<?>) StreamSupport.stream(module.loadService(Externalizer.class).spliterator(), false);
+        Iterable<Externalizer<?>> externalizers = Stream.concat(commonExternalizers, moduleExternalizers)::iterator;
+        for (Externalizer<?> externalizer : externalizers) {
             InfinispanLogger.ROOT_LOGGER.debugf("Cache container %s will use an externalizer for %s", this.name, externalizer.getTargetClass().getName());
             builder.serialization().addAdvancedExternalizer(id++, new AdvancedExternalizerAdapter<>(externalizer));
         }
