@@ -68,7 +68,7 @@ public class SharedInfinispanRegionFactory extends InfinispanRegionFactory {
     @Override
     protected void stopCacheManager() {
         // notify that the cache is not used but skip the stop since its shared for all jpa applications.
-        Notification.stopCache(Classification.INFINISPAN, wrapper, true);
+        Notification.stopCache(Classification.INFINISPAN, wrapper);
     }
 
 
