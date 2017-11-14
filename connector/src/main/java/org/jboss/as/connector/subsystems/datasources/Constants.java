@@ -84,7 +84,7 @@ public class Constants {
 
     private static final String DATASOURCE_DRIVER_NAME = "driver-name";
 
-    private static final String DRIVER_NAME_NAME = "driver-name";
+    static final String DRIVER_NAME_NAME = "driver-name";
 
     private static final String DRIVER_MODULE_NAME_NAME = "driver-module-name";
 
