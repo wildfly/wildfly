@@ -63,12 +63,5 @@
         <module name="org.apache.activemq.artemis.protocol.amqp" services="import" optional="true"/>
         <module name="org.apache.activemq.artemis.protocol.hornetq" services="import" optional="true"/>
         <module name="org.apache.activemq.artemis.protocol.stomp" services="import" optional="true"/>
-
-        <!--
-          WFLY-6301 This module can be used to load user-created classes that are
-          used by Artemis resources (e.g. connector-service, transformers, etc.)
-        -->
-        <module name="org.apache.activemq.artemis.addons" slot="main" optional="true"/>
-
     </dependencies>
 </module>
