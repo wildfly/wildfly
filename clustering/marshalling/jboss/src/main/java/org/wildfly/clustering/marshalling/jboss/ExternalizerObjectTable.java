@@ -23,6 +23,7 @@
 package org.wildfly.clustering.marshalling.jboss;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -83,8 +84,11 @@ public class ExternalizerObjectTable implements ObjectTable {
     public Writer getObjectWriter(final Object object) throws IOException {
         Class<?> targetClass = object.getClass();
         Class<?> writerClass = targetClass.isEnum() ? ((Enum<?>) object).getDeclaringClass() : targetClass;
-        while (!this.writers.containsKey(writerClass) && (writerClass.getSuperclass() != null)) {
-            writerClass = writerClass.getSuperclass();
+        Class<?> superClass = writerClass.getSuperclass();
+        // If implementation class has no externalizer, search any abstract superclasses
+        while (!this.writers.containsKey(writerClass) && (superClass != null) && Modifier.isAbstract(superClass.getModifiers())) {
+            writerClass = superClass;
+            superClass = writerClass.getSuperclass();
         }
         return this.writers.get(writerClass);
     }
