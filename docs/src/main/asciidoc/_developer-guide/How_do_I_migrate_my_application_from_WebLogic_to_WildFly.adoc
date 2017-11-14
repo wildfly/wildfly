@@ -1,0 +1,20 @@
+= How do I migrate my application from WebLogic to WildFly
+
+The purpose of this guide is to document the application changes that
+are needed to successfully run and deploy WebLogic applications on
+WildFly.
+
+[IMPORTANT]
+
+Feel free to add content in any way you prefer. You do not need to
+follow the template below. This is a work in progress.
+
+[[introduction]]
+== Introduction
+
+[[about-this-guide]]
+=== About this Guide
+
+The purpose of this document is to guide you through the planning
+process and migration of fairly simple and standard Oracle WebLogic
+applications to WildFly. O

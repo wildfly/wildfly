@@ -1,0 +1,15 @@
+= Glossary
+
+[[module]]
+== Module
+
+A logical grouping of classes used for classloading and dependency
+management in WildFly 10. Modules can be _dynamic_ or _static_.
+
+_Static Modules_ are the predefined modules installed in the modules/
+directory of the application server.
+
+_Dynamic Modules_ are created by the application server for each
+deployment (or sub-deployment in an EAR).
+
+Reference: link:admin-guide.adoc[Class Loading in WildFly]

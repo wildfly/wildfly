@@ -1,0 +1,36 @@
+= High Availability Guide
+WildFly clustering team;
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 2
+:toc-title: High Availability Guide
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+:wildflyVersion: 11
+:leveloffset: +1
+
+ifndef::ebook-format[:leveloffset: 1]
+
+(C) 2017 The original authors.
+
+ifdef::basebackend-html[toc::[]]
+:numbered:
+
+include::_high-availability/Introduction_To_High_Availability_Services.adoc[]
+
+include::_high-availability/HTTP_Services.adoc[]
+
+include::_high-availability/EJB_Services.adoc[]
+
+include::_high-availability/Hibernate.adoc[]
+
+include::_high-availability/HA_Singleton_Features.adoc[]
+
+include::_high-availability/Related_Topics.adoc[]
+
+include::_high-availability/Changes_From_Previous_Versions.adoc[]
+
+include::_high-availability/Clustering_and_Domain_Setup_Walkthrough.adoc[]
+

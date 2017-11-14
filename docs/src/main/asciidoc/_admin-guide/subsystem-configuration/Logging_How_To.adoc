@@ -1,0 +1,75 @@
+= How To
+
+[[how-do-i-add-a-log-category]]
+== How do I add a log category?
+
+[source, ruby]
+----
+/subsystem=logging/logger=com.your.category:add
+----
+
+[[how-do-i-change-a-log-level]]
+== How do I change a log level?
+
+To change a handlers log level:
+
+[source, ruby]
+----
+/subsystem=logging/console-handler=CONSOLE:write-attribute(name=level,value=DEBUG)
+----
+
+Changing the level on a log category is the same:
+
+[source, ruby]
+----
+/subsystem=logging/logger=com.your.category:write-attribute(name=level,value=ALL)
+----
+
+[[how-do-i-log-my-applications-messages-to-their-own-file]]
+== How do I log my applications messages to their own file?
+
+1.  Create a file handler. There are 3 different types of file handlers
+to choose from; `file-handler`, `periodic-rotating-file-handler` and
+`size-rotating-file-handler`. In this example we'll just use a simple
+`file-handler`.
++
+[source, ruby]
+----
+/subsystem=logging/file-handler=fh:add(level=INFO, file={"relative-to"=>"jboss.server.log.dir", "path"=>"fh.log"}, append=false, autoflush=true)
+----
+2.  Now create the log category.
++
+[source,ruby]
+----
+/subsystem=logging/logger=org.your.company:add(use-parent-handlers=false,handlers=["fh"])
+----
+
+[[how-do-i-use-log4j.properties-or-log4j.xml-instead-of-using-the-logging-subsystem-configuration]]
+== How do I use log4j.properties or log4j.xml instead of using the
+logging subsystem configuration?
+
+First note that if you choose to use a log4j configuration file, you
+will no longer be able to make runtime logging changes to your
+deployments logging configuration.
+
+If that is acceptable you can use
+link:Logging_Configuration.html#src-557095_LoggingConfiguration-Per-deploymentLogging[per-deployment
+logging] and just include a configuration file in your deployment.
+
+[[how-do-i-use-my-own-version-of-log4j]]
+== How do I use my own version of log4j?
+
+If you need/want to include your version of log4j then you need to do
+the following two steps.
+
+1.  Disable the adding of the logging dependencies to all your
+deployments with the
+link:Logging_Configuration.html#src-557095_LoggingConfiguration-add-logging-api-dependencies[add-logging-api-dependencies]
+attribute and disable the
+link:Logging_Configuration.html#src-557095_LoggingConfiguration-use-deployment-logging-config[use-deployment-logging-config]
+attribute *OR* exclude the logging subsystem in a
+link:Class_Loading_in_WildFly.html#src-557206_ClassLoadinginWildFly-JBossDeploymentStructureFile[jboss-deployment-structure.xml].
+2.  Then need to include a log4j library in your deployment.
+
+This only works for logging in your deployment. Server logs will
+continue to use the logging subsystem configuration.

@@ -1,0 +1,221 @@
+= EJB3 subsystem configuration guide
+
+This page lists the options that are available for configuring the EJB
+subsystem.
+
+A complete example of the config is shown below, with a full explanation
+of each
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:ejb3:1.2">
+  <session-bean>
+    <stateless>
+      <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
+    </stateless>
+    <stateful default-access-timeout="5000" cache-ref="simple" clustered-cache-ref="clustered"/>
+    <singleton default-access-timeout="5000"/>
+  </session-bean>
+  <mdb>
+    <resource-adapter-ref resource-adapter-name="hornetq-ra"/>
+    <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
+  </mdb>
+  <entity-bean>
+    <bean-instance-pool-ref pool-name="entity-strict-max-pool"/>
+  </entity-bean>
+  <pools>
+    <bean-instance-pools>
+      <strict-max-pool name="slsb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+      <strict-max-pool name="mdb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+      <strict-max-pool name="entity-strict-max-pool" max-pool-size="100" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+  </bean-instance-pools>
+  </pools>
+  <caches>
+    <cache name="simple" aliases="NoPassivationCache"/>
+    <cache name="passivating" passivation-store-ref="file" aliases="SimpleStatefulCache"/>
+    <cache name="clustered" passivation-store-ref="infinispan" aliases="StatefulTreeCache"/>
+  </caches>
+  <passivation-stores>
+    <file-passivation-store name="file"/>
+    <cluster-passivation-store name="infinispan" cache-container="ejb"/>
+  </passivation-stores>
+  <async thread-pool-name="default"/>
+  <timer-service thread-pool-name="default">
+    <data-store path="timer-service-data" relative-to="jboss.server.data.dir"/>
+  </timer-service>
+  <remote connector-ref="remoting-connector" thread-pool-name="default"/>
+  <thread-pools>
+    <thread-pool name="default">
+      <max-threads count="10"/>
+      <keepalive-time time="100" unit="milliseconds"/>
+      </thread-pool>
+  </thread-pools>
+  <iiop enable-by-default="false" use-qualified-name="false"/>
+  <in-vm-remote-interface-invocation pass-by-value="false"/> <!-- Warning see notes below about possible issues -->
+</subsystem>
+----
+
+[[session-bean]]
+== <session-bean>
+
+[[stateless]]
+=== <stateless>
+
+This element is used to configure the instance pool that is used by
+default for stateless session beans. If it is not present stateless
+session beans are not pooled, but are instead created on demand for
+every invocation. The instance pool can be overridden on a per
+deployment or per bean level using `jboss-ejb3.xml` or the
+`org.jboss.ejb3.annotation.Pool` annotation. The instance pools
+themselves are configured in the `<pools>` element.
+
+[[stateful]]
+=== <stateful>
+
+This element is used to configure Stateful Session Beans.
+
+* `default-access-timeout` This attribute specifies the default time
+concurrent invocations on the same bean instance will wait to acquire
+the instance lock. It can be overridden via the deployment descriptor or
+via the `javax.ejb.AccessTimeout` annotation.
+
+* `cache-ref` This attribute is used to set the default cache for
+non-clustered beans. It can be overridden by `jboss-ejb3.xml`, or via
+the `org.jboss.ejb3.annotation.Cache` annotation.
+
+* `clustered-cache-ref` This attribute is used to set the default cache
+for clustered beans.
+
+[[singleton]]
+=== <singleton>
+
+This element is used to configure Singleton Session Beans.
+
+* `default-access-timeout` This attribute specifies the default time
+concurrent invocations will wait to acquire the instance lock. It can be
+overridden via the deployment descriptor or via the
+`javax.ejb.AccessTimeout` annotation.
+
+[[mdb]]
+== <mdb>
+
+[[resource-adaptor-ref]]
+=== <resource-adaptor-ref>
+
+This element sets the default resource adaptor for Message Driven Beans.
+
+[[bean-instance-pool-ref]]
+=== <bean-instance-pool-ref>
+
+This element is used to configure the instance pool that is used by
+default for Message Driven Beans. If it is not present they are not
+pooled, but are instead created on demand for every invocation. The
+instance pool can be overridden on a per deployment or per bean level
+using `jboss-ejb3.xml` or the `org.jboss.ejb3.annotation.Pool`
+annotation. The instance pools themselves are configured in the
+`<pools>` element.
+
+[[entity-bean]]
+== <entity-bean>
+
+This element is used to configure the behavior for EJB2 EntityBeans.
+
+[[bean-instance-pool-ref-1]]
+=== <bean-instance-pool-ref>
+
+This element is used to configure the instance pool that is used by
+default for Entity Beans. If it is not present they are not pooled, but
+are instead created on demand for every invocation. The instance pool
+can be overridden on a per deployment or per bean level using
+`jboss-ejb3.xml` or the `org.jboss.ejb3.annotation.Pool` annotation. The
+instance pools themselves are configured in the `<pools>` element.
+
+[[pools]]
+== <pools>
+
+[[caches]]
+== <caches>
+
+[[passivation-stores]]
+== <passivation-stores>
+
+[[async]]
+== <async>
+
+This element enables async EJB invocations. It is also used to specify
+the thread pool that these invocations will use.
+
+[[timer-service]]
+== <timer-service>
+
+This element enables the EJB timer service. It is also used to specify
+the thread pool that these invocations will use.
+
+[[data-store]]
+=== <data-store>
+
+This is used to configure the directory that persistent timer
+information is saved to.
+
+[[remote]]
+== <remote>
+
+This is used to enable remote EJB invocations. It specifies the remoting
+connector to use (as defined in the remoting subsystem configuration),
+and the thread pool to use for remote invocations.
+
+[[thread-pools]]
+== <thread-pools>
+
+This is used to configure the thread pools used by async, timer and
+remote invocations.
+
+[[iiop]]
+== <iiop>
+
+This is used to enable IIOP (i.e. CORBA) invocation of EJB's. If this
+element is present then the JacORB subsystem must also be installed. It
+supports the following two attributes:
+
+* `enable-by-default` If this is true then all EJB's with EJB2.x home
+interfaces are exposed via IIOP, otherwise they must be explicitly
+enabled via `jboss-ejb3.xml`.
+
+* `use-qualified-name` If this is true then EJB's are bound to the corba
+naming context with a binding name that contains the application and
+modules name of the deployment (e.g. myear/myejbjar/MyBean), if this is
+false the default binding name is simply the bean name.
+
+[[in-vm-remote-interface-invocation]]
+== <in-vm-remote-interface-invocation>
+
+By default remote interface invocations use pass by value, as required
+by the EJB spec. This element can use used to enable pass by reference,
+which can give you a performance boost. Note WildFly will do a shallow
+check to see if the caller and the EJB have access to the same class
+definitions, which means if you are passing something such as a
+List<MyObject>, WildFly only checks the List to see if it is the same
+class definition on the call & EJB side. If the top level class
+definition is the same, JBoss will make the call using pass by
+reference, which means that if MyObject or any objects beneath it are
+loaded from different classloaders, you would get a ClassCastException.
+If the top level class definitions are loaded from different
+classloaders, JBoss will use pass by value. JBoss cannot do a deep check
+of all of the classes to ensure no ClassCastExceptions will occur
+because doing a deep check would eliminate any performance boost you
+would have received by using call by reference. It is recommended that
+you configure pass by reference only on callers that you are sure will
+use the same class definitions and not globally. This can be done via a
+configuration in the jboss-ejb-client.xml as shown below.
+
+To configure a caller/client use pass by reference, you configure your
+top level deployment with a META-INF/jboss-ejb-client.xml containing:
+
+[source, xml]
+----
+<jboss-ejb-client xmlns="urn:jboss:ejb-client:1.0">
+    <client-context>
+        <ejb-receivers local-receiver-pass-by-value="false"/>
+    </client-context>
+</jboss-ejb-client>
+----

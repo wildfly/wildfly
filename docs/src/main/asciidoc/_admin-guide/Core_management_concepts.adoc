@@ -1,0 +1,17 @@
+= Core management concepts
+:toclevels: 2
+:toc-title: Core management concepts
+:toc: macro
+:leveloffset: +1
+
+ifdef::basebackend-html[toc::[]]
+:numbered:
+
+
+include::Operating_modes.adoc[]
+
+include::General_configuration_concepts.adoc[]
+
+include::Management_resources.adoc[]
+
+:leveloffset: -1

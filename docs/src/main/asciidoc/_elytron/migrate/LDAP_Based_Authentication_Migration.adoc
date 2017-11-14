@@ -1,0 +1,208 @@
+= LDAP Authentication Migration
+
+The section describing how to migrate from properties based
+authentication using either PicketBox or legacy security realms to
+Elytron also contained a lot of additional information regarding
+defining security domains, authentication factories, and how these are
+mapped to be used for authentication. This section will illustrate some
+equivalent LDAP configuration using legacy security realms and PicketBox
+security domains and show the equivalent configuration using Elytron but
+will not repeat the steps to wire it all together covered in the
+previous section.
+
+These configuration examples are developed against a test LDAP sever
+with user entries like: -
+
+....
+dn: uid=TestUserOne,ou=users,dc=group-to-principal,dc=wildfly,dc=org
+objectClass: top
+objectClass: inetOrgPerson
+objectClass: uidObject
+objectClass: person
+objectClass: organizationalPerson
+cn: Test User One
+sn: Test User One
+uid: TestUserOne
+userPassword: {SSHA}UG8ov2rnrnBKakcARVvraZHqTa7mFWJZlWt2HA==
+....
+
+The group entries then look like: -
+
+....
+dn: uid=GroupOne,ou=groups,dc=group-to-principal,dc=wildfly,dc=org
+objectClass: top
+objectClass: groupOfUniqueNames
+objectClass: uidObject
+cn: Group One
+uid: GroupOne
+uniqueMember: uid=TestUserOne,ou=users,dc=group-to-principal,dc=wildfly,dc=org
+....
+
+For authentication purposes the username will be matched against the
+'uid' attribute, also the resulting group name will be taken from the
+'uid' attribute of the group entry.
+
+[[legacy-security-realm]]
+== Legacy Security Realm
+
+A connection to the LDAP server and related security realm can be
+created with the following commands: -
+
+[source, ruby]
+----
+batch
+./core-service=management/ldap-connection=MyLdapConnection:add(url="ldap://localhost:10389", search-dn="uid=admin,ou=system", search-credential="secret")
+ 
+./core-service=management/security-realm=LDAPRealm:add
+./core-service=management/security-realm=LDAPRealm/authentication=ldap:add(connection="MyLdapConnection", username-attribute=uid, base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org")
+ 
+ 
+./core-service=management/security-realm=LDAPRealm/authorization=ldap:add(connection=MyLdapConnection)
+./core-service=management/security-realm=LDAPRealm/authorization=ldap/username-to-dn=username-filter:add(attribute=uid, base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org")
+./core-service=management/security-realm=LDAPRealm/authorization=ldap/group-search=group-to-principal:add(base-dn="ou=groups,dc=group-to-principal,dc=wildfly,dc=org", iterative=true, prefer-original-connection=true, principal-attribute=uniqueMember, search-by=DISTINGUISHED_NAME, group-name=SIMPLE, group-name-attribute=uid)
+run-batch
+----
+
+This results in the following configuration.
+
+[source, xml]
+----
+  <management>
+    <security-realms>
+      ...
+      <security-realm name="LDAPRealm">
+        <authentication>
+          <ldap connection="MyLdapConnection" base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org">
+            <username-filter attribute="uid"/>
+          </ldap>
+        </authentication>
+        <authorization>
+          <ldap connection="MyLdapConnection">
+            <username-to-dn>
+              <username-filter base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org" attribute="uid"/>
+            </username-to-dn>
+            <group-search group-name="SIMPLE" iterative="true" group-name-attribute="uid">
+              <group-to-principal search-by="DISTINGUISHED_NAME" base-dn="ou=groups,dc=group-to-principal,dc=wildfly,dc=org" prefer-original-connection="true">
+                <membership-filter principal-attribute="uniqueMember"/>
+              </group-to-principal>
+            </group-search>
+          </ldap>
+        </authorization>
+      </security-realm>
+    </security-realms>
+    <outbound-connections>
+      <ldap name="MyLdapConnection" url="ldap://localhost:10389" search-dn="uid=admin,ou=system" search-credential="secret"/>
+    </outbound-connections>
+    ...
+  </management>
+----
+
+[[picketbox-ldapextloginmodule]]
+== PicketBox LdapExtLoginModule
+
+The following commands can create a PicketBox security domain configured
+to use the LdapExtLoginModule to verify a username and password.
+
+[source, ruby]
+----
+./subsystem=security/security-domain=application-security:add
+./subsystem=security/security-domain=application-security/authentication=classic:add(login-modules=[{code=LdapExtended, flag=Required, module-options={ \
+java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory, \
+java.naming.provider.url=ldap://localhost:10389, \
+java.naming.security.authentication=simple, \
+bindDN="uid=admin,ou=system", \
+bindCredential=secret, \
+baseCtxDN="ou=users,dc=group-to-principal,dc=wildfly,dc=org", \
+baseFilter="(uid={0})", \
+rolesCtxDN="ou=groups,dc=group-to-principal,dc=wildfly,dc=org",\
+roleFilter="(uniqueMember={1})", \
+roleAttributeID="uid" \
+}}])
+----
+
+This results in the following configuration.
+
+[source, xml]
+----
+  <subsystem xmlns="urn:jboss:domain:security:2.0">
+    ...
+    <security-domains>
+      ...
+      <security-domain name="application-security">
+        <authentication>
+          <login-module code="LdapExtended" flag="required">
+            <module-option name="java.naming.factory.initial" value="com.sun.jndi.ldap.LdapCtxFactory"/>
+            <module-option name="java.naming.provider.url" value="ldap://localhost:10389"/>
+            <module-option name="java.naming.security.authentication" value="simple"/>
+            <module-option name="bindDN" value="uid=admin,ou=system"/>
+            <module-option name="bindCredential" value="secret"/>
+            <module-option name="baseCtxDN" value="ou=users,dc=group-to-principal,dc=wildfly,dc=org"/>
+            <module-option name="baseFilter" value="(uid={0})"/>
+            <module-option name="rolesCtxDN" value="ou=groups,dc=group-to-principal,dc=wildfly,dc=org"/>
+            <module-option name="roleFilter" value="(uniqueMember={1})"/>
+            <module-option name="roleAttributeID" value="uid"/>
+          </login-module>
+        </authentication>
+      </security-domain>
+    </security-domains>
+  </subsystem>
+----
+
+[[migrated]]
+== Migrated
+
+Within the Elytron subsystem a directory context can be defined for the
+connection to LDAP: -
+
+[source, ruby]
+----
+./subsystem=elytron/dir-context=ldap-connection:add(url=ldap://localhost:10389, principal="uid=admin,ou=system", credential-reference={clear-text=secret})
+----
+
+Then a security realm can be created to search LDAP and verify the
+supplied password: -
+
+[source, ruby]
+----
+./subsystem=elytron/ldap-realm=ldap-realm:add(dir-context=ldap-connection, \
+direct-verification=true, \
+identity-mapping={search-base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org", \
+rdn-identifier="uid", \
+attribute-mapping=[{filter-base-dn="ou=groups,dc=group-to-principal,dc=wildfly,dc=org",filter="(uniqueMember={1})",from="uid",to="Roles"}]})
+----
+
+In the prior two examples information is loaded from LDAP to use
+directly as groups or roles, in the Elytron case information can be
+loaded from LDAP to associate with the identity as attributes - these
+can subsequently be mapped to roles but attributes can be loaded for
+other purposes as well.
+
+[IMPORTANT]
+
+By default, if no `role-decoder` is defined for given `security-domain`,
+identity attribute " `Roles`" is mapped to the identity roles.
+
+This leads to the following configuration.
+
+[source, xml]
+----
+  <subsystem xmlns="urn:wildfly:elytron:1.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+    ...
+    <security-realms>
+      ...
+      <ldap-realm name="ldap-realm" dir-context="ldap-connection" direct-verification="true">
+        <identity-mapping rdn-identifier="uid" search-base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org">
+          <attribute-mapping>
+            <attribute from="uid" to="Roles" filter="(uniqueMember={1})" filter-base-dn="ou=groups,dc=group-to-principal,dc=wildfly,dc=org"/>
+          </attribute-mapping>
+        </identity-mapping>
+      </ldap-realm>
+    </security-realms>
+    ...
+    <dir-contexts>
+      <dir-context name="ldap-connection" url="ldap://localhost:10389" principal="uid=admin,ou=system">
+        <credential-reference clear-text="secret"/>
+      </dir-context>
+    </dir-contexts>
+  </subsystem>
+----

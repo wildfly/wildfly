@@ -1,0 +1,119 @@
+= Connect a pooled-connection-factory to a Remote Artemis Server
+
+The `messaging-activemq` subsystem allows to configure a
+`pooled-connection-factory` resource to let a local client deployed in
+WildFly connect to a remote Artemis server.
+
+The configuration of such a `pooled-connection-factory` is done in 3
+steps:
+
+\1. create an outbound-socket-binding pointing to the remote messaging
+server:
+
+[source, ruby]
+----
+   /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=remote-artemis:add(host=<server host>, port=61616)
+
+----
+
+\2. create a remote-connector referencing the outbound-socket-binding
+created at step (1).
+
+[source, ruby]
+----
+  /subsystem=messaging-activemq/server=default/remote-connector=remote-artemis:add(socket-binding=remote-artemis)
+
+----
+
+\3. create a pooled-connection-factory referencing the remote-connector
+created at step (2).
+
+[source,ruby]
+----
+  /subsystem=messaging-activemq/server=default/pooled-connection-factory=remote-artemis:add(connectors=[remote-artemis], entries=[java:/jms/remoteCF])
+   
+----
+
+[[configuration-of-a-mdb-using-a-pooled-connection-factory]]
+== Configuration of a MDB using a pooled-connection-factory
+
+When a `pooled-connection-factory` is configured to connect to a remote
+Artemis, it is possible to configure Message-Driven Beans (MDB) to have
+them consume messages from this remote server.
+
+The MDB must be annotated with the `@ResourceAdapter` annotation using
+the *name* of the `pooled-connection-factory resource`
+
+[source, java]
+----
+import org.jboss.ejb3.annotation.ResourceAdapter;
+ 
+  @ResourceAdapter("remote-artemis")
+  @MessageDriven(name = "MyMDB", activationConfig = {
+    ...
+})
+public class MyMDB implements MessageListener {
+      public void onMessage(Message message) {
+       ...
+    }
+}
+----
+
+If the MDB needs to produce messages to the remote server, it must
+inject the `pooled-connection-factory` by looking it up in JNDI using
+one of its `entries`.
+
+[source, java]
+----
+@Inject
+@JMSConnectionFactory("java:/jms/remoteCF")
+private JMSContext context;
+----
+
+[[configuration-of-the-destination]]
+=== Configuration of the destination
+
+A MDB must also specify which destination it will consume messages from.
+
+The standard way is to define a `destinationLookup` activation config
+property that corresponds to a JNDI lookup on the local server. +
+When the MDB is consuming from a remote Artemis server, there may not
+have such a JNDI binding in the local WildFly. +
+It is possible to use the naming subsystem to configure
+link:#src-557098[external context federation] to have local JNDI
+bindings delegating to external bindings.
+
+However there is a simpler solution to configure the destination when
+using the Artemis Resource Adapter. +
+Instead of using JDNI to lookup the JMS Destination resource, you can
+just specify the *name* of the destination (as configured in the remote
+Artemis server) using the `destination` activation config property and
+set the `useJNDI` activation config property to false to let the Artemis
+Resource Adapter create automatically the JMS destination without
+requiring any JNDI lookup.
+
+[source, java]
+----
+@ResourceAdapter("remote-artemis")
+@MessageDriven(name = "MyMDB", activationConfig = {
+    @ActivationConfigProperty(propertyName = "useJNDI",         propertyValue = "false"),
+    @ActivationConfigProperty(propertyName = "destination",     propertyValue = "myQueue"),
+    @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"), 
+    @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
+})
+public class MyMDB implements MessageListener {
+    ...
+}
+----
+
+These properties configure the MDB to consume messages from the JMS
+Queue named `myQueue` hosted on the remote Artemis server. +
+In most cases, such a MDB does not need to lookup other destinations to
+process the consumed messages and it can use the JMSReplyTo destination
+if it is defined on the message. +
+If the MDB needs any other JMS destinations defined on the remote
+server, it must use client-side JNDI by following the
+http://activemq.apache.org/artemis/docs/1.1.0/using-jms.html#jndi-configuration[Artemis
+documentation] or configure external configuration context in the naming
+subsystem (which allows to inject the JMS resources using the
+`@Resource` annotation).

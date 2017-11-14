@@ -1,0 +1,478 @@
+= Domain Setup
+
+To run a group of servers as a managed domain you need to configure both
+the domain controller and each host that joins the domain. This sections
+focuses on the network configuration for the domain and host controller
+components. For background information users are encouraged to review
+the link:Operating_modes.adoc[Operating modes] and
+link:Management_Clients.html#src-557081_ManagementClients-ConfigurationFiles[Configuration
+Files] sections.
+
+[[domain-controller-configuration]]
+== Domain Controller Configuration
+
+The domain controller is the central government for a managed domain. A
+domain controller configuration requires two steps:
+
+* A host needs to be configured to act as the Domain Controller for the
+whole domain
+* The host must expose an addressable management interface binding for
+the managed hosts to communicate with it
+
+Example IP Addresses
+
+[IMPORTANT]
+
+In this example the domain controller uses 192.168.0.101 and the host
+controller 192.168.0.10
+
+Configuring a host to act as the Domain Controller is done through the
+`domain-controller` declaration in `host.xml`. If it includes the
+`<local/>` element, then this host will become the domain controller:
+
+[source, xml]
+----
+<domain-controller>
+   <local/>
+</domain-controller>
+----
+
+~(See domain/configuration/host.xml)~
+
+A host acting as the Domain Controller _must_ expose a management
+interface on an address accessible to the other hosts in the domain.
+Exposing an HTTP(S) management interface is not required, but is
+recommended as it allows the Administration Console to work:
+
+[source, xml]
+----
+<management-interfaces>
+  <native-interface security-realm="ManagementRealm">
+    <socket interface="management" port="${jboss.management.native.port:9999}"/>
+  </native-interface>
+  <http-interface security-realm="ManagementRealm">
+    <socket interface="management" port="${jboss.management.http.port:9990}"/>
+  </http-interface>
+</management-interfaces>
+----
+
+The interface attributes above refer to a named interface declaration
+later in the host.xml file. This interface declaration will be used to
+resolve a corresponding network interface.
+
+[source, xml]
+----
+<interfaces>
+   <interface name="management">
+       <inet-address value="192.168.0.101"/>
+   </interface>
+</interfaces>
+----
+
+~(See domain/configuration/host.xml)~
+
+Please consult the chapter "Interface Configuration" for a more detailed
+explanation on how to configure network interfaces.
+
+Next by default the master domain controller is configured to require
+authentication so a user needs to be added that can be used by the slave
+domain controller to connect.
+
+Make use of the `add-user` utility to add a new user, for this example I
+am adding a new user called slave.
+
+[NOTE]
+
+`add-user` MUST be run on the master domain controller and NOT the
+slave.
+
+When you reach the final question of the interactive flow answer `y` or
+`yes` to indicate that the new user will be used for a process e.g.
+
+
+----
+Is this new user going to be used for one AS process to connect to another AS process e.g. slave domain controller?
+yes/no? y
+To represent the user add the following to the server-identities definition <secret value="cE3EBEkE=" />
+----
+
+Make a note of the XML Element output as that is going to be required
+within the slave configuration.
+
+[[host-controller-configuration]]
+== Host Controller Configuration
+
+Once the domain controller is configured correctly you can proceed with
+any host that should join the domain. The host controller configuration
+requires three steps:
+
+* The logical host name (within the domain) needs to be distinct
+* The host controller needs to know the domain controller IP address
+
+Provide a distinct, logical name for the host. In the following example
+we simply name it "slave":
+
+[source, xml]
+----
+<host xmlns="urn:jboss:domain:3.0"
+     name="slave">
+[...]
+</host>
+----
+
+~(See domain/configuration/host.xml)~
+
+If the `name` attribute is not set, the default name for the host will
+be the value of the `jboss.host.name` system property. If that is not
+set, the value of the `HOSTNAME` or `COMPUTERNAME` environment variable
+will be used, one of which will be set on most operating systems. If
+neither is set the name will be the value of
+`InetAddress.getLocalHost().getHostName()`.
+
+A security realm needs to be defined to hold the identity of the slave.
+Since it is performing a specific purpose I would suggest a new realm is
+defined although it is possible to combine this with an existing realm.
+
+[source, xml]
+----
+<security-realm name="SlaveRealm">
+  <server-identities>
+    <secret value="cE3EBEkE=" />
+  </server-identities>
+</security-realm>
+----
+
+The `<secret />` element here is the one output from `add-user`
+previously. To create the `<secret />` element yourself the `value`
+needs to be the password encoded using Base64.
+
+Tell it how to find the domain controller so it can register itself with
+the domain:
+
+[source, xml]
+----
+<domain-controller>
+   <remote protocol="remote" host="192.168.0.101" port="9999" username="slave" security-realm="SlaveRealm"/>
+</domain-controller>
+----
+
+Since we have also exposed the HTTP management interface we could also
+use :
+
+[source, xml]
+----
+<domain-controller>
+   <remote protocol="http-remoting" host="192.168.0.101" port="9990" username="slave" security-realm="SlaveRealm"/>
+</domain-controller>
+----
+
+~(See domain/configuration/host.xml)~
+
+The username attribute here is optional, if it is omitted then the name
+of the host will be used instead, in this example that was already set
+to name.
+
+[TIP]
+
+The name of each host needs to be unique when registering with the
+domain controller, however the username does not - using the username
+attribute allows the same account to be used by multiple hosts if this
+makes sense in your environment.
+
+The `<remote />` element is also associated with the security realm
+`SlaveRealm`, this is how it picks up the password from the `<secret />`
+element. +
+
+
+=== Ignoring domain wide resources
+
+WildFly 10 and later make it easy for slave host controllers to "ignore"
+parts of the domain wide configuration. What does the mean and why is it
+useful?
+
+One of the responsibilities of the Domain Controller is ensuring that
+all running Host Controllers have a consistent local copy of the domain
+wide configuration (i.e. those resources whose address does not begin
+with `/host=*`, i.e. those that are persisted in `domain.xml`. Having
+that local copy allows a user to do the following things:
+
+* Ask the slave to launch its already configured servers, even if the
+Domain Controller is not running.
+* Configured new servers, using different server groups from those
+current running, and ask the slave to launch them, even if the Domain
+Controller is not running.
+* Reconfigure the slave to act as the Domain Controller, allowing it to
+take over as the master if the previous master has failed or been shut
+down.
+
+However, of these three things only the latter two require that the
+slave maintain a _complete_ copy of the domain wide configuration. The
+first only requires the slave to have the _portion_ of the domain wide
+configuration that is relevant to its current servers. And the first use
+case is the most common one. A slave that is only meant to support the
+first use case can safely "ignore" portions of the domain wide
+configuration. And there are benefits to ignoring some resources:
+
+* If a server group is ignored, and the deployments mapped to that
+server group aren't mapped to other non-ignored groups, then the slave
+does not need to pull down a copy of the deployment content from the
+master. That can save disk space on the slave, improve the speed of
+starting new hosts and reduce network traffic.
+* WildFly supports "mixed domains" where a later version Domain
+Controller can manage slaves running previous versions. But those
+"legacy" slaves cannot understand configuration resources, attributes
+and operations introduced in newer versions. So any attempt to use newer
+things in the domain wide configuration will fail unless the legacy
+slaves are ignoring the relevant resources. But ignoring resources will
+allow the legacy slaves to work fine managing servers using profiles
+without new concepts, while other hosts can run servers with profiles
+that take advantage of the latest features.
+
+Prior to WildFly 10, a slave could be configured to ignore some
+resources, but the mechanism was not particularly user friendly:
+
+* The resources to be ignored had to be listed in a fair amount of
+detail in each host's configuration.
+* If a new resource is added and needs to be ignored, then *each* host
+that needs to ignore that must be updated to record that.
+
+Starting with WildFly 10, this kind of detailed configuration is no
+longer required. Instead, with the standard versions of `host.xml`, the
+slave will behave as follows:
+
+* If the slave was started with the `--backup` command line parameter,
+the behavior will be the same as releases prior to 10; i.e. only
+resources specifically configured to be ignored will be ignored.
+* Otherwise, the slave will "ignore unused resources".
+
+What does "ignoring unused resources" mean?
+
+* Any server-group that is not referenced by one of the host's
+server-config resources is ignored.
+* Any profile that is not referenced by a non-ignored server-group,
+either directly or indirectly via the profile resource's 'include'
+attribute, is ignored
+* Any socket-binding-group that is not directly referenced by one of the
+host's server-config resources, or referenced by a non-ignored
+server-group, is ignored
+* Extension resources will not be automatically ignored, even if no
+non-ignored profile uses the extension. Ignoring an extension requires
+explicit configuration. Perhaps in a future release extensions will be
+explicitly ignored.
+* If a change is made to the slave host's configuration or to the domain
+wide configuration that reduces the set of ignored resources, then as
+part of handling that change the slave will contact the master to pull
+down the missing pieces of configuration and will integrate those pieces
+in its local copy of the management model. Examples of such changes
+include adding a new server-config that references a previously ignored
+server-group or socket-binding-group, changing the server-group or
+socket-binding-group assigned to a server-config, changing the profile
+or socket-binding-group assigned to a non-ignored server-group, or
+adding a profile or socket-binding-group to the set of those included
+directly or indirectly by a non-ignored profile or socket-binding-group.
+
+The default behavior can be changed, either to always ignore unused
+resources, even if `--backup` is used, or to not ignore unused
+resources, by updating the domain-controller element in the `host-xml`
+file and setting the `ignore-unused-configuration` attribute:
+
+[source, xml]
+----
+<domain-controller>
+    <remote security-realm="ManagementRealm" ignore-unused-configuration="false">
+        <discovery-options>
+            <static-discovery name="primary" protocol="${jboss.domain.master.protocol:remote}" host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9999}"/>
+        </discovery-options>
+    </remote>
+</domain-controller>
+----
+
+The "ignore unused resources" behavior can be used in combination with
+the pre-WildFly 10 detailed specification of what to ignore. If that is
+done both the unused resources and the explicitly declared resources
+will be ignored. Here's an example of such a configuration, one where
+the slave cannot use the "org.example.foo" extension that has been
+installed on the Domain Controller and on some slaves, but not this one:
+
+[source, xml]
+----
+<domain-controller>
+    <remote security-realm="ManagementRealm" ignore-unused-configuration="true">
+        <ignored-resources type="extension">
+            <instance name="org.example.foo"/>
+        </ignored-resources>
+        <discovery-options>
+            <static-discovery name="primary" protocol="${jboss.domain.master.protocol:remote}" host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9999}"/>
+        </discovery-options>
+    </remote>
+</domain-controller>
+----
+
+[[server-groups]]
+== Server groups
+
+The domain controller defines one or more server groups and associates
+each of these with a profile and a socket binding group, and also :
+
+[source, xml]
+----
+<server-groups>
+    <server-group name="main-server-group" profile="default">
+        <jvm name="default">
+           <heap size="64m" max-size="512m"/>
+           <permgen size="128m" max-size="128m"/>
+        </jvm>
+        <socket-binding-group ref="standard-sockets"/>
+    </server-group>
+    <server-group name="other-server-group" profile="bigger">
+        <jvm name="default">
+            <heap size="64m" max-size="512m"/>
+        </jvm>
+        <socket-binding-group ref="bigger-sockets"/>
+    </server-group>
+</server-groups>
+----
+
+~(See domain/configuration/domain.xml)~
+
+The domain controller also defines the socket binding groups and the
+profiles. The socket binding groups define the default socket bindings
+that are used:
+
+[source, xml]
+----
+<socket-binding-groups>
+    <socket-binding-group name="standard-sockets" default-interface="public">
+        <socket-binding name="http" port="8080"/>
+        [...]
+    </socket-binding-group>
+    <socket-binding-group name="bigger-sockets" include="standard-sockets" default-interface="public">
+        <socket-binding name="unique-to-bigger" port="8123"/>
+    </socket-binding-group>
+</socket-binding-groups>
+----
+
+~(See domain/configuration/domain.xml)~ +
+In this example the `bigger-sockets` group includes all the socket
+bindings defined in the `standard-sockets` groups and then defines an
+extra socket binding of its own.
+
+A profile is a collection of subsystems, and these subsystems are what
+implement the functionality people expect of an application server.
+
+[source, xml]
+----
+<profiles>
+    <profile name="default">
+        <subsystem xmlns="urn:jboss:domain:web:1.0">
+            <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
+            [...]
+        </subsystem>
+        <\!-\- The rest of the subsystems here \-->
+        [...]
+    </profile>
+    <profile name="bigger">
+        <subsystem xmlns="urn:jboss:domain:web:1.0">
+            <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
+            [...]
+        </subsystem>
+        <\!-\- The same subsystems as defined by 'default' here \-->
+        [...]
+        <subsystem xmlns="urn:jboss:domain:fictional-example:1.0">
+            <socket-to-use name="unique-to-bigger"/>
+        </subsystem>
+    </profile>
+</profiles>
+----
+
+~(See domain/configuration/domain.xml)~ +
+Here we have two profiles. The `bigger` profile contains all the same
+subsystems as the `default` profile (athough the parameters for the
+various subsystems could be different in each profile), and adds the
+`fictional-example` subsystem which references the `unique-to-bigger`
+socket binding.
+
+[[servers]]
+== Servers
+
+The host controller defines one or more servers:
+
+[source, xml]
+----
+<servers>
+    <server name="server-one" group="main-server-group">
+        <\!-\- server-one inherits the default socket-group declared in the server-group \-->
+        <jvm name="default"/>
+    </server>
+ 
+    <server name="server-two" group="main-server-group" auto-start="true">
+        <socket-binding-group ref="standard-sockets" port-offset="150"/>
+        <jvm name="default">
+            <heap size="64m" max-size="256m"/>
+        </jvm>
+    </server>
+ 
+    <server name="server-three" group="other-server-group" auto-start="false">
+        <socket-binding-group ref="bigger-sockets" port-offset="250"/>
+    </server>
+</servers>
+----
+
+~(See domain/configuration/host.xml)~
+
+`server-one` and `server-two` both are associated with
+`main-server-group` so that means they both run the subsystems defined
+by the `default` profile, and have the socket bindings defined by the
+`standard-sockets` socket binding group. Since all the servers defined
+by a host will be run on the same physical host we would get port
+conflicts unless we used
+`<socket-binding-group ref="standard-sockets" port-offset="150"/>` for
+`server-two`. This means that `server-two` will use the socket bindings
+defined by `standard-sockets` but it will add `150` to each port number
+defined, so the value used for `http` will be `8230` for `server-two`.
+
+`server-three` will not be started due to its `auto-start="false"`. The
+default value if no `auto-start` is given is `true` so both `server-one`
+and `server-two` will be started when the host controller is started.
+`server-three` belongs to `other-server-group`, so if its `auto-start`
+were changed to `true` it would start up using the subsystems from the
+`bigger` profile, and it would use the `bigger-sockets` socket binding
+group.
+
+[[jvm]]
+=== JVM
+
+The host controller contains the main `jvm` definitions with arguments:
+
+[source, xml]
+----
+<jvms>
+    <jvm name="default">
+        <heap size="64m" max-size="128m"/>
+    </jvm>
+</jvms>
+----
+
+~(See domain/configuration/host.xml)~ +
+From the preceeding examples we can see that we also had a `jvm`
+reference at server group level in the domain controller. The jvm's name
+*must* match one of the definitions in the host controller. The values
+supplied at domain controller and host controller level are combined,
+with the host controller taking precedence if the same parameter is
+given in both places.
+
+Finally, as seen, we can also override the `jvm` at server level. Again,
+the jvm's name *must* match one of the definitions in the host
+controller. The values are combined with the ones coming in from domain
+controller and host controller level, this time the server definition
+takes precedence if the same parameter is given in all places.
+
+Following these rules the jvm parameters to start each server would be
+
+[cols=",",options="header"]
+|==============================
+|Server |JVM parameters
+|server-one |-Xms64m -Xmx128m
+|server-two |-Xms64m -Xmx256m
+|server-three |-Xms64m -Xmx128m
+|==============================

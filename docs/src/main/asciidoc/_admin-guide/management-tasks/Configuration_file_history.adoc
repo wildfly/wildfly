@@ -1,0 +1,172 @@
+= Configuration file history
+
+The management operations may modify the model. When this occurs the xml
+backing the model is written out again reflecting the latest changes. In
+addition a full history of the file is maintained. The history of the
+file goes in a separate directory under the configuration directory.
+
+As mentioned in link:#src-557061[Command line parameters] the default
+configuration file can be selected using a command-line parameter. For a
+standalone server instance the history of the active `standalone.xml` is
+kept in `jboss.server.config.dir`/standalone_xml_history (See
+link:#src-557061[Command line parameters#standalone_system_properties]
+for more details). For a domain the active `domain.xml` and `host.xml`
+histories are kept in `jboss.domain.config.dir`/domain_xml_history and
+`jboss.domain.config.dir`/host_xml_history.
+
+The rest of this section will only discuss the history for
+`standalone.xml`. The concepts are exactly the same for `domain.xml` and
+`host.xml`.
+
+Within `standalone_xml_history` itself following a successful first time
+boot we end up with three new files:
+
+* `standalone.initial.xml` - This contains the original configuration
+that was used the first time we successfully booted. This file will
+never be overwritten. You may of course delete the history directory and
+any files in it at any stage.
+* `standalone.boot.xml` - This contains the original configuration that
+was used for the last successful boot of the server. This gets
+overwritten every time we boot the server successfully.
+* `standalone.last.xml` - At this stage the contents will be identical
+to `standalone.boot.xml`. This file gets overwritten each time the
+server successfully writes the configuration, if there was an unexpected
+failure writing the configuration this file is the last known successful
+write.
+
+`standalone_xml_history` contains a directory called `current` which
+should be empty. Now if we execute a management operation that modifies
+the model, for example adding a new system property using the CLI:
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] /system-property=test:add(value="test123")
+{"outcome" => "success"}
+----
+
+What happens is:
+
+* The original configuration file is backed up to
+`standalone_xml_history/current/standalone.v1.xml`. The next change to
+the model would result in a file called `standalone.v2.xml` etc. The 100
+most recent of these files are kept.
+* The change is applied to the original configuration file
+* The changed original configuration file is copied to
+`standalone.last.xml`
+
+When restarting the server, any existing
+`standalone_xml_history/current` directory is moved to a new timestamped
+folder within the `standalone_xml_history`, and a new `current` folder
+is created. These timestamped folders are kept for 30 days.
+
+[[snapshots]]
+== Snapshots
+
+In addition to the backups taken by the server as described above you
+can manually take take snapshots which will be stored in the `snapshot`
+folder under the `_xml_history` folder, the automatic backups described
+above are subject to automatic house keeping so will eventually be
+automatically removed, the snapshots on the other hand can be entirely
+managed by the administrator.
+
+You may also take your own snapshots using the CLI:
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] :take-snapshot
+{
+    "outcome" => "success",
+    "result" => {"name" => "/Users/kabir/wildfly/standalone/configuration/standalone_xml_history/snapshot/20110630-172258657standalone.xml"}
+}
+----
+
+You can also use the CLI to list all the snapshots
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] :list-snapshots
+{
+    "outcome" => "success",
+    "result" => {
+        "directory" => "/Users/kabir/wildfly/standalone/configuration/standalone_xml_history/snapshot",
+        "names" => [
+            "20110630-165714239standalone.xml",
+            "20110630-165821795standalone.xml",
+            "20110630-170113581standalone.xml",
+            "20110630-171411463standalone.xml",
+            "20110630-171908397standalone.xml",
+            "20110630-172258657standalone.xml"
+        ]
+    }
+}
+----
+
+To delete a particular snapshot:
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] :delete-snapshot(name="20110630-165714239standalone.xml")
+{"outcome" => "success"}
+----
+
+and to delete all snapshots:
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] :delete-snapshot(name="all")
+{"outcome" => "success"}
+----
+
+In domain mode executing the snapshot operations against the root node
+will work against the domain model. To do this for a host model you need
+to navigate to the host in question:
+
+[source, ruby]
+----
+[domain@localhost:9990 /] /host=master:list-snapshots
+{
+    "outcome" => "success",
+    "result" => {
+        "domain-results" => {"step-1" => {
+            "directory" => "/Users/kabir/wildfly/domain/configuration/host_xml_history/snapshot",
+            "names" => [
+                "20110630-141129571host.xml",
+                "20110630-172522225host.xml"
+            ]
+        }},
+        "server-operations" => undefined
+    }
+}
+----
+
+[[subsequent-starts]]
+== Subsequent Starts
+
+For subsequent server starts it may be desirable to take the state of
+the server back to one of the previously known states, for a number of
+items an abbreviated reverence to the file can be used:
+
+[cols=",,",options="header"]
+|=======================================================================
+|Abreviation |Parameter |Description
+
+|initial |--server-config=initial |This will start the server using the
+initial configuration first used to start the server.
+
+|boot |--server-config=boot |This will use the configuration from the
+last successful boot of the server.
+
+|last |--server-config=last |This will start the server using the
+configuration backed up from the last successful save.
+
+|v? |--server-config=v? |This will server the _xml_history/current
+folder for the configuration where ? is the number of the backup to use.
+
+|-? |--server-config=-? |The server will be started after searching the
+snapshot folder for the configuration which matches this prefix.
+|=======================================================================
+
+In addition to this the `--server-config` parameter can always be used
+to specify a configuration relative to the `jboss.server.config.dir` and
+finally if no matching configuration is found an attempt to locate the
+configuration as an absolute path will be made.

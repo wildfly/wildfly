@@ -1,0 +1,110 @@
+= XNIO Client Configuration
+
+== <worker /> - XNIO Client
+
+You can use the `worker` element, which is in the `urn:xnio:3.5` namespace, to configure a default XNIO worker using the `wildfly-config.xml` file. This section describes how to do this.
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+...
+    <worker xmlns="urn:xnio:3.5">
+       ...
+    </worker>
+...
+</configuration>
+----
+
+This section describes the child elements that can be configured within this root `worker` element.
+
+The _<worker />_ element can optionally contain the following child elements, as described in the next sections:
+
+* *<daemon-threads />*
+* *<worker-name />*
+* *<pool-size />*
+* *<task-keepalive />*
+* *<io-threads />*
+* *<stack-size />*
+* *<outbound-bind-addresses />*
+
+=== <daemon-threads />
+
+This optional element takes a single required attribute:
+
+[cols=",",options="header"]
+|===
+| Attribute Name | Attribute Description
+| `value` | The value of the setting (required).  A value of `true` indicates that worker and task threads should be daemon threads, and `false` indicates that they should not be daemon threads.  If this element is not given, a value of `true` is assumed. |
+|===
+
+This element has no content.
+
+=== <worker-name />
+
+This element defines the name of the worker.  The worker name will appear in thread dumps and in JMX.
+
+[cols=",",options="header"]
+|===
+| Attribute Name | Attribute Description
+| `value` | The worker's name (required). 
+|===
+
+This element has no content.
+
+=== <pool-size />
+
+This optional element defines the size parameters of the worker's task thread pool.  The following attributes are allowed:
+
+[cols=",",options="header"]
+|===
+| Attribute Name | Attribute Description
+| `max-threads` | A positive integer which specifies the maximum number of threads that should be created (required). 
+|===
+
+=== <task-keepalive />
+
+This optional element establishes the keep-alive time of task threads before they may be expired.
+
+[cols=",",options="header"]
+|===
+| Attribute Name | Attribute Description
+| `value` | A positive integer which represents the minimum number of seconds to keep idle threads alive (required). 
+|===
+
+=== <io-threads />
+
+This optional element determines how many I/O (selector) threads should be maintained.  Generally this number should be a small constant multiple of the number of available cores.
+
+[cols=",",options="header"]
+|===
+| Attribute Name | Attribute Description
+| `value` | A positive integer value for the number of I/O threads (required).
+|===
+
+=== <stack-size />
+
+This optional element establishes the desired minimum thread stack size for worker threads.
+
+[cols=",",options="header"]
+|===
+| Attribute Name | Attribute Description
+| `value` | A positive integer value which indicates the requested stack size, in bytes (required). 
+|===
+
+=== <outbound-bind-addresses />
+
+This optional element specifies bind addresses to use for outbound connections.  Each bind address mapping consists of a destination IP address block, and a bind address and optional port number to use for connections to destinations within that block.
+
+==== <bind-address />
+
+This element defines an individual bind address mapping.
+
+[cols=",",options="header"]
+|===
+| Attribute Name | Attribute Description
+| `match` | The IP address block in CIDR notation to match (required).
+| `bind-address` | The IP address to bind to if the address block matches (required).
+| `bind-port` | A specific port number to bind to if the address block matches (optional, defaults to 0 meaning "any port"). 
+|===

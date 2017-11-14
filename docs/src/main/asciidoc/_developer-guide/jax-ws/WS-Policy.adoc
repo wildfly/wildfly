@@ -1,0 +1,219 @@
+= WS-Policy
+
+[[apache-cxf-ws-policy-support]]
+== Apache CXF WS-Policy support
+
+JBossWS policy support rely on the Apache CXF WS-Policy framework, which
+is compliant with the
+http://www.w3.org/TR/2007/REC-ws-policy-20070904/[Web Services Policy
+1.5 - Framework] and
+http://www.w3.org/TR/2007/REC-ws-policy-attach-20070904/[Web Services
+Policy 1.5 - Attachment] specifications. +
+Users can work with policies in different ways:
+
+* by adding policy assertions to wsdl contracts and letting the runtime
+consume them and behave accordingly;
+* by specifying endpoint policy attachments using either CXF annotations
+or features.
+
+Of course users can also make direct use of the Apache CXF policy
+framework,
+http://cxf.apache.org/docs/developing-assertions.html[defining custom
+assertions], etc.
+
+Finally, JBossWS provides some additional annotations for simplified
+policy attachment.
+
+[[contract-first-approach]]
+=== Contract-first approach
+
+WS-Policies can be attached and referenced in wsdl elements (the
+specifications describe all possible alternatives). Apache CXF
+automatically recognizes, reads and uses policies defined in the wsdl.
+
+Users should hence develop endpoints using the _contract-first_
+approach, that is explicitly providing the contract for their services.
+Here is a excerpt taken from a wsdl including a WS-Addressing policy:
+
+[source, xml]
+----
+<wsdl:definitions name="Foo" targetNamespace="http://ws.jboss.org/foo"
+...
+<wsdl:service name="FooService">
+    <wsdl:port binding="tns:FooBinding" name="FooPort">
+        <soap:address location="http://localhost:80800/foo"/>
+        <wsp:Policy xmlns:wsp="http://www.w3.org/ns/ws-policy">
+             <wsam:Addressing xmlns:wsam="http://www.w3.org/2007/02/addressing/metadata">
+                 <wsp:Policy/>
+              </wsam:Addressing>
+         </wsp:Policy>
+    </wsdl:port>
+</wsdl:service>
+</wsdl:definitions>
+----
+
+Of course, CXF also acts upon policies specified in wsdl documents
+consumed on client side.
+
+[[code-first-approach]]
+=== Code-first approach
+
+For those preferring code-first (java-first) endpoint development,
+Apache CXF comes with `org.apache.cxf.annotations.Policy` and
+`org.apache.cxf.annotations.Policies` annotations to be used for
+attaching policy fragments to the wsdl generated at deploy time.
+
+Here is an example of a code-first endpoint including @Policy
+annotation:
+
+[source, java]
+----
+import javax.jws.WebService;
+import org.apache.cxf.annotations.Policy;
+ 
+@WebService(portName = "MyServicePort",
+            serviceName = "MyService",
+            name = "MyServiceIface",
+            targetNamespace = "http://www.jboss.org/jbossws/foo")
+@Policy(placement = Policy.Placement.BINDING, uri = "JavaFirstPolicy.xml")
+public class MyServiceImpl {
+   public String sayHello() {
+      return "Hello World!";
+   }
+}
+----
+
+The referenced descriptor is to be added to the deployment and will
+include the policy to be attached; the attachment position in the
+contracts is defined through the `placement` attribute. Here is a
+descriptor example:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8" ?>
+<wsp:Policy wsu:Id="MyPolicy" xmlns:wsp="http://www.w3.org/ns/ws-policy"
+    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+    <wsp:ExactlyOne>
+        <wsp:All>
+            <sp:SupportingTokens xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                <wsp:Policy>
+                    <sp:UsernameToken sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/AlwaysToRecipient">
+                        <wsp:Policy>
+                            <sp:WssUsernameToken10/>
+                        </wsp:Policy>
+                    </sp:UsernameToken>
+                </wsp:Policy>
+            </sp:SupportingTokens>
+        </wsp:All>
+    </wsp:ExactlyOne>
+</wsp:Policy>
+----
+
+[[jbossws-additions]]
+== JBossWS additions
+
+[[policy-sets]]
+=== Policy sets
+
+Both approaches above require users to actually write their policies'
+assertions; while this offer great flexibility and control of the actual
+contract, providing the assertions might end up being quite a
+challenging task for complex policies. For this reason, the JBossWS
+integration provides _policy sets_, which are basically pre-defined
+groups of policy assertions corresponding to well known / common needs.
+Each set has a label allowing users to specify it in the
+`@org.jboss.ws.api.annotation.PolicySets` annotation to have the policy
+assertions for that set attached to the annotated endpoint. Multiple
+labels can also be specified. Here is an example of the @PolicySets
+annotation on a service endpoint interface:
+
+[source, java]
+----
+import javax.jws.WebService;
+import org.jboss.ws.api.annotation.PolicySets;
+ 
+@WebService(name = "EndpointTwo", targetNamespace = "http://org.jboss.ws.jaxws.cxf/jbws3648")
+@PolicySets({"WS-RM_Policy_spec_example", "WS-SP-EX223_WSS11_Anonymous_X509_Sign_Encrypt", "WS-Addressing"})
+public interface EndpointTwo
+{
+   String echo(String input);
+}
+----
+
+The three sets specified in @PolicySets will cause the wsdl generated
+for the endpoint having this interface to be enriched with some policy
+assertions for WS-RM, WS-Security and WS-Addressing.
+
+The labels' list of known sets is stored in the
+`META-INF/policies/org.jboss.wsf.stack.cxf.extensions.policy.PolicyAttachmentStore`
+file within the `jbossws-cxf-client.jar` (
+`org.jboss.ws.cxf:jbossws-cxf-client` maven artifact). Actual policy
+fragments for each set are also stored in the same artifact at
+`META-INF/policies/<set-label>-<attachment-position>.xml`.
+
+Here is a list of the available policy sets:
+
+[cols=",",options="header"]
+|=======================================================================
+|Label |Description
+
+|WS-Addressing |Basic WS-Addressing policy
+
+|WS-RM_Policy_spec_example |The basic WS-RM policy example in the WS-RM
+specification
+
+|WS-SP-EX2121_SSL_UT_Supporting_Token |The group of policy assertions
+used in the section 2.1.2.1 example of the WS-Security Policy Examples
+1.0 specification
+
+|WS-SP-EX213_WSS10_UT_Mutual_Auth_X509_Sign_Encrypt |The group of policy
+assertions used in the section 2.1.3 example of the WS-Security Policy
+Examples 1.0 specification
+
+|WS-SP-EX214_WSS11_User_Name_Cert_Sign_Encrypt |The group of policy
+assertions used in the section 2.1.4 example of the WS-Security Policy
+Examples 1.0 specification
+
+|WS-SP-EX221_WSS10_Mutual_Auth_X509_Sign_Encrypt |The group of policy
+assertions used in the section 2.2.1 example of the WS-Security Policy
+Examples 1.0 specification
+
+|WS-SP-EX222_WSS10_Mutual_Auth_X509_Sign_Encrypt |The group of policy
+assertions used in the section 2.2.2 example of the WS-Security Policy
+Examples 1.0 specification
+
+|WS-SP-EX223_WSS11_Anonymous_X509_Sign_Encrypt |The group of policy
+assertions used in the section 2.2.3 example of the WS-Security Policy
+Examples 1.0 specification
+
+|WS-SP-EX224_WSS11_Mutual_Auth_X509_Sign_Encrypt |The group of policy
+assertions used in the section 2.2.4 example of the WS-Security Policy
+Examples 1.0 specification
+
+|AsymmetricBinding_X509v1_TripleDesRsa15_EncryptBeforeSigning_ProtectTokens
+|A WS-Security policy for asymmetric binding (encrypt before signing)
+using X.509v1 tokens, 3DES + RSA 1.5 algorithms and with token
+protections enabled
+
+|AsymmetricBinding_X509v1_GCM256OAEP_ProtectTokens |The same as before,
+but using custom Apache CXF algorithm suite including GCM 256 + RSA OAEP
+algorithms
+|=======================================================================
+
+[WARNING]
+
+Always verify the contents of the generated wsdl contract, as policy
+sets are potentially subject to updates between JBossWS releases. This
+is especially important when dealing with security related policies; the
+provided sets are to be considered as convenient configuration options
+only; users remain responsible for the policies in their contracts.
+
+[TIP]
+
+The `org.jboss.wsf.stack.cxf.extensions.policy.Constants` interface has
+convenient String constants for the available policy set labels.
+
+[TIP]
+
+If you feel a new set should be added, just propose it by writing the
+user forum!

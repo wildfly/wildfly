@@ -1,0 +1,547 @@
+= WildFly Integration Testsuite User Guide
+
+*See also:* link:WildFly_Testsuite_Test_Developer_Guide.html[WildFly
+Testsuite Test Developer Guide]
+
+*Target Audience:* Those interested in running the testsuite or a subset
+thereof, with various configuration options.
+
+[[running-the-testsuite]]
+== Running the testsuite
+
+The tests can be run using:
+
+* `build.sh` or `build.bat`, as a part of WildFly build.
+** By default, only smoke tests are run. To run all tests, run build.sh
+install -DallTests.
+* `integration-tests.sh` or `integration-tests.bat`, a convenience
+script which uses bundled Maven (currently 3.0.3), and runs all parent
+testsuite modules (which configure the AS server).
+* pure maven run, using `mvn install`.
+
+The scripts are wrappers around Maven-based build. Their arguments are
+passed to Maven (with few exceptions described below). This means you
+can use:
+
+* build.sh (defaults to install)
+* build.sh install
+* build.sh clean install
+* integration-tests.sh install
+* ...etc.
+
+[[supported-maven-phases]]
+=== Supported Maven phases
+
+Testsuite actions are bounds to various Maven phases up to `verify`.
+Running the build with earlier ﻿phases may fail in the submodules due to
+missed configuration steps. Therefore, the only Maven phases you may
+safely run, are:
+
+* clean
+* install
+* site
+
+The `test` phase is not recommended to be used for scripted jobs as we
+are planning to switch to the `failsafe` plugin bound to the
+`integration-test` and `verify` phases. See
+https://issues.jboss.org/browse/WFLY-625[WFLY-625] and
+https://issues.jboss.org/browse/WFLY-228[WFLY-228].
+
+[[testsuite-structure]]
+=== Testsuite structure
+
+testsuite +
+integration +
+smoke +
+basic +
+clust +
+iiop +
+multinode +
+xts +
+compat +
+domain +
+mixed-domain +
+stress +
+benchmark
+
+[[test-groups]]
+=== Test groups
+
+To define groups of tests to be run, these properties are available:
+
+* `-DallTests` - Runs all subgroups.
+* `-DallInteg` - Runs all integration tests. Same as
+`cd testsuite/integration; mvn clean install -DallTests`
+* `-Dts.integ` - Basic integration + clustering tests.
+* `-Dts.clust` - Clustering tests.
+* `-Dts.iiop` - IIOP tests.
+* `-Dts.multinode `- Tests with many nodes.
+* `-Dts.manualmode` - Tests with manual mode Arquillian containers.
+* `-Dts.bench` - Benchmark tests.
+* `-Dts.stress` - Stress tests.
+* `-Dts.domain` - Domain mode tests.
+* `-Dts.compat` - Compatibility tests.
+
+[[examples]]
+== Examples
+
+* `integration-tests.sh [install] ` `` `-- Runs smoke tests.`
+* `integration-tests.sh clean install -- Cleans the target directory, then runs smoke tests.`
+* `integration-tests.sh install -Dts.smoke ` `` `-- Same as above.`
+* `integration-tests.sh install -DallTests ` ``
+`-- Runs all testsuite tests.`
+* `integration-tests.sh install -Dts.stress -- Runs smoke tests and stress tests.`
+* `integration-tests.sh install -Dts.stress -Dts.noSmoke -- Runs stress tests only.`
+
+*Pure maven* - if you prefer not to use scripts, you may achieve the
+same result with:
+
+* `mvn ... -rf testsuite`
+
+The `-rf ...` parameter stands for "resume from" and causes Maven to run
+the specified module _and all successive_.
+
+It's possible to run only a single module (provided the ancestor modules
+were already run to create the AS copies) :
+
+* `mvn ... -pl testsuite/integration/cluster`
+
+The `-pl ...` parameter stands for "project list" and causes Maven to
+run the specified module _only_.
+
+[[output-to-console]]
+=== Output to console
+
+[source, java]
+----
+-DtestLogToFile
+----
+
+[[other-options]]
+=== Other options
+
+`-DnoWebProfile` - Run all tests with the _full_ profile (
+`standalone-full.xml`). By default, most tests are run under _web_
+profile ( `standalone.xml`).
+
+`-Dts.skipTests` - Skip testsuite's tests. Defaults to the value of
+`-DskipTests`, which defaults to `false`. To build AS, skip unit tests
+and run testsuite, use `-DskipTests -Dts.skipTests=false`.
+
+[[timeouts]]
+=== Timeouts
+
+[[surefire-execution-timeout]]
+==== Surefire execution timeout
+
+Unfortunatelly, no math can be done in Maven, so instead of applying a
+timeout ratio, you need to specify timeout manually for Surefire.
+
+[source, java]
+----
+-Dsurefire.forked.process.timeout=900
+----
+
+[[in-test-timeout-ratios]]
+==== In-test timeout ratios
+
+Ratio in prercent - 100 = default, 200 = two times longer timeouts for
+given category.
+
+Currently we have five different ratios. Later, it could be replaced
+with just one generic, one for database and one for deployment
+operations.
+
+[source, java]
+----
+-Dtimeout.ratio.fsio=100
+-Dtimeout.ratio.netio=100
+-Dtimeout.ratio.memio=100
+-Dtimeout.ratio.proc=100
+-Dtimeout.ratio.db=100
+----
+
+[[running-a-single-test-or-specified-tests]]
+=== Running a single test (or specified tests)
+
+Single test is run using *-Dtest=...* . Examples:
+
+* `./integration-tests.sh install -Dtest='` `*` `Clustered` `*`
+`' -Dintegration.module` `-Dts.clust`
+* `./integration-tests.sh clean install -Dtest=org` `/` `jboss` `/` `as`
+`/` `test` `/` `integration` `/` `ejb/async/*TestCase.java`
+`-Dintegration.module` `-Dts.basic`
+* `cd testsuite; mvn install` `-Dtest='` `*Clustered` `*` `'`
+`-Dts.basic #`
+`No need for -Dintegration.module - integration module is active by default.`
+
+The same shortcuts listed in "Test groups" may be used to activate the
+module and group profile.
+
+Note that `-Dtest=` overrides `<includes>` and `<exludes>` defined in
+pom.xml, so do not rely on them when using wildcards - all compiled test
+classes matching the wildcard will be run.
+
+*Which Surefire execution is used?*
+
+Due to Surefire's design flaw, tests run multiple times if there are
+multiple surefire executions. +
+To prevent this, if `-Dtest=`... is specified, non-default executions
+are disabled, and standalone-full is used for all tests. +
+If you need it other way, you can overcome that need:
+
+* `basic-integration-web.surefire with standalone.xml - Configure standalone.xml to be used as server config.`
+* `basic-integration-non-web.surefire - For tests included here, technically nothing changes.`
+* `basic-integration-2nd.surefire - Simply run the second test in another invocation of Maven.`
+
+[[running-against-existing-as-copy-not-the-one-from-buildtargetjboss-as-]]
+=== Running against existing AS copy (not the one from
+build/target/jboss-as-*)
+
+*-Djboss.dist=<path/to/jboss-as>* will tell the testsuite to copy that
+AS into submodules to run the tests against.
+
+For example, you might want to run the testsuite against AS located in
+`/opt/wildfly-8` :
+
+[source, java]
+----
+./integration-tests.sh -DallTests -Djboss.dist=/opt/wildfly-8
+----
+
+The difference between jboss.dist and jboss.home:
+
+jboss.dist is the location of the tested binaries. It gets copied to
+testsuite submodules.
+
+jboss.home is internally used and points to those copied AS instances
+(for multinode tests, may be even different for each AS started by
+Arquillian).
+
+[[running-against-a-running-jboss-as-instance]]
+==== Running against a running JBoss AS instance
+
+Arquillian's WildFly {wildflyVersion} container adapter allows specifying
+`allowConnectingToRunningServer` in `arquillian.xml`, which makes it
+check whether AS is listening at `managementAddress:managementPort`, and
+if so, it uses that server instead of launching a new one, and doesn't
+shut it down at the end.
+
+All arquillian.xml's in the testsuite specify this parameter. Thus, if
+you have a server already running, it will be re-used.
+
+[[running-against-jboss-enterprise-application-platform-eap-6.0]]
+==== Running against JBoss Enterprise Application Platform (EAP) 6.0
+
+To run the testsuite against AS included JBoss Enterprise Application
+Platform 6.x (EAP), special steps are needed.
+
+Assuming you already have the sources available, and the distributed EAP
+maven repository unzipped in e.g. `/opt/jboss/eap6-maven-repo/` :
+
+1) Configure maven in settings.xml to use only the EAP repository. This
+repo contains all artifacts necessary for building EAP, including maven
+plugins. +
+The build (unlike running testsuite) may be done offline. +
+The recommended way of configuring is to use special settings.xml, not
+your local one (typically in .m2/settings.xml).
+
+[source, xml]
+----
+   <mirror>
+      <id>eap6-mirror-setting</id>
+      <mirrorOf>
+         *,!central-eap6,!central-eap6-plugins,!jboss-public-eap6,!jboss-public-eap6-plugins
+      </mirrorOf>
+      <name>Mirror Settings for EAP 6 build</name>
+      <url>file:///opt/jboss/eap6-maven-repo</url>
+    </mirror>
+  </mirrors>
+----
+
+\2) Build EAP. You won't use the resulting EAP build, though. The
+purpose is to get the artifacts which the testsuite depends on.
+
+[source, java]
+----
+mvn clean install -s settings.xml -Dmaven.repo.local=local-repo-eap
+----
+
+\3) Run the testsuite. Assuming that EAP is located in `/opt/eap6`, you
+would run:
+
+[source, java]
+----
+./integration-tests.sh -DallTests -Djboss.dist=/opt/eap6
+----
+
+For further information on building EAP and running the testsuite
+against it, see the official EAP documentation (link to be added)
+https://docspace.corp.redhat.com/docs/DOC-86875[.]
+
+How-to for EAP QA can be found
+https://docspace.corp.redhat.com/docs/DOC-89200[here] (Red Hat internal
+only).
+
+[[running-with-a-debugger]]
+=== Running with a debugger
+
+[cols=",,,",options="header"]
+|=======================================================================
+|Argument |What will start with debugger |Default port |Port change arg.
+
+|-Ddebug |AS instances run by Arquillian |8787 |-Das.debug.port=...
+
+|-Djpda |alias for -Ddebug |  | 
+
+|-DdebugClient |Test JVMs (currently Surefire) |5050
+|-Ddebug.port.surefire=...
+
+|-DdebugCLI |AS CLI |5051 |-Ddebug.port.cli=...
+|=======================================================================
+
+[[examples-1]]
+==== Examples
+
+[source, java]
+----
+./integration-tests.sh install -DdebugClient -Ddebug.port.surefire=4040
+ 
+...
+ 
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Listening for transport dt_socket at address: 4040
+----
+
+[source, bash]
+----
+./integration-tests.sh install -DdebugClient -Ddebug.port.surefire
+ 
+...
+ 
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Listening for transport dt_socket at address: 5050
+----
+
+[source, java]
+----
+./integration-tests.sh install -Ddebug
+----
+
+[source, java]
+----
+./integration-tests.sh install -Ddebug -Das.debug.port=5005
+----
+
+[IMPORTANT]
+
+JBoss AS is started by Arquillian, when the first test which requires
+given instance is run. Unless you pass *-DtestLogToFile=false,* *there's
+(currently) no challenge text in the console*; it will look like the
+first test is stuck. This is being solved in
+http://jira.codehaus.org/browse/SUREFIRE-781.
+
+[IMPORTANT]
+
+Depending on which test group(s) you run, multiple AS instances may be
+started. In that case, you need to attach the debugger multiple times.
+
+[[running-tests-with-custom-database]]
+=== Running tests with custom database
+
+To run with different database, specify the `-Dds` and use these
+properties (with the following defaults):
+
+[source, java]
+----
+-Dds.jdbc.driver=
+-Dds.jdbc.driver.version=
+-Dds.jdbc.url=
+-Dds.jdbc.user=test
+-Dds.jdbc.pass=test
+-Dds.jdbc.driver.jar=${ds.db}-jdbc-driver.jar
+----
+
+`driver` is JDBC driver class. JDBC `url`, `user` and `pass` is as
+expected.
+
+`driver.version` is used for automated JDBC driver downloading. Users
+can set up internal Maven repository hosting JDBC drivers, with
+artifacts with
+
+GAV = `jdbcdrivers:${ds.db}:${ds.jdbc.driver.version`}
+
+Internally, JBoss has such repo at
+http://nexus.qa.jboss.com:8081/nexus/content/repositories/thirdparty/jdbcdrivers/
+.
+
+The `ds.db` value is set depending on ds. E.g. `-Dds=mssql2005` sets
+`ds.db=mssql` (since they have the same driver). `-Dds.db` may be
+overriden to use different driver.
+
+[line-through]*In case you don't want to use such driver, set just
+-Dds.db= (empty) and provide the driver to the AS manually.* +
+_Not supported; work in progress on parameter to provide JDBC Driver
+jar._
+
+[[default-values]]
+==== Default values
+
+For WildFly continuous integration, there are some predefined values for
+some of databases, which can be set using:
+
+[source, java]
+----
+-Dds.db=<database-identifier>
+----
+
+Where database-identifier is one of: `h2`, `mysql51`
+
+[[running-tests-with-ipv6]]
+=== Running tests with IPv6
+
+`-Dipv6` - Runs AS with
+`-Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true`
+
+and the following defaults, overridable by respective parameter:
+
+[cols=",,,",options="header"]
+|=======================================================================
+|Parameter |IPv4 default |IPv6 default | 
+
+|-Dnode0 |127.0.0.1 |::1 |Single-node tests.
+
+|-Dnode1 |127.0.0.1 |::1 |Two-node tests (e.g. cluster) use this for the
+2nd node.
+
+|-Dmcast |230.0.0.4 |ff01::1 |ff01::1 is IPv6 Node-Local scope mcast
+addr.
+
+|-Dmcast.jgroupsDiag |224.0.75.75 |ff01::2 |JGroups diagnostics
+multicast address.
+
+|-Dmcast.modcluster |224.0.1.105 |ff01::3 |mod_cluster multicast
+address.
+|=======================================================================
+
+Values are set in AS configuration XML, replaced in resources (like
+ejb-jar.xml) and used in tests.
+
+[[running-tests-with-security-manager-custom-security-policy]]
+=== Running tests with security manager / custom security policy
+
+`-Dsecurity.manager` - Run with default policy.
+
+`-Dsecurity.policy=<path>` - Run with the given policy.
+
+`-Dsecurity.manager.other=<set of Java properties>` - Run with the given
+properties. Whole set is included in all server startup parameters.
+
+Example:
+
+[source, java]
+----
+./integration-tests.sh clean install -Dintegration.module -DallTests \
+\"-Dsecurity.manager.other=-Djava.security.manager \
+-Djava.security.policy==$(pwd)/testsuite/shared/src/main/resources/secman/permitt_all.policy \
+-Djava.security.debug=access:failure \"
+----
+
+Notice the \" quotes delimiting the whole `-Dsecurity.manager.other`
+property.
+
+[[creating-test-reports]]
+=== Creating test reports
+
+Test reports are created in the form known from EAP 5. To create them,
+simply run the testsuite, which will create Surefire XML files.
+
+Creation of the reports is bound to the `site` Maven phase, so it must
+be run separatedly afterwards. Use one of these:
+
+[source, bash]
+----
+./integration-tests.sh site
+cd testsuite; mvn site
+mvn -pl testsuite site
+----
+
+Note that it will take all test results under `testsuite/integration/` -
+the pattern is `**/*TestCase.xml`, without need to specify `-DallTests`.
+
+[[creating-coverage-reports]]
+=== Creating coverage reports
+
+*Jira:* https://issues.jboss.org/browse/WFLY-585
+
+Coverage reports are created by
+http://www.eclemma.org/jacoco/trunk/index.html[JaCoCo].
+
+During the integration tests, Arquillian is passed a JVM argument which
+makes it run with JaCoCo agent, which records the executions into
+`${basedir}/target/jacoco` .
+
+In the `site` phase, a HTML, XML and CSV reports are generated. That is
+done using `jacoco:report` Ant task in `maven-ant-plugin` since JaCoCo's
+maven report goal doesn't support getting classes outside
+target/classes.
+
+[[usage]]
+==== Usage
+
+[source, bash]
+----
+./build.sh clean install -DskipTests
+./integration-tests.sh clean install -DallTests -Dcoverage
+./integration-tests.sh site -DallTests -Dcoverage ## Must run in separatedly.
+----
+
+Alternative:
+
+[source, bash]
+----
+mvn clean install -DskipTests
+mvn -rf testsuite clean install -DallTests -Dcoverage
+mvn -rf testsuite site -DallTests -Dcoverage
+----
+
+[[cleaning-the-project]]
+=== Cleaning the project
+
+To have most stable build process, it should start with:
+
+* clean target directories
+* only central Maven repo configured
+* clean local repository or at least:
+** free of artefacts to be built
+** free of dependencies to be used (especially snapshots)
+
+To use , you may use these commands:
+
+[source, java]
+----
+mvn clean install -DskipTests -DallTests  ## ...to clean all testsuite modules.
+mvn dependency:purge-local-repository build-helper:remove-project-artifact -Dbuildhelper.removeAll
+----
+
+In case the build happens in a shared environment (e.g. network disk),
+it's recommended to use local repository:
+
+[source, java]
+----
+cp /home/hudson/.m2/settings.xml .
+sed "s|<settings>|<settings><localRepository>/home/ozizka/hudson-repos/$JOBNAME</localRepository>|" -i settings.xml
+----
+
+Or:
+
+[source, java]
+----
+mvn clean install ... -Dmaven.repo.local=localrepo
+----
+
+See also https://issues.jboss.org/browse/WFLY-628.

@@ -1,0 +1,45 @@
+= JNDI Reference
+
+[[overview]]
+== Overview
+
+WildFly offers several mechanisms to retrieve components by name. Every
+WildFly instance has it's own local JNDI namespace ( `java:`) which is
+unique per JVM. The layout of this namespace is primarily governed by
+the Java EE specification. Applications which share the same WildFly
+instance can use this namespace to intercommunicate. In addition to
+local JNDI, a variety of mechanisms exist to access remote components.
+
+* Client JNDI - This is a mechanism by which remote components can be
+accessed using the JNDI APIs, but *_without network round-trips_* . This
+approach is the most efficient, and *_removes a potential single point
+of failure_* . For this reason, it is highly recommended to use Client
+JNDI over traditional remote JNDI access. However, to make this
+possible, it does require that all names follow a strict layout, so user
+customizations are not possible. Currently only access to remote EJBs is
+supported via the `ejb:` namespace. Future revisions will likely add a
+JMS client JNDI namespace.
+* Traditional Remote JNDI - This is a more familiar approach to EE
+application developers, where the client performs a remote component
+name lookup against a server, and a proxy/stub to the component is
+serialized as part of the name lookup and returned to the client. The
+client then invokes a method on the proxy which results in another
+remote network call to the underlying service. In a nutshell,
+traditional remote JNDI involves two calls to invoke an EE component,
+whereas Client JNDI requires one. It does however allow for customized
+names, and for a centralised directory for multiple application servers.
+This centralized directory is, however, _a single point of failure_.
+* EE Application Client / Server-To-Server Delegation - This approach is
+where local names are bound as an _alias_ to a remote name using one of
+the above mechanisms. This is useful in that it allows applications to
+only ever reference standard portable Java EE names in both code and
+deployment descriptors. It also allows for the application to be unaware
+of network topology details/ This can even work with Java SE clients by
+using the little known EE Application Client feature. This feature
+allows you to run an extremely minimal AS server around your
+application, so that you can take advantage of certain core services
+such as naming and injection.
+
+include::JNDI_Local_Reference.adoc[]
+
+include::JNDI_Remote_Reference.adoc[]

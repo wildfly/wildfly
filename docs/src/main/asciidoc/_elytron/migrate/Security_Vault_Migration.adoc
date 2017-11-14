@@ -1,0 +1,144 @@
+= Security Vault Migration
+
+Security Vault is primarily used in legacy configurations, a vault is
+used to store sensitive strings outside of the configuration files.
+WildFly server may only contain a single security vault.
+
+Credential Store introduced in WildFly 11 is meant to expand Security
+Vault in terms of storing different credential types and introduce easy
+to implemnent SPI which allows to deploy custom implemenations of
+CredentialStore SPI. Credentials are stored safely encrypted in storage
+file outside WildFly configuration files. Each WildFly server may
+contain multiple credential stores.
+
+To easily migrate vault content into credential store we have added
+"vault" command into WildFly Elytron Tool. The tool could be found at
+$JBOSS_HOME/bin directory. It has several scripts named "elytron-tool.*"
+dependent on your platform of choice. One can use also simple form "java
+-jar $JBOSS_HOME/bin/wildfly-elytron-tool.jar <command> <arguments>" if
+it better suites ones needs.
+
+[[single-security-vault-conversion]]
+== Single Security Vault Conversion
+
+To convert *single* security vault credential store use following
+example:
+
+- to get sample vault use testing resources of Elytron Tool project from
+link:https://github.com/wildfly-security/wildfly-elytron-tool/tree/master/src/test/resources/vault-v1[GitHub]
+
+Command to run actual conversion:
+
+****
+
+`./bin/elytron-tool.sh vault --enc-dir vault_data/ --keystore vault-jceks.keystore --keystore-password MASK-2hKo56F1a3jYGnJwhPmiF5 --iteration 34 --salt 12345678 --alias test --location cs-v1.store --summary`
+
+****
+
+Output:
+
+****
+
+`Vault (enc-dir="vault_data/";keystore="vault-jceks.keystore") converted to credential store "cs-v1.store"` +
+`Vault Conversion summary:` +
+`--------------------------------------` +
+`Vault Conversion Successful` +
+`CLI command to add new credential store:` +
+`/subsystem=elytron/credential-store=test:add(relative-to=jboss.server.data.dir,create=true,modifiable=true,location="cs-v1.store",implementation-properties={"keyStoreType"=>"JCEKS"},credential-reference={clear-text="MASK-2hKo56F1a3jYGnJwhPmiF5;12345678;34"})`
+
+****
+
+Use elytron-tool.sh vault --help to get description of all parameters.
+
+[[notes]]
+=== Notes:
+
+- Elytron Tool cannot handle very first version of Security Vault data
+file. +
+- --keystore-password can come in two forms (1) masked as shown in the
+example or (2) clear text. Parameter --salt and --iteration are there to
+supply information to decrypt the masked password or to generate masked
+password in output. In case --salt and --iteration are omitted default
+values are used. +
+- When --summary parameter is specified, one can see nice output with
+CLI command to be used in WildFly console to add converted credential
+store to the configuration.
+
+[[bulk-security-vault-conversion]]
+== Bulk Security Vault Conversion
+
+There is possibility to convert multiple vaults to credential store
+using --bulk-convert parameter with description file. +
+Example of description file from our link:https://github.com/wildfly-security/wildfly-elytron-tool/blob/master/src/test/java/org/wildfly/security/tool/VaultCommandTest.java[tests]:
+
+****
+
+`# Bulk conversion descriptor` +
+`keystore:target/test-classes/vault-v1/vault-jceks.keystore` +
+`keystore-password:MASK-2hKo56F1a3jYGnJwhPmiF5` +
+`enc-dir:target/test-classes/vault-v1/vault_data/` +
+`salt:12345678` +
+`iteration:34` +
+`location:target/v1-cs-1.store` +
+`alias:test`
+
+`keystore:target/test-classes/vault-v1/vault-jceks.keystore` +
+`keystore-password:secretsecret` +
+`enc-dir:target/test-classes/vault-v1/vault_data/` +
+`location:target/v1-cs-2.store` +
+`alias:test`
+
+`# different vault vault-v1-more` +
+`keystore:target/test-classes/vault-v1-more/vault-jceks.keystore` +
+`keystore-password:MASK-2hKo56F1a3jYGnJwhPmiF5` +
+`enc-dir:target/test-classes/vault-v1-more/vault_data/` +
+`salt:12345678` +
+`iteration:34` +
+`location:target/v1-cs-more.store` +
+`alias:test`
+
+****
+
+After each "keystore:" option new conversion starts. All options are
+mandatory except "salt:", "iteration:" and "properties:"
+
+Execute following command:
+
+****
+
+`./bin/elytron-tool.sh vault --bulk-convert bulk-vault-conversion-desc --summary`
+
+****
+
+Output:
+
+****
+
+`Vault (enc-dir="vault-v1/vault_data/";keystore="vault-v1/vault-jceks.keystore") converted to credential store "v1-cs-1.store"` +
+`Vault Conversion summary:` +
+`--------------------------------------` +
+`Vault Conversion Successful` +
+`CLI command to add new credential store:` +
+`/subsystem=elytron/credential-store=test:add(relative-to=jboss.server.data.dir,create=true,modifiable=true,location="v1-cs-1.store",implementation-properties={"keyStoreType"=>"JCEKS"},credential-reference={clear-text="MASK-2hKo56F1a3jYGnJwhPmiF5;12345678;34"})` +
+`--------------------------------------`
+
+`Vault (enc-dir="vault-v1/vault_data/";keystore="vault-v1/vault-jceks.keystore") converted to credential store "v1-cs-2.store"` +
+`Vault Conversion summary:` +
+`--------------------------------------` +
+`Vault Conversion Successful` +
+`CLI command to add new credential store:` +
+`/subsystem=elytron/credential-store=test:add(relative-to=jboss.server.data.dir,create=true,modifiable=true,location="v1-cs-2.store",implementation-properties={"keyStoreType"=>"JCEKS"},credential-reference={clear-text="secretsecret"})` +
+`--------------------------------------`
+
+`Vault (enc-dir="vault-v1-more/vault_data/";keystore="vault-v1-more/vault-jceks.keystore") converted to credential store "v1-cs-more.store"` +
+`Vault Conversion summary:` +
+`--------------------------------------` +
+`Vault Conversion Successful` +
+`CLI command to add new credential store:` +
+`/subsystem=elytron/credential-store=test:add(relative-to=jboss.server.data.dir,create=true,modifiable=true,location="v1-cs-more.store",implementation-properties={"keyStoreType"=>"JCEKS"},credential-reference={clear-text="MASK-2hKo56F1a3jYGnJwhPmiF5;12345678;34"})` +
+`--------------------------------------`
+
+****
+
+The result is conversion of all vaults with proper CLI commands.
+

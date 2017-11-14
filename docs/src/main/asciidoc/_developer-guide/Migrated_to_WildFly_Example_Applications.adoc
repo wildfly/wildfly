@@ -1,0 +1,68 @@
+= Example Applications - Migrated to WildFly
+
+[[example-applications-migrated-from-previous-releases]]
+== Example Applications Migrated from Previous Releases
+
+The applications in this section were written for a previous version of
+the server but have been modified to run on WildFly {wildflyVersion}. Changes were made
+to resolve issues that arose during deployment and runtime or to fix
+problems with application behaviour. Each example below documents the
+changes that were made to get the application to run successfully on
+WildFly.
+
+[[seam-2-dvd-store-example]]
+=== Seam 2 DVD Store example
+
+For details on how to migrate this demo application, see
+https://community.jboss.org/blogs/marek-novotny/2011/12/16/dvdstore-migration-for-jboss-as-710beta[Seam
+2 DVD Store example on WildFly {wildflyVersion}] on Marek Novotny's Blog.
+
+[[seam-2-booking-example]]
+=== Seam 2 Booking example
+
+For details on how to migrate this demo application, see
+http://community.jboss.org/blogs/marek-novotny/2011/07/29/seam-2-booking-example-on-jboss-as-7[Seam
+2 Booking example on WildFly {wildflyVersion}] on Marek Novotny's Blog.
+
+[[seam-2-booking---step-by-step-migration-of-binaries]]
+=== Seam 2 Booking - step-by-step migration of binaries
+
+This document takes a somewhat different "brute force" approach. The
+idea is to deploy the binaries to WildFly, then see what issues you hit
+and learn how debug and resolve them. See link:Migrate_Seam_2_Booking_EAR_Binaries_-_Step_by_Step.adoc[Seam 2 Booking EAR Migration of Binaries - Step by Step].
+
+
+[[jbpm-console-application]]
+=== jBPM-Console application
+
+Kris Verlaenen migrated this application from AS 5 to WildFly {wildflyVersion}. For
+details about this migration, see http://kverlaen.blogspot.com/2011/07/jbpm5-on-as7-lightning.html[jBPM5 on WildFly] on his Kris's Blog.
+
+[[order-application-used-for-performance-testing]]
+=== Order application used for performance testing
+
+Andy Miller migrated this application from AS 5 to WildFly. For details
+about this migration, see link:Migrate_Order_Application_from_EAP5.1_to_WildFly.adoc[Order Application Migration from EAP5.1 to WildFly].
+
+[[migrate-example-application]]
+=== Migrate example application
+
+A step by step work through of issues, and their solutions, that might
+crop up when migrating applications to WildFly {wildflyVersion}. See the following
+https://github.com/danbev/migrate[github project] for details.
+
+[[example-applications-based-on-ee6]]
+== Example Applications Based on EE6
+
+Applications in this section were designed and written specifically to
+use the features and functions of EE6.
+
+* Quickstarts: A number of quickstart applications were written to
+demonstrate Java EE 6 and a few additional technologies. They provide
+small, specific, working examples that can be used as a reference for
+your own project. For more information about the quickstarts, see
+http://www.jboss.org/jdf/quickstarts/jboss-as-quickstart/guide/Introduction/[Get Started Developing Applications]
+
+include::Migrate_Order_Application_from_EAP5.1_to_WildFly.adoc[]
+
+include::Migrate_Seam_2_Booking_EAR_Binaries_-_Step_by_Step.adoc[]

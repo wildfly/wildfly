@@ -1,0 +1,108 @@
+= Introduction To High Availability Services
+
+[[what-are-high-availability-services]]
+== What are High Availability services?
+
+WildFly's High Availability services are used to guarantee availability
+of a deployed Java EE application.
+
+Deploying critical applications on a single node suffers from two
+potential problems:
+
+* loss of application availability when the node hosting the application
+crashes (single point of failure)
+* loss of application availability in the form of extreme delays in
+response time during high volumes of requests (overwhelmed server)
+
+WildFly supports two features which ensure high availability of critical
+Java EE applications:
+
+* *fail-over:* allows a client interacting with a Java EE application to
+have uninterrupted access to that application, even in the presence of
+node failures
+* *load balancing:* allows a client to have timely responses from the
+application, even in the presence of high-volumes of requests
+
+[IMPORTANT]
+
+These two independent high availability services can very effectively
+inter-operate when making use of mod_cluster for load balancing!
+
+Taking advantage of WildFly's high availability services is easy, and
+simply involves deploying WildFly on a cluster of nodes, making a small
+number of application configuration changes, and then deploying the
+application in the cluster.
+
+We now take a brief look at what these services can guarantee.
+
+[[high-availability-through-fail-over]]
+== High Availability through fail-over
+
+Fail-over allows a client interacting with a Java EE application to have
+uninterrupted access to that application, even in the presence of node
+failures. For example, consider a Java EE application which makes use of
+the following features:
+
+* session-oriented servlets to provide user interaction
+* session-oriented EJBs to perform state-dependent business computation
+* EJB entity beans to store critical data in a persistent store (e.g.
+database)
+* SSO login to the application
+
+If the application makes use of WildFly's fail-over services, a client
+interacting with an instance of that application will not be interrupted
+even when the node on which that instance executes crashes. Behind the
+scenes, WildFly makes sure that all of the user data that the
+application make use of (HTTP session data, EJB SFSB sessions, EJB
+entities and SSO credentials) are available at other nodes in the
+cluster, so that when a failure occurs and the client is redirected to
+that new node for continuation of processing (i.e. the client "fails
+over" to the new node), the user's data is available and processing can
+continue.
+
+The Infinispan and JGroups subsystems are instrumental in providing
+these data availability guarantees and will be discussed in detail later
+in the guide.
+
+[[high-availability-through-load-balancing]]
+== High Availability through load balancing
+
+Load balancing enables the application to respond to client requests in
+a timely fashion, even when subjected to a high-volume of requests.
+Using a load balancer as a front-end, each incoming HTTP request can be
+directed to one node in the cluster for processing. In this way, the
+cluster acts as a pool of processing nodes and the load is "balanced"
+over the pool, achieving scalability and, as a consequence,
+availability. Requests involving session-oriented servlets are directed
+to the the same application instance in the pool for efficiency of
+processing (sticky sessions). Using mod_cluster has the advantage that
+changes in cluster topology (scaling the pool up or down, servers
+crashing) are communicated back to the load balancer and used to update
+in real time the load balancing activity and avoid requests being
+directed to application instances which are no longer available.
+
+The mod_cluster subsystem is instrumental in providing support for this
+High Availability feature of WildFly and will be discussed in detail
+later in this guide.
+
+[[aims-of-the-guide]]
+== Aims of the guide
+
+This guide aims to:
+
+* provide a description of the high-availability features available in
+WildFly and the services they depend on
+* show how the various high availability services can be configured for
+particular application use cases
+* identify default behavior for features relating to
+high-availability/clustering
+
+[[organization-of-the-guide]]
+== Organization of the guide
+
+As high availability features and their configuration depend on the
+particular component they affect (e.g. HTTP sessions, EJB SFSB sessions,
+Hibernate), we organize the discussion around those Java EE features. We
+strive to make each section as self-contained as possible. Also, when
+discussing a feature, we will introduce any WildFly subsystems upon
+which the feature depends.

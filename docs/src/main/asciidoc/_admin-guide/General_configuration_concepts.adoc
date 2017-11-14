@@ -1,0 +1,211 @@
+= General configuration concepts
+
+For both a managed domain or a standalone server, a number of common
+configuration concepts apply:
+
+[[extensions]]
+== Extensions
+
+An extension is a module that extends the core capabilities of the
+server. The WildFly core is very simple and lightweight; most of the
+capabilities people associate with an application server are provided
+via extensions. An extension is packaged as a module in the `modules`
+folder. The user indicates that they want a particular extension to be
+available by including an `<extension/>` element naming its module in
+the `domain.xml` or `standalone.xml` file.
+
+[source, xml]
+----
+<extensions>
+    [...]
+    <extension module="org.jboss.as.transactions"/>
+    <extension module="org.jboss.as.webservices" />
+    <extension module="org.jboss.as.weld" />
+    [...]
+    <extension module="org.wildfly.extension.undertow"/>
+</extensions>
+----
+
+[[profiles-and-subsystems]]
+== Profiles and Subsystems
+
+The most significant part of the configuration in `domain.xml` and
+`standalone.xml` is the configuration of one (in `standalone.xml`) or
+more (in `domain.xml`) "profiles". A profile is a named set of subsystem
+configurations. A subsystem is an added set of capabilities added to the
+core server by an extension (see "Extensions" above). A subsystem
+provides servlet handling capabilities; a subsystem provides an EJB
+container; a subsystem provides JTA, etc. A profile is a named list of
+subsystems, along with the details of each subsystem's configuration. A
+profile with a large number of subsystems results in a server with a
+large set of capabilities. A profile with a small, focused set of
+subsystems will have fewer capabilities but a smaller footprint.
+
+The content of an individual profile configuration looks largely the
+same in `domain.xml` and `standalone.xml`. The only difference is
+`standalone.xml` is only allowed to have a single profile element (the
+profile the server will run), while `domain.xml` can have many profiles,
+each of which can be mapped to one or more groups of servers.
+
+The contents of individual subsystem configurations look exactly the
+same between `domain.xml` and `standalone.xml`.
+
+[[paths]]
+== Paths
+
+A logical name for a filesystem path. The `domain.xml`, `host.xml` and
+`standalone.xml` configurations all include a section where paths can be
+declared. Other sections of the configuration can then reference those
+paths by their logical name, rather than having to include the full
+details of the path (which may vary on different machines). For example,
+the logging subsystem configuration includes a reference to the "
+`jboss.server.log.dir`" path that points to the server's " `log`"
+directory.
+
+[source, xml]
+----
+<file relative-to="jboss.server.log.dir" path="server.log"/>
+----
+
+WildFly automatically provides a number of standard paths without any
+need for the user to configure them in a configuration file:
+
+* `jboss.home`.dir - the root directory of the WildFly distribution
+* `user.home` - user's home directory
+* `user.dir` - user's current working directory
+* `java.home` - java installation directory
+* `jboss.server.base.dir` - root directory for an individual server
+instance
+* `jboss.server.config.dir` - directory the server will use for
+configuration file storage
+* `jboss.server.data.dir` - directory the server will use for persistent
+data file storage
+* `jboss.server.log.dir` - directory the server will use for log file
+storage
+* `jboss.server.temp.dir` - directory the server will use for temporary
+file storage
+* `jboss.controller.temp.dir` - directory the server will use for
+temporary file storage
+* `jboss.domain.servers.dir` - directory under which a host controller
+will create the working area for individual server instances (managed
+domain mode only)
+
+Users can add their own paths or override all except the first 5 of the
+above by adding a `<path/>` element to their configuration file.
+
+[source, xml]
+----
+<path name="example" path="example" relative-to="jboss.server.data.dir"/>
+----
+
+The attributes are:
+
+* `name` -- the name of the path.
+* `path` -- the actual filesystem path. Treated as an absolute path,
+unless the 'relative-to' attribute is specified, in which case the value
+is treated as relative to that path.
+* `relative-to` -- (optional) the name of another previously named path,
+or of one of the standard paths provided by the system.
+
+A `<path/>` element in a `domain.xml` need not include anything more
+than the `name` attribute; i.e. it need not include any information
+indicating what the actual filesystem path is:
+
+[source, xml]
+----
+<path name="x"/>
+----
+
+Such a configuration simply says, "There is a path named 'x' that other
+parts of the `domain.xml` configuration can reference. The actual
+filesystem location pointed to by 'x' is host-specific and will be
+specified in each machine's `host.xml` file." If this approach is used,
+there must be a path element in each machine's `host.xml` that specifies
+what the actual filesystem path is:
+
+[source, xml]
+----
+<path name="x" path="/var/x" />
+----
+
+A `<path/>` element in a `standalone.xml` must include the specification
+of the actual filesystem path.
+
+[[interfaces]]
+== Interfaces
+
+A logical name for a network interface/IP address/host name to which
+sockets can be bound. The `domain.xml`, `host.xml` and `standalone.xml`
+configurations all include a section where interfaces can be declared.
+Other sections of the configuration can then reference those interfaces
+by their logical name, rather than having to include the full details of
+the interface (which may vary on different machines). An interface
+configuration includes the logical name of the interface as well as
+information specifying the criteria to use for resolving the actual
+physical address to use. See link:Interfaces_and_ports.html[Interfaces
+and ports] for further details.
+
+An `<interface/>` element in a `domain.xml` need not include anything
+more than the `name` attribute; i.e. it need not include any information
+indicating what the actual IP address associated with the name is:
+
+[source, xml]
+----
+<interface name="internal"/>
+----
+
+Such a configuration simply says, "There is an interface named
+'internal' that other parts of the domain.xml configuration can
+reference. The actual IP address pointed to by 'internal' is
+host-specific and will be specified in each machine's host.xml file." If
+this approach is used, there must be an interface element in each
+machine's `host.xml` that specifies the criteria for determining the IP
+address:
+
+[source, xml]
+----
+<interface name="internal">
+   <nic name="eth1"/>
+</interface>
+----
+
+An `<interface/>` element in a `standalone.xml` must include the
+criteria for determining the IP address.
+
+[[socket-bindings-and-socket-binding-groups]]
+== Socket Bindings and Socket Binding Groups
+
+A socket binding is a named configuration for a socket.
+
+The `domain.xml` and `standalone.xml` configurations both include a
+section where named socket configurations can be declared. Other
+sections of the configuration can then reference those sockets by their
+logical name, rather than having to include the full details of the
+socket configuration (which may vary on different machines). See
+link:Interfaces_and_ports.html[Interfaces and ports] for full details.
+
+[[system-properties]]
+== System Properties
+
+System property values can be set in a number of places in `domain.xml`,
+`host.xml` and `standalone.xml`. The values in `standalone.xml` are set
+as part of the server boot process. Values in `domain.xml` and
+`host.xml` are applied to servers when they are launched.
+
+When a system property is configured in `domain.xml` or `host.xml`, the
+servers it ends up being applied to depends on where it is set. Setting
+a system property in a child element directly under the `domain.xml`
+root results in the property being set on all servers. Setting it in a
+`<system-property/>` element inside a `<server-group/>` element in
+domain.xml results in the property being set on all servers in the
+group. Setting it in a child element directly under the `host.xml` root
+results in the property being set on all servers controlled by that
+host's Host Controller. Finally, setting it in a `<system-property/>`
+element inside a `<server/>` element in `host.xml` result in the
+property being set on that server. The same property can be configured
+in multiple locations, with a value in a `<server/>` element taking
+precedence over a value specified directly under the `host.xml` root
+element, the value in a `host.xml` taking precedence over anything from
+`domain.xml`, and a value in a `<server-group/>` element taking
+precedence over a value specified directly under the `domain.xml` root
+element.

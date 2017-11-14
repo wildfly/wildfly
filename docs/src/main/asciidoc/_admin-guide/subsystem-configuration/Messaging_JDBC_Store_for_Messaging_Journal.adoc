@@ -1,0 +1,60 @@
+= JDBC Store for Messaging Journal
+
+The Artemis server that are integrated to WildFly can be configured to
+use a JDBC store for its messaging journal instead of its file-based
+journal. +
+The `server resource` of the messaging-activemq subsystem needs to
+configure its `journal-datasource` attribute to be able to use JDBC
+store. If this attribute is not defined, the regular file-base journal
+will be used for the Artemis server. +
+This attribute value must correspond to a data source defined in the
+datasource subsystem.
+
+For example, if the datasources subsystem defines an `ExampleDS` data
+source at `/subsystem=datasources/data-source=ExampleDS`, the Artemis
+server can use it for its JDBC store with the operation:
+
+[source, ruby]
+----
+/subsystem=messaging-activemq/server=default:write-attribute(name=journal-datasource, value=ExampleDS)
+----
+
+Artemis JDBC store uses SQL commands to create the tables used to
+persist its information. +
+These SQL commands may differ depending on the type of database. The SQL
+commands used by the JDBC store are located in the file at:
+
+....
+$JBOSS_HOME/modules/system/layers/base/org/wildfly/extension/messaging-activemq/main/database/journal-sql.properties
+....
+
+By default, "vanilla" SQL commands are used to communicate with the
+database. However some databases requires specific commands to create
+table, update content, etc.
+
+The journal-sql.properties can also specify these provider-specific
+commands. You can customize them by adding a suffix to the vanilla SQL
+properties.
+
+The suffix is determined based on information from the JDBC driver and
+the connection metadata. If the type of database is not supported by the
+code, you can specify it explicitly with the journal-database property
+on the server resource.
+
+Artemis uses different JDBC tables to store its bindings information,
+the persistent messages and the large messages (paging is not supported
+yet).
+
+The name of these tables can be configured with the
+`journal-bindings-table`, `journal-messages-table`,
+`journal-page-store-table, and journal-large-messages-table`.
+
+[[reference]]
+== Reference
+
+****
+
+* Artemis JDBC Persistence -
+http://activemq.apache.org/artemis/docs/1.5.0/persistence.html#configuring-jdbc-persistence
+
+****

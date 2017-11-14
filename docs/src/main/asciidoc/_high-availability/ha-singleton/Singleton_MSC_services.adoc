@@ -1,0 +1,72 @@
+= Singleton MSC services
+
+WildFly allows any user MSC service to be installed as a singleton MSC
+service via a public API. Once installed, the service will only ever
+start on 1 node in the cluster at a time. If the node providing the
+service is shutdown, or fails, another node on which the service was
+installed will start automatically.
+
+[[installing-an-msc-service-using-an-existing-singleton-policy]]
+== Installing an MSC service using an existing singleton policy
+
+While singleton MSC services have been around since AS7, WildFly 10 adds
+the ability to leverage the singleton subsystem to create singleton MSC
+services from existing singleton policies.
+
+The singleton subsystem exposes capabilities for each singleton policy
+it defines. These policies, represented via the
+`org.wildfly.clustering.singleton.SingletonPolicy` interface, can be
+referenced via the following name:
+"org.wildfly.clustering.singleton.policy" +
+e.g.
+
+[source, java]
+----
+public class MyServiceActivator implements ServiceActivator {
+    @Override
+    public void activate(ServiceActivatorContext context) {
+        ServiceName name = ServiceName.parse("my.service.name");
+        Service<?> service = new MyService();
+        try {
+            SingletonPolicy policy = (SingletonPolicy) context.getServiceRegistry().getRequiredService(ServiceName.parse(SingletonPolicy.CAPABILITY_NAME)).awaitValue();
+            policy.createSingletonServiceBuilder(name, service).build(context.getServiceTarget()).install();
+        } catch (InterruptedException e) {
+            throw new ServiceRegistryException(e);
+        }
+    }
+}
+----
+
+[[installing-an-msc-service-using-dynamic-singleton-policy]]
+== Installing an MSC service using dynamic singleton policy
+
+Alternatively, you can build singleton policy dynamically, which is
+particularly useful if you want to use a custom singleton election
+policy. Specifically, `SingletonPolicy` is a generalization of the
+`org.wildfly.clustering.singleton.SingletonServiceBuilderFactory`
+interface, which includes support for specifying an election policy and,
+optionally, a quorum. +
+e.g.
+
+[source, java]
+----
+public class MyServiceActivator implements ServiceActivator {
+    @Override
+    public void activate(ServiceActivatorContext context) {
+        String containerName = "server";
+        ElectionPolicy policy = new MySingletonElectionPolicy();
+        int quorum = 3;
+        ServiceName name = ServiceName.parse("my.service.name");
+        Service<?> service = new MyService();
+        try {
+            SingletonServiceBuilderFactory factory = (SingletonServiceBuilderFactory) context.getServiceRegistry().getRequiredService(SingletonServiceName.BUILDER.getServiceName(containerName))).awaitValue();
+            factory.createSingletonServiceBuilder(name, service)
+                .electionPolicy(policy)
+                .quorum(quorum)
+                .build(context.getServiceTarget()).install();
+        } catch (InterruptedException e) {
+            throw new ServiceRegistryException(e);
+        }
+    }
+}
+----

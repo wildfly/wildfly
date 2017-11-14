@@ -1,0 +1,62 @@
+= Application Client Reference
+
+As a Java EE6 compliant server, WildFly {wildflyVersion} contains an application
+client. An application client is essentially a cut down server instance,
+that allow you to use EE features such as injection in a client side
+program.
+
+[NOTE]
+
+This article is not a tutorial on application client development, rather
+it covers the specifics of the WildFly application client. There are
+tutorials available elsewhere that cover application client basics, such
+as
+http://blogs.steeplesoft.com/2011/02/java-ees-buried-treasure-the-application-client-container/[this
+one].
+
+[IMPORTANT]
+
+Note that the application client is different to the EJB client
+libraries, it is perfectly possible to write client application that do
+not use the application client, but instead use the jboss-ejb-client
+library directly.
+
+[[getting-started]]
+== Getting Started
+
+To launch the application client use the `appclient.sh` or
+`appclient.bat` script in the bin directory. For example:
+
+[source,bash]
+----
+./appclient.sh --host=10.0.0.1 myear.ear#appClient.jar arg1
+----
+
+The `--host` argument tells the appclient the server to connect to. The
+next argument is the application client deployment to use, application
+clients can only run a single deployment, and this deployment must also
+be deployed on the full server instance that the client is connecting
+too.
+
+Any arguments after the deployment to use are passed directly through to
+the application clients `main` function.
+
+[[connecting-to-more-than-one-host]]
+== Connecting to more than one host
+
+If you want to connect to more than one host or make use of the
+clustering functionality then you need to specify a
+jboss-ejb-client.properties file rather than a host:
+
+[source,bash]
+----
+./appclient.sh --ejb-client-properties=my-jboss-ejb-client.properties myear.ear#appClient.jar arg1
+----
+
+[[example]]
+== Example
+
+A simple example how to package an application client and use it with
+WildFly can be within the quickstart
+https://github.com/wildfly/quickstart/tree/master/app-client[appclient]
+which is located on Github .

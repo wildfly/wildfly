@@ -1,0 +1,1100 @@
+= Elytron Subsystem
+
+WildFly Elytron is a security framework used to unify security across
+the entire application server. The _elytron_ subsystem enables a single
+point of configuration for securing both applications and the management
+interfaces. WildFly Elytron also provides a set of APIs and SPIs for
+providing custom implementations of functionality and integrating with
+the _elytron_ subsystem.
+
+In addition, there are several other important features of the WildFly
+Elytron:
+
+* Stronger authentication mechanisms for HTTP and SASL authentication.
+* Improved architecture that allows for _SecurityIdentities_ to be
+propagated across security domains and transparently transformed ready
+to be used for authorization. This transformation takes place using
+configurable role decoders, role mappers, and permission mappers.
+* Centralized point for SSL/TLS configuration including cipher suites
+and protocols.
+* SSL/TLS optimizations such as eager _SecureIdentity_ construction and
+closely tying authorization to establishing an SSL/TLS connection. Eager
+_SecureIdentity_ construction eliminates the need for a _SecureIdentity_
+to be constructed on a per-request basis. Closely tying authentication
+to establishing an SSL/TLS connection enables permission checks to
+happen _BEFORE_ the first request is received.
+* A secure credential store that replaces the previous vault
+implementation to store clear text credentials.
+
+The new _elytron_ subsystem exists in parallel to the legacy _security_
+subsystem and legacy core management authentication. Both the legacy and
+Elytron methods may be used for securing the management interfaces as
+well as providing security for applications.
+
+[[get-started-using-the-elytron-subsystem]]
+== Get Started using the Elytron Subsystem
+
+To get started using Elytron, refer to these topics:
+
+* Use the default Elytron components for
+link:#src-557147_ElytronSubsystem-use-default-elytron-app-auth[application]
+and
+link:#src-557147_ElytronSubsystem-use-default-elytron-mgmt-auth[management]
+authentication
+* Secure an application with a new identity store stored in a
+link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithaFilesystem-BasedIdentityStore[filesystem]
+or
+link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithaDatabaseIdentityStore[database].
+* Set up one-way SSL/TLS for
+link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-one-way-apps[applications]
+or the
+link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-one-way-mgmt[management
+interfaces].
+* Set up two-way SSL/TLS for
+link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-two-way-apps[applications]
+or the
+link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-two-way-mgmt[management
+interfaces].
+* link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-CreateandUseaCredentialStore[Create
+a credential store and use it with your SSL/TLS configuration].
+* link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithCertificates[Use
+certificate-based authentication with applications].
+* link:Using_the_Elytron_Subsystem.html#src-557140_safe-id-VXNpbmd0aGVFbHl0cm9uU3Vic3lzdGVtLU92ZXJyaWRlYW5BcHBsaWNhdGlvbidzQXV0aGVudGljYXRpb25Db25maWd1cmF0aW9u[Override
+an application's authentication configuration] with Elytron
+authentication.
+* link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithaKerberos-BasedIdentityStore[Configure
+Kerberos authentication for applications].
+* Secure
+link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithanLDAP-BasedIdentityStore[applications]
+and the
+link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-SecuretheManagementInterfaceswithaNewIdentityStore[management
+interfaces] with an LDAP-based identity store.
+
+[[provided-components]]
+== Provided components
+
+Wildfly Elytron provides a default set of implementations in the
+_elytron_ subsystem.
+
+[[factories]]
+=== Factories
+
+[cols=",",options="header"]
+|=======================================================================
+|Component |Description
+
+|aggregate-http-server-mechanism-factory |An HTTP server factory
+definition where the HTTP server factory is an aggregation of other HTTP
+server factories.
+
+|aggregate-sasl-server-factory |A SASL server factory definition where
+the SASL server factory is an aggregation of other SASL server
+factories.
+
+|configurable-http-server-mechanism-factory |A SASL server factory
+definition where the SASL server factory is an aggregation of other SASL
+server factories.
+
+|configurable-sasl-server-factory |A SASL server factory definition
+where the SASL server factory is an aggregation of other SASL server
+factories.
+
+|custom-credential-security-factory |A custom credential SecurityFactory
+definition.
+
+|http-authentication-factory |Resource containing the association of a
+security domain with a HttpServerAuthenticationMechanismFactory.
+
+|kerberos-security-factory |A security factory for obtaining a
+GSSCredential for use during authentication.
+
+|mechanism-provider-filtering-sasl-server-factory |A SASL server factory
+definition that enables filtering by provider where the factory was
+loaded using a provider.
+
+|provider-http-server-mechanism-factory |An HTTP server factory
+definition where the HTTP server factory is an aggregation of factories
+from the provider list.
+
+|provider-sasl-server-factory |A SASL server factory definition where
+the SASL server factory is an aggregation of factories from the provider
+list.
+
+|sasl-authentication-factory |Resource containing the association of a
+security domain with a SaslServerFactory.
+
+|service-loader-http-server-mechanism-factory |An HTTP server factory
+definition where the HTTP server factory is an aggregation of factories
+identified using a ServiceLoader
+
+|service-loader-sasl-server-factory |A SASL server factory definition
+where the SASL server factory is an aggregation of factories identified
+using a ServiceLoader
+|=======================================================================
+
+[[principal-transformers]]
+=== Principal Transformers
+
+[cols=",",options="header"]
+|=======================================================================
+|Component |Description
+
+|aggregate-principal-transformer |A principal transformer definition
+where the principal transformer is an aggregation of other principal
+transformers.
+
+|chained-principal-transformer |A principal transformer definition where
+the principal transformer is a chaining of other principal transformers.
+
+|constant-principal-transformer |A principal transformer definition
+where the principal transformer always returns the same constant.
+
+|custom-principal-transformer |A custom principal transformer
+definition.
+
+|regex-principal-transformer |A regular expression based principal
+transformer
+
+|regex-validating-principal-transformer |A regular expression based
+principal transformer which uses the regular expression to validate the
+name.
+|=======================================================================
+
+[[principal-decoders]]
+=== Principal Decoders
+
+[cols=",",options="header"]
+|=======================================================================
+|Component |Description
+
+|aggregate-principal-decoder |A principal decoder definition where the
+principal decoder is an aggregation of other principal decoders.
+
+|concatenating-principal-decoder |A principal decoder definition where
+the principal decoder is a concatenation of other principal decoders.
+
+|constant-principal-decoder |Definition of a principal decoder that
+always returns the same constant.
+
+|custom-principal-decoder |Definition of a custom principal decoder.
+
+|x500-attribute-principal-decoder |Definition of a X500 attribute based
+principal decoder.
+|=======================================================================
+
+[[realm-mappers]]
+=== Realm Mappers
+
+[cols=",",options="header"]
+|=======================================================================
+|Component |Description
+
+|constant-realm-mapper |Definition of a constant realm mapper that
+always returns the same value.
+
+|custom-realm-mapper |Definition of a custom realm mapper
+
+|mapped-regex-realm-mapper |Definition of a realm mapper implementation
+that first uses a regular expression to extract the realm name, this is
+then converted using the configured mapping of realm names.
+
+|simple-regex-realm-mapper |Definition of a simple realm mapper that
+attempts to extract the realm name using the capture group from the
+regular expression, if that does not provide a match then the delegate
+realm mapper is used instead.
+|=======================================================================
+
+[[realms]]
+=== Realms
+
+[cols=",",options="header"]
+|=======================================================================
+|Component |Description
+
+|aggregate-realm |A realm definition that is an aggregation of two
+realms, one for the authentication steps and one for loading the
+identity for the authorization steps.
+
+|caching-realm |A realm definition that enables caching to another
+security realm. Caching strategy is Least Recently Used where least
+accessed entries are discarded when maximum number of entries is
+reached.
+
+|custom-modifiable-realm |Custom realm configured as being modifiable
+will be expected to implement the ModifiableSecurityRealm interface. By
+configuring a realm as being modifiable management operations will be
+made available to manipulate the realm.
+
+|custom-realm |A custom realm definitions can implement either the s
+SecurityRealm interface or the ModifiableSecurityRealm interface.
+Regardless of which interface is implemented management operations will
+not be exposed to manage the realm. However other services that depend
+on the realm will still be able to perform a type check and cast to gain
+access to the modification API.
+
+|filesystem-realm |A simple security realm definition backed by the
+filesystem.
+
+|identity-realm |A security realm definition where identities are
+represented in the management model.
+
+|jdbc-realm |A security realm definition backed by database using JDBC.
+
+|key-store-realm |A security realm definition backed by a keystore.
+
+|ldap-realm |A security realm definition backed by LDAP.
+
+|properties-realm |A security realm definition backed by properties
+files.
+
+|token-realm |A security realm definition capable of validating and
+extracting identities from security tokens.
+
+|trust-managers |A trust manager definition for creating the
+TrustManager list as used to create an SSL context.
+|=======================================================================
+
+[[permission-mappers]]
+=== Permission Mappers
+
+[cols=",",options="header"]
+|=======================================================================
+|Component |Description
+
+|custom-permission-mapper |Definition of a custom permission mapper.
+
+|logical-permission-mapper |Definition of a logical permission mapper.
+
+|simple-permission-mapper |Definition of a simple configured permission
+mapper.
+
+|constant-permission-mapper |Definition of a permission mapper that
+always returns the same constant.
+|=======================================================================
+
+[[role-decoders]]
+=== Role Decoders
+
+[cols=",",options="header"]
+|=======================================================================
+|Component |Description
+
+|custom-role-decoder |Definition of a custom RoleDecoder
+
+|simple-role-decoder |Definition of a simple RoleDecoder that takes a
+single attribute and maps it directly to roles.
+|=======================================================================
+
+[[role-mappers]]
+=== Role Mappers
+
+[cols=",",options="header"]
+|=======================================================================
+|Component |Description
+
+|add-prefix-role-mapper |A role mapper definition for a role mapper that
+adds a prefix to each provided.
+
+|add-suffix-role-mapper |A role mapper definition for a role mapper that
+adds a suffix to each provided.
+
+|constant-role-mapper |A role mapper definition where a constant set of
+roles is always returned.
+
+|aggregate-role-mapper |A role mapper definition where the role mapper
+is an aggregation of other role mappers.
+
+|logical-role-mapper |A role mapper definition for a role mapper that
+performs a logical operation using two referenced role mappers.
+
+|custom-role-mapper |Definition of a custom role mapper
+|=======================================================================
+
+[[ssl-components]]
+=== SSL Components
+
+[cols=",",options="header"]
+|=======================================================================
+|Component |Description
+
+|client-ssl-context |An SSLContext for use on the client side of a
+connection.
+
+|filtering-key-store |A filtering keystore definition, which provides a
+keystore by filtering a key-store.
+
+|key-managers |A key manager definition for creating the key manager
+list as used to create an SSL context.
+
+|key-store |A keystore definition.
+
+|ldap-key-store |An LDAP keystore definition, which loads a keystore
+from an LDAP server.
+
+|server-ssl-context |An SSL context for use on the server side of a
+connection.
+|=======================================================================
+
+[[other]]
+=== Other
+
+[cols=",",options="header"]
+|=======================================================================
+|Component |Description
+
+|aggregate-providers |An aggregation of two or more Provider[]
+resources.
+
+|authentication-configuration |An individual authentication
+configuration definition, which is used by clients deployed to Wildfly
+and other resources for authenticating when making a remote connection.
+
+|authentication-context |An individual authentication context
+definition, which is used to supply an ssl-context and
+authentication-configuration when clients deployed to Wildfly and other
+resources make a remoting connection.
+
+|credential-store |Credential store to keep alias for sensitive
+information such as passwords for external services.
+
+|dir-context |The configuration to connect to a directory (LDAP) server.
+
+|provider-loader |A definition for a provider loader.
+
+|security-domain |A security domain definition.
+
+|security-property |A definition of a security property to be set.
+|=======================================================================
+
+[[out-of-the-box-configuration]]
+== Out of the Box Configuration
+
+WildFly provides a set of components configured by default. While these
+components are ready to use, the legacy _security_ subsystem and legacy
+core management authentication is still used by default. To configure
+WildFly to use the these configured components as well as create new
+ones, see the link:Using_the_Elytron_Subsystem.html[Using the Elytron
+Subsystem] section.
+
+[cols=",",options="header"]
+|=======================================================================
+|Default Component |Description
+
+|ApplicationDomain |The ApplicationDomain security domain uses
+ApplicationRealm and groups-to-roles for authentication. It also uses
+default-permission-mapper to assign the login permission.
+
+|ManagementDomain |The ManagementDomain security domain uses two
+security realms for authentication: ManagementRealm with groups-to-roles
+and local with super-user-mapper. It also uses default-permission-mapper
+to assign the login permission.
+
+|local (security realm) |The local security realm does no authentication
+and sets the identity of principals to $local
+
+|ApplicationRealm |The ApplicationRealm security realm is a properties
+realm that authenticates principals using application-users.properties
+and assigns roles using application-roles.properties. These files are
+located under jboss.server.config.dir, which by default, maps to
+EAP_HOME/standalone/configuration. They are also the same files used by
+the legacy security default configuration.
+
+|ManagementRealm |The ManagementRealm security realm is a properties
+realm that authenticates principals using mgmt-users.properties and
+assigns roles using mgmt-groups.properties. These files are located
+under jboss.server.config.dir, which by default, maps to
+EAP_HOME/standalone/configuration. They are also the same files used by
+the legacy security default configuration.
+
+|default-permission-mapper |The default-permission-mapper mapper is a
+constant permission mapper that uses
+org.wildfly.security.auth.permission.LoginPermission to assign the login
+permission and
+org.wildfly.extension.batch.jberet.deployment.BatchPermission to assign
+permission for batch jobs. The batch permissions are start, stop,
+restart, abandon, and read which aligns with
+javax.batch.operations.JobOperator.
+
+|local (mapper) |The local mapper is a constant role mapper that maps to
+the local security realm. This is used to map authentication to the
+local security realm.
+
+|groups-to-roles |The groups-to-roles mapper is a simple-role-decoder
+that will decode the groups information of a principal and use it for
+the role information.
+
+|super-user-mapper |The super-user-mapper mapper is a constant role
+mapper that maps the SuperUser role to a principal.
+
+|management-http-authentication |The management-http-authentication
+http-authentication-factory can be used for doing authentication over
+http. It uses the global provider-http-server-mechanism-factory to
+filter authentication mechanism and uses ManagementDomain for
+authenticating principals. It accepts the DIGEST authentication
+mechanisms and exposes it as ManagementRealm to applications.
+
+|application-http-authentication |The application-http-authentication
+http-authentication-factory can be used for doing authentication over
+http. It uses the global provider-http-server-mechanism-factory to
+filter authentication mechanism and uses ApplicationDomain for
+authenticating principals. It accepts BASIC and FORM authentication
+mechanisms and exposes BASIC as Application Realm to applications.
+
+|global (provider-http-server-mechanism-factory) |This is the HTTP
+server factory mechanism definition used to list the provided
+authentication mechanisms when creating an http authentication factory.
+
+|management-sasl-authentication |The management-sasl-authentication
+sasl-authentication-factory can be used for authentication using SASL.
+It uses the configured sasl-server-factory to filter authentication
+mechanisms, which also uses the global provider-sasl-server-factory to
+filter by provider names. management-sasl-authentication uses the
+ManagementDomain security domain for authentication of principals. It
+also maps authentication using JBOSS-LOCAL-USER mechanisms using the
+local realm mapper and authentication using DIGEST-MD5 to
+ManagementRealm.
+
+|application-sasl-authentication |The application-sasl-authentication
+sasl-authentication-factory can be used for authentication using SASL.
+It uses the configured sasl-server-factory to filter authentication
+mechanisms, which also uses the global provider-sasl-server-factory to
+filter by provider names. application-sasl-authentication uses the
+ApplicationDomain security domain for authentication of principals.
+
+|global (provider-sasl-server-factory) |This is the SASL server factory
+definition used to create SASL authentication factories.
+
+|elytron (mechanism-provider-filtering-sasl-server-factor) |This is used
+to filter which sasl-authentication-factory is used based on the
+provider. In this case, elytron will match on the WildFlyElytron
+provider name.
+
+|configured (configurable-sasl-server-factory) |This is used to filter
+sasl-authentication-factory is used based on the mechanism name. In this
+case, configured will match on JBOSS-LOCAL-USER and DIGEST-MD5. It also
+sets the wildfly.sasl.local-user.default-user to $local.
+
+|combined-providers |Is an aggregate provider that aggreates the elytron
+and openssl provider loaders.
+
+|elytron |A provider loader
+
+|openssl |A provider loader
+|=======================================================================
+
+*Default WildFly Configuration*
+
+[source, java]
+----
+/subsystem=elytron:read-resource(recursive=true)
+{
+    "outcome" => "success",
+    "result" => {
+        "default-authentication-context" => undefined,
+        "final-providers" => undefined,
+        "initial-providers" => "combined-providers",
+        "add-prefix-role-mapper" => undefined,
+        "add-suffix-role-mapper" => undefined,
+        "aggregate-http-server-mechanism-factory" => undefined,
+        "aggregate-principal-decoder" => undefined,
+        "aggregate-principal-transformer" => undefined,
+        "aggregate-providers" => {"combined-providers" => {"providers" => [
+            "elytron",
+            "openssl"
+        ]}},
+        "aggregate-realm" => undefined,
+        "aggregate-role-mapper" => undefined,
+        "aggregate-sasl-server-factory" => undefined,
+        "authentication-configuration" => undefined,
+        "authentication-context" => undefined,
+        "caching-realm" => undefined,
+        "chained-principal-transformer" => undefined,
+        "client-ssl-context" => undefined,
+        "concatenating-principal-decoder" => undefined,
+        "configurable-http-server-mechanism-factory" => undefined,
+        "configurable-sasl-server-factory" => {"configured" => {
+            "filters" => [
+                {"pattern-filter" => "JBOSS-LOCAL-USER"},
+                {"pattern-filter" => "DIGEST-MD5"}
+            ],
+            "properties" => {"wildfly.sasl.local-user.default-user" => "$local"},
+            "protocol" => undefined,
+            "sasl-server-factory" => "elytron",
+            "server-name" => undefined
+        }},
+        "constant-permission-mapper" => {"default-permission-mapper" => {"permissions" => [
+            {"class-name" => "org.wildfly.security.auth.permission.LoginPermission"},
+            {
+                "class-name" => "org.wildfly.extension.batch.jberet.deployment.BatchPermission",
+                "module" => "org.wildfly.extension.batch.jberet",
+                "target-name" => "*"
+            }
+        ]}},
+        "constant-principal-decoder" => undefined,
+        "constant-principal-transformer" => undefined,
+        "constant-realm-mapper" => {"local" => {"realm-name" => "local"}},
+        "constant-role-mapper" => {"super-user-mapper" => {"roles" => ["SuperUser"]}},
+        "credential-store" => undefined,
+        "custom-credential-security-factory" => undefined,
+        "custom-modifiable-realm" => undefined,
+        "custom-permission-mapper" => undefined,
+        "custom-principal-decoder" => undefined,
+        "custom-principal-transformer" => undefined,
+        "custom-realm" => undefined,
+        "custom-realm-mapper" => undefined,
+        "custom-role-decoder" => undefined,
+        "custom-role-mapper" => undefined,
+        "dir-context" => undefined,
+        "filesystem-realm" => undefined,
+        "filtering-key-store" => undefined,
+        "http-authentication-factory" => {
+            "management-http-authentication" => {
+                "http-server-mechanism-factory" => "global",
+                "mechanism-configurations" => [{
+                    "mechanism-name" => "DIGEST",
+                    "mechanism-realm-configurations" => [{"realm-name" => "ManagementRealm"}]
+                }],
+                "security-domain" => "ManagementDomain"
+            },
+            "application-http-authentication" => {
+                "http-server-mechanism-factory" => "global",
+                "mechanism-configurations" => [
+                    {
+                        "mechanism-name" => "BASIC",
+                        "mechanism-realm-configurations" => [{"realm-name" => "Application Realm"}]
+                    },
+                    {"mechanism-name" => "FORM"}
+                ],
+                "security-domain" => "ApplicationDomain"
+            }
+        },
+        "identity-realm" => {"local" => {
+            "attribute-name" => undefined,
+            "attribute-values" => undefined,
+            "identity" => "$local"
+        }},
+        "jdbc-realm" => undefined,
+        "kerberos-security-factory" => undefined,
+        "key-managers" => undefined,
+        "key-store" => undefined,
+        "key-store-realm" => undefined,
+        "ldap-key-store" => undefined,
+        "ldap-realm" => undefined,
+        "logical-permission-mapper" => undefined,
+        "logical-role-mapper" => undefined,
+        "mapped-regex-realm-mapper" => undefined,
+        "mechanism-provider-filtering-sasl-server-factory" => {"elytron" => {
+            "enabling" => true,
+            "filters" => [{"provider-name" => "WildFlyElytron"}],
+            "sasl-server-factory" => "global"
+        }},
+        "properties-realm" => {
+            "ApplicationRealm" => {
+                "groups-attribute" => "groups",
+                "groups-properties" => {
+                    "path" => "application-roles.properties",
+                    "relative-to" => "jboss.server.config.dir"
+                },
+                "users-properties" => {
+                    "path" => "application-users.properties",
+                    "relative-to" => "jboss.server.config.dir",
+                    "digest-realm-name" => "ApplicationRealm"
+                }
+            },
+            "ManagementRealm" => {
+                "groups-attribute" => "groups",
+                "groups-properties" => {
+                    "path" => "mgmt-groups.properties",
+                    "relative-to" => "jboss.server.config.dir"
+                },
+                "users-properties" => {
+                    "path" => "mgmt-users.properties",
+                    "relative-to" => "jboss.server.config.dir",
+                    "digest-realm-name" => "ManagementRealm"
+                }
+            }
+        },
+        "provider-http-server-mechanism-factory" => {"global" => {"providers" => undefined}},
+        "provider-loader" => {
+            "elytron" => {
+                "class-names" => undefined,
+                "configuration" => undefined,
+                "module" => "org.wildfly.security.elytron",
+                "path" => undefined,
+                "relative-to" => undefined
+            },
+            "openssl" => {
+                "class-names" => undefined,
+                "configuration" => undefined,
+                "module" => "org.wildfly.openssl",
+                "path" => undefined,
+                "relative-to" => undefined
+            }
+        },
+        "provider-sasl-server-factory" => {"global" => {"providers" => undefined}},
+        "regex-principal-transformer" => undefined,
+        "regex-validating-principal-transformer" => undefined,
+        "sasl-authentication-factory" => {
+            "management-sasl-authentication" => {
+                "mechanism-configurations" => [
+                    {
+                        "mechanism-name" => "JBOSS-LOCAL-USER",
+                        "realm-mapper" => "local"
+                    },
+                    {
+                        "mechanism-name" => "DIGEST-MD5",
+                        "mechanism-realm-configurations" => [{"realm-name" => "ManagementRealm"}]
+                    }
+                ],
+                "sasl-server-factory" => "configured",
+                "security-domain" => "ManagementDomain"
+            },
+            "application-sasl-authentication" => {
+                "mechanism-configurations" => undefined,
+                "sasl-server-factory" => "configured",
+                "security-domain" => "ApplicationDomain"
+            }
+        },
+        "security-domain" => {
+            "ApplicationDomain" => {
+                "default-realm" => "ApplicationRealm",
+                "permission-mapper" => "default-permission-mapper",
+                "post-realm-principal-transformer" => undefined,
+                "pre-realm-principal-transformer" => undefined,
+                "principal-decoder" => undefined,
+                "realm-mapper" => undefined,
+                "realms" => [{
+                    "realm" => "ApplicationRealm",
+                    "role-decoder" => "groups-to-roles"
+                }],
+                "role-mapper" => undefined,
+                "trusted-security-domains" => undefined
+            },
+            "ManagementDomain" => {
+                "default-realm" => "ManagementRealm",
+                "permission-mapper" => "default-permission-mapper",
+                "post-realm-principal-transformer" => undefined,
+                "pre-realm-principal-transformer" => undefined,
+                "principal-decoder" => undefined,
+                "realm-mapper" => undefined,
+                "realms" => [
+                    {
+                        "realm" => "ManagementRealm",
+                        "role-decoder" => "groups-to-roles"
+                    },
+                    {
+                        "realm" => "local",
+                        "role-mapper" => "super-user-mapper"
+                    }
+                ],
+                "role-mapper" => undefined,
+                "trusted-security-domains" => undefined
+            }
+        },
+        "security-property" => undefined,
+        "server-ssl-context" => undefined,
+        "service-loader-http-server-mechanism-factory" => undefined,
+        "service-loader-sasl-server-factory" => undefined,
+        "simple-permission-mapper" => undefined,
+        "simple-regex-realm-mapper" => undefined,
+        "simple-role-decoder" => {"groups-to-roles" => {"attribute" => "groups"}},
+        "token-realm" => undefined,
+        "trust-managers" => undefined,
+        "x500-attribute-principal-decoder" => undefined
+    }
+}
+----
+
+[[default-application-authentication-configuration]]
+== Default Application Authentication Configuration
+
+By default, applications are secured using legacy security domains.
+Applications must specify a security domain in their _web.xml_ as well
+as the authentication method. If no security domain is specified by the
+application, WildFly will use the provided _other_ legacy security
+domain.
+
+[[update-wildfly-to-use-the-default-elytron-components-for-application-authentication]]
+=== Update WildFly to Use the Default Elytron Components for Application
+Authentication
+
+[source,ruby]
+----
+/subsystem=undertow/application-security-domain=exampleApplicationDomain:add(http-authentication-factory=application-http-authentication)
+----
+
+[[default-elytron-application-http-authentication-configuration]]
+=== Default Elytron Application HTTP Authentication Configuration
+
+By default, the _application-http-authentication_
+http-authentication-factory is provided for application http
+authentication.
+
+[source,ruby]
+----
+/subsystem=elytron/http-authentication-factory=application-http-authentication:read-resource()
+{
+    "outcome" => "success",
+    "result" => {
+        "http-server-mechanism-factory" => "global",
+        "mechanism-configurations" => [
+            {
+                "mechanism-name" => "BASIC",
+                "mechanism-realm-configurations" => [{"realm-name" => "Application Realm"}]
+            },
+            {"mechanism-name" => "FORM"}
+        ],
+        "security-domain" => "ApplicationDomain"
+    }
+}
+----
+
+The _application-http-authentication_ http-authentication-factory is
+configured to use the _ApplicationDomain_ security domain.
+
+[source,ruby]
+----
+/subsystem=elytron/security-domain=ApplicationDomain:read-resource()
+{
+    "outcome" => "success",
+    "result" => {
+        "default-realm" => "ApplicationRealm",
+        "permission-mapper" => "default-permission-mapper",
+        "post-realm-principal-transformer" => undefined,
+        "pre-realm-principal-transformer" => undefined,
+        "principal-decoder" => undefined,
+        "realm-mapper" => undefined,
+        "realms" => [{
+            "realm" => "ApplicationRealm",
+            "role-decoder" => "groups-to-roles"
+        }],
+        "role-mapper" => undefined,
+        "trusted-security-domains" => undefined
+    }
+}
+----
+
+The _ApplicationDomain_ security domain is backed by the
+_ApplicationRealm_ Elytron security realm, which is a properties-based
+realm.
+
+[source,ruby]
+----
+/subsystem=elytron/properties-realm=ApplicationRealm:read-resource()
+{
+    "outcome" => "success",
+    "result" => {
+        "groups-attribute" => "groups",
+        "groups-properties" => {
+            "path" => "application-roles.properties",
+            "relative-to" => "jboss.server.config.dir"
+        },
+        "users-properties" => {
+            "path" => "application-users.properties",
+            "relative-to" => "jboss.server.config.dir",
+            "digest-realm-name" => "ApplicationRealm"
+        }
+    }
+}
+----
+
+[[default-management-authentication-configuration]]
+== Default Management Authentication Configuration
+
+By default, the WildFly management interfaces are secured by the legacy
+core management authentication.
+
+*Default Configuration*
+
+[source, java]
+----
+/core-service=management/management-interface=http-interface:read-resource()
+{
+    "outcome" => "success",
+    "result" => {
+        "allowed-origins" => undefined,
+        "console-enabled" => true,
+        "http-authentication-factory" => undefined,
+        "http-upgrade" => {"enabled" => true},
+        "http-upgrade-enabled" => true,
+        "sasl-protocol" => "remote",
+        "secure-socket-binding" => undefined,
+        "security-realm" => "ManagementRealm",
+        "server-name" => undefined,
+        "socket-binding" => "management-http",
+        "ssl-context" => undefined
+    }
+----
+
+WildFly does provide _management-http-authentication_ and
+_management-sasl-authentication_ in the _elytron_ subsystem for securing
+the management interfaces as well.
+
+[[update-wildfly-to-use-the-default-elytron-components-for-management-authentication]]
+=== Update WildFly to Use the Default Elytron Components for Management
+Authentication
+
+[[set-http-authentication-factory-to-use-management-http-authentication]]
+==== Set http-authentication-factory to use
+management-http-authentication
+
+[source, java]
+----
+/core-service=management/management-interface=http-interface:write-attribute( \
+  name=http-authentication-factory, \
+  value=management-http-authentication \
+)
+----
+
+[[set-sasl-authentication-factory-to-use-management-sasl-authentication]]
+==== Set sasl-authentication-factory to use
+management-sasl-authentication
+
+[source, java]
+----
+/core-service=management/management-interface=http-interface:write-attribute( \
+  name=http-upgrade.sasl-authentication-factory, \
+  value=management-sasl-authentication \
+)
+----
+
+[[undefine-security-realm]]
+==== Undefine security-realm
+
+[source, java]
+----
+/core-service=management/management-interface=http-interface:undefine-attribute(name=security-realm)
+----
+
+[[reload-wildfly-for-the-changes-to-take-affect.]]
+==== Reload WildFly for the changes to take affect.
+
+[source,ruby]
+----
+reload
+----
+
+The management interfaces are now secured using the default components
+provided by the 'elytron' subsystem.
+
+[[default-elytron-management-http-authentication-configuration]]
+=== Default Elytron Management HTTP Authentication Configuration
+
+When you access the management interface over HTTP, for example when
+using the web-based management console, WildFly will use the
+_management-http-authentication_ http-authentication-factory.
+
+[source,ruby]
+----
+/subsystem=elytron/http-authentication-factory=management-http-authentication:read-resource()
+{
+    "outcome" => "success",
+    "result" => {
+        "http-server-mechanism-factory" => "global",
+        "mechanism-configurations" => [{
+            "mechanism-name" => "DIGEST",
+            "mechanism-realm-configurations" => [{"realm-name" => "ManagementRealm"}]
+        }],
+        "security-domain" => "ManagementDomain"
+    }
+}
+----
+
+The _management-http-authentication_ http-authentication-factory, is
+configured to use the _ManagementDomain_ security domain.
+
+[source,ruby]
+----
+/subsystem=elytron/security-domain=ManagementDomain:read-resource()
+{
+    "outcome" => "success",
+    "result" => {
+        "default-realm" => "ManagementRealm",
+        "permission-mapper" => "default-permission-mapper",
+        "post-realm-principal-transformer" => undefined,
+        "pre-realm-principal-transformer" => undefined,
+        "principal-decoder" => undefined,
+        "realm-mapper" => undefined,
+        "realms" => [
+            {
+                "realm" => "ManagementRealm",
+                "role-decoder" => "groups-to-roles"
+            },
+            {
+                "realm" => "local",
+                "role-mapper" => "super-user-mapper"
+            }
+        ],
+        "role-mapper" => undefined,
+        "trusted-security-domains" => undefined
+    }
+}
+----
+
+The _ManagementDomain_ security domain is backed by the
+_ManagementRealm_ Elytron security realm, which is a properties-based
+realm.
+
+[source,ruby]
+----
+/subsystem=elytron/properties-realm=ManagementRealm:read-resource()
+{
+    "outcome" => "success",
+    "result" => {
+        "groups-attribute" => "groups",
+        "groups-properties" => {
+            "path" => "mgmt-groups.properties",
+            "relative-to" => "jboss.server.config.dir"
+        },
+        "plain-text" => false,
+        "users-properties" => {
+            "path" => "mgmt-users.properties",
+            "relative-to" => "jboss.server.config.dir"
+        }
+    }
+}
+----
+
+[[default-elytron-management-cli-authentication]]
+=== Default Elytron Management CLI Authentication
+
+By default, the management CLI ( _jboss-cli.sh_) is configured to
+connect over _remotehttp_.
+
+*Default jboss-cli.xml*
+
+[source,xml]
+----
+<jboss-cli xmlns="urn:jboss:cli:3.1">
+ 
+    <default-protocol use-legacy-override="true">remotehttp</default-protocol>
+ 
+    <!-- The default controller to connect to when 'connect' command is executed w/o arguments -->
+    <default-controller>
+        <protocol>remotehttp</protocol>
+        <host>localhost</host>
+        <port>9990</port>
+    </default-controller>
+----
+
+This will establish a connection over HTTP and use HTTP upgrade to
+change the communication protocol to _native_. The HTTP upgrade
+connection is secured in the _http-upgrade_ section of the
+_http-interface_ using a _sasl-authentication-factory_.
+
+*Example Configuration with Default Components*
+
+[source, java]
+----
+/core-service=management/management-interface=http-interface:read-resource()
+{
+    "outcome" => "success",
+    "result" => {
+        "allowed-origins" => undefined,
+        "console-enabled" => true,
+        "http-authentication-factory" => "management-http-authentication",
+        "http-upgrade" => {
+            "enabled" => true,
+            "sasl-authentication-factory" => "management-sasl-authentication"
+        },
+        "http-upgrade-enabled" => true,
+        "sasl-protocol" => "remote",
+        "secure-socket-binding" => undefined,
+        "security-realm" => undefined,
+        "server-name" => undefined,
+        "socket-binding" => "management-http",
+        "ssl-context" => undefined
+    }
+}
+----
+
+The default sasl-authentication-factory is
+_management-sasl-authentication_.
+
+[source,ruby]
+----
+/subsystem=elytron/sasl-authentication-factory=management-sasl-authentication:read-resource()
+{
+    "outcome" => "success",
+    "result" => {
+        "mechanism-configurations" => [
+            {
+                "mechanism-name" => "JBOSS-LOCAL-USER",
+                "realm-mapper" => "local"
+            },
+            {
+                "mechanism-name" => "DIGEST-MD5",
+                "mechanism-realm-configurations" => [{"realm-name" => "ManagementRealm"}]
+            }
+        ],
+        "sasl-server-factory" => "configured",
+        "security-domain" => "ManagementDomain"
+    }
+}
+----
+
+The _management-sasl-authentication_ sasl-authentication-factory
+specifies _JBOSS-LOCAL-USER_ and _DIGEST-MD5_ mechanisms.
+
+*JBOSS-LOCAL-USER Realm*
+
+[source,ruby]
+----
+/subsystem=elytron/identity-realm=local:read-resource()
+{
+    "outcome" => "success",
+    "result" => {
+        "attribute-name" => undefined,
+        "attribute-values" => undefined,
+        "identity" => "$local"
+    }
+}
+----
+
+The _local_ Elytron security realm is for handling silent authentication
+for local users.
+
+The _ManagementRealm_ Elytron security realm is the same realm used in
+the _management-http-authentication_ http-authentication-factory.
+
+[[comparing-legacy-approaches-to-elytron-approaches]]
+== Comparing Legacy Approaches to Elytron Approaches
+
+[cols=",",options="header"]
+|=======================================================================
+|Legacy Approach |Elytron Approach
+
+|UsersRoles Login Module |Configure Authentication with a Properties
+File-Based Identity Store
+
+|Database Login Module |Configure Authentication with a Database
+Identity Store
+
+|Ldap, LdapExtended, AdvancedLdap, AdvancedADLdap Login Modules
+|Configure Authentication with an LDAP-Based Identity Store
+
+|Certificate, Certificate Roles Login Module |Configure Authentication
+with Certificates
+
+|Kerberos, SPNEGO Login Modules |Configure Authentication with a
+Kerberos-Based Identity Store
+
+|Kerberos, SPNEGO Login Modules with Fallback |Configure Authentication
+with a Form as a Fallback for Kerberos
+
+|Vault |Create and Use a Credential Store
+
+|Legacy Security Realms |Secure the Management Interfaces with a New
+Identity Store, Silent Authentication
+
+|RBAC |Using RBAC with Elytron
+
+|Legacy Security Realms for One-way and Two-way SSL/TLS for Applications
+|Enable One-way SSL/TLS for Applications, Enable Two-way SSL/TLS in
+WildFly for Applications
+
+|Legacy Security Realms for One-way and Two-way SSL/TLS for Management
+Interfaces |Enable One-way for the Management Interfaces Using the
+Elytron Subsystem, Enable Two-way SSL/TLS for the Management Interfaces
+using the Elytron Subsystem
+|=======================================================================

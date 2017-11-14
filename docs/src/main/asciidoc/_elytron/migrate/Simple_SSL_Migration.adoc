@@ -1,0 +1,195 @@
+= Simple SSL Migration
+
+[[simple-ssl-migration]]
+== Simple SSL Migration
+
+This section describe securing HTTP connections to the server using SSL
+using Elytron. +
+It suppose you have already configured SSL using legacy
+`security-realm`, for example by
+link:Admin_Guide.html#src-557075_AdminGuide-EnableSSL[Admin Guide#Enable
+SSL], and your configuration looks like:
+
+[source, xml]
+----
+<security-realm name="ApplicationRealm">
+  <server-identities>
+    <ssl>
+      <keystore path="server.keystore" relative-to="jboss.server.config.dir" keystore-password="keystore_password" alias="server" key-password="key_password" />
+    </ssl>
+  </server-identities>
+</security-realm>
+----
+
+To switch to Elytron you need to:
+
+1.  Create Elytron `key-store` - specifying where is the keystore file
+stored and password by which it is encrypted. Default type of keystore
+generated using keytool is JKS:
++
+[source, ruby]
+----
+/subsystem=elytron/key-store=LocalhostKeyStore:add(path=server.keystore,relative-to=jboss.server.config.dir,credential-reference={clear-text="keystore_password"},type=JKS)
+----
+2.  Create Elytron `key-manager` - specifying keystore, alias (using
+`alias-filter`) and password of key:
++
+[source, ruby]
+----
+/subsystem=elytron/key-manager=LocalhostKeyManager:add(key-store=LocalhostKeyStore,alias-filter=server,credential-reference={clear-text="key_password"})
+----
+3.  Create Elytron `server-ssl-context` - specifying only reference to
+`key-manager` defined above:
++
+[source, ruby]
+----
+/subsystem=elytron/server-ssl-context=LocalhostSslContext:add(key-manager=LocalhostKeyManager)
+----
+4.  Switch `https-listener` from legacy `security-realm` to newly
+created Elytron `ssl-context`:
++
+[source, ruby]
+----
+/subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name=security-realm)
+/subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context,value=LocalhostSslContext)
+----
+5.  And reload the server:
++
+[source, ruby]
+----
+reload
+----
+
+Output XML configuration of Elytron subsystem should look like:
+
+[source, xml]
+----
+        <subsystem xmlns="urn:wildfly:elytron:1.0" ...>
+            ...
+            <tls>
+                <key-stores>
+                    <key-store name="LocalhostKeyStore">
+                        <credential-reference clear-text="keystore_password"/>
+                        <implementation type="JKS"/>
+                        <file path="server.keystore" relative-to="jboss.server.config.dir"/>
+                    </key-store>
+                </key-stores>
+                <key-managers>
+                    <key-manager name="LocalhostKeyManager" key-store="LocalhostKeyStore">
+                        <credential-reference clear-text="key_password"/>
+                    </key-manager>
+                </key-managers>
+                <server-ssl-contexts>
+                    <server-ssl-context name="LocalhostSslContext" key-manager="LocalhostKeyManager"/>
+                </server-ssl-contexts>
+            </tls>
+        </subsystem>
+----
+
+Output `https-listener` in Undertow subsystem should be:
+
+[source,xml]
+----
+<https-listener name="https" socket-binding="https" ssl-context="LocalhostSslContext" enable-http2="true"/>
+----
+
+[[client-cert-ssl-authentication-migration]]
+== Client-Cert SSL Authentication Migration
+
+This suppose you have already configured Client-Cert SSL authentication
+using `truststore` in legacy `security-realm`, for example by
+link:Admin_Guide.html#src-557075_AdminGuide-AddClient-CerttoSSL[Admin
+Guide#Add Client-Cert to SSL], and your configuration looks like:
+
+[source, xml]
+----
+<security-realm name="ApplicationRealm">
+  <server-identities>
+    <ssl>
+      <keystore path="server.keystore" relative-to="jboss.server.config.dir" keystore-password="keystore_password" alias="server" key-password="key_password" />
+    </ssl>
+  </server-identities>
+  <authentication>
+    <truststore path="server.truststore" relative-to="jboss.server.config.dir" keystore-password="truststore_password" />
+    <local default-user="$local"/>
+    <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
+  </authentication>
+</security-realm>
+----
+
+[IMPORTANT]
+
+Following configuration is sufficient to prevent users without valid
+certificate and private key to access the server, but it does not
+provide user identity to the application. That require to define
+`CLIENT_CERT` HTTP mechanism / `EXTERNAL` SASL mechanism, which will be
+described later.)
+
+At first use steps above to migrate basic part of the configuration.
+Then continue by following:
+
+1.  Create `key-store` of truststore - like for keystore above:
++
+[source, ruby]
+----
+/subsystem=elytron/key-store=TrustStore:add(path=server.truststore,relative-to=jboss.server.config.dir,credential-reference={clear-text="truststore_password"},type=JKS)
+----
+2.  Create `trust-manager` - specifying `key-store` of trustore, created
+above:
++
+[source, ruby]
+----
+/subsystem=elytron/trust-manager=TrustManager:add(key-store=TrustStore)
+----
+3.  Modify `server-ssl-context` to use newly created trustmanager:
++
+[source, ruby]
+----
+/subsystem=elytron/server-ssl-context=LocalhostSslContext:write-attribute(name=trust-manager,value=TrustManager)
+----
+4.  Enable client authentication for `server-ssl-context`:
++
+[source, ruby]
+----
+/subsystem=elytron/server-ssl-context=LocalhostSslContext:write-attribute(name=need-client-auth,value=true)
+----
+5.  And reload the server:
++
+[source, ruby]
+----
+reload
+----
+
+Output XML configuration of Elytron subsystem should look like:
+
+[source, xml]
+----
+<subsystem xmlns="urn:wildfly:elytron:1.0" ...>
+    ...
+    <tls>
+        <key-stores>
+            <key-store name="LocalhostKeyStore">
+                <credential-reference clear-text="keystore_password"/>
+                <implementation type="JKS"/>
+                <file path="server.keystore" relative-to="jboss.server.config.dir"/>
+            </key-store>
+            <key-store name="TrustStore">
+                <credential-reference clear-text="truststore_password"/>
+                <implementation type="JKS"/>
+                <file path="server.truststore" relative-to="jboss.server.config.dir"/>
+            </key-store>
+        </key-stores>
+        <key-managers>
+            <key-manager name="LocalhostKeyManager" key-store="LocalhostKeyStore" alias-filter="server">
+                <credential-reference clear-text="key_password"/>
+            </key-manager>
+        </key-managers>
+        <trust-managers>
+            <trust-manager name="TrustManager" key-store="TrustStore"/>
+        </trust-managers>
+        <server-ssl-contexts>
+            <server-ssl-context name="LocalhostSslContext" need-client-auth="true" key-manager="LocalhostKeyManager" trust-manager="TrustManager"/>
+        </server-ssl-contexts>
+    </tls>
+</subsystem>
+----

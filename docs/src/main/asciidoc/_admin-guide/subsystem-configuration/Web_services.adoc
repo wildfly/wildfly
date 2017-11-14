@@ -1,0 +1,296 @@
+= Web services configuration
+
+JBossWS components are provided to the application server through the
+webservices subsystem. JBossWS components handle the processing of WS
+endpoints. The subsystem supports the configuration of published
+endpoint addresses, and endpoint handler chains. A default webservice
+subsystem is provided in the server's domain and standalone
+configuration files.
+
+[[structure-of-the-webservices-subsystem]]
+== Structure of the webservices subsystem
+
+[[published-endpoint-address]]
+=== Published endpoint address
+
+JBossWS supports the rewriting of the `<soap:address>` element of
+endpoints published in WSDL contracts. This feature is useful for
+controlling the server address that is advertised to clients for each
+endpoint.
+
+The following elements are available and can be modified (all are
+optional):
+
+[cols=",,",options="header"]
+|=======================================================================
+|Name |Type |Description
+
+|modify-wsdl-address |boolean |This boolean enables and disables the
+address rewrite functionality.When modify-wsdl-address is set to true
+and the content of <soap:address> is a valid URL, JBossWS will rewrite
+the URL using the values of wsdl-host and wsdl-port or
+wsdl-secure-port.When modify-wsdl-address is set to false and the
+content of <soap:address> is a valid URL, JBossWS will not rewrite the
+URL. The <soap:address> URL will be used.When the content of
+<soap:address> is not a valid URL, JBossWS will rewrite it no matter
+what the setting of modify-wsdl-address.If modify-wsdl-address is set to
+true and wsdl-host is not defined or explicitly set to
+'jbossws.undefined.host' the content of <soap:address> URL is use.
+JBossWS uses the requester's host when rewriting the <soap:address>When
+modify-wsdl-address is not defined JBossWS uses a default value of true.
+
+|wsdl-host |string |The hostname / IP address to be used for rewriting
+<soap:address>.If wsdl-host is set to jbossws.undefined.host, JBossWS
+uses the requester's host when rewriting the <soap:address>When
+wsdl-host is not defined JBossWS uses a default value of
+'jbossws.undefined.host'.
+
+|wsdl-port |int |Set this property to explicitly define the HTTP port
+that will be used for rewriting the SOAP address.Otherwise the HTTP port
+will be identified by querying the list of installed HTTP connectors.
+
+|wsdl-secure-port |int |Set this property to explicitly define the HTTPS
+port that will be used for rewriting the SOAP address.Otherwise the
+HTTPS port will be identified by querying the list of installed HTTPS
+connectors.
+
+|wsdl-uri-scheme |string |This property explicitly sets the URI scheme
+to use for rewriting <soap:address> . Valid values are http and https.
+This configuration overrides scheme computed by processing the endpoint
+(even if a transport guaranteeis specified). The provided values for
+wsdl-port and wsdl-secure-port (or their default values) are used
+depending on specified scheme.
+
+|wsdl-path-rewrite-rule |string |This string defines a SED substitution
+command (e.g., 's/regexp/replacement/g') that JBossWS executes against
+the path component of each <soap:address> URL published from the
+server.When wsdl-path-rewrite-rule is not defined, JBossWS retains the
+original path component of each <soap:address> URL.When
+'modify-wsdl-address' is set to "false" this element is ignored.
+|=======================================================================
+
+[[predefined-endpoint-configurations]]
+=== Predefined endpoint configurations
+
+JBossWS enables extra setup configuration data to be predefined and
+associated with an endpoint implementation. Predefined endpoint
+configurations can be used for JAX-WS client and JAX-WS endpoint setup.
+Endpoint configurations can include JAX-WS handlers and key/value
+properties declarations. This feature provides a convenient way to add
+handlers to WS endpoints and to set key/value properties that control
+JBossWS and Apache CXF internals (
+https://docs.jboss.org/author/display/JBWS/Apache+CXF+integration#ApacheCXFintegration-Deploymentdescriptorproperties[see
+Apache CXF configuration]).
+
+The webservices subsystem provides
+http://www.jboss.org/schema/jbossas/jboss-as-webservices_1_2.xsd[schema]
+to support the definition of named sets of endpoint configuration data.
+Annotation, _org.jboss.ws.api.annotation.EndpointConfig_ is provided to
+map the named configuration to the endpoint implementation.
+
+There is no limit to the number of endpoint configurations that can be
+defined within the webservices subsystem. Each endpoint configuration
+must have a name that is unique within the webservices subsystem.
+Endpoint configurations defined in the webservices subsystem are
+available for reference by name through the annotation to any endpoint
+in a deployed application.
+
+WildFly ships with two predefined endpoint configurations.
+Standard-Endpoint-Config is the default configuration.
+Recording-Endpoint-Config is an example of custom endpoint configuration
+and includes a recording handler.
+
+[source, ruby]
+----
+[standalone@localhost:9999 /] /subsystem=webservices:read-resource
+{
+    "outcome" => "success",
+    "result" => {
+        "endpoint" => {},
+        "modify-wsdl-address" => true,
+        "wsdl-host" => expression "${jboss.bind.address:127.0.0.1}",
+        "endpoint-config" => {
+            "Standard-Endpoint-Config" => undefined,
+            "Recording-Endpoint-Config" => undefined
+        }
+    }
+}
+----
+
+[IMPORTANT]
+
+The `Standard-Endpoint-Config` is a special endpoint configuration. It
+is used for any endpoint that does not have an explicitly assigned
+endpoint configuration.
+
+[[endpoint-configs]]
+==== Endpoint configs
+
+Endpoint configs are defined using `the endpoint-config` element. Each
+endpoint configuration may include properties and handlers set to the
+endpoints associated to the configuration.
+
+[source, ruby]
+----
+[standalone@localhost:9999 /] /subsystem=webservices/endpoint-config=Recording-Endpoint-Config:read-resource
+{
+    "outcome" => "success",
+    "result" => {
+        "post-handler-chain" => undefined,
+        "property" => undefined,
+        "pre-handler-chain" => {"recording-handlers" => undefined}
+    }
+}
+----
+
+A new endpoint configuration can be added as follows:
+
+[source, ruby]
+----
+[standalone@localhost:9999 /] /subsystem=webservices/endpoint-config=My-Endpoint-Config:add
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-restart" => true,
+        "process-state" => "restart-required"
+    }
+}
+----
+
+[[handler-chains]]
+==== Handler chains
+
+Each endpoint configuration may be associated with zero or more PRE and
+POST handler chains. Each handler chain may include JAXWS handlers. For
+outbound messages the PRE handler chains are executed before any handler
+that is attached to the endpoint using the standard means, such as with
+annotation @HandlerChain, and POST handler chains are executed after
+those objects have executed. For inbound messages the POST handler
+chains are executed before any handler that is attached to the endpoint
+using the standard means and the PRE handler chains are executed after
+those objects have executed.
+
+....
+* Server inbound messages
+Client --> ... --> POST HANDLER --> ENDPOINT HANDLERS --> PRE HANDLERS --> Endpoint
+
+* Server outbound messages
+Endpoint --> PRE HANDLER --> ENDPOINT HANDLERS --> POST HANDLERS --> ... --> Client
+....
+
+The protocol-binding attribute must be used to set the protocols for
+which the chain will be triggered.
+
+[source, ruby]
+----
+[standalone@localhost:9999 /] /subsystem=webservices/endpoint-config=Recording-Endpoint-Config/pre-handler-chain=recording-handlers:read-resource
+{
+    "outcome" => "success",
+    "result" => {
+        "protocol-bindings" => "##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM",
+        "handler" => {"RecordingHandler" => undefined}
+    },
+    "response-headers" => {"process-state" => "restart-required"}
+}
+----
+
+A new handler chain can be added as follows:
+
+[source, ruby]
+----
+[standalone@localhost:9999 /] /subsystem=webservices/endpoint-config=My-Endpoint-Config/post-handler-chain=my-handlers:add(protocol-bindings="##SOAP11_HTTP")
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-restart" => true,
+        "process-state" => "restart-required"
+    }
+}
+[standalone@localhost:9999 /] /subsystem=webservices/endpoint-config=My-Endpoint-Config/post-handler-chain=my-handlers:read-resource
+{
+    "outcome" => "success",
+    "result" => {
+        "handler" => undefined,
+        "protocol-bindings" => "##SOAP11_HTTP"
+    },
+    "response-headers" => {"process-state" => "restart-required"}
+}
+----
+
+[[handlers]]
+==== Handlers
+
+JAXWS handler can be added in handler chains:
+
+[source, ruby]
+----
+[standalone@localhost:9999 /] /subsystem=webservices/endpoint-config=Recording-Endpoint-Config/pre-handler-chain=recording-handlers/handler=RecordingHandler:read-resource
+{
+    "outcome" => "success",
+    "result" => {"class" => "org.jboss.ws.common.invocation.RecordingServerHandler"},
+    "response-headers" => {"process-state" => "restart-required"}
+}
+[standalone@localhost:9999 /] /subsystem=webservices/endpoint-config=My-Endpoint-Config/post-handler-chain=my-handlers/handler=foo-handler:add(class="org.jboss.ws.common.invocation.RecordingServerHandler")
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-restart" => true,
+        "process-state" => "restart-required"
+    }
+}
+----
+
+Endpoint-config handler classloading
+
+[NOTE]
+
+The `class` attribute is used to provide the fully qualified class name
+of the handler. At deploy time, an instance of the class is created for
+each referencing deployment. For class creation to succeed, the
+deployment classloader must to be able to load the handler class.
+
+[[runtime-information]]
+== Runtime information
+
+Each web service endpoint is exposed through the deployment that
+provides the endpoint implementation. Each endpoint can be queried as a
+deployment resource. For further information please consult the chapter
+"Application Deployment". Each web service endpoint specifies a web
+context and a WSDL Url:
+
+[source, ruby]
+----
+[standalone@localhost:9999 /] /deployment="*"/subsystem=webservices/endpoint="*":read-resource
+{
+   "outcome" => "success",
+   "result" => [{
+       "address" => [
+           ("deployment" => "jaxws-samples-handlerchain.war"),
+           ("subsystem" => "webservices"),
+           ("endpoint" => "jaxws-samples-handlerchain:TestService")
+       ],
+       "outcome" => "success",
+       "result" => {
+           "class" => "org.jboss.test.ws.jaxws.samples.handlerchain.EndpointImpl",
+           "context" => "jaxws-samples-handlerchain",
+           "name" => "TestService",
+           "type" => "JAXWS_JSE",
+           "wsdl-url" => "http://localhost:8080/jaxws-samples-handlerchain?wsdl"
+       }
+   }]
+}
+----
+
+[[component-reference]]
+== Component Reference
+
+The web service subsystem is provided by the JBossWS project. For a
+detailed description of the available configuration properties, please
+consult the project documentation.
+
+****
+
+* JBossWS homepage: http://www.jboss.org/jbossws
+* Project Documentation: https://docs.jboss.org/author/display/JBWS
+
+****

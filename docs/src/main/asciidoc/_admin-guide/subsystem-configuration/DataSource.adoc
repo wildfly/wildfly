@@ -1,0 +1,206 @@
+= DataSource configuration
+
+Datasources are configured through the _datasource_ subsystem. Declaring
+a new datasource consists of two separate steps: You would need to
+provide a JDBC driver and define a datasource that references the driver
+you installed.
+
+[[jdbc-driver-installation]]
+== JDBC Driver Installation
+
+The recommended way to install a JDBC driver into WildFly {wildflyVersion} is to deploy
+it as a regular JAR deployment. The reason for this is that when you run
+WildFly in domain mode, deployments are automatically propagated to all
+servers to which the deployment applies; thus distribution of the driver
+JAR is one less thing for you to worry about!
+
+Any JDBC 4-compliant driver will automatically be recognized and
+installed into the system by name and version. A JDBC JAR is identified
+using the Java service provider mechanism. Such JARs will contain a text
+a file named `META-INF/services/java.sql.Driver`, which contains the
+name of the class(es) of the Drivers which exist in that JAR. If your
+JDBC driver JAR is not JDBC 4-compliant, it can be made deployable in
+one of a few ways.
+
+*Modify the JAR*
+
+The most straightforward solution is to simply modify the JAR and add
+the missing file. You can do this from your command shell by:
+
+1.  Change to, or create, an empty temporary directory.
+2.  Create a `META-INF` subdirectory.
+3.  Create a `META-INF/services` subdirectory.
+4.  Create a `META-INF/services/java.sql.Driver` file which contains one
+line - the fully-qualified class name of the JDBC driver.
+5.  Use the `jar` command-line tool to update the JAR like this:
+
+[source]
+----
+jar \-uf jdbc-driver.jar META-INF/services/java.sql.Driver
+----
+
+For a detailed explanation how to deploy JDBC 4 compliant driver jar,
+please refer to the chapter " link:#application-deployment[Application Deployment]".
+
+[[datasource-definitions]]
+== Datasource Definitions
+
+The datasource itself is defined within the subsystem _datasources_:
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:datasources:4.0">
+    <datasources>
+        <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS">
+            <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
+            <driver>h2</driver>
+            <pool>
+                <min-pool-size>10</min-pool-size>
+                <max-pool-size>20</max-pool-size>
+                <prefill>true</prefill>
+            </pool>
+            <security>
+                <user-name>sa</user-name>
+                <password>sa</password>
+            </security>
+        </datasource>
+        <xa-datasource jndi-name="java:jboss/datasources/ExampleXADS" pool-name="ExampleXADS">
+           <driver>h2</driver>
+           <xa-datasource-property name="URL">jdbc:h2:mem:test</xa-datasource-property>
+           <xa-pool>
+                <min-pool-size>10</min-pool-size>
+                <max-pool-size>20</max-pool-size>
+                <prefill>true</prefill>
+           </xa-pool>
+           <security>
+                <user-name>sa</user-name>
+                <password>sa</password>
+           </security>
+        </xa-datasource>
+        <drivers>
+            <driver name="h2" module="com.h2database.h2">
+                <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
+            </driver>
+        </drivers>
+  </datasources>
+ 
+</subsystem>
+----
+
+~(See~ `standalone/configuration/standalone.xml` ~)~
+
+As you can see the datasource references a driver by it's logical name.
+
+You can easily query the same information through the CLI:
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] /subsystem=datasources:read-resource(recursive=true)
+{
+    "outcome" => "success",
+    "result" => {
+        "data-source" => {"H2DS" => {
+            "connection-url" => "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
+            "jndi-name" => "java:/H2DS",
+            "driver-name" => "h2",
+            "pool-name" => "H2DS",
+            "use-java-context" => true,
+            "enabled" => true,
+            "jta" => true,
+            "pool-prefill" => true,
+            "pool-use-strict-min" => false,
+            "user-name" => "sa",
+            "password" => "sa",
+            "flush-strategy" => "FailingConnectionOnly",
+            "background-validation" => false,
+            "use-fast-fail" => false,
+            "validate-on-match" => false,
+            "use-ccm" => true
+        }},
+        "xa-data-source" => undefined,
+        "jdbc-driver" => {"h2" => {
+            "driver-name" => "h2",
+            "driver-module-name" => "com.h2database.h2",
+            "driver-xa-datasource-class-name" => "org.h2.jdbcx.JdbcDataSource"
+        }}
+    }
+}
+ 
+ 
+[standalone@localhost:9990 /] /subsystem=datasources:installed-drivers-list
+{
+    "outcome" => "success",
+    "result" => [{
+        "driver-name" => "h2",
+        "deployment-name" => undefined,
+        "driver-module-name" => "com.h2database.h2",
+        "module-slot" => "main",
+        "driver-xa-datasource-class-name" => "org.h2.jdbcx.JdbcDataSource",
+        "driver-class-name" => "org.h2.Driver",
+        "driver-major-version" => 1,
+        "driver-minor-version" => 3,
+        "jdbc-compliant" => true
+    }]
+}
+----
+
+[TIP]
+
+Using the web console or the CLI greatly simplifies the deployment of
+JDBC drivers and the creation of datasources.
+
+The CLI offers a set of commands to create and modify datasources:
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] data-source --help
+ 
+SYNOPSIS
+  data-source --help [--properties | --commands] |
+              (--name=<resource_id> (--<property>=<value>)*) |
+              (<command> --name=<resource_id> (--<parameter>=<value>)*)
+              [--headers={<operation_header> (;<operation_header>)*}]
+DESCRIPTION
+  The command is used to manage resources of type /subsystem=datasources/data-source.
+[...]
+ 
+ 
+[standalone@localhost:9990 /] xa-data-source --help
+ 
+SYNOPSIS
+  xa-data-source --help [--properties | --commands] |
+                 (--name=<resource_id> (--<property>=<value>)*) |
+                 (<command> --name=<resource_id> (--<parameter>=<value>)*)
+                 [--headers={<operation_header> (;<operation_header>)*}]
+ 
+DESCRIPTION
+  The command is used to manage resources of type /subsystem=datasources/xa-data-source.
+ 
+RESOURCE DESCRIPTION
+  A JDBC XA data-source configuration
+ 
+[...]
+----
+
+[[using-security-domains]]
+== Using security domains
+
+Information can be found at
+https://community.jboss.org/wiki/JBossAS7SecurityDomainModel
+
+[[component-reference]]
+== Component Reference
+
+The datasource subsystem is provided by the
+http://www.jboss.org/ironjacamar[IronJacamar] project. For a detailed
+description of the available configuration properties, please consult
+the project documentation.
+
+****
+
+* IronJacamar homepage: http://ironjacamar.org/
+* Project Documentation: http://ironjacamar.org/documentation.html
+* Schema description:
+http://www.ironjacamar.org/doc/userguide/1.1/en-US/html_single/index.html#deployingds_descriptor
+
+****

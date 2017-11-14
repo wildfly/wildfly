@@ -1,0 +1,38 @@
+= Migrate Legacy Security to Elytron Security
+
+== Authentication Configuration
+
+:leveloffset: +1
+include::migrate/Properties_File_Based_Authentication_Migration.adoc[]
+include::migrate/LDAP_Based_Authentication_Migration.adoc[]
+include::migrate/Composite_Stores_Migration.adoc[]
+include::migrate/Database_Authentication_Migration.adoc[]
+include::migrate/Kerberos_Based_Authentication_Migration.adoc[]
+include::migrate/Caching_Migration.adoc[]
+
+:leveloffset: -1
+== Clients
+:leveloffset: +1
+include::migrate/Application_Client_Migration.adoc[]
+:leveloffset: -1
+
+== General Utilities
+:leveloffset: +1
+include::migrate/Security_Vault_Migration.adoc[]
+include::migrate/Security_Property_Migration.adoc[]
+:leveloffset: -1
+
+== SSL Migration
+:leveloffset: +1
+include::migrate/Simple_SSL_Migration.adoc[]
+include::migrate/SSL_with_Client_Cert_Migration.adoc[]
+:leveloffset: -1
+
+[[documentation-still-needed]]
+== Documentation Still Needed
+
+** How to migrate application which uses different identity store for
+authentication and authorization (migration to Elytron aggregate-realm).
+** How migrate to using cache (migration to caching-realm)
+** Limitations for migration from PicketBox/legacy security to Elytron,
+for example, Infinispan cache cannot be used, any others?

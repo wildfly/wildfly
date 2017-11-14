@@ -1,0 +1,28 @@
+= Remote JNDI Configuration
+
+The Naming subsystem configuration may be used to (de)activate the
+remote JNDI interface, which allows clients to lookup entries present in
+a remote WildFly instance.
+
+[NOTE]
+
+Only entries within the `java:jboss/exported` context are accessible
+over remote JNDI.
+
+In the subsystem's XML configuration, remote JNDI access bindings are
+configured through the `<remote-naming />` XML element:
+
+[source, xml]
+----
+<remote-naming />
+----
+
+Management clients, such as the WildFly CLI, may be used to add/remove
+the remote JNDI interface. An example to `add` and `remove` the one in
+the XML example above:
+
+[source, ruby]
+----
+/subsystem=naming/service=remote-naming:add
+/subsystem=naming/service=remote-naming:remove
+----

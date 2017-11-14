@@ -1,0 +1,143 @@
+= Published WSDL customization
+
+[[endpoint-address-rewrite]]
+== Endpoint address rewrite
+
+JBossWS supports the rewrite of the `<soap:address>` element of
+endpoints published in WSDL contracts. This feature is useful for
+controlling the server address that is advertised to clients for each
+endpoint. The rewrite mechanism is configured at server level through a
+set of elements in the webservices subsystem of the WildFly management
+model. Please refer to the container documentation for details on the
+options supported in the selected container version. Below is a list of
+the elements available in the latest WildFly sources:
+
+[cols=",,",options="header"]
+|=======================================================================
+|Name |Type |Description
+
+|modify-wsdl-address |boolean |This boolean enables and disables the
+address rewrite functionality.When modify-wsdl-address is set to true
+and the content of <soap:address> is a valid URL, JBossWS will rewrite
+the URL using the values of wsdl-host and wsdl-port or
+wsdl-secure-port.When modify-wsdl-address is set to false and the
+content of <soap:address> is a valid URL, JBossWS will not rewrite the
+URL. The <soap:address> URL will be used.When the content of
+<soap:address> is not a valid URL, JBossWS will rewrite it no matter
+what the setting of modify-wsdl-address.If modify-wsdl-address is set to
+true and wsdl-host is not defined or explicitly set to
+'jbossws.undefined.host' the content of <soap:address> URL is use.
+JBossWS uses the requester's host when rewriting the <soap:address>When
+modify-wsdl-address is not defined JBossWS uses a default value of true.
+
+|wsdl-host |string |The hostname / IP address to be used for rewriting
+<soap:address>.If wsdl-host is set to jbossws.undefined.host, JBossWS
+uses the requester's host when rewriting the <soap:address>When
+wsdl-host is not defined JBossWS uses a default value of
+'jbossws.undefined.host'.
+
+|wsdl-port |int |Set this property to explicitly define the HTTP port
+that will be used for rewriting the SOAP address.Otherwise the HTTP port
+will be identified by querying the list of installed HTTP connectors.
+
+|wsdl-secure-port |int |Set this property to explicitly define the HTTPS
+port that will be used for rewriting the SOAP address.Otherwise the
+HTTPS port will be identified by querying the list of installed HTTPS
+connectors.
+
+|wsdl-uri-scheme |string |This property explicitly sets the URI scheme
+to use for rewriting <soap:address> . Valid values are http and https.
+This configuration overrides scheme computed by processing the endpoint
+(even if a transport guaranteeis specified). The provided values for
+wsdl-port and wsdl-secure-port (or their default values) are used
+depending on specified scheme.
+
+|wsdl-path-rewrite-rule |string |This string defines a SED substitution
+command (e.g., 's/regexp/replacement/g') that JBossWS executes against
+the path component of each <soap:address> URL published from the
+server.When wsdl-path-rewrite-rule is not defined, JBossWS retains the
+original path component of each <soap:address> URL.When
+'modify-wsdl-address' is set to "false" this element is ignored.
+|=======================================================================
+
+Additionally, users can override the server level configuration by
+requesting a specific rewrite behavior for a given endpoint deployment.
+That is achieved by setting one of the following properties within a
+_jboss-webservices.xml_ descriptor:
+
+[cols=",",options="header"]
+|=======================================================================
+|Property |Corresponding server option
+|wsdl.soapAddress.rewrite.modify-wsdl-address |modify-wsdl-address
+|wsdl.soapAddress.rewrite.wsdl-host |wsdl-host
+|wsdl.soapAddress.rewrite.wsdl-port |wsdl-port
+|wsdl.soapAddress.rewrite.wsdl-secure-port |wsdl-secure-port
+|wsdl.soapAddress.rewrite.wsdl-path-rewrite-rule |wsdl-path-rewrite-rule
+|wsdl.soapAddress.rewrite.wsdl-uri-scheme |wsdl-uri-scheme
+|=======================================================================
+
+Here is an example of partial overriding of the default configuration
+for a specific deployment:
+
+[source,xml]
+----
+<?xml version="1.1" encoding="UTF-8"?>
+<webservices version="1.2"
+  xmlns="http://www.jboss.com/xml/ns/javaee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee">
+  <property>
+    <name>wsdl.soapAddress.rewrite.wsdl-uri-scheme</name>
+    <value>https</value>
+  </property>
+  <property>
+    <name>wsdl.soapAddress.rewrite.wsdl-host</name>
+    <value>foo</value>
+  </property>
+</webservices>
+----
+
+[[system-property-references]]
+== System property references
+
+System property references wrapped within "@" characters are expanded
+when found in WSDL attribute and element values. This allows for
+instance including multiple WS-Policy declarations in the contract and
+selecting the policy to use depending on a server wide system property;
+here is an example:
+
+[source,xml]
+----
+<wsdl:definitions ...>
+  ...
+  <wsdl:binding name="ServiceOneSoapBinding" type="tns:EndpointOne">
+    ...
+    <wsp:PolicyReference URI="#@org.jboss.wsf.test.JBWS3628TestCase.policy@"/>
+    <wsdl:operation name="echo">
+      ...
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ServiceOne">
+    <wsdl:port binding="tns:ServiceOneSoapBinding" name="EndpointOnePort">
+      <soap:address location="http://localhost:8080/jaxws-cxf-jbws3628/ServiceOne"/>
+    </wsdl:port>
+  </wsdl:service>
+ 
+  <wsp:Policy xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsp="http://www.w3.org/ns/ws-policy" wsu:Id="WS-RM_Policy">
+ <wsrmp:RMAssertion xmlns:wsrmp="http://schemas.xmlsoap.org/ws/2005/02/rm/policy">
+          ...
+   </wsrmp:RMAssertion>
+  </wsp:Policy>
+ 
+  <wsp:Policy xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsp="http://www.w3.org/ns/ws-policy"
+      xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" wsu:Id="WS-Addressing_policy">
+    <wsam:Addressing>
+      <wsp:Policy/>
+    </wsam:Addressing>
+  </wsp:Policy>
+</wsdl:definitions>
+----
+
+If the *_org.jboss.wsf.test.JBWS3628TestCase.policy_* system property is
+defined and set to " *_WS-Addressing_policy_* ", WS-Addressing will be
+enabled for the endpoint defined by the contract above.

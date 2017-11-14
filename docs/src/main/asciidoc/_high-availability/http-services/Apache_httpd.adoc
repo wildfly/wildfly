@@ -1,0 +1,25 @@
+= Apache httpd
+
+The recommended front-end module is mod_cluster but mod_jk or mod_proxy
+could be used as in Tomcat or other AS version.
+
+To use AJP define a ajp connector in the web subsystem like:
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:web:1.0"> +
+<connector name="http" protocol="HTTP/1.1" socket-binding="http"/> +
+<connector name="ajp" protocol="AJP/1.3" socket-binding="ajp"/>
+----
+
+sTo the ajp in the in the socket-binding-group like:
+
+[source, xml]
+----
+<socket-binding-group name="standard-sockets"
+default-interface="public"> +
+.... +
+<socket-binding name="http" port="8080"/> +
+<socket-binding name="ajp" port="8009"/> +
+<socket-binding name="https" port="8443"/>
+----

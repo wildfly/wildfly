@@ -1,0 +1,77 @@
+= CLI extensibility for layered products
+
+In addition to supporting the ServiceLoader extension mechanism to load
+command handlers coming from outside of the CLI codebase, starting from
+the wildfly-core-1.0.0.Beta1 release the CLI running in a modular
+classloading environment can be extended with commands exposed in server
+extension modules. The CLI will look for and register extension commands
+when it (re-)connects to the controller by iterating through the
+registered by that time extensions and using the ServiceLoader mechanism
+on the extension modules. (Note, that this mechanism will work only for
+extensions available in the server installation the CLI is launched
+from.)
+
+Here is an example of a simple command handler and its integration.
+
+[source, java]
+----
+package org.jboss.as.test.cli.extensions;public class ExtCommandHandler extends org.jboss.as.cli.handlers.CommandHandlerWithHelp {     
+ 
+package org.jboss.as.test.cli.extensions;
+public class ExtCommandHandler extends org.jboss.as.cli.handlers.CommandHandlerWithHelp {
+ 
+ 
+    public static final String NAME = "ext-command";
+    public static final String OUTPUT = "hello world!";
+ 
+ 
+    public CliExtCommandHandler() {
+        super(NAME, false);
+    }
+ 
+ 
+    @Override
+    protected void doHandle(CommandContext ctx) throws CommandLineException {
+        ctx.printLine(OUTPUT);
+    }
+}
+----
+
+The command will simply print a message to the terminal. The next step
+is to implement the CLI CommandHandlerProvider interface.
+
+[source, java]
+----
+package org.jboss.as.test.cli.extensions;
+public class ExtCommandHandlerProvider implements org.jboss.as.cli.CommandHandlerProvider {
+ 
+ 
+    @Override
+    public CommandHandler createCommandHandler(CommandContext ctx) {
+        return new ExtCommandHandler();
+    }
+ 
+ 
+    /**
+     * Whether the command should be available in tab-completion.
+     */
+    @Override
+    public boolean isTabComplete() {
+        return true;
+    }
+ 
+ 
+    /**
+     * Command name(s).
+     */
+    @Override
+    public String[] getNames() {
+        return new String[]{ExtCommandHandler.NAME};
+    }
+}
+----
+
+The final step is to include
+*META-INF/services/org.jboss.as.cli.CommandHandlerProvider* entry into
+the JAR file containing the classes above with value
+*org.jboss.as.test.cli.extensions.ExtCommandHandlerProvider*.

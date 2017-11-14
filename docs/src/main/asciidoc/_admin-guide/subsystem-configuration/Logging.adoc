@@ -1,0 +1,324 @@
+= Logging Configuration
+
+[[overview]]
+== Overview
+
+The overall server logging configuration is represented by the logging
+subsystem. It consists of four notable parts: `handler` configurations,
+`logger`, the `root logger` declarations (aka log categories) and
+logging profiles. Each logger does reference a handler (or set of
+handlers). Each handler declares the log format and output:
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:logging:3.0">
+   <console-handler name="CONSOLE" autoflush="true">
+       <level name="DEBUG"/>
+       <formatter>
+           <named-formatter name="COLOR-PATTERN"/>
+       </formatter>
+   </console-handler>
+   <periodic-rotating-file-handler name="FILE" autoflush="true">
+       <formatter>
+           <named-formatter name="PATTERN"/>
+       </formatter>
+       <file relative-to="jboss.server.log.dir" path="server.log"/>
+       <suffix value=".yyyy-MM-dd"/>
+   </periodic-rotating-file-handler>
+   <logger category="com.arjuna">
+       <level name="WARN"/>
+   </logger>
+   [...]
+   <root-logger>
+       <level name="DEBUG"/>
+       <handlers>
+           <handler name="CONSOLE"/>
+           <handler name="FILE"/>
+       </handlers>
+   </root-logger>
+   <formatter name="PATTERN">
+       <pattern-formatter pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
+   </formatter>
+   <formatter name="COLOR-PATTERN">
+       <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
+   </formatter>
+</subsystem>
+----
+
+[[attributes]]
+== Attributes
+
+The root resource contains two notable attributes
+`add-logging-api-dependencies` and `use-deployment-logging-config`.
+
+[[add-logging-api-dependencies]]
+=== add-logging-api-dependencies
+
+The `add-logging-api-dependencies` controls whether or not the container
+adds
+link:Implicit_module_dependencies_for_deployments.html#src-557203_safe-id-SW1wbGljaXRtb2R1bGVkZXBlbmRlbmNpZXNmb3JkZXBsb3ltZW50cy1JbXBsaWNpdG1vZHVsZWRlcGVuZGVuY2llc2ZvcmRlcGxveW1lbnRzLVdoaWNoYXJldGhlaW1wbGljaXRtb2R1bGVkZXBlbmRlbmNpZXMlM0Y[implicit]
+logging API dependencies to your deployments. If set to `true`, the
+default, all the implicit logging API dependencies are added. If set to
+`false` the dependencies are not added to your deployments.
+
+[[use-deployment-logging-config]]
+=== use-deployment-logging-config
+
+The `use-deployment-logging-config` controls whether or not your
+deployment is scanned for
+link:#src-557095_LoggingConfiguration-Per-deploymentLogging[per-deployment
+logging]. If set to `true`, the default,
+link:#src-557095_LoggingConfiguration-Per-deploymentLogging[per-deployment
+logging] is enabled. Set to `false` to disable this feature.
+
+[[per-deployment-logging]]
+== Per-deployment Logging
+
+Per-deployment logging allows you to add a logging configuration file to
+your deployment and have the logging for that deployment configured
+according to the configuration file. In an EAR the configuration should
+be in the `META-INF` directory. In a WAR or JAR deployment the
+configuration file can be in either the `META-INF` or `WEB-INF/classes`
+directories.
+
+The following configuration files are allowed:
+
+* logging.properties
+* jboss-logging.properties
+* log4j.properties
+* log4j.xml
+* jboss-log4j.xml
+
+You can also disable this functionality by changing the
+`use-deployment-logging-config` attribute to `false`.
+
+[[logging-profiles]]
+== Logging Profiles
+
+Logging profiles are like additional logging subsystems. Each logging
+profile constists of three of the four notable parts listed above:
+`handler` configurations, `logger` and the `root logger` declarations.
+
+You can assign a logging profile to a deployment via the deployments
+manifest. Add a `Logging-Profile` entry to the `MANIFEST.MF` file with a
+value of the logging profile id. For example a logging profile defined
+on `/subsystem=logging/logging-profile=ejbs` the MANIFEST.MF would look
+like:
+
+....
+Manifest-Version: 1.0
+Logging-Profile: ejbs
+....
+
+A logging profile can be assigned to any number of deployments. Using a
+logging profile also allows for runtime changes to the configuration.
+This is an advantage over the per-deployment logging configuration as
+the redeploy is not required for logging changes to take affect.
+
+[[default-log-file-locations]]
+== Default Log File Locations
+
+[[managed-domain]]
+=== Managed Domain
+
+In a managed domain two types of log files do exist: Controller and
+server logs. The controller components govern the domain as whole. It's
+their responsibility to start/stop server instances and execute managed
+operations throughout the domain. Server logs contain the logging
+information for a particular server instance. They are co-located with
+the host the server is running on.
+
+For the sake of simplicity we look at the default setup for managed
+domain. In this case, both the domain controller components and the
+servers are located on the same host:
+
+[cols=",",options="header"]
+|============================================================
+|Process |Log File
+|Host Controller |./domain/log/host-controller.log
+|Process Controller |./domain/log/process-controller.log
+|"Server One" |./domain/servers/server-one/log/server.log
+|"Server Two" |./domain/servers/server-two/log/server.log
+|"Server Three" |./domain/servers/server-three/log/server.log
+|============================================================
+
+[[standalone-server]]
+=== Standalone Server
+
+The default log files for a standalone server can be found in the log
+subdirectory of the distribution:
+
+[cols=",",options="header"]
+|===================================
+|Process |Log File
+|Server |./standalone/log/server.log
+|===================================
+
+[[filter-expressions]]
+== Filter Expressions
+
+[cols=",,,,",options="header"]
+|=======================================================================
+|Filter Type |Expression |Description |Parameter(s) |Examples
+
+|accept |accept |Accepts all log messages. |None |accept
+
+|deny |deny |enies all log messages. |None |deny
+
+|not |not(filterExpression) |Accepts a filter as an argument and inverts
+the returned value. |The expression takes a single filter for it's
+argument. |not(match("JBAS"))
+
+|all |all(filterExpressions) |A filter consisting of several filters in
+a chain. If any filter find the log message to be unloggable, the
+message will not be logged and subsequent filters will not be checked.
+|The expression takes a comma delimited list of filters for it's
+argument. |all(match("JBAS"), match("WELD"))
+
+|any |any(filterExpressions) |A filter consisting of several filters in
+a chain. If any filter fins the log message to be loggable, the message
+will be logged and the subsequent filters will not be checked. |The
+expression takes a comma delimited list of filters for it's argument.
+|any(match("JBAS"), match("WELD"))
+
+|levelChange |levelChange(level) |A filter which modifies the log record
+with a new level. |The expression takes a single string based level for
+it's argument. |levelChange(WARN)
+
+|levels |levels(levels) |A filter which includes log messages with a
+level that is listed in the list of levels. |The expression takes a
+comma delimited list of string based levels for it's argument.
+|levels(DEBUG, INFO, WARN, ERROR)
+
+|levelRange |levelRange([minLevel,maxLevel]) |A filter which logs
+records that are within the level range. |The filter expression uses a
+"[" to indicate a minimum inclusive level and a "]" to indicate a
+maximum inclusive level. Otherwise use "(" or ")" respectively indicate
+exclusive. The first argument for the expression is the minimum level
+allowed, the second argument is the maximum level allowed. |minimum
+level must be less than ERROR and the maximum level must be greater than
+DEBUGlevelRange(ERROR, DEBUG) minimum level must be less than or equal
+to ERROR and the maximum level must be greater than
+DEBUGlevelRange[ERROR, DEBUG) minimum level must be less than or equal
+to ERROR and the maximum level must be greater or equal to
+INFOlevelRange[ERROR, INFO]
+
+|match |match("pattern") |A regular-expression based filter. The raw
+unformatted message is used against the pattern. |The expression takes a
+regular expression for it's argument. match("JBAS\d+") |
+
+|substitute |substitute("pattern", "replacement value") |A filter which
+replaces the first match to the pattern with the replacement value. |The
+first argument for the expression is the pattern the second argument is
+the replacement text. |substitute("JBAS", "EAP")
+
+|substituteAll |substituteAll("pattern", "replacement value") |A filter
+which replaces all matches of the pattern with the replacement value.
+|The first argument for the expression is the pattern the second
+argument is the replacement text. |substituteAll("JBAS", "EAP")
+|=======================================================================
+
+[[list-log-files-and-reading-log-files]]
+== List Log Files and Reading Log Files
+
+Log files can be listed and viewed via management operations. The log
+files allowed to be viewed are intentionally limited to files that exist
+in the `jboss.server.log.dir` and are associated with a known file
+handler. Known file handler types include `file-handler`,
+`periodic-rotating-file-handler` and `size-rotating-file-handler`. The
+operations are valid in both standalone and domain modes.
+
+[[list-log-files]]
+=== List Log Files
+
+The logging subsystem has a `log-file` resource off the subsystem root
+resource and off each `logging-profile` resource to list each log file.
+
+.CLI command and output
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] /subsystem=logging:read-children-names(child-type=log-file)
+{
+    "outcome" => "success",
+    "result" => [
+        "server.log",
+        "server.log.2014-02-12",
+        "server.log.2014-02-13"
+    ]
+}
+----
+
+[[read-log-file]]
+=== Read Log File
+
+The `read-log-file` operation is available on each `log-file` resource.
+This operation has 4 optional parameters.
+
+[cols=",",options="header"]
+|=======================================================================
+|Name |Description
+
+|encoding |the encoding the file should be read in
+
+|lines |the number of lines from the file. A value of -1 indicates all
+lines should be read.
+
+|skip |the number of lines to skip before reading.
+
+|tail |true to read from the end of the file up or false to read top
+down.
+|=======================================================================
+
+.CLI command and output
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] /subsystem=logging/log-file=server.log:read-log-file
+{
+    "outcome" => "success",
+    "result" => [
+        "2014-02-14 14:16:48,781 INFO  [org.jboss.as.server.deployment.scanner] (MSC service thread 1-11) JBAS015012: Started FileSystemDeploymentService for directory /home/jperkins/servers/wildfly-8.0.0.Final/standalone/deployments",
+        "2014-02-14 14:16:48,782 INFO  [org.jboss.as.connector.subsystems.datasources] (MSC service thread 1-8) JBAS010400: Bound data source [java:jboss/myDs]",
+        "2014-02-14 14:16:48,782 INFO  [org.jboss.as.connector.subsystems.datasources] (MSC service thread 1-15) JBAS010400: Bound data source [java:jboss/datasources/ExampleDS]",
+        "2014-02-14 14:16:48,786 INFO  [org.jboss.as.server.deployment] (MSC service thread 1-9) JBAS015876: Starting deployment of \"simple-servlet.war\" (runtime-name: \"simple-servlet.war\")",
+        "2014-02-14 14:16:48,978 INFO  [org.jboss.ws.common.management] (MSC service thread 1-10) JBWS022052: Starting JBoss Web Services - Stack CXF Server 4.2.3.Final",
+        "2014-02-14 14:16:49,160 INFO  [org.wildfly.extension.undertow] (MSC service thread 1-16) JBAS017534: Registered web context: /simple-servlet",
+        "2014-02-14 14:16:49,189 INFO  [org.jboss.as.server] (Controller Boot Thread) JBAS018559: Deployed \"simple-servlet.war\" (runtime-name : \"simple-servlet.war\")",
+        "2014-02-14 14:16:49,224 INFO  [org.jboss.as] (Controller Boot Thread) JBAS015961: Http management interface listening on http://127.0.0.1:9990/management",
+        "2014-02-14 14:16:49,224 INFO  [org.jboss.as] (Controller Boot Thread) JBAS015951: Admin console listening on http://127.0.0.1:9990",
+        "2014-02-14 14:16:49,225 INFO  [org.jboss.as] (Controller Boot Thread) JBAS015874: WildFly {wildflyVersion}.0.0.Final \"WildFly\" started in 1906ms - Started 258 of 312 services (90 services are lazy, passive or on-demand)"
+    ]
+}
+----
+
+[[faq]]
+== FAQ
+
+[[why-is-there-a-logging.properties-file]]
+=== Why is there a logging.properties file?
+
+You may have noticed that there is a `logging.properties` file in the
+configuration directory. This is logging configuration is used when the
+server boots up until the logging subsystem kicks in. If the logging
+subsystem is not included in your configuration, then this would act as
+the logging configuration for the entire server.
+
+[TIP]
+
+The `logging.properties` file is overwritten at boot and with each
+change to the logging subsystem. Any changes made to the file are not
+persisted. Any changes made to the XML configuration or via management
+operations will be persisted to the `logging.properties` file and used
+on the next boot.
+
+
+:leveloffset: +1
+
+include::Logging_Handlers.adoc[]
+
+include::Logging_How_To.adoc[]
+
+include::Logging_Loggers.adoc[]
+
+:leveloffset: -1

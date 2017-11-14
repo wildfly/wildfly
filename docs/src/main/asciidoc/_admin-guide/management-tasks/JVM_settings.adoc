@@ -1,0 +1,90 @@
+= JVM settings
+
+Configuration of the JVM settings is different for a managed domain and
+a standalone server. In a managed domain, the domain controller
+components are responsible for starting and stoping server processes and
+hence determine the JVM settings. For a standalone server, it's the
+responsibility of the process that started the server (e.g. passing them
+as command line arguments).
+
+[[managed-domain]]
+== Managed Domain
+
+In a managed domain the JVM settings can be declared at different
+scopes: For a specific server group, for a host or for a particular
+server. If not declared, the settings are inherited from the parent
+scope. This allows you to customize or extend the JVM settings within
+every layer.
+
+Let's take a look at the JVM declaration for a server group:
+
+[source, xml]
+----
+<server-groups>
+       <server-group name="main-server-group" profile="default">
+           <jvm name="default">
+               <heap size="64m" max-size="512m"/>
+           </jvm>
+           <socket-binding-group ref="standard-sockets"/>
+       </server-group>
+       <server-group name="other-server-group" profile="default">
+           <jvm name="default">
+               <heap size="64m" max-size="512m"/>
+           </jvm>
+           <socket-binding-group ref="standard-sockets"/>
+       </server-group>
+</server-groups>
+----
+
+~(See~ `domain/configuration/domain.xml` ~)~
+
+In this example the server group "main-server-group" declares a heap
+size of `64m` and a maximum heap size of `512m`. Any server that belongs
+to this group will inherit these settings. You can change these settings
+for the group as a whole, or a specific server or host:
+
+[source, xml]
+----
+<servers>
+       <server name="server-one" group="main-server-group" auto-start="true">
+           <jvm name="default"/>
+       </server>
+       <server name="server-two" group="main-server-group" auto-start="true">
+           <jvm name="default">
+               <heap size="64m" max-size="256m"/>
+           </jvm>
+           <socket-binding-group ref="standard-sockets" port-offset="150"/>
+       </server>
+       <server name="server-three" group="other-server-group" auto-start="false">
+           <socket-binding-group ref="standard-sockets" port-offset="250"/>
+       </server>
+</servers>
+----
+
+~(See domain/configuration/host.xml)~
+
+In this case, _server-two_, belongs to the _main-server-group_ and
+inherits the JVM settings named _default_, but declares a lower maximum
+heap size.
+
+[source, ruby]
+----
+[domain@localhost:9999 /] /host=local/server-config=server-two/jvm=default:read-resource
+{
+   "outcome" => "success",
+   "result" => {
+       "heap-size" => "64m",
+       "max-heap-size" => "256m",
+   }
+}
+----
+
+[[standalone-server]]
+== Standalone Server
+
+For a standalone sever you have to pass in the JVM settings either as
+command line arguments when executing the
+`$JBOSS_HOME/bin/standalone.sh` script, or by declaring them in
+`$JBOSS_HOME/bin/standalone.conf`. (For Windows users, the script to
+execute is `%JBOSS_HOME%/bin/standalone.bat` while the JVM settings can
+be declared in `%JBOSS_HOME%/bin/standalone.conf.bat.)`

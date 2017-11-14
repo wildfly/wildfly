@@ -1,0 +1,133 @@
+= WildFly Testsuite Overview
+
+This document will detail the implementation of the testsuite
+Integration submodule as it guides you on adding your own test cases.
+
+The WildFly integration test suite has been designed with the following
+goals:
+
+* support execution of all identified test case use cases
+* employ a design/organization which is scalable and maintainable
+* provide support for the automated measurement of test suite quality
+(generation of feature coverage reports, code coverage reports)
+
+In addition, these requirements were considered:
+
+* identifying distinct test case runs of the same test case with a
+different set of client side parameters and server side parameters
+* separately maintaining server side execution results (e.g. logs, the
+original server configuration) for post-execution debugging
+* running the testsuite in conjunction with a debugger
+* the execution of a single test (for debugging purposes)
+* running test cases against different container modes (managed in the
+main, but also remote and embedded)
+* configuring client and server JVMs separately (e.g., IPv6 testing)
+
+[[test-suite-organization]]
+== Test Suite Organization
+
+The testsuite module has a small number of submodules:
+
+* *benchmark* - holds all benchmark tests intended to assess relative
+performance of specific feature
+* *domain* - holds all domain management tests
+* *integration* - holds all integration tests
+* *stress* - holds all stress tests
+
+It is expected that test contributions fit into one of these categories.
+
+The pom.xml file located in the testsuite module is inherited by all
+submodules and is used to do the following:
+
+* set defaults for common testsuite system properties (which can then be
+overridden on the command line)
+* define dependencies common to all tests (Arquillian, junit or testng,
+and container type)
+* provide a workaround for @Resource(lookup=...) which requires
+libraries in jbossas/endorsed
+
+It should not:
+
+* define module-specific server configuration build steps
+* define module-specific surefire executions
+
+These elements should be defined in logical profiles associated with
+each logical grouping of tests; e.g., in the pom for the module which
+contains the tests. The submodule poms contain additional details of
+their function and purpose as well as expanded information as shown in
+this document.
+
+[[profiles]]
+== Profiles
+
+You should not activate the abovementioned profiles by -P, because that
+disables other profiles which are activated by default.
+
+Instead, you should always use activating properties, which are in
+parenthesis in the lists below.
+
+*Testsuite profiles* are used to group tests into logical groups.
+
+* all-modules.module.profile (all-modules)
+* integration.module.profile (integration.module)
+* compat.module.profile (compat.module)
+* domain.module.profile (domain.module)
+* benchmark.module.profile (benchmark.module)
+* stress.module.profile (stress.module)
+
+They also pprepare WildFly instances and resources for respective
+testsuite submodules.
+
+* jpda.profile - sets surefire.jpda.args (debug)
+* ds.profile -sets database properties and prepares the datasource
+(ds=<db id>)
+** Has related database-specific profiles, like mysql51.profile etc.
+
+*Integration testsuite profiles* configure surefire executions.
+
+* smoke.integration.tests.profile
+* basic.integration.tests.profile
+* clustering.integration.tests.profile
+
+== Integration tests
+
+[[smoke--dts.smoke--dts.nosmoke]]
+=== Smoke -Dts.smoke, -Dts.noSmoke
+
+Contains smoke tests.
+
+Runs by default; use -Dts.noSmoke to prevent running.
+
+Tests should execute quickly.
+
+Divided into two Surefire executions:
+
+* One with full profile
+* Second with web profile (majority of tests).
+
+[[basic--dts.basic]]
+=== Basic -Dts.basic
+
+Basic integration tests - those which do not need special configuration
+like cluster.
+
+Divided into three Surefire executions:
+
+* One with full profile,
+* Second with web profile (majority of tests).
+* Third with web profile, but needs to be run after server restart to
+check whether persistent data are really persisted.
+
+[[cluster--dts.clust]]
+=== Cluster -Dts.clust
+
+Sets up a cluster of two nodes.
+
+[[iiop--dts.iiop]]
+=== IIOP -Dts.iiop
+
+[[xts--dts.xts]]
+== XTS -Dts.XTS
+
+[[multinode--dts.multinode]]
+=== Multinode -Dts.multinode

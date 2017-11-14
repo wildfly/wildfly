@@ -1,0 +1,65 @@
+= Getting Started Developing Applications Guide
+WildFly team;
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 2
+:toc-title: Getting Started Developing Applications Guide
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+:wildflyVersion: 11
+
+ifndef::ebook-format[:leveloffset: 1]
+
+(C) 2017 The original authors.
+
+ifdef::basebackend-html[toc::[]]
+:numbered:
+
+
+This guide has moved to
+https://github.com/wildfly/quickstart/blob/11.x/guide/
+
+
+
+////
+include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/guide.asciidoc[]
+////
+
+
+include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/Introduction.asciidoc[]
+
+include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/GettingStarted.asciidoc[]
+
+include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/HelloworldQuickstart.asciidoc[]
+
+include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/NumberguessQuickstart.asciidoc[]
+
+include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/GreeterQuickstart.asciidoc[]
+
+include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/KitchensinkQuickstart.asciidoc[]
+
+include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/Archetype.asciidoc[]
+
+
+= More Resources
+
+[cols=","]
+|=======================================================================
+| link:Getting_Started_Guide.adoc[Getting Started Guide] |The Getting Started Guide covers topics such as
+server layout (what you can configure where), data source definition,
+and using the web management interface.
+
+| link:http://torquebox.org/[Torquebox] |Torque Box allows you to use all the familiar services from
+JBoss AS 7, but with Ruby.
+
+| link:https://developer.jboss.org/wiki/JBossAS7FAQ[JBoss AS 7 FAQ] |Frequently Asked Questions for JBoss AS 7
+|=======================================================================
+
+:leveloffset: +1
+
+include::_extras/Developing_JSF_Project_Using,_Maven_and_IntelliJ.adoc[]
+
+include::_extras/Getting_Started_Developing_Applications_Presentation_Demo.adoc[]
+

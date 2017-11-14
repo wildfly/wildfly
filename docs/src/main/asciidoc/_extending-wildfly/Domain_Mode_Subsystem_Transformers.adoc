@@ -1,0 +1,2704 @@
+= Domain Mode Subsystem Transformers
+
+[[abstract]]
+== Abstract
+
+A WildFly domain may consist of a new Domain Controller (DC) controlling
+slave Host Controllers (HC) running older versions. Each slave HC
+maintains a copy of the centralized domain configuration, which they use
+for controlling their own servers. In order for the slave HCs to
+understand the configuration from the DC, transformation is needed,
+whereby the DC translates the configuration and operations into
+something the slave HCs can understand.
+
+[[background]]
+== Background
+
+WildFly comes with a link:Domain_Setup.html[domain mode] which allows
+you to have one Host Controller acting as the Domain Controller. The
+Domain Controller's job is to maintain the centralized domain
+configuration. Another term for the DC is 'Master Host Controller'.
+Before explaining why transformers are important and when they should be
+used, we will revisit how the domain configuration is used in domain
+mode.
+
+The centralized domain configuration is stored in `domain.xml`. This is
+only ever parsed on the DC, and it has the following structure:
+
+* `extensions` - contains:
+** `extension` - a references to a module that bootstraps the
+`org.jboss.as.controller.Extension` implementation used to bootstrap
+your subsystem parsers and initialize the resource definitions for your
+subsystems.
+* `profiles` - contains:
+** `profile` - a named set of:
+*** `subsystem` - contains the configuration for a subsystem, using the
+parser initialized by the subsystem's extension.
+* `socket-binding-groups` - contains:
+** `socket-binding-group` - a named set of:
+*** `socket-binding` - A named port on an interface which can be
+referenced from the `subsystem` configurations for subsystems opening
+sockets.
+* `server-groups` - contains
+** `server-group` - this has a name and references a `profile` and a
+`socket-binding-group`. The HCs then reference the `server-group` name
+from their `<servers>` section in `host.xml`.
+
+When the DC parses `domain.xml`, it is transformed into `add` (and in
+some cases `write-attribute`) operations just as explained in
+link:Parsing_and_marshalling_of_the_subsystem_xml.html[Parsing and
+marshalling of the subsystem xml]. These operations build up the model
+on the DC.
+
+A HC wishing to join the domain and use the DC's centralized
+configuration is known as a 'slave HC'. A slave HC maintains a copy of
+the DC's centralized domain configuration. This copy of the domain
+configuration is used to start its servers. This is done by asking the
+domain model to `describe` itself, which in turn asks the subsystems to
+`describe` themselves. The `describe` operation for a subsystem looks at
+the state of the subsystem model and produces the `add` operations
+necessary to create the subsystem on the server. The same mechanism also
+takes place on the DC (bear in mind that the DC is also a HC, which can
+have its own servers), although of course its copy of the domain
+configuration is the centralized one.
+
+There are two steps involved in keeping the keeping the slave HC's
+domain configuration in sync with the centralized domain configuration.
+
+* getting the initial domain model
+* an operation changes something in the domain configuration
+
+Let's look a bit closer at what happens in each of these steps.
+
+[[getting-the-initial-domain-model]]
+=== Getting the initial domain model
+
+When a slave HC connects to the DC it obtains a copy of the domain model
+from the DC. This is done in a simpler serialized format, different from
+the operations that built up the model on the DC, or the operations
+resulting from the `describe` step used to bootstrap the servers. They
+describe each address that exists in the DC's model, and contain the
+attributes set for the resource at that address. This serialized form
+looks like this:
+
+[source, ruby]
+----
+[{
+    "domain-resource-address" => [],
+    "domain-resource-model" => {
+        "management-major-version" => 2,
+        "management-minor-version" => 0,
+        "management-micro-version" => 0,
+        "release-version" => "8.0.0.Beta1-SNAPSHOT",
+        "release-codename" => "WildFly"
+    }
+},
+{
+    "domain-resource-address" => [("extension" => "org.jboss.as.clustering.infinispan")],
+    "domain-resource-model" => {"module" => "org.jboss.as.clustering.infinispan"}
+},
+--SNIP - the rest of the extensions --
+{
+    "domain-resource-address" => [("extension" => "org.jboss.as.weld")],
+    "domain-resource-model" => {"module" => "org.jboss.as.weld"}
+},
+{
+    "domain-resource-address" => [("system-property" => "java.net.preferIPv4Stack")],
+    "domain-resource-model" => {
+        "value" => "true",
+        "boot-time" => undefined
+    }
+},
+{
+    "domain-resource-address" => [("profile" => "full-ha")],
+    "domain-resource-model" => undefined
+},
+{
+    "domain-resource-address" => [
+        ("profile" => "full-ha"),
+        ("subsystem" => "logging")
+    ],
+    "domain-resource-model" => {}
+},
+{
+    "domain-resource-address" => [sss|WFLY8:Example subsystem],
+    "domain-resource-model" => {
+        "level" => "INFO",
+        "enabled" => undefined,
+        "encoding" => undefined,
+        "formatter" => "%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n",
+        "filter-spec" => undefined,
+        "autoflush" => undefined,
+        "target" => undefined,
+        "named-formatter" => undefined
+    }
+},
+--SNIP---
+----
+
+The slave HC then applies these one at a time and builds up the initial
+domain model. It needs to do this before it can start any of its
+servers.
+
+[[an-operation-changes-something-in-the-domain-configuration]]
+=== An operation changes something in the domain configuration
+
+Once a domain is up and running we can still change things in the domain
+configuration. These changes must happen when connected to the DC, and
+are then propagated to the slave HCs, which then in turn propagate the
+changes to any servers running in a server group affected by the changes
+made. In this example:
+
+[source,ruby]
+----
+[disconnected /] connect
+[domain@localhost:9990 /] /profile=full/subsystem=datasources/data-source=ExampleDS:write-attribute(name=enabled,value=false)
+{
+    "outcome" => "success",
+    "result" => undefined,
+    "server-groups" => {"main-server-group" => {"host" => {
+        "slave" => {"server-one" => {"response" => {
+            "outcome" => "success",
+            "result" => undefined,
+            "response-headers" => {
+                "operation-requires-restart" => true,
+                "process-state" => "restart-required"
+            }
+        }}},
+        "master" => {
+            "server-one" => {"response" => {
+                "outcome" => "success",
+                "response-headers" => {
+                    "operation-requires-restart" => true,
+                    "process-state" => "restart-required"
+                }
+            }},
+            "server-two" => {"response" => {
+                "outcome" => "success",
+                "response-headers" => {
+                    "operation-requires-restart" => true,
+                    "process-state" => "restart-required"
+                }
+            }}
+        }
+    }}}
+}
+----
+
+the DC propagates the changes to itself `host=master`, which in turn
+propagates it to its two servers belonging to `main-server-group` which
+uses the `full` profile. More interestingly, it also propagates it to
+`host=slave` which updates its local copy of the domain model, and then
+propagates the change to its `server-one` which belongs to
+`main-server-group` which uses the `full` profile.
+
+[[versions-and-backward-compatibility]]
+== Versions and backward compatibility
+
+A HC and its servers will always be the same version of WildFly (they
+use the same module path and jars). However, the DC and the slave HCs do
+not necessarily need to be the same version. One of the points in the
+original specification for WildFly is that
+
+Important
+
+[IMPORTANT]
+
+A Domain Controller should be able to manage slave Host Controllers
+older than itself.
+
+This means that for example a WildFly 10.1 DC should be able to work
+with slave HCs running WildFly 10. The opposite is not true, the DC must
+be the same or the newest version in the domain.
+
+[[versioning-of-subsystems]]
+=== Versioning of subsystems
+
+To help with being able to know what is compatible we have versions
+within the subsystems, this is stored in the subsystem's extension. When
+registering the subsystem you will typically see something like:
+
+[source, java]
+----
+public class SomeExtension implements Extension {
+ 
+    private static final String SUBSYSTEM_NAME = "my-subsystem"'
+ 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+ 
+    /**
+     * {@inheritDoc}
+     * @see org.jboss.as.controller.Extension#initialize(org.jboss.as.controller.ExtensionContext)
+     */
+    @Override
+    public void initialize(ExtensionContext context) {
+ 
+        // IMPORTANT: Management API version != xsd version! Not all Management API changes result in XSD changes
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
+                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+ 
+        //Register the resource definitions
+        ....
+    }
+    ....
+}
+----
+
+Which sets the `ModelVersion` of the subsystem.
+
+Important
+
+[IMPORTANT]
+
+Whenever something changes in the subsystem, such as:
+
+* an attribute is added or removed from a resource
+* a attribute is renamed in a resource
+* an attribute has its type changed
+* an attribute or operation parameter's nillable or allows expressions
+is changed
+* an attribute or operation parameter's default value changes
+* a child resource type is added or removed
+* an operation is added or removed
+* an operation has its parameters changed
+
+and the current version of the subsystem has been part of a Final
+release of WildFly, we *must* bump the version of the subsystem.
+
+Once it has been increased you can of course make more changes until the
+next Final release without more version bumps. It is also worth noting
+that a new WildFly release does not automatically mean a new version for
+the subsystem, the new version is only needed if something was changed.
+For example the `jaxrs` subsystem has remained on 1.0.0 for all versions
+of WildFly and JBoss AS 7.
+
+You can find the `ModelVersion` of a subsystem by querying its
+extension:
+
+[source,ruby]
+----
+domain@localhost:9990 /] /extension=org.jboss.as.clustering.infinispan:read-resource(recursive=true)
+{
+    "outcome" => "success",
+    "result" => {
+        "module" => "org.jboss.as.clustering.infinispan",
+        "subsystem" => {"infinispan" => {
+            "management-major-version" => 2,
+            "management-micro-version" => 0,
+            "management-minor-version" => 0,
+            "xml-namespaces" => [jboss:domain:infinispan:1.0",
+                "urn:jboss:domain:infinispan:1.1",
+                "urn:jboss:domain:infinispan:1.2",
+                "urn:jboss:domain:infinispan:1.3",
+                "urn:jboss:domain:infinispan:1.4",
+                "urn:jboss:domain:infinispan:2.0"]
+        }}
+    }
+}
+----
+
+[[the-role-of-transformers]]
+== The role of transformers
+
+Now that we have mentioned the slave HCs registration process with the
+DC, and know about ModelVersions, it is time to mention that when
+registering with the DC, the slave HC will send across a list of all its
+subsystem ModelVersions. The DC maintains this information in a registry
+for each slave HC, so that it knows which transformers (if any) to
+invoke for a legacy slave. We will see how to write and register
+transformers later on in
+link:#src-557181_DomainModeSubsystemTransformers-HowdoIwriteatransformer[#How
+do I write a transformer]. Slave HCs from version 7.2.0 onwards will
+also include a list of resources that they ignore (see
+link:#src-557181_DomainModeSubsystemTransformers-Ignoringresourcesonlegacyhosts[#Ignoring
+resources on legacy hosts]), and the DC will maintain this information
+in its registry. The DC will not send across any resources that it knows
+a slave ignores during the initial domain model transfer. When
+forwarding operations onto the slave HCs, the DC will skip forwarding
+those to slave HCs ignoring those resources.
+
+There are two kinds of transformers:
+
+* resource transformers
+* operation transformers
+
+The main function of transformers is to transform a subsystem to
+something that the legacy slave HC can understand, or to aggressively
+reject things that the legacy slave HC will not understand. Rejection,
+in this context, essentially means, that the resource or operation
+cannot safely be transformed to something valid on the slave, so the
+transformation fails. We will see later how to reject attributes in
+link:#src-557181_DomainModeSubsystemTransformers-Rejectingattributes[#Rejecting
+attributes], and child resources in
+link:#src-557181_DomainModeSubsystemTransformers-Rejectchildresource[#Reject
+child resource].
+
+Both resource and operation transformers are needed, but take effect at
+different times. Let us use the `weld` subsystem, which is relatively
+simple, as an example. In JBoss AS 7.2.0 and lower it had a ModelVersion
+of 1.0.0, and its resource description was as follows:
+
+[source,ruby]
+----
+                {
+                    "description" => "The configuration of the weld subsystem.",
+                    "attributes" => {},
+                    "operations" => {
+                        "remove" => {
+                            "operation-name" => "remove",
+                            "description" => "Operation removing the weld subsystem.",
+                            "request-properties" => {},
+                            "reply-properties" => {}
+                        },
+                        "add" => {
+                            "operation-name" => "add",
+                            "description" => "Operation creating the weld subsystem.",
+                            "request-properties" => {},
+                            "reply-properties" => {}
+                        }
+                    },
+                    "children" => {}
+                },
+----
+
+In WildFly {wildflyVersion}, it has a ModelVersion of 2.0.0 and has added two
+attributes, `require-bean-descriptor` and `non-portable` mode:
+
+[source,ruby]
+----
+{
+        "description" => "The configuration of the weld subsystem.",
+        "attributes" => {
+            "require-bean-descriptor" => {
+                "type" => BOOLEAN,
+                "description" => "If true then implicit bean archives without bean descriptor file (beans.xml) are ignored by Weld",
+                "expressions-allowed" => true,
+                "nillable" => true,
+                "default" => false,
+                "access-type" => "read-write",
+                "storage" => "configuration",
+                "restart-required" => "no-services"
+            },
+            "non-portable-mode" => {
+                "type" => BOOLEAN,
+                "description" => "If true then the non-portable mode is enabled. The non-portable mode is suggested by the specification to overcome problems with legacy applications that do not use CDI SPI properly and may be rejected by more strict validation in CDI 1.1.",
+                "expressions-allowed" => true,
+                "nillable" => true,
+                "default" => false,
+                "access-type" => "read-write",
+                "storage" => "configuration",
+                "restart-required" => "no-services"
+            }
+        },
+        "operations" => {
+            "remove" => {
+                "operation-name" => "remove",
+                "description" => "Operation removing the weld subsystem.",
+                "request-properties" => {},
+                "reply-properties" => {}
+            },
+            "add" => {
+                "operation-name" => "add",
+                "description" => "Operation creating the weld subsystem.",
+                "request-properties" => {
+                    "require-bean-descriptor" => {
+                        "type" => BOOLEAN,
+                        "description" => "If true then implicit bean archives without bean descriptor file (beans.xml) are ignored by Weld",
+                        "expressions-allowed" => true,
+                        "required" => false,
+                        "nillable" => true,
+                        "default" => false
+                    },
+                    "non-portable-mode" => {
+                        "type" => BOOLEAN,
+                        "description" => "If true then the non-portable mode is enabled. The non-portable mode is suggested by the specification to overcome problems with legacy applications that do not use CDI SPI properly and may be rejected by more strict validation in CDI 1.1.",
+                        "expressions-allowed" => true,
+                        "required" => false,
+                        "nillable" => true,
+                        "default" => false
+                    }
+                },
+                "reply-properties" => {}
+            }
+        },
+        "children" => {}
+    }
+----
+
+In the rest of this section we will assume that we are running a DC
+running WildFly {wildflyVersion} so it will have ModelVersion 2.0.0 of the weld
+subsystem, and that we are running a slave using ModelVersion 1.0.0 of
+the weld subsystem.
+
+Important
+
+[IMPORTANT]
+
+Transformation always takes place on the Domain Controller, and is done
+when sending across the initial domain model AND forwarding on
+operations to legacy slave HCs.
+
+[[resource-transformers]]
+=== Resource transformers
+
+When copying over the centralized domain configuration as mentioned in
+link:#src-557181_DomainModeSubsystemTransformers-Gettingtheinitialdomainmodel[#Getting
+the initial domain model], we need to make sure that the copy of the
+domain model is something that the servers running on the legacy slave
+HC understand. So if the centralized domain configuration had any of the
+two new attributes set, we would need to reject the transformation in
+the transformers. One reason for this is to keep things consistent, it
+doesn't look good if you connect to the slave HC and find attributes
+and/or child resources when doing `:read-resource` which are not there
+when you do `:read-resource-description`. Also, to make life easier for
+subsystem writers, most instances of the `describe` operation use a
+standard implementation which would include these attributes when
+creating the `add` operation for the server, which could cause problems
+there.
+
+Another, more concrete example from the logging subsystem is that it
+allows a ' `%K{...`}' in the pattern formatter which makes the formatter
+use color:
+
+[source,xml]
+----
+            <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+----
+
+This ' `%K{...`}' however was introduced in JBoss AS < 7.1.3
+(ModelVersion 1.2.0), so if that makes it across to a slave HC running
+an older version, the servers *will* fail to start up. So the logging
+extension registers transformers to strip out the ' `%K{...`}' from the
+attribute value (leaving ' `%-5p` `%c` `(%t) %s%E%n"`') so that the old
+slave HC's servers can understand it.
+
+[[rejection-in-resource-transformers]]
+==== Rejection in resource transformers
+
+Only slave HCs from JBoss AS 7.2.0 and newer inform the DC about their
+ignored resources (see
+link:#src-557181_DomainModeSubsystemTransformers-Ignoringresourcesonlegacyhosts[#Ignoring
+resources on legacy hosts]). This means that if a transformer on the DC
+rejects transformation for a legacy slave HC, exactly what happens to
+the slave HC depends on the version of the slave HC. If the slave HC is:
+
+* _older than 7.2.0_ - the DC has no means of knowing if the slave HC
+has ignored the resource being rejected or not. So we log a warning on
+the DC, and send over the serialized part of that model anyway. If the
+slave HC has ignored the resource in question, it does not apply it. If
+the slave HC has not ignored the resource in question, it will apply it,
+but no failure will happen until it tries to start a server which
+references this bad configuration.
+* _7.2.0 or newer_ - If a resource is ignored on the slave HC, the DC
+knows about this, and will not attempt to transform or send the resource
+across to the slave HC. If the resource transformation is rejected, we
+know the resource was not ignored on the slave HC and so we can
+aggressively fail the transformation, which in turn will cause the slave
+HC to fail to start up.
+
+[[operation-transformers]]
+=== Operation transformers
+
+When
+link:#src-557181_DomainModeSubsystemTransformers-Anoperationchangessomethinginthedomainconfiguration[#An
+operation changes something in the domain configuration] the operation
+gets sent across to the slave HCs to update their copies of the domain
+model. The slave HCs then forward this operation onto the affected
+servers. The same considerations as in
+link:#src-557181_DomainModeSubsystemTransformers-Resourcetransformers[#Resource
+transformers] are true, although operation transformers give you quicker
+'feedback' if something is not valid. If you try to execute:
+
+[source,ruby]
+----
+/profile=full/subsystem=weld:write-attribute(name=require-bean-descriptor, value=false)
+----
+
+This will fail on the legacy slave HC since its version of the subsystem
+does not contain any such attribute. However, it is best to aggressively
+reject in such cases.
+
+[[rejection-in-operation-transformers]]
+==== Rejection in operation transformers
+
+For transformed operations we can always know if the operation is on an
+ignored resource in the legacy slave HC. In 7.2.0 onwards, we know this
+through the DC's registry of ignored resources on the slave. In older
+versions of slaves, we send the operation across to the slave, which
+tries to invoke the operation. If the operation is against an ignored
+resource we inform the DC about this fact. So as part of the
+transformation process, if something gets rejected we can (and do!) fail
+the transformation aggressively. If the operation invoked on the DC
+results in the operation being sent across to 10 slave HCs and one of
+them has a legacy version which ends up rejecting the transformation, we
+rollback the operation across the whole domain.
+
+[[different-profiles-for-different-versions]]
+=== Different profiles for different versions
+
+Now for the `weld` example we have been using there is a slight twist.
+We have the new `require-bean-descriptor` and `non-portable-mode`
+attributes. These have been added in WildFly {wildflyVersion} which supports Java EE 7,
+and thus CDI 1.1. JBoss AS 7.x supports Java EE 6, and thus CDI 1.0. In
+CDI 1.1 the values of these attributes are tweakable, so they can be set
+to either `true` or `false`. The default behaviour for these in CDI 1.1,
+if not set, is that they are `false`. However, for CDI 1.0 these were
+not tweakable, and with the way the subsystem in JBoss AS 7.x worked is
+similar to if they are set to `true`.
+
+The above discussion implies that to use the weld subsystem on a legacy
+slave HC, the `domain.xml` configuration for it must look like:
+
+[source,xml]
+----
+<subsystem xmlns="urn:jboss:domain:weld:2.0"
+      require-bean-descriptor="true"
+      non-portable-mode="true"/>
+----
+
+We will see the exact mechanics for how this is actually done later but
+in short when pushing this to a legacy slave DC we register transformers
+which reject the transformation if these attributes are not set to
+`true` since that implies some behavior not supported on the legacy
+slave DC. If they are `true`, all is well, and the transformers discard,
+or remove, these attributes since they don't exist in the legacy model.
+This removal is fine since they have the values which would result in
+the behavior assumed on the legacy slave HC.
+
+That way the older slave HCs will work fine. However, we might also have
+WildFly {wildflyVersion} slave HCs in our domain, and they are missing out on the new
+features introduced by the attributes introduced in ModelVersion 2.0.0.
+If we do
+
+[source,xml]
+----
+<subsystem xmlns="urn:jboss:domain:weld:2.0"
+      require-bean-descriptor="false"
+      non-portable-mode="false"/>
+----
+
+then it will fail when doing transformation for the legacy controller.
+The solution is to put these in two different profiles in `domain.xml`
+
+[source,xml]
+----
+<domain>
+....
+  <profiles>
+    <profile name="full">
+      <subsystem xmlns="urn:jboss:domain:weld:2.0"
+        require-bean-descriptor="false"
+        non-portable-mode="false"/>
+      ...
+    </profile>
+    <profile name="full-legacy">
+      <subsystem xmlns="urn:jboss:domain:weld:2.0"
+        require-bean-descriptor="true"
+        non-portable-mode="true"/>
+      ...
+    </profile>
+  </profiles>
+  ...
+  <server-groups>
+    <server-group name="main-server-group" profile="full">
+      ....
+    <server-group>
+    <server-group name="main-server-group-legacy" profile="full-legacy">
+      ....
+    <server-group>
+  </server-groups>
+</domain>
+----
+
+Then have the HCs using WildFly {wildflyVersion} make their servers reference the
+`main-server-group` server group, and the HCs using older versions of
+WildFly {wildflyVersion} make their servers reference the `main-server-group-legacy`
+server group.
+
+[[ignoring-resources-on-legacy-hosts]]
+==== Ignoring resources on legacy hosts
+
+Booting the above configuration will still cause problems on legacy
+slave HCs, especially if they are JBoss AS 7.2.0 or later. The reason
+for this is that when they register themselves with the DC it lets the
+DC know which `ignored resources` they have. If the DC comes to
+transform something it should reject for a slave HC and it is not part
+of its ignored resources it will aggressively fail the transformation.
+Versions of JBoss AS older than 7.2.0 still have this ignored resources
+mechanism, but don't let the DC know about what they have ignored so the
+DC cannot reject aggressively - instead it will log some warnings.
+However, it is still good practice to ignore resources you are not
+interested in regardless of which legacy version the slave HC is
+running.
+
+To ignore the profile we cannot understand we do the following in the
+legacy slave HC's `host.xml`
+
+[source,xml]
+----
+<host xmlns="urn:jboss:domain:1.3" name="slave">
+...
+    <domain-controller>
+       <remote host="${jboss.test.host.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm">
+            <ignored-resources type="profile">
+                <instance name="full-legacy"/>
+            </ignored-resources>
+       </remote>
+    </domain-controller>
+....
+</host>
+----
+
+Important
+
+[IMPORTANT]
+
+Any top-level resource type can be ignored `profile`, `extension`,
+`server-group` etc. Ignoring a resource instance ignores that resource,
+and all its children.
+
+[[how-do-i-know-what-needs-to-be-transformed]]
+== How do I know what needs to be transformed?
+
+There is a set of related classes in the `org.wildfly.legacy.util`
+package to help you determine this. These now live at
+https://github.com/wildfly/wildfly-legacy-test/tree/master/tools/src/main/java/org/wildfly/legacy/util. +
+They are all runnable in your IDE, just start the WildFly or JBoss AS 7
+instances as described below.
+
+[[getting-data-for-a-previous-version]]
+=== Getting data for a previous version
+
+https://github.com/wildfly/wildfly-legacy-test/tree/master/tools/src/main/resources/legacy-models
+contains the output for the previous WildFly/JBoss AS 7 versions, so
+check if the files for the version you want to check backwards
+compatibility are there yet. If not, then you need to do the following
+to get the subsystem definitions:
+
+1.  Start the *old* version of WildFly/JBoss AS 7 using
+`--server-config=standalone-full-ha.xml`
+2.  Run `org.wildfly.legacy.util.GrabModelVersionsUtil`, which will
+output the subsystem versions to
+`target/standalone-model-versions-running.dmr`
+3.  Run `org.wildfly.legacy.util.DumpStandaloneResourceDefinitionUtil`
+which will output the full resource definition to
+`target/standalone-resource-definition-running.dmr`
+4.  Stop the running version of WildFly/JBoss AS 7
+
+[[see-what-changed]]
+=== See what changed
+
+To do this follow the following steps
+
+.  Start the *new* version of WildFly using
+`--server-config=standalone-full-ha.xml`
+.  Run `org.wildfly.legacy.util.CompareModelVersionsUtil` and answer
+the following questions"
+..  Enter Legacy AS version:
+* If it is known version in the `tools/src/test/resources/legacy-models`
+folder, enter the version number.
+* If it is a not known version, and you got the data yourself in the
+last step, enter ' `running`'
+..  Enter type:
+* Answer ' `S`'
+.  Read from target directory or from the legacy-models directory:
+* If it is known version in the
+`controller/src/test/resources/legacy-models` folder, enter ' `l`'.
+* If it is a not known version, and you got the data yourself in the
+last step, enter ' `t`'
+.  Report on differences in the model when the management versions are
+different?:
+* Answer ' `y`'
+
+Here is some example output, as a subsystem developer you can ignore
+everything down to `======= Comparing subsystem models ======`:
+
+[source, bash]
+----
+Enter legacy AS version: 7.2.0.Final
+Using target model: 7.2.0.Final
+Enter type [S](standalone)/H(host)/D(domain)/F(domain + host):S
+Read from target directory or from the legacy-models directory - t/[l]:
+Report on differences in the model when the management versions are different? y/[n]: y
+Reporting on differences in the model when the management versions are different
+Loading legacy model versions for 7.2.0.Final....
+Loaded legacy model versions
+Loading model versions for currently running server...
+Oct 01, 2013 6:26:03 PM org.xnio.Xnio <clinit>
+INFO: XNIO version 3.1.0.CR7
+Oct 01, 2013 6:26:03 PM org.xnio.nio.NioXnio <clinit>
+INFO: XNIO NIO Implementation Version 3.1.0.CR7
+Oct 01, 2013 6:26:03 PM org.jboss.remoting3.EndpointImpl <clinit>
+INFO: JBoss Remoting version 4.0.0.Beta1
+Loaded current model versions
+Loading legacy resource descriptions for 7.2.0.Final....
+Loaded legacy resource descriptions
+Loading resource descriptions for currently running STANDALONE...
+Loaded current resource descriptions
+Starting comparison of the current....
+ 
+======= Comparing core models ======
+-- SNIP --
+ 
+======= Comparing subsystem models ======
+-- SNIP --
+======= Resource root address: ["subsystem" => "remoting"] - Current version: 2.0.0; legacy version: 1.2.0 =======
+--- Problems for relative address to root []:
+Missing child types in current: []; missing in legacy [http-connector]
+--- Problems for relative address to root ["remote-outbound-connection" => "*"]:
+Missing attributes in current: []; missing in legacy [protocol]
+Missing parameters for operation 'add' in current: []; missing in legacy [protocol]
+-- SNIP --
+======= Resource root address: ["subsystem" => "weld"] - Current version: 2.0.0; legacy version: 1.0.0 =======
+--- Problems for relative address to root []:
+Missing attributes in current: []; missing in legacy [require-bean-descriptor, non-portable-mode]
+Missing parameters for operation 'add' in current: []; missing in legacy [require-bean-descriptor, non-portable-mode]
+ 
+Done comparison of STANDALONE!
+----
+
+So we can see that for the `remoting` subsystem, we have added a child
+type called `http-connector`, and we have added an attribute called
+`protocol` (they are missing in legacy). +
+in the `weld` subsystem, we have added the `require-bean-descriptor` and
+`non-portable-mode` attributes in the current version. It will also
+point out other issues like changed attribute types, changed defaults
+etc.
+
+Warning
+
+[WARNING]
+
+Note that CompareModelVersionsUtil simply inspects the raw resource
+descriptions of the specified legacy and current models. Its results
+show the differences between the two. They do not take into account
+whether one or more transformers have already been written for those
+versions differences. You will need to check that transformers are not
+already in place for those versions.
+
+One final point to consider are that some subsystems register
+runtime-only resources and operations. For example the `modcluster`
+subsystem has a `stop` method. These do not get registered on the `DC`,
+e.g. there is no `/profile=full-ha/subsystem=modcluster:stop` operation,
+it only exists on the servers, for example
+`/host=xxx/server=server-one/subsystem=modcluster:stop`. What this means
+is that you don't have to transform such operations and resources. The
+reason is they are not callable on the DC, and so do not need
+propagation to the servers in the domain, which in turn means no
+transformation is needed.
+
+[[how-do-i-write-a-transformer]]
+== How do I write a transformer?
+
+There are two APIs available to write transformers for a resource. There
+is the original low-level API where you register transformers directly,
+the general idea is that you get hold of a `TransformersSubRegistration`
+for each level and implement the `ResourceTransformer`,
+`OperationTransformer` and `PathAddressTransformer` interfaces directly.
+It is, however, a pretty complex thing to do, so we recommend the other
+approach. For completeness here is the entry point to handling
+transformation in this way.
+
+[source, java]
+----
+public class SomeExtension implements Extension {
+ 
+    private static final String SUBSYSTEM_NAME = "my-subsystem"'
+ 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+ 
+    @Override
+    public void initialize(ExtensionContext context) {
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
+                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        //Register the resource definitions
+        ....
+    }
+ 
+    static void registerTransformers(final SubsystemRegistration subsystem) {
+        registerTransformers_1_1_0(subsystem);
+        registerTransformers_1_2_0(subsystem);
+    }
+ 
+    /**
+     * Registers transformers from the current version to ModelVersion 1.1.0
+     */
+    private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
+        final ModelVersion version = ModelVersion.create(1, 1, 0);
+ 
+        //The default resource transformer forwards all operations
+        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version, ResourceTransformer.DEFAULT);
+        final TransformersSubRegistration child = registration.registerSubResource(PathElement.pathElement("child"));
+        //We can do more things on the TransformersSubRegistation instances
+ 
+ 
+        registerRelayTransformers(stack);
+    }
+----
+
+Having implemented a number of transformers using the above approach, we
+decided to simplify things, so we introduced the
+`org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder`
+API. It is a lot simpler and avoids a lot of the duplication of
+functionality required by the low-level API approach. While it doesn't
+give you the full power that the low-level API does, we found that there
+are very few places in the WildFly codebase where this does not work, so
+we will focus on the `ResourceTransformationDescriptionBuilder` API
+here. (If you come across a problem where this does not work, get in
+touch with someone from the WildFly Domain Management Team and we should
+be able to help). The builder API makes all the nasty calls to
+`TransformersSubRegistration` for you under the hood. It also allows you
+to fall back to the low-level API in places, although that will not be
+covered in the current version of this guide. The entry point for using
+the builder API here is taken from the WeldExtension (in current WildFly
+this has ModelVersion 2.0.0).
+
+[source, java]
+----
+    private void registerTransformers(SubsystemRegistration subsystem) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        //These new attributes are assumed to be 'true' in the old version but default to false in the current version. So discard if 'true' and reject if 'undefined'.
+        builder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
+                        WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
+                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+ 
+                    @Override
+                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                        return WeldMessages.MESSAGES.rejectAttributesMustBeTrue(attributes.keySet());
+                    }
+ 
+                    @Override
+                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                            TransformationContext context) {
+                        //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
+                        return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
+                    }
+                }, WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
+                .end();
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
+    }
+----
+
+Here we register a `discard check` and a `reject check`. As mentioned in
+link:#src-557181_DomainModeSubsystemTransformers-Attributetransformationlifecycle[#Attribute
+transformation lifecycle] all attributes are inspected for whether they
+should be discarded first. Then all attributes which were not discarded
+are checked for if they should be rejected. We will dig more into what
+this code means in the next few sections, but in short it means that we
+discard the `require-bean-descriptor` and `non-portable` attributes on
+the `weld` subsystem resource if they have the value `true`. If they
+have any other value, they will not get discarded and so reach the
+reject check, which will reject the transformation of the attributes if
+they have any other value.
+
+Here we are saying that we should discard the `require-bean-descriptor`
+and `non-portable-mode` attributes on the `weld` subsystem resource if
+they are undefined, and reject them if they are defined. So that means
+that if the weld subsystem looks like
+
+[source, java]
+----
+    {
+        "non-portable-mode" => false,
+        "require-bean-descriptor" => false
+    }
+----
+
+or
+
+[source, java]
+----
+    {
+        "non-portable-mode" => undefined,
+        "require-bean-descriptor" => undefined
+    }
+----
+
+or any other combination (the default values for these attributes if
+undefined is `false`) we will reject the transformation for the slave
+legacy HC.
+
+If the resource has true for these attributes:
+
+[source, java]
+----
+    {
+        "non-portable-mode" => true,
+        "require-bean-descriptor" => true
+    }
+----
+
+they both get discarded (i.e. removed), so they will not get inspected
+for rejection, and an empty model not containing these attributes gets
+sent to the legacy HC.
+
+Here we will discuss this API a bit more, to outline the most important
+features/most commonly needed tasks.
+
+[[resourcetransformationdescriptionbuilder]]
+=== ResourceTransformationDescriptionBuilder
+
+The `ResourceTransformationDescriptionBuilder` contains transformations
+for a resource type. The initial one is for the subsystem, obtained by
+the following call:
+
+[source, java]
+----
+        ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+----
+
+The `ResourceTransformationDescriptionBuilder` contains functionality
+for how to handle child resources, which we will look at in this
+section. It is also the entry point to how to handle transformation of
+attributes as we will see in
+link:#src-557181_DomainModeSubsystemTransformers-AttributeTransformationDescriptionBuilder[#AttributeTransformationDescriptionBuilder].
+Also, it allows you to further override operation transformation as
+discussed in
+link:#src-557181_DomainModeSubsystemTransformers-OperationTransformationOverrideBuilder[#OperationTransformationOverrideBuilder].
+When we have finished with our builder, we register it with the
+`SubsystemRegistration` against the target ModelVersion.
+
+[source, java]
+----
+        TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, ModelVersion.create(1, 0, 0));
+----
+
+Important
+
+[IMPORTANT]
+
+If you have several old ModelVersions you could be transforming to, you
+need a separate builder for each of those.
+
+[[silently-discard-child-resources]]
+==== Silently discard child resources
+
+To make the `ResourceTransformationDescriptionBuilder` do something, we
+need to call some of its methods. For example, if we want to silently
+discard a child resource, we can do
+
+[source, java]
+----
+    subsystemBuilder.discardChildResource(PathElement.pathElement("child", "discarded"));
+----
+
+This means that any usage of `/subsystem=my-subsystem/child=discarded`
+never make it to the legacy slave HC running ModelVersion 1.0.0. During
+the initial domain model transfer, that part of the serialized domain
+model is stripped out, and any operations on this address are not
+forwarded on to the legacy slave HCs running that version of the
+subsystem. (For brevity this section will leave out the leading
+`/profile=xxx` part used in domain mode, and use
+`/subsystem=my-subsystem` as the 'top-level' address).
+
+Warning
+
+[WARNING]
+
+Note that discarding, although the simplest option in theory, is *rarely
+the right thing to do*.
+
+The presence of the defined child normally implies some behaviour on the
+DC, and that behaviour is not available on the legacy slave HC, so
+normally rejection is a better policy for those cases. Remember we can
+have different profiles targeting different groups of versions of legacy
+slave HCs.
+
+[[reject-child-resource]]
+==== Reject child resource
+
+If we want to reject transformation if a child resource exists, we can
+do
+
+[source, java]
+----
+    subsystemBuilder.rejectChildResource(PathElement.pathElement("child", "reject"));
+----
+
+Now, if there are any legacy slaves running ModelVersion 1.0.0, any
+usage of `/subsystem=my-subsystem/child=reject` will get rejected for
+those slaves. Both during the initial domain model transfer, and if any
+operations are invoked on that address. For example the `remoting`
+subsystem did not have a `http-connector=*` child until ModelVersion
+2.0.0, so it is set up to reject that child when transforming to legacy
+HCs for all previous ModelVersions (1.1.0, 1.2.0 and 1.3.0). (See
+link:#src-557181_DomainModeSubsystemTransformers-Rejectioninresourcetransformers[#Rejection
+in resource transformers] and
+link:#src-557181_DomainModeSubsystemTransformers-Rejectioninoperationtransformers[#Rejection
+in operation transformers] for exactly what happens when something is
+rejected).
+
+[[redirect-address-for-child-resource]]
+==== Redirect address for child resource
+
+Sometimes we rename the addresses for a child resource between model
+versions. To do that we use one of the `addChildRedirection()` methods,
+note that these also return a builder for the child resource (since we
+are not rejecting or discarding it), we can do this for all children of
+a given type:
+
+[source, java]
+----
+    ResourceTransformationDescriptionBuilder childBuilder =
+       subsystemBuilder.addChildRedirection(PathElement.pathElement("newChild"), PathElement.pathElement("oldChild");
+----
+
+Now, in the initial domain transfer
+`/subsystem=my-subsystem/newChild=test` becomes
+`/subsystem=my-subsystem/oldChild=test`. Similarly all operations
+against the former address get mapped to the latter when executing
+operations on the DC before sending them to the legacy slave HC running
+ModelVersion 1.1.0 of the subsystem.
+
+We can also rename a specific named child:
+
+[source, java]
+----
+    ResourceTransformationDescriptionBuilder childBuilder =
+       subsystemBuilder.addChildRedirection(PathElement.pathElement("newChild", "newName"), PathElement.pathElement("oldChild", "oldName");
+----
+
+Now, `/subsystem=my-subsystem/newChild=newName` becomes
+`/subsystem=my-subsystem/oldChild=oldName` both in the initial domain
+transfer, and when mapping operations to the legacy slave. For example,
+under the `web` subsystem `ssl=configuration` got renamed to
+`configuration=ssl` in later versions, meaning we need a redirect from
+`configuration=ssl` to `ssl=configuration` in its transformers.
+
+[[getting-a-child-resource-builder]]
+==== Getting a child resource builder
+
+Sometimes we don't want to transform the subsystem resource, but we want
+to transform something in one of its child resources. Again, since we
+are not discarding or rejecting, we get a reference to the builder for
+the child resource.
+
+[source, java]
+----
+    ResourceTransformationDescriptionBuilder childBuilder =
+       subsystemBuilder.addChildResource(PathElement.pathElement("some-child"));
+    //We don't actually want to transform anything in /subsystem-my-subsystem/some-child=* either :-)
+    //We are interested in /subsystem-my-subsystem/some-child=*/another-level
+    ResourceTransformationDescriptionBuilder anotherBuilder =
+       childBuilder.addChildResource(PathElement.pathElement("another-level"));
+ 
+    //Use anotherBuilder to add child-resource and/or attribute transformation
+    ....
+----
+
+[[attributetransformationdescriptionbuilder]]
+=== AttributeTransformationDescriptionBuilder
+
+To transform attributes you call
+`ResourceTransformationDescriptionBuilder.getAttributeBuilder()` which
+returns you a `AttributeTransformationDescriptionBuilder` which is used
+to define transformation for the resource's attributes. For example this
+gets the attribute builder for the subsystem resource:
+
+[source, java]
+----
+    AttributeTransformationDescriptionBuilder attributeBuilder = subSystemBuilder.getAttributeBuilder();
+----
+
+or we could get it for one of the child resources:
+
+[source, java]
+----
+    ResourceTransformationDescriptionBuilder childBuilder =
+       subsystemBuilder.addChildResource(PathElement.pathElement("some-child"));
+    AttributeTransformationDescriptionBuilder attributeBuilder = childBuilder.getAttributeBuilder();
+----
+
+The attribute transformations defined by the
+`AttributeTransformationDescriptionBuilder` will also impact the
+parameters to all operations defined on the resource. This means that if
+you have defined the `example` attribute of
+`/subsystem=my-subsystem/some-child=*` to reject transformation if its
+value is `true`, the inital domain transfer will reject if it is `true`,
+also the transformation of the following operations will reject:
+
+[source,ruby]
+----
+    /subsystem=my-subsystem/some-child=test:add(example=true)
+    /subsystem=my-subsystem:write-attribute(name=example, value=true)
+    /subsystem=my-subsystem:custom-operation(example=true)
+----
+
+The following operations will pass in this example, since the `example`
+attribute is not getting set to `true`
+
+[source,ruby]
+----
+    /subsystem=my-subsystem/some-child=test:add(example=false)
+    /subsystem=my-subsystem/some-child=test:add()             //Here it 'example' is simply left undefined
+    /subsystem=my-subsystem:write-attribute(name=example, value=false)
+    /subsystem=my-subsystem:undefine-attribute(name=example)  //Again this makes 'example' undefined
+    /subsystem=my-subsystem:custom-operation(example=false)
+----
+
+For the rest of the examples in this section we assume that the
+`attributeBuilder` is for `/subsystem=my-subsystem`
+
+[[attribute-transformation-lifecycle]]
+==== Attribute transformation lifecycle
+
+There is a well defined lifecycle used for attribute transformation that
+is worth explaining before jumping into specifics. Transformation is
+done in the following phases, in the following order:
+
+1.  `discard` - All attributes in the domain model transfer or invoked
+operation that have been registered for a discard check, are checked to
+see if the attribute should be discarded. If an attribute should be
+discarded, it is removed from the resource's attributes/operation's
+parameters and it does not get passed to the next phases. Once discarded
+it does not get sent to the legacy slave HC.
+2.  `reject` - All attributes that have been registered for a reject
+check (and which not have been discarded) are checked to see if the
+attribute should be rejected. As explained in
+link:#src-557181_DomainModeSubsystemTransformers-Rejectioninresourcetransformers[#Rejection
+in resource transformers] and
+link:#src-557181_DomainModeSubsystemTransformers-Rejectioninoperationtransformers[#Rejection
+in operation transformers] exactly what happens when something is
+rejected varies depending on whether we are transforming a resource or
+an operation, and the version of the legacy slave HC we are transforming
+for. If a transformer rejects an attribute, all other reject
+transformers still get invoked, and the next phases also get invoked.
+This is because we don't know in all cases what will happen if a reject
+happens. Although this might sound cumbersome, in practice it actually
+makes it easier to write transformers since you only need one kind
+regardless of if it is a resource, an operation, and legacy slave HC
+version. However, as we will see in
+link:#src-557181_DomainModeSubsystemTransformers-Commontransformationuse-cases[Common
+transformation use-cases], it means some extra checks are needed when
+writing reject and convert transformers.
+3.  `convert` - All attributes that have been registered for conversion
+are checked to see if the attribute should be converted. If the
+attribute does not exist in the original operation/resource it may be
+introduced. This is useful for setting default values for the target
+legacy slave HC.
+4.  `rename` - All attributes registered for renaming are renamed.
+
+Next, let us have a look at how to register attributes for each of these
+phases.
+
+[[discarding-attributes]]
+==== Discarding attributes
+
+The general idea behind a discard is that we remove attributes which do
+not exist in the legacy slave HC's model. However, as hopefully
+described below, we normally can't simply discard everything, we need to
+check the values first.
+
+To discard an attribute we need an instance of
+`org.jboss.as.controller.transform.description.DiscardAttributeChecker`,
+and call the following method on the
+`AttributeTransformationDescriptionBuilder`:
+
+[source, java]
+----
+     DiscardAttributeChecker discardCheckerA = ....;
+     attributeBuilder.setDiscard(discardCheckerA, "attr1", "attr2");
+----
+
+As shown, you can register the `DiscardAttributeChecker` for several
+attributes at once, in the above example both `attr1` and `attr2` get
+checked for if they should be discarded. You can also register different
+`DiscardAttributeChecker` instances for different attributes:
+
+[source, java]
+----
+     DiscardAttributeChecker discardCheckerA = ....;
+     DiscardAttributeChecker discardCheckerB = ....;
+     attributeBuilder.setDiscard(discardCheckerA, "attr1");
+     attributeBuilder.setDiscard(discardCheckerA, "attr2");
+----
+
+Note that you can only have one `DiscardAttributeChecker` per attribute,
+so the following would cause an error (if running with assertions
+enabled, otherwise `discardCheckerB` will overwrite `discardCheckerA`):
+
+[source, java]
+----
+     DiscardAttributeChecker discardCheckerA = ....;
+     DiscardAttributeChecker discardCheckerB = ....;
+     attributeBuilder.setDiscard(discardCheckerA, "attr1");
+     attributeBuilder.setDiscard(discardCheckerB, "attr1");
+----
+
+[[the-discardattributechecker-interface]]
+===== The DiscardAttributeChecker interface
+
+`org.jboss.as.controller.transform.description.DiscardAttributeChecker`
+contains both the `DiscardAttributeChecker` and some helper
+implementations. The implementations of this interface get called for
+each attribute they are registered against. The interface itself is
+quite simple:
+
+[source, java]
+----
+public interface DiscardAttributeChecker {
+ 
+    /**
+     * Returns {@code true} if the attribute should be discarded if expressions are used
+     *
+     * @return whether to discard if expressions are used
+     */
+    boolean isDiscardExpressions();
+----
+
+Return `true` here to discard the attribute if it is an expression. If
+it is an expression, and this method returns `true`, the
+`isOperationParameterDiscardable` and `isResourceAttributeDiscardable`
+methods will not get called.
+
+[source, java]
+----
+    /**
+     * Returns {@code true} if the attribute should be discarded if it is undefined
+     *
+     * @return whether to discard if the attribute is undefined
+     */
+    boolean isDiscardUndefined();
+----
+
+Return `true` here to discard the attribute if it is `undefined`. If it
+is `undefined`, and this method returns `true`, the
+`isDiscardExpressions`, `isOperationParameterDiscardable` and
+`isResourceAttributeDiscardable` methods will not get called.
+
+[source, java]
+----
+    /**
+     * Gets whether the given operation parameter can be discarded
+     *
+     * @param address the address of the operation
+     * @param attributeName the name of the operation parameter.
+     * @param attributeValue the value of the operation parameter.
+     * @param operation the operation executed. This is unmodifiable.
+     * @param context the context of the transformation
+     *
+     * @return {@code true} if the operation parameter value should be discarded, {@code false} otherwise.
+     */
+    boolean isOperationParameterDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context);
+----
+
+If we are transforming an operation, this method gets called for each
+operation parameter. We have access to the address of the operation, the
+name and value of the operation parameter, an unmodifiable copy of the
+original operation and the `TransformationContext`. The
+`TransformationContext` allows you access to the original resource the
+operation is working on before any transformation happened, which is
+useful if you want to check other values in the resource if this is, say
+a `write-attribute` operation. Return `true` to discard the operation.
+
+[source, java]
+----
+    /**
+     * Gets whether the given attribute can be discarded
+     *
+     * @param address the address of the resource
+     * @param attributeName the name of the attribute
+     * @param attributeValue the value of the attribute
+     * @param context the context of the transformation
+     *
+     * @return {@code true} if the attribute value should be discarded, {@code false} otherwise.
+     */
+    boolean isResourceAttributeDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
+----
+
+If we are transforming a resource, this method gets called for each
+attribute in the resource. We have access to the address of the
+resource, the name and value of the attribute, and the
+`TransformationContext`. Return `true` to discard the operation.
+
+[source, java]
+----
+}
+----
+
+[[discardattributechecker-helper-classesimplementations]]
+===== DiscardAttributeChecker helper classes/implementations
+
+`DiscardAttributeChecker` contains a few helper implementations for the
+most common cases to save you writing the same stuff again and again.
+
+[[discardattributechecker.defaultdiscardattributechecker]]
+====== DiscardAttributeChecker.DefaultDiscardAttributeChecker
+
+`DiscardAttributeChecker.DefaultDiscardAttributeChecker` is an abstract
+convenience class. In most cases you don't need a separate check for if
+an operation or a resource is being transformed, so it makes both the
+`isResourceAttributeDiscardable()` and
+`isOperationParameterDiscardable()` methods call the following method.
+
+[source, java]
+----
+protected abstract boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
+----
+
+All you lose, in the case of an operation transformation, is the name of
+the transformed operation. The constructor of
+`DiscardAttributeChecker.DefaultDiscardAttributeChecker` also allows you
+to define values for `isDiscardExpressions()` and
+`isDiscardUndefined()`.
+
+[[discardattributechecker.discardattributevaluechecker]]
+====== DiscardAttributeChecker.DiscardAttributeValueChecker
+
+This is another convenience class, which allows you to discard an
+attribute if it has one or more values. Here is a real-world example
+from the `jpa` subsystem:
+
+[source, java]
+----
+    private void initializeTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.getAttributeBuilder()
+            .setDiscard(
+                   new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(ExtendedPersistenceInheritance.DEEP.toString())),
+                   JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
+            .addRejectCheck(RejectAttributeChecker.DEFINED, JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
+            .end();
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 1, 0));
+    }
+----
+
+We will come back to the reject checks in the
+link:#src-557181_DomainModeSubsystemTransformers-Rejectingattributes[#Rejecting
+attributes] section. We are saying that we should discard the
+`JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE` attribute if it
+has the value `deep`. The reasoning here is that this attribute did not
+exist in the old model, but the legacy slave HCs _implied behaviour_ is
+that this was `deep`. In the current version we added the possibility to
+toggle this setting, but only `deep` is consistent with what is
+available in the legacy slave HC. In this case we are using the
+constructor for `DiscardAttributeChecker.DiscardAttributeValueChecker`
+which says don't discard if it uses expressions, and discard if it is
+`undefined`. If it is `undefined` in the current model, looking at the
+default value of
+`JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE`, it is `deep`,
+so a discard is in line with the implied legacy behaviour. If an
+expression is used, we cannot discard since we have no idea what the
+expression will resolve to on the slave HC.
+
+[[discardattributechecker.always]]
+====== DiscardAttributeChecker.ALWAYS
+
+`DiscardAttributeChecker.ALWAYS` will always discard an attribute. Use
+this sparingly, since normally the presence of an attribute in the
+current model implies some behaviour should be turned on, and if that
+does not exist in the legacy model it implies that that behaviour does
+not exist in the legacy slave HC and its servers. Normally the legacy
+slave HC's subsystem has some implied behaviour which is better checked
+for by using a `DiscardAttributeChecker.DiscardAttributeValueChecker`.
+One valid use for `DiscardAttributeChecker.ALWAYS` can be found in the
+`ejb3` subsystem:
+
+[source, java]
+----
+    private static void registerTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance()
+                .getAttributeBuilder()
+                 ...
+                // We can always discard this attribute, because it's meaningless without the security-manager subsystem, and
+                // a legacy slave can't have that subsystem in its profile.
+                .setDiscard(DiscardAttributeChecker.ALWAYS, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
+   ...
+----
+
+As the comment says, this attribute only makes sense with the
+security-manager susbsystem, which does not exist on legacy slaves
+running ModelVersion 1.1.0 of the `ejb3` subsystem.
+
+[[discardattributechecker.undefined]]
+====== DiscardAttributeChecker.UNDEFINED
+
+`DiscardAttributeChecker.UNDEFINED` will discard an attribute if it is
+`undefined`. This is normally safer than
+`DiscardAttributeChecker.ALWAYS` since the attribute is not set in the
+current model, we don't need to send it to the legacy model. However,
+you should check that this attribute not existing in the legacy slave
+HC, implies the same functionality as being undefined in the current DC.
+
+[[rejecting-attributes]]
+==== Rejecting attributes
+
+The next step is to check attributes and values which we know for sure
+will not work on the target legacy slave HC.
+
+To reject an attribute we need an instance of
+`org.jboss.as.controller.transform.description.RejectAttributeChecker`,
+and call the following method on the
+`AttributeTransformationDescriptionBuilder`:
+
+[source, java]
+----
+     RejectAttributeChecker rejectCheckerA = ....;
+     attributeBuilder.addRejectCheck(rejectCheckerA, "attr1", "attr2");
+----
+
+As shown you can register the `RejectAttributeChecker` for several
+attributes at once, in the above example both `attr1` and `attr2` get
+checked for if they should be discarded. You can also register different
+`RejectAttributeChecker` instances for different attributes:
+
+[source, java]
+----
+     RejectAttributeChecker rejectCheckerA = ....;
+     RejectAttributeChecker rejectCheckerB = ....;
+     attributeBuilder.addRejectCheck(rejectCheckerA, "attr1");
+     attributeBuilder.addRejectCheck(rejectCheckerB, "attr2");
+----
+
+You can also register several `RejectAttributeChecker` instances per
+attribute
+
+[source, java]
+----
+     RejectAttributeChecker rejectCheckerA = ....;
+     RejectAttributeChecker rejectCheckerB = ....;
+     attributeBuilder.addRejectCheck(rejectCheckerA, "attr1");
+     attributeBuilder.addRejectCheck(rejectCheckerB, "attr1, "attr2");
+----
+
+In this case `attr1` gets both `rejectCheckerA` and `rejectCheckerB`.
+For attributes with several `RejectAttributeChecker` registered, they
+get processed in the order that they have been added. So when checking
+`attr1` for rejection, `rejectCheckerA` gets run before
+`rejectCheckerB`. As mentioned in
+link:#src-557181_DomainModeSubsystemTransformers-Attributetransformationlifecycle[#Attribute
+transformation lifecycle], if an attribute is rejected, we still invoke
+the rest of the reject checkers.
+
+[[the-rejectattributechecker-interface]]
+===== The RejectAttributeChecker interface
+
+`org.jboss.as.controller.transform.description.RejectAttributeChecker`
+contains both the `RejectAttributeChecker` and some helper
+implementations. The implementations of this interface get called for
+each attribute they are registered against. The interface itself is
+quite simple, and its main methods are similar to
+`DiscardAttributeChecker`:
+
+[source, java]
+----
+public interface RejectAttributeChecker {
+    /**
+     * Determines whether the given operation parameter value is not understandable by the target process and needs
+     * to be rejected.
+     *
+     * @param address        the address of the operation
+     * @param attributeName  the name of the attribute
+     * @param attributeValue the value of the attribute
+     * @param operation      the operation executed. This is unmodifiable.
+     * @param context        the context of the transformation
+     * @return {@code true} if the parameter value is not understandable by the target process and so needs to be rejected, {@code false} otherwise.
+     */
+    boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context);
+----
+
+If we are transforming an operation, this method gets called for each
+operation parameter. We have access to the address of the operation, the
+name and value of the operation parameter, an unmodifiable copy of the
+original operation and the `TransformationContext`. The
+`TransformationContext` allows you access to the original resource the
+operation is working on before any transformation happened, which is
+useful if you want to check other values in the resource if this is, say
+a `write-attribute` operation. Return `true` to reject the operation.
+
+[source, java]
+----
+    /**
+     * Gets whether the given resource attribute value is not understandable by the target process and needs
+     * to be rejected.
+     *
+     * @param address        the address of the resource
+     * @param attributeName  the name of the attribute
+     * @param attributeValue the value of the attribute
+     * @param context        the context of the transformation
+     * @return {@code true} if the attribute value is not understandable by the target process and so needs to be rejected, {@code false} otherwise.
+     */
+    boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
+----
+
+If we are transforming a resource, this method gets called for each
+attribute in the resource. We have access to the address of the
+resource, the name and value of the attribute, and the
+`TransformationContext`. Return `true` to discard the operation.
+
+[source, java]
+----
+    /**
+     * Returns the log message id used by this checker. This is used to group it so that all attributes failing a type of rejection
+     * end up in the same error message
+     *
+     * @return the log message id
+     */
+    String getRejectionLogMessageId();
+----
+
+Here we need a unique id for the log message from the
+`RejectAttributeChecker`. It is used to group rejected attributes by
+their log message. A typical implementation will contain \{\{return
+getRejectionLogMessage(Collections.<String, ModelNode>emptyMap());}
+
+[source, java]
+----
+    /**
+     * Gets the log message if the attribute failed rejection
+     *
+     * @param attributes a map of all attributes failed in this checker and their values
+     * @return the formatted log message
+     */
+    String getRejectionLogMessage(Map<String, ModelNode> attributes);
+----
+
+Here we return a message saying why the attributes were rejected, with
+the possibility to format the message to include the names of all the
+rejected attributes and the values they had.
+
+[source, java]
+----
+}
+----
+
+[[rejectattributechecker-helper-classesimplementations]]
+===== RejectAttributeChecker helper classes/implementations
+
+`RejectAttributeChecker` contains a few helper classes for the most
+common scenarios to save you from writing the same stuff again and
+again.
+
+[[rejectattributechecker.defaultrejectattributechecker]]
+====== RejectAttributeChecker.DefaultRejectAttributeChecker
+
+`RejectAttributeChecker.DefaultRejectAttributeChecker` is an abstract
+convenience class. In most cases you don't need a separate check for if
+an operation or a resource is being transformed, so it makes both the
+`rejectOperationParameter()` and `rejectResourceAttribute()` methods
+call the following method.
+
+[source, java]
+----
+protected abstract boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
+----
+
+Like `DefaultDiscardAttributeChecker`, all you loose is the name of the
+transformed operation, in the case of operation transformation.
+
+[[rejectattributechecker.defined]]
+====== RejectAttributeChecker.DEFINED
+
+`RejectAttributeChecker.DEFINED` is used to reject any attribute that
+has a defined value. Normally this is because the attribute does not
+exist on the target legacy slave HC. A typical use case for these is for
+the _implied behavior_ example we looked at in the `jpa` subsystem in
+link:#src-557181_DomainModeSubsystemTransformers-DiscardAttributeChecker.DiscardAttributeValueChecker[#DiscardAttributeChecker.DiscardAttributeValueChecker]
+
+[source, java]
+----
+    private void initializeTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.getAttributeBuilder()
+            .setDiscard(
+                   new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(ExtendedPersistenceInheritance.DEEP.toString())),
+                   JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
+            .addRejectCheck(RejectAttributeChecker.DEFINED, JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
+            .end();
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 1, 0));
+    }
+----
+
+So we discard the
+`JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE` value if it is
+not an expression, and also has the value `deep`. Now if it was not
+discarded, it would will still be defined so we reject it.
+
+Important
+
+[IMPORTANT]
+
+Reject and discard often work in pairs.
+
+[[rejectattributechecker.simple_expressions]]
+====== RejectAttributeChecker.SIMPLE_EXPRESSIONS
+
+`RejectAttributeChecker.SIMPLE_EXPRESSIONS` can be used to reject an
+attribute that contains expressions. This was used a lot for
+transformations to subsystems in JBoss AS 7.1.x, since we had not fully
+realized the importance of where to support expressions until JBoss AS
+7.2.0 was released, so a lot of attributes in earlier versions were
+missing expressions support.
+
+[[rejectattributechecker.listrejectattributechecker]]
+====== RejectAttributeChecker.ListRejectAttributeChecker
+
+The
+`RejectAttributeChecker}}s we have seen so far work on simple attributes, i.e. where the attribute has a ModelType which is one of the primitives. We also have a {{RejectAttributeChecker.ListRejectAttributeChecker`
+which allows you to define a checker for the elements of a list, when
+the type of an attribute is `ModelType.LIST`.
+
+[source, java]
+----
+    attributeBuilder
+            .addRejectCheck(new ListRejectAttributeChecker(RejectAttributeChecker.EXPRESSIONS), "attr1");
+----
+
+For `attr1` it will check each element of the list and run
+`RejectAttributeChecker.EXPRESSIONS` to check that each element is not
+an expression. You can of course pass in another kind of
+`RejectAttributeChecker` to check the elements as well.
+
+[[rejectattributechecker.objectfieldsrejectattributechecker]]
+====== RejectAttributeChecker.ObjectFieldsRejectAttributeChecker
+
+For attributes where the type is `ModelType.OBJECT` we have
+`RejectAttributeChecker.ObjectFieldsRejectAttributeChecker` which allows
+you to register different reject checkers for the different fields of
+the registered object.
+
+[source, java]
+----
+    Map<String, RejectAttributeChecker> fieldRejectCheckers = new HashMap<String, RejectAttributeChecker>();
+    fieldRejectCheckers.put("time", RejectAttributeChecker.SIMPLE_EXPRESSIONS);
+    fieldRejectCheckers.put("unit", "Lunar Month");
+    attributeBuilder
+            .addRejectCheck(new ObjectFieldsRejectAttributeChecker(fieldRejectCheckers), "attr1");
+----
+
+Now if `attr1` is a complex type where
+`attr1.get("time").getType() == ModelType.EXPRESSION` or
+`attr1.get("unit").asString().equals("Lunar Month")` we reject the
+attribute.
+
+[[converting-attributes]]
+==== Converting attributes
+
+To convert an attribute you register an
+`org.jboss.as.controller.transform.description.AttributeConverter`
+instance against the attributes you want to convert:
+
+[source, java]
+----
+    AttributeConverter converterA = ...;
+    AttributeConverter converterB = ...;
+    attributeBuilder
+            .setValueConverter(converterA, "attr1", "attr2");
+    attributeBuilder
+            .setValueConverter(converterB, "attr3");
+----
+
+Now if `attr1` and `attr2` get converted with `converterA`, while
+`attr3` gets converted with `converterB`.
+
+[[the-attributeconverter-interface]]
+===== The AttributeConverter interface
+
+The `AttributeConverter` interface gets called for each attribute for
+which the `AttributeConverter` has been registered
+
+[source, java]
+----
+public interface AttributeConverter {
+ 
+    /**
+     * Converts an operation parameter
+     *
+     * @param address the address of the operation
+     * @param attributeName the name of the operation parameter
+     * @param attributeValue the value of the operation parameter to be converted
+     * @param operation the operation executed. This is unmodifiable.
+     * @param context the context of the transformation
+     */
+    void convertOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context);
+----
+
+If we are transforming an operation, this method gets called for each
+operation parameter for which the con. We have access to the address of
+the operation, the name and value of the operation parameter, an
+unmodifiable copy of the original operation and the
+`TransformationContext`. The `TransformationContext` allows you access
+to the original resource the operation is working on before any
+transformation happened, which is useful if you want to check other
+values in the resource if this is, say a write-attribute operation. To
+change the attribute value, you modify the `attributeValue`.
+
+[source, java]
+----
+    /**
+     * Converts a resource attribute
+     *
+     * @param address the address of the operation
+     * @param attributeName the name of the attribute
+     * @param attributeValue the value of the attribute to be converted
+     * @param context the context of the transformation
+     */
+    void convertResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
+----
+
+If we are transforming a resource, this method gets called for each
+attribute in the resource. We have access to the address of the
+resource, the name and value of the attribute, and the
+`TransformationContext`. To change the attribute value, you modify the
+`attributeValue`.
+
+[source, java]
+----
+}
+----
+
+A hypothetical example is if the current and legacy subsystems both
+contain an attribute called `timeout`. In the legacy model this was
+specified to be milliseconds, however in the current model it has been
+changed to be seconds, hence we need to convert the value when sending
+it to slave HCs using the legacy model:
+
+[source, java]
+----
+     AttributeConverter secondsToMs = new AttributeConverter.DefaultAttributeConverter() {
+                  @Override
+                  protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                           TransformationContext context) {
+                      if (attributeValue.isDefined()) {
+                           int seconds = attributeValue.asInt();
+                           int milliseconds = seconds * 1000;
+                           attributeValue.set(milliseconds);
+                      }
+                  }
+          };
+ 
+     attributeBuilder.
+          .setValueConverter(secondsToMs , "timeout")
+----
+
+We need to be a bit careful here. If the `timeout` attribute is an
+expression our nice conversion will not work, so we need to add a reject
+check to make sure it is not an expression as well:
+
+[source, java]
+----
+     attributeBuilder.
+          .addRejectCheck(SIMPLE_EXPRESSIONS, "timeout")
+          .setValueConverter(secondsToMs , "timeout")
+----
+
+Now it should be fine.
+
+`AttributeConverter.DefaultAttributeConverter` is is an abstract
+convenience class. In most cases you don't need a separate check for if
+an operation or a resource is being transformed, so it makes both the
+convertOperationParameter() and convertResourceAttribute() methods call
+the following method.
+
+[source, java]
+----
+protected abstract void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
+----
+
+Like `DefaultDiscardAttributeChecker` and
+`DefaultRejectAttributeChecker`, all you loose is the name of the
+transformed operation, in the case of operation transformation.
+
+[[introducing-attributes-during-transformation]]
+====== Introducing attributes during transformation
+
+Say both the current and the legacy models have an attribute called
+`port`. In the legacy version this attribute had to be specified, and
+the default xml configuration had `1234` for its value. In the current
+version this attribute has been made optional with a default value of
+`1234` so that it does not need to be specified. When transforming to a
+slave HC using the old version we will need to introduce this attribute
+if the new model does not contain it:
+
+[source, java]
+----
+     attributeBuilder.
+         setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(1234) true), "port");
+----
+
+So what this factory method does is to create an implementation of
+`AttributeConverter.DefaultAttributeConverter` where in
+`convertAttribute()` we set `attributeValue` to have the value `1234` if
+it is `undefined`. As long as `attributeValue` gets set in that method
+it will get set in the model, regardless of if it existed already or
+not.
+
+[[renaming-attributes]]
+==== Renaming attributes
+
+To rename an attribute, you simply do
+
+[source, java]
+----
+    attributeBuilder.addRename("my-name", "legacy-name");
+----
+
+Now, in the initial domain transfer to the legacy slave HC, we rename
+`/subsystem=my-subsystem`'s `my-name` attribute to `legacy-name`. Also,
+the operations involving this attribute are affected, so
+
+[source,ruby]
+----
+    /subsystem=my-subsystem/:add(my-name=true)  ->
+         /subsystem=my-subsystem/:add(legacy-name=true)
+    /subsystem=my-subsystem:write-attribute(name=my-name, value=true) ->
+         /subsystem=my-subsystem:write-attribute(name=legacy-name, value=true)
+    /subsystem=my-subsystem:undefine-attribute(name=my-name) ->
+         /subsystem=my-subsystem:undefine-attribute(name=legacy-name)
+----
+
+[[operationtransformationoverridebuilder]]
+=== OperationTransformationOverrideBuilder
+
+All operations on a resource automatically get the same transformations
+on their parameters as set up by the
+`AttributeTransformationDescriptionBuilder`. In some cases you might
+want to change this, so you can use the
+`OperationTransformationOverrideBuilder`, which is got from:
+
+[source, java]
+----
+OperationTransformationOverrideBuilder operationBuilder = subSystemBuilder.addOperationTransformationOverride("some-operation");
+----
+
+In this case the operation will now no longer inherit the
+attribute/operation parameter transformations, so they are effectively
+turned off. In other cases you might want to include them by calling
+`inheritResourceAttributeDefinitions()`, and to include some more checks
+(the `OperationTransformationBuilder` interface has all the methods
+found in `AttributeTransformationBuilder`:
+
+[source, java]
+----
+    OperationTransformationOverrideBuilder operationBuilder = subSystemBuilder.addOperationTransformationOverride("some-operation");
+    operationBuilder.inheritResourceAttributeDefinitions();
+    operationBuilder.setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(1234) true), "port");
+----
+
+You can also rename operations, in this case the operation
+`some-operation` gets renamed to `legacy-operation` before getting sent
+to the legacy slave HC.
+
+[source, java]
+----
+    OperationTransformationOverrideBuilder operationBuilder = subSystemBuilder.addOperationTransformationOverride("some-operation");
+    operationBuilder.rename("legacy-operation");
+----
+
+[[evolving-transformers-with-subsystem-modelversions]]
+== Evolving transformers with subsystem ModelVersions
+
+Say you have a subsystem with ModelVersions 1.0.0 and 1.1.0. There will
+(hopefully!) already be transformers in place for 1.1.0 to 1.0.0
+transformations. Let's say that the transformers registration looks
+like:
+
+[source, java]
+----
+public class SomeExtension implements Extension {
+ 
+    private static final String SUBSYSTEM_NAME = "my-subsystem"'
+ 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+ 
+    @Override
+    public void initialize(ExtensionContext context) {
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
+                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        //Register the resource definitions
+        ....
+    }
+ 
+    private void registerTransformers(final SubsystemRegistration subsystem) {
+        registerTransformers_1_0_0(subsystem);
+    }
+ 
+    /**
+     * Registers transformers from the current version to ModelVersion 1.0.0
+     */
+    private void registerTransformers_1_0_0(SubsystemRegistration subsystem) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.DEFINED, "attr1")
+            .end();
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
+    }
+}
+----
+
+Now say we want to do a new version of the model. This new version
+contains a new attribute called 'new-attr' which cannot be defined when
+transforming to 1.1.0, we bump the model version to 2.0.0:
+
+[source, java]
+----
+public class SomeExtension implements Extension {
+ 
+    private static final String SUBSYSTEM_NAME = "my-subsystem"'
+ 
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+ 
+    @Override
+    public void initialize(ExtensionContext context) {
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
+                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        //Register the resource definitions
+        ....
+    }
+----
+
+There are a few ways to evolve your transformers:
+
+* link:#src-557181_DomainModeSubsystemTransformers-Theoldway[#The old
+way]
+* link:#src-557181_DomainModeSubsystemTransformers-Chainedtransformers[#Chained
+transformers]
+
+[[the-old-way]]
+=== The old way
+
+This is the way that has been used up to WildFly {wildflyVersion}.x. However, in
+WildFly 9 and later, it is strongly recommended to migrate to what is
+mentioned in
+link:#src-557181_DomainModeSubsystemTransformers-Chainedtransformers[#Chained
+transformers]
+
+Now we need some new transformers from the current ModelVersion to 1.1.0
+where we reject any defined occurrances of our new attribute `new-attr`:
+
+[source, java]
+----
+    private void registerTransformers(final SubsystemRegistration subsystem) {
+        registerTransformers_1_0_0(subsystem);
+        registerTransformers_1_1_0(subsystem);
+    }
+ 
+    /**
+     * Registers transformers from the current version to ModelVersion 1.1.0
+     */
+    private void registerTransformers_1_1_0(SubsystemRegistration subsystem) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.DEFINED, "new-attr")
+            .end();
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 1, 0));
+    }
+----
+
+So that is all well and good, however we also need to take into account
+that `new-attr` *does not exist in ModelVersion 1.0.0 either*, so we
+need to extend our transformer for 1.0.0 to reject it there as well. As
+you can see 1.0.0 also rejects a defined 'attr1' in addition to the
+'new-attr'(which is rejected in both versions).
+
+[source, java]
+----
+    /**
+     * Registers transformers from the current version to ModelVersion 1.0.0
+     */
+    private void registerTransformers_1_0_0(SubsystemRegistration subsystem) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.DEFINED, "attr1", "new-attr")
+            .end();
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
+    }
+}
+----
+
+Now `new-attr` will be rejected if defined for all previous model
+versions.
+
+[[chained-transformers]]
+=== Chained transformers
+
+Since 'The old way' had a lot of duplication of code, since WildFly 9 we
+now have chained transformers. You obtain a
+`ChainedTransformationDescriptionBuilder` which is a different entry
+point to the `ResourceTransformationDescriptionBuilder` we have seen
+earlier. Each `ResourceTransformationDescriptionBuilder` deals with
+transformation across one version delta.
+
+[source, java]
+----
+    private void registerTransformers(SubsystemRegistration subsystem) {
+        ModelVersion version1_1_0 = ModelVersion.create(1, 1, 0);
+        ModelVersion version1_0_0 = ModelVersion.create(1, 0, 0);
+ 
+        ChainedTransformationDescriptionBuilder chainedBuilder =
+              TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystem.getSubsystemVersion());
+ 
+        //Differences between the current version and 1.1.0
+        ResourceTransformationDescriptionBuilder builder110 =
+            chainedBuilder.create(subsystem.getSubsystemVersion(), version1_1_0);
+        builder110.getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.DEFINED, "new-attr")
+            .end();
+ 
+        //Differences between the 1.1.0 and 1.0.0
+        ResourceTransformationDescriptionBuilder builder100 =
+            chainedBuilder.create(subsystem.getSubsystemVersion(), version1_0_0);
+        builder110.getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.DEFINED, "attr1")
+            .end();
+ 
+        chainedBuilder.buildAndRegister(subsystem, new ModelVersion[]{version1_0_0, version1_1_0});
+----
+
+The `buildAndRegister(ModelVersion[]... chains)` method registers a
+chain consisting of the built `builder110` and `builder100` for
+transformation to 1.0.0, and a chain consisting of the built
+`builder110` for transformation to 1.1.0. It allows you to specify more
+than one chain.
+
+Now when transforming from the current version to 1.0.0, the resource is
+first transformed from the current version to 1.1.0 (which rejects a
+defined `new-attr`) and then it is transformed from 1.1.0 to 1.0.0
+(which rejects a defined `attr1`). So when evolving transformers you
+should normally only need to add things to the last version delta. The
+full current-to-1.1.0 transformation is run before the 1.1.0-to-1.0.0
+transformation is run.
+
+One thing worth pointing out that the value returned by
+`TransformationContext.readResource(PathAddress address)` and
+`TransformationContext.readResourceFromRoot(PathAddress address)` which
+you can use from your custom `RejectAttributeChecker`,
+`DiscardAttributeChecker` and `AttributeConverter` behaves slightly
+differently depending on if you are transforming an operation or a
+resource.
+
+During _resource transformation_ this will be the latest model, so in
+our above example, in the current-to-1.1.0 transformation it will be the
+original model. In the 1.1.0-to-1.0.0 transformation, it will be the
+result of the current-to-1.1.0 transformation.
+
+During _operation transformation_ these methods will always return the
+original model (we are transforming operations, not resources!).
+
+In WildFly 9 we are now less aggressive about transforming to all
+previous versions of WildFly, however we still have a lot of good tests
+for running against 7.1.x, 8. Also, for Red Hat employees we have tests
+against EAP versions. These tests no longer get run by default, to run
+them you need to specify some system properties when invoking maven.
+They are:
+
+* `-Djboss.test.transformers.subsystem.old` - enables the non-default
+subsystem tests.
+* -Djboss.test.transformers.eap - (Red Hat developers only), enables the
+eap tests, but only the ones run by default. If run in conjunction with
+`-Djboss.test.transformers.subsystem.old` you get all the possible
+subsystem tests run.
+* -Djboss.test.transformers.core.old - enables the non-default core
+model tests.
+
+[[testing-transformers]]
+== Testing transformers
+
+To test transformation you need to extend
+`org.jboss.as.subsystem.test.AbstractSubsystemTest` or
+`org.jboss.as.subsystem.test.AbstractSubsystemBaseTest`. Then, in order
+to have the best test coverage possible, you should test the fullest
+configuration that will work, and you should also test configurations
+that don't work if you have rejecting transformers registered. The
+following example is from the threads subsystem, and I have only
+included the tests against 7.1.2 - there are more! First we need to set
+up our test:
+
+[source, java]
+----
+public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
+    public ThreadsSubsystemTestCase() {
+        super(ThreadsExtension.SUBSYSTEM_NAME, new ThreadsExtension());
+    }
+ 
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return readResource("threads-subsystem-1_1.xml");
+    }
+----
+
+So we say that this test is for the `threads` subsystem, and that it is
+implemented by `ThreadsExtension`. This is the same test framework as we
+use in
+link:Example_subsystem.html#src-557103_Examplesubsystem-Testingtheparsers[Example
+subsystem#Testing the parsers], but we will only talk about the parts
+relevant to transformers here.
+
+[[testing-a-configuration-that-works]]
+=== Testing a configuration that works
+
+To test a configuration xxx
+
+[source, java]
+----
+    @Test
+    public void testTransformerAS712() throws Exception {
+        testTransformer_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
+    }
+    /**
+     * Tests transformation of model from 1.1.0 version into 1.0.0 version.
+     *
+     * @throws Exception
+     */
+    private void testTransformer_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        String subsystemXml = "threads-transform-1_0.xml";   //This has no expressions not understood by 1.0
+        ModelVersion modelVersion = ModelVersion.create(1, 0, 0); //The old model version
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource(subsystemXml);
+ 
+        final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName));
+ 
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addOperationValidationResolve("add", subsystemAddress.append(PathElement.pathElement("thread-factory")))
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
+                .excludeFromParent(SingleClassFilter.createFilter(ThreadsLogger.class));
+ 
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(legacyServices);
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+    }
+----
+
+What this test does is get the builder to configure the test controller
+using `threads-transform-1_0.xml`. This main builder works with the
+current subsystem version, and the jars in the WildFly checkout.
+
+Next we configure a 'legacy' controller. This will run the version of
+the core libraries (e.g the `controller` module) as found in the
+targeted legacy version of JBoss AS/Wildfly), and the subsystem. We need
+to pass in that it is using the core AS version 7.1.2.Final (i.e. the
+`ModelTestControllerVersion.V7_1_2_FINAL` part) and that that version is
+ModelVersion 1.0.0. Next we have some `addMavenResourceURL()` calls
+passing in the Maven GAVs of the old version of the subsystem and any
+dependencies it has needed to boot up. Normally, specifying just the
+Maven GAV of the old version of the subsystem is enough, but that
+depends on your subsystem. In this case the old subsystem GAV is enough.
+When booting up the legacy controller the framework uses the parsed
+operations from the main controller and transforms them using the 1.0.0
+transformer in the threads subsystem. The
+`addOperationValidationResolve()` and `excludeFromParent()` calls are
+not normally necessary, see the javadoc for more examples.
+
+The call to `KernelServicesBuilder.build()` will build both the main
+controller and the legacy controller. As part of that it also boots up a
+second copy of the main controller using the transformed operations to
+make sure that the 'old' ops to boot our subsystem will still work on
+the current controller, which is important for backwards compatibility
+of CLI scripts. To tweak how that is done if you see failures there, see
+`LegacyKernelServicesInitializer.skipReverseControllerCheck()` and
+`LegacyKernelServicesInitializer.configureReverseControllerCheck()`. The
+`LegacyKernelServicesInitializer` is what gets returned by
+`KernelServicesBuilder.createLegacyKernelServicesBuilder()`.
+
+Finally we call `checkSubsystemModelTransformation()` which reads the
+full legacy subsystem model. The legacy subsystem model will have been
+built up from the transformed boot operations from the parsed xml. The
+operations get transformed by the operation transformers. Then it takes
+the model of the current subsystem and transforms that using the
+resource transformers. Then it compares the two models, which should be
+the same. In some rare cases it is not possible to get those two models
+exactly the same, so there is a version of this method that takes a
+`ModelFixer` to make adjustments. The
+`checkSubsystemModelTransformation()` method also makes sure that the
+legacy model is valid according to the legacy subsystem's resource
+definition.
+
+The legacy subsystem resource definitions are read on demand from the
+legacy controller when the tests run. In some older versions of
+subsystems (before we converted everything to use ResourceDefinition,
+and DescriptionProvider implementations were coded by hand) there were
+occasional problems with the resource definitions and they needed to be
+touched up. In this case you can generate a new one, touch it up and
+store the result in a file in the test resources under
+`/same/package/as/the/test/class/{{subsystem-name`- `model-version`.
+This will then prefer the file read from the file system to the one read
+at runtime. To generate the .dmr file, you need to generate it by adding
+a temporary test (make sure that you adjust `controllerVersion` and
+`modelVersion` to what you want to generate):
+
+[source, java]
+----
+    @Test
+    public void deleteMeWhenDone() throws Exception {
+        ModelTestControllerVersion controllerVersion = ModelTestControllerVersion.V7_1_2_FINAL;
+        ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(null);
+ 
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+            .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion());
+        KernelServices services = builder.build();
+ 
+        generateLegacySubsystemResourceRegistrationDmr(services, modelVersion);
+    }
+----
+
+Now run the test and delete it. The legacy .dmr file should be in
+`target/test-classes/org/jboss/as/subsystem/test/<your-subsystem-name>-<your-version>.dmr`.
+Copy this .dmr file to the correct location in your project's test
+resources.
+
+[[testing-a-configuration-that-does-not-work]]
+=== Testing a configuration that does not work
+
+The `threads` subsystem (like several others) did not support the use of
+expression values in the version that came with JBoss AS 7.1.2.Final. So
+we have a test that attempts to use expressions, and then fixes each
+resource and attribute where expressions were not allowed.
+
+[source, java]
+----
+    @Test
+    public void testRejectExpressionsAS712() throws Exception {
+        testRejectExpressions_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
+    }
+ 
+    private void testRejectExpressions_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+ 
+        // create builder for legacy subsystem version
+        ModelVersion version_1_0_0 = ModelVersion.create(1, 0, 0);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_0_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
+                .excludeFromParent(SingleClassFilter.createFilter(ThreadsLogger.class));
+ 
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_0_0);
+ 
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+ 
+        List<ModelNode> xmlOps = builder.parseXmlResource("expressions.xml");
+ 
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_0_0, xmlOps, getConfig());
+    }
+----
+
+Again we boot up a current and a legacy controller. However, note in
+this case that they are both empty, no xml was parsed on boot so there
+are no operations to boot up the model. Instead once the controllers
+have been booted, we call `KernelServicesBuilder.parseXmlResource()`
+which gets the operations from `expressions.xml`. `expressions.xml` uses
+expressions in all the places they were not allowed in 7.1.2.Final. For
+each resource `ModelTestUtils.checkFailedTransformedBootOperations()`
+will check that the `add` operation gets rejected, and then correct one
+attribute at a time until the resource has been totally corrected. Once
+the `add` operation is totally correct, it will check that the add
+operation no longer is rejected. The configuration for this is the
+`FailedOperationTransformationConfig` returned by the `getConfig()`
+method:
+
+[source, java]
+----
+    private FailedOperationTransformationConfig getConfig() {
+        PathAddress subsystemAddress = PathAddress.pathAddress(ThreadsExtension.SUBSYSTEM_PATH);
+        FailedOperationTransformationConfig.RejectExpressionsConfig allowedAndKeepalive =
+                new FailedOperationTransformationConfig.RejectExpressionsConfig(PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT, PoolAttributeDefinitions.KEEPALIVE_TIME);
+...
+        return new FailedOperationTransformationConfig()
+                .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(CommonAttributes.BLOCKING_BOUNDED_QUEUE_THREAD_POOL)),
+                        allowedAndKeepalive)
+                .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(CommonAttributes.BOUNDED_QUEUE_THREAD_POOL)),
+                        allowedAndKeepalive)
+    }
+----
+
+So what this means is that we expect the `allow-core-timeout` and
+`keepalive-time` attributes for the
+`blocking-bounded-queue-thread-pool=*` and `bounded-queue-thread-pool=*`
+add operations to use expressions in the parsed xml. We then expect them
+to fail since there should be transformers in place to reject
+expressions, and correct them one at a time until the add operation
+should pass. As well as doing the `add` operations the
+`ModelTestUtils.checkFailedTransformedBootOperations()` method will also
+try calling `write-attribute` for each attribute, correcting as it goes
+along. As well as allowing you to test rejection of expressions
+`FailedOperationTransformationConfig` also has some helper classes to
+help testing rejection of other scenarios.
+
+[[common-transformation-use-cases]]
+== Common transformation use-cases
+
+Most transformations are quite similar, so this section covers some of
+the actual transformation patterns found in the WildFly codebase. We
+will look at the output of CompareModelVersionsUtil, and see what can be
+done to transform for the older slave HCs. The examples come from the
+WildFly codebase but are stripped down to focus solely on the use-case
+being explained in an attempt to keep things as clear/simple as
+possible.
+
+[[child-resource-type-does-not-exist-in-legacy-model]]
+=== Child resource type does not exist in legacy model
+
+Looking at the model comparison between WildFly and JBoss AS 7.2.0,
+there is a change to the `remoting` subsystem. The relevant part of the
+output is:
+
+[source, java]
+----
+======= Resource root address: ["subsystem" => "remoting"] - Current version: 2.0.0; legacy version: 1.2.0 =======
+--- Problems for relative address to root []:
+Missing child types in current: []; missing in legacy [http-connector]
+----
+
+So our current model has added a child type called `http-connector`
+which was not there in 7.2.0. This is configurable, and adds new
+behavior, so it can not be part of a configuration sent across to a
+legacy slave running version 1.2.0. So we add the following to
+`RemotingExtension` to reject all instances of that child type against
+ModelVersion 1.2.0.
+
+[source, java]
+----
+    @Override
+    public void initialize(ExtensionContext context) {
+        ....
+        if (context.isRegisterTransformers()) {
+            registerTransformers_1_1(registration);
+            registerTransformers_1_2(registration);
+        }
+    }
+ 
+    private void registerTransformers_1_2(SubsystemRegistration registration) {
+        TransformationDescription.Tools.register(get1_2_0_1_3_0Description(), registration, VERSION_1_2);
+    }
+ 
+    private static TransformationDescription get1_2_0_1_3_0Description() {
+        ResourceTransformationDescriptionBuilder builder = ResourceTransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.rejectChildResource(HttpConnectorResource.PATH);
+ 
+        return builder.build();
+    }
+----
+
+Since this child resource type also does not exist in ModelVersion 1.1.0
+we need to reject it there as well using a similar mechanism.
+
+[[attribute-does-not-exist-in-the-legacy-subsystem]]
+=== Attribute does not exist in the legacy subsystem
+
+[[default-value-of-the-attribute-is-the-same-as-legacy-implied-behavior]]
+==== Default value of the attribute is the same as legacy implied
+behavior
+
+This example also comes from the `remoting` subsystem, and is probably
+the most common type of transformation. The comparison tells us that
+there is now an attribute under
+`/subsystem=remoting/remote-outbound-connection=*` called `protocol`
+which did not exist in the older version:
+
+[source, java]
+----
+======= Resource root address: ["subsystem" => "remoting"] - Current version: 2.0.0; legacy version: 1.2.0 =======
+--- Problems for relative address to root []:
+....
+--- Problems for relative address to root ["remote-outbound-connection" => "*"]:
+Missing attributes in current: []; missing in legacy [protocol]
+Missing parameters for operation 'add' in current: []; missing in legacy [protocol]
+----
+
+This difference also affects the `add` operation. Looking at the current
+model the valid values for the `protocol` attribute are `remote`,
+`http-remoting` and `https-remoting`. The last two are new protocols
+introduced in WildFly {wildflyVersion}, meaning that the _implied behaviour_ in JBoss
+7.2.0 and earlier is the `remote` protocol. Since this attribute does
+not exist in the legacy model we want to discard this attribute if it is
+`undefined` or if it has the value `remote`, both of which are in line
+with what the legacy slave HC is hardwired to use. Also we want to
+reject it if it has a value different from `remote`. So what we need to
+do when registering transformers against ModelVersion 1.2.0 to handle
+this attribute:
+
+[source, java]
+----
+    private void registerTransformers_1_2(SubsystemRegistration registration) {
+        TransformationDescription.Tools.register(get1_2_0_1_3_0Description(), registration, VERSION_1_2);
+    }
+ 
+    private static TransformationDescription get1_2_0_1_3_0Description() {
+        ResourceTransformationDescriptionBuilder builder = ResourceTransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        protocolTransform(builder.addChildResource(RemoteOutboundConnectionResourceDefinition.ADDRESS)
+                .getAttributeBuilder());
+        return builder.build();
+    }
+ 
+    private static AttributeTransformationDescriptionBuilder protocolTransform(AttributeTransformationDescriptionBuilder builder) {
+        builder.setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(Protocol.REMOTE.toString())), RemoteOutboundConnectionResourceDefinition.PROTOCOL)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, RemoteOutboundConnectionResourceDefinition.PROTOCOL);
+        return builder;
+    }
+----
+
+So the first thing to happens is that we register a
+`DiscardAttributeChecker.DiscardAttributeValueChecker` which discards
+the attribute if it is either `undefined` (the default value in the
+current model is `remote`), or `defined` and has the value `remote`.
+Remembering that the `discard` phase always happens before the `reject`
+phase, the reject checker checks that the `protocol` attribute is
+defined, and rejects it if it is. The only reason it would be `defined`
+in the reject check, is if it was not discarded by the discard check.
+Hopefully this example shows that the discard and reject checkers often
+work in pairs.
+
+An alternative way to write the `protocolTransform()` method would be:
+
+[source, java]
+----
+     private static AttributeTransformationDescriptionBuilder protocolTransform(AttributeTransformationDescriptionBuilder builder) {
+        builder.setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
+                    @Override
+                    protected boolean isValueDiscardable(final PathAddress address, final String attributeName, final ModelNode attributeValue, final TransformationCon
+                        return !attributeValue.isDefined() || attributeValue.asString().equals(Protocol.REMOTE.toString());
+                    }
+                }, RemoteOutboundConnectionResourceDefinition.PROTOCOL)
+         .addRejectCheck(RejectAttributeChecker.DEFINED, RemoteOutboundConnectionResourceDefinition.PROTOCOL);
+         return builder;
+----
+
+The reject check remains the same, but we have implemented the discard
+check by using `DiscardAttributeChecker.DefaultDiscardAttributeChecker`
+instead. However, the effect of the discard check is exactly the same as
+when we used `DiscardAttributeChecker.DiscardAttributeValueChecker`.
+
+[[default-value-of-the-attribute-is-different-from-legacy-implied-behaviour]]
+==== Default value of the attribute is different from legacy implied
+behaviour
+
+We touched on this in the weld subsystem example we used earlier in this
+guide, but let's take a more thorough look. Our comparison tells us that
+we have two new attributes `require-bean-descriptor` and
+`non-portable-mode`:
+
+....
+====== Resource root address: ["subsystem" => "weld"] - Current version: 2.0.0; legacy version: 1.0.0 =======
+--- Problems for relative address to root []:
+Missing attributes in current: []; missing in legacy [require-bean-descriptor, non-portable-mode]
+Missing parameters for operation 'add' in current: []; missing in legacy [require-bean-descriptor, non-portable-mode]
+....
+
+Now when we look at this we see that the default value for both of the
+attributes in the current model is `false`, which allows us more
+flexible behavior introduced in CDI 1.1 (which was introduced with this
+version of the subsystem). The old model does not have these attributes,
+and implements CDI 1.0, which under the hood (using our weld subsystem
+expertise knowledge) implies the values `true` for both of these. So our
+transformer must reject anything that is not `true` for these
+attributes. Let us look at the transformer registered by the
+WeldExtension:
+
+[source, java]
+----
+    private void registerTransformers(SubsystemRegistration subsystem) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        //These new attributes are assumed to be 'true' in the old version but default to false in the current version. So discard if 'true' and reject if 'undefined'.
+        builder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
+                        WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
+                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+ 
+                    @Override
+                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                        return WeldMessages.MESSAGES.rejectAttributesMustBeTrue(attributes.keySet());
+                    }
+ 
+                    @Override
+                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                            TransformationContext context) {
+                        //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
+                        return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
+                    }
+                }, WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
+                .end();
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
+    }
+----
+
+This looks a bit more scary than the previous transformer we have seen,
+but isn't actually too bad. The first thing we do is register a
+`DiscardAttributeChecker.DiscardAttributeValueChecker` which will
+discard the attribute if it has the value `true`. It will not discard if
+it is `undefined` since that defaults to `false`. This is registered for
+both attributes.
+
+If the attributes had the value `true` they will get discarded we will
+not hit the reject checker since discarded attributes never get checked
+for rejection. If on the other hand they were an expression (since we
+are interested in the actual value, but cannot evaluate what value an
+expression will resolve to on the target from the DC running the
+transformers), `false`, or `undefined` (which will then default to
+`false`) they will not get discarded and will need to be rejected. So
+our
+`RejectAttributeChecker.DefaultRejectAttributeChecker.rejectAttribute()`
+method will return `true` (i.e. reject) if the attribute value is
+`undefined` (since that defaults to `false`) or if it is defined and
+'not equal to `true`'. It is better to check for 'not equal to `true`'
+than to check for 'equal to `false`' since if an expression was used we
+still want to reject, and only the 'not equal to `true`' check would
+actually kick in in that case.
+
+The other thing we need in our
+`DiscardAttributeChecker.DiscardAttributeValueChecker` is to override
+the `getRejectionLogMessage()` method to get the message to be displayed
+when rejecting the transformation. In this case it says something along
+the lines "These attributes must be 'true' for use with CDI 1.0 '%s'",
+with the names of the attributes having been rejected substituting the
+`%s`.
+
+[[attribute-has-a-different-default-value]]
+=== Attribute has a different default value
+
+– TODO
+
+(The gist of this is to use a value converter, such that if the
+attribute is undefined, and hence the default value will take effect,
+then the value gets converted to the current version's default value.
+This ensures that the legacy HC will use the same effective setting as
+current version HCs.
+
+Note however that a change in default values is a form of incompatible
+API change, since CLI scripts written assuming the old defaults will now
+produce a configuration that behaves differently. Transformers make it
+possible to have a consistently configured domain even in the presence
+of this kind of incompatible change, but that doesn't mean such changes
+are good practice. They are generally unacceptable in WildFly's own
+subsystems.
+
+One trick to ameliorate the impact of a default value change is to
+modify the xml parser for the *old* schema version such that if the xml
+attribute is not configured, the parser sets the old default value for
+the attribute, instead of `undefined`. This approach allows the parsing
+of old config documents to produce results consistent with what happened
+when they were created. It does not help with CLI scripts though.)
+
+[[attribute-has-a-different-type]]
+=== Attribute has a different type
+
+Here the example comes from the `capacity` parameter some way into the
+`modcluster` subsystem, and the legacy version is AS 7.1.2.Final. There
+are quite a few differences, so I am only showing the ones relevant for
+this example:
+
+....
+====== Resource root address: ["subsystem" => "modcluster"] - Current version: 2.0.0; legacy version: 1.2.0 =======
+...
+--- Problems for relative address to root ["mod-cluster-config" => "configuration","dynamic-load-provider" => "configuration","custom-load-m
+etric" => "*"]:
+Different 'type' for attribute 'capacity'. Current: DOUBLE; legacy: INT
+Different 'expressions-allowed' for attribute 'capacity'. Current: true; legacy: false
+...
+Different 'type' for parameter 'capacity' of operation 'add'. Current: DOUBLE; legacy: INT
+Different 'expressions-allowed' for parameter 'capacity' of operation 'add'. Current: true; legacy: false
+....
+
+So as we can see expressions are not allowed for the `capacity`
+attribute, and the current type is `double` while the legacy subsystem
+is `int`. So this means that if the value is for example `2.0` we can
+convert this to `2`, but `2.5` cannot be converted. The way this is
+solved in the ModClusterExtension is to register the following some
+other attributes are registered here, but hopefully it is clear anyway:
+
+[source, java]
+----
+        dynamicLoadProvider.addChildResource(LOAD_METRIC_PATH)
+                    .getAttributeBuilder()
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TYPE, WEIGHT, CAPACITY, PROPERTY)
+                        .addRejectCheck(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
+                        .setValueConverter(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
+                        ...
+                        .end();
+----
+
+So we register that we should reject expressions, and we also register
+the `CapacityCheckerAndConverter` for `capacity`.
+`CapacityCheckerAndConverter` extends the convenience class
+`DefaultCheckersAndConverter` which implements the
+`DiscardAttributeChecker`, `RejectAttributeChecker`, and
+`AttributeConverter` interfaces. We have seen `DiscardAttributeChecker`
+and `RejectAttributeChecker` in previous examples. Since we now need to
+convert a value we need an instance of `AttributeConverter`.
+
+[source, java]
+----
+    static class CapacityCheckerAndConverter extends DefaultCheckersAndConverter {
+ 
+        static final CapacityCheckerAndConverter INSTANCE = new CapacityCheckerAndConverter();
+----
+
+We should not discard so `isValueDiscardable()` from
+`DiscardAttributeChecker` always returns `false`:
+
+[source, java]
+----
+        @Override
+        protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            //Not used for discard
+            return false;
+        }
+ 
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return ModClusterMessages.MESSAGES.capacityIsExpressionOrGreaterThanIntegerMaxValue(attributes.get(CAPACITY.getName()));
+        }
+----
+
+Now we check to see if we can convert the attribute to an `int` and
+reject if not. Note that if it is an expression, we have no idea what
+its value will resolve to on the target host, so we need to reject it.
+Then we try to change it into an `int`, and reject if that was not
+possible:
+
+[source, java]
+----
+        @Override
+        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            if (checkForExpression(attributeValue)
+                    || (attributeValue.isDefined() && !isIntegerValue(attributeValue.asDouble()))) {
+                return true;
+            }
+            Long converted = convert(attributeValue);
+            return (converted != null && (converted > Integer.MAX_VALUE || converted < Integer.MIN_VALUE));
+        }
+----
+
+And then finally we do the conversion:
+
+[source, java]
+----
+        @Override
+        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            Long converted = convert(attributeValue);
+            if (converted != null && converted <= Integer.MAX_VALUE && converted >= Integer.MIN_VALUE) {
+                attributeValue.set((int)converted.longValue());
+            }
+        }
+ 
+ 
+        private Long convert(ModelNode attributeValue) {
+            if (attributeValue.isDefined() && !checkForExpression(attributeValue)) {
+                double raw = attributeValue.asDouble();
+                if (isIntegerValue(raw)) {
+                    return Math.round(raw);
+                }
+            }
+            return null;
+        }
+ 
+        private boolean isIntegerValue(double raw) {
+            return raw == Double.valueOf(Math.round(raw)).doubleValue();
+        }
+ 
+    }
+----

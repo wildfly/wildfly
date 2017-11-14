@@ -1,0 +1,247 @@
+= wsprovide
+
+_wsprovide_ is a command line tool, Maven plugin and Ant task that
+generates portable JAX-WS artifacts for a service endpoint
+implementation. It also has the option to "provide" the abstract
+contract for offline usage.
+
+[[command-line-tool]]
+== Command Line Tool
+
+The command line tool has the following usage:
+
+....
+usage: wsprovide [options] <endpoint class name>
+options:
+  -h, --help                  Show this help message
+  -k, --keep                  Keep/Generate Java source
+  -w, --wsdl                  Enable WSDL file generation
+  -a, --address The generated port soap:address in wsdl
+  -c. --classpath=<path>      The classpath that contains the endpoint
+  -o, --output=<directory>    The directory to put generated artifacts
+  -r, --resource=<directory>  The directory to put resource artifacts
+  -s, --source=<directory>    The directory to put Java source
+  -e, --extension             Enable SOAP 1.2 binding extension
+  -q, --quiet                 Be somewhat more quiet
+  -t, --show-traces           Show full exception stack traces
+....
+
+[[examples]]
+=== Examples
+
+Generating wrapper classes for portable artifacts in the "generated"
+directory:
+
+....
+wsprovide -o generated foo.Endpoint
+....
+
+Generating wrapper classes and WSDL in the "generated" directory
+
+....
+wsprovide -o generated -w foo.Endpoint
+....
+
+Using an endpoint that references other jars
+
+....
+wsprovide -o generated -c application1.jar:application2.jar foo.Endpoint
+....
+
+[[maven-plugin]]
+== Maven Plugin
+
+The _wsprovide_ tools is included in the
+*org.jboss.ws.plugins:jaxws-tools-* *maven-* *plugin* plugin. The plugin
+has two goals for running the tool, _wsprovide_ and _wsprovide-test_,
+which basically do the same during different Maven build phases (the
+former triggers the sources generation during _process-classes_ phase,
+the latter during the _process-test-classes_ one).
+
+The _wsprovide_ plugin has the following parameters:
+
+[cols=",,",options="header"]
+|=======================================================================
+|Attribute |Description |Default
+
+|testClasspathElements |Each classpathElement provides alibrary file to
+be added to classpath
+|$\{project.compileClasspathElements}or$\{project.testClasspathElements}
+
+|outputDirectory |The output directory for generated artifacts.
+|$\{project.build.outputDirectory}or$\{project.build.testOutputDirectory}
+
+|resourceDirectory |The output directory for resource artifacts
+(WSDL/XSD). |$\{project.build.directory}/wsprovide/resources
+
+|sourceDirectory |The output directory for Java source.
+|$\{project.build.directory}/wsprovide/java
+
+|extension |Enable SOAP 1.2 binding extension. |false
+
+|generateWsdl |Whether or not to generate WSDL. |false
+
+|verbose |Enables more informational output about command progress.
+|false
+
+|portSoapAddress |The generated port soap:address in the WSDL | 
+
+|endpointClass |Service Endpoint Implementation. | 
+|=======================================================================
+
+[[examples-1]]
+=== Examples
+
+You can use _wsprovide_ in your own project build simply referencing the
+_maven-jaxws-tools-plugin_ in the configured plugins in your _pom.xml_
+file.
+
+The following example makes the plugin provide the wsdl file and
+artifact sources for the specified endpoint class:
+
+[source,xml]
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.jboss.ws.plugins</groupId>
+      <artifactId>jaxws-tools-maven-plugin</artifactId>
+      <version>1.2.0.Beta1</version>
+      <configuration>
+        <verbose>true</verbose>
+        <endpointClass>org.jboss.test.ws.plugins.tools.wsprovide.TestEndpoint</endpointClass>
+        <generateWsdl>true</generateWsdl>
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>wsprovide</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+----
+
+The following example does the same, but is meant for use in your own
+testsuite:
+
+[source,xml]
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.jboss.ws.plugins</groupId>
+      <artifactId>jaxws-tools-maven-plugin</artifactId>
+      <version>1.2.0.Beta1</version>
+      <configuration>
+        <verbose>true</verbose>
+        <endpointClass>org.jboss.test.ws.plugins.tools.wsprovide.TestEndpoint2</endpointClass>
+        <generateWsdl>true</generateWsdl>
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>wsprovide-test</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+----
+
+Plugin stack dependencyThe plugin itself does not have an explicit
+dependency to a JBossWS stack, as it's meant for being used with
+implementations of any supported version of the _JBossWS SPI_. So the
+user is expected to set a dependency in his own `pom.xml` to the desired
+_JBossWS_ stack version. The plugin will rely on the that for using the
+proper tooling.
+
+[source,xml]
+----
+<dependencies>
+  <dependency>
+    <groupId>org.jboss.ws.cxf</groupId>
+    <artifactId>jbossws-cxf-client</artifactId>
+    <version>5.0.0.CR1</version>
+  </dependency>
+</dependencies>
+----
+
+[TIP]
+
+Be careful when using this plugin with the Maven War Plugin as that
+include any project dependency into the generated application war
+archive. You might want to set `<scope>provided</scope>` for the
+_JBossWS_ stack dependency to avoid that.
+
+[IMPORTANT]
+
+Up to version 1.1.2.Final, the _artifactId_ of the plugin was
+*maven-jaxws-tools-plugin*.
+
+[[ant-task]]
+== Ant Task
+
+The wsprovide ant task ( _org.jboss.ws.tools.ant.WSProvideTask_) has the
+following attributes:
+
+[cols=",,",options="header"]
+|=======================================================================
+|Attribute |Description |Default
+
+|fork |Whether or not to run the generation task in a separate VM. |true
+
+|keep |Keep/Enable Java source code generation. |false
+
+|destdir |The output directory for generated artifacts. |"output"
+
+|resourcedestdir |The output directory for resource artifacts
+(WSDL/XSD). |value of destdir
+
+|sourcedestdir |The output directory for Java source. |value of destdir
+
+|extension |Enable SOAP 1.2 binding extension. |false
+
+|genwsdl |Whether or not to generate WSDL. |false
+
+|address |The generated port soap:address in wsdl. | 
+
+|verbose |Enables more informational output about command progress.
+|false
+
+|sei |Service Endpoint Implementation. | 
+
+|classpath |The classpath that contains the service endpoint
+implementation. |"."
+|=======================================================================
+
+[[examples-2]]
+=== Examples
+
+Executing wsprovide in verbose mode with separate output directories for
+source, resources, and classes:
+
+[source,xml]
+----
+<target name="test-wsproivde" depends="init">
+  <taskdef name="wsprovide" classname="org.jboss.ws.tools.ant.WSProvideTask">
+    <classpath refid="core.classpath"/>
+  </taskdef>
+  <wsprovide
+    fork="false"
+    keep="true"
+    destdir="out"
+    resourcedestdir="out-resource"
+    sourcedestdir="out-source"
+    genwsdl="true"
+    verbose="true"
+    sei="org.jboss.test.ws.jaxws.jsr181.soapbinding.DocWrappedServiceImpl">
+    <classpath>
+      <pathelement path="${tests.output.dir}/classes"/>
+    </classpath>
+  </wsprovide>
+</target>
+----

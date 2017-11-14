@@ -1,0 +1,176 @@
+= Database Authentication
+
+The section describing how to migrate from database accessible via JDBC
+datasource based authentication using PicketBox to Elytron. This section
+will illustrate some equivalent configuration using PicketBox security
+domains and show the equivalent configuration using Elytron but will not
+repeat the steps to wire it all together covered in the previous
+sections.
+
+These configuration examples are developed against a test database with
+users table like:
+
+[source, sql]
+----
+CREATE TABLE User (
+    id BIGINT NOT NULL,
+    username VARCHAR(255),
+    password VARCHAR(255),
+    role ENUM('admin', 'manager', 'user'),
+    PRIMARY KEY (id),
+    UNIQUE (username)
+)
+----
+
+For authentication purposes the username will be matched against the '
+`username`' column, password will be expected in hex-encoded MD5 hash in
+' `password`' column. User role for authorization purposes will be taken
+from ' `role`' column.
+
+[[picketbox-database-loginmodule]]
+== PicketBox Database LoginModule
+
+The following commands can create a PicketBox security domain configured
+to use database accessible via JDBC datasource to verify a username and
+password and to assign roles.
+
+[source, ruby]
+----
+./subsystem=security/security-domain=application-security/:add
+./subsystem=security/security-domain=application-security/authentication=classic:add(login-modules=[{code=Database, flag=Required, module-options={ \
+    dsJndiName="java:jboss/datasources/ExampleDS", \
+    principalsQuery="SELECT password FROM User WHERE username = ?", \
+    rolesQuery="SELECT role, 'Roles' FROM User WHERE username = ?", \
+    hashAlgorithm=MD5, \
+    hashEncoding=base64 \
+}}])
+----
+
+This results in the following configuration.
+
+[source, xml]
+----
+        <subsystem xmlns="urn:jboss:domain:security:2.0">
+            <security-domains>
+                ...
+                <security-domain name="application-security">
+                    <authentication>
+                        <login-module code="Database" flag="required">
+                            <module-option name="dsJndiName" value="java:jboss/datasources/ExampleDS"/>
+                            <module-option name="principalsQuery" value="SELECT password FROM User WHERE username = ?"/>
+                            <module-option name="rolesQuery" value="SELECT role, 'Roles' FROM User WHERE username = ?"/>
+                            <module-option name="hashAlgorithm" value="MD5"/>
+                            <module-option name="hashEncoding" value="base64"/>
+                        </login-module>
+                    </authentication>
+                </security-domain>
+            </security-domains>
+        </subsystem>
+----
+
+[[migrated]]
+== Migrated
+
+Within the Elytron subsystem to use database accesible via JDBC you need
+to define `jdbc-realm`:
+
+[source, ruby]
+----
+./subsystem=elytron/jdbc-realm=jdbc-realm:add(principal-query=[{ \
+    data-source=ExampleDS, \
+    sql="SELECT role, password FROM User WHERE username = ?", \
+    attribute-mapping=[{index=1, to=Roles}] \
+    simple-digest-mapper={algorithm=simple-digest-md5, password-index=2}, \
+}])
+----
+
+This results in the following overall configuration:
+
+[source, xml]
+----
+        <subsystem xmlns="urn:wildfly:elytron:1.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+            ...
+            <security-realms>
+                ...
+                <jdbc-realm name="jdbc-realm">
+                    <principal-query sql="SELECT role, password FROM User WHERE username = ?" data-source="ExampleDS">
+                        <attribute-mapping>
+                            <attribute to="Roles" index="1"/>
+                        </attribute-mapping>
+                        <simple-digest-mapper password-index="2"/>
+                    </principal-query>
+                </jdbc-realm>
+                ...
+            </security-realms>
+            ...
+        </subsystem>
+----
+
+In comparison with PicketBox solution, Elytron `jdbc-realm` use one SQL
+query to obtain all user attributes and credentials. Their extraction
+from SQL result specifies mappers.
+
+== N-M relation beetween user and roles
+When using a n:m-relation beetween user and roles (which means: the user has multiple roles), the previous configuration does not work.
+
+The database:
+[source, sql]
+----
+CREATE TABLE User (
+id BIGINT NOT NULL,
+username VARCHAR(255),
+password VARCHAR(255),
+PRIMARY KEY (id),
+UNIQUE (username)
+)
+
+CREATE TABLE Role(
+id BIGINT NOT NULL,
+rolename VARCHAR(255),
+PRIMARY KEY (id),
+UNIQUE (rolename)
+)
+
+CREATE TABLE Userrole(
+userid BIGINT not null,
+roleid BIGINT not null,
+PRIMARY KEY (userid, roleid),
+FOREIGN KEY (userid) references User(id,
+FOREIGN KEY (roleid) references Role(id)
+)
+----
+
+
+Here you need two configure two principal queries:
+
+[source, xml]
+----
+<jdbc-realm name="jdbc-realm">
+    <principal-query sql="SELECT PASSWORD FROM USER WHERE USERNAME = ?" data-source="ExampleDS">
+        <clear-password-mapper password-index="1"/>
+    </principal-query>
+    <principal-query sql="SELECT R.ROLENAME from ROLE AS R, USERROLE AS UR, USER AS U WHERE U.USERNAME=? AND UR.ROLEID = R.ID AND UR.USERID = U.ID" data-source="ExampleDS">
+        <attribute-mapping>
+            <attribute to="roles" index="1"/>
+        </attribute-mapping>
+    </principal-query>
+</jdbc-realm>
+----
+
+The second query needs an attribute mapping to decode the selected rolename column (index 1):
+[source, xml]
+----
+<mappers>
+...
+<simple-role-decoder name="from-roles-attribute" attribute="roles"/>
+...
+</mappers>
+----
+
+The role decoder is referenced by the security domain:
+[source, xml]
+----
+<security-domain name="MyDomain" default-realm="jdbc-realm" permission-mapper="default-permission-mapper">
+<realm name="MyDbRealm" role-decoder="from-roles-attribute"/>
+</security-domain>
+---- 

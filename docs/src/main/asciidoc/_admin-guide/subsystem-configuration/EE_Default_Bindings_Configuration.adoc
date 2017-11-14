@@ -1,0 +1,32 @@
+= Default EE Bindings
+
+The Java EE Specification mandates the existence of a default instance
+for each of the following resources:
+
+* Context Service
+* Datasource
+* JMS Connection Factory
+* Managed Executor Service
+* Managed Scheduled Executor Service
+* Managed Thread Factory
+
+The EE subsystem looks up the default instances from JNDI, using the
+names in the default bindings configuration, before placing those in the
+standard JNDI names, such as `java:comp/DefaultManagedExecutorService`:
+
+[source, xml]
+----
+  <default-bindings
+ context-service="java:jboss/ee/concurrency/context/default"
+ datasource="java:jboss/datasources/ExampleDS"
+ jms-connection-factory="java:jboss/DefaultJMSConnectionFactory"
+ managed-executor-service="java:jboss/ee/concurrency/executor/default"
+ managed-scheduled-executor-service="java:jboss/ee/concurrency/scheduler/default"
+ managed-thread-factory="java:jboss/ee/concurrency/factory/default" />
+----
+
+[NOTE]
+
+The default bindings are optional, if the jndi name for a default
+binding is not configured then the related resource will not be
+available to Java EE applications.

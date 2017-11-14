@@ -1,0 +1,448 @@
+= Handlers
+
+WIP
+
+[IMPORTANT]
+
+This is still a work in progress. Please feel free to edit any mistakes
+you find icon:smile-o[role="yellow"]
+
+
+[[overview]]
+== Overview
+
+Handlers are used to determine what happens with a log message if the
+link:Loggers.html#src-557085_Loggers-Logger[logger] determines the
+message is loggable.
+
+There are 6 main handlers provided with WildFly and 1 generic handler;
+
+* link:#Handlers-async-handler[async-handler]
+* link:#Handlers-console-handler[console-handler]
+* link:#Handlers-file-handler[file-handler]
+* link:#Handlers-periodic-rotating-file-handler[periodic-rotating-file-handler]
+* link:#Handlers-size-rotating-file-handler[size-rotating-file-handler]
+* link:#Handlers-syslog-handler[syslog-handler]
+* link:#Handlers-custom-handler[custom-handler]
+
+[[async-handler]]
+=== async-handler
+
+An `async-handler` is a handler that asynchronously writes log messages
+to it's child handlers. This type of handler is generally used for other
+handlers that take a substantial time to write logged messages.
+
+[[attributes]]
+==== Attributes
+
+* link:#src-557084_Handlers-enabled[#enabled]
+* link:#src-557084_Handlers-filter-spec[#filter-spec]
+* link:#src-557084_Handlers-level[#level]
+* link:#src-557084_Handlers-overflow-action[#overflow-action]
+* link:#src-557084_Handlers-queue-length[#queue-length]
+* link:#src-557084_Handlers-subhandlers[#subhandlers]
+
+[[console-handler]]
+=== console-handler
+
+A `console-handler` is a handler that writes log messages to the
+console. Generally this writes to `stdout`, but can be set to write to
+`stderr`.
+
+[[attributes-1]]
+==== Attributes
+
+* link:#src-557084_Handlers-autoflush[#autoflush]
+* link:#src-557084_Handlers-enabled[#enabled]
+* link:#src-557084_Handlers-encoding[#encoding]
+* link:#src-557084_Handlers-filter-spec[#filter-spec]
+* link:#src-557084_Handlers-formatter[#formatter]
+* link:#src-557084_Handlers-level[#level]
+* link:#src-557084_Handlers-named-formatter[#named-formatter]
+* link:#src-557084_Handlers-target[#target]
+
+[[file-handler]]
+=== file-handler
+
+A `file-handler` is a handler that writes log messages to the specified
+file.
+
+[[attributes-2]]
+==== Attributes
+
+* link:#src-557084_Handlers-autoflush[#autoflush]
+* link:#src-557084_Handlers-enabled[#enabled]
+* link:#src-557084_Handlers-encoding[#encoding]
+* link:#src-557084_Handlers-filter-spec[#filter-spec]
+* link:#src-557084_Handlers-formatter[#formatter]
+* link:#src-557084_Handlers-level[#level]
+* link:#src-557084_Handlers-named-formatter[#named-formatter]
+* link:#src-557084_Handlers-file[#file]
+
+[[periodic-rotating-file-handler]]
+=== periodic-rotating-file-handler
+
+A `periodic-rotating-file-handler` is a handler that writes log messages
+to the specified file. The file rotates on the date pattern specified in
+the link:#src-557084_Handlers-suffix[#suffix] attribute. The suffix must
+be a valid pattern recognized by the
+http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html[`java.text.SimpleDateFormat`]
+and must not rotate on seconds or milliseconds.
+
+[NOTE]
+
+The rotate happens before the next message is written by the handler.
+
+[[attributes-3]]
+==== Attributes
+
+* link:#src-557084_Handlers-autoflush[#autoflush]
+* link:#src-557084_Handlers-enabled[#enabled]
+* link:#src-557084_Handlers-encoding[#encoding]
+* link:#src-557084_Handlers-filter-spec[#filter-spec]
+* link:#src-557084_Handlers-formatter[#formatter]
+* link:#src-557084_Handlers-level[#level]
+* link:#src-557084_Handlers-named-formatter[#named-formatter]
+* link:#src-557084_Handlers-file[#file]
+* link:#src-557084_Handlers-suffix[#suffix]
+
+[[size-rotating-file-handler]]
+=== size-rotating-file-handler
+
+A `size-rotating-file-handler` is a handler that writes log messages to
+the specified file. The file rotates when the file size is greater than
+the link:#src-557084_Handlers-rotate-size[#rotate-size] attribute. The
+rotated file will be kept and the index appended to the name moving
+previously rotated file indexes up by 1 until the
+link:#src-557084_Handlers-max-backup-index[#max-backup-index] is
+reached. Once the
+link:#src-557084_Handlers-max-backup-index[#max-backup-index] is
+reached, the indexed files will be overwritten.
+
+[NOTE]
+
+The rotate happens before the next message is written by the handler.
+
+[[attributes-4]]
+==== Attributes
+
+* link:#src-557084_Handlers-autoflush[#autoflush]
+* link:#src-557084_Handlers-enabled[#enabled]
+* link:#src-557084_Handlers-encoding[#encoding]
+* link:#src-557084_Handlers-filter-spec[#filter-spec]
+* link:#src-557084_Handlers-formatter[#formatter]
+* link:#src-557084_Handlers-level[#level]
+* link:#src-557084_Handlers-named-formatter[#named-formatter]
+* link:#src-557084_Handlers-file[#file]
+* link:#src-557084_Handlers-max-backup-index[#max-backup-index]
+* link:#src-557084_Handlers-rotate-size[#rotate-size]
+* link:#src-557084_Handlers-rotate-on-boot[#rotate-on-boot]
+
+[[syslog-handler]]
+=== syslog-handler
+
+A `syslog-handler` is a handler that writes to a syslog server. The
+handler support http://www.ietf.org/rfc/rfc3164.txt[RFC3164] or
+http://www.ietf.org/rfc/rfc5424.txt[RFC5424] formats.
+
+[[attributes-5]]
+==== Attributes
+
+* link:#src-557084_Handlers-port[#port]
+* link:#src-557084_Handlers-app-name[#app-name]
+* link:#src-557084_Handlers-enabled[#enabled]
+* link:#src-557084_Handlers-level[#level]
+* link:#src-557084_Handlers-facility[#facility]
+* link:#src-557084_Handlers-server-address[#server-address]
+* link:#src-557084_Handlers-hostname[#hostname]
+* link:#src-557084_Handlers-syslog-format[#syslog-format]
+
+[TIP]
+
+The syslog-handler is missing some configuration properties that may be
+useful in some scenarios like setting a formatter. Use the
+`org.jboss.logmanager.handlers.SyslogHandler` in module
+`org.jboss.logmanager` as a
+link:#src-557084_Handlers-custom-handler[#custom-handler] to exploit
+these benefits. Additional attributes will be added at some point so
+this will no longer be necessary.
+
+[[custom-handler]]
+=== custom-handler
+
+[[attributes-6]]
+=== Attributes
+
+[[autoflush]]
+==== autoflush
+
+****
+
+[cols=",",options="header"]
+|=======================================================================
+|Description: |Indicates whether a flush should happen after each write.
+|Type: |boolean
+|Default Value: |true
+|Allowed Values: |true or false
+|=======================================================================
+
+****
+
+[[enabled]]
+==== enabled
+
+****
+
+[cols=",",options="header"]
+|=======================================================================
+|Description: |If set to true the handler is enabled and functioning as
+normal, if set to false the handler is ignored when processing log
+messages.
+
+|Type: |boolean
+
+|Default Value: |true
+
+|Allowed Values: |true or false
+|=======================================================================
+
+****
+
+[[encoding]]
+==== encoding
+
+****
+
+[cols=",",options="header"]
+|==========================================================
+|Description: |The character encoding used by this Handler.
+|Type: |string
+|Default Value: |null
+|Allowed Values: |Any valid encoding
+|==========================================================
+
+****
+
+[[file]]
+==== file
+
+****
+
+[cols=",",options="header"]
+|=======================================================================
+|Description: |An object describing the file the handler should write
+to.
+
+|Type: |object
+
+|Default Value: |null
+
+|Allowed Values: |An object optionally containing a relative-to property
+and a path. The path is a required property of the object.
+|=======================================================================
+
+****
+
+[[named-formatter]]
+==== named-formatter
+
+****
+
+[cols=",",options="header"]
+|=======================================================================
+|Description: |The name of a defined formatter to be used on the
+handler.
+
+|Type: |string
+
+|Default Value: |null
+
+|Allowed Values: |TODO add link
+|=======================================================================
+
+****
+
+[[formatter]]
+==== formatter
+
+****
+
+[cols=",",options="header"]
+|========================================================
+|Description: |Defines a pattern for a pattern formatter.
+|Type: |string
+|Default Value: |%d\{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n
+|Allowed Values: |TODO add link
+|========================================================
+
+****
+
+[[filter-spec]]
+==== filter-spec
+
+****
+
+[cols=",",options="header"]
+|===========================================================
+|Description: |A filter expression value to define a filter.
+|Type: |string
+|Default Value: |null
+|Allowed Values: |See Filter Expression
+|===========================================================
+
+****
+
+[[level]]
+==== level
+
+****
+
+[cols=",",options="header"]
+|=======================================================================
+|Description : |The log level specifying which message levels will be
+logged by this logger. Message levels lower than this value will be
+discarded.
+
+|Type: |string
+
+|Default Value: |ALL
+
+|Allowed Values: |ALL FINEST FINER TRACE DEBUG FINE CONFIG INFO WARN
+WARNING ERROR SEVERE FATAL OFF
+|=======================================================================
+
+****
+
+[[max-backup-index]]
+==== max-backup-index
+
+****
+
+[cols=",",options="header"]
+|==========================================================
+|Description: |The maximum number of rotated files to keep.
+|Type: |integer
+|Default Value: |1
+|Allowed Values: |any integer greater than 0
+|==========================================================
+
+****
+
+[[overflow-action]]
+==== overflow-action
+
+****
+
+[cols=",",options="header"]
+|===============================================================
+|Description: |Specify what action to take when the overflowing.
+|Type: |string
+|Default Value: |BLOCK
+|Allowed Values: |BLOCK or DISCARD
+|===============================================================
+
+****
+
+[[queue-length]]
+==== queue-length
+
+****
+
+[cols=",",options="header"]
+|=============================================================
+|Description: |The queue length to use before flushing writing
+|Type: |integer
+|Default Value: |0
+|Allowed Values: |any positive integer
+|=============================================================
+
+****
+
+[[rotate-on-boot]]
+==== rotate-on-boot
+
+****
+
+[cols=",",options="header"]
+|=======================================================================
+|Description: |Indicates whether or not the file should be rotated each
+time the #file attribute is changed. If set to true will rotate on each
+boot of the server.
+
+|Type: |boolean
+
+|Default Value: |false
+
+|Allowed Values: |true or false
+|=======================================================================
+
+****
+
+[[rotate-size]]
+==== rotate-size
+
+****
+
+[cols=",",options="header"]
+|=======================================================================
+|Description: |The size at which the file should be rotated.
+
+|Type: |string
+
+|Default Value: |2m
+
+|Allowed Values: |Any positive integer with a size type appended to the
+end. Valid types are b for bytes, k for kilobytes, m for megabytes, g
+for gigabytes or t for terabytes. Type character is not case sensitive.
+|=======================================================================
+
+****
+
+[[subhandlers]]
+==== subhandlers
+
+****
+
+[cols=",",options="header"]
+|==============================================================
+|Description: |The handlers to associate with the async handler
+|Type: |list of strings
+|Default Value: |null
+|Allowed Values: |An array of valid handler names
+|==============================================================
+
+****
+
+[[suffix]]
+==== suffix
+
+****
+
+[cols=",",options="header"]
+|=======================================================================
+|Description: |The pattern used to determine when the file should be
+rotated.
+
+|Type: |string
+
+|Default Value: |null
+
+|Allowed Values: |Any valid java.text.SimpleDateFormat pattern.
+|=======================================================================
+
+****
+
+[[target]]
+==== target
+
+****
+
+[cols=",",options="header"]
+|========================================================
+|Description: |Defines the target of the console handler.
+|Type: |string
+|Default Value: |System.out
+|Allowed Values: |System.out or System.err
+|========================================================
+
+****

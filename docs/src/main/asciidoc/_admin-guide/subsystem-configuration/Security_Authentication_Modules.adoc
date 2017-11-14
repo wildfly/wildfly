@@ -1,0 +1,140 @@
+= Authentication Modules
+
+In this section we will describe each login module's options available.
+
+[[client]]
+== Client
+
+This login module is designed to establish caller identity and
+credentials when WildFly is acting a client. It should never be used as
+part of a security domain used for actual server authentication.
+
+[cols=",,",options="header"]
+|=======================================================================
+|Options |Usage |Description
+
+|multi-threaded |optional |Set to true if each thread has its own
+principal and credential storage. Set to false to indicate that all
+threads in the VM share the same identity and credential. Default is
+false
+
+|restore-login-identity |optional |Set to true if the identity and
+credential seen at the start of the login() method should be restored
+after the logout() method is invoked. Default is false
+
+|password-stacking |optional |Set to useFirstPass to indicate that this
+login module should look for information stored in the LoginContext to
+use as the identity. This option can be used when stacking other login
+modules with this one. Default is false
+|=======================================================================
+
+[[database]]
+== Database
+
+This login module is designed to be used for authenticating users
+against a database backend.
+
+[cols=",,",options="header"]
+|=======================================================================
+|Options |Usage |Description
+
+|dsJndiName |required |JNDI name of the datasource containing the tables
+for users and roles
+
+|principalsQuery |required |SQL prepared statement to be executed in
+order to match the password. Default is select Password from Principals
+where PrincipalID=?
+
+|rolesQuery |optional |SQL prepared statement to be executed in order to
+map roles. It should be an equivalent to select Role, RoleGroup from
+Roles where PrincipalID=?, where Role is the role name and RoleGroup
+column value should always be "Roles" with capital R.
+
+|suspendResume |optional |A boolean flag that specifies that any
+existing JTA transaction be suspended during DB operations. The default
+is true
+|=======================================================================
+
+[[certificate]]
+== Certificate
+
+This login module is designed to authenticate users based on
+X509Certificates. A use case for this is CLIENT-CERT authentication of a
+web application.
+
+[cols=",,",options="header"]
+|=======================================================================
+|Options |Usage |Description
+
+|securityDomain |optional |Name of the security domain that has the jsse
+configuration for the truststore holding the trusted certificates
+
+|verifier |optional |The class name of the
+org.jboss.security.auth.certs.X509CertificateVerifier to use for
+verification of the login certificate
+|=======================================================================
+
+If there is no verifier set, this login module will try to validate the
+user's certificate with a public certificate stored in the truststore.
+The public certificate must be stored in the truststore using the DN of
+the certificate as the truststore alias.
+
+[[certificateroles]]
+== CertificateRoles
+
+This login module extends the Certificate login module to add role
+mapping capabilities from a properties file. It has the same options
+plus these additional options:
+
+[cols=",,",options="header"]
+|=======================================================================
+|Options |Usage |Description
+
+|rolesProperties |optional |Name of the resource/file containing the
+roles to assign to each user. Default is roles.properties
+
+|defaultRolesProperties |optional |Name of the resource/file to fall
+back to if the rolesProperties file can't be found. Default is
+defaultRoles.properties
+
+|roleGroupSeperator |optional |Character to use as the role group
+separator in the role properties file. Default character is '.' (period)
+|=======================================================================
+
+The role properties file must be in the format username=role1,role2
+where the username is the DN of the certificate, escaping any equals and
+space characters. Here is an example:
+
+....
+CN\=unit-tests-client,\ OU\=JBoss\ Inc.,\ O\=JBoss\ Inc.,\ ST\=Washington,\ C\=US=JBossAdmin
+....
+
+This would assign the _JBossAdmin_ role to an user that presents a
+certificate with _CN=unit-tests-client, OU=JBoss Inc., O=JBoss Inc.,
+ST=Washington, C=US_ as the DN.
+
+[[databasecertificate]]
+== DatabaseCertificate
+
+This login module extends the Certificate login to add role mapping
+capabilities from a database table. It has the same options plus these
+additional options:
+
+[cols=3*,options="header"]
+|=======================================================================
+|Options |Usage |Description
+
+|dsJndiName |required |JNDI name of the datasource containing the tables
+for users and roles
+
+|rolesQuery |optional |SQL prepared statement to be executed in order to
+map roles. It should be an equivalent to select Role, RoleGroup from
+Roles where PrincipalID=?, where Role is the role name and RoleGroup
+column value should always be "Roles" with capital R. Default is select
+Role, RoleGroup from Roles where PrincipalID=?
+
+|suspendResume |optional |A boolean flag that specifies that any
+existing JTA transaction be suspended during DB operations. The default
+is *true*
+select Role, RoleGroup from Roles where PrincipalID=?
+|=======================================================================
