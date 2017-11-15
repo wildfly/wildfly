@@ -164,8 +164,8 @@
         <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.4.7.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
-        <version.org.jboss.metadata>10.0.2.Final</version.org.jboss.metadata>
         <version.org.jboss.narayana>5.5.31.Final</version.org.jboss.narayana>
+        <version.org.jboss.metadata>11.0.0.Beta1</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.3.7.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.openjdk-orb>8.1.0.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.2.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
@@ -189,6 +189,7 @@
         <version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>1.0.6.Final</version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.1_spec>1.0.2.Final</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.1_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.2.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
+        <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>1.0.0.Alpha3</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
         <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>1.0.3.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>1.1.1.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>
         <version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec>1.0.1.Final</version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec>
@@ -215,6 +216,7 @@
         <version.org.slf4j>1.7.22</version.org.slf4j>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.arquillian>2.1.0.Final</version.org.wildfly.arquillian>
+        <version.org.wildfly.bridge.servlet-api-bridge>1.0.0.Final</version.org.wildfly.bridge.servlet-api-bridge>
         <version.org.wildfly.build-tools>1.2.6.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>4.0.0.Alpha9</version.org.wildfly.core>
@@ -4777,6 +4779,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.wildfly.bridge</groupId>
+                <artifactId>servlet-api-bridge</artifactId>
+                <version>${version.org.wildfly.bridge.servlet-api-bridge}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jberet</groupId>
                 <artifactId>jberet-core</artifactId>
                 <version>${version.org.jberet}</version>
@@ -5366,6 +5374,12 @@
 
             <dependency>
                 <groupId>org.jboss.spec.javax.servlet</groupId>
+                <artifactId>jboss-servlet-api_4.0_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.servlet</groupId>
                 <artifactId>jboss-servlet-api_3.1_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec}</version>
             </dependency>
@@ -5377,7 +5391,7 @@
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.servlet</groupId>
-                        <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+                        <artifactId>jboss-servlet-api_3.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -6022,7 +6036,7 @@
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.ejb</groupId>
-                        <artifactId>jboss-ejb-api_3.1_spec</artifactId>
+                        <artifactId>jboss-ejb-api_4.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <!-- superseded by org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec -->

@@ -85,6 +85,7 @@ import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.AttributeMetaData;
 import org.jboss.metadata.web.spec.FunctionMetaData;
+import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.metadata.web.spec.TagFileMetaData;
 import org.jboss.metadata.web.spec.TagMetaData;
 import org.jboss.metadata.web.spec.TldMetaData;
@@ -583,6 +584,11 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         TagLibraryInfo tagLibraryInfo = new TagLibraryInfo();
+        if(tldMetaData.getListeners() != null) {
+            for (ListenerMetaData l : tldMetaData.getListeners()) {
+                tagLibraryInfo.addListener(l.getListenerClass());
+            }
+        }
         tagLibraryInfo.setTlibversion(tldMetaData.getTlibVersion());
         if (tldMetaData.getJspVersion() == null) {
             tagLibraryInfo.setJspversion(tldMetaData.getVersion());

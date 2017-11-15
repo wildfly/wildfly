@@ -113,7 +113,7 @@ public class ServletResourceManager implements ResourceManager {
 
     @Override
     public void registerResourceChangeListener(ResourceChangeListener listener) {
-        if(deploymentResourceManager.isResourceChangeListenerSupported()) {
+        if(explodedDeployment && deploymentResourceManager.isResourceChangeListenerSupported()) {
             deploymentResourceManager.registerResourceChangeListener(listener);
         }
         for(ResourceManager external : externalOverlays) {
