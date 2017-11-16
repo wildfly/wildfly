@@ -206,7 +206,8 @@ concat_lines() {
   fi
 }
 
-export MAVEN_PROJECTBASEDIR="${MAVEN_BASEDIR:-`find_maven_basedir`}"
+MAVEN_PROJECTBASEDIR="${MAVEN_BASEDIR:-`find_maven_basedir`}"
+export MAVEN_PROJECTBASEDIR
 MAVEN_OPTS="`(concat_lines "$MAVEN_PROJECTBASEDIR/.mvn/jvm.config")` $MAVEN_OPTS"
 
 # For Cygwin, switch paths to Windows format before running java
