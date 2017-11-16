@@ -34,11 +34,13 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -46,6 +48,8 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 class IIOPRootDefinition extends PersistentResourceDefinition {
+
+    static final RuntimeCapability<Void> IIOP_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_IIOP, false).build();
 
     static final ModelNode NONE = new ModelNode("none");
 
@@ -61,7 +65,6 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
 
     static final ParameterValidator VALIDATOR = new EnumValidator<>(IORTransportConfigValues.class,
             true, true);
-
 
     //ORB attributes
 
@@ -153,6 +156,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(IIOP_SECURITY_DEF)
             .setAlternatives(Constants.SERVER_SSL_CONTEXT, Constants.CLIENT_SSL_CONTEXT)
+            .setCapabilityReference(Capabilities.CAPABILITY_LEGACY_SECURITY_DOMAIN, IIOP_CAPABILITY)
             .build();
 
     public static final AttributeDefinition SERVER_SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(
@@ -433,6 +437,12 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return ALL_ATTRIBUTES;
+    }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+        resourceRegistration.registerCapability(IIOP_CAPABILITY);
     }
 
     private enum AuthMethodValues {
