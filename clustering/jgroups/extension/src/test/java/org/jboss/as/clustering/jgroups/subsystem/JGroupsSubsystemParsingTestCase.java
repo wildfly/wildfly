@@ -121,43 +121,6 @@ public class JGroupsSubsystemParsingTestCase extends ClusteringSubsystemTest {
         Assert.assertEquals(this.expectedOperationCount, operations.size());
     }
 
-    /**
-     * Starts a controller with a given subsystem xml and then checks that a second controller
-     * started with the xml marshalled from the first one results in the same model
-     */
-    @Test
-    public void testParseAndMarshalModel() throws Exception {
-        KernelServices services = this.buildKernelServices();
-
-        // Get the model and the persisted xml from the first controller
-        ModelNode modelA = services.readWholeModel();
-        String marshalled = services.getPersistedSubsystemXml();
-        ModelNode modelB = this.buildKernelServices(marshalled).readWholeModel();
-
-        // Make sure the models from the two controllers are identical
-        super.compare(modelA, modelB);
-    }
-
-    /**
-     * Starts a controller with the given subsystem xml and then checks that a second controller
-     * started with the operations from its describe action results in the same model
-     */
-    @Test
-    public void testDescribeHandler() throws Exception {
-        KernelServices servicesA = this.buildKernelServices();
-        // Get the model and the describe operations from the first controller
-        ModelNode modelA = servicesA.readWholeModel();
-        ModelNode operation = Operations.createDescribeOperation(PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH));
-        List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(operation)).asList();
-
-        // Install the describe options from the first controller into a second controller
-        KernelServices servicesB = this.createKernelServicesBuilder().setBootOperations(operations).build();
-        ModelNode modelB = servicesB.readWholeModel();
-
-        // Make sure the models from the two controllers are identical
-        super.compare(modelA, modelB);
-    }
-
     @Test
     public void testLegacyOperations() throws Exception {
         List<ModelNode> ops = new LinkedList<>();
