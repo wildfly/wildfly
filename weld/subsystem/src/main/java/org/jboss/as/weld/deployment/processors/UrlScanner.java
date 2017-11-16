@@ -20,16 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.weld.deployment;
+package org.jboss.as.weld.deployment.processors;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Enumeration;
-import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -38,11 +39,26 @@ import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 
-public class UrlScanner {
+class UrlScanner {
 
+    @FunctionalInterface
+    interface ClassFile {
 
-    public boolean handleBeansXml(final URL url, final List<String> discoveredClasses) {
-        String urlPath = url.toExternalForm();
+        InputStream openStream() throws IOException;
+
+    }
+
+    private final URL beansXmlUrl;
+
+    private final BiConsumer<String, ClassFile> classConsumer;
+
+    UrlScanner(URL beansXmlUrl, BiConsumer<String, ClassFile> classConsumer) {
+        this.beansXmlUrl = beansXmlUrl;
+        this.classConsumer = classConsumer;
+    }
+
+    boolean scan() {
+        String urlPath = beansXmlUrl.toExternalForm();
 
         // determin resource type (eg: jar, file, bundle)
         String urlType = "file";
@@ -54,7 +70,7 @@ public class UrlScanner {
         // Extra built-in support for simple file-based resources
         if ("file".equals(urlType) || "jar".equals(urlType)) {
             // switch to using getPath() instead of toExternalForm()
-            urlPath = url.getPath();
+            urlPath = beansXmlUrl.getPath();
 
             if (urlPath.indexOf('!') > 0) {
                 urlPath = urlPath.substring(0, urlPath.indexOf('!'));
@@ -70,28 +86,28 @@ public class UrlScanner {
             } catch (UnsupportedEncodingException ex) {
                 throw new RuntimeException(ex);
             }
-            handle(urlPath, discoveredClasses);
+            handle(urlPath);
             return true;
         } else if ("vfs".equals(urlType)) {
             try {
-                VirtualFile vfsRoot = VFS.getChild(url).getParent().getParent();
-                handle(vfsRoot, discoveredClasses);
+                VirtualFile vfsRoot = VFS.getChild(beansXmlUrl).getParent().getParent();
+                handle(vfsRoot);
                 return true;
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e);
             }
         } else {
-            WeldLogger.DEPLOYMENT_LOGGER.doNotUnderstandProtocol(url);
+            WeldLogger.DEPLOYMENT_LOGGER.doNotUnderstandProtocol(beansXmlUrl);
             return false;
         }
     }
 
-    private void handle(VirtualFile urlPath, List<String> discoveredClasses) {
+    private void handle(VirtualFile urlPath) {
         WeldLogger.DEPLOYMENT_LOGGER.tracef("scanning: %s", urlPath);
-        handleDirectory(urlPath, null, discoveredClasses);
+        handleDirectory(urlPath, null);
     }
 
-    private void handle(String urlPath, List<String> discoveredClasses) {
+    private void handle(String urlPath) {
         try {
             WeldLogger.DEPLOYMENT_LOGGER.tracef("scanning: %s", urlPath);
 
@@ -104,16 +120,16 @@ public class UrlScanner {
 
             File file = new File(urlPath);
             if (file.isDirectory()) {
-                handleDirectory(file, null, discoveredClasses);
+                handleDirectory(file, null);
             } else {
-                handleArchiveByFile(file, discoveredClasses);
+                handleArchiveByFile(file);
             }
         } catch (IOException ioe) {
             WeldLogger.DEPLOYMENT_LOGGER.couldNotReadEntries(ioe);
         }
     }
 
-    private void handleArchiveByFile(File file, List<String> discoveredClasses) throws IOException {
+    private void handleArchiveByFile(File file) throws IOException {
         try {
             WeldLogger.DEPLOYMENT_LOGGER.trace("archive: " + file);
 
@@ -123,7 +139,7 @@ public class UrlScanner {
                 while (entries.hasMoreElements()) {
                     ZipEntry entry = entries.nextElement();
                     String name = entry.getName();
-                    handleFile(name, discoveredClasses);
+                    handleFile(name, () -> zip.getInputStream(entry));
                 }
             }
         } catch (ZipException e) {
@@ -131,7 +147,7 @@ public class UrlScanner {
         }
     }
 
-    private void handleDirectory(File file, String path,  List<String> discoveredClasses) {
+    private void handleDirectory(File file, String path) {
 
         WeldLogger.DEPLOYMENT_LOGGER.tracef("handling directory: %s", file);
 
@@ -139,15 +155,14 @@ public class UrlScanner {
             String newPath = (path == null) ? child.getName() : (path + '/' + child.getName());
 
             if (child.isDirectory()) {
-                handleDirectory(child, newPath,  discoveredClasses);
+                handleDirectory(child, newPath);
             } else {
-                handleFile(newPath, discoveredClasses);
+                handleFile(newPath, () -> child.toURI().toURL().openStream());
             }
         }
     }
 
-    private void handleDirectory(VirtualFile file, String path, List<String> discoveredClasses) {
-
+    private void handleDirectory(VirtualFile file, String path) {
 
         WeldLogger.DEPLOYMENT_LOGGER.tracef("handling directory: %s", file);
 
@@ -155,16 +170,16 @@ public class UrlScanner {
             String newPath = (path == null) ? child.getName() : (path + '/' + child.getName());
 
             if (child.isDirectory()) {
-                handleDirectory(child, newPath, discoveredClasses);
+                handleDirectory(child, newPath);
             } else {
-                handleFile(newPath, discoveredClasses);
+                handleFile(newPath, () -> file.toURL().openStream());
             }
         }
     }
 
-    protected void handleFile(String name, List<String> discoveredClasses) {
+    protected void handleFile(String name, ClassFile loader) {
         if (name.endsWith(".class")) {
-            discoveredClasses.add(filenameToClassname(name));
+            classConsumer.accept(filenameToClassname(name), loader);
         }
     }
 
