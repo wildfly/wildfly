@@ -38,13 +38,11 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="org.jboss.as.clustering.common"/>
-        <module name="org.jboss.as.connector"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.marshalling"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.staxmapper"/>
