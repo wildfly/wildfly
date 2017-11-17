@@ -94,10 +94,6 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
  */
 public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    private static final String SSL_CONTEXT_CAPABILITY = "org.wildfly.security.ssl-context";
-
-    private static final String AUTH_CONTEXT_CAPABILITY = "org.wildfly.security.authentication-context";
-
     public IIOPSubsystemAdd(final Collection<? extends AttributeDefinition> attributes) {
         super(attributes);
     }
@@ -180,19 +176,19 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // add dependencies to the ssl context services if needed.
         final String serverSSLContextName = props.getProperty(Constants.SERVER_SSL_CONTEXT);
         if (serverSSLContextName != null) {
-            ServiceName serverContextServiceName = context.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY, serverSSLContextName, SSLContext.class);
+            ServiceName serverContextServiceName = context.getCapabilityServiceName(Capabilities.SSL_CONTEXT_CAPABILITY, serverSSLContextName, SSLContext.class);
             builder.addDependency(serverContextServiceName);
         }
         final String clientSSLContextName = props.getProperty(Constants.CLIENT_SSL_CONTEXT);
         if (clientSSLContextName != null) {
-            ServiceName clientContextServiceName = context.getCapabilityServiceName(SSL_CONTEXT_CAPABILITY, clientSSLContextName, SSLContext.class);
+            ServiceName clientContextServiceName = context.getCapabilityServiceName(Capabilities.SSL_CONTEXT_CAPABILITY, clientSSLContextName, SSLContext.class);
             builder.addDependency(clientContextServiceName);
         }
 
         // if an authentication context has ben specified, add a dependency to its service.
         final String authContext = props.getProperty(Constants.ORB_INIT_AUTH_CONTEXT);
         if (authContext != null) {
-            ServiceName authContextServiceName = context.getCapabilityServiceName(AUTH_CONTEXT_CAPABILITY, authContext, AuthenticationContext.class);
+            ServiceName authContextServiceName = context.getCapabilityServiceName(Capabilities.AUTH_CONTEXT_CAPABILITY, authContext, AuthenticationContext.class);
             builder.addDependency(authContextServiceName);
         }
 
