@@ -27,13 +27,10 @@ import java.util.List;
 import java.util.Properties;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
@@ -125,23 +122,25 @@ public class InfinispanSubsystemParsingTestCase extends ClusteringSubsystemTest 
     }
 
     /**
-     * Test that the model created from the xml looks as expected
+     * Does the normal test with some extra model validation.
      */
+    @Override
     @Test
-    public void testInstallIntoController() throws Exception {
-        // Parse the subsystem xml and install into the controller
-        KernelServices services = createKernelServicesBuilder().setSubsystemXml(getSubsystemXml()).build();
+    public void testSubsystem() throws Exception {
+        // Perform the standard test
+        KernelServices services = standardSubsystemTest(null, true);
 
-        // Read the whole model and make sure it looks as expected
-        ModelNode model = services.readWholeModel();
-
-        Assert.assertTrue(model.get(InfinispanSubsystemResourceDefinition.PATH.getKey()).hasDefined(InfinispanSubsystemResourceDefinition.PATH.getValue()));
-
-        checkLegacyParserStatisticsTrue(model.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair()));
+        // Do some extra model validation
+        checkLegacyParserStatisticsTrue(services);
     }
 
-    private void checkLegacyParserStatisticsTrue(ModelNode subsystem) {
+    private void checkLegacyParserStatisticsTrue(KernelServices services) {
         if (!this.schema.since(InfinispanSchema.VERSION_1_5)) {
+            ModelNode model = services.readWholeModel();
+
+            Assert.assertTrue(model.get(InfinispanSubsystemResourceDefinition.PATH.getKey()).hasDefined(InfinispanSubsystemResourceDefinition.PATH.getValue()));
+            ModelNode subsystem = model.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair());
+
             for (Property containerProp : subsystem.get(CacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 Assert.assertTrue("cache-container=" + containerProp.getName(),
                         containerProp.getValue().get(CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName()).asBoolean());
@@ -159,53 +158,5 @@ public class InfinispanSubsystemParsingTestCase extends ClusteringSubsystemTest 
                 }
             }
         }
-    }
-
-    private KernelServicesBuilder createKernelServicesBuilder() throws Exception {
-        return this.createKernelServicesBuilder(this.createAdditionalInitialization());
-    }
-
-    /**
-     * Starts a controller with a given subsystem xml and then checks that a second controller
-     * started with the xml marshalled from the first one results in the same model
-     */
-    @Test
-    public void testParseAndMarshalModel() throws Exception {
-        // Parse the subsystem xml and install into the first controller
-        KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(this.getSubsystemXml()).build();
-
-        // Get the model and the persisted xml from the first controller
-        ModelNode modelA = servicesA.readWholeModel();
-
-        String marshalled = servicesA.getPersistedSubsystemXml();
-
-        // Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = this.createKernelServicesBuilder().setSubsystemXml(marshalled).build();
-        ModelNode modelB = servicesB.readWholeModel();
-
-        // Make sure the models from the two controllers are identical
-        this.compare(modelA, modelB);
-    }
-
-    /**
-     * Starts a controller with the given subsystem xml and then checks that a second controller
-     * started with the operations from its describe action results in the same model
-     */
-    @Test
-    public void testDescribeHandler() throws Exception {
-        // Parse the subsystem xml and install into the first controller
-        KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(this.getSubsystemXml()).build();
-        // Get the model and the describe operations from the first controller
-        ModelNode modelA = servicesA.readWholeModel();
-
-        ModelNode operation = Operations.createDescribeOperation(PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH));
-        List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(operation)).asList();
-
-        // Install the describe options from the first controller into a second controller
-        KernelServices servicesB = this.createKernelServicesBuilder().setBootOperations(operations).build();
-        ModelNode modelB = servicesB.readWholeModel();
-
-        // Make sure the models from the two controllers are identical
-        this.compare(modelA, modelB);
     }
 }
