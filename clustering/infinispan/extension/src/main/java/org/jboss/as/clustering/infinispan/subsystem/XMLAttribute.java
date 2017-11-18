@@ -68,7 +68,7 @@ public enum XMLAttribute {
     @Deprecated INDEX("index"),
     INTERVAL(ExpirationResourceDefinition.Attribute.INTERVAL),
     ISOLATION(LockingResourceDefinition.Attribute.ISOLATION),
-    JNDI_NAME(CacheContainerResourceDefinition.Attribute.JNDI_NAME),
+    @Deprecated JNDI_NAME(CacheContainerResourceDefinition.DeprecatedAttribute.JNDI_NAME),
     KEEPALIVE_TIME(ThreadPoolResourceDefinition.values()[0].getKeepAliveTime()),
     L1_LIFESPAN(DistributedCacheResourceDefinition.Attribute.L1_LIFESPAN),
     LIFESPAN(ExpirationResourceDefinition.Attribute.LIFESPAN),

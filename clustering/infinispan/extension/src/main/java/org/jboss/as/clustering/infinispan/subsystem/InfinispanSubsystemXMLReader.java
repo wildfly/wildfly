@@ -107,7 +107,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case JNDI_NAME: {
-                    readAttribute(reader, i, operation, CacheContainerResourceDefinition.Attribute.JNDI_NAME);
+                    if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                    readAttribute(reader, i, operation, CacheContainerResourceDefinition.DeprecatedAttribute.JNDI_NAME);
                     break;
                 }
                 case LISTENER_EXECUTOR: {
@@ -494,8 +497,11 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case JNDI_NAME: {
+                if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                    throw ParseUtils.unexpectedAttribute(reader, index);
+                }
                 if (this.schema.since(InfinispanSchema.VERSION_1_1)) {
-                    readAttribute(reader, index, operation, CacheResourceDefinition.Attribute.JNDI_NAME);
+                    readAttribute(reader, index, operation, CacheResourceDefinition.DeprecatedAttribute.JNDI_NAME);
                     break;
                 }
             }

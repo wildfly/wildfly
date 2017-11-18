@@ -89,7 +89,6 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         MODULE("module", ModelType.STRING, builder -> builder.setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())),
-        JNDI_NAME("jndi-name", ModelType.STRING, UnaryOperator.identity()),
         STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN, builder -> builder.setDefaultValue(new ModelNode(false))),
         ;
         private final AttributeDefinition definition;
@@ -109,6 +108,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         @Deprecated BATCHING("batching", ModelType.BOOLEAN, builder -> builder.setDefaultValue(new ModelNode(false)), InfinispanModel.VERSION_3_0_0),
         @Deprecated INDEXING("indexing", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode(Index.NONE.name())).setValidator(new EnumValidator<>(Index.class)), InfinispanModel.VERSION_4_0_0),
         @Deprecated INDEXING_PROPERTIES("indexing-properties", InfinispanModel.VERSION_4_0_0),
+        @Deprecated JNDI_NAME("jndi-name", ModelType.STRING, UnaryOperator.identity(), InfinispanModel.VERSION_6_0_0),
         @Deprecated START("start", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode(StartMode.LAZY.name())).setValidator(new EnumValidator<>(StartMode.class)), InfinispanModel.VERSION_3_0_0),
         ;
         private final AttributeDefinition definition;
