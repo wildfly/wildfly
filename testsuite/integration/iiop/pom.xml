@@ -26,7 +26,8 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <iiop.endorsed.argline>-Djava.endorsed.dirs=${project.build.directory}/endorsed</iiop.endorsed.argline>
         <ts.elytron.cli>ssl-enable-elytron.cli</ts.elytron.cli>
-        <wildfly.config.dir>${basedir}/target/wildfly/standalone/configuration</wildfly.config.dir>
+        <wildfly>wildfly</wildfly>
+        <wildfly.config.dir>${basedir}/target/${wildfly}/standalone/configuration</wildfly.config.dir>
     </properties>
 
     <profiles>

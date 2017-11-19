@@ -205,6 +205,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }
 
+
         String sslSocketBinding = props.getProperty(Constants.ORB_SSL_SOCKET_BINDING);
         if(sslSocketBinding != null) {
             builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(sslSocketBinding), SocketBinding.class,

@@ -40,7 +40,9 @@
         <copy todir="target/jbossas-iiop-ssl-client/standalone/configuration">
             <fileset file="${keystore.file}"/>
         </copy>
-        <ts.config-as.setup-ssl-support-for-iiop name="jbossas-iiop-ssl-client"
+        <ts.config-as.iiop.enable-ssl-jsse-domain name="jbossas-iiop-ssl-client"/>
+        <ts.config-as.iiop.enable-server-requires-ssl name="jbossas-iiop-ssl-client"/>
+        <ts.config-as.iiop.create-jsse-security-domain name="jbossas-iiop-ssl-client"
                                                  keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
                                                  password="${keystore.password}"/>
 
@@ -56,36 +58,16 @@
         <copy todir="target/jbossas-iiop-ssl-server/standalone/configuration">
             <fileset file="${keystore.file}"/>
         </copy>
-        <ts.config-as.setup-ssl-support-for-iiop name="jbossas-iiop-ssl-server"
-                                                 keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
-                                                 password="${keystore.password}"/>
-
-        <!-- SSL Server with server-requires -->
-        <echo message="Building config jbossas-iiop-ssl-legacy-server"/>
-        <copy todir="target/jbossas-iiop-ssl-legacy-server">
-            <fileset dir="target/wildfly"/>
-        </copy>
-        <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-legacy-server"
-                                        node="${node1}"
-                                        mcast="${mcast}"
-        />
-        <copy todir="target/jbossas-iiop-ssl-legacy-server/standalone/configuration">
-            <fileset file="${keystore.file}"/>
-        </copy>
-        <ts.config-as.setup-legacy-ssl-support-for-iiop name="jbossas-iiop-ssl-legacy-server"
-                                                        keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
-                                                        password="${keystore.password}"/>
-
+        <ts.config-as.iiop.enable-ssl-jsse-domain name="jbossas-iiop-ssl-server"/>
+        <ts.config-as.iiop.enable-server-requires-ssl name="jbossas-iiop-ssl-server"/>
+        <ts.config-as.iiop.create-jsse-security-domain name="jbossas-iiop-ssl-server"
+                                                       keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
+                                                       password="${keystore.password}"/>
     </target>
 
     <target name="build-iiop-elytron" description="Builds server configurations for IIOP tests with Elytron">
 
-        <basename property="keystore.client" file="${keystore.client.file}"/>
-        <basename property="keystore.server" file="${keystore.server.file}"/>
-        <basename property="truststore.client" file="${truststore.client.file}"/>
-        <basename property="truststore.server" file="${truststore.server.file}"/>
-
-        <echo message="Building config jbossas-iiop-client"/>
+    <echo message="Building config jbossas-iiop-client"/>
         <copy todir="target/jbossas-iiop-client">
             <fileset dir="target/wildfly"/>
         </copy>
@@ -114,15 +96,6 @@
                                         node="${node0}"
                                         mcast="${mcast}"
                     />
-        <copy todir="target/jbossas-iiop-ssl-client/standalone/configuration">
-            <fileset file="${keystore.client.file}"/>
-            <fileset file="${truststore.client.file}"/>
-            <fileset file="${keystore.server.file}"/>
-            <fileset file="${truststore.server.file}"/>
-        </copy>
-        <ts.config-as.setup-ssl-support-for-iiop-elytron name="jbossas-iiop-ssl-client"
-                                                 keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
-                                                 password="${keystore.password}"/>
 
         <!-- SSL Server with ior-settings transport config -->
         <echo message="Building config jbossas-iiop-ssl-server"/>
@@ -133,35 +106,6 @@
                                         node="${node1}"
                                         mcast="${mcast}"
         />
-        <copy todir="target/jbossas-iiop-ssl-server/standalone/configuration">
-            <fileset file="${keystore.client.file}"/>
-            <fileset file="${truststore.client.file}"/>
-            <fileset file="${keystore.server.file}"/>
-            <fileset file="${truststore.server.file}"/>
-        </copy>
-        <ts.config-as.setup-ssl-support-for-iiop-elytron name="jbossas-iiop-ssl-server"
-                                                 keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
-                                                 password="${keystore.password}"/>
-
-        <!-- SSL Server with server-requires -->
-        <echo message="Building config jbossas-iiop-ssl-legacy-server"/>
-        <copy todir="target/jbossas-iiop-ssl-legacy-server">
-            <fileset dir="target/wildfly"/>
-        </copy>
-        <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-legacy-server"
-                                        node="${node1}"
-                                        mcast="${mcast}"
-        />
-        <copy todir="target/jbossas-iiop-ssl-legacy-server/standalone/configuration">
-            <fileset file="${keystore.client.file}"/>
-            <fileset file="${truststore.client.file}"/>
-            <fileset file="${keystore.server.file}"/>
-            <fileset file="${truststore.server.file}"/>
-        </copy>
-        <ts.config-as.setup-legacy-ssl-support-for-iiop-elytron name="jbossas-iiop-ssl-legacy-server"
-                                                        keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
-                                                        password="${keystore.password}"/>
-
+        <ts.config-as.iiop.enable-server-requires-ssl name="jbossas-iiop-ssl-server"/>
     </target>
-
 </project>

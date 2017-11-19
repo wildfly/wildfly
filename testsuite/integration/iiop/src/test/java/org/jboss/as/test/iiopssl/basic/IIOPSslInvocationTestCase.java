@@ -60,15 +60,6 @@ public class IIOPSslInvocationTestCase {
         return jar;
     }
 
-    @Deployment(name = "legacy-server", testable = false)
-    @TargetsContainer("iiop-legacy-server")
-    public static Archive<?> legacyServer() {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "server.jar");
-        jar.addClasses(IIOPSslStatelessBean.class, IIOPSslStatelessHome.class, IIOPSslStatelessRemote.class)
-                .addAsManifestResource(IIOPSslInvocationTestCase.class.getPackage(), "legacy-jboss-ejb3.xml", "jboss-ejb3.xml");
-        return jar;
-    }
-
     @Deployment(name = "client", testable = true)
     @TargetsContainer("iiop-client")
     public static Archive<?> clientDeployment() {
@@ -117,20 +108,6 @@ public class IIOPSslInvocationTestCase {
             Assert.assertEquals("hello", ejb.lookup(3628));
             Assert.fail("Connection on CLEAR-TEXT port should be refused");
         } catch(NamingException e) {}
-    }
-
-    @Test
-    @OperateOnDeployment("client")
-    public void testManualLookupOnLegacyNodeUsingNonSSLPort() throws Exception {
-        final ClientEjb ejb = client();
-        Assert.assertEquals("hello", ejb.lookup(3728));
-    }
-
-    @Test
-    @OperateOnDeployment("client")
-    public void testManualLookupOnLegacyNodeUsingSSLPort() throws Exception {
-        final ClientEjb ejb = client();
-        Assert.assertEquals("hello", ejb.lookupSsl(3729));
     }
 
     private ClientEjb client() throws NamingException {
