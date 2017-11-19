@@ -199,8 +199,8 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean serverRequiresSsl = IIOPRootDefinition.SERVER_REQUIRES_SSL.resolveModelAttribute(context, model).asBoolean();
 
         // inject the socket bindings that specify IIOP and IIOP/SSL ports.
-        if (!serverRequiresSsl) {
-            String socketBinding = props.getProperty(Constants.ORB_SOCKET_BINDING);
+        String socketBinding = props.getProperty(Constants.ORB_SOCKET_BINDING);
+        if (socketBinding != null) {
             builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBinding), SocketBinding.class,
                     orbService.getIIOPSocketBindingInjector());
         }
