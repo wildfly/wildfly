@@ -153,6 +153,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(IIOP_SECURITY_DEF)
             .setAlternatives(Constants.SERVER_SSL_CONTEXT, Constants.CLIENT_SSL_CONTEXT)
+            .setCapabilityReference(Capabilities.CAPABILITY_LEGACY_SECURITY_DOMAIN)
             .build();
 
     public static final AttributeDefinition SERVER_SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(

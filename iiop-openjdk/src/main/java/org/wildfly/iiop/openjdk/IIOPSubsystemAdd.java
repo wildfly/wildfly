@@ -101,9 +101,6 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         super(attributes);
     }
 
-    private static final ServiceName SECURITY_DOMAIN_SERVICE_NAME = ServiceName.JBOSS.append("security").append(
-            "security-domain");
-
     @Override
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
@@ -174,8 +171,9 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // if a security domain has been specified, add a dependency to the domain service.
         String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
-        if (securityDomain != null)
-            builder.addDependency(SECURITY_DOMAIN_SERVICE_NAME.append(securityDomain));
+        if (securityDomain != null) {
+            builder.addDependency(context.getCapabilityServiceName(Capabilities.CAPABILITY_LEGACY_SECURITY_DOMAIN, securityDomain, null));
+        }
 
         // add dependencies to the ssl context services if needed.
         final String serverSSLContextName = props.getProperty(Constants.SERVER_SSL_CONTEXT);
