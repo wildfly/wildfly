@@ -3444,8 +3444,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.weld</groupId>
-      <artifactId>weld-core-jsf</artifactId>
+      <groupId>org.jboss.weld.module</groupId>
+      <artifactId>weld-jsf</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>

@@ -16,7 +16,7 @@
  */
 package org.jboss.as.jsf.injection.weld;
 
-import org.jboss.weld.el.WeldELContextListener;
+import org.jboss.weld.module.web.el.WeldELContextListener;
 
 import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
