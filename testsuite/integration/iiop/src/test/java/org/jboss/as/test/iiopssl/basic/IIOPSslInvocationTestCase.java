@@ -104,9 +104,19 @@ public class IIOPSslInvocationTestCase {
 
     @Test
     @OperateOnDeployment("client")
-    public void testManualLookup() throws Exception {
+    public void testManualSslLookup() throws Exception {
         final ClientEjb ejb = client();
-        Assert.assertEquals("hello", ejb.lookup(3628));
+        Assert.assertEquals("hello", ejb.lookupSsl(3629));
+    }
+
+    @Test
+    @OperateOnDeployment("client")
+    public void testManualCleartextLookup() throws Exception {
+        try {
+            final ClientEjb ejb = client();
+            Assert.assertEquals("hello", ejb.lookup(3628));
+            Assert.fail("Connection on CLEAR-TEXT port should be refused");
+        } catch(NamingException e) {}
     }
 
     @Test

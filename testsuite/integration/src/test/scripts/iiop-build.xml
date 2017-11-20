@@ -139,7 +139,7 @@
             <fileset file="${keystore.server.file}"/>
             <fileset file="${truststore.server.file}"/>
         </copy>
-        <ts.config-as.setup-ssl-support-for-iiop-elytron name="jbossas-iiop-ssl-server"
+        <ts.config-as.setup-required-ssl-support-for-iiop-elytron name="jbossas-iiop-ssl-server"
                                                  keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
                                                  password="${keystore.password}"/>
 
@@ -158,7 +158,7 @@
             <fileset file="${keystore.server.file}"/>
             <fileset file="${truststore.server.file}"/>
         </copy>
-        <ts.config-as.setup-legacy-ssl-support-for-iiop-elytron name="jbossas-iiop-ssl-legacy-server"
+        <ts.config-as.setup-ssl-support-for-iiop-elytron name="jbossas-iiop-ssl-legacy-server"
                                                         keystore="$${jboss.home.dir}/standalone/configuration/${keystore.filename}"
                                                         password="${keystore.password}"/>
 

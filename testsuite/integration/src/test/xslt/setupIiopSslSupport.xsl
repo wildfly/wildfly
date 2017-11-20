@@ -30,6 +30,7 @@
                                           /*[local-name()='security']">
         <xsl:copy>
             <xsl:attribute name="support-ssl">true</xsl:attribute>
+            <xsl:attribute name="server-requires-ssl">true</xsl:attribute>
             <xsl:attribute name="security-domain"><xsl:value-of select="$domainName"/></xsl:attribute>
         </xsl:copy>
     </xsl:template>

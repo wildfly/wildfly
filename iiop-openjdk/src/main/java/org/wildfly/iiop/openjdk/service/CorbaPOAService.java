@@ -25,6 +25,7 @@ package org.wildfly.iiop.openjdk.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.corba.se.spi.extension.ZeroPortPolicy;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -88,6 +89,8 @@ public class CorbaPOAService implements Service<POA> {
 
     private final ThreadPolicyValue threadPolicyValue;
 
+    private final boolean sslRequired;
+
     /**
      * <p>
      * Creates a {@code CorbaPOAService} with the specified POA name and binding name. The {@code POA} created by this
@@ -98,8 +101,8 @@ public class CorbaPOAService implements Service<POA> {
      * @param bindingName the JNDI context name where the created {@code POA} will be bound. If null, the JNDI binding
      *                    won't be performed.
      */
-    public CorbaPOAService(String poaName, String bindingName) {
-        this(poaName, bindingName, null, null, null, null, null, null, null);
+    public CorbaPOAService(String poaName, String bindingName, boolean sslRequired) {
+        this(poaName, bindingName, sslRequired, null, null, null, null, null, null, null);
     }
 
     /**
@@ -125,12 +128,13 @@ public class CorbaPOAService implements Service<POA> {
      * @param threadPolicyValue             the {@code ThreadPolicyValue} that will be associated with the created {@code POA}. Can
      *                                      be null.
      */
-    public CorbaPOAService(String poaName, String bindingName, IdAssignmentPolicyValue idAssignmentPolicyValue,
+    public CorbaPOAService(String poaName, String bindingName, boolean sslRequired, IdAssignmentPolicyValue idAssignmentPolicyValue,
                            IdUniquenessPolicyValue idUniquenessPolicyValue, ImplicitActivationPolicyValue implicitActivationPolicyValue,
                            LifespanPolicyValue lifespanPolicyValue, RequestProcessingPolicyValue requestProcessingPolicyValue,
                            ServantRetentionPolicyValue servantRetentionPolicyValue, ThreadPolicyValue threadPolicyValue) {
         this.poaName = poaName;
         this.bindingName = bindingName;
+        this.sslRequired = sslRequired;
         this.idAssignmentPolicyValue = idAssignmentPolicyValue;
         this.idUniquenessPolicyValue = idUniquenessPolicyValue;
         this.implicitActivationPolicyValue = implicitActivationPolicyValue;
@@ -218,7 +222,8 @@ public class CorbaPOAService implements Service<POA> {
      */
     private Policy[] createPolicies(POA poa) {
         List<Policy> policies = new ArrayList<Policy>();
-
+        if(this.sslRequired)
+            policies.add(ZeroPortPolicy.getPolicy());
         if (this.idAssignmentPolicyValue != null)
             policies.add(poa.create_id_assignment_policy(this.idAssignmentPolicyValue));
         if (this.idUniquenessPolicyValue != null)
