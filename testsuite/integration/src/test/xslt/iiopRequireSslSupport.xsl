@@ -2,7 +2,7 @@
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" indent="yes"/>
 
-    <xsl:variable name="iiopNS" select="'urn:jboss:domain:iiop-openjdk:'"/>
+    <xsl:variable name="iiopns" select="'urn:jboss:domain:iiop-openjdk:'"/>
     <xsl:variable name="iiop-ssl" select="'iiop-ssl'"/>
 
 
@@ -21,8 +21,13 @@
         </xsl:copy>
     </xsl:template>
     -->
-    <xsl:template match="subsystem[@xmlns='urn:jboss:domain:iiop-openjdk:2.0']/security/@server-requires-ssl">
+
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $iiopns)]
+                          /*[local-name()='security']
+                          /@server-requires-ssl">
         <xsl:attribute name="server-requires-ssl">true</xsl:attribute>
     </xsl:template>
+
+
 
 </xsl:stylesheet>
