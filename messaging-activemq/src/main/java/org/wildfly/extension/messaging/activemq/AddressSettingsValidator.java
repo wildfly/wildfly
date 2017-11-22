@@ -24,8 +24,11 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.CORE_QUEUE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXPIRY_ADDRESS;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_QUEUE;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_TOPIC;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -97,27 +100,12 @@ class AddressSettingsValidator {
         }
 
         final String address = addressNode.asString();
-        final String addressPrefix;
-        final String childType;
 
-        if (address.startsWith(JMS_QUEUE_ADDRESS_PREFIX)) {
-            // JMS Queue
-            childType = CommonAttributes.JMS_QUEUE;
-            addressPrefix = JMS_QUEUE_ADDRESS_PREFIX;
-        } else if (address.startsWith(JMS_TOPIC_ADDRESS_PREFIX)) {
-            // JMS Topic
-            childType = CommonAttributes.JMS_TOPIC;
-            addressPrefix = JMS_TOPIC_ADDRESS_PREFIX;
-        } else {
-            // Core Queue
-            childType = CommonAttributes.CORE_QUEUE;
-            // no special address prefix for core queues
-            addressPrefix = "";
-        }
-
-        for (String childName : activeMQServer.getChildrenNames(childType)) {
-            if (address.equals(addressPrefix + childName)) {
-                return true;
+        for (String childType: new String[] {JMS_QUEUE, JMS_TOPIC, CORE_QUEUE}) {
+            for (String childName : activeMQServer.getChildrenNames(childType)) {
+                if (address.equals(childName)) {
+                    return true;
+                }
             }
         }
         return false;

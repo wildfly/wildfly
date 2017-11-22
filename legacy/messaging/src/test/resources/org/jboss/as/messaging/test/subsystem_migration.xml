@@ -256,6 +256,14 @@
                     <connector-ref>netty</connector-ref>
                 </static-connectors>
             </cluster-connection>
+            <cluster-connection name="cc5">
+                <address>jms</address>
+                <connector-ref>netty-throughput</connector-ref>
+                <static-connectors>
+                    <connector-ref>in-vm</connector-ref>
+                    <connector-ref>netty</connector-ref>
+                </static-connectors>
+            </cluster-connection>
         </cluster-connections>
         <grouping-handler name="grouping-handler">
             <type>${grouping.type:LOCAL}</type>

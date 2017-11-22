@@ -390,7 +390,7 @@
             <xs:element name="cluster-connection" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
                     <xs:attribute name="name" type="xs:string" use="required" />
-                    <xs:attribute name="address" type="xs:string" use="required" />
+                    <xs:attribute name="address" type="xs:string" use="optional" />
                     <xs:attribute name="connector-name" type="xs:string" use="required" />
 
                     <xs:attribute name="check-period" type="xs:long" use="optional" />

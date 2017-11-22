@@ -22,8 +22,8 @@
             </security-setting>
 
             <address-setting name="#"
-                             dead-letter-address="jms.queue.DLQ"
-                             expiry-address="jms.queue.ExpiryQueue"
+                             dead-letter-address="DLQ"
+                             expiry-address="ExpiryQueue"
                              max-size-bytes="10485760"
                              page-size-bytes="2097152"
                              message-counter-history-day-limit="10" />

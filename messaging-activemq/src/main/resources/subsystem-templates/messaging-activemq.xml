@@ -66,8 +66,8 @@
     <supplement name="default">
         <replacement placeholder="ADDRESS-SETTINGS">
             <address-setting name="#"
-                             dead-letter-address="jms.queue.DLQ"
-                             expiry-address="jms.queue.ExpiryQueue"
+                             dead-letter-address="DLQ"
+                             expiry-address="ExpiryQueue"
                              max-size-bytes="10485760"
                              page-size-bytes="2097152"
                              message-counter-history-day-limit="10" />
@@ -84,8 +84,8 @@
         </replacement>
         <replacement placeholder="ADDRESS-SETTINGS">
             <address-setting name="#"
-                             dead-letter-address="jms.queue.DLQ"
-                             expiry-address="jms.queue.ExpiryQueue"
+                             dead-letter-address="DLQ"
+                             expiry-address="ExpiryQueue"
                              max-size-bytes="10485760"
                              page-size-bytes="2097152"
                              message-counter-history-day-limit="10"
@@ -102,7 +102,6 @@
         </replacement>
         <replacement placeholder="CLUSTER-CONNECTIONS">
                 <cluster-connection name="my-cluster"
-                                    address="jms"
                                     connector-name="http-connector"
                                     discovery-group="dg-group1" />
         </replacement>
