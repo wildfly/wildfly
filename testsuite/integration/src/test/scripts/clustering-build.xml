@@ -14,7 +14,7 @@
 
         <echo message="  =========  Building config clustering-${stack}-0  =========  "/>
         <copy todir="target/wildfly-${stack}-0" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
+            <fileset dir="${basedir}/target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast name="wildfly-${stack}-0"
                                         node="${node0}"
@@ -32,7 +32,7 @@
 
         <echo message="  =========  Building config clustering-${stack}-1  =========  "/>
         <copy todir="target/wildfly-${stack}-1" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
+            <fileset dir="${basedir}/target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast name="wildfly-${stack}-1"
                                         node="${node1}"
@@ -50,12 +50,12 @@
 
         <!-- Messaging profiles -->
         <copy todir="target/wildfly-clustered-messaging-0" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
+            <fileset dir="${basedir}/target/wildfly"/>
         </copy>
         <ts.config-as.change-transport-stack name="wildfly-clustered-messaging-0"
                                              stack="${stack}"/>
         <copy todir="target/wildfly-clustered-messaging-1" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
+            <fileset dir="${basedir}/target/wildfly"/>
         </copy>
         <ts.config-as.change-transport-stack name="wildfly-clustered-messaging-1"
                                              stack="${stack}"/>
@@ -68,7 +68,7 @@
 
         <echo message="  =========  Building config clustering-${stack}-2  =========  "/>
         <copy todir="target/wildfly-${stack}-2" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
+            <fileset dir="${basedir}/target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast name="wildfly-${stack}-2"
                                         node="${node2}"
@@ -125,7 +125,7 @@
         <!-- site LON, node 0, mcast 0 -->
         <echo message="Building config clustering-xsite-LON-0"/>
         <copy todir="target/wildfly-xsite-LON-0" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
+            <fileset dir="${basedir}/target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-xsite-LON-0"
                                                  managementIPAddress="${node0}" publicIPAddress="${node0}"
@@ -146,7 +146,7 @@
         <!-- site LON, node 1, mcast 0 -->
         <echo message="Building config clustering-xsite-LON-1"/>
         <copy todir="target/wildfly-xsite-LON-1" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
+            <fileset dir="${basedir}/target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-xsite-LON-1"
                                                  managementIPAddress="${node1}" publicIPAddress="${node1}"
@@ -167,7 +167,7 @@
         <!-- site NYC, node 2, mcast 1 -->
         <echo message="Building config clustering-xsite-NYC-0"/>
         <copy todir="target/wildfly-xsite-NYC-0" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
+            <fileset dir="${basedir}/target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-xsite-NYC-0"
                                                  managementIPAddress="${node2}" publicIPAddress="${node2}"
@@ -183,7 +183,7 @@
         <!-- site SFO, node 3, mcast 2 -->
         <echo message="Building config clustering-xsite-SFO-0"/>
         <copy todir="target/wildfly-xsite-SFO-0" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
+            <fileset dir="${basedir}/target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-xsite-SFO-0"
                                                  managementIPAddress="${node3}" publicIPAddress="${node3}"
@@ -199,7 +199,7 @@
         <!-- site SFO, node 3, mcast 2 + backupFor -->
         <echo message="Building config clustering-xsite-SFO-0-backupFor"/>
         <copy todir="target/wildfly-xsite-SFO-0-backupFor" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
+            <fileset dir="${basedir}/target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-xsite-SFO-0-backupFor"
                                                  managementIPAddress="${node3}" publicIPAddress="${node3}"
@@ -231,7 +231,7 @@
         <!-- clusterA, node 0, mcast 0 -->
         <echo message="Building config clustering-two-clusters clusterA-node0"/>
         <copy todir="target/wildfly-clusterA-node0" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
+            <fileset dir="${basedir}/target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-clusterA-node0" managementIPAddress="${node0}" publicIPAddress="${node0}" udpMcastAddress="${mcast-clusterA}" diagnosticsMcastAddress="${mcast-clusterA}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-clusterA}"/>
         <ts.config-as.add-port-offset name="wildfly-clusterA-node0"/>
@@ -243,7 +243,7 @@
         <!-- clusterA, node 1, mcast 0 -->
         <echo message="Building config clustering-two-clusters clusterA-node1"/>
         <copy todir="target/wildfly-clusterA-node1" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
+            <fileset dir="${basedir}/target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-clusterA-node1" managementIPAddress="${node1}" publicIPAddress="${node1}" udpMcastAddress="${mcast-clusterA}" diagnosticsMcastAddress="${mcast-clusterA}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-clusterA}"/>
         <ts.config-as.add-port-offset name="wildfly-clusterA-node1" offset="100" nativePort="9999" httpPort="9990"/>
@@ -255,7 +255,7 @@
         <!-- clusterB, node 2, mcast 1 -->
         <echo message="Building config clustering-two-clusters clusterB-node0"/>
         <copy todir="target/wildfly-clusterB-node0" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
+            <fileset dir="${basedir}/target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-clusterB-node0" managementIPAddress="${node2}" publicIPAddress="${node2}" udpMcastAddress="${mcast-clusterB}" diagnosticsMcastAddress="${mcast-clusterB}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-clusterB}"/>
         <ts.config-as.add-port-offset name="wildfly-clusterB-node0" offset="200" nativePort="9999" httpPort="9990"/>
@@ -264,7 +264,7 @@
         <!-- clusterB, node 3, mcast 1 -->
         <echo message="Building config clustering-two-clusters-clusterB-node1"/>
         <copy todir="target/wildfly-clusterB-node1" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
+            <fileset dir="${basedir}/target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-clusterB-node1" managementIPAddress="${node3}" publicIPAddress="${node3}" udpMcastAddress="${mcast-clusterB}" diagnosticsMcastAddress="${mcast-clusterB}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-clusterB}"/>
         <ts.config-as.add-port-offset name="wildfly-clusterB-node1" offset="300" nativePort="9999" httpPort="9990"/>

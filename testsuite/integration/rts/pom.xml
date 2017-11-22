@@ -77,28 +77,27 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
+                        <artifactId>maven-resources-plugin</artifactId>
                         <executions combine.children="append">
-                            <!-- Disable default-test execution. -->
                             <execution>
-                                <id>default-test</id>
+                                <id>ts.copy-rts-config</id>
+                                <phase>generate-test-resources</phase>
                                 <goals>
-                                    <goal>test</goal>
+                                    <goal>copy-resources</goal>
                                 </goals>
-                                <phase>none</phase>
-                            </execution>
-
-                            <!-- Multi node clustering tests. -->
-                            <execution>
-                                <id>tests-rts.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
+                                <inherited>true</inherited>
                                 <configuration>
-                                    <includes>
-                                        <include>org/wildfly/test/extension/rts/**/*TestCase.java</include>
-                                    </includes>
+                                    <outputDirectory>${basedir}/target/wildfly/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <!-- Add the RTS config to the standalone/config directory, so it will be processed as well -->
+                                            <directory>${jboss.home}/docs/examples/configs</directory>
+                                            <includes>
+                                                <include>standalone-rts.xml</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
                                 </configuration>
                             </execution>
                         </executions>

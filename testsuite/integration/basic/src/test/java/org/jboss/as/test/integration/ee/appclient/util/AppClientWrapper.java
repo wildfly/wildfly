@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -184,9 +184,9 @@ public class AppClientWrapper implements Runnable {
         if( ! new File(asDist).exists() ) throw new Exception("AS dir from 'jboss.dist' doesn't exist: " + asDist + " user.dir: " + System.getProperty("user.dir"));
 
         // TODO: Move to a shared testsuite lib.
-        String asInst = System.getProperty("jboss.inst");
-        if( asInst == null ) throw new Exception("'jboss.inst' property is not set. Perhaps this test is in a multi-node tests group but runs outside container?");
-        if( ! new File(asInst).exists() ) throw new Exception("AS dir from 'jboss.inst' doesn't exist: " + asInst + " user.dir: " + System.getProperty("user.dir"));
+        //String asInst = System.getProperty("jboss.inst");
+        //if( asInst == null ) throw new Exception("'jboss.inst' property is not set. Perhaps this test is in a multi-node tests group but runs outside container?");
+        //if( ! new File(asInst).exists() ) throw new Exception("AS dir from 'jboss.inst' doesn't exist: " + asInst + " user.dir: " + System.getProperty("user.dir"));
 
         String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
 
@@ -195,11 +195,12 @@ public class AppClientWrapper implements Runnable {
                 " -Djline.WindowsTerminal.directConsole=false" +
                 TestSuiteEnvironment.getIpv6Args() +
                 "-Djboss.bind.address=" + TestSuiteEnvironment.getServerAddress() +
+                " "+System.getProperty("server.jvm.args") +
                 " -jar "+ asDist + "/jboss-modules.jar" +
                 " -mp "+ asDist + "/modules" +
                 " org.jboss.as.appclient" +
-                " -Djboss.server.base.dir="+ asInst + "/appclient" +
-                " -Djboss.home.dir="+ asInst +
+                " -Djboss.server.base.dir="+ asDist + "/appclient" +
+                " -Djboss.home.dir="+ asDist +
                 " " + this.appClientArgs + " " + archiveArg + " " + args;
         return appClientCommand;
     }

@@ -23,7 +23,7 @@ package org.jboss.as.test.integration.domain.mixed;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.junit.AfterClass;
 
@@ -120,7 +120,7 @@ protected static MixedDomainTestSupport getSupport(Class<?> testClass,  boolean 
      */
     protected static MixedDomainTestSupport getSupportForLegacyConfig(Class<?> testClass, Version.AsVersion version) {
         if (support == null) {
-            final File originalDomainXml = MixedDomainTestSupport.loadLegacyDomainXml(version);
+            final Path originalDomainXml = MixedDomainTestSupport.loadLegacyDomainXml(version);
             final String copiedDomainXml = MixedDomainTestSupport.copyDomainFile(originalDomainXml);
             return getSupport(testClass, copiedDomainXml, Profile.FULL_HA, true, true, false);
         }

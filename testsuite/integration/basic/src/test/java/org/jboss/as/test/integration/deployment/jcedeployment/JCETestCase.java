@@ -64,13 +64,13 @@ public class JCETestCase {
     public static Archive<?> deployment() throws Exception {
         final JavaArchive jce = ShrinkWrap.create(JavaArchive.class, "jcetest.jar")
                 .addPackage(DummyProvider.class.getPackage());
-        final File jceJar = new File("jcetest.jar");
+        final File jceJar = new File("target/jcetest.jar");
         jce.as(ZipExporter.class).exportTo(jceJar, true);
-        final File signedJceJar = new File("jcetestsigned.jar");
+        final File signedJceJar = new File("target/jcetestsigned.jar");
         JavaArchive signedJce;
         if (isJCETestable())  {
             // see genkey-jcetest-keystore in pom.xml for the keystore creation
-            final JarSignerUtil signer = new JarSignerUtil(new File("../jcetest.keystore"), "password", "password", /* alias */ "test");
+            final JarSignerUtil signer = new JarSignerUtil(new File("target/jcetest.keystore"), "password", "password", /* alias */ "test");
             signer.sign(jceJar, signedJceJar);
             signer.verify(signedJceJar);
             signedJce = ShrinkWrap.create(ZipImporter.class, "jcetestsigned.jar")
@@ -89,7 +89,7 @@ public class JCETestCase {
 
         // ControllerServlet and DummyProvider need the following perms for their "dirty" game
         ear.addAsManifestResource(createPermissionsXmlAsset(
-                new FilePermission("../jcetest.keystore", "read"),
+                new FilePermission("target/jcetest.keystore", "read"),
                 new RuntimePermission("accessDeclaredMembers"),
                 new ReflectPermission("suppressAccessChecks"),
                 new RuntimePermission("accessClassInPackage.sun.security.validator"),

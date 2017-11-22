@@ -21,7 +21,6 @@
 */
 package org.wildfly.test.extension.rts;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.SocketPermission;
@@ -67,7 +66,7 @@ public final class CoordinatorTestCase extends AbstractTestCase {
     public static WebArchive getDeployment() {
         return AbstractTestCase.getDeployment()
                 .addClasses(WorkRestATResource.class, Work.class)
-                .addAsWebInfResource(new File("../test-classes", "web.xml"), "web.xml")
+                .addAsWebInfResource(CoordinatorTestCase.class.getClassLoader().getResource("web.xml"),"web.xml")
                 .addAsManifestResource(new StringAsset(DEPENDENCIES), "MANIFEST.MF")
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
                         // Permissions required to access SERVER_HOST_PORT

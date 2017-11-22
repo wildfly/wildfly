@@ -84,7 +84,7 @@
                         <goals>
                             <goal>build</goal>
                         </goals>
-                        <phase>process-test-resources</phase>
+                        <phase>generate-test-resources</phase>
                         <configuration>
                             <config-file>server-provisioning.xml</config-file>
                             <server-name>${wildfly.instance.name}</server-name>
@@ -98,7 +98,15 @@
                 <version>${version.resources.plugin}</version>
                 <executions combine.self="override">
                     <execution>
-                        <id>ts.copy-jbossas.groups</id>
+                        <id>ts.config-as.copy-mgmt-users</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>ts.copy-wildfly</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>ts.copy-elytron.config</id>
                         <phase>process-test-resources</phase>
                         <inherited>false</inherited>
                         <configuration combine.self="override">
