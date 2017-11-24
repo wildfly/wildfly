@@ -252,13 +252,13 @@ public interface ConnectorLogger extends BasicLogger {
      * @return a {@link StartException} for the error.
      */
     @Message(id = 22, value = "Failed to start JGroups channel %s for distributed workmanager %s")
-    StartException failedToStartJGroupsChannel(String channelName, String wmName);
+    StartException failedToStartJGroupsChannel(@Cause Throwable cause, String channelName, String wmName);
 
     @Message(id = 23, value = "Cannot find WorkManager %s or it isn't a distributed workmanager. Only DWM can override configurations")
     OperationFailedException failedToFindDistributedWorkManager(String wmName);
 
     @Message(id = 24, value = "Failed to start JGroups transport for distributed workmanager %s")
-    StartException failedToStartDWMTransport(String wmName);
+    StartException failedToStartDWMTransport(@Cause Throwable cause, String wmName);
 
     @Message(id = 25, value = "Unsupported selector's option: %s")
     OperationFailedException unsupportedSelector(String name);

@@ -88,8 +88,7 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
             transport.setClusterName(this.value.getName());
             this.value.setTransport(transport);
         } catch (Exception e) {
-            ROOT_LOGGER.trace("failed to start JGroups channel", e);
-            throw ROOT_LOGGER.failedToStartJGroupsChannel(this.value.getName(), this.value.getName());
+            throw ROOT_LOGGER.failedToStartJGroupsChannel(e, this.value.getName(), this.value.getName());
         }
 
         BlockingExecutor longRunning = (BlockingExecutor) executorLong.getOptionalValue();
@@ -114,9 +113,8 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
 
         try {
             transport.startup();
-        } catch (Throwable throwable) {
-            ROOT_LOGGER.trace("failed to start DWM transport:", throwable);
-            throw ROOT_LOGGER.failedToStartDWMTransport(this.value.getName());
+        } catch (Throwable e) {
+            throw ROOT_LOGGER.failedToStartDWMTransport(e, this.value.getName());
         }
         transport.register(new Address(value.getId(), value.getName(), value.getTransport().getId()));
 
