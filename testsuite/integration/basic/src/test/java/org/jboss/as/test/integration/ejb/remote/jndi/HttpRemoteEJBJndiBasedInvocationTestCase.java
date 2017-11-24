@@ -102,6 +102,13 @@ public class HttpRemoteEJBJndiBasedInvocationTestCase {
         final String msg = "Hello world from a really remote client!!!";
         final String echo = remoteEcho.echo(msg);
         Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
+
+        // invoke a method which uses application specific type instead of primitives
+        final EchoMessage message = new EchoMessage();
+        message.setMessage("Hello");
+        final EchoMessage echoResponse = remoteEcho.echo(message);
+        Assert.assertNotNull("Echo response was null", echoResponse);
+        Assert.assertEquals("Unexpected echo returned from the bean", message.getMessage(), echoResponse.getMessage());
     }
 
     @Test

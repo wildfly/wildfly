@@ -29,11 +29,20 @@ import javax.ejb.Stateless;
  * @author Jaikiran Pai
  */
 @Stateless
-@Remote (RemoteEcho.class)
+@Remote(RemoteEcho.class)
 public class EchoBean implements RemoteEcho {
 
     @Override
     public String echo(String msg) {
         return msg;
+    }
+
+    @Override
+    public EchoMessage echo(final EchoMessage message) {
+        final EchoMessage echo = new EchoMessage();
+        if (message != null) {
+            echo.setMessage(message.getMessage());
+        }
+        return echo;
     }
 }
