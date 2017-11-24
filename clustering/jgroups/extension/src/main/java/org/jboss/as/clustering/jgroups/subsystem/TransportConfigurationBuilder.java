@@ -123,9 +123,7 @@ public class TransportConfigurationBuilder<T extends TP> extends AbstractProtoco
 
         protocol.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("", false), JChannelFactory.class.getClassLoader()));
 
-        protocol.setDefaultThreadPool(this.threadPoolFactories.get(ThreadPoolResourceDefinition.DEFAULT).getValue().get());
-        protocol.setInternalThreadPool(this.threadPoolFactories.get(ThreadPoolResourceDefinition.INTERNAL).getValue().get());
-        protocol.setOOBThreadPool(this.threadPoolFactories.get(ThreadPoolResourceDefinition.OOB).getValue().get());
+        protocol.setThreadPool(this.threadPoolFactories.get(ThreadPoolResourceDefinition.DEFAULT).getValue().get());
         protocol.setTimer(this.timerFactory.getValue().get());
 
         Optional<InetSocketAddress> diagnosticsSocketAddress = Optional.ofNullable(this.diagnosticsSocketBinding).map(Value::getValue).map(SocketBinding::getSocketAddress);

@@ -38,6 +38,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  */
 public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDefinition {
 
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
         StateTransferResourceDefinition.buildTransformation(version, builder);
@@ -61,6 +62,7 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
         ClusteredCacheResourceDefinition.buildTransformation(version, builder);
     }
 
+    @SuppressWarnings("deprecation")
     SharedStateCacheResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, ClusteredCacheServiceHandler handler) {
         super(path, descriptorConfigurator.andThen(descriptor -> descriptor
                 .addRequiredChildren(PartitionHandlingResourceDefinition.PATH, StateTransferResourceDefinition.PATH, BackupForResourceDefinition.PATH, BackupsResourceDefinition.PATH)

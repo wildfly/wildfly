@@ -26,12 +26,13 @@ import static org.jboss.as.clustering.jgroups.subsystem.SocketDiscoveryProtocolR
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.security.PrivilegedAction;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
-import org.jboss.as.clustering.jgroups.protocol.SocketDiscoveryProtocol;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -41,21 +42,26 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Value;
+import org.jgroups.protocols.Discovery;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
  */
-public class SocketDiscoveryProtocolConfigurationBuilder<P extends Protocol & SocketDiscoveryProtocol> extends ProtocolConfigurationBuilder<P> {
+public class SocketDiscoveryProtocolConfigurationBuilder<A, P extends Discovery> extends ProtocolConfigurationBuilder<P> {
+
+    private final Function<InetSocketAddress, A> hostTransformer;
 
     private volatile List<ValueDependency<OutboundSocketBinding>> bindings;
 
-    public SocketDiscoveryProtocolConfigurationBuilder(PathAddress address) {
+    public SocketDiscoveryProtocolConfigurationBuilder(PathAddress address, Function<InetSocketAddress, A> hostTransformer) {
         super(address);
+        this.hostTransformer = hostTransformer;
     }
 
     @Override
@@ -76,13 +82,16 @@ public class SocketDiscoveryProtocolConfigurationBuilder<P extends Protocol & So
     @Override
     public void accept(P protocol) {
         if (!this.bindings.isEmpty()) {
-            protocol.setSocketAddresses(this.bindings.stream().map(Value::getValue).map(binding -> {
+            List<A> initialHosts = this.bindings.stream().map(Value::getValue).map(binding -> {
                 try {
                     return new InetSocketAddress(binding.getResolvedDestinationAddress(), binding.getDestinationPort());
                 } catch (UnknownHostException e) {
                     throw JGroupsLogger.ROOT_LOGGER.failedToResolveSocketBinding(e, binding);
                 }
-            }).collect(Collectors.toList()));
+            }).map(this.hostTransformer).collect(Collectors.toList());
+            // In the absence of some common interface, we need to use reflection
+            PrivilegedAction<Protocol> action = () -> protocol.setValue("initial_hosts", initialHosts);
+            WildFlySecurityManager.doUnchecked(action);
         }
     }
 }

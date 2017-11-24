@@ -78,7 +78,6 @@ public class CustomStoreBuilder extends StoreBuilder<CustomStoreConfiguration, C
                     .preload(store.preload())
                     .purgeOnStartup(store.purgeOnStartup())
                     .shared(store.shared())
-                    .singleton().read(store.singletonStore())
                     .withProperties(store.properties())
                     .persistence().create();
         } catch (ClassNotFoundException | ClassCastException e) {

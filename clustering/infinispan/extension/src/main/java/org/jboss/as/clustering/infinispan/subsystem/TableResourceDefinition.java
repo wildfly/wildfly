@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
@@ -53,12 +54,12 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        BATCH_SIZE("batch-size", ModelType.INT, new ModelNode(100)),
-        FETCH_SIZE("fetch-size", ModelType.INT, new ModelNode(100)),
+        FETCH_SIZE("fetch-size", ModelType.INT, new ModelNode(100), UnaryOperator.identity()),
+        BATCH_SIZE("batch-size", ModelType.INT, new ModelNode(100), builder -> builder.setDeprecated(InfinispanModel.VERSION_6_0_0.getVersion())),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue) {
+        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
@@ -72,7 +73,27 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
             return this.definition;
         }
     }
+/*
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        ;
+        private final AttributeDefinition definition;
 
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setDeprecated(deprecation.getVersion())
+                    .build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+*/
     enum ColumnAttribute implements org.jboss.as.clustering.controller.Attribute {
         ID("id-column", "id", "VARCHAR"),
         DATA("data-column", "datum", "BINARY"),

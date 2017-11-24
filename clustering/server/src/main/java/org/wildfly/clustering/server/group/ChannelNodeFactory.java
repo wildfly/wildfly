@@ -24,13 +24,15 @@ package org.wildfly.clustering.server.group;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.jgroups.Address;
-import org.jgroups.Channel;
 import org.jgroups.Event;
+import org.jgroups.JChannel;
 import org.jgroups.stack.IpAddress;
+import org.jgroups.util.NameCache;
 import org.wildfly.clustering.group.Node;
 
 /**
@@ -40,23 +42,20 @@ import org.wildfly.clustering.group.Node;
 public class ChannelNodeFactory implements JGroupsNodeFactory, AutoCloseable {
 
     private final ConcurrentMap<Address, Node> nodes = new ConcurrentHashMap<>();
-    private final Channel channel;
+    private final JChannel channel;
 
-    public ChannelNodeFactory(Channel channel) {
+    public ChannelNodeFactory(JChannel channel) {
         this.channel = channel;
     }
 
     @Override
     public Node createNode(Address key) {
-        return this.nodes.computeIfAbsent(key, (Address address) -> {
+        return this.nodes.computeIfAbsent(key, address -> {
             IpAddress ipAddress = (IpAddress) this.channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, address));
             // Physical address might be null if node is no longer a member of the cluster
             InetSocketAddress socketAddress = (ipAddress != null) ? new InetSocketAddress(ipAddress.getIpAddress(), ipAddress.getPort()) : new InetSocketAddress(0);
-            String name = this.channel.getName(address);
-            if (name == null) {
-                // If no logical name exists, create one using physical address
-                name = String.format("%s:%s", socketAddress.getHostString(), socketAddress.getPort());
-            }
+            // If no logical name exists, create one using physical address
+            String name = Optional.ofNullable(NameCache.get(address)).orElseGet(() -> String.format("%s:%s", socketAddress.getHostString(), socketAddress.getPort()));
             return new AddressableNode(address, name, socketAddress);
         });
     }

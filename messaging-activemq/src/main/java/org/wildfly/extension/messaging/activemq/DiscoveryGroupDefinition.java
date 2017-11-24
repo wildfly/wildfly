@@ -42,7 +42,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 
 /**
@@ -54,7 +54,9 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
 
-    public static final RuntimeCapability<Void> CHANNEL_FACTORY_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.discovery-group.channel-factory", true).build();
+    public static final RuntimeCapability<Void> COMMAND_DISPATCHER_FACTORY_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.discovery-group.command-dispatcher-factory", true)
+            .setDynamicNameMapper(address -> new String[] { address.getParent().getLastElement().getValue(), address.getLastElement().getValue() })
+            .build();
 
     public static final SimpleAttributeDefinition REFRESH_TIMEOUT = create("refresh-timeout", ModelType.LONG)
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultBroadcastRefreshTimeout()))
@@ -73,7 +75,7 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition JGROUPS_STACK = create(CommonAttributes.JGROUPS_STACK)
-            .setCapabilityReference(JGroupsRequirement.CHANNEL_FACTORY.getName(), CHANNEL_FACTORY_CAPABILITY)
+            .setCapabilityReference(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getName(), COMMAND_DISPATCHER_FACTORY_CAPABILITY)
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = { JGROUPS_STACK, JGROUPS_CHANNEL, SOCKET_BINDING,
@@ -109,6 +111,6 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerCapabilities(ManagementResourceRegistration registration) {
-        registration.registerCapability(CHANNEL_FACTORY_CAPABILITY);
+        registration.registerCapability(COMMAND_DISPATCHER_FACTORY_CAPABILITY);
     }
 }

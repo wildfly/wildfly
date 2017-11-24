@@ -36,7 +36,7 @@ public class CacheLocality implements Locality {
 
     public CacheLocality(Cache<?, ?> cache) {
         DistributionManager dist = cache.getAdvancedCache().getDistributionManager();
-        this.locality = (dist != null) ? new ConsistentHashLocality(cache.getCacheManager().getAddress(), dist.getConsistentHash()) : new SimpleLocality(true);
+        this.locality = (dist != null) ? new ConsistentHashLocality(dist.getCacheTopology()) : new SimpleLocality(true);
     }
 
     @Override

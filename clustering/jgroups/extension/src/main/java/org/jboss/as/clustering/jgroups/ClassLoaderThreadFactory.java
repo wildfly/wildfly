@@ -66,12 +66,6 @@ public class ClassLoaderThreadFactory implements org.jgroups.util.ThreadFactory 
         return WildFlySecurityManager.doUnchecked(action);
     }
 
-    @Deprecated
-    @Override
-    public Thread newThread(ThreadGroup group, Runnable r, String name) {
-        return this.newThread(r, name);
-    }
-
     @Override
     public void setPattern(String pattern) {
         this.factory.setPattern(pattern);

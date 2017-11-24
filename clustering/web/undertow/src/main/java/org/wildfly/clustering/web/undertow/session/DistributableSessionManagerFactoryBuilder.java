@@ -52,6 +52,7 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.MappedValueService;
+import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerConfiguration;
@@ -93,15 +94,18 @@ public class DistributableSessionManagerFactoryBuilder implements CapabilityServ
     }
 
     private final ServiceName name;
-    private final CapabilityServiceBuilder<org.wildfly.clustering.web.session.SessionManagerFactory<Batch>> factoryBuilder;
+    private final CapabilityServiceBuilder<org.wildfly.clustering.web.session.SessionManagerFactory<LocalSessionContext, Batch>> factoryBuilder;
+    private final DistributableSessionManagerConfiguration config;
 
     public DistributableSessionManagerFactoryBuilder(ServiceName name, DistributableSessionManagerConfiguration config, SessionManagerFactoryBuilderProvider<Batch> provider) {
         this.name = name;
+        this.config = config;
 
         Module module = config.getModule();
         MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), module.getClassLoader());
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
-        SessionManagerFactoryConfiguration<MarshallingContext> configuration = new SessionManagerFactoryConfiguration<MarshallingContext>() {
+        LocalContextFactory<LocalSessionContext> localContextFactory = new LocalSessionContextFactory();
+        SessionManagerFactoryConfiguration<MarshallingContext, LocalSessionContext> configuration = new SessionManagerFactoryConfiguration<MarshallingContext, LocalSessionContext>() {
             @Override
             public int getMaxActiveSessions() {
                 return config.getMaxActiveSessions();
@@ -136,6 +140,11 @@ public class DistributableSessionManagerFactoryBuilder implements CapabilityServ
             public MarshallingContext getMarshallingContext() {
                 return context;
             }
+
+            @Override
+            public LocalContextFactory<LocalSessionContext> getLocalContextFactory() {
+                return localContextFactory;
+            }
         };
         this.factoryBuilder = provider.getBuilder(configuration);
     }
@@ -157,7 +166,7 @@ public class DistributableSessionManagerFactoryBuilder implements CapabilityServ
         @SuppressWarnings("rawtypes")
         InjectedValue<org.wildfly.clustering.web.session.SessionManagerFactory> sessionManagerFactoryValue = new InjectedValue<>();
         @SuppressWarnings("unchecked")
-        Service<SessionManagerFactory> service = new MappedValueService<>(sessionManagerFactory -> new DistributableSessionManagerFactory(sessionManagerFactory), sessionManagerFactoryValue);
+        Service<SessionManagerFactory> service = new MappedValueService<>(sessionManagerFactory -> new DistributableSessionManagerFactory(sessionManagerFactory, this.config), sessionManagerFactoryValue);
         return target.addService(this.name, service)
                 .addDependency(this.factoryBuilder.getServiceName(), org.wildfly.clustering.web.session.SessionManagerFactory.class, sessionManagerFactoryValue)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);

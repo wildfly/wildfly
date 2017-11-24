@@ -21,7 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.interceptors.ActivationInterceptor;
+import org.infinispan.interceptors.impl.CacheLoaderInterceptor;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -33,18 +33,17 @@ import org.jboss.dmr.ModelType;
  *
  * @author Paul Ferraro
  */
-@SuppressWarnings("deprecation")
-public enum StoreMetric implements Metric<ActivationInterceptor> {
+public enum StoreMetric implements Metric<CacheLoaderInterceptor<?, ?>> {
 
     CACHE_LOADER_LOADS(MetricKeys.CACHE_LOADER_LOADS, ModelType.LONG) {
         @Override
-        public ModelNode execute(ActivationInterceptor interceptor) {
+        public ModelNode execute(CacheLoaderInterceptor<?, ?> interceptor) {
             return new ModelNode(interceptor.getCacheLoaderLoads());
         }
     },
     CACHE_LOADER_MISSES(MetricKeys.CACHE_LOADER_MISSES, ModelType.LONG) {
         @Override
-        public ModelNode execute(ActivationInterceptor interceptor) {
+        public ModelNode execute(CacheLoaderInterceptor<?, ?> interceptor) {
             return new ModelNode(interceptor.getCacheLoaderMisses());
         }
     },

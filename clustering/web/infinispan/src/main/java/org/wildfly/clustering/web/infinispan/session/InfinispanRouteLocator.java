@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.infinispan.Cache;
-import org.infinispan.distribution.DistributionManager;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
@@ -58,7 +57,8 @@ public class InfinispanRouteLocator implements RouteLocator {
     }
 
     private Address locatePrimaryOwner(String sessionId) {
-        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        return (dist != null) ? dist.getPrimaryLocation(new Key<>(sessionId)) : this.cache.getCacheManager().getAddress();
+        return Optional.ofNullable(this.cache.getAdvancedCache().getDistributionManager())
+                .map(dist -> dist.getCacheTopology().getDistribution(new Key<>(sessionId)).primary())
+                .orElse(this.cache.getCacheManager().getAddress());
     }
 }

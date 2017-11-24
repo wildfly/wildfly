@@ -24,7 +24,6 @@ package org.wildfly.clustering.server.dispatcher;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -37,13 +36,14 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import org.jboss.as.clustering.logging.ClusteringLogger;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.threads.JBossThreadFactory;
 import org.jgroups.Address;
-import org.jgroups.Channel;
+import org.jgroups.JChannel;
 import org.jgroups.MembershipListener;
 import org.jgroups.MergeView;
 import org.jgroups.Message;
@@ -51,7 +51,7 @@ import org.jgroups.View;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestCorrelator;
 import org.jgroups.blocks.RequestHandler;
-import org.jgroups.stack.Protocol;
+import org.jgroups.blocks.Response;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
@@ -60,6 +60,7 @@ import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 import org.wildfly.clustering.server.group.JGroupsNodeFactory;
+import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
 import org.wildfly.clustering.service.concurrent.ServiceExecutor;
 import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
@@ -71,13 +72,14 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * all of which will share the same {@link MessageDispatcher} instance.
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory, RequestHandler, AutoCloseable, Group, MembershipListener {
+public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDispatcherFactory, RequestHandler, Group, MembershipListener {
 
     private static ThreadFactory createThreadFactory(Class<?> targetClass) {
         PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
         return new ClassLoaderThreadFactory(WildFlySecurityManager.doUnchecked(action), targetClass.getClassLoader());
     }
 
+    private final ExecutorService executorService = Executors.newCachedThreadPool(createThreadFactory(this.getClass()));
     private final Map<Object, Optional<Object>> contexts = new ConcurrentHashMap<>();
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
     private final Map<Listener, ExecutorService> listeners = new ConcurrentHashMap<>();
@@ -87,23 +89,21 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
     private final MessageDispatcher dispatcher;
     private final long timeout;
 
+    @SuppressWarnings("resource")
     public ChannelCommandDispatcherFactory(ChannelCommandDispatcherFactoryConfiguration config) {
         this.nodeFactory = config.getNodeFactory();
         this.marshallingContext = config.getMarshallingContext();
         this.timeout = config.getTimeout();
-        this.dispatcher = new MessageDispatcher() {
-            @Override
-            protected RequestCorrelator createRequestCorrelator(Protocol transport, RequestHandler handler, Address localAddr) {
-                RequestCorrelator correlator = super.createRequestCorrelator(transport, handler, localAddr);
-                correlator.setMarshaller(new CommandResponseMarshaller(config));
-                return correlator;
-            }
-        };
-        Channel channel = config.getChannel();
-        this.dispatcher.setChannel(channel);
-        this.dispatcher.setRequestHandler(this);
-        this.dispatcher.setMembershipListener(this);
-        this.dispatcher.asyncDispatching(true).start();
+        JChannel channel = config.getChannel();
+        RequestCorrelator correlator = new RequestCorrelator(channel.getProtocolStack().getTransport(), this, channel.getAddress()).setMarshaller(new CommandResponseMarshaller(config));
+        this.dispatcher = new MessageDispatcher()
+                .setChannel(channel)
+                .setRequestHandler(this)
+                .setMembershipListener(this)
+                .asyncDispatching(true)
+                // Setting the request correlator starts the dispatcher
+                .correlator(correlator)
+                ;
         this.view.compareAndSet(null, channel.getView());
     }
 
@@ -118,18 +118,35 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
                 WildFlySecurityManager.doUnchecked(action);
             });
             this.listeners.clear();
+            this.executorService.shutdownNow();
         });
     }
 
     @Override
-    public Object handle(Message message) throws Exception {
+    public Object handle(Message request) throws Exception {
+        return this.read(request).call();
+    }
+
+    @Override
+    public void handle(Message request, Response response) throws Exception {
+        Callable<Object> task = this.read(request);
+        this.executorService.submit(() -> {
+            try {
+                response.send(task.call(), false);
+            } catch (Exception e) {
+                response.send(e, true);
+            }
+        });
+    }
+
+    private Callable<Object> read(Message message) throws Exception {
         try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(message.getRawBuffer(), message.getOffset(), message.getLength()))) {
             int version = IndexExternalizer.VARIABLE.readData(input);
             try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 Object clientId = unmarshaller.readObject();
                 Optional<Object> context = this.contexts.get(clientId);
-                if (context == null) return NoSuchService.INSTANCE;
+                if (context == null) return () -> NoSuchService.INSTANCE;
                 @SuppressWarnings("unchecked")
                 Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
                 Callable<Optional<Object>> task = new Callable<Optional<Object>>() {
@@ -139,7 +156,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
                         return Optional.ofNullable(command.execute(context.orElse(null)));
                     }
                 };
-                return this.executor.execute(task).orElse(Optional.of(NoSuchService.INSTANCE)).orElse(null);
+                return () -> this.executor.execute(task).orElse(Optional.of(NoSuchService.INSTANCE)).orElse(null);
             }
         }
     }
@@ -151,10 +168,12 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
 
     @Override
     public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
-        this.contexts.put(id, Optional.ofNullable(context));
+        if (this.contexts.putIfAbsent(id, Optional.ofNullable(context)) != null) {
+            throw ClusteringServerLogger.ROOT_LOGGER.commandDispatcherAlreadyExists(id);
+        }
         CommandMarshaller<C> marshaller = new CommandDispatcherMarshaller<>(this.marshallingContext, id);
         CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalNode(), context);
-        return new ChannelCommandDispatcher<>(this.dispatcher, marshaller, this.nodeFactory, this.timeout, localDispatcher, () -> {
+        return new ChannelCommandDispatcher<>(this.dispatcher, marshaller, this, this.nodeFactory, this.timeout, localDispatcher, () -> {
             localDispatcher.close();
             this.contexts.remove(id);
         });
@@ -214,15 +233,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
     }
 
     private List<Node> getNodes(View view) {
-        return (view != null) ? this.getNodes(view.getMembers()) : Collections.<Node>emptyList();
-    }
-
-    private List<Node> getNodes(List<Address> addresses) {
-        List<Node> nodes = new ArrayList<>(addresses.size());
-        for (Address address: addresses) {
-            nodes.add(this.nodeFactory.createNode(address));
-        }
-        return nodes;
+        return Optional.ofNullable(view).map(View::getMembers).orElse(Collections.emptyList()).stream().map(address -> this.nodeFactory.createNode(address)).collect(Collectors.toList());
     }
 
     @Override

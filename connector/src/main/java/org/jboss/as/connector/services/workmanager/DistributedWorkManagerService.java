@@ -27,7 +27,6 @@ import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 import java.util.concurrent.Executor;
 
 import org.jboss.as.connector.security.ElytronSecurityIntegration;
-import org.jboss.as.connector.services.workmanager.transport.ForkChannelTransport;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.txn.integration.JBossContextXATerminator;
 import org.jboss.jca.core.security.picketbox.PicketBoxSecurityIntegration;
@@ -42,6 +41,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.BlockingExecutor;
+import org.jgroups.Channel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
@@ -83,14 +83,13 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
         ROOT_LOGGER.debugf("Starting JCA DistributedWorkManager: ", value.getName());
 
         ChannelFactory factory = this.jGroupsChannelFactory.getValue();
-        JGroupsTransport transport = new ForkChannelTransport(factory);
+        JGroupsTransport transport = new JGroupsTransport();
         try {
-            transport.setChannel(factory.createChannel(this.value.getName()));
+            transport.setChannel(new Channel(factory.createChannel(this.value.getName())));
             transport.setClusterName(this.value.getName());
             this.value.setTransport(transport);
         } catch (Exception e) {
-            ROOT_LOGGER.trace("failed to start JGroups channel", e);
-            throw ROOT_LOGGER.failedToStartJGroupsChannel(this.value.getName(), this.value.getName());
+            throw ROOT_LOGGER.failedToStartJGroupsChannel(e, this.value.getName(), this.value.getName());
         }
 
         BlockingExecutor longRunning = (BlockingExecutor) executorLong.getOptionalValue();
@@ -115,9 +114,8 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
 
         try {
             transport.startup();
-        } catch (Throwable throwable) {
-            ROOT_LOGGER.trace("failed to start DWM transport:", throwable);
-            throw ROOT_LOGGER.failedToStartDWMTransport(this.value.getName());
+        } catch (Throwable e) {
+            throw ROOT_LOGGER.failedToStartDWMTransport(e, this.value.getName());
         }
         transport.register(new Address(value.getId(), value.getName(), value.getTransport().getId()));
 

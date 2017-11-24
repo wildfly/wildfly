@@ -34,7 +34,7 @@ import org.jipijapa.event.impl.internal.Notification;
  * @author Paul Ferraro
  * @author Scott Marlow
  */
-public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.InfinispanRegionFactory {
+public class InfinispanRegionFactory extends org.infinispan.hibernate.cache.InfinispanRegionFactory {
     private static final long serialVersionUID = 6526170943015350422L;
 
     public static final String CACHE_CONTAINER = "hibernate.cache.infinispan.container";
