@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -63,6 +62,7 @@ import org.wildfly.clustering.server.group.JGroupsNodeFactory;
 import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
 import org.wildfly.clustering.service.concurrent.ServiceExecutor;
 import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
+import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -132,13 +132,8 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
                 if (context == null) return NoSuchService.INSTANCE;
                 @SuppressWarnings("unchecked")
                 Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
-                Callable<Optional<Object>> task = new Callable<Optional<Object>>() {
-                    @Override
-                    public Optional<Object> call() throws Exception {
-                        // Wrap in an Optional, since command execution might return null
-                        return Optional.ofNullable(command.execute(context.orElse(null)));
-                    }
-                };
+                // Wrap execution result in an Optional, since command execution might return null
+                ExceptionSupplier<Optional<Object>, Exception> task = () -> Optional.ofNullable(command.execute(context.orElse(null)));
                 return this.executor.execute(task).orElse(Optional.of(NoSuchService.INSTANCE)).orElse(null);
             }
         }

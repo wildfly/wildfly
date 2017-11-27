@@ -23,10 +23,12 @@
 package org.wildfly.clustering.service.concurrent;
 
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.StampedLock;
 import java.util.function.Supplier;
+
+import org.wildfly.common.function.ExceptionRunnable;
+import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * {@link ServiceExecutor} implemented via a {@link StampedLock}.
@@ -50,11 +52,23 @@ public class StampedLockServiceExecutor implements ServiceExecutor {
     }
 
     @Override
-    public <R> Optional<R> execute(Callable<R> executeTask) throws Exception {
+    public <E extends Exception> void execute(ExceptionRunnable<E> executeTask) throws E {
         long stamp = this.lock.tryReadLock();
         if (stamp != 0L) {
             try {
-                return Optional.of(executeTask.call());
+                executeTask.run();
+            } finally {
+                this.lock.unlock(stamp);
+            }
+        }
+    }
+
+    @Override
+    public <R> Optional<R> execute(Supplier<R> executeTask) {
+        long stamp = this.lock.tryReadLock();
+        if (stamp != 0L) {
+            try {
+                return Optional.of(executeTask.get());
             } finally {
                 this.lock.unlock(stamp);
             }
@@ -63,7 +77,7 @@ public class StampedLockServiceExecutor implements ServiceExecutor {
     }
 
     @Override
-    public <R> Optional<R> execute(Supplier<R> executeTask) {
+    public <R, E extends Exception> Optional<R> execute(ExceptionSupplier<R, E> executeTask) throws E {
         long stamp = this.lock.tryReadLock();
         if (stamp != 0L) {
             try {
