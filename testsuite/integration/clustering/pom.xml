@@ -87,15 +87,23 @@
                             <execution>
                                 <id>ts.surefire.clustering.custom-manual-tcp-sync</id>
                                 <phase>test</phase>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <configuration>
-                                    <!-- Needed for EJB client tests -->
-                                    <reuseForks>false</reuseForks>
                                     <!-- Tests to execute. -->
                                     <includes>
                                         <include>${test-group}/**/*TestCase.java</include>
                                     </includes>
-
+                                    <!-- Exclude test groups that require disabled fork reuse (i.e. tests using EJB client) corresponding
+                                     to the includes in the following execution. -->
+                                    <excludes>
+                                        <exclude>${test-group}/dispatcher/**/*TestCase.java</exclude>
+                                        <exclude>${test-group}/ejb/remote/**/*TestCase.java</exclude>
+                                        <exclude>${test-group}/ejb2/**/*TestCase.java</exclude>
+                                        <exclude>${test-group}/provider/**/*TestCase.java</exclude>
+                                        <exclude>${test-group}/registry/**/*TestCase.java</exclude>
+                                    </excludes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
@@ -106,6 +114,33 @@
                                     </systemPropertyVariables>
 
                                     <!-- Differentiate surefire TCP and UDP reports. -->
+                                    <reportNameSuffix>SYNC-tcp</reportNameSuffix>
+                                </configuration>
+                            </execution>
+
+                            <!-- TCP clustering tests with custom containers with manual deployments with fork reuse disabled for EJB tests -->
+                            <execution>
+                                <id>ts.surefire.clustering.custom-manual-tcp-sync-ejb</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Needed for EJB client tests -->
+                                    <reuseForks>false</reuseForks>
+                                    <includes>
+                                        <include>${test-group}/dispatcher/**/*TestCase.java</include>
+                                        <include>${test-group}/ejb/remote/**/*TestCase.java</include>
+                                        <include>${test-group}/ejb2/**/*TestCase.java</include>
+                                        <include>${test-group}/provider/**/*TestCase.java</include>
+                                        <include>${test-group}/registry/**/*TestCase.java</include>
+                                    </includes>
+                                    <systemPropertyVariables combine.children="append">
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
+                                        <cacheMode>SYNC</cacheMode>
+                                        <stack>tcp</stack>
+                                    </systemPropertyVariables>
                                     <reportNameSuffix>SYNC-tcp</reportNameSuffix>
                                 </configuration>
                             </execution>
@@ -499,9 +534,9 @@
                                         <!-- this configuration uses one interface and port offsets -->
                                         <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
                                             <property name="node0" value="${node0}"/>
-                                            <property name="node1" value="${node0}"></property>
-                                            <property name="node2" value="${node1}"></property>
-                                            <property name="node3" value="${node1}"></property>
+                                            <property name="node1" value="${node0}"/>
+                                            <property name="node2" value="${node1}"/>
+                                            <property name="node3" value="${node1}"/>
                                             <property name="mcast-lon" value="${mcast}"/>
                                             <property name="mcast-nyc" value="${mcast1}"/>
                                             <property name="mcast-sfo" value="${mcast2}"/>
