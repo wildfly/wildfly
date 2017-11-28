@@ -10,8 +10,8 @@
 
     <container qualifier="clustering-udp-single">
         <configuration>
-            <property name="jbossHome">${basedir}/target/wildfly-SYNC-tcp-0</property>
-            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-SYNC-tcp-0 -Djboss.node.name=node-0</property>
+            <property name="jbossHome">${basedir}/target/wildfly-tcp-0</property>
+            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-tcp-0 -Djboss.node.name=node-0</property>
             <property name="serverConfig">${jboss.server.config.file.name}</property>
             <property name="jbossArguments">${jboss.args}</property>
             <property name="managementAddress">${node0}</property>
@@ -41,9 +41,9 @@
     <group qualifier="clustering-balancer">
         <container qualifier="balancer" mode="custom" managed="false" default="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-${cacheMode}-${stack}-0</property>
+                <property name="jbossHome">${basedir}/target/wildfly-${stack}-0</property>
                 <!-- AS7-2493 different jboss.node.name must be specified -->
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${cacheMode}-${stack}-0 -Djboss.node.name=balancer</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${stack}-0 -Djboss.node.name=balancer</property>
                 <property name="serverConfig">${jboss.server.config.file.standalone}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node0}</property>
@@ -57,9 +57,9 @@
 
         <container qualifier="con-1" mode="custom" managed="false" default="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-${cacheMode}-${stack}-1</property>
+                <property name="jbossHome">${basedir}/target/wildfly-${stack}-1</property>
                 <!-- AS7-2493 different jboss.node.name must be specified -->
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${cacheMode}-${stack}-1 -Djboss.node.name=node-1 -Djboss.mod_cluster.jvmRoute=worker-1 -Djboss.port.offset=100</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${stack}-1 -Djboss.node.name=node-1 -Djboss.mod_cluster.jvmRoute=worker-1 -Djboss.port.offset=100</property>
                 <property name="serverConfig">${jboss.server.config.file.standalone-ha}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node1}</property>
@@ -73,8 +73,8 @@
 
         <container qualifier="con-2" mode="custom" managed="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-${cacheMode}-${stack}-2</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${cacheMode}-${stack}-2 -Djboss.node.name=node-2 -Djboss.mod_cluster.jvmRoute=worker-2 -Djboss.port.offset=200</property>
+                <property name="jbossHome">${basedir}/target/wildfly-${stack}-2</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${stack}-2 -Djboss.node.name=node-2 -Djboss.mod_cluster.jvmRoute=worker-2 -Djboss.port.offset=200</property>
                 <property name="serverConfig">${jboss.server.config.file.standalone-ha}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node2}</property>
@@ -91,9 +91,9 @@
 
         <container qualifier="container-0" mode="custom" managed="false" default="true">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-${cacheMode}-${stack}-0</property>
+                <property name="jbossHome">${basedir}/target/wildfly-${stack}-0</property>
                 <!-- AS7-2493 different jboss.node.name must be specified -->
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${cacheMode}-${stack}-0 -Djboss.node.name=node-0</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${stack}-0 -Djboss.node.name=node-0</property>
                 <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node0}</property>
@@ -107,8 +107,8 @@
 
         <container qualifier="container-1" mode="custom" managed="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-${cacheMode}-${stack}-1</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${cacheMode}-${stack}-1 -Djboss.node.name=node-1 -Djboss.port.offset=100</property>
+                <property name="jbossHome">${basedir}/target/wildfly-${stack}-1</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${stack}-1 -Djboss.node.name=node-1 -Djboss.port.offset=100</property>
                 <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node1}</property>
@@ -122,8 +122,8 @@
 
         <container qualifier="container-single" mode="custom" managed="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-SYNC-tcp-0</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-SYNC-tcp-0 -Djboss.node.name=node-0</property>
+                <property name="jbossHome">${basedir}/target/wildfly-tcp-0</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-tcp-0 -Djboss.node.name=node-0</property>
                 <property name="serverConfig">standalone.xml</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="managementAddress">${node0}</property>

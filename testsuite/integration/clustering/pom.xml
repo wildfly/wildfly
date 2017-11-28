@@ -58,7 +58,6 @@
                                             <property name="mcast.ttl" value="${mcast.ttl}"/>
                                             <property name="cacheLoader" value="binary-keyed" />
                                             <property name="cacheType" value="replicated" />
-                                            <property name="mode" value="${cacheMode}" />
                                             <target name="build-clustering"/>
                                         </ant>
                                     </target>
@@ -79,13 +78,15 @@
                             <!-- Disable default-test execution. -->
                             <execution>
                                 <id>default-test</id>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <phase>none</phase>
                             </execution>
 
                             <!-- TCP clustering tests with custom containers with manual deployments. -->
                             <execution>
-                                <id>ts.surefire.clustering.custom-manual-tcp-sync</id>
+                                <id>ts.surefire.clustering.custom-manual-tcp</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
@@ -109,18 +110,17 @@
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <cacheMode>SYNC</cacheMode>
                                         <stack>tcp</stack>
                                     </systemPropertyVariables>
 
                                     <!-- Differentiate surefire TCP and UDP reports. -->
-                                    <reportNameSuffix>SYNC-tcp</reportNameSuffix>
+                                    <reportNameSuffix>tcp</reportNameSuffix>
                                 </configuration>
                             </execution>
 
                             <!-- TCP clustering tests with custom containers with manual deployments with fork reuse disabled for EJB tests -->
                             <execution>
-                                <id>ts.surefire.clustering.custom-manual-tcp-sync-ejb</id>
+                                <id>ts.surefire.clustering.custom-manual-tcp-ejb</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
@@ -138,10 +138,9 @@
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <cacheMode>SYNC</cacheMode>
                                         <stack>tcp</stack>
                                     </systemPropertyVariables>
-                                    <reportNameSuffix>SYNC-tcp</reportNameSuffix>
+                                    <reportNameSuffix>tcp</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -236,34 +235,15 @@
                             <!-- Disable default-test execution. -->
                             <execution>
                                 <id>default-test</id>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <phase>none</phase>
                             </execution>
 
-                            <!-- TCP-ASYNC -->
+                            <!-- UDP -->
                             <execution>
-                                <id>ts.surefire.clustering.multinode-manual-tcp-async</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Needed for EJB client tests -->
-                                    <reuseForks>false</reuseForks>
-                                    <includes>
-                                        <include>${test-group}/**/*TestCase.java</include>
-                                    </includes>
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <cacheMode>ASYNC</cacheMode>
-                                        <stack>tcp</stack>
-                                    </systemPropertyVariables>
-                                    <reportNameSuffix>ASYNC-tcp</reportNameSuffix>
-                                </configuration>
-                            </execution>
-
-                            <!-- UDP-SYNC -->
-                            <execution>
-                                <id>ts.surefire.clustering.multinode-manual-udp-sync</id>
+                                <id>ts.surefire.clustering.multinode-manual-udp</id>
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
@@ -275,31 +255,9 @@
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <cacheMode>SYNC</cacheMode>
                                         <stack>udp</stack>
                                     </systemPropertyVariables>
-                                    <reportNameSuffix>SYNC-udp</reportNameSuffix>
-                                </configuration>
-                            </execution>
-
-                            <!-- UDP-ASYNC -->
-                            <execution>
-                                <id>ts.surefire.clustering.multinode-manual-udp-async</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Needed for EJB client tests -->
-                                    <reuseForks>false</reuseForks>
-                                    <includes>
-                                        <include>${test-group}/**/*TestCase.java</include>
-                                    </includes>
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <cacheMode>ASYNC</cacheMode>
-                                        <stack>udp</stack>
-                                    </systemPropertyVariables>
-                                    <reportNameSuffix>ASYNC-udp</reportNameSuffix>
+                                    <reportNameSuffix>udp</reportNameSuffix>
                                 </configuration>
                             </execution>
                         </executions>
@@ -373,7 +331,6 @@
                                             <property name="mcast.ttl" value="${mcast.ttl}"/>
                                             <property name="cacheLoader" value="string-keyed" />
                                             <property name="cacheType" value="local" />
-                                            <property name="mode" value="${cacheMode}" />                                            
                                             <target name="build-clustering-udp-jdbc-store"/>
                                         </ant>
                                     </target>
@@ -689,7 +646,6 @@
             <properties>
                 <cacheLoader>binary-keyed</cacheLoader>
                 <cacheType>replicated</cacheType>
-                <mode>SYNC</mode>
             </properties>
             
             <build>
@@ -760,7 +716,6 @@
                                     <systemPropertyVariables>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <cacheMode>SYNC</cacheMode>
                                         <stack>tcp</stack>
                                     </systemPropertyVariables>
                                 </configuration>
@@ -804,7 +759,6 @@
                                             <property name="mcast.ttl" value="${mcast.ttl}"/>
                                             <property name="cacheLoader" value="binary-keyed" />
                                             <property name="cacheType" value="replicated" />
-                                            <property name="mode" value="${cacheMode}" />
                                             <target name="build-clustering-balancer"/>
                                         </ant>
                                     </target>
@@ -847,7 +801,6 @@
                                         <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                         <jboss.server.config.file.standalone>standalone.xml</jboss.server.config.file.standalone>
                                         <jboss.server.config.file.standalone-ha>standalone-ha.xml</jboss.server.config.file.standalone-ha>
-                                        <cacheMode>SYNC</cacheMode>
                                         <stack>tcp</stack>
                                     </systemPropertyVariables>
                                 </configuration>
