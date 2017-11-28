@@ -39,7 +39,7 @@ REM MAVEN_OPTS MAVEN_OPTS now live in .mvn/jvm.config and .mvn/maven.config
 REM set MAVEN_OPTS=%MAVEN_OPTS% -Xmx768M
 
 set DIRNAME=%~p0
-set MVN=%DIRNAME%\mvn.cmd
+set MVN=%DIRNAME%\mvnw.cmd
 
 set GOAL=%1
 if "%GOAL%"=="" set GOAL=install
