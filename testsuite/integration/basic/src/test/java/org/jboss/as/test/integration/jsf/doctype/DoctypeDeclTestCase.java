@@ -45,13 +45,12 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.jsf.subsystem.JSFExtension;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -70,6 +69,9 @@ import org.junit.runner.RunWith;
 public class DoctypeDeclTestCase {
     @ArquillianResource
     private URL url;
+
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     private final Pattern viewStatePattern = Pattern.compile("id=\".*javax.faces.ViewState.*\" value=\"([^\"]*)\"");
 
@@ -144,16 +146,14 @@ public class DoctypeDeclTestCase {
     private void writeDisallowDoctypeDeclAttributeAndReload(boolean value) throws Exception {
         final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, JSFExtension.SUBSYSTEM_NAME);
         final ModelNode op = Operations.createWriteAttributeOperation(address, "disallow-doctype-decl", value);
-        final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
-        ManagementOperations.executeOperation(client, op);
-        ServerReload.executeReloadAndWaitForCompletion(client);
+        ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
     }
 
     private void undefineDisallowDoctypeDeclAttributeAndReload() throws Exception {
         final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, JSFExtension.SUBSYSTEM_NAME);
         final ModelNode op = Operations.createUndefineAttributeOperation(address, "disallow-doctype-decl");
-        final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
-        ManagementOperations.executeOperation(client, op);
-        ServerReload.executeReloadAndWaitForCompletion(client);
+        ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
     }
 }
