@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.clustering.xsite;
 
-import static org.jboss.as.test.clustering.ClusterTestUtil.waitForReplication;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -132,7 +130,7 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3,
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_4) URL baseURL4)
-            throws IllegalStateException, IOException, URISyntaxException {
+            throws IllegalStateException, IOException, URISyntaxException, InterruptedException {
 
         URI url1 = CacheAccessServlet.createPutURI(baseURL1, "a", "100");
         URI url2 = CacheAccessServlet.createGetURI(baseURL2, "a");
@@ -151,7 +149,7 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
             //System.out.println("Executed HTTP request");
 
             // Lets wait for the session to replicate
-            waitForReplication(GRACE_TIME_TO_REPLICATE);
+            Thread.sleep(GRACE_TIME_TO_REPLICATE);
 
             // do a get on LON-1
             //System.out.println("Executing HTTP request: " + url2);
