@@ -57,11 +57,13 @@ public class DivertDefinition extends PersistentResourceDefinition {
             .setXmlName("address")
             .setDefaultValue(null)
             .setAllowExpression(true)
+            .setCorrector(ActiveMQAddressCorrector.CORRECTOR)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition FORWARDING_ADDRESS = create("forwarding-address", STRING)
             .setAllowExpression(true)
+            .setCorrector(ActiveMQAddressCorrector.CORRECTOR)
             .setRestartAllServices()
             .build();
 

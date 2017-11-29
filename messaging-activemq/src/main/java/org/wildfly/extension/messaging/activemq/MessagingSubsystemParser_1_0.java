@@ -33,7 +33,6 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_C
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
-import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.ha.LiveOnlyDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ReplicationColocatedDefinition;
@@ -365,15 +364,7 @@ public class MessagingSubsystemParser_1_0 extends PersistentResourceXMLParser {
                                                                 ClusterConnectionDefinition.NOTIFICATION_INTERVAL,
                                                                 ClusterConnectionDefinition.CONNECTOR_REFS,
                                                                 ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY,
-                                                                ClusterConnectionDefinition.DISCOVERY_GROUP_NAME)
-                                                        .setAdditionalOperationsGenerator((address, addOperation, operations) -> {
-                                                            ModelNode clusterConnectionAddress = addOperation.get(ClusterConnectionDefinition.ADDRESS.getName());
-                                                            // if jms is used as the cluster-connection-address, replace it with the empty string for Artemis 2
-                                                            // as it no longer uses the jms prefix for addresses corresponding to JMS destinations.
-                                                            if (clusterConnectionAddress.isDefined() && clusterConnectionAddress.asString().equals("jms")) {
-                                                                addOperation.get(ClusterConnectionDefinition.ADDRESS.getName()).set("");
-                                                            }
-                                                        }))
+                                                                ClusterConnectionDefinition.DISCOVERY_GROUP_NAME))
                                         .addChild(
                                                 builder(GroupingHandlerDefinition.INSTANCE.getPathElement())
                                                         .addAttributes(

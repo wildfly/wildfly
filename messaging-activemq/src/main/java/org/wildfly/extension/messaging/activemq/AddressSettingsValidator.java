@@ -46,8 +46,6 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  */
 class AddressSettingsValidator {
 
-    private static final String JMS_QUEUE_ADDRESS_PREFIX = "jms.queue.";
-    private static final String JMS_TOPIC_ADDRESS_PREFIX = "jms.topic.";
     /**
      * Validates that an address-setting:add operation does not define expiry-address or dead-letter address
      * without corresponding resources for them.

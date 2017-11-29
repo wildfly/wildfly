@@ -851,4 +851,8 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 96, value = "The %s operation can not be performed on a JDBC store journal")
     OperationFailedException operationNotAllowedOnJdbcStore(String operationName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 97, value = "ActiveMQ Artemis no longer use jms prefix for addresses corresponding to JMS resources. The '%s' address has been corrected to '%s'.")
+    void convertingActiveMQAddress(String newValue, String correctedValue);
 }

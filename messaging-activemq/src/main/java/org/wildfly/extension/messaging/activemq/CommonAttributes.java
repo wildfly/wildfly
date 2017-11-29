@@ -118,6 +118,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition DEAD_LETTER_ADDRESS = create("dead-letter-address", ModelType.STRING)
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(ActiveMQAddressCorrector.CORRECTOR)
             .build();
 
     AttributeDefinition DELIVERING_COUNT = create("delivering-count", INT)
@@ -158,6 +159,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition EXPIRY_ADDRESS = create("expiry-address", ModelType.STRING)
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(ActiveMQAddressCorrector.CORRECTOR)
             .build();
 
     SimpleAttributeDefinition FILTER = create("filter", ModelType.STRING)

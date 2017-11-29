@@ -146,6 +146,7 @@ public class BridgeDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition FORWARDING_ADDRESS = create("forwarding-address", STRING)
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(ActiveMQAddressCorrector.CORRECTOR)
             .setRestartAllServices()
             .build();
 

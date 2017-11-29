@@ -71,6 +71,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             // empty string is allowed to route *any* address to the cluster
             .setValidator(new StringLengthValidator(0))
             .setAllowExpression(true)
+            .setCorrector(ActiveMQAddressCorrector.CORRECTOR)
             .setRestartAllServices()
             .build();
 
