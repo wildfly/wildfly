@@ -104,38 +104,49 @@ public class ForkProtocolRuntimeResourceRegistration implements RuntimeResourceR
         String moduleName = ProtocolResourceDefinition.Attribute.MODULE.resolveModelAttribute(context, resource.getModel()).asString();
         Class<? extends Protocol> protocolClass = ChannelRuntimeResourceRegistration.findProtocolClass(context, protocolName, moduleName);
 
-        final Map<String, Attribute> attributes = ProtocolMetricsHandler.findProtocolAttributes(protocolClass);
+        Map<String, Attribute> attributes = ProtocolMetricsHandler.findProtocolAttributes(protocolClass);
 
-        OverrideDescriptionProvider provider = new OverrideDescriptionProvider() {
-            @Override
-            public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
-                Map<String, ModelNode> result = new HashMap<>();
-                for (Attribute attribute : attributes.values()) {
-                    ModelNode value = new ModelNode();
-                    value.get(ModelDescriptionConstants.DESCRIPTION).set(attribute.getDescription());
-                    result.put(attribute.getName(), value);
+        // If this is a wildcard registration, create an override model registration with which to register protocol-specific metrics
+        if (registration.getPathAddress().getLastElement().isWildcard()) {
+            OverrideDescriptionProvider provider = new OverrideDescriptionProvider() {
+                @Override
+                public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
+                    Map<String, ModelNode> result = new HashMap<>();
+                    for (Attribute attribute : attributes.values()) {
+                        ModelNode value = new ModelNode();
+                        value.get(ModelDescriptionConstants.DESCRIPTION).set(attribute.getDescription());
+                        result.put(attribute.getName(), value);
+                    }
+                    return result;
                 }
-                return result;
-            }
 
-            @Override
-            public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                return Collections.emptyMap();
-            }
-        };
+                @Override
+                public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
+                    return Collections.emptyMap();
+                }
+            };
+            registration = registration.registerOverrideModel(protocolName, provider);
+        }
 
-        ManagementResourceRegistration protocolRegistration = registration.registerOverrideModel(protocolName, provider);
         ProtocolMetricsHandler handler = new ProtocolMetricsHandler(this);
 
         for (Attribute attribute : attributes.values()) {
             String name = attribute.getName();
             FieldType type = FieldType.valueOf(attribute.getType());
-            protocolRegistration.registerMetric(new SimpleAttributeDefinitionBuilder(name, type.getModelType()).setStorageRuntime().build(), handler);
+            registration.registerMetric(new SimpleAttributeDefinitionBuilder(name, type.getModelType()).setStorageRuntime().build(), handler);
         }
     }
 
     @Override
-    public void unregister(OperationContext context) {
-        context.getResourceRegistrationForUpdate().unregisterOverrideModel(context.getCurrentAddressValue());
+    public void unregister(OperationContext context) throws OperationFailedException {
+        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
+        String protocolName = context.getCurrentAddressValue();
+        String moduleName = ProtocolResourceDefinition.Attribute.MODULE.resolveModelAttribute(context, resource.getModel()).asString();
+        Class<? extends Protocol> protocolClass = ChannelRuntimeResourceRegistration.findProtocolClass(context, protocolName, moduleName);
+
+        for (String attribute : ProtocolMetricsHandler.findProtocolAttributes(protocolClass).keySet()) {
+            registration.unregisterAttribute(attribute);
+        }
     }
 }
