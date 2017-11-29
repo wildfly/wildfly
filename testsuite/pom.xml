@@ -1051,13 +1051,13 @@
                                             </excludes>
                                         </fileset>
                                         <fileset>
-                                            <directory>target/wildfly-SYNC-tcp-0</directory>
+                                            <directory>target/wildfly-tcp-0</directory>
                                             <excludes>
                                                 <exclude>**/*.log</exclude>
                                             </excludes>
                                         </fileset>
                                         <fileset>
-                                            <directory>target/wildfly-SYNC-tcp-1</directory>
+                                            <directory>target/wildfly-tcp-1</directory>
                                             <excludes>
                                                 <exclude>**/*.log</exclude>
                                             </excludes>
@@ -1070,12 +1070,6 @@
                                         </fileset>
                                         <fileset>
                                             <directory>target/wildfly-clustered-messaging-1</directory>
-                                            <excludes>
-                                                <exclude>**/*.log</exclude>
-                                            </excludes>
-                                        </fileset>
-                                        <fileset>
-                                            <directory>target/wildfly-udp-jdbc-store</directory>
                                             <excludes>
                                                 <exclude>**/*.log</exclude>
                                             </excludes>

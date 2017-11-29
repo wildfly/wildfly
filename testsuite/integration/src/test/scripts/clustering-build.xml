@@ -107,29 +107,6 @@
         </antcall>
     </target>
 
-    <!-- Single node tests -->
-    <target name="build-clustering-udp-jdbc-store" description="Builds server configuration for UDP tests with jdbc-store enabled">
-
-        <echo message="Building config clustering-udp-jdbc-store"/>
-        <echo>clustering-udp-jdbc-store node0: ${node0}</echo>
-        <copy todir="target/wildfly-udp-jdbc-store" overwrite="true">
-            <fileset dir="${basedir}/target/jbossas"/>
-        </copy>
-        <ts.config-as.add-cache-container name="wildfly-udp-jdbc-store" cacheLoader="${cacheLoader}" cacheType="${cacheType}"/>
-        <ts.config-as.ip-with-multicast name="wildfly-udp-jdbc-store"
-                                        node="${node0}"
-                                        mcast="${mcast}"
-                />
-        <ts.config-as.add-port-offset name="wildfly-udp-jdbc-store"/>
-        <ts.config-as.configure-multicast-ttl name="wildfly-udp-jdbc-store" mcast.ttl="${mcast.ttl}"/>
-
-    </target>
-
-    <target name="add-cache">
-        <ts.config-as.add-cache-container name="wildfly-${stack}-0" cacheLoader="${cacheLoader}" cacheType="${cacheType}"/>
-        <ts.config-as.add-cache-container name="wildfly-${stack}-1" cacheLoader="${cacheLoader}" cacheType="${cacheType}"/>
-    </target>
-
     <!-- x-site test deployment:
          4 nodes: ${node0}, ${node1}, ${node2}, ${node3}
          3 sites: LON (node0, node1), NYC (node2), SFO (node3)
