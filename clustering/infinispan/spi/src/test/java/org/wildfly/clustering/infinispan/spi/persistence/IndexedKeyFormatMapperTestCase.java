@@ -32,7 +32,7 @@ import org.junit.Test;
 /**
  * @author Paul Ferraro
  */
-public class OrdinalKeyFormatMapperTestCase {
+public class IndexedKeyFormatMapperTestCase {
 
     enum Type {
         TYPE00 {},
