@@ -32,6 +32,6 @@ import org.jboss.ejb3.annotation.SecurityDomain;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @Stateless
-@SecurityDomain("ejb3-tests")
+@SecurityDomain("elytron-tests")
 public class WhoAmIBean extends org.wildfly.test.integration.elytron.ejb.base.WhoAmIBean implements WhoAmI {
 }

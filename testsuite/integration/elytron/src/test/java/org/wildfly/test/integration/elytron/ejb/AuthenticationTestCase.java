@@ -54,7 +54,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
-import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.Archive;
@@ -68,6 +67,8 @@ import org.wildfly.security.permission.ElytronPermission;
 import org.wildfly.test.integration.elytron.ejb.authentication.EntryBean;
 import org.wildfly.test.integration.elytron.ejb.base.WhoAmIBean;
 import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
+import org.wildfly.test.security.common.elytron.ElytronDomainSetup;
+import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
 /**
  * Test case to hold the authentication scenarios, these range from calling a servlet which calls a bean to calling a bean which
@@ -77,7 +78,7 @@ import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ AuthenticationTestCase.EjbSecurityDomainSetup.class })
+@ServerSetup({ AuthenticationTestCase.ElytronDomainSetupOverride.class, EjbElytronDomainSetup.class, ServletElytronDomainSetup.class })
 @Category(CommonCriteria.class)
 public class AuthenticationTestCase {
 
@@ -104,7 +105,7 @@ public class AuthenticationTestCase {
                 .addPackage(WhoAmIBean.class.getPackage()).addPackage(EntryBean.class.getPackage())
                 .addClass(WhoAmI.class).addClass(Util.class).addClass(Entry.class)
                 .addClasses(WhoAmIServlet.class, AuthenticationTestCase.class)
-                .addClasses(AbstractSecurityDomainSetup.class, EjbElytronDomainSetup.class)
+                .addClasses(ElytronDomainSetup.class, EjbElytronDomainSetup.class, ServletElytronDomainSetup.class)
                 .addClass(TestSuiteEnvironment.class)
                 .addAsResource(currentPackage, "users.properties", "users.properties")
                 .addAsResource(currentPackage, "roles.properties", "roles.properties")
@@ -465,8 +466,8 @@ public class AuthenticationTestCase {
     // 17.6.9 - Runtime Security Enforcement
     // 17.6.10 - Audit Trail
 
-    static class EjbSecurityDomainSetup extends EjbElytronDomainSetup {
-        public EjbSecurityDomainSetup() {
+    static class ElytronDomainSetupOverride extends ElytronDomainSetup {
+        public ElytronDomainSetupOverride() {
             super(new File(AuthenticationTestCase.class.getResource("users.properties").getFile()).getAbsolutePath(),
                     new File(AuthenticationTestCase.class.getResource("roles.properties").getFile()).getAbsolutePath());
         }
