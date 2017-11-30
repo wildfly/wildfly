@@ -22,29 +22,39 @@
 
 package org.wildfly.clustering.infinispan.spi.persistence;
 
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertTrue;
 
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 import org.junit.Assert;
-import org.junit.Test;
 
 /**
+ * Tester for a {@link KeyFormat}.
  * @author Paul Ferraro
  */
-public class SimpleKeyFormatTestCase {
-    @Test
-    public void test() {
-        Function<String, Object> parser = mock(Function.class);
-        Function<Object, String> formatter = mock(Function.class);
-        KeyFormat<Object> format = new SimpleKeyFormat<>(Object.class, parser, formatter);
+public class KeyFormatTester<K> {
 
-        Object object = new Object();
-        String result = "foo";
+    private final KeyFormat<K> format;
+    private final BiConsumer<K, K> assertion;
 
-        when(formatter.apply(object)).thenReturn(result);
-        when(parser.apply(result)).thenReturn(object);
+    public KeyFormatTester(KeyFormat<K> format) {
+        this(format, Assert::assertEquals);
+    }
 
-        new KeyFormatTester<>(format, Assert::assertSame).test(object);
+    public KeyFormatTester(KeyFormat<K> format, BiConsumer<K, K> assertion) {
+        this.format = format;
+        this.assertion = assertion;
+    }
+
+    public void test(K subject) {
+        assertTrue(this.format.getTargetClass().isInstance(subject));
+
+        String formatted = this.format.format(subject);
+
+        K result = this.format.parse(formatted);
+
+        assertTrue(this.format.getTargetClass().isInstance(result));
+
+        this.assertion.accept(subject, result);
     }
 }

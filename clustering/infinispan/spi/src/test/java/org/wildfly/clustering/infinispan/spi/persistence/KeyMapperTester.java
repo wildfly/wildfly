@@ -22,29 +22,30 @@
 
 package org.wildfly.clustering.infinispan.spi.persistence;
 
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
-import java.util.function.Function;
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 
 /**
+ * Tester for a {@link TwoWayKey2StringMapper}.
  * @author Paul Ferraro
  */
-public class SimpleKeyFormatTestCase {
-    @Test
-    public void test() {
-        Function<String, Object> parser = mock(Function.class);
-        Function<Object, String> formatter = mock(Function.class);
-        KeyFormat<Object> format = new SimpleKeyFormat<>(Object.class, parser, formatter);
+public class KeyMapperTester {
 
-        Object object = new Object();
-        String result = "foo";
+    private final TwoWayKey2StringMapper mapper;
 
-        when(formatter.apply(object)).thenReturn(result);
-        when(parser.apply(result)).thenReturn(object);
+    public KeyMapperTester(TwoWayKey2StringMapper mapper) {
+        this.mapper = mapper;
+    }
 
-        new KeyFormatTester<>(format, Assert::assertSame).test(object);
+    public void test(Object key) {
+        assertTrue(this.mapper.isSupportedType(key.getClass()));
+
+        String mapping = this.mapper.getStringMapping(key);
+
+        Object result = this.mapper.getKeyMapping(mapping);
+
+        assertEquals(key, result);
     }
 }
