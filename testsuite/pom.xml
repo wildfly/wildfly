@@ -80,6 +80,8 @@
         <!-- This project's root dir. -->
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
 
+        <!-- Skips profile generation; to be used with running single test with -Dtest=... -->
+        <skip.antrun>false</skip.antrun>
 
         <!-- Used to provide an absolute location for the distribution under test. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
