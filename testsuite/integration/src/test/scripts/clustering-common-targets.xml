@@ -123,39 +123,6 @@
     </macrodef>
 
     <!--
-        Change default cache mode in clustering server profiles.
-    -->
-    <macrodef name="ts.config-as.change-cache-mode" description="Change default cache mode in clustering server profiles.">
-
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
-
-        <attribute name="cacheMode" default="SYNC"/>
-
-        <sequential>
-            <echo message="Changing cache mode for config @{name}"/>
-
-            <!-- WEB Cache -->
-            <execute-xslt-transform transform="changeCacheMode.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="name" expression="web"/>
-                    <param name="mode" expression="@{cacheMode}"/>
-                </transform-params>
-            </execute-xslt-transform>
-
-            <!-- EJB Cache -->
-            <execute-xslt-transform transform="changeCacheMode.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="name" expression="ejb"/>
-                    <param name="mode" expression="@{cacheMode}"/>
-                </transform-params>
-            </execute-xslt-transform>
-
-        </sequential>
-    </macrodef>
-
-    <!--
         Add a new cache container to the Infinispan subsystem.
         The container definition is loaded from a file.
     -->
@@ -166,7 +133,6 @@
         <attribute name="config.dir.name" default="standalone/configuration"/>
         <attribute name="cacheLoader" />
         <attribute name="cacheType" />
-        <attribute name="mode" />
 
         <sequential>
             <echo message="Adding a cache container to Infinispan subsystem for config @{name}" />
@@ -175,7 +141,6 @@
                 <transform-params>
                     <param name="cacheLoader" expression="@{cacheLoader}" />
                     <param name="cacheType" expression="@{cacheType}" />
-                    <param name="mode" expression="@{mode}" />
                 </transform-params>
             </execute-xslt-transform>
         </sequential>

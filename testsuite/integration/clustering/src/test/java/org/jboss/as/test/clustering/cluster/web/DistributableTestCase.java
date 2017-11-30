@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.clustering.cluster.web;
 
-import static org.jboss.as.test.clustering.ClusterTestUtil.waitForReplication;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -122,7 +120,7 @@ public class DistributableTestCase extends ClusterAbstractTestCase {
     public void testSessionReplication(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
+            throws IOException, URISyntaxException, InterruptedException {
 
         URI url1 = SimpleServlet.createURI(baseURL1);
         URI url2 = SimpleServlet.createURI(baseURL2);
@@ -146,7 +144,7 @@ public class DistributableTestCase extends ClusterAbstractTestCase {
             }
 
             // Lets wait for the session to replicate
-            waitForReplication(GRACE_TIME_TO_REPLICATE);
+            Thread.sleep(GRACE_TIME_TO_REPLICATE);
 
             // Now check on the 2nd server
             response = client.execute(new HttpGet(url2));
