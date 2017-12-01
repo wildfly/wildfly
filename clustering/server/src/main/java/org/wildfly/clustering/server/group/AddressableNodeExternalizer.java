@@ -34,6 +34,7 @@ import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.persistence.BinaryKeyFormat;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
  * Marshalling externalizer for an {@link AddressableNode}.
@@ -50,9 +51,9 @@ public class AddressableNodeExternalizer extends BinaryKeyFormat<AddressableNode
         try {
             Address jgroupsAddress = org.jgroups.util.Util.readAddress(input);
             String name = input.readUTF();
-            byte[] address = new byte[input.readInt()];
+            byte[] address = new byte[IndexExternalizer.UNSIGNED_BYTE.readData(input)];
             input.readFully(address);
-            int port = input.readInt();
+            int port = IndexExternalizer.UNSIGNED_SHORT.readData(input);
             return new AddressableNode(jgroupsAddress, name, new InetSocketAddress(InetAddress.getByAddress(address), port));
         } catch (IOException e) {
             throw e;
@@ -66,10 +67,11 @@ public class AddressableNodeExternalizer extends BinaryKeyFormat<AddressableNode
             org.jgroups.util.Util.writeAddress(node.getAddress(), output);
             output.writeUTF(node.getName());
             InetSocketAddress socketAddress = node.getSocketAddress();
+            // Socket address will always contain a resolved address
             byte[] address = socketAddress.getAddress().getAddress();
-            output.writeInt(address.length);
+            IndexExternalizer.UNSIGNED_BYTE.writeData(output, address.length);
             output.write(address);
-            output.writeInt(socketAddress.getPort());
+            IndexExternalizer.UNSIGNED_SHORT.writeData(output, socketAddress.getPort());
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
