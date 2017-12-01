@@ -149,8 +149,8 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(IIOPExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES,
-                        Phase.DEPENDENCIES_JDKORB, new IIOPDependencyProcessor());
-                processorTarget.addDeploymentProcessor(IIOPExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JDKORB,
+                        Phase.DEPENDENCIES_IIOP_OPENJDK, new IIOPDependencyProcessor());
+                processorTarget.addDeploymentProcessor(IIOPExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_IIOP_OPENJDK,
                         new IIOPMarkerProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
