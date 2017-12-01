@@ -96,7 +96,9 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
             this.descriptor.getResourceCapabilityReferences().forEach((reference, resolver) -> reference.removeCapabilityRequirements(context, resource, null, resolver.apply(address)));
 
             if (this.requiresRuntime(context)) {
-                this.descriptor.getRuntimeResourceRegistrations().forEach(r -> r.unregister(context));
+                for (RuntimeResourceRegistration runtimeRegistration : this.descriptor.getRuntimeResourceRegistrations()) {
+                    runtimeRegistration.unregister(context);
+                }
             }
         }
 
