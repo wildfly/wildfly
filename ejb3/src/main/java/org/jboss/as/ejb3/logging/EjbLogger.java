@@ -102,6 +102,7 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
@@ -3135,4 +3136,7 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 498, value = "Business view method %s declared final in %s")
     DeploymentUnitProcessingException businessViewMethodDeclaredFinal(String method, String bean);
+
+    @Message(id = 499, value = "Cannot read derived size - service %s unreachable")
+    OperationFailedException cannotReadStrictMaxPoolDerivedSize(ServiceName serviceName);
 }
