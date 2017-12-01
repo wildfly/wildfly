@@ -296,7 +296,11 @@ public class MessagingSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                         AddressSettingDefinition.SLOW_CONSUMER_POLICY,
                                                         AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD,
                                                         AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES,
-                                                        AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES))
+                                                        AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES,
+                                                        AddressSettingDefinition.AUTO_CREATE_QUEUES,
+                                                        AddressSettingDefinition.AUTO_DELETE_QUEUES,
+                                                        AddressSettingDefinition.AUTO_CREATE_ADDRESSES,
+                                                        AddressSettingDefinition.AUTO_DELETE_ADDRESSES))
                                 .addChild(
                                         builder(MessagingExtension.HTTP_CONNECTOR_PATH)
                                                 .addAttributes(

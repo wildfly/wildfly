@@ -25,8 +25,12 @@ package org.wildfly.extension.messaging.activemq;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService.ignoreOperationIfServerNotActive;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY;
+import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.AUTO_CREATE_ADDRESSES;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES;
+import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.AUTO_CREATE_QUEUES;
+import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.AUTO_DELETE_ADDRESSES;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES;
+import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.AUTO_DELETE_QUEUES;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.EXPIRY_DELAY;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.LAST_VALUE_QUEUE;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS;
@@ -131,6 +135,10 @@ public class AddressSettingsResolveHandler extends AbstractRuntimeOnlyHandler {
         result.get(SLOW_CONSUMER_THRESHOLD.getName()).set(settings.getSlowConsumerThreshold());
         result.get(AUTO_CREATE_JMS_QUEUES.getName()).set(settings.isAutoCreateJmsQueues());
         result.get(AUTO_DELETE_JMS_QUEUES.getName()).set(settings.isAutoDeleteJmsQueues());
+        result.get(AUTO_CREATE_ADDRESSES.getName()).set(settings.isAutoCreateAddresses());
+        result.get(AUTO_DELETE_ADDRESSES.getName()).set(settings.isAutoDeleteAddresses());
+        result.get(AUTO_CREATE_QUEUES.getName()).set(settings.isAutoCreateQueues());
+        result.get(AUTO_DELETE_QUEUES.getName()).set(settings.isAutoDeleteQueues());
     }
 
     public static void registerOperationHandler(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {

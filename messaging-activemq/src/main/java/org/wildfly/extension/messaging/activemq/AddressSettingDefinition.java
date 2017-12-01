@@ -29,6 +29,7 @@ import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECOND
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.SECONDS;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXPIRY_ADDRESS;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.VERSION_3_0_0;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,16 +53,44 @@ import org.jboss.dmr.ModelType;
  */
 public class AddressSettingDefinition extends PersistentResourceDefinition {
 
-    public static final SimpleAttributeDefinition AUTO_CREATE_JMS_QUEUES = create("auto-create-jms-queues", ModelType.BOOLEAN)
-            // Default value is false to have the same behaviour than the legacy messaging subsystem (Artemis defaults to true)
-            .setDefaultValue(new ModelNode(false))
+    public static final SimpleAttributeDefinition AUTO_CREATE_ADDRESSES = create("auto-create-addresses", ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(true))
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
-    public static final SimpleAttributeDefinition AUTO_DELETE_JMS_QUEUES = create("auto-delete-jms-queues", ModelType.BOOLEAN)
-            // Default value is false to have the same behaviour than the legacy messaging subsystem (Artemis defaults to true)
+    public static final SimpleAttributeDefinition AUTO_DELETE_ADDRESSES = create("auto-delete-addresses", ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(true))
+            .setRequired(false)
+            .setAllowExpression(true)
+            .build();
+
+    // Property exists in Artemis 2 but is no longer honoured
+    @Deprecated
+    public static final SimpleAttributeDefinition AUTO_CREATE_JMS_QUEUES = create("auto-create-jms-queues", ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(false))
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setDeprecated(VERSION_3_0_0)
+            .build();
+
+    // Property exists in Artemis 2 but is no longer honoured
+    @Deprecated
+    public static final SimpleAttributeDefinition AUTO_DELETE_JMS_QUEUES = create("auto-delete-jms-queues", ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(false))
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setDeprecated(VERSION_3_0_0)
+            .build();
+
+    public static final SimpleAttributeDefinition AUTO_CREATE_QUEUES = create("auto-create-queues", ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(true))
+            .setRequired(false)
+            .setAllowExpression(true)
+            .build();
+
+    public static final SimpleAttributeDefinition AUTO_DELETE_QUEUES = create("auto-delete-queues", ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(true))
             .setRequired(false)
             .setAllowExpression(true)
             .build();
@@ -196,7 +225,11 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
             SLOW_CONSUMER_POLICY,
             SLOW_CONSUMER_THRESHOLD,
             AUTO_CREATE_JMS_QUEUES,
-            AUTO_DELETE_JMS_QUEUES
+            AUTO_DELETE_JMS_QUEUES,
+            AUTO_CREATE_ADDRESSES,
+            AUTO_DELETE_ADDRESSES,
+            AUTO_CREATE_QUEUES,
+            AUTO_DELETE_QUEUES
     };
 
     static final AddressSettingDefinition INSTANCE = new AddressSettingDefinition();

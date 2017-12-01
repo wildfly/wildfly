@@ -279,8 +279,24 @@
                         </xs:simpleType>
                     </xs:attribute>
                     <xs:attribute name="slow-consumer-threshold" type="xs:long" use="optional" />
-                    <xs:attribute name="auto-create-jms-queues" type="xs:boolean" use="optional" />
-                    <xs:attribute name="auto-delete-jms-queues" type="xs:boolean" use="optional" />
+                    <xs:attribute name="auto-create-jms-queues" type="xs:boolean" use="optional">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Deprecated. Use auto-create-queues and auto-create-addresses instead.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="auto-delete-jms-queues" type="xs:boolean" use="optional">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Deprecated. Use auto-delete-queues and auto-delete-addresses instead.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="auto-create-queues" type="xs:boolean" use="optional" />
+                    <xs:attribute name="auto-delete-queues" type="xs:boolean" use="optional" />
+                    <xs:attribute name="auto-create-addresses" type="xs:boolean" use="optional" />
+                    <xs:attribute name="auto-delete-addresses" type="xs:boolean" use="optional" />
                 </xs:complexType>
             </xs:element>
 

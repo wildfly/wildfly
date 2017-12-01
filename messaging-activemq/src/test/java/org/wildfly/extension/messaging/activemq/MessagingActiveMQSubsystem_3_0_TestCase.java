@@ -30,6 +30,7 @@ import static org.jboss.as.model.test.ModelTestControllerVersion.WF_11_0_0_CR1;
 import static org.junit.Assert.assertTrue;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getActiveMQDependencies;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getMessagingActiveMQGAV;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.ADDRESS_SETTING_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.BRIDGE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CLUSTER_CONNECTION_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONNECTION_FACTORY_PATH;
@@ -144,6 +145,12 @@ public class MessagingActiveMQSubsystem_3_0_TestCase extends AbstractSubsystemBa
                                 new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
                         .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_COLOCATED_PATH, MessagingExtension.CONFIGURATION_MASTER_PATH),
                                 new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
+                        .addFailedAttribute(pathAddress(SUBSYSTEM_PATH, SERVER_PATH, ADDRESS_SETTING_PATH),
+                                new FailedOperationTransformationConfig.NewAttributesConfig(
+                                        AddressSettingDefinition.AUTO_CREATE_QUEUES,
+                                        AddressSettingDefinition.AUTO_DELETE_QUEUES,
+                                        AddressSettingDefinition.AUTO_CREATE_ADDRESSES,
+                                        AddressSettingDefinition.AUTO_DELETE_ADDRESSES))
                         .addFailedAttribute(subsystemAddress.append(SERVER_PATH, PathElement.pathElement(CommonAttributes.HTTP_CONNECTOR)),
                                 new FailedOperationTransformationConfig.NewAttributesConfig(
                                         HTTPConnectorDefinition.SERVER_NAME))
@@ -179,6 +186,12 @@ public class MessagingActiveMQSubsystem_3_0_TestCase extends AbstractSubsystemBa
                                         ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION,
                                         ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD,
                                         ServerDefinition.JOURNAL_NODE_MANAGER_STORE_TABLE))
+                        .addFailedAttribute(pathAddress(SUBSYSTEM_PATH, SERVER_PATH, ADDRESS_SETTING_PATH),
+                                new FailedOperationTransformationConfig.NewAttributesConfig(
+                                        AddressSettingDefinition.AUTO_CREATE_QUEUES,
+                                        AddressSettingDefinition.AUTO_DELETE_QUEUES,
+                                        AddressSettingDefinition.AUTO_CREATE_ADDRESSES,
+                                        AddressSettingDefinition.AUTO_DELETE_ADDRESSES))
                         .addFailedAttribute(pathAddress(SUBSYSTEM_PATH, SERVER_PATH, CONNECTION_FACTORY_PATH),
                                 new FailedOperationTransformationConfig.NewAttributesConfig(
                                         ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE)));
