@@ -154,7 +154,7 @@ public class QueueDefinition extends PersistentResourceDefinition {
      * @return true if the operation is forwarded to the corresponding runtime-queue resource, false else.
      */
     static boolean forwardToRuntimeQueue(OperationContext context, ModelNode operation, OperationStepHandler handler) {
-        PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+        PathAddress address = context.getCurrentAddress();
 
         // do not forward if the current operation is for a runtime-queue already:
         if (RUNTIME_QUEUE.equals(address.getLastElement().getKey())) {
@@ -162,6 +162,12 @@ public class QueueDefinition extends PersistentResourceDefinition {
         }
 
         String queueName = address.getLastElement().getValue();
+        System.out.println(">>> 1 queueName = " + queueName);
+        if (queueName.startsWith("jms.queue.")) {
+            queueName = queueName.substring("jms.queue.".length());
+        }
+        System.out.println(">>> 2 queueName = " + queueName);
+
 
         PathAddress activeMQPathAddress = MessagingServices.getActiveMQServerPathAddress(address);
         if (context.readResourceFromRoot(activeMQPathAddress, false).hasChild(address.getLastElement())) {

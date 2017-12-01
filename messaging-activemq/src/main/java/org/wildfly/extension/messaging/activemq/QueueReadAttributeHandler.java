@@ -47,7 +47,6 @@ import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.logging.ControllerLogger;
@@ -91,22 +90,24 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         }
 
         validator.validate(operation);
-        final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
-
-        PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-        String queueName = address.getLastElement().getValue();
 
         if (forwardToRuntimeQueue(context, operation, RUNTIME_INSTANCE)) {
             return;
         }
 
-        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(address);
+        final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
+        String queueName = context.getCurrentAddressValue();
+        if (queueName.startsWith("jms.queue.")) {
+            queueName = queueName.substring("jms.queue.".length());
+        }
+
+        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
         ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
         QueueControl control = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + queueName));
 
         if (control == null) {
-            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(context.getCurrentAddress());
         }
 
         if (MESSAGE_COUNT.getName().equals(attributeName)) {
