@@ -48,6 +48,7 @@ public class UtilExternalizerTestCase {
         new ExternalizerTester<>(DefaultExternalizer.LOCALE.cast(Locale.class)).test(Locale.US);
         new ExternalizerTester<>(DefaultExternalizer.NATURAL_ORDER_COMPARATOR.cast(Comparator.class)).test(Comparator.naturalOrder());
         new ExternalizerTester<>(DefaultExternalizer.OPTIONAL.cast(Optional.class)).test(Optional.empty());
+        new ExternalizerTester<>(DefaultExternalizer.OPTIONAL.cast(Optional.class)).test(Optional.of(UUID.randomUUID()));
         new ExternalizerTester<>(DefaultExternalizer.REVERSE_ORDER_COMPARATOR.cast(Comparator.class)).test(Comparator.reverseOrder());
         new EnumExternalizerTester<>(DefaultExternalizer.TIME_UNIT.cast(TimeUnit.class)).test();
         new ExternalizerTester<>(DefaultExternalizer.TIME_ZONE.cast(TimeZone.class)).test(TimeZone.getDefault());
