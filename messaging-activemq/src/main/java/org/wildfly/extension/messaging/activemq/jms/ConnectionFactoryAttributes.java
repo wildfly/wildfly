@@ -50,6 +50,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
+import org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators;
 
 public interface ConnectionFactoryAttributes {
 
@@ -89,6 +90,7 @@ public interface ConnectionFactoryAttributes {
                 .setMeasurementUnit(MILLISECONDS)
                 .setRequired(false)
                 .setAllowExpression(true)
+                .setValidator(InfiniteOrPositiveValidators.LONG_INSTANCE)
                 .build();
 
         AttributeDefinition COMPRESS_LARGE_MESSAGES = SimpleAttributeDefinitionBuilder.create("compress-large-messages", BOOLEAN)
@@ -102,6 +104,7 @@ public interface ConnectionFactoryAttributes {
                 .setMeasurementUnit(BYTES)
                 .setRequired(false)
                 .setAllowExpression(true)
+                .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
                 .build();
 
         AttributeDefinition CONNECTION_LOAD_BALANCING_CLASS_NAME = SimpleAttributeDefinitionBuilder.create("connection-load-balancing-policy-class-name", STRING)
@@ -114,6 +117,7 @@ public interface ConnectionFactoryAttributes {
                 .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_CONNECTION_TTL))
                 .setRequired(false)
                 .setAllowExpression(true)
+                .setValidator(InfiniteOrPositiveValidators.LONG_INSTANCE)
                 .setMeasurementUnit(MILLISECONDS)
                 .build();
 
@@ -130,6 +134,7 @@ public interface ConnectionFactoryAttributes {
                 .setMeasurementUnit(PER_SECOND)
                 .setRequired(false)
                 .setAllowExpression(true)
+                .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
                 .build();
 
         AttributeDefinition CONSUMER_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("consumer-window-size", INT)
@@ -214,6 +219,7 @@ public interface ConnectionFactoryAttributes {
                 .setMeasurementUnit(PER_SECOND)
                 .setRequired(false)
                 .setAllowExpression(true)
+                .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
                 .build();
 
         AttributeDefinition PRODUCER_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("producer-window-size", INT)
@@ -250,12 +256,14 @@ public interface ConnectionFactoryAttributes {
                 .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize()))
                 .setRequired(false)
                 .setAllowExpression(true)
+                .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
                 .build();
 
         AttributeDefinition THREAD_POOL_MAX_SIZE = SimpleAttributeDefinitionBuilder.create("thread-pool-max-size", INT)
                 .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultThreadPoolMaxSize()))
                 .setRequired(false)
                 .setAllowExpression(true)
+                .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
                 .build();
 
         AttributeDefinition TRANSACTION_BATCH_SIZE = SimpleAttributeDefinitionBuilder.create("transaction-batch-size", INT)

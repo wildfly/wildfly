@@ -58,6 +58,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
+import org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.jms.Validators;
 
@@ -106,6 +107,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
+            .setValidator(InfiniteOrPositiveValidators.LONG_INSTANCE)
             .setRestartAllServices()
             .build();
 
@@ -121,6 +123,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setMeasurementUnit(BYTES)
             .setRequired(false)
             .setAllowExpression(true)
+            .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
 
@@ -135,6 +138,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CONNECTION_TTL))
             .setRequired(false)
             .setAllowExpression(true)
+            .setValidator(InfiniteOrPositiveValidators.LONG_INSTANCE)
             .setMeasurementUnit(MILLISECONDS)
             .setRestartAllServices()
             .build();
@@ -144,6 +148,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setMeasurementUnit(PER_SECOND)
             .setRequired(false)
             .setAllowExpression(true)
+            .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
 
@@ -241,6 +246,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setMeasurementUnit(PER_SECOND)
             .setRequired(false)
             .setAllowExpression(true)
+            .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
 
@@ -279,6 +285,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize()))
             .setRequired(false)
             .setAllowExpression(true)
+            .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
 
@@ -286,6 +293,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultThreadPoolMaxSize()))
             .setRequired(false)
             .setAllowExpression(true)
+            .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
 

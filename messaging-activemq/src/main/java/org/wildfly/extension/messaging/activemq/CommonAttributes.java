@@ -80,6 +80,7 @@ public interface CommonAttributes {
             .setRequired(false)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
+            .setValidator(InfiniteOrPositiveValidators.LONG_INSTANCE)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
@@ -98,6 +99,7 @@ public interface CommonAttributes {
             .setMeasurementUnit(BYTES)
             .setRequired(false)
             .setAllowExpression(true)
+            .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
 
@@ -105,6 +107,7 @@ public interface CommonAttributes {
             .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_CONNECTION_TTL))
             .setRequired(false)
             .setAllowExpression(true)
+            .setValidator(InfiniteOrPositiveValidators.LONG_INSTANCE)
             .setMeasurementUnit(MILLISECONDS)
             .setRestartAllServices()
             .build();
