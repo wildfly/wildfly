@@ -152,10 +152,6 @@
                                     <includes>
                                         <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
                                     </includes>
-                                    <excludes>
-                                        <exclude>org/jboss/as/test/clustering/single/jdbcstore/**/*TestCase.java</exclude>
-                                    </excludes>
-                                    <!-- Parameters to test cases. -->
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-udp-single</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
@@ -276,22 +272,8 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ts.config-as.clustering.jdbc-store</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
-                            <execution>
-                                <id>ts.surefire.clustering.jdbc-store</id>
-                                <phase>none</phase>
-                            </execution>
                             <execution>
                                 <id>ts.surefire.clustering.single-node</id>
                                 <phase>none</phase>
@@ -301,84 +283,6 @@
                 </plugins>
             </build>
         </profile>
-
-        
-
-        <profile>
-            <id>ts.clustering.jdbc-cachestore.profile</id>
-            <activation><property><name>!ts.noClustering</name></property></activation>
-
-            <!--
-                Server configuration executions.
-            -->
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>ts.config-as.clustering.enable-jdbc-store</id>
-                                <phase>process-test-resources</phase>
-                                <goals><goal>run</goal></goals>
-                                <configuration>
-                                    <target>
-                                        <echo>In Maven: node0: ${node0}</echo>
-                                        <echo>In Maven: mcast.ttl: ${mcast.ttl}</echo>
-                                        <!-- Build the UDP server configs in target/ . -->
-                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
-                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
-                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
-                                            <property name="cacheLoader" value="string-keyed" />
-                                            <property name="cacheType" value="local" />
-                                            <target name="build-clustering-udp-jdbc-store"/>
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!--
-                       Surefire test executions.
-                    -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals><goal>test</goal></goals>
-                                <phase>none</phase>
-                            </execution>
-
-                            <!-- Single node clustering tests. -->
-                            <execution>
-                                <id>ts.surefire.clustering.jdbc-store</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/single/jdbcstore/*TestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>clustering-udp-single-jdbc-store</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
         <profile>
             <id>ts.clustering.xsite.profile</id>
             <activation><property><name>!ts.noClustering</name></property></activation>
