@@ -35,13 +35,10 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.ModuleBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
-import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
@@ -88,9 +85,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         new XAResourceRecoveryBuilder(cacheAddress).build(target).install();
 
         new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName), CONFIGURATION.getServiceName(cacheAddress), Configuration.class).build(target).install();
-        BinderServiceBuilder<?> bindingBuilder = new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(containerName, cacheName), CACHE.getServiceName(cacheAddress), Cache.class);
-        ModelNodes.optionalString(JNDI_NAME.resolveModelAttribute(context, model)).map(jndiName -> ContextNames.bindInfoFor(JndiNameFactory.parse(jndiName).getAbsoluteName())).ifPresent(aliasBinding -> bindingBuilder.alias(aliasBinding));
-        bindingBuilder.build(target).install();
+        new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(containerName, cacheName), CACHE.getServiceName(cacheAddress), Cache.class).build(target).install();
 
         for (CacheBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
             for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(cacheAddress), containerName, cacheName)) {

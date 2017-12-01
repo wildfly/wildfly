@@ -23,7 +23,7 @@
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
     </cache-container>
-    <cache-container name="maximal" default-cache="local" jndi-name="java:global/infinispan/maximal">
+    <cache-container name="maximal" default-cache="local">
         <alias>alias1</alias>
         <alias>alias2</alias>
         <transport lock-timeout="120000" stack="tcp" site="site" rack="rack" machine="machine"/>

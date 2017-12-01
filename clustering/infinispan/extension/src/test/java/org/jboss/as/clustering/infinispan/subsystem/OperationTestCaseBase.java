@@ -86,7 +86,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     // cache access
     protected static ModelNode getCacheAddOperation(String containerName, String cacheType, String cacheName) {
         PathAddress address = getCacheAddress(containerName, cacheType, cacheName);
-        return Operations.createAddOperation(address, Collections.<Attribute, ModelNode>singletonMap(CacheResourceDefinition.Attribute.JNDI_NAME, new ModelNode("java:/fred/was/here")));
+        return Operations.createAddOperation(address, Collections.emptyMap());
     }
 
     protected static ModelNode getCacheReadOperation(String containerName, String cacheType, String cacheName, Attribute attribute) {
