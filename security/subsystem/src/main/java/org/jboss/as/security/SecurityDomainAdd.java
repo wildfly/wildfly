@@ -79,6 +79,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaasConfigurationService;
@@ -181,6 +182,10 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                         securityDomainService.getSecurityManagementInjector())
                 .addDependency(JaasConfigurationService.SERVICE_NAME, Configuration.class,
                         securityDomainService.getConfigurationInjector());
+
+        if (jsseSecurityDomain != null) {
+            builder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("jaas"));
+        }
 
         if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {
             String defaultCacheRequirementName = InfinispanDefaultCacheRequirement.CONFIGURATION.resolve(CACHE_CONTAINER_NAME);
