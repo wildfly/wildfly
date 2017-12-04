@@ -39,7 +39,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.cluster.ExtendedClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractExtendedClusteringTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -75,7 +75,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
+public class XSiteSimpleTestCase extends AbstractExtendedClusteringTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false)
     @TargetsContainer(CONTAINER_1)

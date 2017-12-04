@@ -44,7 +44,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.xpc.bean.StatefulBean;
 import org.jboss.as.test.clustering.cluster.ejb.xpc.servlet.StatefulServlet;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
@@ -64,7 +64,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
+public class StatefulWithXPCFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final String persistence_xml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +

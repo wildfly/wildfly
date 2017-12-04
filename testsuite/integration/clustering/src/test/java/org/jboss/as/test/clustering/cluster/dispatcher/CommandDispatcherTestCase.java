@@ -6,7 +6,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopology;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetriever;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetrieverBean;
@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
+public class CommandDispatcherTestCase extends AbstractClusteringTestCase {
     private static final long VIEW_CHANGE_WAIT = TimeoutUtil.adjust(2000);
     private static final String MODULE_NAME = "command-dispatcher";
 

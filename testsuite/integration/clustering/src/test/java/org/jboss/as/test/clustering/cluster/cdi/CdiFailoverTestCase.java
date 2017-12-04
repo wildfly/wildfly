@@ -31,7 +31,7 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.junit.Test;
@@ -56,7 +56,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public class CdiFailoverTestCase extends ClusterAbstractTestCase {
+public class CdiFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = "cdi-failover";
 

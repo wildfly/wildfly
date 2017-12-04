@@ -45,7 +45,7 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -61,7 +61,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(WebSecurityDomainSetup.class)
-public class FormAuthenticationWebFailoverTestCase extends ClusterAbstractTestCase {
+public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false)
     @TargetsContainer(CONTAINER_1)

@@ -39,7 +39,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.junit.Assert;
@@ -54,7 +54,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class AbstractWebFailoverTestCase extends ClusterAbstractTestCase {
+public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTestCase {
 
     private final String deploymentName;
     private final Runnable nonOwnerTask;

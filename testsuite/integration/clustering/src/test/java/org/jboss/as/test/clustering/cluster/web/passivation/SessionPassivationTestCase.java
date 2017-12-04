@@ -46,7 +46,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -54,7 +54,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 
-public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase {
+public abstract class SessionPassivationTestCase extends AbstractClusteringTestCase {
 
     private static final int MAX_PASSIVATION_WAIT = TimeoutUtil.adjust(10000);
 

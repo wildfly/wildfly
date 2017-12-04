@@ -31,7 +31,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.integration.web.sso.LogoutServlet;
 import org.jboss.as.test.integration.web.sso.SSOTestBase;
 import org.jboss.logging.Logger;
@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ClusteredSingleSignOnTestCase extends ClusterAbstractTestCase {
+public class ClusteredSingleSignOnTestCase extends AbstractClusteringTestCase {
 
     private static Logger log = Logger.getLogger(ClusteredSingleSignOnTestCase.class);
 

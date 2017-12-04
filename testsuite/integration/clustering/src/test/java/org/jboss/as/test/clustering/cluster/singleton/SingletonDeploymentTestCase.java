@@ -41,7 +41,7 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.servlet.TraceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -57,7 +57,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCase {
+public abstract class SingletonDeploymentTestCase extends AbstractClusteringTestCase {
 
     private static final String DEPLOYMENT_NAME = "singleton-deployment-helper.war";
     static final String SINGLETON_DEPLOYMENT_1 = "singleton-deployment-0";

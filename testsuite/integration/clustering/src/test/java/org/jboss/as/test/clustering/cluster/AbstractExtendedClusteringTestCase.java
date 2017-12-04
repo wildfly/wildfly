@@ -27,9 +27,8 @@ import org.jboss.as.test.clustering.ExtendedClusteringTestConstants;
  * Base cluster test that ensures the custom containers are already running.
  *
  * @author Richard Achmatowicz
- * @version May 2013
  */
-public abstract class ExtendedClusterAbstractTestCase extends ClusterAbstractTestCase implements ExtendedClusteringTestConstants {
+public abstract class AbstractExtendedClusteringTestCase extends AbstractClusteringTestCase implements ExtendedClusteringTestConstants {
 
     @Override
     public void beforeTestMethod() {

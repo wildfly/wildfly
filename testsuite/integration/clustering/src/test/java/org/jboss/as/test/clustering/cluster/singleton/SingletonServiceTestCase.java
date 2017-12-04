@@ -40,7 +40,7 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.server.security.ServerPermission;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeService;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceActivator;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceServlet;
@@ -55,7 +55,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SingletonServiceTestCase extends ClusterAbstractTestCase {
+public class SingletonServiceTestCase extends AbstractClusteringTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)

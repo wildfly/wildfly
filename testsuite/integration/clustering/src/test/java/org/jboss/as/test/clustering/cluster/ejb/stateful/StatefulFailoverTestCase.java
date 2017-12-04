@@ -41,7 +41,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.CounterDecorator;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.IncrementorDDInterceptor;
@@ -67,7 +67,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
+public class StatefulFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = "stateful-failover";
 

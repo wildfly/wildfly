@@ -24,7 +24,7 @@ package org.jboss.as.test.clustering.cluster.ejb2.stateful.failover;
 
 import javax.naming.NamingException;
 
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterRemote;
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterRemoteHome;
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterResult;
@@ -43,7 +43,7 @@ import org.junit.BeforeClass;
 /**
  * @author Ondrej Chaloupka
  */
-public abstract class RemoteEJBClientStatefulFailoverTestBase extends ClusterAbstractTestCase {
+public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractClusteringTestCase {
     private static final Logger log = Logger.getLogger(RemoteEJBClientStatefulFailoverTestBase.class);
 
     protected static final String MODULE_NAME = "ejb2-failover-test";

@@ -35,7 +35,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.clustering.cluster.ExtendedClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractExtendedClusteringTestCase;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.twoclusters.bean.common.CommonStatefulSB;
 import org.jboss.as.test.clustering.twoclusters.bean.forwarding.AbstractForwardingStatefulSBImpl;
@@ -68,7 +68,7 @@ import org.wildfly.common.function.ExceptionSupplier;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class AbstractRemoteEJBTwoClusterTestCase extends ExtendedClusterAbstractTestCase {
+public abstract class AbstractRemoteEJBTwoClusterTestCase extends AbstractExtendedClusteringTestCase {
 
     @BeforeClass
     public static void beforeClass() {

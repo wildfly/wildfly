@@ -26,7 +26,7 @@ import java.util.PropertyPermission;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
@@ -48,7 +48,7 @@ import org.wildfly.common.function.ExceptionSupplier;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class AbstractRemoteStatefulEJBFailoverTestCase extends ClusterAbstractTestCase {
+public abstract class AbstractRemoteStatefulEJBFailoverTestCase extends AbstractClusteringTestCase {
     private static final int COUNT = 20;
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
 

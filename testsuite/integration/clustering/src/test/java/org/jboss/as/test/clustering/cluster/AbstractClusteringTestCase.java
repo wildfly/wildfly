@@ -51,11 +51,10 @@ import org.junit.Before;
  * {@link #deploy(String...)}, etc).
  *
  * @author Radoslav Husar
- * @version Jul 2013
  */
-public abstract class ClusterAbstractTestCase implements ClusteringTestConstants {
+public abstract class AbstractClusteringTestCase implements ClusteringTestConstants {
 
-    protected static final Logger log = Logger.getLogger(ClusterAbstractTestCase.class);
+    protected static final Logger log = Logger.getLogger(AbstractClusteringTestCase.class);
     private static final RoutingSupport routing = new SimpleRoutingSupport();
     static final Map<String, String> NODE_TO_CONTAINER = new TreeMap<>();
     static final Map<String, String> NODE_TO_DEPLOYMENT = new TreeMap<>();
@@ -138,12 +137,12 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
     public class RestartLifecycle implements Lifecycle {
         @Override
         public void start(String... nodes) {
-            ClusterAbstractTestCase.this.start(this.getContainers(nodes));
+            AbstractClusteringTestCase.this.start(this.getContainers(nodes));
         }
 
         @Override
         public void stop(String... nodes) {
-            ClusterAbstractTestCase.this.stop(this.getContainers(nodes));
+            AbstractClusteringTestCase.this.stop(this.getContainers(nodes));
         }
 
         String[] getContainers(String... nodes) {
@@ -163,19 +162,19 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
     public class GracefulRestartLifecycle extends RestartLifecycle {
         @Override
         public void stop(String... nodes) {
-            ClusterAbstractTestCase.this.stop(GRACEFUL_SHUTDOWN_TIMEOUT, this.getContainers(nodes));
+            AbstractClusteringTestCase.this.stop(GRACEFUL_SHUTDOWN_TIMEOUT, this.getContainers(nodes));
         }
     }
 
     public class RedeployLifecycle implements Lifecycle {
         @Override
         public void start(String... nodes) {
-            ClusterAbstractTestCase.this.deploy(this.getDeployments(nodes));
+            AbstractClusteringTestCase.this.deploy(this.getDeployments(nodes));
         }
 
         @Override
         public void stop(String... nodes) {
-            ClusterAbstractTestCase.this.undeploy(this.getDeployments(nodes));
+            AbstractClusteringTestCase.this.undeploy(this.getDeployments(nodes));
         }
 
         private String[] getDeployments(String... nodes) {
