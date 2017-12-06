@@ -5,13 +5,25 @@
     <import file="common-targets.xml" as="common"/>
     <import file="clustering-common-targets.xml" as="clustering-common"/>
 
+    <!-- Only copy over 4 profiles -->
+    <target name="build-clustering">
+        <copy todir="target/wildfly-1" overwrite="true">
+            <fileset dir="${basedir}/target/wildfly"/>
+        </copy>
+        <copy todir="target/wildfly-2" overwrite="true">
+            <fileset dir="${basedir}/target/wildfly"/>
+        </copy>
+        <copy todir="target/wildfly-3" overwrite="true">
+            <fileset dir="${basedir}/target/wildfly"/>
+        </copy>
+        <copy todir="target/wildfly-4" overwrite="true">
+            <fileset dir="${basedir}/target/wildfly"/>
+        </copy>
+    </target>
+
+
     <!-- Shared clustering config target -->
     <target name="abstract-build-clustering" description="Builds two server configuration for given JGroups stack">
-
-        <echo>clustering-${stack}-0 node0: ${node0}</echo>
-        <echo>clustering-${stack}-0 node1: ${node1}</echo>
-        <echo>clustering-${stack}-0 mcast: ${mcast}</echo>
-
         <echo message="  =========  Building config clustering-${stack}-0  =========  "/>
         <copy todir="target/wildfly-${stack}-0" overwrite="true">
             <fileset dir="${basedir}/target/wildfly"/>
@@ -23,7 +35,6 @@
         <ts.config-as.add-port-offset name="wildfly-${stack}-0"/>
         <ts.config-as.change-transport-stack name="wildfly-${stack}-0"
                                              stack="${stack}"/>
-        <ts.config-as.configure-multicast-ttl name="wildfly-${stack}-0" mcast.ttl="${mcast.ttl}"/>
         <ts.config-as.add-interface name="wildfly-${stack}-0"
                                     interface="multicast"
                                     inet-address="${node0}"/>
@@ -41,7 +52,6 @@
         <ts.config-as.add-port-offset name="wildfly-${stack}-1" offset="100" nativePort="9999" httpPort="9990"/>
         <ts.config-as.change-transport-stack name="wildfly-${stack}-1"
                                              stack="${stack}"/>
-        <ts.config-as.configure-multicast-ttl name="wildfly-${stack}-1" mcast.ttl="${mcast.ttl}"/>
         <ts.config-as.add-interface name="wildfly-${stack}-1"
                                     interface="multicast"
                                     inet-address="${node0}"/>
@@ -61,41 +71,9 @@
                                              stack="${stack}"/>
     </target>
 
-    <target name="build-balancer" description="Builds two server configuration for given JGroups stack">
-
-        <echo>clustering-${stack}-2 node2: ${node2}</echo>
-        <echo>clustering-${stack}-0 mcast: ${mcast}</echo>
-
-        <echo message="  =========  Building config clustering-${stack}-2  =========  "/>
-        <copy todir="target/wildfly-${stack}-2" overwrite="true">
-            <fileset dir="${basedir}/target/wildfly"/>
-        </copy>
-        <ts.config-as.ip-with-multicast name="wildfly-${stack}-2"
-                                        node="${node2}"
-                                        mcast="${mcast}"
-                />
-        <ts.config-as.add-port-offset name="wildfly-${stack}-2" offset="200" nativePort="9999" httpPort="9990"/>
-        <ts.config-as.change-transport-stack name="wildfly-${stack}-2"
-                                             stack="${stack}"/>
-        <ts.config-as.configure-multicast-ttl name="wildfly-${stack}-2" mcast.ttl="${mcast.ttl}"/>
-        <ts.config-as.add-interface name="wildfly-${stack}-2"
-                                    interface="multicast"
-                                    inet-address="${node0}"/>
-        <ts.config-as.change-jgroups-multicast-interface name="wildfly-${stack}-2"
-                                                         interface="multicast"/>
-    </target>
-
     <!-- Build SYNC-tcp stack configs -->
     <target name="build-clustering" description="Builds server configuration for tcp tests">
         <antcall target="abstract-build-clustering">
-            <param name="stack" value="tcp"/>
-        </antcall>
-    </target>
-
-    <!-- Build SYNC-tcp stack configs -->
-    <target name="build-clustering-balancer" description="Builds server configuration for tcp tests">
-        <antcall target="build-clustering"/>
-        <antcall target="build-balancer">
             <param name="stack" value="tcp"/>
         </antcall>
     </target>
@@ -141,7 +119,6 @@
                                        cache-type="distributed-cache" cache="dist" backup.site="NYC"/>
         <ts.config-as.add-xsite-backup name="wildfly-xsite-LON-0" container="web"
                                        cache-type="distributed-cache" cache="dist" backup.site="SFO"/>
-        <ts.config-as.configure-multicast-ttl name="wildfly-xsite-LON-0" mcast.ttl="${mcast.ttl}"/>
 
         <!-- site LON, node 1, mcast 0 -->
         <echo message="Building config clustering-xsite-LON-1"/>
@@ -162,7 +139,6 @@
                                        cache-type="distributed-cache" cache="dist" backup.site="NYC"/>
         <ts.config-as.add-xsite-backup name="wildfly-xsite-LON-1" container="web"
                                        cache-type="distributed-cache" cache="dist" backup.site="SFO"/>
-        <ts.config-as.configure-multicast-ttl name="wildfly-xsite-LON-1" mcast.ttl="${mcast.ttl}"/>
 
         <!-- site NYC, node 2, mcast 1 -->
         <echo message="Building config clustering-xsite-NYC-0"/>
@@ -178,7 +154,6 @@
                                       remote-site.site="LON" remote-site.stack="tcp" remote-site.cluster="bridge"/>
         <ts.config-as.add-xsite-remote-site name="wildfly-xsite-NYC-0" stack="udp"
                                       remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
-        <ts.config-as.configure-multicast-ttl name="wildfly-xsite-NYC-0" mcast.ttl="${mcast.ttl}"/>
 
         <!-- site SFO, node 3, mcast 2 -->
         <echo message="Building config clustering-xsite-SFO-0"/>
@@ -194,7 +169,6 @@
                                       remote-site.site="LON" remote-site.stack="tcp" remote-site.cluster="bridge"/>
         <ts.config-as.add-xsite-remote-site name="wildfly-xsite-SFO-0" stack="udp"
                                       remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge"/>
-        <ts.config-as.configure-multicast-ttl name="wildfly-xsite-SFO-0" mcast.ttl="${mcast.ttl}"/>
 
         <!-- site SFO, node 3, mcast 2 + backupFor -->
         <echo message="Building config clustering-xsite-SFO-0-backupFor"/>
@@ -214,8 +188,6 @@
         <!-- create a named backup cache based on repl for LON:web:dist and mark as backup-for -->
         <ts.config-as.copy-cache name="wildfly-xsite-SFO-0-backupFor" container.name="web"
                                        cache-type="distributed-cache" cache.base="dist" cache.name="LON"/>
-        <ts.config-as.configure-multicast-ttl name="wildfly-xsite-SFO-0-backupFor" mcast.ttl="${mcast.ttl}"/>
-
     </target>
 
     <!-- two cluster test deployment:
@@ -233,7 +205,6 @@
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-clusterA-node0" managementIPAddress="${node0}" publicIPAddress="${node0}" udpMcastAddress="${mcast-clusterA}" diagnosticsMcastAddress="${mcast-clusterA}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-clusterA}"/>
         <ts.config-as.add-port-offset name="wildfly-clusterA-node0"/>
-        <ts.config-as.configure-multicast-ttl name="wildfly-clusterA-node0" mcast.ttl="${mcast.ttl}"/>
         <ts.config-as.add-remote-outbound-connection name="wildfly-clusterA-node0" node="${node2}" remotePort="8280" protocol="http-remoting" securityRealm="PasswordRealm" userName="remoteejbuser"/>
         <ts.config-as.add-identity-realm name="wildfly-clusterA-node0" realmName="PasswordRealm" secret="cmVtQHRlZWpicGFzc3dkMQ=="/>
         <ts.config-as.change-cluster-name name="wildfly-clusterA-node0" cluster="ejb-forwarder"/>
@@ -245,7 +216,6 @@
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-clusterA-node1" managementIPAddress="${node1}" publicIPAddress="${node1}" udpMcastAddress="${mcast-clusterA}" diagnosticsMcastAddress="${mcast-clusterA}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-clusterA}"/>
         <ts.config-as.add-port-offset name="wildfly-clusterA-node1" offset="100" nativePort="9999" httpPort="9990"/>
-        <ts.config-as.configure-multicast-ttl name="wildfly-clusterA-node1" mcast.ttl="${mcast.ttl}"/>
         <ts.config-as.add-remote-outbound-connection name="wildfly-clusterA-node1" node="${node2}" remotePort="8280" protocol="http-remoting" securityRealm="PasswordRealm" userName="remoteejbuser" />
         <ts.config-as.add-identity-realm name="wildfly-clusterA-node1" realmName="PasswordRealm" secret="cmVtQHRlZWpicGFzc3dkMQ=="/>
         <ts.config-as.change-cluster-name name="wildfly-clusterA-node1" cluster="ejb-forwarder"/>
@@ -257,7 +227,6 @@
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-clusterB-node0" managementIPAddress="${node2}" publicIPAddress="${node2}" udpMcastAddress="${mcast-clusterB}" diagnosticsMcastAddress="${mcast-clusterB}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-clusterB}"/>
         <ts.config-as.add-port-offset name="wildfly-clusterB-node0" offset="200" nativePort="9999" httpPort="9990"/>
-        <ts.config-as.configure-multicast-ttl name="wildfly-clusterB-node0" mcast.ttl="${mcast.ttl}"/>
 
         <!-- clusterB, node 3, mcast 1 -->
         <echo message="Building config clustering-two-clusters-clusterB-node1"/>
@@ -266,7 +235,6 @@
         </copy>
         <ts.config-as.ip-with-multicast-longform name="wildfly-clusterB-node1" managementIPAddress="${node3}" publicIPAddress="${node3}" udpMcastAddress="${mcast-clusterB}" diagnosticsMcastAddress="${mcast-clusterB}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-clusterB}"/>
         <ts.config-as.add-port-offset name="wildfly-clusterB-node1" offset="300" nativePort="9999" httpPort="9990"/>
-        <ts.config-as.configure-multicast-ttl name="wildfly-clusterB-node1" mcast.ttl="${mcast.ttl}"/>
     </target>
 
 </project>

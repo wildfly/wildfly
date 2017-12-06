@@ -35,7 +35,6 @@ import org.jboss.logging.Logger;
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @author Radoslav Husar
- * @version $Revision: $
  */
 public class StopCustomContainersOnAfterSuiteExtension implements LoadableExtension {
 

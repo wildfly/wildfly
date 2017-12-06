@@ -60,7 +60,6 @@ import org.junit.runner.RunWith;
 /**
  * @author Paul Ferraro
  * @author Scott Marlow
- * @version Oct 2012
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -122,7 +121,7 @@ public class StatefulWithXPCFailoverTestCase extends AbstractClusteringTestCase 
     public void testSecondLevelCache(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, InterruptedException, URISyntaxException {
+            throws IOException, URISyntaxException {
 
         URI xpc1_create_url = StatefulServlet.createEmployeeURI(baseURL1);
         URI xpc2_create_url = StatefulServlet.createEmployeeURI(baseURL2);

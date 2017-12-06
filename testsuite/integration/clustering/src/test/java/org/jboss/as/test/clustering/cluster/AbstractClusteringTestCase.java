@@ -55,7 +55,7 @@ import org.junit.Before;
  */
 public abstract class AbstractClusteringTestCase {
 
-    public static final String CONTAINER_SINGLE = "container-single";
+    public static final String CONTAINER_SINGLE = "node-non-ha";
 
     // Unified node and container names
     public static final String NODE_1 = "node-1";
@@ -63,6 +63,7 @@ public abstract class AbstractClusteringTestCase {
     public static final String NODE_3 = "node-3";
     public static final String NODE_4 = "node-4";
     public static final String[] TWO_NODES = new String[] { NODE_1, NODE_2 };
+    public static final String[] THREE_NODES = new String[] { NODE_1, NODE_2, NODE_3 };
     public static final String[] FOUR_NODES = new String[] {NODE_1, NODE_2, NODE_3, NODE_4};
     public static final String NODE_NAME_PROPERTY = "jboss.node.name";
 
@@ -88,6 +89,12 @@ public abstract class AbstractClusteringTestCase {
     public static final int GRACE_TIME_TO_MEMBERSHIP_CHANGE = TimeoutUtil.adjust(10000);
     public static final int WAIT_FOR_PASSIVATION_MS = TimeoutUtil.adjust(5);
     public static final int HTTP_REQUEST_WAIT_TIME_S = TimeoutUtil.adjust(5);
+
+    // System Properties
+    public static final String MCAST = System.getProperty("mcast", "230.0.0.4");
+    public static final String MCAST1 = System.getProperty("mcast1", "230.0.0.5");
+    public static final String MCAST2 = System.getProperty("mcast2", "230.0.0.6");
+    public static final String MCAST3 = System.getProperty("mcast3", "230.0.0.7");
 
     protected static final Logger log = Logger.getLogger(AbstractClusteringTestCase.class);
     private static final RoutingSupport routing = new SimpleRoutingSupport();

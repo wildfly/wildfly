@@ -52,7 +52,6 @@ import org.junit.runner.RunWith;
  * Validates that session passivation in non-HA environment works (on single node).
  *
  * @author Radoslav Husar
- * @version Oct 2012
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -71,7 +70,6 @@ public class NonHaWebSessionPersistenceTestCase extends AbstractClusteringTestCa
     public void beforeTestMethod() {
         // TODO rethink how this can be done faster with one less stopping (eg. make this test last)
         stop(NODE_1);
-        stop(NODE_2);
 
         start(CONTAINER_SINGLE);
         deploy(DEPLOYMENT_1);
