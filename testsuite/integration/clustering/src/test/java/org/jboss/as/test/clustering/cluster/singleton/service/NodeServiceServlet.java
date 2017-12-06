@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -67,18 +69,17 @@ public class NodeServiceServlet extends HttpServlet {
         @SuppressWarnings("unchecked")
         ServiceController<Node> service = (ServiceController<Node>) CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse(serviceName));
         try {
-            Node node = service.awaitValue();
+            Node node = service.awaitValue(5, TimeUnit.SECONDS);
             if (expected != null) {
                 for (int i = 0; i < RETRIES; ++i) {
                     if ((node != null) && expected.equals(node.getName())) break;
-                    Thread.yield();
-                    node = service.awaitValue();
+                    node = service.awaitValue(1, TimeUnit.SECONDS);
                 }
             }
             if (node != null) {
                 resp.setHeader(NODE_HEADER, node.getName());
             }
-        } catch (IllegalStateException e) {
+        } catch (TimeoutException | IllegalStateException e) {
             // Thrown when quorum was not met
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
