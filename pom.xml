@@ -108,7 +108,7 @@
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>2.0</version.javax.enterprise>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
-        <version.javax.mail>1.5.6</version.javax.mail>
+        <version.javax.mail>1.6.0</version.javax.mail>
         <version.javax.validation>1.1.0.Final</version.javax.validation>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
