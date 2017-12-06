@@ -22,8 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.web.context;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -90,7 +89,7 @@ public class InvalidateConversationTestCase extends AbstractClusteringTestCase {
 
         String conversation = null;
 
-        establishTopology(baseURL1, NODES);
+        establishTopology(baseURL1, TWO_NODES);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(ConversationServlet.createURI(baseURL1)));

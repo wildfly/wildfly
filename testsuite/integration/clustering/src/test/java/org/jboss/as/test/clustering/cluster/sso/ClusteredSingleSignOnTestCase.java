@@ -76,7 +76,7 @@ public class ClusteredSingleSignOnTestCase extends AbstractClusteringTestCase {
 
     @Test
     @InSequence(-2)
-    public void startServers() throws Exception {
+    public void startServers() {
 
         controller.start(NODE_1);
         controller.start(NODE_2);
@@ -93,9 +93,9 @@ public class ClusteredSingleSignOnTestCase extends AbstractClusteringTestCase {
         SSOTestBase.addSso(client1.getControllerClient());
         SSOTestBase.addSso(client2.getControllerClient());
 
-        stop(NODES);
-        start(NODES);
-        deploy(DEPLOYMENTS);
+        stop(TWO_NODES);
+        start(TWO_NODES);
+        deploy(TWO_DEPLOYMENTS);
     }
 
     @Test
@@ -107,8 +107,8 @@ public class ClusteredSingleSignOnTestCase extends AbstractClusteringTestCase {
         SSOTestBase.removeSso(client1.getControllerClient());
         SSOTestBase.removeSso(client2.getControllerClient());
 
-        undeploy(DEPLOYMENTS);
-        stop(NODES);
+        undeploy(TWO_DEPLOYMENTS);
+        stop(TWO_NODES);
     }
 
 

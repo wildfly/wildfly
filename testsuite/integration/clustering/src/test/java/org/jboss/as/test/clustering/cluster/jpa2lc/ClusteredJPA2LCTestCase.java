@@ -22,11 +22,15 @@
 
 package org.jboss.as.test.clustering.cluster.jpa2lc;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.*;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -51,19 +55,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.api.Authentication;
-
-import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
-import static org.jboss.as.controller.client.helpers.ClientConstants.ADDRESS;
-import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
-import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
-import static org.jboss.as.controller.client.helpers.ClientConstants.REMOVE_OPERATION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODES;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENTS;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
 
 /**
  * Smoke test of clustered JPA 2nd level cache implemented by Infinispan.
@@ -123,7 +114,7 @@ public class ClusteredJPA2LCTestCase {
     @Test
     @InSequence(-1)
     public void setupCacheContainer() throws IOException {
-        NodeUtil.start(controller, NODES);
+        NodeUtil.start(controller, TWO_NODES);
 
         final ModelNode createEntityReplicatedCacheOp = new ModelNode();
         createEntityReplicatedCacheOp.get(ADDRESS).set(CACHE_ADDRESS);
@@ -139,7 +130,7 @@ public class ClusteredJPA2LCTestCase {
         final ModelNode result1 = client1.execute(createEntityReplicatedCacheOp);
         Assert.assertTrue(result1.toJSONString(false), result1.get(OUTCOME).asString().equals(SUCCESS));
 
-        NodeUtil.deploy(this.deployer, DEPLOYMENTS);
+        NodeUtil.deploy(this.deployer, TWO_DEPLOYMENTS);
     }
 
     /**

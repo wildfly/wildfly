@@ -114,7 +114,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
         URI uri1 = SimpleServlet.createURI(baseURL1);
         URI uri2 = SimpleServlet.createURI(baseURL2);
 
-        this.establishTopology(baseURL1, NODES);
+        this.establishTopology(baseURL1, TWO_NODES);
 
         try {
             HttpResponse response = client.execute(new HttpGet(uri1));
@@ -176,7 +176,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
 
             lifecycle.start(NODE_1);
 
-            this.establishTopology(baseURL2, NODES);
+            this.establishTopology(baseURL2, TWO_NODES);
 
             response = client.execute(new HttpGet(uri2));
             try {
@@ -249,7 +249,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
 
             lifecycle.start(NODE_2);
 
-            this.establishTopology(baseURL1, NODES);
+            this.establishTopology(baseURL1, TWO_NODES);
 
             response = client.execute(new HttpGet(uri1));
             try {

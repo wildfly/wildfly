@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.clustering.cluster.singleton;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -58,8 +60,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Test case for BZ-1190029 and https://issues.jboss.org/browse/WFLY-4748.
@@ -189,7 +189,7 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
         super.afterTestMethod();
 
         // Stop the container to ensure there aren't any remnants since the test operates on a live JGroups channels
-        stop(NODES);
+        stop(TWO_NODES);
     }
 
     private static void checkSingletonNode(URI serviceUri, String expectedProviderNode) throws IOException {

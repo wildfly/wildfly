@@ -97,7 +97,7 @@ public class CdiFailoverTestCase extends AbstractClusteringTestCase {
     public void testGracefulSimpleFailover(
             @ArquillianResource(CdiServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(CdiServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, InterruptedException, URISyntaxException {
+            throws IOException, URISyntaxException {
         testFailover(new RestartLifecycle(), baseURL1, baseURL2);
     }
 

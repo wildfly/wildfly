@@ -98,7 +98,7 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
             throws Exception {
 
         // In order to test undeploy in case another node becomes elected as the master, we need an election policy that will ever trigger that code path (WFLY-8184)
-        executeOnNodesAndReload("/subsystem=singleton/singleton-policy=default/election-policy=simple:write-attribute(name=name-preferences,value=" + Arrays.toString(NODES) + ")", client1, client2);
+        executeOnNodesAndReload("/subsystem=singleton/singleton-policy=default/election-policy=simple:write-attribute(name=name-preferences,value=" + Arrays.toString(TWO_NODES) + ")", client1, client2);
 
         this.deploy(SINGLETON_DEPLOYMENT_1);
         Thread.sleep(DELAY);

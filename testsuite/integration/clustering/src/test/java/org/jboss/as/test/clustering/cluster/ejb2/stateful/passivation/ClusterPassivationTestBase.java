@@ -22,11 +22,12 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.stateful.passivation;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.WAIT_FOR_PASSIVATION_MS;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;

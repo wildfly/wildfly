@@ -22,10 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.web.passivation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -36,6 +33,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.stream.Stream;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.Header;
@@ -71,8 +69,8 @@ public abstract class SessionPassivationTestCase extends AbstractClusteringTestC
     public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL)
             throws IOException, URISyntaxException {
 
-        String session1 = null;
-        String session2 = null;
+        String session1;
+        String session2;
 
         try (CloseableHttpClient client1 = TestHttpClientUtils.promiscuousCookieHttpClient();
              CloseableHttpClient client2 = TestHttpClientUtils.promiscuousCookieHttpClient()) {

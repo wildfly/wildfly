@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.clustering.single.provider;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.*;
 

@@ -22,10 +22,9 @@
 
 package org.jboss.as.test.clustering.messaging;
 
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.GRACE_TIME_TO_MEMBERSHIP_CHANGE;
 import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -45,7 +44,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.clustering.ClusteringTestConstants;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
@@ -137,7 +135,7 @@ public class ClusteredMessagingTestCase {
         String text = UUID.randomUUID().toString();
 
         // WIP test if the problem is that the view is not yet propagated
-        Thread.sleep(ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+        Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
         // send to the queue on server 0
         sendMessage(contextFromServer0, jmsQueueLookup, text);
@@ -167,7 +165,7 @@ public class ClusteredMessagingTestCase {
             String text = UUID.randomUUID().toString();
 
             // WIP test if the problem is that the view is not yet propagated
-            Thread.sleep(ClusteringTestConstants.GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
 
             // send a message to the topic on server 0
             sendMessage(contextFromServer0, jmsTopicLookup, text);

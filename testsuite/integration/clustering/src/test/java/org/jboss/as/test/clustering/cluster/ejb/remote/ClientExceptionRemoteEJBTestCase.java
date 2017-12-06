@@ -22,8 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.PropertyPermission;
 

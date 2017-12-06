@@ -23,6 +23,7 @@ package org.jboss.as.test.clustering.cluster;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -30,8 +31,8 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.WildFlyContainerController;
-import org.jboss.as.test.clustering.ClusteringTestConstants;
 import org.jboss.as.test.clustering.NodeUtil;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.web.session.RoutingSupport;
 import org.jboss.as.web.session.SimpleRoutingSupport;
 import org.jboss.logging.Logger;
@@ -52,7 +53,41 @@ import org.junit.Before;
  *
  * @author Radoslav Husar
  */
-public abstract class AbstractClusteringTestCase implements ClusteringTestConstants {
+public abstract class AbstractClusteringTestCase {
+
+    public static final String CONTAINER_SINGLE = "container-single";
+
+    // Unified node and container names
+    public static final String NODE_1 = "node-1";
+    public static final String NODE_2 = "node-2";
+    public static final String NODE_3 = "node-3";
+    public static final String NODE_4 = "node-4";
+    public static final String[] TWO_NODES = new String[] { NODE_1, NODE_2 };
+    public static final String[] FOUR_NODES = new String[] {NODE_1, NODE_2, NODE_3, NODE_4};
+    public static final String NODE_NAME_PROPERTY = "jboss.node.name";
+
+    // Test deployment names
+    public static final String DEPLOYMENT_1 = "deployment-0";
+    public static final String DEPLOYMENT_2 = "deployment-1";
+    public static final String DEPLOYMENT_3 = "deployment-2";
+    public static final String DEPLOYMENT_4 = "deployment-3";
+    public static final String[] TWO_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2 };
+    public static final String[] FOUR_DEPLOYMENTS = new String[] {DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3, DEPLOYMENT_4 };
+
+    // Helper deployment names
+    public static final String DEPLOYMENT_HELPER_1 = "deployment-helper-0";
+    public static final String DEPLOYMENT_HELPER_2 = "deployment-helper-1";
+    public static final String DEPLOYMENT_HELPER_3 = "deployment-helper-2";
+    public static final String DEPLOYMENT_HELPER_4 = "deployment-helper-3";
+    public static final String[] TWO_DEPLOYMENT_HELPERS = new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2 };
+    public static final String[] FOUR_DEPLOYMENT_HELPERS = new String[] {DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2, DEPLOYMENT_HELPER_3, DEPLOYMENT_HELPER_4 };
+
+    // Timeouts
+    public static final int GRACE_TIME_TO_REPLICATE = TimeoutUtil.adjust(3000);
+    public static final int GRACEFUL_SHUTDOWN_TIMEOUT = TimeoutUtil.adjust(15);
+    public static final int GRACE_TIME_TO_MEMBERSHIP_CHANGE = TimeoutUtil.adjust(10000);
+    public static final int WAIT_FOR_PASSIVATION_MS = TimeoutUtil.adjust(5);
+    public static final int HTTP_REQUEST_WAIT_TIME_S = TimeoutUtil.adjust(5);
 
     protected static final Logger log = Logger.getLogger(AbstractClusteringTestCase.class);
     private static final RoutingSupport routing = new SimpleRoutingSupport();
@@ -60,6 +95,8 @@ public abstract class AbstractClusteringTestCase implements ClusteringTestConsta
     static {
         NODE_TO_DEPLOYMENT.put(NODE_1, DEPLOYMENT_1);
         NODE_TO_DEPLOYMENT.put(NODE_2, DEPLOYMENT_2);
+        NODE_TO_DEPLOYMENT.put(NODE_3, DEPLOYMENT_3);
+        NODE_TO_DEPLOYMENT.put(NODE_4, DEPLOYMENT_4);
     }
 
     protected static Map.Entry<String, String> parseSessionRoute(HttpResponse response) {
@@ -74,7 +111,23 @@ public abstract class AbstractClusteringTestCase implements ClusteringTestConsta
     @ArquillianResource
     protected Deployer deployer;
 
+    private final String[] nodes;
+    private final String[] deployments;
+
     // Framework contract methods
+
+    public AbstractClusteringTestCase() {
+        this(TWO_NODES);
+    }
+
+    public AbstractClusteringTestCase(String[] nodes) {
+        this(nodes, Stream.of(nodes).map(NODE_TO_DEPLOYMENT::get).toArray(String[]::new));
+    }
+
+    public AbstractClusteringTestCase(String[] nodes, String[] deployments) {
+        this.nodes = nodes;
+        this.deployments = deployments;
+    }
 
     /**
      * Guarantees that prior to test method execution both containers are running and both deployments are deployed.
@@ -82,8 +135,8 @@ public abstract class AbstractClusteringTestCase implements ClusteringTestConsta
     @Before
     @RunAsClient // Does not work, see https://issues.jboss.org/browse/ARQ-351
     public void beforeTestMethod() {
-        NodeUtil.start(this.controller, NODES);
-        NodeUtil.deploy(this.deployer, DEPLOYMENTS);
+        NodeUtil.start(this.controller, nodes);
+        NodeUtil.deploy(this.deployer, deployments);
     }
 
     /**
@@ -92,8 +145,8 @@ public abstract class AbstractClusteringTestCase implements ClusteringTestConsta
     @After
     @RunAsClient // Does not work, see https://issues.jboss.org/browse/ARQ-351
     public void afterTestMethod() {
-        NodeUtil.start(this.controller, NODES);
-        NodeUtil.undeploy(this.deployer, DEPLOYMENTS);
+        NodeUtil.start(this.controller, nodes);
+        NodeUtil.undeploy(this.deployer, deployments);
     }
 
     // Node and deployment lifecycle management convenience methods
