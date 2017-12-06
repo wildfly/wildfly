@@ -58,9 +58,9 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.REMOVE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINERS;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODES;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENTS;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
@@ -82,13 +82,13 @@ public class ClusteredJPA2LCTestCase {
     protected Deployer deployer;
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> createDeploymentForContainer1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> createDeploymentForContainer2() {
         return createDeployment();
     }
@@ -123,7 +123,7 @@ public class ClusteredJPA2LCTestCase {
     @Test
     @InSequence(-1)
     public void setupCacheContainer() throws IOException {
-        NodeUtil.start(controller, CONTAINERS);
+        NodeUtil.start(controller, NODES);
 
         final ModelNode createEntityReplicatedCacheOp = new ModelNode();
         createEntityReplicatedCacheOp.get(ADDRESS).set(CACHE_ADDRESS);

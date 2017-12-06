@@ -64,13 +64,13 @@ public class SharedSessionTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_2 = "war2";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
         return getDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deployment1() {
         return getDeployment();
     }

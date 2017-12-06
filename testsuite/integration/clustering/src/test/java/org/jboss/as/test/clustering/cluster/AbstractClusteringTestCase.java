@@ -56,11 +56,8 @@ public abstract class AbstractClusteringTestCase implements ClusteringTestConsta
 
     protected static final Logger log = Logger.getLogger(AbstractClusteringTestCase.class);
     private static final RoutingSupport routing = new SimpleRoutingSupport();
-    static final Map<String, String> NODE_TO_CONTAINER = new TreeMap<>();
-    static final Map<String, String> NODE_TO_DEPLOYMENT = new TreeMap<>();
+    private static final Map<String, String> NODE_TO_DEPLOYMENT = new TreeMap<>();
     static {
-        NODE_TO_CONTAINER.put(NODE_1, CONTAINER_1);
-        NODE_TO_CONTAINER.put(NODE_2, CONTAINER_2);
         NODE_TO_DEPLOYMENT.put(NODE_1, DEPLOYMENT_1);
         NODE_TO_DEPLOYMENT.put(NODE_2, DEPLOYMENT_2);
     }
@@ -85,7 +82,7 @@ public abstract class AbstractClusteringTestCase implements ClusteringTestConsta
     @Before
     @RunAsClient // Does not work, see https://issues.jboss.org/browse/ARQ-351
     public void beforeTestMethod() {
-        NodeUtil.start(this.controller, CONTAINERS);
+        NodeUtil.start(this.controller, NODES);
         NodeUtil.deploy(this.deployer, DEPLOYMENTS);
     }
 
@@ -95,7 +92,7 @@ public abstract class AbstractClusteringTestCase implements ClusteringTestConsta
     @After
     @RunAsClient // Does not work, see https://issues.jboss.org/browse/ARQ-351
     public void afterTestMethod() {
-        NodeUtil.start(this.controller, CONTAINERS);
+        NodeUtil.start(this.controller, NODES);
         NodeUtil.undeploy(this.deployer, DEPLOYMENTS);
     }
 
@@ -125,10 +122,6 @@ public abstract class AbstractClusteringTestCase implements ClusteringTestConsta
         return NODE_TO_DEPLOYMENT.get(node);
     }
 
-    protected String findContainer(String node) {
-        return NODE_TO_CONTAINER.get(node);
-    }
-
     public interface Lifecycle {
         void start(String... nodes);
         void stop(String... nodes);
@@ -149,11 +142,10 @@ public abstract class AbstractClusteringTestCase implements ClusteringTestConsta
             String[] containers = new String[nodes.length];
             for (int i = 0; i < nodes.length; ++i) {
                 String node = nodes[i];
-                String container = NODE_TO_CONTAINER.get(node);
-                if (container == null) {
-                    throw new IllegalArgumentException(node);
+                if (node == null) {
+                    throw new IllegalArgumentException();
                 }
-                containers[i] = container;
+                containers[i] = node;
             }
             return containers;
         }

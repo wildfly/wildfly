@@ -128,7 +128,7 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Abstrac
                     assertTrue(String.valueOf(frequency) + " invocations were routed to " + node, frequency > 0);
                 }
 
-                stop(CONTAINER_2);
+                stop(NODE_2);
 
                 for (int i = 0; i < COUNT; ++i) {
                     Result<Integer> result = bean.increment();
@@ -139,7 +139,7 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Abstrac
                 Assert.assertEquals(COUNT, Collections.frequency(results, NODE_1));
                 Assert.assertEquals(0, Collections.frequency(results, NODE_2));
 
-                start(CONTAINER_2);
+                start(NODE_2);
 
                 // Allow sufficient time for client to receive new topology
                 Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);

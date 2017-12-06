@@ -118,7 +118,7 @@ public abstract class AbstractRemoteStatefulEJBFailoverTestCase extends Abstract
                 Assert.assertEquals(String.valueOf(i), target, result.getNode());
             }
 
-            stop(this.findContainer(target));
+            stop(target);
 
             result = bean.increment();
             // Bean should failover to other node
@@ -127,7 +127,7 @@ public abstract class AbstractRemoteStatefulEJBFailoverTestCase extends Abstract
             Assert.assertEquals(count++, result.getValue().intValue());
             Assert.assertNotEquals(target, failoverTarget);
 
-            start(this.findContainer(target));
+            start(target);
 
             // Allow sufficient time for client to receive new topology
             Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);

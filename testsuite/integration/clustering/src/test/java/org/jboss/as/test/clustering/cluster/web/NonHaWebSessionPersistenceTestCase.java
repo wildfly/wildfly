@@ -70,8 +70,8 @@ public class NonHaWebSessionPersistenceTestCase extends AbstractClusteringTestCa
     @Override
     public void beforeTestMethod() {
         // TODO rethink how this can be done faster with one less stopping (eg. make this test last)
-        stop(CONTAINER_1);
-        stop(CONTAINER_2);
+        stop(NODE_1);
+        stop(NODE_2);
 
         start(CONTAINER_SINGLE);
         deploy(DEPLOYMENT_1);

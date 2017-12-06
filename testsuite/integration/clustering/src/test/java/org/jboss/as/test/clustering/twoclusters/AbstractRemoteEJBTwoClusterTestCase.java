@@ -90,13 +90,13 @@ public abstract class AbstractRemoteEJBTwoClusterTestCase extends AbstractExtend
     }
 
     @Deployment(name = DEPLOYMENT_3, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_3)
+    @TargetsContainer(NODE_3)
     public static Archive<?> deployment2() {
         return createNonForwardingDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_4, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_4)
+    @TargetsContainer(NODE_4)
     public static Archive<?> deployment3() {
         return createNonForwardingDeployment();
     }
@@ -137,40 +137,40 @@ public abstract class AbstractRemoteEJBTwoClusterTestCase extends AbstractExtend
             client.assertNoExceptions("at the beginning of the test");
 
             logger.debug("------ Shutdown clusterA-node0 -----");
-            stop(GRACEFUL_SHUTDOWN_TIMEOUT, CONTAINER_1);
+            stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_1);
             Thread.sleep(SERVER_DOWN_TIME);
             client.assertNoExceptions("after clusterA-node0 was shut down");
 
             logger.debug("------ Startup clusterA-node0 -----");
-            start(CONTAINER_1);
+            start(NODE_1);
             Thread.sleep(FAILURE_FREE_TIME);
             client.assertNoExceptions("after clusterA-node0 was brought up");
 
             logger.debug("----- Shutdown clusterA-node1 -----");
-            stop(GRACEFUL_SHUTDOWN_TIMEOUT, CONTAINER_2);
+            stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_2);
             Thread.sleep(SERVER_DOWN_TIME);
 
             logger.info("------ Startup clusterA-node1 -----");
-            start(CONTAINER_2);
+            start(NODE_2);
             Thread.sleep(FAILURE_FREE_TIME);
             client.assertNoExceptions("after clusterA-node1 was brought back up");
 
             logger.debug("----- Shutdown clusterB-node0 -----");
-            stop(GRACEFUL_SHUTDOWN_TIMEOUT, CONTAINER_3);
+            stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_3);
             Thread.sleep(SERVER_DOWN_TIME);
             client.assertNoExceptions("after clusterB-node0 was shut down");
 
             logger.info("------ Startup clusterB-node0 -----");
-            start(CONTAINER_3);
+            start(NODE_3);
             Thread.sleep(FAILURE_FREE_TIME);
             client.assertNoExceptions("after clusterB-node0 was brought back up");
 
             logger.debug("----- Shutdown clusterB-node1 -----");
-            stop(GRACEFUL_SHUTDOWN_TIMEOUT, CONTAINER_4);
+            stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_4);
             Thread.sleep(SERVER_DOWN_TIME);
 
             logger.debug("------ Startup clusterB-node1 -----");
-            start(CONTAINER_4);
+            start(NODE_4);
             Thread.sleep(FAILURE_FREE_TIME);
 
             // final assert

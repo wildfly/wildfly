@@ -57,9 +57,9 @@ import org.junit.runner.RunWith;
  * Test xsite functionality on a 4-node, 3-site test deployment:
  *
  * sites:
- *   LON: {LON-0, LON-1}  // maps to CONTAINER_1/CONTAINER_2 (see arquillian.xml)
- *   NYC: {NYC-0}         // maps to CONTAINER_3 (see arquillian.xml)
- *   SFO: {SFO-0}         // maps to CONTAINER_4 (see arquillian.xml)
+ *   LON: {LON-0, LON-1}  // maps to NODE_1/NODE_2 (see arquillian.xml)
+ *   NYC: {NYC-0}         // maps to NODE_3 (see arquillian.xml)
+ *   SFO: {SFO-0}         // maps to NODE_4 (see arquillian.xml)
  *
  * routes:
  *   LON -> NYC,SFO
@@ -78,25 +78,25 @@ import org.junit.runner.RunWith;
 public class XSiteSimpleTestCase extends AbstractExtendedClusteringTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
         return getDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deployment1() {
         return getDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_3, managed = false)
-    @TargetsContainer(CONTAINER_3)
+    @TargetsContainer(NODE_3)
     public static Archive<?> deployment2() {
         return getDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_4, managed = false)
-    @TargetsContainer(CONTAINER_4)
+    @TargetsContainer(NODE_4)
     public static Archive<?> deployment3() {
         return getDeployment();
     }

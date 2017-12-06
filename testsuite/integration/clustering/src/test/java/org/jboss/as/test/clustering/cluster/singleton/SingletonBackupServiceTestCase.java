@@ -57,13 +57,13 @@ import org.junit.runner.RunWith;
 public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deployment1() {
         return createDeployment();
     }
@@ -88,7 +88,7 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
             throws IOException, URISyntaxException {
 
         // Needed to be able to inject ArquillianResource
-        stop(CONTAINER_2);
+        stop(NODE_2);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL1, ValueServiceActivator.SERVICE_NAME)));
@@ -99,7 +99,7 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            start(CONTAINER_2);
+            start(NODE_2);
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL1, ValueServiceActivator.SERVICE_NAME)));
             try {
@@ -117,7 +117,7 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            stop(CONTAINER_2);
+            stop(NODE_2);
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL1, ValueServiceActivator.SERVICE_NAME)));
             try {
@@ -127,7 +127,7 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            start(CONTAINER_2);
+            start(NODE_2);
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL1, ValueServiceActivator.SERVICE_NAME)));
             try {
@@ -145,7 +145,7 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            stop(CONTAINER_1);
+            stop(NODE_1);
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL2, ValueServiceActivator.SERVICE_NAME)));
             try {
@@ -155,7 +155,7 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            start(CONTAINER_1);
+            start(NODE_1);
 
             response = client.execute(new HttpGet(ValueServiceServlet.createURI(baseURL1, ValueServiceActivator.SERVICE_NAME)));
             try {

@@ -83,13 +83,13 @@ public class StatefulWithXPCFailoverTestCase extends AbstractClusteringTestCase 
                     "</persistence>";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deployment1() {
         return createDeployment();
     }
@@ -202,7 +202,7 @@ public class StatefulWithXPCFailoverTestCase extends AbstractClusteringTestCase 
         URI xpc2_getdestroy_url = StatefulServlet.destroyURI(baseURL2);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            stop(CONTAINER_2);
+            stop(NODE_2);
 
             // extended persistence context is available on node1
 
@@ -217,7 +217,7 @@ public class StatefulWithXPCFailoverTestCase extends AbstractClusteringTestCase 
             employeeName = executeUrlWithAnswer(client, xpc1_getempsecond_url, "1. xpc on node1, node1 should be able to read entity from second bean on node1");
             assertEquals(employeeName, "Tom Brady");
 
-            start(CONTAINER_2);
+            start(NODE_2);
 
             log.trace(new Date() + "2. started node2 + deployed, about to read entity on node1");
 
@@ -227,7 +227,7 @@ public class StatefulWithXPCFailoverTestCase extends AbstractClusteringTestCase 
             assertEquals(employeeName, "Tom Brady");
 
             // failover to deployment2
-            stop(CONTAINER_1); // failover #1 to node 2
+            stop(NODE_1); // failover #1 to node 2
 
             log.trace(new Date() + "3. stopped node1 to force failover, about to read entity on node2");
 

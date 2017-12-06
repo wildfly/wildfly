@@ -49,13 +49,13 @@ public class ClusteredSingleSignOnTestCase extends AbstractClusteringTestCase {
     private static Logger log = Logger.getLogger(ClusteredSingleSignOnTestCase.class);
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deployment1() {
         return createArchive();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deployment2() {
         return createArchive();
     }
@@ -78,8 +78,8 @@ public class ClusteredSingleSignOnTestCase extends AbstractClusteringTestCase {
     @InSequence(-2)
     public void startServers() throws Exception {
 
-        controller.start(CONTAINER_1);
-        controller.start(CONTAINER_2);
+        controller.start(NODE_1);
+        controller.start(NODE_2);
 
     }
 
@@ -93,8 +93,8 @@ public class ClusteredSingleSignOnTestCase extends AbstractClusteringTestCase {
         SSOTestBase.addSso(client1.getControllerClient());
         SSOTestBase.addSso(client2.getControllerClient());
 
-        stop(CONTAINERS);
-        start(CONTAINERS);
+        stop(NODES);
+        start(NODES);
         deploy(DEPLOYMENTS);
     }
 
@@ -108,7 +108,7 @@ public class ClusteredSingleSignOnTestCase extends AbstractClusteringTestCase {
         SSOTestBase.removeSso(client2.getControllerClient());
 
         undeploy(DEPLOYMENTS);
-        stop(CONTAINERS);
+        stop(NODES);
     }
 
 

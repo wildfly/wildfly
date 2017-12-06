@@ -64,13 +64,13 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
     static final String SINGLETON_DEPLOYMENT_2 = "singleton-deployment-1";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deploymentHelper0() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deploymentHelper1() {
         return createDeployment();
     }

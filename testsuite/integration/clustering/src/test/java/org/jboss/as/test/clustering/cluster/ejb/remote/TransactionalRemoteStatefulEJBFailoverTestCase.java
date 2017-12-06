@@ -57,13 +57,13 @@ public class TransactionalRemoteStatefulEJBFailoverTestCase extends AbstractClus
     private static final String MODULE_NAME = "transactional-remote-stateful-ejb-failover-test";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> createDeploymentForContainer1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> createDeploymentForContainer2() {
         return createDeployment();
     }

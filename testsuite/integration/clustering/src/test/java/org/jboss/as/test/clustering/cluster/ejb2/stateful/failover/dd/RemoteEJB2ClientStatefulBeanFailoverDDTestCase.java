@@ -48,25 +48,25 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 public class RemoteEJB2ClientStatefulBeanFailoverDDTestCase extends RemoteEJBClientStatefulFailoverTestBase {
 
     @Deployment(name = DEPLOYMENT_HELPER_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> createDeploymentForContainer1Singleton() {
         return createDeploymentSingleton();
     }
 
     @Deployment(name = DEPLOYMENT_HELPER_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> createDeploymentForContainer2Singleton() {
         return createDeploymentSingleton();
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> createDeploymentForContainer1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> createDeploymentForContainer2() {
         return createDeployment();
     }

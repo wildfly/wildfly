@@ -32,13 +32,13 @@ public abstract class AbstractExtendedClusteringTestCase extends AbstractCluster
 
     @Override
     public void beforeTestMethod() {
-        this.start(EXTENDED_CONTAINERS);
+        this.start(EXTENDED_NODES);
         this.deploy(EXTENDED_DEPLOYMENTS);
     }
 
     @Override
     public void afterTestMethod() {
-        this.start(EXTENDED_CONTAINERS);
+        this.start(EXTENDED_NODES);
         this.undeploy(EXTENDED_DEPLOYMENTS);
     }
 }

@@ -35,6 +35,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.clustering.ClusteringTestConstants;
 import org.jboss.as.test.clustering.NodeInfoServlet;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.passivation.ClusterPassivationTestBase;
@@ -69,13 +70,13 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
     private Deployer deployer;
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(ClusteringTestConstants.NODE_1)
     public static Archive<?> deployment0() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(ClusteringTestConstants.NODE_2)
     public static Archive<?> deployment1() {
         return createDeployment();
     }
@@ -91,13 +92,13 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
     @Override
     protected void startServers(ManagementClient client1, ManagementClient client2) {
         if (client1 == null || !client1.isServerInRunningState()) {
-            log.trace("Starting server: " + CONTAINER_1);
-            controller.start(CONTAINER_1);
+            log.trace("Starting server: " + ClusteringTestConstants.NODE_1);
+            controller.start(ClusteringTestConstants.NODE_1);
             deployer.deploy(DEPLOYMENT_1);
         }
         if (client2 == null || !client2.isServerInRunningState()) {
-            log.trace("Starting server: " + CONTAINER_2);
-            controller.start(CONTAINER_2);
+            log.trace("Starting server: " + ClusteringTestConstants.NODE_2);
+            controller.start(ClusteringTestConstants.NODE_2);
             deployer.deploy(DEPLOYMENT_2);
         }
     }
@@ -119,11 +120,11 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
                            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
         String nodeName1 = HttpRequest.get(baseURL1.toString() + NodeInfoServlet.URL, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
         node2deployment.put(nodeName1, DEPLOYMENT_1);
-        node2container.put(nodeName1, CONTAINER_1);
+        node2container.put(nodeName1, ClusteringTestConstants.NODE_1);
         log.trace("URL1 nodename: " + nodeName1);
         String nodeName2 = HttpRequest.get(baseURL2.toString() + NodeInfoServlet.URL, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
         node2deployment.put(nodeName2, DEPLOYMENT_2);
-        node2container.put(nodeName2, CONTAINER_2);
+        node2container.put(nodeName2, ClusteringTestConstants.NODE_2);
         log.trace("URL2 nodename: " + nodeName2);
     }
 
@@ -157,12 +158,12 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
         if (client1.isServerInRunningState()) {
             unsetPassivationAttributes(client1.getControllerClient());
             deployer.undeploy(DEPLOYMENT_1);
-            controller.stop(CONTAINER_1);
+            controller.stop(ClusteringTestConstants.NODE_1);
         }
         if (client2.isServerInRunningState()) {
             unsetPassivationAttributes(client2.getControllerClient());
             deployer.undeploy(DEPLOYMENT_2);
-            controller.stop(CONTAINER_2);
+            controller.stop(ClusteringTestConstants.NODE_2);
         }
     }
 }

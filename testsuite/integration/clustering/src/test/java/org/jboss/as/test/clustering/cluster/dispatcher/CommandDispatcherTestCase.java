@@ -26,13 +26,13 @@ public class CommandDispatcherTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = "command-dispatcher";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> createDeploymentForContainer1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> createDeploymentForContainer2() {
         return createDeployment();
     }
@@ -72,7 +72,7 @@ public class CommandDispatcherTestCase extends AbstractClusteringTestCase {
             assertTrue(topology.getNodes().contains(NODE_2));
             assertFalse(topology.getRemoteNodes().toString() + " should not contain " + topology.getLocalNode(), topology.getRemoteNodes().contains(topology.getLocalNode()));
 
-            stop(CONTAINER_1);
+            stop(NODE_1);
 
             topology = bean.getClusterTopology();
             assertEquals(1, topology.getNodes().size());
@@ -80,7 +80,7 @@ public class CommandDispatcherTestCase extends AbstractClusteringTestCase {
             assertEquals(NODE_2, topology.getLocalNode());
             assertTrue(topology.getRemoteNodes().toString(), topology.getRemoteNodes().isEmpty());
 
-            start(CONTAINER_1);
+            start(NODE_1);
 
             Thread.sleep(VIEW_CHANGE_WAIT);
 

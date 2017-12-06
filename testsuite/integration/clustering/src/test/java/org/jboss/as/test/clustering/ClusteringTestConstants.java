@@ -34,9 +34,6 @@ public interface ClusteringTestConstants {
      * Manual container with unmanaged deployments names.
      */
     String CONTAINER_SINGLE = "container-single";
-    String CONTAINER_1 = "container-0";
-    String CONTAINER_2 = "container-1";
-    String[] CONTAINERS = new String[] { CONTAINER_1, CONTAINER_2 };
 
     /**
      * Deployment names.
@@ -55,8 +52,8 @@ public interface ClusteringTestConstants {
     /**
      * Node names passed in arquillian.xml via -Djboss.node.name property.
      */
-    String NODE_1 = "node-0";
-    String NODE_2 = "node-1";
+    String NODE_1 = "node-1";
+    String NODE_2 = "node-2";
     String[] NODES = new String[] { NODE_1, NODE_2 };
 
     String NODE_NAME_PROPERTY = "jboss.node.name";

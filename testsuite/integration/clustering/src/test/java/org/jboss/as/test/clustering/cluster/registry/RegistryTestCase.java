@@ -28,13 +28,13 @@ public class RegistryTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = "registry";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> createDeploymentForContainer1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> createDeploymentForContainer2() {
         return createDeployment();
     }
@@ -69,13 +69,13 @@ public class RegistryTestCase extends AbstractClusteringTestCase {
             assertTrue(names.contains(NODE_1));
             assertTrue(names.contains(NODE_2));
 
-            stop(CONTAINER_2);
+            stop(NODE_2);
 
             names = bean.getNodes();
             assertEquals(1, names.size());
             assertTrue(names.contains(NODE_1));
 
-            start(CONTAINER_2);
+            start(NODE_2);
 
             names = bean.getNodes();
             assertEquals(2, names.size());

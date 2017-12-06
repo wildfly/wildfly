@@ -80,13 +80,13 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
     private static final String CONTAINER = "server";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deployment1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deployment2() {
         return createDeployment();
     }
@@ -189,7 +189,7 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
         super.afterTestMethod();
 
         // Stop the container to ensure there aren't any remnants since the test operates on a live JGroups channels
-        stop(CONTAINERS);
+        stop(NODES);
     }
 
     private static void checkSingletonNode(URI serviceUri, String expectedProviderNode) throws IOException {

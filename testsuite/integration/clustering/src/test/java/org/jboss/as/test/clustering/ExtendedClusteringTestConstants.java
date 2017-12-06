@@ -32,13 +32,6 @@ package org.jboss.as.test.clustering;
 public interface ExtendedClusteringTestConstants extends ClusteringTestConstants {
 
     /**
-     * Manual container with unmanaged deployments names.
-     */
-    String CONTAINER_3 = "container-2";
-    String CONTAINER_4 = "container-3";
-    String[] EXTENDED_CONTAINERS = new String[] { CONTAINER_1, CONTAINER_2, CONTAINER_3, CONTAINER_4 };
-
-    /**
      * Deployment names.
      */
     String DEPLOYMENT_3 = "deployment-2";
@@ -55,7 +48,7 @@ public interface ExtendedClusteringTestConstants extends ClusteringTestConstants
     /**
      * Node names passed in arquillian.xml via -Djboss.node.name property.
      */
-    String NODE_3 = "node-2";
-    String NODE_4 = "node-3";
+    String NODE_3 = "node-3";
+    String NODE_4 = "node-4";
     String[] EXTENDED_NODES = new String[] { NODE_1, NODE_2 , NODE_3, NODE_4};
 }

@@ -72,13 +72,13 @@ public class StatefulFailoverTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = "stateful-failover";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deployment1() {
         return createDeployment();
     }
@@ -236,12 +236,12 @@ public class StatefulFailoverTestCase extends AbstractClusteringTestCase {
             assertEquals(3, queryCount(client, uri2));
             assertEquals(4, queryCount(client, uri2));
 
-            stop(CONTAINER_2);
+            stop(NODE_2);
 
             assertEquals(5, queryCount(client, uri1));
             assertEquals(6, queryCount(client, uri1));
 
-            start(CONTAINER_2);
+            start(NODE_2);
 
             assertEquals(7, queryCount(client, uri1));
             assertEquals(8, queryCount(client, uri1));
@@ -249,12 +249,12 @@ public class StatefulFailoverTestCase extends AbstractClusteringTestCase {
             assertEquals(9, queryCount(client, uri2));
             assertEquals(10, queryCount(client, uri2));
 
-            stop(CONTAINER_1);
+            stop(NODE_1);
 
             assertEquals(11, queryCount(client, uri2));
             assertEquals(12, queryCount(client, uri2));
 
-            start(CONTAINER_1);
+            start(NODE_1);
 
             assertEquals(13, queryCount(client, uri1));
             assertEquals(14, queryCount(client, uri1));
