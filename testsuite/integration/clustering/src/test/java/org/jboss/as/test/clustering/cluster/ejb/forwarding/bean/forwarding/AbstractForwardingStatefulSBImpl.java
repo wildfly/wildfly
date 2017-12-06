@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,14 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.twoclusters.bean.forwarding;
+package org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.forwarding;
 
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful.RemoteStatefulSB;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.as.test.clustering.twoclusters.bean.stateful.RemoteStatefulSB;
 import org.jboss.logging.Logger;
 
 /**
@@ -37,7 +37,7 @@ import org.jboss.logging.Logger;
 public abstract class AbstractForwardingStatefulSBImpl {
 
     private static final Logger log = Logger.getLogger(AbstractForwardingStatefulSBImpl.class.getName());
-    public static final String MODULE_NAME = "twocluster-terminus";
+    public static final String MODULE_NAME = "terminus";
 
     private RemoteStatefulSB bean;
 

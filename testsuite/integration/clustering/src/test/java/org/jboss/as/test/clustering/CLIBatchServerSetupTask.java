@@ -31,6 +31,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of {@link ServerSetupTask} which runs provided CLI commands.
@@ -39,6 +40,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class CLIBatchServerSetupTask implements ServerSetupTask {
 
+    private static final Logger LOG = Logger.getLogger(CLIBatchServerSetupTask.class);
     private final List<String> nodes;
     private final List<String> setupCommands;
     private final List<String> tearDownCommands;
@@ -51,6 +53,14 @@ public class CLIBatchServerSetupTask implements ServerSetupTask {
         this(nodes == null ? null : Arrays.asList(nodes), Arrays.asList(setupCommands), Arrays.asList(tearDownCommands));
     }
 
+    /**
+     * Constructs a {@link ServerSetupTask} which is run after the container is started and before the deployment is deployed and its
+     * corresponding tear down commands run after undeployment.
+     *
+     * @param nodes            list of nodes to run the commands on used to run specific setup on concrete nodes; {@code null} to run on all
+     * @param setupCommands    list of CLI commands to run on container setup
+     * @param tearDownCommands list of CLI commands to run on container tear down, specifically undoing all changes done in setup commands
+     */
     public CLIBatchServerSetupTask(List<String> nodes, List<String> setupCommands, List<String> tearDownCommands) {
         this.nodes = nodes;
         this.setupCommands = setupCommands;

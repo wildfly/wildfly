@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.twoclusters;
+package org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful;
 
-import org.jboss.as.test.clustering.ejb.ClientEJBDirectory;
+import javax.ejb.Stateful;
+
+import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.common.CommonStatefulSBImpl;
 
 /**
- * Tests concurrent fail-over without a managed transaction context on the forwarder and using the client "API".
- *
  * @author Radoslav Husar
  */
-public class NonTxClientEJBTwoClusterTestCase extends NonTxRemoteEJBTwoClusterTestCase {
-
-    public NonTxClientEJBTwoClusterTestCase() {
-        super(() -> new ClientEJBDirectory(MODULE_NAME));
-    }
+@Stateful
+public class RemoteStatefulSBImpl extends CommonStatefulSBImpl implements RemoteStatefulSB {
 }

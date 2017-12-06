@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.twoclusters.bean.stateful;
+package org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.common;
 
-import org.jboss.as.test.clustering.twoclusters.bean.common.CommonStatefulSB;
+public interface CommonStatefulSB {
 
-import javax.ejb.Remote;
-
-/**
- * The enterprise bean must implement a business interface. That is, remote clients may not access an enterprise bean through a
- * no-interface view.
- *
- * @author Radoslav Husar
- */
-@Remote
-public interface RemoteStatefulSB extends CommonStatefulSB {
+    int getSerialAndIncrement();
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.twoclusters;
+package org.jboss.as.test.clustering.cluster.ejb.forwarding;
 
 import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
 import static org.junit.Assert.fail;
@@ -35,11 +35,13 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.clustering.CLIBatchServerSetupTask;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful.RemoteStatefulSB;
+import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.common.CommonStatefulSB;
+import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.forwarding.AbstractForwardingStatefulSBImpl;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
-import org.jboss.as.test.clustering.twoclusters.bean.common.CommonStatefulSB;
-import org.jboss.as.test.clustering.twoclusters.bean.forwarding.AbstractForwardingStatefulSBImpl;
-import org.jboss.as.test.clustering.twoclusters.bean.stateful.RemoteStatefulSB;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -68,7 +70,8 @@ import org.wildfly.common.function.ExceptionSupplier;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class AbstractRemoteEJBTwoClusterTestCase extends AbstractClusteringTestCase {
+@ServerSetup({AbstractRemoteEJBForwardingTestCase.ClusterAServerSetup.class, AbstractRemoteEJBForwardingTestCase.ClusterBServerSetup.class})
+public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractClusteringTestCase {
 
     @BeforeClass
     public static void beforeClass() {
@@ -77,14 +80,14 @@ public abstract class AbstractRemoteEJBTwoClusterTestCase extends AbstractCluste
 
     private static long FAILURE_FREE_TIME = TimeoutUtil.adjust(5000);
     private static long SERVER_DOWN_TIME = TimeoutUtil.adjust(5000);
-    private static long INVOCATION_WAIT = TimeoutUtil.adjust(100);
+    private static long INVOCATION_WAIT = TimeoutUtil.adjust(1000);
 
     private final ExceptionSupplier<EJBDirectory, NamingException> directorySupplier;
     private final String implementationClass;
 
-    private static final Logger logger = Logger.getLogger(AbstractRemoteEJBTwoClusterTestCase.class);
+    private static final Logger logger = Logger.getLogger(AbstractRemoteEJBForwardingTestCase.class);
 
-    AbstractRemoteEJBTwoClusterTestCase(ExceptionSupplier<EJBDirectory, NamingException> directorySupplier, String implementationClass) {
+    AbstractRemoteEJBForwardingTestCase(ExceptionSupplier<EJBDirectory, NamingException> directorySupplier, String implementationClass) {
         super(FOUR_NODES);
 
         this.directorySupplier = directorySupplier;
@@ -93,13 +96,13 @@ public abstract class AbstractRemoteEJBTwoClusterTestCase extends AbstractCluste
 
     @Deployment(name = DEPLOYMENT_3, managed = false, testable = false)
     @TargetsContainer(NODE_3)
-    public static Archive<?> deployment2() {
+    public static Archive<?> deployment3() {
         return createNonForwardingDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_4, managed = false, testable = false)
     @TargetsContainer(NODE_4)
-    public static Archive<?> deployment3() {
+    public static Archive<?> deployment4() {
         return createNonForwardingDeployment();
     }
 
@@ -196,7 +199,7 @@ public abstract class AbstractRemoteEJBTwoClusterTestCase extends AbstractCluste
         /**
          * Asserts that there were no exception during the last test period.
          */
-        void assertNoExceptions(String when) throws Exception {
+        void assertNoExceptions(String when) {
             if (firstException != null) {
                 logger.error(firstException);
                 fail("Client threw an exception " + when + ": " + firstException); // Arrays.stream(firstException.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.joining("\n")));
@@ -220,6 +223,36 @@ public abstract class AbstractRemoteEJBTwoClusterTestCase extends AbstractCluste
                     this.firstException = clientException;
                 }
             }
+        }
+    }
+
+    public static class ClusterAServerSetup extends CLIBatchServerSetupTask {
+        public ClusterAServerSetup() {
+            super(new String[]{NODE_1, NODE_2},
+                    new String[]{
+                            "/subsystem=jgroups/channel=ee:write-attribute(name=cluster,value=ejb-forwarder)",
+                            String.format("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-remote-ejb-connection:add(host=%s,port=8280)", TESTSUITE_NODE3),
+                            "/core-service=management/security-realm=PasswordRealm:add",
+                            "/core-service=management/security-realm=PasswordRealm/server-identity=secret:add(value=\"cmVtQHRlZWpicGFzc3dkMQ==\")",
+                            "/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:add(outbound-socket-binding-ref=binding-remote-ejb-connection,protocol=http-remoting,security-realm=PasswordRealm,username=remoteejbuser)",
+                    },
+                    new String[]{
+                            "/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:remove",
+                            "/core-service=management/security-realm=PasswordRealm:remove",
+                            "/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-remote-ejb-connection:remove",
+                            "/subsystem=jgroups/channel=ee:write-attribute(name=cluster,value=ejb)",
+                    });
+        }
+    }
+
+    public static class ClusterBServerSetup extends CLIBatchServerSetupTask {
+        public ClusterBServerSetup() {
+            super(new String[]{NODE_3, NODE_4},
+                    new String[]{
+                            String.format("/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=%s)", TESTSUITE_MCAST1),
+                    }, new String[]{
+                            "/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=\"${jboss.default.multicast.address:230.0.0.4}\"",
+                    });
         }
     }
 }

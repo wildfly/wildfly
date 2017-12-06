@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,15 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.twoclusters.bean.forwarding;
+package org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.forwarding;
 
 import javax.ejb.Stateful;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.jboss.as.test.clustering.twoclusters.bean.stateful.RemoteStatefulSB;
+import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful.RemoteStatefulSB;
 
 @Stateful
-@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-public class NonTxForwardingStatefulSBImpl extends AbstractForwardingStatefulSBImpl implements RemoteStatefulSB {
+@TransactionAttribute(TransactionAttributeType.REQUIRED) // this is the default anyway
+public class ForwardingStatefulSBImpl extends AbstractForwardingStatefulSBImpl implements RemoteStatefulSB {
+
+    // We need to override these methods so that the TransactionAttribute gets processed on this class!
+
+    @Override
+    public int getSerialAndIncrement() {
+        return super.getSerialAndIncrement();
+    }
 }

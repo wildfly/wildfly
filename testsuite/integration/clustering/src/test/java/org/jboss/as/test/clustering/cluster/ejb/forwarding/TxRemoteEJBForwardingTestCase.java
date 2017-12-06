@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.twoclusters;
+package org.jboss.as.test.clustering.cluster.ejb.forwarding;
 
 import javax.naming.NamingException;
 
@@ -29,10 +29,10 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.NamingEJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.as.test.clustering.twoclusters.bean.common.CommonStatefulSB;
-import org.jboss.as.test.clustering.twoclusters.bean.forwarding.AbstractForwardingStatefulSBImpl;
-import org.jboss.as.test.clustering.twoclusters.bean.forwarding.ForwardingStatefulSBImpl;
-import org.jboss.as.test.clustering.twoclusters.bean.stateful.RemoteStatefulSB;
+import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.common.CommonStatefulSB;
+import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.forwarding.AbstractForwardingStatefulSBImpl;
+import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.forwarding.ForwardingStatefulSBImpl;
+import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful.RemoteStatefulSB;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -43,15 +43,15 @@ import org.wildfly.common.function.ExceptionSupplier;
  *
  * @author Radoslav Husar
  */
-public class TxRemoteEJBTwoClusterTestCase extends AbstractRemoteEJBTwoClusterTestCase {
+public class TxRemoteEJBForwardingTestCase extends AbstractRemoteEJBForwardingTestCase {
 
-    public static final String MODULE_NAME = "twocluster-forwarder-tx";
+    public static final String MODULE_NAME = "forwarder-tx";
 
-    public TxRemoteEJBTwoClusterTestCase() {
+    public TxRemoteEJBForwardingTestCase() {
         this(() -> new RemoteEJBDirectory(MODULE_NAME));
     }
 
-    TxRemoteEJBTwoClusterTestCase(ExceptionSupplier<EJBDirectory, NamingException> directorySupplier) {
+    TxRemoteEJBForwardingTestCase(ExceptionSupplier<EJBDirectory, NamingException> directorySupplier) {
         super(directorySupplier, ForwardingStatefulSBImpl.class.getSimpleName());
     }
 
@@ -76,7 +76,7 @@ public class TxRemoteEJBTwoClusterTestCase extends AbstractRemoteEJBTwoClusterTe
         ejbJar.addClass(ForwardingStatefulSBImpl.class);
         ejbJar.addClasses(EJBDirectory.class, NamingEJBDirectory.class, RemoteEJBDirectory.class);
         // remote outbound connection configuration
-        ejbJar.addAsManifestResource(AbstractRemoteEJBTwoClusterTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        ejbJar.addAsManifestResource(AbstractRemoteEJBForwardingTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
         return ejbJar;
     }
 }

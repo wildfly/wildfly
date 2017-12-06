@@ -20,9 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.twoclusters.bean.common;
+package org.jboss.as.test.clustering.cluster.ejb.forwarding;
 
-public interface CommonStatefulSB {
+import org.jboss.as.test.clustering.ejb.ClientEJBDirectory;
 
-    int getSerialAndIncrement();
+/**
+ * Tests concurrent fail-over without a managed transaction context on the forwarder and using the client "API".
+ *
+ * @author Radoslav Husar
+ */
+public class NonTxClientEJBForwardingTestCase extends NonTxRemoteEJBForwardingTestCase {
+
+    public NonTxClientEJBForwardingTestCase() {
+        super(() -> new ClientEJBDirectory(MODULE_NAME));
+    }
 }

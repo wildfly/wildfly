@@ -40,16 +40,16 @@ import org.junit.After;
 import org.junit.Before;
 
 /**
- * Base cluster test that guarantees a framework contract as follows:
- * <ul>
+ * Base implementation for every clustering test which guarantees a framework contract as follows:
+ * <ol>
+ * <li>test case is constructed specifying nodes and deployments required</li>
  * <li>before every test method, containers are started and deployments are deployed via {@link #beforeTestMethod()}</li>
  * <li>after every method execution the deployments are undeployed via {@link #afterTestMethod()}</li>
- * </ul>
- *
- * Should the test demand different node/deployment setup, the methods must be overridden.
- *
- * Furthermore provides convenience methods for {@link NodeUtil} utility ({@link #start(String...)},
- * {@link #deploy(String...)}, etc).
+ * </ol>
+ * Should the test demand different node and deployment handling, the methods must be overridden.
+ * <p>
+ * Furthermore, this base class provides common constants for node/instance-id, deployment/deployment helpers, timeouts and provides
+ * convenience methods for managing container and deployment lifecycle ({@link #start(String...)}, {@link #deploy(String...)}, etc).
  *
  * @author Radoslav Husar
  */
@@ -68,10 +68,10 @@ public abstract class AbstractClusteringTestCase {
     public static final String NODE_NAME_PROPERTY = "jboss.node.name";
 
     // Test deployment names
-    public static final String DEPLOYMENT_1 = "deployment-0";
-    public static final String DEPLOYMENT_2 = "deployment-1";
-    public static final String DEPLOYMENT_3 = "deployment-2";
-    public static final String DEPLOYMENT_4 = "deployment-3";
+    public static final String DEPLOYMENT_1 = "deployment-1";
+    public static final String DEPLOYMENT_2 = "deployment-2";
+    public static final String DEPLOYMENT_3 = "deployment-3";
+    public static final String DEPLOYMENT_4 = "deployment-4";
     public static final String[] TWO_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2 };
     public static final String[] FOUR_DEPLOYMENTS = new String[] {DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3, DEPLOYMENT_4 };
 
@@ -91,10 +91,14 @@ public abstract class AbstractClusteringTestCase {
     public static final int HTTP_REQUEST_WAIT_TIME_S = TimeoutUtil.adjust(5);
 
     // System Properties
-    public static final String MCAST = System.getProperty("mcast", "230.0.0.4");
-    public static final String MCAST1 = System.getProperty("mcast1", "230.0.0.5");
-    public static final String MCAST2 = System.getProperty("mcast2", "230.0.0.6");
-    public static final String MCAST3 = System.getProperty("mcast3", "230.0.0.7");
+    public static final String TESTSUITE_NODE0 = System.getProperty("node0", "127.0.0.1");
+    public static final String TESTSUITE_NODE1 = System.getProperty("node1", "127.0.0.1");
+    public static final String TESTSUITE_NODE2 = System.getProperty("node2", "127.0.0.1");
+    public static final String TESTSUITE_NODE3 = System.getProperty("node3", "127.0.0.1");
+    public static final String TESTSUITE_MCAST = System.getProperty("mcast", "230.0.0.4");
+    public static final String TESTSUITE_MCAST1 = System.getProperty("mcast1", "230.0.0.5");
+    public static final String TESTSUITE_MCAST2 = System.getProperty("mcast2", "230.0.0.6");
+    public static final String TESTSUITE_MCAST3 = System.getProperty("mcast3", "230.0.0.7");
 
     protected static final Logger log = Logger.getLogger(AbstractClusteringTestCase.class);
     private static final RoutingSupport routing = new SimpleRoutingSupport();

@@ -20,39 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.twoclusters.bean.common;
+package org.jboss.as.test.clustering.cluster.ejb.forwarding;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Remove;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import org.jboss.as.test.clustering.ejb.ClientEJBDirectory;
 
-import org.jboss.logging.Logger;
+/**
+ * Tests concurrent fail-over with a managed transaction context on the forwarder and using the client "API".
+ *
+ * @author Radoslav Husar
+ */
+public class TxClientEJBForwardingTestCase extends TxRemoteEJBForwardingTestCase {
 
-@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-public class CommonStatefulSBImpl implements CommonStatefulSB {
-
-    private int serial;
-    private static final Logger log = Logger.getLogger(CommonStatefulSBImpl.class.getName());
-
-    @PostConstruct
-    private void init() {
-        serial = 0;
-        log.infof("New SFSB created: %s.", this);
-    }
-
-    @Override
-    public int getSerialAndIncrement() {
-        log.infof("getSerialAndIncrement() called on non-forwarding node %s", getCurrentNode());
-        return serial++;
-    }
-
-    @Remove
-    private void destroy() {
-        serial = -1;
-    }
-
-    private static String getCurrentNode() {
-        return System.getProperty("jboss.node.name", "unknown");
+    public TxClientEJBForwardingTestCase() {
+        super(() -> new ClientEJBDirectory(MODULE_NAME));
     }
 }
