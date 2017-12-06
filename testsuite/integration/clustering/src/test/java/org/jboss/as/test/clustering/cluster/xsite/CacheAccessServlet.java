@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.xsite;
+package org.jboss.as.test.clustering.cluster.xsite;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -95,28 +95,34 @@ public class CacheAccessServlet extends HttpServlet {
             throw new ServletException(String.format("No '%s' parameter specified)", OPERATION));
         }
         //
-        if (operation.equals(GET)) {
-            String key = req.getParameter(KEY);
-            validateKeyParam(operation, key);
-            Custom value = cache.get(key);
-            if (value == null) {
-                throw new ServletException(String.format("No value is defined for key '%s'",key));
-            }
-            resp.setIntHeader("value", value.getValue());
-            resp.getWriter().write("Success");
+        switch (operation) {
+            case GET: {
+                String key = req.getParameter(KEY);
+                validateKeyParam(operation, key);
+                Custom value = cache.get(key);
+                if (value == null) {
+                    throw new ServletException(String.format("No value is defined for key '%s'", key));
+                }
+                resp.setIntHeader("value", value.getValue());
+                resp.getWriter().write("Success");
 
-        } else if (operation.equals(PUT)) {
-            String key = req.getParameter(KEY);
-            validateKeyParam(operation, key);
-            String value = req.getParameter(VALUE);
-            validateValueParam(operation, value);
-            int intValue = Integer.parseInt(value);
-            // put the new instance of Custom here to the cache
-            // todo: difference between putting new value and modifying existing old value
-            cache.put(key, new Custom(intValue));
-            resp.getWriter().write("Success");
-        } else {
-            throw new ServletException(String.format("Unknown operation '%s': valid operations are get/put)", operation));
+                break;
+            }
+            case PUT: {
+                String key = req.getParameter(KEY);
+                validateKeyParam(operation, key);
+                String value = req.getParameter(VALUE);
+                validateValueParam(operation, value);
+                int intValue = Integer.parseInt(value);
+                // put the new instance of Custom here to the cache
+                // todo: difference between putting new value and modifying existing old value
+                cache.put(key, new Custom(intValue));
+                resp.getWriter().write("Success");
+                break;
+            }
+            default: {
+                throw new ServletException(String.format("Unknown operation '%s': valid operations are get/put)", operation));
+            }
         }
     }
 
@@ -138,7 +144,7 @@ public class CacheAccessServlet extends HttpServlet {
         }
     }
 
-    /*
+    /**
      * Serializable object holding an int value
      */
     public static class Custom implements Serializable {
