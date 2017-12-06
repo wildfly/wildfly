@@ -159,7 +159,7 @@ public abstract class BuildConfigurationTestBase {
             String line = reader.readLine();
             while (line != null) {
                 if (line.contains("<security-setting name=\"#\">")) { //super duper hackish, just IO optimization
-                    writer.write("        <journal file-size=\"1024\" />");
+                    writer.write("        <journal type=\"NIO\" file-size=\"1024\" />");
                     writer.newLine();
                 }
 
