@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.util;
+package org.wildfly.clustering.infinispan.spi.persistence;
 
-import java.io.IOException;
-import java.util.AbstractMap;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
+import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 
 /**
- * Unit test for {@link MapEntryExternalizer} externalizers
+ * Tester for a {@link TwoWayKey2StringMapper}.
  * @author Paul Ferraro
  */
-public class MapEntryExternalizerTestCase {
+public class KeyMapperTester {
 
-    @Test
-    public void test() throws ClassNotFoundException, IOException {
-        Object key = "key";
-        Object value = "value";
-        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_ENTRY.cast(AbstractMap.SimpleEntry.class)).test(new AbstractMap.SimpleEntry<>(key, value));
-        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_IMMUTABLE_ENTRY.cast(AbstractMap.SimpleImmutableEntry.class)).test(new AbstractMap.SimpleImmutableEntry<>(key, value));
+    private final TwoWayKey2StringMapper mapper;
+
+    public KeyMapperTester(TwoWayKey2StringMapper mapper) {
+        this.mapper = mapper;
+    }
+
+    public void test(Object key) {
+        assertTrue(this.mapper.isSupportedType(key.getClass()));
+
+        String mapping = this.mapper.getStringMapping(key);
+
+        Object result = this.mapper.getKeyMapping(mapping);
+
+        assertEquals(key, result);
     }
 }

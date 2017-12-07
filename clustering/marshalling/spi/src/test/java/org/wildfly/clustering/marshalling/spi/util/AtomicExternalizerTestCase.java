@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
+import org.wildfly.clustering.marshalling.ExternalizerTester;
 import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
@@ -42,9 +42,9 @@ public class AtomicExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        ExternalizerTestUtil.test(DefaultExternalizer.ATOMIC_BOOLEAN.cast(AtomicBoolean.class), new AtomicBoolean(Boolean.TRUE), (expected, actual) -> assertEquals(expected.get(), actual.get()));
-        ExternalizerTestUtil.test(DefaultExternalizer.ATOMIC_INTEGER.cast(AtomicInteger.class), new AtomicInteger(Integer.MAX_VALUE), (expected, actual) -> assertEquals(expected.get(), actual.get()));
-        ExternalizerTestUtil.test(DefaultExternalizer.ATOMIC_LONG.cast(AtomicLong.class), new AtomicLong(Long.MAX_VALUE), (expected, actual) -> assertEquals(expected.get(), actual.get()));
-        ExternalizerTestUtil.test(DefaultExternalizer.ATOMIC_REFERENCE.cast(AtomicReference.class), new AtomicReference<Object>(Boolean.TRUE), (expected, actual) -> assertEquals(expected.get(), actual.get()));
+        new ExternalizerTester<>(DefaultExternalizer.ATOMIC_BOOLEAN.cast(AtomicBoolean.class), (expected, actual) -> assertEquals(expected.get(), actual.get())).test(new AtomicBoolean(true));
+        new ExternalizerTester<>(DefaultExternalizer.ATOMIC_INTEGER.cast(AtomicInteger.class), (expected, actual) -> assertEquals(expected.get(), actual.get())).test(new AtomicInteger(Integer.MAX_VALUE));
+        new ExternalizerTester<>(DefaultExternalizer.ATOMIC_LONG.cast(AtomicLong.class), (expected, actual) -> assertEquals(expected.get(), actual.get())).test(new AtomicLong(Long.MAX_VALUE));
+        new ExternalizerTester<>(DefaultExternalizer.ATOMIC_REFERENCE.cast(AtomicReference.class), (expected, actual) -> assertEquals(expected.get(), actual.get())).test(new AtomicReference<Object>(Boolean.TRUE));
     }
 }

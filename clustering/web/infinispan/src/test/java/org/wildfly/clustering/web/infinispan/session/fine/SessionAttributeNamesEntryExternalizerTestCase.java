@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.util;
+package org.wildfly.clustering.web.infinispan.session.fine;
 
 import java.io.IOException;
-import java.util.AbstractMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
- * Unit test for {@link MapEntryExternalizer} externalizers
+ * Unit test for {@link SessionAttributeNamesEntryExternalizer}.
  * @author Paul Ferraro
  */
-public class MapEntryExternalizerTestCase {
+public class SessionAttributeNamesEntryExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        Object key = "key";
-        Object value = "value";
-        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_ENTRY.cast(AbstractMap.SimpleEntry.class)).test(new AbstractMap.SimpleEntry<>(key, value));
-        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_IMMUTABLE_ENTRY.cast(AbstractMap.SimpleImmutableEntry.class)).test(new AbstractMap.SimpleImmutableEntry<>(key, value));
+        ConcurrentMap<String, Integer> attributes = new ConcurrentHashMap<>();
+        attributes.put("a", 1);
+        attributes.put("b", 2);
+        attributes.put("c", 3);
+        SessionAttributeNamesEntry entry = new SessionAttributeNamesEntry(new AtomicInteger(10), attributes);
+        new ExternalizerTester<>(new SessionAttributeNamesEntryExternalizer(), SessionAttributeNamesEntryExternalizerTestCase::assertEquals).test(entry);
+    }
+
+    static void assertEquals(SessionAttributeNamesEntry entry1, SessionAttributeNamesEntry entry2) {
+        Assert.assertEquals(entry1.getNames(), entry2.getNames());
+        Assert.assertEquals(entry1.getSequence().get(), entry2.getSequence().get());
     }
 }

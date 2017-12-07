@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.util;
+package org.wildfly.clustering.web.infinispan.session;
 
 import java.io.IOException;
-import java.util.AbstractMap;
+import java.time.Duration;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
- * Unit test for {@link MapEntryExternalizer} externalizers
+ * Unit test for {@link SessionAccessMetaDataExternalizer}.
  * @author Paul Ferraro
  */
-public class MapEntryExternalizerTestCase {
+public class SessionAccessMetaDataExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        Object key = "key";
-        Object value = "value";
-        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_ENTRY.cast(AbstractMap.SimpleEntry.class)).test(new AbstractMap.SimpleEntry<>(key, value));
-        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_IMMUTABLE_ENTRY.cast(AbstractMap.SimpleImmutableEntry.class)).test(new AbstractMap.SimpleImmutableEntry<>(key, value));
+        SimpleSessionAccessMetaData metaData = new SimpleSessionAccessMetaData();
+        metaData.setLastAccessedDuration(Duration.ofMinutes(1));
+        new ExternalizerTester<>(new SessionAccessMetaDataExternalizer(), SessionAccessMetaDataExternalizerTestCase::assertEquals).test(metaData);
+    }
+
+    static void assertEquals(SimpleSessionAccessMetaData metaData1, SimpleSessionAccessMetaData metaData2) {
+        Assert.assertEquals(metaData1.getLastAccessedDuration(), metaData2.getLastAccessedDuration());
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.util;
+package org.wildfly.clustering.web.infinispan.sso;
 
 import java.io.IOException;
-import java.util.AbstractMap;
 
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
- * Unit test for {@link MapEntryExternalizer} externalizers
+ * Unit test for {@link AuthenticationKeyExternalizer}.
  * @author Paul Ferraro
  */
-public class MapEntryExternalizerTestCase {
+public class AuthenticationKeyExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        Object key = "key";
-        Object value = "value";
-        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_ENTRY.cast(AbstractMap.SimpleEntry.class)).test(new AbstractMap.SimpleEntry<>(key, value));
-        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_IMMUTABLE_ENTRY.cast(AbstractMap.SimpleImmutableEntry.class)).test(new AbstractMap.SimpleImmutableEntry<>(key, value));
+        new ExternalizerTester<>(new AuthenticationKeyExternalizer()).test(new AuthenticationKey("ABC123"));
     }
 }

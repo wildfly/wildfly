@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.util;
+package org.wildfly.clustering.ejb.infinispan.bean;
 
 import java.io.IOException;
-import java.util.AbstractMap;
+import java.util.UUID;
 
+import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.UUIDSessionID;
+import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
- * Unit test for {@link MapEntryExternalizer} externalizers
+ * Unit test for {@link InfinispanBeanEntryExternalizer}.
  * @author Paul Ferraro
  */
-public class MapEntryExternalizerTestCase {
+public class InfinispanBeanEntryExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        Object key = "key";
-        Object value = "value";
-        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_ENTRY.cast(AbstractMap.SimpleEntry.class)).test(new AbstractMap.SimpleEntry<>(key, value));
-        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_IMMUTABLE_ENTRY.cast(AbstractMap.SimpleImmutableEntry.class)).test(new AbstractMap.SimpleImmutableEntry<>(key, value));
+        InfinispanBeanEntry<SessionID> entry = new InfinispanBeanEntry<>("StatefulBean", new UUIDSessionID(UUID.randomUUID()));
+        new ExternalizerTester<>(new InfinispanBeanEntryExternalizer(), InfinispanBeanEntryExternalizerTestCase::assertEquals).test(entry);
+    }
+
+    static void assertEquals(InfinispanBeanEntry<SessionID> entry1, InfinispanBeanEntry<SessionID> entry2) {
+        Assert.assertEquals(entry1.getBeanName(), entry2.getBeanName());
+        Assert.assertEquals(entry1.getGroupId(), entry2.getGroupId());
     }
 }

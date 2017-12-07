@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi;
+package org.wildfly.clustering.marshalling;
 
 import static org.junit.Assert.*;
 
@@ -29,41 +29,42 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.EnumSet;
 import java.util.function.BiConsumer;
 
 import org.junit.Assert;
-import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
+ * Tester for an {@link Externalizer}.
  * @author Paul Ferraro
  */
-public class ExternalizerTestUtil {
+public class ExternalizerTester<T> {
 
-    public static <E extends Enum<E>> void test(Externalizer<E> externalizer) throws IOException, ClassNotFoundException {
-        for (E value : EnumSet.allOf(externalizer.getTargetClass())) {
-            test(externalizer, value);
-        }
+    private final Externalizer<T> externalizer;
+    private final BiConsumer<T, T> assertion;
+
+    public ExternalizerTester(Externalizer<T> externalizer) {
+        this(externalizer, Assert::assertEquals);
     }
 
-    public static <T> void test(Externalizer<T> externalizer, T subject) throws IOException, ClassNotFoundException {
-        test(externalizer, subject, Assert::assertEquals);
+    public ExternalizerTester(Externalizer<T> externalizer, BiConsumer<T, T> assertion) {
+        this.externalizer = externalizer;
+        this.assertion = assertion;
     }
 
-    public static <T> void test(Externalizer<T> externalizer, T subject, BiConsumer<T, T> assertion) throws IOException, ClassNotFoundException {
-        assertTrue(externalizer.getTargetClass().isInstance(subject));
+    public void test(T subject) throws IOException, ClassNotFoundException {
+        assertTrue(this.externalizer.getTargetClass().isInstance(subject));
 
         ByteArrayOutputStream externalizedOutput = new ByteArrayOutputStream();
         try (ObjectOutputStream output = new ObjectOutputStream(externalizedOutput)) {
-            externalizer.writeObject(output, subject);
+            this.externalizer.writeObject(output, subject);
         }
 
         byte[] externalizedBytes = externalizedOutput.toByteArray();
 
         try (ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(externalizedBytes))) {
-            T result = externalizer.readObject(input);
-            assertion.accept(subject, result);
-            assertTrue(externalizer.getTargetClass().isInstance(result));
+            T result = this.externalizer.readObject(input);
+            assertTrue(this.externalizer.getTargetClass().isInstance(result));
+            this.assertion.accept(subject, result);
         }
 
         // If object is serializable, make sure we've actually improved upon default serialization size

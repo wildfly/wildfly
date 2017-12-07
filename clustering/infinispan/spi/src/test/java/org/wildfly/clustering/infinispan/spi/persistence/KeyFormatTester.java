@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.util;
+package org.wildfly.clustering.infinispan.spi.persistence;
 
-import java.io.IOException;
-import java.util.AbstractMap;
+import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
+import java.util.function.BiConsumer;
+
+import org.junit.Assert;
 
 /**
- * Unit test for {@link MapEntryExternalizer} externalizers
+ * Tester for a {@link KeyFormat}.
  * @author Paul Ferraro
  */
-public class MapEntryExternalizerTestCase {
+public class KeyFormatTester<K> {
 
-    @Test
-    public void test() throws ClassNotFoundException, IOException {
-        Object key = "key";
-        Object value = "value";
-        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_ENTRY.cast(AbstractMap.SimpleEntry.class)).test(new AbstractMap.SimpleEntry<>(key, value));
-        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_IMMUTABLE_ENTRY.cast(AbstractMap.SimpleImmutableEntry.class)).test(new AbstractMap.SimpleImmutableEntry<>(key, value));
+    private final KeyFormat<K> format;
+    private final BiConsumer<K, K> assertion;
+
+    public KeyFormatTester(KeyFormat<K> format) {
+        this(format, Assert::assertEquals);
+    }
+
+    public KeyFormatTester(KeyFormat<K> format, BiConsumer<K, K> assertion) {
+        this.format = format;
+        this.assertion = assertion;
+    }
+
+    public void test(K subject) {
+        assertTrue(this.format.getTargetClass().isInstance(subject));
+
+        String formatted = this.format.format(subject);
+
+        K result = this.format.parse(formatted);
+
+        assertTrue(this.format.getTargetClass().isInstance(result));
+
+        this.assertion.accept(subject, result);
     }
 }

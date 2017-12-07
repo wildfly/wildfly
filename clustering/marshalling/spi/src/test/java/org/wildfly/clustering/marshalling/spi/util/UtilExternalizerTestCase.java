@@ -32,7 +32,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
+import org.wildfly.clustering.marshalling.EnumExternalizerTester;
+import org.wildfly.clustering.marshalling.ExternalizerTester;
 import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
@@ -43,14 +44,15 @@ public class UtilExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        ExternalizerTestUtil.test(DefaultExternalizer.CURRENCY.cast(Currency.class), Currency.getInstance(Locale.US));
-        ExternalizerTestUtil.test(DefaultExternalizer.LOCALE.cast(Locale.class), Locale.US);
-        ExternalizerTestUtil.test(DefaultExternalizer.NATURAL_ORDER_COMPARATOR.cast(Comparator.class), Comparator.naturalOrder());
-        ExternalizerTestUtil.test(DefaultExternalizer.OPTIONAL.cast(Optional.class), Optional.empty());
-        ExternalizerTestUtil.test(DefaultExternalizer.REVERSE_ORDER_COMPARATOR.cast(Comparator.class), Comparator.reverseOrder());
-        ExternalizerTestUtil.test(DefaultExternalizer.TIME_UNIT.cast(TimeUnit.class));
-        ExternalizerTestUtil.test(DefaultExternalizer.TIME_ZONE.cast(TimeZone.class), TimeZone.getDefault());
-        ExternalizerTestUtil.test(DefaultExternalizer.TIME_ZONE.cast(TimeZone.class), TimeZone.getTimeZone("America/New_York"));
-        ExternalizerTestUtil.test(DefaultExternalizer.UUID.cast(UUID.class), UUID.randomUUID());
+        new ExternalizerTester<>(DefaultExternalizer.CURRENCY.cast(Currency.class)).test(Currency.getInstance(Locale.US));
+        new ExternalizerTester<>(DefaultExternalizer.LOCALE.cast(Locale.class)).test(Locale.US);
+        new ExternalizerTester<>(DefaultExternalizer.NATURAL_ORDER_COMPARATOR.cast(Comparator.class)).test(Comparator.naturalOrder());
+        new ExternalizerTester<>(DefaultExternalizer.OPTIONAL.cast(Optional.class)).test(Optional.empty());
+        new ExternalizerTester<>(DefaultExternalizer.OPTIONAL.cast(Optional.class)).test(Optional.of(UUID.randomUUID()));
+        new ExternalizerTester<>(DefaultExternalizer.REVERSE_ORDER_COMPARATOR.cast(Comparator.class)).test(Comparator.reverseOrder());
+        new EnumExternalizerTester<>(DefaultExternalizer.TIME_UNIT.cast(TimeUnit.class)).test();
+        new ExternalizerTester<>(DefaultExternalizer.TIME_ZONE.cast(TimeZone.class)).test(TimeZone.getDefault());
+        new ExternalizerTester<>(DefaultExternalizer.TIME_ZONE.cast(TimeZone.class)).test(TimeZone.getTimeZone("America/New_York"));
+        new ExternalizerTester<>(DefaultExternalizer.UUID.cast(UUID.class)).test(UUID.randomUUID());
     }
 }

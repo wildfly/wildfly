@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.spi.util;
+package org.wildfly.clustering.web.infinispan.session;
 
 import java.io.IOException;
-import java.util.AbstractMap;
+import java.time.Duration;
+import java.time.Instant;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
- * Unit test for {@link MapEntryExternalizer} externalizers
+ * Unit test for {@link SessionCreationMetaDataEntryExternalizer}.
  * @author Paul Ferraro
  */
-public class MapEntryExternalizerTestCase {
+public class SessionCreationMetaDataEntryExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        Object key = "key";
-        Object value = "value";
-        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_ENTRY.cast(AbstractMap.SimpleEntry.class)).test(new AbstractMap.SimpleEntry<>(key, value));
-        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_IMMUTABLE_ENTRY.cast(AbstractMap.SimpleImmutableEntry.class)).test(new AbstractMap.SimpleImmutableEntry<>(key, value));
+        SessionCreationMetaData metaData = new SimpleSessionCreationMetaData(Instant.now());
+        metaData.setMaxInactiveInterval(Duration.ofMinutes(10));
+        SessionCreationMetaDataEntry<Object> entry = new SessionCreationMetaDataEntry<>(metaData);
+
+        new ExternalizerTester<>(new SessionCreationMetaDataEntryExternalizer(), SessionCreationMetaDataEntryExternalizerTestCase::assertEquals).test(entry);
+    }
+
+    static void assertEquals(SessionCreationMetaDataEntry<Object> entry1, SessionCreationMetaDataEntry<Object> entry2) {
+        Assert.assertEquals(entry1.getMetaData().getCreationTime(), entry2.getMetaData().getCreationTime());
+        Assert.assertEquals(entry1.getMetaData().getMaxInactiveInterval(), entry2.getMetaData().getMaxInactiveInterval());
     }
 }

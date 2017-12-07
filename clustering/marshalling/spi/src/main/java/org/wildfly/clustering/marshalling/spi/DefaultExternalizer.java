@@ -25,6 +25,9 @@ package org.wildfly.clustering.marshalling.spi;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -46,6 +49,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -63,6 +67,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.net.InetAddressExternalizer;
+import org.wildfly.clustering.marshalling.spi.net.InetSocketAddressExternalizer;
 import org.wildfly.clustering.marshalling.spi.net.URLExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.DurationExternalizer;
 import org.wildfly.clustering.marshalling.spi.time.InstantExternalizer;
@@ -88,6 +94,10 @@ import org.wildfly.clustering.marshalling.spi.util.UUIDExternalizer;
  */
 public enum DefaultExternalizer implements Externalizer<Object> {
     // java.net
+    INET_ADDRESS(new InetAddressExternalizer<>(InetAddress.class, OptionalInt.empty())),
+    INET4_ADDRESS(new InetAddressExternalizer<>(Inet4Address.class, OptionalInt.of(4))),
+    INET6_ADDRESS(new InetAddressExternalizer<>(Inet6Address.class, OptionalInt.of(16))),
+    INET_SOCKET_ADDRESS(new InetSocketAddressExternalizer()),
     URI(new StringExternalizer<>(java.net.URI.class, java.net.URI::create, java.net.URI::toString)),
     URL(new URLExternalizer()),
     // java.time

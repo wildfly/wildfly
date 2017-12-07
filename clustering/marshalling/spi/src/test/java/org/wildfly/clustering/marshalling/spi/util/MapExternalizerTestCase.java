@@ -22,9 +22,6 @@
 
 package org.wildfly.clustering.marshalling.spi.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,13 +32,12 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
+import org.wildfly.clustering.marshalling.ExternalizerTester;
 import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
@@ -54,23 +50,25 @@ public class MapExternalizerTestCase {
     @Test
     public void test() throws ClassNotFoundException, IOException {
         Map<Object, Object> basis = Stream.of(1, 2, 3, 4, 5).collect(Collectors.<Integer, Object, Object>toMap(i -> i, i -> Integer.toString(i)));
-        test(DefaultExternalizer.CONCURRENT_HASH_MAP.cast(ConcurrentHashMap.class), new ConcurrentHashMap<>(basis));
-        test(DefaultExternalizer.HASH_MAP.cast(HashMap.class), new HashMap<>(basis));
-        test(DefaultExternalizer.LINKED_HASH_MAP.cast(LinkedHashMap.class), new LinkedHashMap<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.CONCURRENT_HASH_MAP.cast(ConcurrentHashMap.class), MapExternalizerTestCase::assertMapEquals).test(new ConcurrentHashMap<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.HASH_MAP.cast(HashMap.class), MapExternalizerTestCase::assertMapEquals).test(new HashMap<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.LINKED_HASH_MAP.cast(LinkedHashMap.class), MapExternalizerTestCase::assertMapEquals).test(new LinkedHashMap<>(basis));
 
-        test(DefaultExternalizer.EMPTY_MAP.cast(Map.class), Collections.emptyMap());
-        test(DefaultExternalizer.EMPTY_NAVIGABLE_MAP.cast(NavigableMap.class), Collections.emptyNavigableMap());
-        test(DefaultExternalizer.EMPTY_SORTED_MAP.cast(SortedMap.class), Collections.emptySortedMap());
+        new ExternalizerTester<>(DefaultExternalizer.EMPTY_MAP.cast(Map.class), Assert::assertSame).test(Collections.emptyMap());
+        new ExternalizerTester<>(DefaultExternalizer.EMPTY_NAVIGABLE_MAP.cast(NavigableMap.class), Assert::assertSame).test(Collections.emptyNavigableMap());
+        new ExternalizerTester<>(DefaultExternalizer.EMPTY_SORTED_MAP.cast(SortedMap.class), Assert::assertSame).test(Collections.emptySortedMap());
 
-        test(DefaultExternalizer.SINGLETON_MAP.cast(Map.class), Collections.singletonMap(1, 2));
+        new ExternalizerTester<>(DefaultExternalizer.SINGLETON_MAP.cast(Map.class), MapExternalizerTestCase::assertMapEquals).test(Collections.singletonMap(1, 2));
 
-        test(DefaultExternalizer.CONCURRENT_SKIP_LIST_MAP.cast(ConcurrentSkipListMap.class), new ConcurrentSkipListMap<>(basis));
-        test(DefaultExternalizer.TREE_MAP.cast(TreeMap.class), new TreeMap<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.CONCURRENT_SKIP_LIST_MAP.cast(ConcurrentSkipListMap.class), MapExternalizerTestCase::assertMapEquals).test(new ConcurrentSkipListMap<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.TREE_MAP.cast(TreeMap.class), MapExternalizerTestCase::assertMapEquals).test(new TreeMap<>(basis));
     }
 
-    public static <T extends Map<Object, Object>> void test(Externalizer<T> externalizer, T collection) throws ClassNotFoundException, IOException {
-        BiConsumer<T, T> assertSize = (expected, actual) -> assertEquals(expected.size(), actual.size());
-        BiConsumer<T, T> assertContents = (expected, actual) -> assertTrue(actual.keySet().containsAll(expected.keySet()));
-        ExternalizerTestUtil.test(externalizer, collection, assertSize.andThen(assertContents));
+    static <T extends Map<Object, Object>> void assertMapEquals(T expected, T actual) {
+        Assert.assertEquals(expected.size(), actual.size());
+        Assert.assertTrue(expected.keySet().containsAll(actual.keySet()));
+        for (Map.Entry<Object, Object> entry : expected.entrySet()) {
+            Assert.assertEquals(entry.getValue(), actual.get(entry.getKey()));
+        }
     }
 }
