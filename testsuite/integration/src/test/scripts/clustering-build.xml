@@ -56,17 +56,5 @@
                                     inet-address="${node0}"/>
         <ts.config-as.change-jgroups-multicast-interface name="wildfly-${stack}-1"
                                                          interface="multicast"/>
-
-        <!-- Messaging profiles -->
-        <copy todir="target/wildfly-clustered-messaging-0" overwrite="true">
-            <fileset dir="${basedir}/target/wildfly"/>
-        </copy>
-        <ts.config-as.change-transport-stack name="wildfly-clustered-messaging-0"
-                                             stack="${stack}"/>
-        <copy todir="target/wildfly-clustered-messaging-1" overwrite="true">
-            <fileset dir="${basedir}/target/wildfly"/>
-        </copy>
-        <ts.config-as.change-transport-stack name="wildfly-clustered-messaging-1"
-                                             stack="${stack}"/>
     </target>
 </project>

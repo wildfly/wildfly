@@ -20,9 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.messaging;
+package org.jboss.as.test.clustering.cluster.jms;
 
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.GRACE_TIME_TO_MEMBERSHIP_CHANGE;
 import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
 import static org.junit.Assert.*;
 
@@ -39,16 +38,13 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,10 +55,7 @@ import org.wildfly.test.api.Authentication;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ClusteredMessagingTestCase {
-
-    public static final String CONTAINER_0 = "messaging-container-0";
-    public static final String CONTAINER_1 = "messaging-container-1";
+public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
 
     protected final String jmsQueueName = "ClusteredMessagingTestCase-Queue";
     protected final String jmsQueueLookup = "jms/" + jmsQueueName;
@@ -70,8 +63,9 @@ public class ClusteredMessagingTestCase {
     protected final String jmsTopicName = "ClusteredMessagingTestCase-Topic";
     protected final String jmsTopicLookup = "jms/" + jmsTopicName;
 
-    @ArquillianResource
-    protected static ContainerController container;
+    public ClusteredMessagingTestCase() {
+        super(TWO_NODES, new String[]{});
+    }
 
     protected static ModelControllerClient createClient1() {
         return TestSuiteEnvironment.getModelControllerClient();
@@ -88,15 +82,9 @@ public class ClusteredMessagingTestCase {
         thisTestIsFailingIntermittently("WFLY-5390");
     }
 
-    @Before
-    public void setUp() throws Exception {
-
-        container.start(CONTAINER_0);
-        container.start(CONTAINER_1);
-
-        // both servers are started and configured
-        assertTrue(container.isStarted(CONTAINER_0));
-        assertTrue(container.isStarted(CONTAINER_1));
+    @Override
+    public void beforeTestMethod() throws Exception {
+        super.beforeTestMethod();
 
         try (ModelControllerClient client = createClient1()) {
             JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
@@ -110,8 +98,10 @@ public class ClusteredMessagingTestCase {
         }
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    public void afterTestMethod() throws Exception {
+        super.afterTestMethod();
+
         try (ModelControllerClient client = createClient1()) {
             JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
             jmsOperations.removeJmsQueue(jmsQueueName);
@@ -122,9 +112,6 @@ public class ClusteredMessagingTestCase {
             jmsOperations.removeJmsQueue(jmsQueueName);
             jmsOperations.removeJmsTopic(jmsTopicName);
         }
-
-        container.stop(CONTAINER_0);
-        container.stop(CONTAINER_1);
     }
 
     @Test
@@ -191,7 +178,7 @@ public class ClusteredMessagingTestCase {
         return new InitialContext(env);
     }
 
-    protected static  InitialContext createJNDIContextFromServer1() throws NamingException {
+    protected static InitialContext createJNDIContextFromServer1() throws NamingException {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
         env.put(Context.PROVIDER_URL, "http-remoting://" + TestSuiteEnvironment.getServerAddress() + ":8180");
@@ -200,7 +187,7 @@ public class ClusteredMessagingTestCase {
         return new InitialContext(env);
     }
 
-    protected static  void sendMessage(Context ctx, String destinationLookup, String text) throws NamingException {
+    protected static void sendMessage(Context ctx, String destinationLookup, String text) throws NamingException {
         ConnectionFactory cf = (ConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
         assertNotNull(cf);
         Destination destination = (Destination) ctx.lookup(destinationLookup);
@@ -218,7 +205,7 @@ public class ClusteredMessagingTestCase {
         return context;
     }
 
-    protected static void receiveMessage(JMSConsumer consumer, String expectedText) throws NamingException {
+    protected static void receiveMessage(JMSConsumer consumer, String expectedText) {
         String text = consumer.receiveBody(String.class, 5000);
         assertNotNull(text);
         assertEquals(expectedText, text);

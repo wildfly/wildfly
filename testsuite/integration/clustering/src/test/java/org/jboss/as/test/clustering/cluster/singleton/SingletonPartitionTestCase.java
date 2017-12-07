@@ -185,7 +185,7 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
     }
 
     @Override
-    public void afterTestMethod() {
+    public void afterTestMethod() throws Exception {
         super.afterTestMethod();
 
         // Stop the container to ensure there aren't any remnants since the test operates on a live JGroups channels

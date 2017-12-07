@@ -145,7 +145,7 @@ public abstract class AbstractClusteringTestCase {
      */
     @Before
     @RunAsClient // Does not work, see https://issues.jboss.org/browse/ARQ-351
-    public void beforeTestMethod() {
+    public void beforeTestMethod() throws Exception {
         NodeUtil.start(this.controller, nodes);
         NodeUtil.deploy(this.deployer, deployments);
     }
@@ -155,7 +155,7 @@ public abstract class AbstractClusteringTestCase {
      */
     @After
     @RunAsClient // Does not work, see https://issues.jboss.org/browse/ARQ-351
-    public void afterTestMethod() {
+    public void afterTestMethod() throws Exception {
         NodeUtil.start(this.controller, nodes);
         NodeUtil.undeploy(this.deployer, deployments);
     }
