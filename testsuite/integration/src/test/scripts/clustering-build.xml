@@ -1,11 +1,5 @@
 <?xml version="1.0"?>
-<project name="clustering-build scripts">
-
-    <!-- Import shared ant targets -->
-    <import file="common-targets.xml" as="common"/>
-    <import file="clustering-common-targets.xml" as="clustering-common"/>
-
-    <!-- Only copy over 4 profiles -->
+<project>
     <target name="build-clustering">
         <copy todir="target/wildfly-1" overwrite="true">
             <fileset dir="${basedir}/target/wildfly"/>
@@ -19,42 +13,5 @@
         <copy todir="target/wildfly-4" overwrite="true">
             <fileset dir="${basedir}/target/wildfly"/>
         </copy>
-    </target>
-
-    <!-- Shared clustering config target -->
-    <target name="abstract-build-clustering" description="Builds two server configuration for given JGroups stack">
-        <echo message="  =========  Building config clustering-${stack}-0  =========  "/>
-        <copy todir="target/wildfly-${stack}-0" overwrite="true">
-            <fileset dir="${basedir}/target/wildfly"/>
-        </copy>
-        <ts.config-as.ip-with-multicast name="wildfly-${stack}-0"
-                                        node="${node0}"
-                                        mcast="${mcast}"
-                />
-        <ts.config-as.add-port-offset name="wildfly-${stack}-0"/>
-        <ts.config-as.change-transport-stack name="wildfly-${stack}-0"
-                                             stack="${stack}"/>
-        <ts.config-as.add-interface name="wildfly-${stack}-0"
-                                    interface="multicast"
-                                    inet-address="${node0}"/>
-        <ts.config-as.change-jgroups-multicast-interface name="wildfly-${stack}-0"
-                                                         interface="multicast"/>
-
-        <echo message="  =========  Building config clustering-${stack}-1  =========  "/>
-        <copy todir="target/wildfly-${stack}-1" overwrite="true">
-            <fileset dir="${basedir}/target/wildfly"/>
-        </copy>
-        <ts.config-as.ip-with-multicast name="wildfly-${stack}-1"
-                                        node="${node1}"
-                                        mcast="${mcast}"
-                />
-        <ts.config-as.add-port-offset name="wildfly-${stack}-1" offset="100" nativePort="9999" httpPort="9990"/>
-        <ts.config-as.change-transport-stack name="wildfly-${stack}-1"
-                                             stack="${stack}"/>
-        <ts.config-as.add-interface name="wildfly-${stack}-1"
-                                    interface="multicast"
-                                    inet-address="${node0}"/>
-        <ts.config-as.change-jgroups-multicast-interface name="wildfly-${stack}-1"
-                                                         interface="multicast"/>
     </target>
 </project>
