@@ -190,7 +190,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
         final AttributeDefinition definition;
 
-        private ConnectorStat(final AttributeDefinition definition) {
+        ConnectorStat(final AttributeDefinition definition) {
             this.definition = definition;
         }
 
@@ -220,7 +220,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         ATTRIBUTES.addAll(SOCKET_OPTIONS);
     }
 
-    public ListenerResourceDefinition(PathElement pathElement) {
+    ListenerResourceDefinition(PathElement pathElement) {
         super(new PersistentResourceDefinition.Parameters(pathElement, UndertowExtension.getResolver(Constants.LISTENER))
                 .setCapabilities(LISTENER_CAPABILITY));
     }

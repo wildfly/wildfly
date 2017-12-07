@@ -400,7 +400,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     private static final class IntExpressionConfig extends RejectExpressionsConfig {
 
-        public IntExpressionConfig(String... attributes) {
+        IntExpressionConfig(String... attributes) {
             // FIXME GlobalSessionTimeOutConfig constructor
             super(attributes);
         }
@@ -414,7 +414,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     private static final class BooleanExpressionConfig extends RejectExpressionsConfig {
 
-        public BooleanExpressionConfig(String... attributes) {
+        BooleanExpressionConfig(String... attributes) {
             // FIXME GlobalSessionTimeOutConfig constructor
             super(attributes);
         }

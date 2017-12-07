@@ -119,7 +119,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     private Map<String, InjectedValue<ExceptionSupplier<CredentialSource, Exception>>> bridgeCredentialSource = new HashMap<>();
     private InjectedValue<ExceptionSupplier<CredentialSource, Exception>> clusterCredentialSource = new InjectedValue<>();
 
-    public ActiveMQServerService(Configuration configuration, PathConfig pathConfig) {
+    ActiveMQServerService(Configuration configuration, PathConfig pathConfig) {
         this.configuration = configuration;
         this.pathConfig = pathConfig;
         if (configuration != null) {
@@ -432,7 +432,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         private final String pagingRelativeToPath;
         private final List<PathManager.Callback.Handle> callbackHandles = new ArrayList<PathManager.Callback.Handle>();
 
-        public PathConfig(String bindingsPath, String bindingsRelativeToPath, String journalPath, String journalRelativeToPath,
+        PathConfig(String bindingsPath, String bindingsRelativeToPath, String journalPath, String journalRelativeToPath,
                 String largeMessagePath, String largeMessageRelativeToPath, String pagingPath, String pagingRelativeToPath) {
             this.bindingsPath = bindingsPath;
             this.bindingsRelativeToPath = bindingsRelativeToPath;

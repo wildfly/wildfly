@@ -42,7 +42,7 @@ final class ArchiveValidationService implements Service<ArchiveValidationService
 
 
         /** create an instance **/
-        public ArchiveValidationService(ArchiveValidationService.ArchiveValidation value) {
+        ArchiveValidationService(ArchiveValidationService.ArchiveValidation value) {
             this.value = value;
         }
 
@@ -73,7 +73,7 @@ final class ArchiveValidationService implements Service<ArchiveValidationService
         private final boolean failOnError;
         private final boolean failOnWarn;
 
-        public ArchiveValidation(boolean enabled, boolean failOnError, boolean failOnWarn) {
+        ArchiveValidation(boolean enabled, boolean failOnError, boolean failOnWarn) {
             this.enabled = enabled;
             this.failOnError = failOnError;
             this.failOnWarn = failOnWarn;

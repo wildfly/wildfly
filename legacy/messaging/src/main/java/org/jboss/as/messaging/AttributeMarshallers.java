@@ -48,7 +48,7 @@ public final class AttributeMarshallers {
         private final String elementName;
         private final String attributeName;
 
-        public AttributeInsideElementMarshaller(final String elementName, final String attributeName) {
+        AttributeInsideElementMarshaller(final String elementName, final String attributeName) {
             this.elementName = elementName;
             this.attributeName = attributeName;
         }

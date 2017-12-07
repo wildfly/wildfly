@@ -29,6 +29,7 @@ import java.lang.reflect.Proxy;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
+@SuppressWarnings("checkstyle:equalshashcode")
 abstract class AbstractInvocationHandler implements InvocationHandler {
     protected abstract boolean doEquals(Object obj);
 

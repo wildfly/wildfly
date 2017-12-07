@@ -59,7 +59,7 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
     private final InjectedValue<SecurityRealmService> realmService = new InjectedValue<>();
     private final InjectedValue<PathHandler> remoteHttpInvokerServiceInjectedValue = new InjectedValue<>();
 
-    public HttpInvokerHostService(String path) {
+    HttpInvokerHostService(String path) {
         this.path = path;
     }
 

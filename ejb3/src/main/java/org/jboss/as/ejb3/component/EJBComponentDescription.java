@@ -873,7 +873,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private static class Ejb2ViewTypeConfigurator implements ViewConfigurator {
         private final Ejb2xViewType local;
 
-        public Ejb2ViewTypeConfigurator(final Ejb2xViewType local) {
+        Ejb2ViewTypeConfigurator(final Ejb2xViewType local) {
             this.local = local;
         }
 
@@ -957,7 +957,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
         private final String name;
 
-        public ToStringMethodInterceptor(final String name) {
+        ToStringMethodInterceptor(final String name) {
             this.name = name;
         }
 

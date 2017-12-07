@@ -126,7 +126,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
 
         private static final String ENTITY_MANAGER_CLASS = "javax.persistence.EntityManager";
 
-        public PersistenceContextJndiInjectable(
+            PersistenceContextJndiInjectable(
             final ServiceName puServiceName,
             final ServiceRegistry serviceRegistry,
             final PersistenceContextType type,

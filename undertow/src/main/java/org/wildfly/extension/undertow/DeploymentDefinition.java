@@ -271,7 +271,7 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
 
         final AttributeDefinition definition;
 
-        private SessionStat(final AttributeDefinition definition) {
+        SessionStat(final AttributeDefinition definition) {
             this.definition = definition;
         }
 

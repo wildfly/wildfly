@@ -221,7 +221,7 @@ public interface ConnectorLogger extends BasicLogger {
 
     @LogMessage(level = WARN)
     @Message(id = 16, value = "Method %s on DataSource class %s not found. Ignoring")
-    void methodNotFoundOnDataSource(final String method, final Class<?> clazz);
+    void methodNotFoundOnDataSource(String method, Class<?> clazz);
 
     @LogMessage(level = DEBUG)
     @Message(id = 17, value = "Forcing ironjacamar.xml descriptor to null")
@@ -603,7 +603,7 @@ public interface ConnectorLogger extends BasicLogger {
 //     * @return an {@link IllegalArgumentException} for the exception
 //     */
 //    @Message(id = 63, value = "%s cannot be null or empty")
-//    IllegalArgumentException stringParamCannotBeNullOrEmpty(final String paramName);
+//    IllegalArgumentException stringParamCannotBeNullOrEmpty(String paramName);
 
     @Message(id = 64, value = "Exception deploying datasource %s")
     DeploymentUnitProcessingException exceptionDeployingDatasource(@Cause Throwable cause, String datasource);

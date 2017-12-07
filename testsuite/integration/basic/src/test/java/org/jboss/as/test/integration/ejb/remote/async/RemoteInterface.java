@@ -30,7 +30,7 @@ import java.util.concurrent.Future;
 @Remote
 public interface RemoteInterface {
 
-    void modifyArray(final String[] array);
+    void modifyArray(String[] array);
 
     Future<String> hello();
 

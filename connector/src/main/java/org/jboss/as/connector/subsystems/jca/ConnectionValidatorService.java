@@ -37,7 +37,7 @@ final class ConnectionValidatorService implements Service<ConnectionValidator> {
     /**
      * Constructor
      */
-    public ConnectionValidatorService() {
+    ConnectionValidatorService() {
     }
 
     @Override

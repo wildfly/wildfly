@@ -272,7 +272,7 @@ public abstract class AbstractTimerManagementTestCase {
 
     protected abstract boolean isPersistent();
 
-    protected abstract void assertCalendar(final ModelNode timerDetails);
+    protected abstract void assertCalendar(ModelNode timerDetails);
 
     protected String getCalendarTimerDetail(){
         return this.bean.getComparableTimerDetail();

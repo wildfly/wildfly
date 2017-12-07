@@ -77,7 +77,7 @@ public class LdapsInitializer {
             private final SSLContext delegate;
             private final SslCertChainRecorder recorder;
 
-            public WrappedSSLContextSpi(SSLContext delegate, SslCertChainRecorder recorder) {
+            WrappedSSLContextSpi(SSLContext delegate, SslCertChainRecorder recorder) {
                 super();
                 this.delegate = delegate;
                 this.recorder = recorder;
@@ -123,7 +123,7 @@ public class LdapsInitializer {
             private final SSLEngine delegate;
             private final SslCertChainRecorder recorder;
 
-            public WrappedSSLEngine(SSLEngine delegate, SslCertChainRecorder recorder) {
+            WrappedSSLEngine(SSLEngine delegate, SslCertChainRecorder recorder) {
                 super();
                 this.delegate = delegate;
                 this.recorder = recorder;

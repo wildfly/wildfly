@@ -103,7 +103,7 @@ public class EJB3IIOPResourceDefinition extends SimpleResourceDefinition {
 
     private abstract static class AbstractIIOPSettingWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
-        public AbstractIIOPSettingWriteHandler(final AttributeDefinition attribute) {
+        AbstractIIOPSettingWriteHandler(final AttributeDefinition attribute) {
             super(attribute);
         }
 
@@ -131,7 +131,7 @@ public class EJB3IIOPResourceDefinition extends SimpleResourceDefinition {
             }
         }
 
-        abstract void applySetting(final IIOPSettingsService service, final OperationContext context, final ModelNode model) throws OperationFailedException;
+        abstract void applySetting(IIOPSettingsService service, OperationContext context, ModelNode model) throws OperationFailedException;
 
     }
 }

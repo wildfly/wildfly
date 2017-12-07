@@ -260,7 +260,7 @@ public class ManagementResourceDefinition extends SimpleResourceDefinition {
 
     private abstract static class AbstractMetricsHandler extends AbstractRuntimeOnlyHandler {
 
-        abstract void handle(final ModelNode response, final OperationContext context, final ModelNode operation);
+        abstract void handle(ModelNode response, OperationContext context, ModelNode operation);
 
         @Override
         protected void executeRuntimeStep(final OperationContext context, final ModelNode operation) throws

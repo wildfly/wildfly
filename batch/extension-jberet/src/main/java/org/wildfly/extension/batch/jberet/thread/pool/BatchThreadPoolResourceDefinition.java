@@ -91,7 +91,7 @@ public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition 
         static final BatchThreadPoolAdd INSTANCE = new BatchThreadPoolAdd(BatchThreadFactoryResolver.INSTANCE, BatchServiceNames.BASE_BATCH_THREAD_POOL_NAME);
         private final ServiceName serviceNameBase;
 
-        public BatchThreadPoolAdd(final ThreadFactoryResolver threadFactoryResolver, final ServiceName serviceNameBase) {
+        BatchThreadPoolAdd(final ThreadFactoryResolver threadFactoryResolver, final ServiceName serviceNameBase) {
             super(threadFactoryResolver, serviceNameBase);
             this.serviceNameBase = serviceNameBase;
         }
@@ -112,7 +112,7 @@ public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition 
     static class BatchThreadPoolRemove extends UnboundedQueueThreadPoolRemove {
         static final BatchThreadPoolRemove INSTANCE = new BatchThreadPoolRemove();
 
-        public BatchThreadPoolRemove() {
+        BatchThreadPoolRemove() {
             super(BatchThreadPoolAdd.INSTANCE);
         }
 

@@ -30,7 +30,7 @@ import java.util.Map;
 final class CustomServerConfig extends ServerConfig {
     private String protocol;
 
-    public CustomServerConfig(final String protocol, final String socketBinding, Credentials credentials, boolean ssl, boolean tls, Map<String, String> properties) {
+    CustomServerConfig(final String protocol, final String socketBinding, Credentials credentials, boolean ssl, boolean tls, Map<String, String> properties) {
         super(socketBinding, credentials, ssl, tls, properties);
         this.protocol = protocol;
     }

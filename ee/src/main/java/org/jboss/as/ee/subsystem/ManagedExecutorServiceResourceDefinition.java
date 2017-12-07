@@ -162,7 +162,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
     }
 
     static class ValidatingWriteHandler extends ReloadRequiredWriteAttributeHandler {
-        public ValidatingWriteHandler(final AttributeDefinition... definitions) {
+        ValidatingWriteHandler(final AttributeDefinition... definitions) {
             super(definitions);
         }
 

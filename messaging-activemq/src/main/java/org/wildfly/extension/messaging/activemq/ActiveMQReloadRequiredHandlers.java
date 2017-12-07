@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat, inc
  */
 public interface ActiveMQReloadRequiredHandlers {
-    static class AddStepHandler extends AbstractAddStepHandler {
+    class AddStepHandler extends AbstractAddStepHandler {
 
         private boolean reloadRequired = false;
 
@@ -87,7 +87,7 @@ public interface ActiveMQReloadRequiredHandlers {
         }
     }
 
-    static class WriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
+    class WriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
         public WriteAttributeHandler(Collection<? extends AttributeDefinition> definitions) {
             super(definitions.toArray(new AttributeDefinition[definitions.size()]));

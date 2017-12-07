@@ -66,7 +66,7 @@ public class EjbJaccConfig {
         private final K key;
         private final V value;
 
-        public Entry(final K key, final V value) {
+        Entry(final K key, final V value) {
             this.key = key;
             this.value = value;
         }

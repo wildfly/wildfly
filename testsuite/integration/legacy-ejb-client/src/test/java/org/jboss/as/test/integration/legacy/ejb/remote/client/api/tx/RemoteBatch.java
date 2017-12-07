@@ -27,17 +27,17 @@ package org.jboss.as.test.integration.legacy.ejb.remote.client.api.tx;
  */
 public interface RemoteBatch {
 
-    void createBatch(final String batchName);
+    void createBatch(String batchName);
 
-    void step1(final String batchName, final String stepName);
+    void step1(String batchName, String stepName);
 
-    void successfulStep2(final String batchName, final String stepName);
+    void successfulStep2(String batchName, String stepName);
 
-    void appExceptionFailingStep2(final String batchName, final String stepName) throws SimpleAppException;
+    void appExceptionFailingStep2(String batchName, String stepName) throws SimpleAppException;
 
-    void systemExceptionFailingStep2(final String batchName, final String stepName);
+    void systemExceptionFailingStep2(String batchName, String stepName);
 
-    void independentStep3(final String batchName, final String stepName);
+    void independentStep3(String batchName, String stepName);
 
-    void step4(final String batchName, final String stepName);
+    void step4(String batchName, String stepName);
 }

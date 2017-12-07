@@ -108,7 +108,7 @@ abstract class AbstractMetaDataBuilderPOJO {
         return builder.build();
     }
 
-    protected abstract List<POJOEndpoint> getPojoEndpoints(final DeploymentUnit unit);
+    protected abstract List<POJOEndpoint> getPojoEndpoints(DeploymentUnit unit);
 
     /**
      * Sets config name and config file.

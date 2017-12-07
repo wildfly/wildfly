@@ -364,7 +364,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
         ModClusterSSLResourceDefinition.buildTransformation(version, builder);
     }
 
-    public ModClusterConfigResourceDefinition() {
+    ModClusterConfigResourceDefinition() {
         super(new Parameters(PATH, ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION))
                 .setAddHandler(ModClusterConfigAdd.INSTANCE)
                 .setRemoveHandler(new ReloadRequiredRemoveStepHandler())

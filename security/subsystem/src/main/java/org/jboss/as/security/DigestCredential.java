@@ -29,7 +29,7 @@ package org.jboss.as.security;
  */
 public interface DigestCredential {
 
-    boolean verifyHA1(final byte[] ha1);
+    boolean verifyHA1(byte[] ha1);
 
     String getRealm();
 

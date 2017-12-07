@@ -47,6 +47,6 @@ public @interface WithContextClassLoader {
      *
      * @author Gunnar Morling
      */
-    public static class NullClassLoader extends ClassLoader {
+    class NullClassLoader extends ClassLoader {
     }
 }

@@ -62,7 +62,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
             }
         }
 
-        private Namespace(String namespace) {
+        Namespace(String namespace) {
             this.namespace = namespace;
         }
 
@@ -101,7 +101,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
             }
         }
 
-        private Element(final String localName) {
+        Element(final String localName) {
             this.localName = localName;
         }
 
@@ -138,7 +138,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
             }
         }
 
-        private Attribute(final QName qName) {
+        Attribute(final QName qName) {
             this.qName = qName;
         }
 

@@ -61,7 +61,7 @@ public abstract class AbstractRuntimeMetricsHandler extends AbstractRuntimeOnlyH
         return BasicComponent.serviceNameOf(deploymentUnitServiceName, component).append("START");
     }
 
-    protected abstract void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException;
+    protected abstract void executeReadMetricStep(OperationContext context, ModelNode operation, EJBComponent component) throws OperationFailedException;
 
     @Override
     protected void executeRuntimeStep(final OperationContext context, final ModelNode operation) throws OperationFailedException {

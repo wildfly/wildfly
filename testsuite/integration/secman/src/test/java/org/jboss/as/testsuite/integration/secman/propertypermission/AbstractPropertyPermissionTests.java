@@ -204,7 +204,7 @@ public abstract class AbstractPropertyPermissionTests {
      * @param expectedBody expected response value; if null then response body is not checked
      * @throws Exception
      */
-    protected abstract void checkProperty(final URL webAppURL, final String propertyName, final int expectedCode,
-            final String expectedBody) throws Exception;
+    protected abstract void checkProperty(URL webAppURL, String propertyName, int expectedCode,
+            String expectedBody) throws Exception;
 
 }

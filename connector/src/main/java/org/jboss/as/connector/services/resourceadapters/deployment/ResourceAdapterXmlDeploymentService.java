@@ -157,7 +157,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         private final Activation activation;
 
 
-        public WildFlyRaXmlDeployer(ServiceTarget serviceTarget, URL url, String deploymentName, File root, ClassLoader cl,
+        WildFlyRaXmlDeployer(ServiceTarget serviceTarget, URL url, String deploymentName, File root, ClassLoader cl,
                                     Connector cmd, Activation activation, final ServiceName deploymentServiceName) {
             super(serviceTarget, url, deploymentName, root, cl, cmd, deploymentServiceName);
             this.activation = activation;

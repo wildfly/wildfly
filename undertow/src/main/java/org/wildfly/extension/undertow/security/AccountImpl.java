@@ -138,7 +138,7 @@ public class AccountImpl implements Account, Serializable {
         private static final long serialVersionUID = 1L;
         private String name;
 
-        public AccountPrincipal(String name) {
+        AccountPrincipal(String name) {
             this.name = name;
         }
 

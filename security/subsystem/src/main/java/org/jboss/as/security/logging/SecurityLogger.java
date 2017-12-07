@@ -285,14 +285,14 @@ public interface SecurityLogger extends BasicLogger {
      * @return {@link SecurityException}
      */
     @Message(id = 29, value = "Security realm '%s' not found.")
-    SecurityException realmNotFound(final String name);
+    SecurityException realmNotFound(String name);
 
 //    /**
 //     * Create a {@link SecurityException} to indicate that no password validation mechanism has been identified.
 //     * @return {@link SecurityException}
 //     */
     //@Message(id = 30, value = "No suitable password validation mechanism identified for realm '%s'")
-    //SecurityException noPasswordValidationAvailable(final String realmName);
+    //SecurityException noPasswordValidationAvailable(String realmName);
 
     /**
      * Create a {@link LoginException} to indicate a failure calling the security realm.
@@ -334,7 +334,7 @@ public interface SecurityLogger extends BasicLogger {
     @Message(id = 37, value = "Keystore '%s' doesn't exist."
             + "\nkeystore could be created: "
             + "keytool -genseckey -alias Vault -storetype jceks -keyalg AES -keysize 128 -storepass secretsecret -keypass secretsecret -keystore %s")
-    Exception keyStoreDoesnotExistWithExample(final String keystoreURL, final String keystoreURLExample);
+    Exception keyStoreDoesnotExistWithExample(String keystoreURL, String keystoreURLExample);
 
     /**
      * Create an Exception when one cannot write to the KeyStore or it is not a file.
@@ -343,7 +343,7 @@ public interface SecurityLogger extends BasicLogger {
      * @return the exception
      */
     @Message(id = 38, value = "Keystore [%s] is not writable or not a file.")
-    Exception keyStoreNotWritable(final String keystoreURL);
+    Exception keyStoreNotWritable(String keystoreURL);
 
     /**
      * Create an exception when KeyStore password is not specified.
@@ -368,7 +368,7 @@ public interface SecurityLogger extends BasicLogger {
      * @return the exception
      */
     @Message(id = 41, value = "Encryption directory is not a directory or doesn't exist. (%s)")
-    Exception encryptionDirectoryDoesNotExist(final String directory);
+    Exception encryptionDirectoryDoesNotExist(String directory);
 
     /**
      * Create an exception when encryption directory cannot be created.
@@ -377,7 +377,7 @@ public interface SecurityLogger extends BasicLogger {
      * @return the exception
      */
     @Message(id = 42, value = "Cannot create encryption directory %s")
-    Exception cannotCreateEncryptionDirectory(final String directory);
+    Exception cannotCreateEncryptionDirectory(String directory);
 
     /**
      * Create an exception when iteration count is out of range.
@@ -386,7 +386,7 @@ public interface SecurityLogger extends BasicLogger {
      * @return the exception
      */
     @Message(id = 43, value = "Iteration count has to be within 1 - " + Integer.MAX_VALUE + ", but it is %s.")
-    Exception iterationCountOutOfRange(final String iteration);
+    Exception iterationCountOutOfRange(String iteration);
 
     /**
      * Create an exception when salt has different length than 8.
@@ -727,7 +727,7 @@ public interface SecurityLogger extends BasicLogger {
 //     * @return
 //     */
 //    @Message(id = 84, value = "'%s' parameter type or length is incorrect")
-//    IllegalArgumentException incorrectKeystoreParameters(final String keystoreName);
+//    IllegalArgumentException incorrectKeystoreParameters(String keystoreName);
 
     /**
      * i18n version of string from Vault Tool utility
@@ -855,7 +855,7 @@ public interface SecurityLogger extends BasicLogger {
      * @return a {@link StartException} instance.
      */
     @Message(id = 100, value = "Legacy security domain %s doesn't contain a valid JSSE configuration")
-    StartException unableToLocateJSSEConfig(final String legacyDomainName);
+    StartException unableToLocateJSSEConfig(String legacyDomainName);
 
     /**
      * Creates an exception indicating the inability to find a component (keystore, truststore, keymanager, etc) in
@@ -864,7 +864,7 @@ public interface SecurityLogger extends BasicLogger {
      * @return a {@link StartException} instance.
      */
     @Message(id = 101, value = "Unable to find a %s configuration in JSSE security domain %s")
-    StartException unableToLocateComponentInJSSEDomain(final String componentName, final String legacyDomainName);
+    StartException unableToLocateComponentInJSSEDomain(String componentName, String legacyDomainName);
 
     /**
      * Creates an exception indicating that the expected manager type was not found in the JSSE security domain.
@@ -874,7 +874,7 @@ public interface SecurityLogger extends BasicLogger {
      * @return a {@link StartException} instance.
      */
     @Message(id = 102, value = "Could not find a %s of type %s in the JSSE security domain %s")
-    StartException expectedManagerTypeNotFound(final String managerName, final String managerType, final String legacyDomainName);
+    StartException expectedManagerTypeNotFound(String managerName, String managerType, String legacyDomainName);
 
     /**
      * Creates an exception indicating that an {@link org.wildfly.security.authz.AuthorizationIdentity} could not be created

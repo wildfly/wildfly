@@ -196,7 +196,7 @@ public class EJBReadWriteLockTest {
          * @param processingTime The amount of time in milliseconds, this thread will sleep (a.k.a process)
          *                       in its {@link #run()} method
          */
-        public ThreadHoldingWriteLock(CountDownLatch latch, Lock lock, long processingTime) {
+        ThreadHoldingWriteLock(CountDownLatch latch, Lock lock, long processingTime) {
             this.lock = lock;
             this.processingTime = processingTime;
             this.latch = latch;

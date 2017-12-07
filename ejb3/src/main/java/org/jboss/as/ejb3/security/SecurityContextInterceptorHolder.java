@@ -39,7 +39,7 @@ class SecurityContextInterceptorHolder {
     Map<String, Set<String>> principalVsRolesMap;
     boolean skipAuthentication;
 
-    public SecurityContextInterceptorHolder() {
+    SecurityContextInterceptorHolder() {
     }
 
     public SecurityContextInterceptorHolder setSecurityManager(ServerSecurityManager ssm) {

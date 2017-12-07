@@ -628,13 +628,13 @@ public interface MessagingLogger extends BasicLogger {
 //
 //
 //    @Message(id = 55, value = "Could not parse file %s")
-//    DeploymentUnitProcessingException couldNotParseDeployment(final String file, @Cause Throwable cause);
+//    DeploymentUnitProcessingException couldNotParseDeployment(String file, @Cause Throwable cause);
 //
 //    @Message(id = 56, value = "Handler cannot handle operation %s")
-//    IllegalStateException operationNotValid(final String operation);
+//    IllegalStateException operationNotValid(String operation);
 //
 //    @Message(id = 57, value = "No message destination registered at address %s")
-//    String noDestinationRegisteredForAddress(final PathAddress address);
+//    String noDestinationRegisteredForAddress(PathAddress address);
 //
 //    @Message(id = 58, value = "SecurityDomainContext has not been set")
 //    IllegalStateException securityDomainContextNotSet();
@@ -716,7 +716,7 @@ public interface MessagingLogger extends BasicLogger {
      * @return an {@link OperationFailedException} for the error.
      */
     @Message(id = 67, value = "The broadcast group '%s' defines reference to nonexistent connector '%s'. Available connectors '%s'.")
-    OperationFailedException wrongConnectorRefInBroadCastGroup(final String bgName, final String connectorRef, final Collection<String> presentConnectors);
+    OperationFailedException wrongConnectorRefInBroadCastGroup(String bgName, String connectorRef, Collection<String> presentConnectors);
 
 
 //    /**

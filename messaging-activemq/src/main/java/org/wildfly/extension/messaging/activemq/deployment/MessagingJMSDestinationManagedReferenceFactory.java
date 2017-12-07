@@ -40,7 +40,7 @@ class MessagingJMSDestinationManagedReferenceFactory<D extends Destination> impl
 
     private final Service<D> service;
 
-    public MessagingJMSDestinationManagedReferenceFactory(Service<D> service) {
+    MessagingJMSDestinationManagedReferenceFactory(Service<D> service) {
         this.service = service;
     }
 

@@ -43,29 +43,29 @@ public interface JMSOperations {
 
     String getProviderName();
 
-    void createJmsQueue(final String queueName, final String jndiName);
+    void createJmsQueue(String queueName, String jndiName);
 
-    void createJmsQueue(final String queueName, final String jndiName, ModelNode attributes);
+    void createJmsQueue(String queueName, String jndiName, ModelNode attributes);
 
-    void createJmsTopic(final String topicName, final String jndiName);
+    void createJmsTopic(String topicName, String jndiName);
 
-    void createJmsTopic(final String topicName, final String jndiName, ModelNode attributes);
+    void createJmsTopic(String topicName, String jndiName, ModelNode attributes);
 
-    void removeJmsQueue(final String queueName);
+    void removeJmsQueue(String queueName);
 
-    void removeJmsTopic(final String topicName);
+    void removeJmsTopic(String topicName);
 
-    void addJmsConnectionFactory(final String name, final String jndiName, ModelNode attributes);
+    void addJmsConnectionFactory(String name, String jndiName, ModelNode attributes);
 
-    void removeJmsConnectionFactory(final String name);
+    void removeJmsConnectionFactory(String name);
 
     void addJmsBridge(String name, ModelNode attributes);
 
     void removeJmsBridge(String name);
 
-    void addCoreQueue(final String queueName, final String queueAddress, boolean durable);
+    void addCoreQueue(String queueName, String queueAddress, boolean durable);
 
-    void removeCoreQueue(final String queueName);
+    void removeCoreQueue(String queueName);
 
     /**
      * Creates remote acceptor

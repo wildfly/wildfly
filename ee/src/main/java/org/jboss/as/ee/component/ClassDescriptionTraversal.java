@@ -58,5 +58,5 @@ public abstract class ClassDescriptionTraversal {
         }
     }
 
-    protected abstract void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException;
+    protected abstract void handle(Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException;
 }

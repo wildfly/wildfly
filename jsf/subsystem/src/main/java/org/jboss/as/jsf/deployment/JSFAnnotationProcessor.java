@@ -74,7 +74,7 @@ public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
         private final Class<? extends Annotation> annotationClass;
         private final DotName indexName;
 
-        private FacesAnnotation(Class<? extends Annotation> annotationClass) {
+        FacesAnnotation(Class<? extends Annotation> annotationClass) {
             this.annotationClass = annotationClass;
             this.indexName = DotName.createSimple(annotationClass.getName());
         }

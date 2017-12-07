@@ -138,7 +138,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
     }
 
     private static class WebsocketsAdd extends RestartParentResourceAddHandler {
-        protected WebsocketsAdd() {
+        WebsocketsAdd() {
             super(ServletContainerDefinition.INSTANCE.getPathElement().getKey(), Collections.singleton(WEBSOCKET_CAPABILITY), ATTRIBUTES);
         }
 
@@ -162,7 +162,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
 
     private static class WebsocketsRemove extends RestartParentResourceRemoveHandler {
 
-        protected WebsocketsRemove() {
+        WebsocketsRemove() {
             super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
         }
 
@@ -184,7 +184,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
         private final boolean perMessageDeflate;
         private final int deflaterLevel;
 
-        public WebSocketInfo(String worker, String bufferPool, boolean dispatchToWorker, boolean perMessageDeflate,
+        WebSocketInfo(String worker, String bufferPool, boolean dispatchToWorker, boolean perMessageDeflate,
                 int deflaterLevel) {
             this.worker = worker;
             this.bufferPool = bufferPool;

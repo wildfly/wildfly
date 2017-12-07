@@ -435,7 +435,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         private final boolean newTimer;
         private volatile TimerImpl timer;
 
-        public PersistTransactionSynchronization(final Lock lock, final String transactionKey, final boolean newTimer) {
+        PersistTransactionSynchronization(final Lock lock, final String transactionKey, final boolean newTimer) {
             this.lock = lock;
             this.transactionKey = transactionKey;
             this.newTimer = newTimer;

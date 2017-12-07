@@ -106,7 +106,7 @@ public class CustomAuditProviderModuleTest {
 
         private final TestModule loginJBossModule;
 
-        public CustomAuditProviderModuleSecurityDomainSetup() {
+        CustomAuditProviderModuleSecurityDomainSetup() {
 
             final Class<?> providerModuleClass = CustomAuditProviderModule.class;
             auditProviderJBossModule = new TestModule(providerModuleClass.getName()+ RANDOM_EXECUTION_ID, "org.picketbox", "javax.api",

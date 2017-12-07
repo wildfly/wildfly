@@ -125,7 +125,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
      */
     private static class ThreadPoolService implements Service<Void> {
 
-        public ThreadPoolService() {
+        ThreadPoolService() {
         }
 
         @Override

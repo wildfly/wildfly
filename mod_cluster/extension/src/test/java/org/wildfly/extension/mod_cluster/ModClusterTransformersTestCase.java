@@ -181,7 +181,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
     }
 
     private static class SessionDrainingStrategyConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<SessionDrainingStrategyConfig> {
-        public SessionDrainingStrategyConfig(String... attributes) {
+        SessionDrainingStrategyConfig(String... attributes) {
             super(attributes);
         }
 
@@ -202,7 +202,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
     }
 
     private static class ProxiesConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<ProxiesConfig> {
-        public ProxiesConfig(String... attributes) {
+        ProxiesConfig(String... attributes) {
             super(attributes);
         }
 
@@ -223,7 +223,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
     }
 
     private static class StatusIntervalConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<StatusIntervalConfig> {
-        public StatusIntervalConfig(String... attributes) {
+        StatusIntervalConfig(String... attributes) {
             super(attributes);
         }
 

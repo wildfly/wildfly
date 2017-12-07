@@ -61,7 +61,7 @@ public class ControllerServlet extends HttpServlet {
         try {
             final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 
-            try (final InputStream in = Files.newInputStream(Paths.get("../jcetest.keystore"))){
+            try (InputStream in = Files.newInputStream(Paths.get("../jcetest.keystore"))){
                 keyStore.load(in, "password".toCharArray());
             }
             final X509Certificate testCertificate = (X509Certificate) keyStore.getCertificate("test");

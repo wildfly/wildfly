@@ -32,14 +32,14 @@ public interface DeploymentRepositoryListener {
      * Called when the listener is added to the repository. This method runs in a synchronized block,
      * so the listener can get the current state of the repository.
      */
-    void listenerAdded(final DeploymentRepository repository);
+    void listenerAdded(DeploymentRepository repository);
 
     /**
      * Callback when a deployment becomes available
      * @param deployment The deployment
      * @param moduleDeployment module deployment
      */
-    void deploymentAvailable(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment);
+    void deploymentAvailable(DeploymentModuleIdentifier deployment, ModuleDeployment moduleDeployment);
 
 
     /**
@@ -47,20 +47,20 @@ public interface DeploymentRepositoryListener {
      * @param deployment The deployment
      * @param moduleDeployment module deployment
      */
-    void deploymentStarted(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment);
+    void deploymentStarted(DeploymentModuleIdentifier deployment, ModuleDeployment moduleDeployment);
 
     /**
      * Called when a deployment is no longer available
      *
      * @param deployment The deployment
      */
-    void deploymentRemoved(final DeploymentModuleIdentifier deployment);
+    void deploymentRemoved(DeploymentModuleIdentifier deployment);
 
     /**
      * Called when a deployment is suspended, as a result of server suspension.
      * @param deployment The deployment
      */
-    default void deploymentSuspended(final DeploymentModuleIdentifier deployment){}
+    default void deploymentSuspended(DeploymentModuleIdentifier deployment){}
 
     /**
      * Called when a deployment is no longer suspended, as a result of server resume.
@@ -70,5 +70,5 @@ public interface DeploymentRepositoryListener {
      *
      * @param deployment The deployment
      */
-    default void deploymentResumed(final DeploymentModuleIdentifier deployment) {}
+    default void deploymentResumed(DeploymentModuleIdentifier deployment) {}
 }

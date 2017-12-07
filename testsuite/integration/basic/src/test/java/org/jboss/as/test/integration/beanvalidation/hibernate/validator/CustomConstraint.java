@@ -44,15 +44,15 @@ public @interface CustomConstraint {
 
     Class<? extends Payload>[] payload() default {};
 
-    public class Validator implements ConstraintValidator<CustomConstraint, String> {
+    class Validator implements ConstraintValidator<CustomConstraint, String> {
 
         private final String message;
 
-        public Validator() {
+        Validator() {
             this.message = "Created by default factory";
         }
 
-        public Validator(String message) {
+        Validator(String message) {
             this.message = message;
         }
 

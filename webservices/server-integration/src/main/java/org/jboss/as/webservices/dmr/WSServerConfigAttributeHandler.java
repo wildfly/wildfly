@@ -46,7 +46,7 @@ import org.jboss.dmr.ModelNode;
  */
 final class WSServerConfigAttributeHandler extends AbstractWriteAttributeHandler<WSServerConfigAttributeHandler.RollbackInfo> {
 
-    public WSServerConfigAttributeHandler(final AttributeDefinition... definitions) {
+    WSServerConfigAttributeHandler(final AttributeDefinition... definitions) {
         super(definitions);
     }
 
@@ -149,7 +149,7 @@ final class WSServerConfigAttributeHandler extends AbstractWriteAttributeHandler
     static class RollbackInfo {
         private final boolean runtimeUpdated;
 
-        public RollbackInfo(boolean runtimeUpdated) {
+        RollbackInfo(boolean runtimeUpdated) {
             this.runtimeUpdated = runtimeUpdated;
         }
 

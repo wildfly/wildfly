@@ -127,7 +127,7 @@ public final class KeyStoreUtils {
         ksOut.close();
     }
 
-    public static enum KeyStoreType {
+    public enum KeyStoreType {
         JKS,
         PKCS12
     }

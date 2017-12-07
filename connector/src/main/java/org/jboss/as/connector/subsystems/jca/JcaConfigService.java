@@ -40,7 +40,7 @@ final class JcaConfigService implements Service<JcaSubsystemConfiguration> {
     private final JcaSubsystemConfiguration value;
 
     /** create an instance **/
-    public JcaConfigService(JcaSubsystemConfiguration value) {
+    JcaConfigService(JcaSubsystemConfiguration value) {
         super();
         this.value = value;
     }

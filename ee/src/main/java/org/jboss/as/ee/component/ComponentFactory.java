@@ -8,6 +8,6 @@ import org.jboss.invocation.InterceptorContext;
  */
 public interface ComponentFactory {
 
-    ManagedReference create(final InterceptorContext context);
+    ManagedReference create(InterceptorContext context);
 
 }

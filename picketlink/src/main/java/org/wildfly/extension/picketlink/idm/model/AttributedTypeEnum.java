@@ -77,7 +77,7 @@ public enum AttributedTypeEnum {
     private final String alias;
     private final String type;
 
-    private AttributedTypeEnum(String alias, String type) {
+    AttributedTypeEnum(String alias, String type) {
         this.alias = alias;
         this.type = type;
     }

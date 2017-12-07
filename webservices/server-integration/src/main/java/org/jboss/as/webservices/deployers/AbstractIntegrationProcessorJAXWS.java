@@ -78,7 +78,7 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
         // does nothing
     }
 
-    protected abstract void processAnnotation(final DeploymentUnit unit, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException;
+    protected abstract void processAnnotation(DeploymentUnit unit, EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException;
 
     static ComponentDescription createComponentDescription(final DeploymentUnit unit, final String componentName, final String componentClassName, final String dependsOnEndpointClassName) {
         final EEModuleDescription moduleDescription = getRequiredAttachment(unit, EE_MODULE_DESCRIPTION);

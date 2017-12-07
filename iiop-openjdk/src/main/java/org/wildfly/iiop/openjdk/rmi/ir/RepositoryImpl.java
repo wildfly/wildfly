@@ -51,7 +51,7 @@ import org.wildfly.iiop.openjdk.logging.IIOPLogger;
  */
 class RepositoryImpl extends ContainerImpl implements RepositoryOperations, LocalContainer {
 
-    public RepositoryImpl(ORB orb, POA poa, String name) {
+    RepositoryImpl(ORB orb, POA poa, String name) {
         super(DefinitionKind.dk_Repository, null);
 
         this.orb = orb;

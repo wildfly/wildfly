@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source.
  * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -42,6 +42,6 @@ public interface BoottimeHandlerProvider {
     /**
      * @see org.jboss.as.controller.AbstractBoottimeAddStepHandler#performBoottime(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode
      */
-    void performBoottime(final Set<LoadMetric> enabledMetrics, OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException;
+    void performBoottime(Set<LoadMetric> enabledMetrics, OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException;
 
 }

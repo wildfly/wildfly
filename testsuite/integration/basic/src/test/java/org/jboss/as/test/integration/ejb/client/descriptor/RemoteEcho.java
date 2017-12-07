@@ -29,5 +29,5 @@ public interface RemoteEcho {
 
     String echo(String moduleName, String msg);
 
-    String twoSecondEcho(final String moduleName, final String msg);
+    String twoSecondEcho(String moduleName, String msg);
 }

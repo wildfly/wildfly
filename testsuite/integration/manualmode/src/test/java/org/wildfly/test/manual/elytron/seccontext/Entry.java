@@ -59,5 +59,5 @@ public interface Entry {
     /**
      * Read remote URL using simple HttpURLConnection.
      */
-    String readUrl(String username, String password, ReAuthnType type, final URL url);
+    String readUrl(String username, String password, ReAuthnType type, URL url);
 }

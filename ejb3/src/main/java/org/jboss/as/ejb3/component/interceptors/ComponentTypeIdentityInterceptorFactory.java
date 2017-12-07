@@ -51,7 +51,7 @@ public class ComponentTypeIdentityInterceptorFactory implements InterceptorFacto
 
         private final ComponentView componentView;
 
-        public ProxyTypeEqualsInterceptor(final ComponentView componentView) {
+        ProxyTypeEqualsInterceptor(final ComponentView componentView) {
             this.componentView = componentView;
         }
 

@@ -69,7 +69,7 @@ class SecurityActions {
 
     private interface ClassLoaderActions {
 
-        Class<?> loadClass(final String name) throws ClassNotFoundException;
+        Class<?> loadClass(String name) throws ClassNotFoundException;
 
         ClassLoader setThreadContextClassLoader(ClassLoader toSet);
 

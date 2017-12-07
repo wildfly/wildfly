@@ -134,6 +134,6 @@ public abstract class AbstractPPTestsWithJSP extends AbstractPropertyPermissionT
      * @param expectedBodyStart expected beginning of response value; if null then response body is not checked
      * @throws Exception
      */
-    protected abstract void checkPropertyInJSP(final URL webAppURL, final String propertyName, final int expectedCode,
-            final String expectedBodyStart) throws Exception;
+    protected abstract void checkPropertyInJSP(URL webAppURL, String propertyName, int expectedCode,
+            String expectedBodyStart) throws Exception;
 }

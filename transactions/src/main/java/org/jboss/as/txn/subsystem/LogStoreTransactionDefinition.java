@@ -39,7 +39,7 @@ class LogStoreTransactionDefinition extends SimpleResourceDefinition {
             LogStoreConstants.TRANSACTION_AGE, LogStoreConstants.RECORD_TYPE};
 
 
-    public LogStoreTransactionDefinition(final LogStoreResource resource) {
+    LogStoreTransactionDefinition(final LogStoreResource resource) {
         super(new Parameters(TransactionExtension.TRANSACTION_PATH,
                 TransactionExtension.getResourceDescriptionResolver(LogStoreConstants.LOG_STORE, CommonAttributes.TRANSACTION))
                 .setRuntime()

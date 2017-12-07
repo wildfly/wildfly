@@ -46,7 +46,7 @@ final class ConnectionDefinitionService implements Service<ModifiableConnDef> {
     private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier = new InjectedValue<>();
 
     /** create an instance **/
-    public ConnectionDefinitionService() {
+    ConnectionDefinitionService() {
     }
 
     @Override

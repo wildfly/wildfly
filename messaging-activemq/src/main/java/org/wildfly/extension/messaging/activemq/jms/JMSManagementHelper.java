@@ -44,7 +44,7 @@ public class JMSManagementHelper {
 
     private static class DeliveryModeValidator extends StringLengthValidator implements AllowedValuesValidator {
 
-        public DeliveryModeValidator() {
+        DeliveryModeValidator() {
             super(1);
         }
 

@@ -45,11 +45,11 @@ public abstract class EJBComponentDescriptionFactory {
      */
     protected final boolean appclient;
 
-    protected EJBComponentDescriptionFactory(final boolean appclient) {
+    EJBComponentDescriptionFactory(final boolean appclient) {
         this.appclient = appclient;
     }
 
-    protected void addComponent(final DeploymentUnit deploymentUnit, final EJBComponentDescription beanDescription) {
+    void addComponent(final DeploymentUnit deploymentUnit, final EJBComponentDescription beanDescription) {
         final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);
         if (appclient) {
             deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS, beanDescription);
@@ -76,9 +76,9 @@ public abstract class EJBComponentDescriptionFactory {
     /**
      * Process annotations and merge any available metadata at the same time.
      */
-    protected abstract void processAnnotations(final DeploymentUnit deploymentUnit, final CompositeIndex compositeIndex) throws DeploymentUnitProcessingException;
+    protected abstract void processAnnotations(DeploymentUnit deploymentUnit, CompositeIndex compositeIndex) throws DeploymentUnitProcessingException;
 
-    protected abstract void processBeanMetaData(final DeploymentUnit deploymentUnit, final EnterpriseBeanMetaData enterpriseBeanMetaData) throws DeploymentUnitProcessingException;
+    protected abstract void processBeanMetaData(DeploymentUnit deploymentUnit, EnterpriseBeanMetaData enterpriseBeanMetaData) throws DeploymentUnitProcessingException;
 
     protected static <T> T override(T original, T override) {
         return override != null ? override : original;

@@ -49,7 +49,7 @@ class CSIv2PolicyFactory extends LocalObject implements PolicyFactory {
      *
      * @param codec the {@code Codec} used to encode the CSIv2 policies.
      */
-    public CSIv2PolicyFactory(Codec codec) {
+    CSIv2PolicyFactory(Codec codec) {
         this.codec = codec;
     }
 

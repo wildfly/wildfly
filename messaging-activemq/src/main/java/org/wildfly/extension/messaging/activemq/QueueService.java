@@ -43,7 +43,7 @@ class QueueService implements Service<Void> {
     private final CoreQueueConfiguration queueConfiguration;
     private final boolean temporary;
 
-    public QueueService(final CoreQueueConfiguration queueConfiguration, final boolean temporary) {
+    QueueService(final CoreQueueConfiguration queueConfiguration, final boolean temporary) {
         if(queueConfiguration == null) {
             throw MessagingLogger.ROOT_LOGGER.nullVar("queueConfiguration");
         }

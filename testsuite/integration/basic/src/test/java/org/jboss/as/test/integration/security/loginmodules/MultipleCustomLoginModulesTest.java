@@ -100,7 +100,7 @@ public class MultipleCustomLoginModulesTest {
 
         private final TestModule[] modules;
 
-        public MultipleCustomLoginModulesSecurityDomainSetup() {
+        MultipleCustomLoginModulesSecurityDomainSetup() {
             TestModule[] modules = new TestModule[MODULE_CLASSES.length];
             for (int i = 0; i < MODULE_CLASSES.length; i++) {
                 Class<?> loginModuleClass = MODULE_CLASSES[i];

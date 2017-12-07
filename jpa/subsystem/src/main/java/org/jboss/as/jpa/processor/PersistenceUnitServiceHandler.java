@@ -1087,7 +1087,7 @@ public class PersistenceUnitServiceHandler {
         private volatile ManagedReference reference;
         private final Injector<DataSource> dataSourceInjector;
 
-        public ManagedReferenceFactoryInjector(Injector<DataSource> dataSourceInjector) {
+        ManagedReferenceFactoryInjector(Injector<DataSource> dataSourceInjector) {
             this.dataSourceInjector = dataSourceInjector;
         }
 
@@ -1195,7 +1195,7 @@ public class PersistenceUnitServiceHandler {
         volatile Resource subsystemResource;
         volatile PathElement pathToScopedPu;
 
-        public PersistenceAdaptorRemoval(PersistenceUnitMetadata pu, PersistenceProviderAdaptor adaptor) {
+        PersistenceAdaptorRemoval(PersistenceUnitMetadata pu, PersistenceProviderAdaptor adaptor) {
             this.pu = pu;
             this.adaptor = adaptor;
         }

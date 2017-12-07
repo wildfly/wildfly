@@ -38,7 +38,7 @@ class WeldConfiguration {
     private final boolean nonPortableMode;
     private final boolean developmentMode;
 
-    public WeldConfiguration(boolean requireBeanDescriptor, boolean nonPortableMode, boolean developmentMode) {
+    WeldConfiguration(boolean requireBeanDescriptor, boolean nonPortableMode, boolean developmentMode) {
         this.requireBeanDescriptor = requireBeanDescriptor;
         this.nonPortableMode = nonPortableMode;
         this.developmentMode = developmentMode;

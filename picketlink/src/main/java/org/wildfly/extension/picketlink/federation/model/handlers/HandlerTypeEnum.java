@@ -55,7 +55,7 @@ public enum HandlerTypeEnum {
     SAML2_SIGNATURE_VALIDATION_HANDLER("SAML2SignatureValidationHandler", SAML2SignatureValidationHandler.class.getName());
 
 
-    private static final Map<String, HandlerTypeEnum> types = new HashMap<String, HandlerTypeEnum>();
+    private static final Map<String, HandlerTypeEnum> types = new HashMap<>();
 
     static {
         for (HandlerTypeEnum element : values()) {
@@ -66,7 +66,7 @@ public enum HandlerTypeEnum {
     private final String alias;
     private final String type;
 
-    private HandlerTypeEnum(String alias, String type) {
+    HandlerTypeEnum(String alias, String type) {
         this.alias = alias;
         this.type = type;
     }

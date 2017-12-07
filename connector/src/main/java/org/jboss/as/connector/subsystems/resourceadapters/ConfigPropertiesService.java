@@ -47,7 +47,7 @@ final class ConfigPropertiesService implements Service<String> {
     /**
      * create an instance *
      */
-    public ConfigPropertiesService(String name, String value) {
+    ConfigPropertiesService(String name, String value) {
         this.name = name;
         this.value = value;
     }

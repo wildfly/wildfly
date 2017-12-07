@@ -22,7 +22,7 @@ public enum Listener {
     private final String protocol;
     private final boolean secure;
 
-    private Listener(String name, String scheme, String protocol, boolean secure) {
+    Listener(String name, String scheme, String protocol, boolean secure) {
         this.name = name;
         this.scheme = scheme;
         this.protocol = protocol;

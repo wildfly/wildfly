@@ -31,7 +31,7 @@ import org.jboss.as.threads.ManagedJBossThreadPoolExecutorService;
 class WildFlyJobExecutor extends JobExecutor {
     private final ManagedJBossThreadPoolExecutorService delegate;
 
-    public WildFlyJobExecutor(final ManagedJBossThreadPoolExecutorService delegate) {
+    WildFlyJobExecutor(final ManagedJBossThreadPoolExecutorService delegate) {
         super(delegate);
         this.delegate = delegate;
     }

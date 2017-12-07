@@ -38,6 +38,6 @@ public abstract class JcaMgmtServerSetupTask extends JcaMgmtBase implements Serv
         doSetup(managementClient);
     }
 
-    protected abstract void doSetup(final ManagementClient managementClient) throws Exception;
+    protected abstract void doSetup(ManagementClient managementClient) throws Exception;
 
 }

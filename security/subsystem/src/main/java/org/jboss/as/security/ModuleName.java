@@ -32,7 +32,7 @@ public enum ModuleName {
     private final String name;
     private final String slot;
 
-    private ModuleName(final String name, final String slot) {
+    ModuleName(final String name, final String slot) {
         this.name = name;
         this.slot = slot;
     }

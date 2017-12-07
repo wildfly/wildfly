@@ -42,7 +42,7 @@ final class BeanValidationService implements Service<BeanValidationService.BeanV
 
 
         /** create an instance **/
-        public BeanValidationService(BeanValidation value) {
+        BeanValidationService(BeanValidation value) {
             this.value = value;
         }
 
@@ -69,7 +69,7 @@ final class BeanValidationService implements Service<BeanValidationService.BeanV
     public static class BeanValidation {
         private final boolean enabled;
 
-        public BeanValidation(boolean enabled) {
+        BeanValidation(boolean enabled) {
             this.enabled = enabled;
         }
 

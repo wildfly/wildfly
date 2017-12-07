@@ -73,7 +73,7 @@ final class SecurityActions {
     }
     private interface RemotingContextAssociationActions {
 
-        void setConnection(final Connection connection);
+        void setConnection(Connection connection);
 
         void clear();
 
@@ -119,7 +119,7 @@ final class SecurityActions {
 
     private interface RemoteContextAssociationActions {
 
-        void setConnection(final RemoteConnection connection);
+        void setConnection(RemoteConnection connection);
 
         void clear();
 

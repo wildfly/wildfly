@@ -43,11 +43,11 @@ public class TestXAResource implements XAResource {
     private static Logger LOG = Logger.getLogger(TestXAResource.class);
     private static XAException RM_SPECIFIC_EXCEPTION = createDriverSpecificXAException(XAException.XAER_RMERR);
 
-    public static enum CommitOperation {
+    public enum CommitOperation {
         NONE, THROW_KNOWN_XA_EXCEPTION, THROW_UNKNOWN_XA_EXCEPTION
     }
 
-    public static enum PrepareOperation {
+    public enum PrepareOperation {
         NONE, THROW_KNOWN_XA_EXCEPTION, THROW_UNKNOWN_XA_EXCEPTION
     }
 

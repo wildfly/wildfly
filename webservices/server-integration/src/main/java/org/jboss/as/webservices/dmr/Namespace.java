@@ -55,7 +55,7 @@ enum Namespace {
 
     private final String name;
 
-    private Namespace(final String name) {
+    Namespace(final String name) {
         this.name = name;
     }
 

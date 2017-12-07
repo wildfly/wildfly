@@ -27,5 +27,5 @@ package org.jboss.as.test.integration.legacy.ejb.remote.client.api;
  */
 public interface EmployeeManager {
 
-    AliasedEmployee addNickNames(final Employee employee, final String... nickNames);
+    AliasedEmployee addNickNames(Employee employee, String... nickNames);
 }

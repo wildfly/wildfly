@@ -97,7 +97,7 @@ abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAc
         return securityRolesMD;
     }
 
-    protected abstract List<EJBEndpoint> getEjbEndpoints(final Deployment dep);
+    protected abstract List<EJBEndpoint> getEjbEndpoints(Deployment dep);
 
     /**
      * @see org.jboss.webservices.integration.tomcat.SecurityMetaDataAccessorEJB#getAuthMethod(Endpoint)

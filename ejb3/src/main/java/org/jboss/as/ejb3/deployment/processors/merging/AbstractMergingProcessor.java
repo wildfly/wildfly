@@ -79,7 +79,7 @@ public abstract class AbstractMergingProcessor<T extends EJBComponentDescription
         }
     }
 
-    private void processComponentConfig(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final T description) throws DeploymentUnitProcessingException {
+    private void processComponentConfig(DeploymentUnit deploymentUnit, EEApplicationClasses applicationClasses, Module module, DeploymentReflectionIndex deploymentReflectionIndex, T description) throws DeploymentUnitProcessingException {
 
         final Class<?> componentClass;
         try {
@@ -97,12 +97,12 @@ public abstract class AbstractMergingProcessor<T extends EJBComponentDescription
     /**
      * Handle annotations relating to the component that have been found in the deployment. Will not be called if the deployment is metadata complete.
      */
-    protected abstract void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final T description) throws DeploymentUnitProcessingException;
+    protected abstract void handleAnnotations(DeploymentUnit deploymentUnit, EEApplicationClasses applicationClasses, DeploymentReflectionIndex deploymentReflectionIndex, Class<?> componentClass, T description) throws DeploymentUnitProcessingException;
 
     /**
      * Handle the deployment descriptor
      */
-    protected abstract void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final T description) throws DeploymentUnitProcessingException;
+    protected abstract void handleDeploymentDescriptor(DeploymentUnit deploymentUnit, DeploymentReflectionIndex deploymentReflectionIndex, Class<?> componentClass, T description) throws DeploymentUnitProcessingException;
 
 
     protected MethodIntf getMethodIntf(final MethodInterfaceType viewType, final MethodIntf defaultMethodIntf) {

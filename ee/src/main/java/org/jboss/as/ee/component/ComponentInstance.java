@@ -79,7 +79,7 @@ public interface ComponentInstance extends Serializable {
      * @param key The component data key
      * @return The attached data
      */
-    Object getInstanceData(final Object key);
+    Object getInstanceData(Object key);
 
     /**
      * Attaches some data to this component instance. This should only be used during component construction.
@@ -87,6 +87,6 @@ public interface ComponentInstance extends Serializable {
      * @param key The key to store the data
      * @param value The data value
      */
-    void setInstanceData(final Object key, final Object value);
+    void setInstanceData(Object key, Object value);
 
 }

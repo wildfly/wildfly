@@ -56,7 +56,7 @@ interface JAXRConstants {
             MAP = map;
         }
 
-        private Namespace(final String name) {
+        Namespace(final String name) {
             this.name = name;
         }
 
@@ -91,7 +91,7 @@ interface JAXRConstants {
             MAP = map;
         }
 
-        private Attribute(final String name) {
+        Attribute(final String name) {
             this.name = name;
         }
 
@@ -129,7 +129,7 @@ interface JAXRConstants {
             MAP = map;
         }
 
-        private Element(final String name) {
+        Element(final String name) {
             this.name = name;
         }
 

@@ -10,7 +10,7 @@ public interface AppClientSingletonRemote {
 
     void reset();
 
-    void makeAppClientCall(final String value);
+    void makeAppClientCall(String value);
 
     String awaitAppClientCall();
 }

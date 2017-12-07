@@ -28,7 +28,7 @@ public class InjectedBeanMethodValue implements Value<Method> {
     private final MethodFinder methodFinder;
 
     interface MethodFinder {
-        Method find(final Class<?> clazz);
+        Method find(Class<?> clazz);
     }
 
     public InjectedBeanMethodValue(Value<?> targetBeanValue, MethodFinder methodFinder) {

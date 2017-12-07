@@ -296,7 +296,7 @@ public class SecurityDomainTestCase {
 
             private final String[] suffixsToAdd;
 
-            public PrincipalTransformers(String... suffixsToAdd) {
+            PrincipalTransformers(String... suffixsToAdd) {
                 this.suffixsToAdd = suffixsToAdd;
             }
 

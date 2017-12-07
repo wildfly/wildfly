@@ -95,7 +95,7 @@ public abstract class AbstractPersistentSessionManager implements SessionPersist
 
     protected abstract void persistSerializedSessions(String deploymentName, Map<String, SessionEntry> serializedData) throws IOException;
 
-    protected abstract Map<String, SessionEntry> loadSerializedSessions(final String deploymentName) throws IOException;
+    protected abstract Map<String, SessionEntry> loadSerializedSessions(String deploymentName) throws IOException;
 
     @Override
     public Map<String, PersistentSession> loadSessionAttributes(String deploymentName, final ClassLoader classLoader) {

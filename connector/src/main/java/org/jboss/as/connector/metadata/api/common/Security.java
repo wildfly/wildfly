@@ -23,15 +23,13 @@ import java.util.Map;
  *
  * @author Flavia Rainone
  */
-public interface Security extends org.jboss.jca.common.api.metadata.common.Security, SecurityMetadata
-{
+public interface Security extends org.jboss.jca.common.api.metadata.common.Security, SecurityMetadata{
    /**
     *
     * A Tag.
     *
     */
-   enum Tag
-   {
+   enum Tag{
       // new Elytron tags
       /**
        * elytron-enabled tag

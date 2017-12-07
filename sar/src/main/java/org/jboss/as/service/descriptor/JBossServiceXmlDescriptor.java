@@ -59,7 +59,7 @@ public final class JBossServiceXmlDescriptor implements Serializable {
         this.controllerMode = controllerMode;
     }
 
-    public static enum ControllerMode {
+    public enum ControllerMode {
          ACTIVE("active"), PASSIVE("passive"), ON_DEMAND("on demand"), NEVER("never");
 
         private static final Map<String, ControllerMode> MAP = new HashMap<String, ControllerMode>();
@@ -72,7 +72,7 @@ public final class JBossServiceXmlDescriptor implements Serializable {
 
         private final String value;
 
-        private ControllerMode(final String value) {
+        ControllerMode(final String value) {
             this.value = value;
         }
 

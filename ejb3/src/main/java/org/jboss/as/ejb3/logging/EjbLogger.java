@@ -452,7 +452,7 @@ public interface EjbLogger extends BasicLogger {
      */
     @LogMessage(level = INFO)
     @Message(id = 42, value = "Started message driven bean '%s' with '%s' resource adapter")
-    void logMDBStart(final String mdbName, final String raName);
+    void logMDBStart(String mdbName, String raName);
 
     /**
      * Logs a waring message indicating an overlapped invoking timeout for timer
@@ -479,7 +479,7 @@ public interface EjbLogger extends BasicLogger {
      * @return the exception
      */
     @Message(id = 45, value = "Could not find an Endpoint for resource adapter %s")
-    IllegalArgumentException noSuchEndpointException(final String resourceAdapterName, @Cause NotFoundException notFoundException);
+    IllegalArgumentException noSuchEndpointException(String resourceAdapterName, @Cause NotFoundException notFoundException);
 
     /**
      * Returns a {@link IllegalStateException} indicating that the {@link org.jboss.jca.core.spi.rar.Endpoint}
@@ -500,13 +500,13 @@ public interface EjbLogger extends BasicLogger {
      * @return the exception
      */
     @Message(id = 47, value = "Could not deactivate endpoint for message driven component %s")
-    RuntimeException failureDuringEndpointDeactivation(final String componentName, @Cause ResourceException cause);
+    RuntimeException failureDuringEndpointDeactivation(String componentName, @Cause ResourceException cause);
 
 //    @Message(id = 48, value = "")
 //    UnsupportedCallbackException unsupportedCallback(@Param Callback current);
 
     @Message(id = 49, value = "Could not create an instance of cluster node selector %s for cluster %s")
-    RuntimeException failureDuringLoadOfClusterNodeSelector(final String clusterNodeSelectorName, final String clusterName, @Cause Exception e);
+    RuntimeException failureDuringLoadOfClusterNodeSelector(String clusterNodeSelectorName, String clusterName, @Cause Exception e);
 
     @LogMessage(level = WARN)
     @Message(id = 50, value = "Failed to parse property %s due to %s")
@@ -751,7 +751,7 @@ public interface EjbLogger extends BasicLogger {
 //
 //    @LogMessage(level = INFO)
 //    @Message(id = 124, value = "Cannot add cluster node %s to cluster %s since none of the client mappings matched for addresses %s")
-//    void cannotAddClusterNodeDueToUnresolvableClientMapping(final String nodeName, final String clusterName, final Object bindings);
+//    void cannotAddClusterNodeDueToUnresolvableClientMapping(String nodeName, String clusterName, Object bindings);
 
     @Message(id = 125, value = "Could not create an instance of deployment node selector %s")
     DeploymentUnitProcessingException failedToCreateDeploymentNodeSelector(@Cause Exception e, String deploymentNodeSelectorClassName);
@@ -1115,7 +1115,7 @@ public interface EjbLogger extends BasicLogger {
 //     * @return a {@link IllegalArgumentException} for the error.
 //     */
 //    @Message(id = 191, value = "Roles cannot be null while setting roles on view type: %s")
-//    IllegalArgumentException rolesIsNullOnViewType(final MethodIntf viewType);
+//    IllegalArgumentException rolesIsNullOnViewType(MethodIntf viewType);
 
 //    /**
 //     * Creates an exception indicating roles cannot be null while setting roles on view type and method"
@@ -2236,7 +2236,7 @@ public interface EjbLogger extends BasicLogger {
      * @return an {@link IllegalStateException for the error.
      */
     @Message(id = 329, value = "Timer %s is not a calendar based timer")
-    IllegalStateException invalidTimerNotCalendarBaseTimer(final TimerImpl timer);
+    IllegalStateException invalidTimerNotCalendarBaseTimer(TimerImpl timer);
 
     /**
      * Creates an exception indicating the Timer has expired
@@ -2469,7 +2469,7 @@ public interface EjbLogger extends BasicLogger {
 //     * @return an {@link IllegalStateException} for the error.
 //     */
 //    @Message(id = 358, value = "Method %s for view %s shouldn't be marked for both %s and %s at the same time")
-//    IllegalStateException invalidSecurityAnnotation(Method componentMethod, String viewClassName, final String s, final String s1);
+//    IllegalStateException invalidSecurityAnnotation(Method componentMethod, String viewClassName, String s, String s1);
 //
 //    /**
 //     * Creates an exception indicating method named with params not found on component class
@@ -2509,7 +2509,7 @@ public interface EjbLogger extends BasicLogger {
      * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 363, value = "%s cannot handle method %s of view class %s.Expected view method to be %s on view class %s")
-    IllegalStateException failProcessInvocation(String name, final Method invokedMethod, String viewClassOfInvokedMethod, Method viewMethod, String viewClassName);
+    IllegalStateException failProcessInvocation(String name, Method invokedMethod, String viewClassOfInvokedMethod, Method viewMethod, String viewClassName);
 
     /**
      * Creates an exception indicating the Invocation on method is not allowed
@@ -2575,7 +2575,7 @@ public interface EjbLogger extends BasicLogger {
 //     * @return an {@link IllegalArgumentException} for the error.
 //     */
 //    @Message(id = 371, value = "%s is not an EJB component")
-//    IllegalArgumentException invalidComponentIsNotEjbComponent(final String componentName);
+//    IllegalArgumentException invalidComponentIsNotEjbComponent(String componentName);
 
     /**
      * Creates an exception indicating Component class has multiple @Timeout annotations
@@ -2658,7 +2658,7 @@ public interface EjbLogger extends BasicLogger {
      * @param ejb       The ejb
      */
     @Message(id = 384, value = "Could not find method %s from view %s on EJB class %s")
-    DeploymentUnitProcessingException couldNotFindViewMethodOnEjb(final Method method, String viewClass, String ejb);
+    DeploymentUnitProcessingException couldNotFindViewMethodOnEjb(Method method, String viewClass, String ejb);
 
     /**
      * Creates and returns an exception indicating that the param named <code>paramName</code> cannot be null
@@ -2668,7 +2668,7 @@ public interface EjbLogger extends BasicLogger {
      * @return an {@link IllegalArgumentException} for the exception
      */
     @Message(id = 385, value = "%s cannot be null or empty")
-    IllegalArgumentException stringParamCannotBeNullOrEmpty(final String paramName);
+    IllegalArgumentException stringParamCannotBeNullOrEmpty(String paramName);
 
     /**
      * Exception that is thrown when invoking remove while an EJB is in a transaction
@@ -2771,7 +2771,7 @@ public interface EjbLogger extends BasicLogger {
      */
     @Deprecated
     @Message(id = 409, value = "@Clustered annotation cannot be used with message driven beans. %s failed since %s bean is marked with @Clustered on class %s")
-    DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForMDB(final DeploymentUnit unit, final String componentName, final String componentClassName);
+    DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForMDB(DeploymentUnit unit, String componentName, String componentClassName);
 
     /**
      * Returns a {@link DeploymentUnitProcessingException} to indicate that the {@link org.jboss.ejb3.annotation.Clustered}
@@ -2784,7 +2784,7 @@ public interface EjbLogger extends BasicLogger {
      */
     @Deprecated
     @Message(id = 410, value = "@Clustered annotation cannot be used with entity beans. %s failed since %s bean is marked with @Clustered on class %s")
-    DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForEntityBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
+    DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForEntityBean(DeploymentUnit unit, String componentName, String componentClassName);
 
     /**
      * Returns a {@link DeploymentUnitProcessingException} to indicate that the {@link org.jboss.ejb3.annotation.Clustered}
@@ -2797,7 +2797,7 @@ public interface EjbLogger extends BasicLogger {
      */
     @Deprecated
     @Message(id = 411, value = "@Clustered annotation is currently not supported for singleton EJB. %s failed since %s bean is marked with @Clustered on class %s")
-    DeploymentUnitProcessingException clusteredAnnotationNotYetImplementedForSingletonBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
+    DeploymentUnitProcessingException clusteredAnnotationNotYetImplementedForSingletonBean(DeploymentUnit unit, String componentName, String componentClassName);
 
     /**
      * Returns a {@link DeploymentUnitProcessingException} to indicate that the {@link org.jboss.ejb3.annotation.Clustered}
@@ -2810,7 +2810,7 @@ public interface EjbLogger extends BasicLogger {
      */
     @Deprecated
     @Message(id = 412, value = "%s failed since @Clustered annotation cannot be used for %s bean on class %s")
-    DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
+    DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForBean(DeploymentUnit unit, String componentName, String componentClassName);
 
 
 
@@ -2845,13 +2845,13 @@ public interface EjbLogger extends BasicLogger {
      * @return an {@link IllegalArgumentException} for the exception
      */
     @Message(id = 416, value = "%s cannot be null")
-    IllegalArgumentException paramCannotBeNull(final String paramName);
+    IllegalArgumentException paramCannotBeNull(String paramName);
 
 //    @Message(id = 417, value = "A GroupMembershipNotifier is already registered by the name of %s")
-//    IllegalArgumentException groupMembershipNotifierAlreadyRegistered(final String groupName);
+//    IllegalArgumentException groupMembershipNotifierAlreadyRegistered(String groupName);
 //
 //    @Message(id = 418, value = "No GroupMembershipNotifier registered by the name of %s")
-//    IllegalArgumentException groupMembershipNotifierNotRegistered(final String groupName);
+//    IllegalArgumentException groupMembershipNotifierNotRegistered(String groupName);
 
     /**
      * Creates and returns an exception indicating that the pool name configured for a bean cannot be an empty string
@@ -2860,7 +2860,7 @@ public interface EjbLogger extends BasicLogger {
      * @return an {@link IllegalArgumentException} for the exception
      */
     @Message(id = 419, value = "Pool name cannot be empty string for bean %s")
-    IllegalArgumentException poolNameCannotBeEmptyString(final String ejbName);
+    IllegalArgumentException poolNameCannotBeEmptyString(String ejbName);
 
     /**
      * The user attempts to look up the ejb context in a war when no ejb context is active
@@ -2916,19 +2916,19 @@ public interface EjbLogger extends BasicLogger {
     IllegalArgumentException unknownChannelCreationOptionType(String optionType);
 
     @Message(id = 437, value = "Could not determine remote interface from home interface %s for bean %s")
-    DeploymentUnitProcessingException couldNotDetermineRemoteInterfaceFromHome(final String homeClass, final String beanName);
+    DeploymentUnitProcessingException couldNotDetermineRemoteInterfaceFromHome(String homeClass, String beanName);
 
     @Message(id = 438, value = "Could not determine local interface from local home interface %s for bean %s")
-    DeploymentUnitProcessingException couldNotDetermineLocalInterfaceFromLocalHome(final String localHomeClass, final String beanName);
+    DeploymentUnitProcessingException couldNotDetermineLocalInterfaceFromLocalHome(String localHomeClass, String beanName);
 
 //    @Message(id = 439, value = "Unsupported marshalling version: %d")
 //    IllegalArgumentException unsupportedMarshallingVersion(int version);
 //
 //    @Message(id = 440, value = "%s method %s must be public")
-//    DeploymentUnitProcessingException ejbMethodMustBePublic(final String type, final Method method);
+//    DeploymentUnitProcessingException ejbMethodMustBePublic(String type, Method method);
 
     @Message(id = 441, value = "EJB business method %s must be public")
-    DeploymentUnitProcessingException ejbBusinessMethodMustBePublic(final Method method);
+    DeploymentUnitProcessingException ejbBusinessMethodMustBePublic(Method method);
 
     @Message(id = 442, value = "Unexpected Error")
     EJBException unexpectedError();
@@ -2958,7 +2958,7 @@ public interface EjbLogger extends BasicLogger {
     EJBException transactionInUnexpectedState(Transaction tx, String txStatus);
 
     @Message(id = 449, value = "Timerservice API is not allowed on stateful session bean %s")
-    String timerServiceMethodNotAllowedForSFSB(final String ejbComponent);
+    String timerServiceMethodNotAllowedForSFSB(String ejbComponent);
 
     @Message(id = 450, value = "Entity Beans are no longer supported, beans %s cannot be deployed")
     DeploymentUnitProcessingException entityBeansAreNotSupported(String beanName);
@@ -3048,7 +3048,7 @@ public interface EjbLogger extends BasicLogger {
 
     @LogMessage(level = INFO)
     @Message(id = 473, value = "JNDI bindings for session bean named '%s' in deployment unit '%s' are as follows:%s")
-    void jndiBindings(final String ejbName, final DeploymentUnit deploymentUnit, final StringBuilder bindings);
+    void jndiBindings(String ejbName, DeploymentUnit deploymentUnit, StringBuilder bindings);
 
     @LogMessage(level = ERROR)
     @Message(id = 474, value = "Attribute '%s' is not supported on current version servers; it is only allowed if its value matches '%s'. This attribute should be removed.")

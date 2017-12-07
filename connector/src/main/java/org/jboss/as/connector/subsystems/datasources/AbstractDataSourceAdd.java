@@ -444,15 +444,14 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
     }
 
-    protected abstract void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
-                                                        AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation)
-            throws OperationFailedException;
+    protected abstract void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder, AbstractDataSourceService dataSourceService, String jndiName,
+                                                        ServiceTarget serviceTarget, ModelNode operation) throws OperationFailedException;
 
-    protected abstract AbstractDataSourceService createDataSourceService(final String dsName, final String jndiName) throws OperationFailedException;
+    protected abstract AbstractDataSourceService createDataSourceService(String dsName, String jndiName) throws OperationFailedException;
 
     protected abstract boolean isXa();
 
-    static Collection<AttributeDefinition> join(final AttributeDefinition[] a, final AttributeDefinition[] b) {
+    static Collection<AttributeDefinition> join(AttributeDefinition[] a, AttributeDefinition[] b) {
         final List<AttributeDefinition> result = new ArrayList<>();
         result.addAll(Arrays.asList(a));
         result.addAll(Arrays.asList(b));

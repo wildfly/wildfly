@@ -44,5 +44,5 @@ public abstract class PoolConfig {
         return this.poolName;
     }
 
-    public abstract <T> Pool<T> createPool(final StatelessObjectFactory<T> statelessObjectFactory);
+    public abstract <T> Pool<T> createPool(StatelessObjectFactory<T> statelessObjectFactory);
 }

@@ -43,7 +43,7 @@ public interface ReferenceFactory {
      * "reference data" and with object type information given by the
      * <code>interfId</code> parameter.
      */
-    org.omg.CORBA.Object createReferenceWithId(final byte[] id, String interfId)
+    org.omg.CORBA.Object createReferenceWithId(byte[] id, String interfId)
             throws Exception;
 
     /**

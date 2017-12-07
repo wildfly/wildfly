@@ -46,7 +46,7 @@ class ConnectionFactoryService implements Service<Void> {
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<>();
 
-    public ConnectionFactoryService(final ConnectionFactoryConfiguration configuration) {
+    ConnectionFactoryService(final ConnectionFactoryConfiguration configuration) {
         name = configuration.getName();
         if(name == null) {
             throw MessagingLogger.ROOT_LOGGER.nullVar("cf name");

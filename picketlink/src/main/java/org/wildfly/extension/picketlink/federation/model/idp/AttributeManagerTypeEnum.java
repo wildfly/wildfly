@@ -39,7 +39,7 @@ public enum AttributeManagerTypeEnum {
     UNDERTOW_ATTRIBUTE_MANAGER("UndertowAttributeManager", UndertowAttributeManager.class.getName()),
     EMPTY_ATTRIBUTE_MANAGER("EmptyAttributeManager", EmptyAttributeManager.class.getName());
 
-    private static final Map<String, AttributeManagerTypeEnum> types = new HashMap<String, AttributeManagerTypeEnum>();
+    private static final Map<String, AttributeManagerTypeEnum> types = new HashMap<>();
 
     static {
         for (AttributeManagerTypeEnum element : values()) {
@@ -50,7 +50,7 @@ public enum AttributeManagerTypeEnum {
     private final String alias;
     private final String type;
 
-    private AttributeManagerTypeEnum(String alias, String type) {
+    AttributeManagerTypeEnum(String alias, String type) {
         this.alias = alias;
         this.type = type;
     }

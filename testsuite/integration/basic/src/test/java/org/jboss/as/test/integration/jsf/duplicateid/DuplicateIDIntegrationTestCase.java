@@ -150,7 +150,7 @@ public class DuplicateIDIntegrationTestCase {
         final String action;
         final List<Input> inputFields = new LinkedList<>();
 
-        public Form(HttpResponse response) throws IOException {
+        Form(HttpResponse response) throws IOException {
             this.response = response;
             log.debug(response.getStatusLine().toString());
             final String responseString = new BasicResponseHandler().handleResponse(response);
@@ -185,7 +185,7 @@ public class DuplicateIDIntegrationTestCase {
         final String name, value;
         final Type type;
 
-        public Input(String name, String value, Type type) {
+        Input(String name, String value, Type type) {
             this.name = name;
             this.value = value;
             this.type = type;

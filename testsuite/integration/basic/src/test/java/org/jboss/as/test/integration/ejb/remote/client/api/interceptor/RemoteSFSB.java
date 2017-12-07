@@ -29,5 +29,5 @@ import java.util.Map;
  */
 public interface RemoteSFSB {
 
-    Map<String, Object> getInvocationData(final String... key);
+    Map<String, Object> getInvocationData(String... key);
 }

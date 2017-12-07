@@ -165,7 +165,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
     }
 
     private final class ReverseProxyHostAdd extends AbstractAddStepHandler {
-        public ReverseProxyHostAdd() {
+        ReverseProxyHostAdd() {
             super(getAttributes());
         }
 

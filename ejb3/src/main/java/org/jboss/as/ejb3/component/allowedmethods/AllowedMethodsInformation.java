@@ -165,7 +165,7 @@ public class AllowedMethodsInformation {
         private final CurrentSynchronizationCallback.CallbackType callbackType;
         private final MethodType methodType;
 
-        public DeniedSyncMethodKey(CurrentSynchronizationCallback.CallbackType callbackType, MethodType methodType) {
+        DeniedSyncMethodKey(CurrentSynchronizationCallback.CallbackType callbackType, MethodType methodType) {
             this.callbackType = callbackType;
             this.methodType = methodType;
         }

@@ -41,5 +41,5 @@ public interface TwoPhaseBootstrapCapable {
      * @param map
      * @return
      */
-    EntityManagerFactoryBuilder getBootstrap(final PersistenceUnitInfo info, final Map map);
+    EntityManagerFactoryBuilder getBootstrap(PersistenceUnitInfo info, Map map);
 }

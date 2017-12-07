@@ -39,7 +39,7 @@ public enum RoleGeneratorTypeEnum {
     UNDERTOW_ROLE_GENERATOR("UndertowRoleGenerator", UndertowRoleGenerator.class.getName()),
     EMPTY_ROLE_GENERATOR("EmptyRoleGenerator", EmptyRoleGenerator.class.getName());
 
-    private static final Map<String, RoleGeneratorTypeEnum> types = new HashMap<String, RoleGeneratorTypeEnum>();
+    private static final Map<String, RoleGeneratorTypeEnum> types = new HashMap<>();
 
     static {
         for (RoleGeneratorTypeEnum element : values()) {
@@ -50,7 +50,7 @@ public enum RoleGeneratorTypeEnum {
     private final String alias;
     private final String type;
 
-    private RoleGeneratorTypeEnum(String alias, String type) {
+    RoleGeneratorTypeEnum(String alias, String type) {
         this.alias = alias;
         this.type = type;
     }

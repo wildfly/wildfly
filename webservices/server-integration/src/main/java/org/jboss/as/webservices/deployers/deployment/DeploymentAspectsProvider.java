@@ -56,8 +56,7 @@ public class DeploymentAspectsProvider {
         return aspects;
     }
 
-    private static List<DeploymentAspect> getDeploymentAspects(final ClassLoader cl, final String resourcePath)
-    {
+    private static List<DeploymentAspect> getDeploymentAspects(final ClassLoader cl, final String resourcePath) {
         try {
             Enumeration<URL> urls = DeploymentAspectsProvider.class.getClassLoader().getResources(resourcePath);
             if (urls != null && urls.hasMoreElements()) {

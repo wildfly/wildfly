@@ -283,7 +283,7 @@ public interface UndertowLogger extends BasicLogger {
     StartException couldNotCreateLogDirectory(Path directory, @Cause IOException e);
 
     @Message(id = 63, value = "Could not find the port number listening for protocol %s")
-    IllegalStateException noPortListeningForProtocol(final String protocol);
+    IllegalStateException noPortListeningForProtocol(String protocol);
 
     @Message(id = 64, value = "Failed to configure handler %s")
     RuntimeException failedToConfigureHandler(Class<?> handlerClass, @Cause Exception e);
@@ -295,7 +295,7 @@ public interface UndertowLogger extends BasicLogger {
     RuntimeException failedToConfigureHandlerClass(String handlerClass, @Cause Exception e);
 
     @Message(id = 67, value = "Servlet class not defined for servlet %s")
-    IllegalArgumentException servletClassNotDefined(final String servletName);
+    IllegalArgumentException servletClassNotDefined(String servletName);
 
     @LogMessage(level = ERROR)
     @Message(id = 68, value = "Error obtaining authorization helper")
