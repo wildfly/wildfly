@@ -252,7 +252,7 @@ public class EEApplicationDescription {
         private final VirtualFile deploymentRoot;
         private final String beanName;
 
-        public ViewInformation(final ViewDescription viewDescription, final VirtualFile deploymentRoot, final String beanName) {
+        ViewInformation(final ViewDescription viewDescription, final VirtualFile deploymentRoot, final String beanName) {
             this.viewDescription = viewDescription;
             this.deploymentRoot = deploymentRoot;
             this.beanName = beanName;
@@ -263,7 +263,7 @@ public class EEApplicationDescription {
         private final ComponentDescription componentDescription;
         private final VirtualFile deploymentRoot;
 
-        public Description(final ComponentDescription componentDescription, final VirtualFile deploymentRoot) {
+        Description(final ComponentDescription componentDescription, final VirtualFile deploymentRoot) {
             this.componentDescription = componentDescription;
             this.deploymentRoot = deploymentRoot;
         }
@@ -273,7 +273,7 @@ public class EEApplicationDescription {
         private final String jndiName;
         private final VirtualFile deploymentRoot;
 
-        public MessageDestinationMapping(final String jndiName, final VirtualFile deploymentRoot) {
+        MessageDestinationMapping(final String jndiName, final VirtualFile deploymentRoot) {
             this.jndiName = jndiName;
             this.deploymentRoot = deploymentRoot;
         }

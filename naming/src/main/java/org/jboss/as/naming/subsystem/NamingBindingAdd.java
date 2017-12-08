@@ -395,7 +395,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         private final String name;
         private final Hashtable<String, String> environment;
 
-        public ObjectFactoryManagedReference(ObjectFactory objectFactoryClassInstance, String name, Hashtable<String, String> environment) {
+        ObjectFactoryManagedReference(ObjectFactory objectFactoryClassInstance, String name, Hashtable<String, String> environment) {
             this.objectFactoryClassInstance = objectFactoryClassInstance;
             this.name = name;
             this.environment = environment;
@@ -438,7 +438,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
     private static class LookupManagedReferenceFactory implements ManagedReferenceFactory {
         private final String lookup;
 
-        public LookupManagedReferenceFactory(String lookup) {
+        LookupManagedReferenceFactory(String lookup) {
             this.lookup = lookup;
         }
 

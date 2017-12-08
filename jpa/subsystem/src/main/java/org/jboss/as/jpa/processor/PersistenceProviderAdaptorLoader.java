@@ -144,8 +144,7 @@ public class PersistenceProviderAdaptorLoader {
      * @param persistenceProvider classloader will be used to load the persistence provider adapter
      * @return the persistence provider adaptor for the provider class
      */
-    public static PersistenceProviderAdaptor loadPersistenceAdapter(final PersistenceProvider persistenceProvider, final Platform platform, final JtaManagerImpl jtaManager)
-        {
+    public static PersistenceProviderAdaptor loadPersistenceAdapter(final PersistenceProvider persistenceProvider, final Platform platform, final JtaManagerImpl jtaManager) {
         PersistenceProviderAdaptor persistenceProviderAdaptor=null;
 
         final ServiceLoader<PersistenceProviderAdaptor> serviceLoader =

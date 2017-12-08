@@ -215,7 +215,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
         private final AnnotationInstance instance;
         private final AnnotationTarget target;
 
-        public TargetAnnotation(final AnnotationInstance instance, final AnnotationTarget target) {
+        TargetAnnotation(final AnnotationInstance instance, final AnnotationTarget target) {
             this.instance = instance;
             this.target = target;
         }

@@ -67,7 +67,7 @@
 
         <version.surefire.plugin>2.18.1</version.surefire.plugin>
         <!-- use older version of checkstyle as otherwise lots of checks fail -->
-        <version.checkstyle>6.8</version.checkstyle>
+        <version.checkstyle>8.5</version.checkstyle>
         <!--
             Dependency versions. Please keep alphabetical.
 
