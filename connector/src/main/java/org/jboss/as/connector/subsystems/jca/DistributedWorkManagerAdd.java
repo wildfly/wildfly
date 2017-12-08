@@ -56,8 +56,8 @@ import org.jboss.jca.core.workmanager.selector.PingTime;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
 
 /**
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
@@ -148,7 +148,7 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
         DistributedWorkManagerService wmService = new DistributedWorkManagerService(namedDistributedWorkManager);
         ServiceBuilder<NamedDistributedWorkManager> builder = serviceTarget
                 .addService(ConnectorServices.WORKMANAGER_SERVICE.append(name), wmService);
-        builder.addDependency(JGroupsDefaultRequirement.CHANNEL_FACTORY.getServiceName(context), ChannelFactory.class, wmService.getJGroupsChannelFactoryInjector());
+        builder.addDependency(ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context), CommandDispatcherFactory.class, wmService.getCommandDispatcherFactoryInjector());
 
         builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING).append(name), Executor.class, wmService.getExecutorLongInjector());
         builder.addDependency(ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING).append(name), Executor.class, wmService.getExecutorShortInjector());

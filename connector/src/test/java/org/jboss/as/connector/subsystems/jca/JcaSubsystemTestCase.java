@@ -46,7 +46,7 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
+import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -83,7 +83,7 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName());
+        return AdditionalInitialization.withCapabilities(ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName());
     }
 
     @Test

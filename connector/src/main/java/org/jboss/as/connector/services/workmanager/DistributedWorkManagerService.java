@@ -27,14 +27,13 @@ import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 import java.util.concurrent.Executor;
 
 import org.jboss.as.connector.security.ElytronSecurityIntegration;
-import org.jboss.as.connector.services.workmanager.transport.ForkChannelTransport;
+import org.jboss.as.connector.services.workmanager.transport.CommandDispatcherTransport;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.txn.integration.JBossContextXATerminator;
 import org.jboss.jca.core.security.picketbox.PicketBoxSecurityIntegration;
 import org.jboss.jca.core.spi.workmanager.Address;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
 import org.jboss.jca.core.workmanager.WorkManagerCoordinator;
-import org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -42,7 +41,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.BlockingExecutor;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 
 /**
  * A WorkManager Service.
@@ -60,7 +59,7 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
 
     private final InjectedValue<JBossContextXATerminator> xaTerminator = new InjectedValue<JBossContextXATerminator>();
 
-    private final InjectedValue<ChannelFactory> jGroupsChannelFactory = new InjectedValue<ChannelFactory>();
+    private final InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<>();
 
     /**
      * create an instance
@@ -82,16 +81,9 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
     public void start(StartContext context) throws StartException {
         ROOT_LOGGER.debugf("Starting JCA DistributedWorkManager: ", value.getName());
 
-        ChannelFactory factory = this.jGroupsChannelFactory.getValue();
-        JGroupsTransport transport = new ForkChannelTransport(factory);
-        try {
-            transport.setChannel(factory.createChannel(this.value.getName()));
-            transport.setClusterName(this.value.getName());
-            this.value.setTransport(transport);
-        } catch (Exception e) {
-            ROOT_LOGGER.trace("failed to start JGroups channel", e);
-            throw ROOT_LOGGER.failedToStartJGroupsChannel(this.value.getName(), this.value.getName());
-        }
+        CommandDispatcherTransport transport = new CommandDispatcherTransport(this.dispatcherFactory.getValue(), this.value.getName());
+
+        this.value.setTransport(transport);
 
         BlockingExecutor longRunning = (BlockingExecutor) executorLong.getOptionalValue();
         if (longRunning != null) {
@@ -111,7 +103,6 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
         } else {
             this.value.setSecurityIntegration(new PicketBoxSecurityIntegration());
         }
-        transport.setId(String.valueOf(transport.getChannel().hashCode()));
 
         try {
             transport.startup();
@@ -119,7 +110,7 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
             ROOT_LOGGER.trace("failed to start DWM transport:", throwable);
             throw ROOT_LOGGER.failedToStartDWMTransport(this.value.getName());
         }
-        transport.register(new Address(value.getId(), value.getName(), value.getTransport().getId()));
+        transport.register(new Address(value.getId(), value.getName(), transport.getId()));
 
         WorkManagerCoordinator.getInstance().registerWorkManager(value);
 
@@ -159,8 +150,7 @@ public final class DistributedWorkManagerService implements Service<NamedDistrib
         return xaTerminator;
     }
 
-    public Injector<ChannelFactory> getJGroupsChannelFactoryInjector() {
-        return jGroupsChannelFactory;
+    public Injector<CommandDispatcherFactory> getCommandDispatcherFactoryInjector() {
+        return this.dispatcherFactory;
     }
-
 }
