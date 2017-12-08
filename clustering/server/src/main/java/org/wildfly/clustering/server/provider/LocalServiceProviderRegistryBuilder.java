@@ -22,18 +22,19 @@
 package org.wildfly.clustering.server.provider;
 
 
+import java.util.function.Function;
+
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.MappedValueService;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
@@ -68,7 +69,7 @@ public class LocalServiceProviderRegistryBuilder<T> implements CapabilityService
 
     @Override
     public ServiceBuilder<ServiceProviderRegistry<T>> build(ServiceTarget target) {
-        Value<ServiceProviderRegistry<T>> value = () -> new ServiceProviderRegistrationFactoryAdapter<>(new LocalServiceProviderRegistry<>(this.group.getValue()));
-        return this.group.register(target.addService(this.name, new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND));
+        Function<Group, ServiceProviderRegistry<T>> mapper = LocalServiceProviderRegistry::new;
+        return this.group.register(target.addService(this.name, new MappedValueService<>(mapper, this.group)).setInitialMode(ServiceController.Mode.ON_DEMAND));
     }
 }

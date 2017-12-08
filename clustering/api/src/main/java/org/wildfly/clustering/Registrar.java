@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,34 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.group;
 
-import java.util.Collection;
-
-import org.jgroups.Address;
-import org.wildfly.clustering.group.Node;
+package org.wildfly.clustering;
 
 /**
- * Non-clustered {@link JGroupsNodeFactory}.
+ * Defines the contract for registration-capable objects, e.g. for listener registration.
  * @author Paul Ferraro
+ * @param <T> the type of object to be registered
  */
-public class LocalNodeFactory implements JGroupsNodeFactory {
-
-    private final String group;
-    private final String name;
-
-    public LocalNodeFactory(String group, String name) {
-        this.group = group;
-        this.name = name;
-    }
-
-    @Override
-    public Node createNode(Address address) {
-        return new LocalNode(this.group, this.name);
-    }
-
-    @Override
-    public void invalidate(Collection<Address> addresses) {
-        // Do nothing
-    }
+public interface Registrar<T> {
+    /**
+     * Registers an object.  The object is unregistered when the generated {@link Registration} is closed.
+     * @param object an object to register
+     * @return an object registration.
+     */
+    Registration register(T object);
 }

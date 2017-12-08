@@ -41,7 +41,6 @@ import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
-import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
@@ -50,6 +49,7 @@ import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.NodeFactory;
 
 /**
  * @author Paul Ferraro
@@ -68,7 +68,7 @@ public class InfinispanBeanManagerFactoryBuilder<I, T> implements Builder<BeanMa
     private final InjectedValue<ScheduledExecutorService> scheduler = new InjectedValue<>();
     private final InjectedValue<Executor> executor = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
-    private final InjectedValue<NodeFactory> nodeFactory = new InjectedValue<>();
+    private final InjectedValue<NodeFactory> group = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Registry> registry = new InjectedValue<>();
     private final InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<>();
@@ -97,7 +97,7 @@ public class InfinispanBeanManagerFactoryBuilder<I, T> implements Builder<BeanMa
                 .addDependency(deploymentUnitServiceName.append(this.name, "eviction"), Executor.class, this.executor)
                 .addDependency(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(this.support, containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
                 .addDependency(ClusteringCacheRequirement.REGISTRY.getServiceName(this.support, containerName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), Registry.class, this.registry)
-                .addDependency(ClusteringCacheRequirement.NODE_FACTORY.getServiceName(this.support, containerName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), NodeFactory.class, this.nodeFactory)
+                .addDependency(ClusteringCacheRequirement.GROUP.getServiceName(this.support, containerName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), NodeFactory.class, this.group)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
     }
@@ -144,7 +144,7 @@ public class InfinispanBeanManagerFactoryBuilder<I, T> implements Builder<BeanMa
 
     @Override
     public NodeFactory<Address> getNodeFactory() {
-        return this.nodeFactory.getValue();
+        return this.group.getValue();
     }
 
     @Override

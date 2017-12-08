@@ -1,5 +1,0 @@
-org.wildfly.clustering.server.group.CacheGroupAliasBuilderProvider
-org.wildfly.clustering.server.group.CacheNodeFactoryAliasBuilderProvider
-org.wildfly.clustering.server.provider.ServiceProviderRegistryAliasBuilderProvider
-org.wildfly.clustering.server.registry.RegistryFactoryAliasBuilderProvider
-org.wildfly.clustering.server.singleton.SingletonServiceBuilderFactoryAliasBuilderProvider

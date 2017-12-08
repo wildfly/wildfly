@@ -21,31 +21,31 @@
  */
 package org.wildfly.clustering.server.group;
 
-import java.util.Collections;
-import java.util.List;
-
-import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.group.GroupListener;
+import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 
 /**
  * Non-clustered {@link Group} implementation
  * @author Paul Ferraro
  */
-public class LocalGroup implements Group {
+public class LocalGroup implements Group<Void> {
+    private static final String NAME = "local";
 
-    private final String name;
-    private final Node node;
+    private final Membership membership;
 
-    public LocalGroup(String name, Node node) {
-        this.name = name;
-        this.node = node;
+    public LocalGroup(Node node) {
+        this.membership = new SingletonMembership(node);
     }
 
     @Override
-    public void addListener(Listener listener) {
+    public Registration register(GroupListener object) {
         // membership of a non-clustered group will never change
+        return () -> {};
     }
 
+    @Deprecated
     @Override
     public void removeListener(Listener listener) {
         // membership of a non-clustered group will never change
@@ -53,31 +53,26 @@ public class LocalGroup implements Group {
 
     @Override
     public String getName() {
-        return this.name;
+        return NAME;
     }
 
     @Override
-    public boolean isCoordinator() {
+    public Node getLocalMember() {
+        return this.membership.getCoordinator();
+    }
+
+    @Override
+    public Membership getMembership() {
+        return this.membership;
+    }
+
+    @Override
+    public boolean isSingleton() {
         return true;
     }
 
     @Override
-    public Node getLocalNode() {
-        return this.node;
-    }
-
-    @Override
-    public Node getCoordinatorNode() {
-        return this.node;
-    }
-
-    @Override
-    public List<Node> getNodes() {
-        return Collections.singletonList(this.node);
-    }
-
-    @Override
-    public boolean isLocal() {
-        return true;
+    public Node createNode(Void address) {
+        return this.getLocalMember();
     }
 }

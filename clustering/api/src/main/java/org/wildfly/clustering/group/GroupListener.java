@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,17 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.group;
-
-import org.wildfly.clustering.server.GroupRequirementAliasBuilderProvider;
-import org.wildfly.clustering.spi.ClusteringRequirement;
+package org.wildfly.clustering.group;
 
 /**
+ * Listener for {@link Group} membership changes.
  * @author Paul Ferraro
  */
-public class GroupNodeFactoryAliasBuilderProvider extends GroupRequirementAliasBuilderProvider {
-
-    public GroupNodeFactoryAliasBuilderProvider() {
-        super(ClusteringRequirement.NODE_FACTORY);
-    }
+public interface GroupListener {
+    /**
+     * Indicates that the membership of the group has changed.
+     *
+     * @param previousMembership previous group membership
+     * @param membership new group membership
+     * @param merged indicates whether the membership change is the result of a merge view
+     */
+    void membershipChanged(Membership previousMembership, Membership membersip, boolean merged);
 }

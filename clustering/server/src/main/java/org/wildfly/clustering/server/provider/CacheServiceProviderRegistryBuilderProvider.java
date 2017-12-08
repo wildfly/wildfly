@@ -21,12 +21,14 @@
  */
 package org.wildfly.clustering.server.provider;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
 
 /**
  * Provides the requisite builders for a clustered {@link ServiceProviderRegistrationFactory}.
  * @author Paul Ferraro
  */
+@MetaInfServices(DistributedCacheBuilderProvider.class)
 public class CacheServiceProviderRegistryBuilderProvider extends ServiceProviderRegistryBuilderProvider implements DistributedCacheBuilderProvider {
 
     public CacheServiceProviderRegistryBuilderProvider() {

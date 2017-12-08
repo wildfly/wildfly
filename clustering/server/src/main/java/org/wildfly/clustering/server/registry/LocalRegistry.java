@@ -24,9 +24,11 @@ package org.wildfly.clustering.server.registry;
 import java.util.Collections;
 import java.util.Map;
 
+import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.registry.RegistryListener;
 
 /**
  * Non-clustered {@link Registry} implementation.
@@ -52,10 +54,12 @@ public class LocalRegistry<K, V> implements Registry<K, V> {
     }
 
     @Override
-    public void addListener(Registry.Listener<K, V> listener) {
+    public Registration register(RegistryListener<K, V> object) {
         // if there are no remote nodes, any registered listener would never get triggered
+        return () -> {};
     }
 
+    @Deprecated
     @Override
     public void removeListener(Registry.Listener<K, V> listener) {
         // if there are no remote nodes, any registered listener would never get triggered

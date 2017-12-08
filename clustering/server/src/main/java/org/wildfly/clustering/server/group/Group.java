@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,16 +22,12 @@
 
 package org.wildfly.clustering.server.group;
 
-import org.wildfly.clustering.server.GroupCapabilityServiceBuilderFactory;
-import org.wildfly.clustering.server.GroupRequirementBuilderProvider;
-import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.NodeFactory;
 
 /**
+ * {@link Group} that can create {@link org.wildfly.clustering.group.Node} instances.
  * @author Paul Ferraro
+ * @param <A> address type
  */
-public class JGroupsNodeFactoryBuilderProvider<F extends JGroupsNodeFactory> extends GroupRequirementBuilderProvider<F> {
-
-    public JGroupsNodeFactoryBuilderProvider(GroupCapabilityServiceBuilderFactory<F> factory) {
-        super(ClusteringRequirement.NODE_FACTORY, factory);
-    }
+public interface Group<A> extends org.wildfly.clustering.group.Group, NodeFactory<A> {
 }

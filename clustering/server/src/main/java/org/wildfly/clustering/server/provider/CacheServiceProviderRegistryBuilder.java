@@ -22,13 +22,13 @@
 package org.wildfly.clustering.server.provider;
 
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.function.Consumers;
+import org.jboss.as.clustering.function.Functions;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -87,9 +87,8 @@ public class CacheServiceProviderRegistryBuilder<T> implements CapabilityService
 
     @Override
     public ServiceBuilder<ServiceProviderRegistry<T>> build(ServiceTarget target) {
-        Function<CacheServiceProviderRegistry<T>, ServiceProviderRegistry<T>> mapper = registry -> new ServiceProviderRegistrationFactoryAdapter<>(registry);
         Supplier<CacheServiceProviderRegistry<T>> supplier = () -> new CacheServiceProviderRegistry<>(this);
-        Service<ServiceProviderRegistry<T>> service = new SuppliedValueService<>(mapper, supplier, Consumers.close());
+        Service<ServiceProviderRegistry<T>> service = new SuppliedValueService<>(Functions.identity(), supplier, Consumers.close());
         ServiceBuilder<ServiceProviderRegistry<T>> builder = new AsynchronousServiceBuilder<>(this.name, service).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
         Stream.of(this.cache, this.dispatcherFactory, this.group).forEach(dependency -> dependency.register(builder));
         return builder;

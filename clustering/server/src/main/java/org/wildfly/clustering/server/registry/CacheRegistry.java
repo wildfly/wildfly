@@ -54,12 +54,13 @@ import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.logging.ClusteringLogger;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.registry.RegistryListener;
+import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -80,11 +81,10 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     }
 
     private final ExecutorService topologyChangeExecutor = Executors.newSingleThreadExecutor(createThreadFactory(this.getClass()));
-    private final Map<Registry.Listener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
+    private final Map<RegistryListener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final Cache<Node, Map.Entry<K, V>> cache;
     private final Batcher<? extends Batch> batcher;
-    private final Group group;
-    private final NodeFactory<Address> factory;
+    private final Group<Address> group;
     private final Runnable closeTask;
     private final Map.Entry<K, V> entry;
 
@@ -92,7 +92,6 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
         this.cache = config.getCache();
         this.batcher = config.getBatcher();
         this.group = config.getGroup();
-        this.factory = config.getNodeFactory();
         this.closeTask = closeTask;
         this.entry = new AbstractMap.SimpleImmutableEntry<>(entry);
         this.populateRegistry();
@@ -101,7 +100,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
 
     private void populateRegistry() {
         try (Batch batch = this.batcher.createBatch()) {
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(this.group.getLocalNode(), this.entry);
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(this.group.getLocalMember(), this.entry);
         }
     }
 
@@ -114,7 +113,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     public void close() {
         this.cache.removeListener(this);
         this.shutdown(this.topologyChangeExecutor);
-        Node node = this.getGroup().getLocalNode();
+        Node node = this.getGroup().getLocalMember();
         try (Batch batch = this.batcher.createBatch()) {
             // If this remove fails, the entry will be auto-removed on topology change by the new primary owner
             this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).remove(node);
@@ -129,26 +128,32 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     }
 
     @Override
-    public void addListener(Registry.Listener<K, V> listener) {
+    public Registration register(RegistryListener<K, V> listener) {
         this.listeners.computeIfAbsent(listener, key -> Executors.newSingleThreadExecutor(createThreadFactory(listener.getClass())));
+        return () -> this.unregister(listener);
     }
 
-    @Override
-    public void removeListener(Registry.Listener<K, V> listener) {
+    private void unregister(RegistryListener<K, V> listener) {
         ExecutorService executor = this.listeners.remove(listener);
         if (executor != null) {
             this.shutdown(executor);
         }
     }
 
+    @Deprecated
     @Override
-    public Group getGroup() {
+    public void removeListener(Registry.Listener<K, V> listener) {
+        this.unregister(listener);
+    }
+
+    @Override
+    public org.wildfly.clustering.group.Group getGroup() {
         return this.group;
     }
 
     @Override
     public Map<K, V> getEntries() {
-        Set<Node> nodes = this.group.getNodes().stream().collect(Collectors.toSet());
+        Set<Node> nodes = new HashSet<>(this.group.getMembership().getMembers());
         try (Batch batch = this.batcher.createBatch()) {
             return this.cache.getAdvancedCache().getAll(nodes).values().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
         }
@@ -179,7 +184,10 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
             this.topologyChangeExecutor.submit(() -> {
                 if (!addresses.isEmpty()) {
                     // We're only interested in the entries for which we are the primary owner
-                    List<Node> nodes = addresses.stream().filter(address -> hash.locatePrimaryOwner(address).equals(localAddress)).map(address -> this.factory.createNode(address)).collect(Collectors.toList());
+                    List<Node> nodes = addresses.stream()
+                            .filter(address -> hash.locatePrimaryOwner(address).equals(localAddress))
+                            .map(address -> this.group.createNode(address))
+                            .collect(Collectors.toList());
 
                     if (!nodes.isEmpty()) {
                         Cache<Node, Map.Entry<K, V>> cache = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
@@ -247,8 +255,8 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     }
 
     private void notifyListeners(Event.Type type, Map<K, V> entries) {
-        for (Map.Entry<Listener<K, V>, ExecutorService> entry: this.listeners.entrySet()) {
-            Listener<K, V> listener = entry.getKey();
+        for (Map.Entry<RegistryListener<K, V>, ExecutorService> entry: this.listeners.entrySet()) {
+            RegistryListener<K, V> listener = entry.getKey();
             ExecutorService executor = entry.getValue();
             try {
                 executor.submit(() -> {

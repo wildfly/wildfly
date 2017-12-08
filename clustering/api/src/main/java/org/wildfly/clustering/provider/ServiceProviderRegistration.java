@@ -23,6 +23,7 @@ package org.wildfly.clustering.provider;
 
 import java.util.Set;
 
+import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.Node;
 
 /**
@@ -31,7 +32,7 @@ import org.wildfly.clustering.group.Node;
  * @author Paul Ferraro
  * @param <T> a service type
  */
-public interface ServiceProviderRegistration<T> extends AutoCloseable {
+public interface ServiceProviderRegistration<T> extends Registration {
 
     /**
      * Listener for service provider changes.
@@ -58,11 +59,4 @@ public interface ServiceProviderRegistration<T> extends AutoCloseable {
      * @return a set of nodes
      */
     Set<Node> getProviders();
-
-    /**
-     * Indicates that this node can no longer provide this service.
-     * Once closed, this object is no longer functional.
-     */
-    @Override
-    void close();
 }

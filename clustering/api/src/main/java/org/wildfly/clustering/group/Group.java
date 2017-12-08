@@ -23,43 +23,54 @@ package org.wildfly.clustering.group;
 
 import java.util.List;
 
+import org.wildfly.clustering.Registrar;
+
 /**
  * Represents a groups of nodes.
  *
  * @author Paul Ferraro
  */
-public interface Group {
+public interface Group extends Registrar<GroupListener> {
 
     /**
-     * Listener for membership changes.
+     * @deprecated Replaced by {@link GroupListener}.
      */
-    interface Listener {
+    @Deprecated interface Listener extends GroupListener {
         /**
          * Indicates that the membership of the group has changed.
          *
          * @param previousMembers previous group members
-         * @param members         new group members
-         * @param merged          indicates whether the membership change is the result of a merge view
+         * @param members new group members
+         * @param merged indicates whether the membership change is the result of a merge view
          */
         void membershipChanged(List<Node> previousMembers, List<Node> members, boolean merged);
+
+        @Override
+        default void membershipChanged(Membership previousMembership, Membership membership, boolean merged) {
+            this.membershipChanged(previousMembership.getMembers(), membership.getMembers(), merged);
+        }
     }
 
     /**
      * Registers a membership listener for the group.
      *
      * @param listener listener to be added
+     * @deprecated Replaced by {@link #register(GroupListener)}.
      */
-    void addListener(Listener listener);
+    @Deprecated default void addListener(Listener listener) {
+        this.register(listener);
+    }
 
     /**
      * Removes a registered listener from the group.
      *
      * @param listener listener to be removed
+     * @deprecated Replaced by {@link org.wildfly.clustering.Registration#close()}
      */
-    void removeListener(Listener listener);
+    @Deprecated void removeListener(Listener listener);
 
     /**
-     * Returns the name of this group.
+     * Returns the logical name of this group.
      *
      * @return the group name
      */
@@ -69,33 +80,65 @@ public interface Group {
      * Indicates whether or not we are the group coordinator.
      *
      * @return true, if we are the group coordinator, false otherwise
+     * @deprecated Replaced by {@link Membership#isCoordinator()}.
      */
-    boolean isCoordinator();
+    @Deprecated default boolean isCoordinator() {
+        return this.getMembership().isCoordinator();
+    }
 
     /**
      * Returns the local node.
-     *
-     * @return the local node
+     * @deprecated Replaced by {@link #getLocalMember()}.
      */
-    Node getLocalNode();
+    @Deprecated default Node getLocalNode() {
+        return this.getLocalMember();
+    }
+
+    /**
+     * Returns the local member.
+     *
+     * @return the local member
+     */
+    Node getLocalMember();
 
     /**
      * Returns the group coordinator node.
      *
      * @return the group coordinator node
+     * @deprecated Replaced by {@link Membership#getCoordinator()}.
      */
-    Node getCoordinatorNode();
+    @Deprecated default Node getCoordinatorNode() {
+        return this.getMembership().getCoordinator();
+    }
 
     /**
      * Returns the list of nodes that are members of this group.
      *
      * @return a list of nodes
+     * @deprecated Replaced by {@link Membership#getNodes()}.
      */
-    List<Node> getNodes();
+    @Deprecated default List<Node> getNodes() {
+        return this.getMembership().getMembers();
+    }
+
+    /**
+     * Gets the current membership of this group
+     * @return the group membership
+     */
+    Membership getMembership();
 
     /**
      * Indicates whether this is a local group.  A local group only ever contains a single member.
      * @return true, if this is a local group, false otherwise.
+     * @deprecated Replaced by {@link #isSingleton()}.
      */
-    boolean isLocal();
+    @Deprecated default boolean isLocal() {
+        return this.isSingleton();
+    }
+
+    /**
+     * Indicates whether or not this is a singleton group.  The membership of a singleton group contains only the local member and never changes.
+     * @return true, if this is a singleton group, false otherwise.
+     */
+    boolean isSingleton();
 }

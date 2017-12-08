@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.server.group;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
@@ -29,9 +30,10 @@ import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
  * Provides the requisite builders for a non-clustered cache-based {@link Group} service.
  * @author Paul Ferraro
  */
+@MetaInfServices(LocalCacheBuilderProvider.class)
 public class LocalCacheGroupBuilderProvider extends CacheGroupBuilderProvider implements LocalCacheBuilderProvider {
 
     public LocalCacheGroupBuilderProvider() {
-        super((name, containerName, cacheName) -> new LocalCacheGroupBuilder(name, containerName));
+        super((name, containerName, cacheName) -> new LocalGroupBuilder(name));
     }
 }

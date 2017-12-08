@@ -44,6 +44,6 @@ public class LocalCommandDispatcherFactory implements CommandDispatcherFactory {
 
     @Override
     public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
-        return new LocalCommandDispatcher<>(this.group.getLocalNode(), context);
+        return new LocalCommandDispatcher<>(this.group.getLocalMember(), context);
     }
 }

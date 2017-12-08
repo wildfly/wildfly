@@ -114,7 +114,7 @@ public final class AssociationService implements Service<AssociationService> {
                         b.addAttribute(EJBClientContext.FILTER_ATTR_NODE, AttributeValue.fromString(ourNodeName));
                         if (clientMappingsRegistry != null) {
                             Group group = clientMappingsRegistry.getGroup();
-                            if (!group.isLocal()) {
+                            if (!group.isSingleton()) {
                                 b.addAttribute(EJBClientContext.FILTER_ATTR_CLUSTER, AttributeValue.fromString(group.getName()));
                             }
                         }

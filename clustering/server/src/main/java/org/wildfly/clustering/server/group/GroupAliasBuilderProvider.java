@@ -23,12 +23,14 @@
 package org.wildfly.clustering.server.group;
 
 import org.jboss.as.clustering.naming.JndiNameFactory;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.server.GroupRequirementAliasBuilderProvider;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(org.wildfly.clustering.spi.GroupAliasBuilderProvider.class)
 public class GroupAliasBuilderProvider extends GroupRequirementAliasBuilderProvider {
 
     public GroupAliasBuilderProvider() {

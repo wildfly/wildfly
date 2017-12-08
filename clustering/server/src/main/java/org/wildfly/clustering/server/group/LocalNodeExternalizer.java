@@ -27,8 +27,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.DelimitedKeyFormat;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
+import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
@@ -36,20 +36,19 @@ import org.wildfly.clustering.marshalling.Externalizer;
  * @author Paul Ferraro
  */
 @MetaInfServices({ Externalizer.class, KeyFormat.class })
-public class LocalNodeExternalizer extends DelimitedKeyFormat<LocalNode> implements Externalizer<LocalNode> {
+public class LocalNodeExternalizer extends SimpleKeyFormat<LocalNode> implements Externalizer<LocalNode> {
 
     public LocalNodeExternalizer() {
-        super(LocalNode.class, "|", parts -> new LocalNode(parts[0], parts[1]), node -> new String[] { node.getCluster(), node.getName() });
+        super(LocalNode.class, LocalNode::new, LocalNode::getName);
     }
 
     @Override
     public void writeObject(ObjectOutput output, LocalNode node) throws IOException {
-        output.writeUTF(node.getCluster());
         output.writeUTF(node.getName());
     }
 
     @Override
     public LocalNode readObject(ObjectInput input) throws IOException {
-        return new LocalNode(input.readUTF(), input.readUTF());
+        return new LocalNode(input.readUTF());
     }
 }

@@ -27,7 +27,7 @@ public class CommandDispatcherBean implements CommandDispatcher<Node> {
 
     @PostConstruct
     public void init() {
-        this.dispatcher = this.factory.createCommandDispatcher("CommandDispatcherTestCase", this.factory.getGroup().getLocalNode());
+        this.dispatcher = this.factory.createCommandDispatcher("CommandDispatcherTestCase", this.factory.getGroup().getLocalMember());
     }
 
     @PreDestroy

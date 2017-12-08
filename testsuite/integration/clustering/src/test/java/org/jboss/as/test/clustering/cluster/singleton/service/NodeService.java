@@ -42,7 +42,7 @@ public class NodeService implements Service<Node> {
         if (!this.started) {
             throw new IllegalStateException();
         }
-        return this.group.getValue().getLocalNode();
+        return this.group.getValue().getLocalMember();
     }
 
     @Override

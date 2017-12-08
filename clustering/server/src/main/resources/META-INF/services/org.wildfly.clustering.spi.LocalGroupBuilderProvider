@@ -1,3 +1,0 @@
-org.wildfly.clustering.server.dispatcher.LocalCommandDispatcherFactoryBuilderProvider
-org.wildfly.clustering.server.group.LocalGroupBuilderProvider
-org.wildfly.clustering.server.group.LocalNodeFactoryBuilderProvider

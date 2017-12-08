@@ -86,7 +86,7 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService implements C
 
     @Override
     public Map.Entry<String, List<ClientMapping>> getValue() {
-        return new AbstractMap.SimpleImmutableEntry<>(this.group.getValue().getLocalNode().getName(), this.getClientMappings());
+        return new AbstractMap.SimpleImmutableEntry<>(this.group.getValue().getLocalMember().getName(), this.getClientMappings());
     }
 
     List<ClientMapping> getClientMappings() {

@@ -35,6 +35,6 @@ public class LocalNodeExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        new ExternalizerTester<>(new LocalNodeExternalizer()).test(new LocalNode("cluster", "name"));
+        new ExternalizerTester<>(new LocalNodeExternalizer()).test(new LocalNode("name"));
     }
 }

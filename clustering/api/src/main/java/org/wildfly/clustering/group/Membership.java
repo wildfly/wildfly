@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,25 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.provider;
+
+package org.wildfly.clustering.group;
+
+import java.util.List;
 
 /**
- * A factory for creating a service provider registration.
- *
+ * Encapsulates an immutable membership of a group.
  * @author Paul Ferraro
- * @deprecated Use {@link ServiceProviderRegistry} instead
  */
-@Deprecated
-public interface ServiceProviderRegistrationFactory<T> extends ServiceProviderRegistry<T> {
+public interface Membership {
+    /**
+     * Indicates whether or not the local node is the coordinator of this group membership.
+     * Semantically equivalent to:
+     * {@code group.getLocalNode().equals(#getCoordinator())}
+     *
+     * @return true, if we are the group membership coordinator, false otherwise
+     */
+    boolean isCoordinator();
 
     /**
-     * Registers the local node as providing the specified service, using the specified listener.
+     * Returns the coordinator node of this group membership.
+     * All nodes of this membership will always agree on which node is the coordinator.
      *
-     * @param service  a service to register
-     * @param listener a registry listener
-     * @return a new service provider registration
+     * @return the group coordinator node
      */
-    default ServiceProviderRegistration<T> createRegistration(T service, ServiceProviderRegistration.Listener listener) {
-        return this.register(service, listener);
-    }
+    Node getCoordinator();
+
+    /**
+     * Returns the nodes that comprise this group membership.
+     * The membership order will be consistent on each node in the group.
+     *
+     * @return a list of nodes ordered by descending age.
+     */
+    List<Node> getMembers();
 }

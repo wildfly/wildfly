@@ -21,12 +21,14 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 
 /**
  * Provides the requisite builders for creating a non-clustered {@link org.wildfly.clustering.dispatcher.CommandDispatcherFactory}.
  * @author Paul Ferraro
  */
+@MetaInfServices(LocalGroupBuilderProvider.class)
 public class LocalCommandDispatcherFactoryBuilderProvider extends CommandDispatcherFactoryBuilderProvider implements LocalGroupBuilderProvider {
 
     public LocalCommandDispatcherFactoryBuilderProvider() {

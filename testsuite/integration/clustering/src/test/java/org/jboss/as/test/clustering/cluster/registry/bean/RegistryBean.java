@@ -12,19 +12,22 @@ import javax.ejb.Local;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 
+import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryFactory;
+import org.wildfly.clustering.registry.RegistryListener;
 
 @Singleton
 @Startup
 @Local(Registry.class)
-public class RegistryBean implements Registry<String, String>, Registry.Listener<String, String> {
+public class RegistryBean implements Registry<String, String>, RegistryListener<String, String> {
 
     @Resource(lookup = "java:jboss/clustering/registry/server/default")
     private RegistryFactory<String, String> factory;
     private Registry<String, String> registry;
+    private Registration registration;
 
     private static String getLocalHost() {
         try {
@@ -37,12 +40,12 @@ public class RegistryBean implements Registry<String, String>, Registry.Listener
     @PostConstruct
     public void init() {
         this.registry = this.factory.createRegistry(new AbstractMap.SimpleImmutableEntry<>(System.getProperty("jboss.node.name"), getLocalHost()));
-        this.registry.addListener(this);
+        this.registration = this.registry.register(this);
     }
 
     @PreDestroy
     public void destroy() {
-        this.registry.removeListener(this);
+        this.registration.close();
         this.registry.close();
     }
 
@@ -72,10 +75,11 @@ public class RegistryBean implements Registry<String, String>, Registry.Listener
     }
 
     @Override
-    public void addListener(Registry.Listener<String, String> listener) {
-        this.registry.addListener(listener);
+    public Registration register(RegistryListener<String, String> listener) {
+        return this.registry.register(listener);
     }
 
+    @Deprecated
     @Override
     public void removeListener(Registry.Listener<String, String> listener) {
         this.registry.removeListener(listener);

@@ -21,12 +21,14 @@
  */
 package org.wildfly.clustering.server.singleton;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
 /**
  * Provides the requisite builders for a non-clustered {@link org.wildfly.clustering.singleton.SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
+@MetaInfServices(LocalCacheBuilderProvider.class)
 public class LocalSingletonServiceBuilderFactoryBuilderProvider extends SingletonServiceBuilderFactoryBuilderProvider implements LocalCacheBuilderProvider {
 
     public LocalSingletonServiceBuilderFactoryBuilderProvider() {

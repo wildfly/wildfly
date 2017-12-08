@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,56 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.group;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
-import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
-import org.wildfly.clustering.spi.ServiceNameRegistry;
+import org.wildfly.clustering.group.Membership;
+import org.wildfly.clustering.group.Node;
 
 /**
- * Provides the requisite builders for both local and clustered service implementations of a {@link org.wildfly.clustering.group.NodeFactory} for a cache.
+ * A membership that only ever contains a single member.
  * @author Paul Ferraro
  */
-public class CacheNodeFactoryBuilderProvider implements LocalCacheBuilderProvider, DistributedCacheBuilderProvider {
+public class SingletonMembership implements Membership {
+
+    private final Node member;
+
+    public SingletonMembership(Node member) {
+        this.member = member;
+    }
 
     @Override
-    public Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
-        return Collections.singleton(new CacheNodeFactoryBuilder(registry, containerName));
+    public boolean isCoordinator() {
+        return true;
+    }
+
+    @Override
+    public Node getCoordinator() {
+        return this.member;
+    }
+
+    @Override
+    public List<Node> getMembers() {
+        return Collections.singletonList(this.member);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.member.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof SingletonMembership)) return false;
+        SingletonMembership membership = (SingletonMembership) object;
+        return this.member.equals(membership.member);
     }
 
     @Override
     public String toString() {
-        return this.getClass().getName();
+        return this.member.toString();
     }
 }

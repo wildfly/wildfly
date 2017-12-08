@@ -21,19 +21,18 @@
  */
 package org.wildfly.clustering.server.group;
 
+import java.util.function.Function;
+
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.Value;
+import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ValueDependency;
-import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.service.MappedValueService;
 
 /**
  * Builds a non-clustered {@link Group} service.
@@ -42,13 +41,11 @@ import org.wildfly.clustering.spi.ClusteringRequirement;
 public class LocalGroupBuilder implements CapabilityServiceBuilder<Group> {
 
     private final ServiceName name;
-    private final String group;
 
-    private volatile ValueDependency<JGroupsNodeFactory> factory;
+    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
 
-    public LocalGroupBuilder(ServiceName name, String group) {
+    public LocalGroupBuilder(ServiceName name) {
         this.name = name;
-        this.group = group;
     }
 
     @Override
@@ -57,14 +54,11 @@ public class LocalGroupBuilder implements CapabilityServiceBuilder<Group> {
     }
 
     @Override
-    public Builder<Group> configure(CapabilityServiceSupport support) {
-        this.factory = new InjectedValueDependency<>(ClusteringRequirement.NODE_FACTORY.getServiceName(support, this.group), JGroupsNodeFactory.class);
-        return this;
-    }
-
-    @Override
     public ServiceBuilder<Group> build(ServiceTarget target) {
-        Value<Group> value = () -> new LocalGroup(this.group, this.factory.getValue().createNode(null));
-        return this.factory.register(target.addService(this.name, new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND));
+        Function<ServerEnvironment, Group> mapper = environment -> new LocalGroup(new LocalNode(environment.getNodeName()));
+        return target.addService(this.name, new MappedValueService<>(mapper, this.environment))
+                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                ;
     }
 }

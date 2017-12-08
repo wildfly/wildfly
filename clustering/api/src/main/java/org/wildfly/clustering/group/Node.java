@@ -39,7 +39,7 @@ public interface Node {
     /**
      * Returns the unique socking binding address of this node.
      *
-     * @return a socket binding address
+     * @return a socket binding address, or null if this node is a member of a singleton group.
      */
     InetSocketAddress getSocketAddress();
 }

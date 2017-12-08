@@ -23,8 +23,8 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.spi.NodeFactory;
 
 /**
  * Configuration for a {@link RouteLocator}.
@@ -36,5 +36,5 @@ public interface InfinispanRouteLocatorConfiguration {
 
     Registry<String, Void> getRegistry();
 
-    NodeFactory<Address> getNodeFactory();
+    NodeFactory<Address> getMemberFactory();
 }
