@@ -144,7 +144,7 @@ public class SpnegoMechTestCase extends AbstractMechTestBase {
 
         LoginContext lc = Utils.loginWithKerberos(krb5Configuration, "user1@WILDFLY.ORG", "password1");
         Subject.doAs(lc.getSubject(), (PrivilegedExceptionAction<Void>) () -> {
-            try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 
                 GSSManager manager = GSSManager.getInstance();
                 GSSName acceptorName = manager.createName("HTTP@localhost", GSSName.NT_HOSTBASED_SERVICE);
@@ -159,7 +159,7 @@ public class SpnegoMechTestCase extends AbstractMechTestBase {
 
                     HttpGet request = new HttpGet(uri);
                     request.setHeader(HEADER_AUTHORIZATION, CHALLENGE_PREFIX + Base64.getEncoder().encodeToString(message));
-                    try (final CloseableHttpResponse response = httpClient.execute(request)) {
+                    try ( CloseableHttpResponse response = httpClient.execute(request)) {
                         int statusCode = response.getStatusLine().getStatusCode();
 
                         if (statusCode != SC_UNAUTHORIZED) {
@@ -168,7 +168,7 @@ public class SpnegoMechTestCase extends AbstractMechTestBase {
 
                             // test cached identity
                             HttpGet request2 = new HttpGet(uri);
-                            try (final CloseableHttpResponse response2 = httpClient.execute(request2)) {
+                            try ( CloseableHttpResponse response2 = httpClient.execute(request2)) {
                                 int statusCode2 = response.getStatusLine().getStatusCode();
                                 assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode2);
                                 assertEquals("Unexpected content of HTTP response.", SimpleServlet.RESPONSE_BODY, EntityUtils.toString(response2.getEntity()));

@@ -153,7 +153,7 @@ public class SubDeploymentAvailableInClassPathTestCase {
     @Test
     @OperateOnDeployment("ear-with-single-war")
     public void testEjbClassAvailableInServlet(@ArquillianResource(HelloWorldServlet.class) URL baseUrl) throws Exception {
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             final String message = "JBossAS7";
 
             final String requestURL = baseUrl.toURI() + HelloWorldServlet.URL_PATTERN + "?" + HelloWorldServlet.PARAMETER_NAME + "=" + message;
@@ -184,7 +184,7 @@ public class SubDeploymentAvailableInClassPathTestCase {
     @Test
     @OperateOnDeployment("ear-with-exploded-war")
     public void testExplodedWarInEar(@ArquillianResource(HelloWorldServlet.class) URL baseUrl) throws Exception {
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             String message = "OK!";
             String requestURL = baseUrl.toURI() + "/index.jsp";
             HttpGet request = new HttpGet(requestURL);
@@ -220,7 +220,7 @@ public class SubDeploymentAvailableInClassPathTestCase {
     @Test
     @OperateOnDeployment("ear-with-single-war")
     public void testServletClassNotAvailableToEjbInEar(@ArquillianResource(EjbInvokingServlet.class) URL baseUrl) throws Exception {
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             final String classInWar = HelloWorldServlet.class.getName();
             final String requestURL = baseUrl.toURI() + EjbInvokingServlet.URL_PATTERN + "?" + EjbInvokingServlet.CLASS_IN_WAR_PARAMETER + "=" + classInWar;
             final HttpGet request = new HttpGet(requestURL);
@@ -252,7 +252,7 @@ public class SubDeploymentAvailableInClassPathTestCase {
     @Test
     @OperateOnDeployment("ear-with-war-and-jar")
     public void testWarSeeJarAndJarSeeImplicitModulesFirst(@ArquillianResource(EjbInvokeClassloaderToStringServlet.class) URL baseUrl) throws Exception {
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             final String requestURL = baseUrl.toURI() + EjbInvokeClassloaderToStringServlet.URL_PATTERN
                     + "?" + EjbInvokeClassloaderToStringServlet.CLASS_NAME_PARAMETER + "=javax.naming.InitialContext";
             final HttpGet request = new HttpGet(requestURL);
@@ -283,7 +283,7 @@ public class SubDeploymentAvailableInClassPathTestCase {
     @Test
     @OperateOnDeployment("ear-with-multiple-wars")
     public void testWarsDontSeeEachOtherInEar(@ContainerResource ManagementClient managementClient) throws Exception {
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             final String classInOtherWar = HelloWorldServlet.class.getName();
             final String requestURL = managementClient.getWebUri() + "/" + OTHER_WEB_APP_CONTEXT + ServletInOtherWar.URL_PATTERN +
                     "?" + ServletInOtherWar.CLASS_IN_OTHER_WAR_PARAMETER + "=" + classInOtherWar;

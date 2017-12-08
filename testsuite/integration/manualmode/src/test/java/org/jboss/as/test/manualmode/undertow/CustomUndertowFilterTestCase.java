@@ -147,7 +147,7 @@ public class CustomUndertowFilterTestCase {
         // create a deployment
         final WebArchive war = ShrinkWrap.create(WebArchive.class).addAsWebResource(new StringAsset("Hello world!"), "index.html");
         // deploy it
-        try (final InputStream is = war.as(ZipExporter.class).exportAsInputStream()) {
+        try (InputStream is = war.as(ZipExporter.class).exportAsInputStream()) {
             final ServerDeploymentHelper deploymentHelper = new ServerDeploymentHelper(serverController.getClient().getControllerClient());
             deploymentHelper.deploy(WAR_DEPLOYMENT_NAME + ".war", is);
         }
@@ -165,7 +165,7 @@ public class CustomUndertowFilterTestCase {
                 + ":" + TestSuiteEnvironment.getHttpPort()
                 + "/" + WAR_DEPLOYMENT_NAME + "/index.html";
         logger.debug("Invoking request at " + url);
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             final HttpGet httpget = new HttpGet(url);
             final HttpResponse response = httpClient.execute(httpget);
             final StatusLine statusLine = response.getStatusLine();

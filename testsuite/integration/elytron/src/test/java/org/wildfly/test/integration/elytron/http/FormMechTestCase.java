@@ -90,8 +90,8 @@ public class FormMechTestCase extends AbstractMechTestBase {
         HttpGet request = new HttpGet(new URI(url.toExternalForm() + "role1"));
         HttpClientContext context = HttpClientContext.create();
 
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            try (final CloseableHttpResponse response = httpClient.execute(request, context)) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            try (CloseableHttpResponse response = httpClient.execute(request, context)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
                 assertEquals("Unexpected content of HTTP response.", LOGIN_PAGE_CONTENT, EntityUtils.toString(response.getEntity()));
@@ -104,8 +104,8 @@ public class FormMechTestCase extends AbstractMechTestBase {
         HttpGet request = new HttpGet(new URI(url.toExternalForm() + "login.html"));
         HttpClientContext context = HttpClientContext.create();
 
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            try (final CloseableHttpResponse response = httpClient.execute(request, context)) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            try (CloseableHttpResponse response = httpClient.execute(request, context)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
                 assertEquals("Unexpected content of HTTP response.", LOGIN_PAGE_CONTENT, EntityUtils.toString(response.getEntity()));
@@ -115,10 +115,10 @@ public class FormMechTestCase extends AbstractMechTestBase {
 
     @Test
     public void testCorrectWorkflow() throws Exception {
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().disableRedirectHandling().build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().disableRedirectHandling().build()) {
             // unauthorized - login form should be shown
             HttpGet request1 = new HttpGet(new URI(url.toExternalForm() + "role1"));
-            try (final CloseableHttpResponse response = httpClient.execute(request1)) {
+            try (CloseableHttpResponse response = httpClient.execute(request1)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
                 assertEquals("Unexpected content of HTTP response.", LOGIN_PAGE_CONTENT, EntityUtils.toString(response.getEntity()));
@@ -130,7 +130,7 @@ public class FormMechTestCase extends AbstractMechTestBase {
             params.add(new BasicNameValuePair("j_username", "user1"));
             params.add(new BasicNameValuePair("j_password", "password1"));
             request2.setEntity(new UrlEncodedFormEntity(params));
-            try (final CloseableHttpResponse response = httpClient.execute(request2)) {
+            try (CloseableHttpResponse response = httpClient.execute(request2)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 Header[] locations = response.getHeaders("Location");
                 assertEquals("Unexpected status code in HTTP response.", SC_MOVED_TEMPORARILY, statusCode);
@@ -140,7 +140,7 @@ public class FormMechTestCase extends AbstractMechTestBase {
 
             // should be logged now
             HttpGet request3 = new HttpGet(new URI(url.toExternalForm() + "role1"));
-            try (final CloseableHttpResponse response = httpClient.execute(request3)) {
+            try (CloseableHttpResponse response = httpClient.execute(request3)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
                 assertEquals("Unexpected content of HTTP response.", RESPONSE_BODY, EntityUtils.toString(response.getEntity()));
@@ -148,7 +148,7 @@ public class FormMechTestCase extends AbstractMechTestBase {
 
             // but no role2
             HttpGet request4 = new HttpGet(new URI(url.toExternalForm() + "role2"));
-            try (final CloseableHttpResponse response = httpClient.execute(request4)) {
+            try (CloseableHttpResponse response = httpClient.execute(request4)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_FORBIDDEN, statusCode);
                 assertNotEquals("Unexpected content of HTTP response.", RESPONSE_BODY, EntityUtils.toString(response.getEntity()));
@@ -156,7 +156,7 @@ public class FormMechTestCase extends AbstractMechTestBase {
 
             // try to log-out
             HttpGet request5 = new HttpGet(new URI(url.toExternalForm() + "logout"));
-            try (final CloseableHttpResponse response = httpClient.execute(request5)) {
+            try (CloseableHttpResponse response = httpClient.execute(request5)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 Header[] locations = response.getHeaders("Location");
                 assertEquals("Unexpected status code in HTTP response.", SC_MOVED_TEMPORARILY, statusCode);
@@ -166,7 +166,7 @@ public class FormMechTestCase extends AbstractMechTestBase {
 
             // should be logged-out again
             HttpGet request6 = new HttpGet(new URI(url.toExternalForm() + "role1"));
-            try (final CloseableHttpResponse response = httpClient.execute(request6)) {
+            try (CloseableHttpResponse response = httpClient.execute(request6)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
                 assertEquals("Unexpected content of HTTP response.", LOGIN_PAGE_CONTENT, EntityUtils.toString(response.getEntity()));
@@ -176,13 +176,13 @@ public class FormMechTestCase extends AbstractMechTestBase {
 
     @Test
     public void testInvalidPrincipal() throws Exception {
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().disableRedirectHandling().build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().disableRedirectHandling().build()) {
             HttpPost request = new HttpPost(new URI(url.toExternalForm() + "j_security_check"));
             List<NameValuePair> params = new ArrayList<NameValuePair>();
             params.add(new BasicNameValuePair("j_username", "user1wrong"));
             params.add(new BasicNameValuePair("j_password", "password1"));
             request.setEntity(new UrlEncodedFormEntity(params));
-            try (final CloseableHttpResponse response = httpClient.execute(request)) {
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
                 assertEquals("Unexpected content of HTTP response.", ERROR_PAGE_CONTENT, EntityUtils.toString(response.getEntity()));
@@ -192,13 +192,13 @@ public class FormMechTestCase extends AbstractMechTestBase {
 
     @Test
     public void testInvalidCredential() throws Exception {
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().disableRedirectHandling().build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().disableRedirectHandling().build()) {
             HttpPost request = new HttpPost(new URI(url.toExternalForm() + "j_security_check"));
             List<NameValuePair> params = new ArrayList<NameValuePair>();
             params.add(new BasicNameValuePair("j_username", "user1"));
             params.add(new BasicNameValuePair("j_password", "password1wrong"));
             request.setEntity(new UrlEncodedFormEntity(params));
-            try (final CloseableHttpResponse response = httpClient.execute(request)) {
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
                 assertEquals("Unexpected content of HTTP response.", ERROR_PAGE_CONTENT, EntityUtils.toString(response.getEntity()));

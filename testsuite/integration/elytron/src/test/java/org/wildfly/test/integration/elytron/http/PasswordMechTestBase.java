@@ -56,9 +56,9 @@ abstract class PasswordMechTestBase extends AbstractMechTestBase {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(AuthScope.ANY, credentials);
 
-        try (final CloseableHttpClient httpClient = HttpClients.custom()
+        try (CloseableHttpClient httpClient = HttpClients.custom()
                 .setDefaultCredentialsProvider(credsProvider).build()) {
-            try (final CloseableHttpResponse response = httpClient.execute(request)) {
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
                 assertEquals("Unexpected content of HTTP response.", SimpleServlet.RESPONSE_BODY, EntityUtils.toString(response.getEntity()));
@@ -74,9 +74,9 @@ abstract class PasswordMechTestBase extends AbstractMechTestBase {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(AuthScope.ANY, credentials);
 
-        try (final CloseableHttpClient httpClient = HttpClients.custom()
+        try (CloseableHttpClient httpClient = HttpClients.custom()
                 .setDefaultCredentialsProvider(credsProvider).build()) {
-            try (final CloseableHttpResponse response = httpClient.execute(request)) {
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_FORBIDDEN, statusCode);
             }
@@ -91,9 +91,9 @@ abstract class PasswordMechTestBase extends AbstractMechTestBase {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(AuthScope.ANY, credentials);
 
-        try (final CloseableHttpClient httpClient = HttpClients.custom()
+        try (CloseableHttpClient httpClient = HttpClients.custom()
                 .setDefaultCredentialsProvider(credsProvider).build()) {
-            try (final CloseableHttpResponse response = httpClient.execute(request)) {
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_UNAUTHORIZED, statusCode);
             }
@@ -108,9 +108,9 @@ abstract class PasswordMechTestBase extends AbstractMechTestBase {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(AuthScope.ANY, credentials);
 
-        try (final CloseableHttpClient httpClient = HttpClients.custom()
+        try (CloseableHttpClient httpClient = HttpClients.custom()
                 .setDefaultCredentialsProvider(credsProvider).build()) {
-            try (final CloseableHttpResponse response = httpClient.execute(request)) {
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_UNAUTHORIZED, statusCode);
             }

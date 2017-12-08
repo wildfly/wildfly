@@ -45,7 +45,7 @@ public class PathAccessCheckServlet extends HttpServlet {
         final String path = req.getParameter("path");
         final String shouldBeAccessible = req.getParameter("expected-accessible");
         final boolean expectedAccessible = shouldBeAccessible == null ? false : Boolean.parseBoolean(shouldBeAccessible);
-        try (final InputStream is = req.getServletContext().getResourceAsStream(path)) {
+        try (InputStream is = req.getServletContext().getResourceAsStream(path)) {
             if (expectedAccessible && is == null) {
                 throw new ServletException("Expected to be accessible but could not access " + path);
             }

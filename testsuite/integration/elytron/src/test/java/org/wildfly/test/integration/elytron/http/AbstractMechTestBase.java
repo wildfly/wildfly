@@ -68,8 +68,8 @@ abstract class AbstractMechTestBase {
         HttpGet request = new HttpGet(new URI(url.toExternalForm() + "unprotected"));
         HttpClientContext context = HttpClientContext.create();
 
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            try (final CloseableHttpResponse response = httpClient.execute(request, context)) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            try (CloseableHttpResponse response = httpClient.execute(request, context)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
                 assertEquals("Unexpected content of HTTP response.", SimpleServlet.RESPONSE_BODY, EntityUtils.toString(response.getEntity()));
@@ -82,8 +82,8 @@ abstract class AbstractMechTestBase {
         HttpGet request = new HttpGet(new URI(url.toExternalForm() + "role1"));
         HttpClientContext context = HttpClientContext.create();
 
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            try (final CloseableHttpResponse response = httpClient.execute(request, context)) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            try (CloseableHttpResponse response = httpClient.execute(request, context)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_UNAUTHORIZED, statusCode);
             }

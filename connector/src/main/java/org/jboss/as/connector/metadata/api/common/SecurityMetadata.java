@@ -20,8 +20,7 @@ package org.jboss.as.connector.metadata.api.common;
  *
  * @author Flavia Rainone
  */
-public interface SecurityMetadata extends org.jboss.jca.common.api.metadata.common.SecurityMetadata
-{
+public interface SecurityMetadata extends org.jboss.jca.common.api.metadata.common.SecurityMetadata {
    /**
     *
     * Indicates if Elytron will be used to authenticate connections.
