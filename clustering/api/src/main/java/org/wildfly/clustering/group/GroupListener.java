@@ -34,5 +34,5 @@ public interface GroupListener {
      * @param membership new group membership
      * @param merged indicates whether the membership change is the result of a merge view
      */
-    void membershipChanged(Membership previousMembership, Membership membersip, boolean merged);
+    void membershipChanged(Membership previousMembership, Membership membership, boolean merged);
 }
