@@ -76,7 +76,7 @@ public class WeldProvider implements CDIProvider {
         private final BeanManagerProxy rootBeanManager;
         private final WeldDeployment deployment;
 
-        public CdiImpl(Container container, BeanManagerProxy rootBeanManager, WeldDeployment deployment) {
+        CdiImpl(Container container, BeanManagerProxy rootBeanManager, WeldDeployment deployment) {
             this.container = container;
             this.rootBeanManager = rootBeanManager;
             this.deployment = deployment;

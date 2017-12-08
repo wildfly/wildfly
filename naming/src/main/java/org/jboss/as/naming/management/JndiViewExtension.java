@@ -36,5 +36,5 @@ public interface JndiViewExtension {
      * @param context The extension context.
      * @throws OperationFailedException
      */
-    void execute(final JndiViewExtensionContext context) throws OperationFailedException;
+    void execute(JndiViewExtensionContext context) throws OperationFailedException;
 }

@@ -107,6 +107,6 @@ public abstract class AbstractPoolMergingProcessor<T extends EJBComponentDescrip
      * @param componentDescription The component description
      * @param poolName             The pool name
      */
-    protected abstract void setPoolName(final T componentDescription, final String poolName);
+    protected abstract void setPoolName(T componentDescription, String poolName);
 
 }

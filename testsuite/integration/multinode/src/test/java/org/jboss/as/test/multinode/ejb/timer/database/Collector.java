@@ -9,8 +9,8 @@ import java.util.List;
 @Remote
 public interface Collector {
 
-    void timerRun(final String nodeName, String info);
+    void timerRun(String nodeName, String info);
 
-    List<TimerData> collect(final int expectedCount);
+    List<TimerData> collect(int expectedCount);
 
 }

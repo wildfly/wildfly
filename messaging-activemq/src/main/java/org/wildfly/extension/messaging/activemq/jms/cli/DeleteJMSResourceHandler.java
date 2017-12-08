@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelNode;
  */
 class DeleteJMSResourceHandler extends BatchModeCommandHandler {
 
-    public DeleteJMSResourceHandler(CommandContext ctx) {
+    DeleteJMSResourceHandler(CommandContext ctx) {
         super(ctx, "delete-jms-resource", true);
         this.addRequiredPath("/subsystem=messaging-activemq");
     }

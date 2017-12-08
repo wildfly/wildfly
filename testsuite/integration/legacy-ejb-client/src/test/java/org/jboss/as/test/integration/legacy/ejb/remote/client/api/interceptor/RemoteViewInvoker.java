@@ -29,7 +29,7 @@ import java.util.Map;
  */
 public interface RemoteViewInvoker {
 
-    Map<String, Object> invokeRemoteViewAndGetInvocationData(final String... key);
+    Map<String, Object> invokeRemoteViewAndGetInvocationData(String... key);
 
     Map<String, Object> getDataSetupForInvocationContext();
 }

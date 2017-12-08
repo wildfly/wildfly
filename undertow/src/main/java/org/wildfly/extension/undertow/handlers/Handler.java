@@ -79,5 +79,5 @@ abstract class Handler extends PersistentResourceDefinition {
         return CONSTRAINTS;
     }
 
-    abstract HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException;
+    abstract HttpHandler createHandler(OperationContext context, ModelNode model) throws OperationFailedException;
 }

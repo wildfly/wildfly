@@ -31,7 +31,7 @@ class TypeBeanStateKey {
     private final Class<?> type;
     private final BeanState state;
 
-    public TypeBeanStateKey(Class<?> type, BeanState state) {
+    TypeBeanStateKey(Class<?> type, BeanState state) {
         this.type = type;
         this.state = state;
     }

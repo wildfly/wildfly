@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelNode;
  */
 class CreateJMSResourceHandler extends BatchModeCommandHandler {
 
-    public CreateJMSResourceHandler(CommandContext ctx) {
+    CreateJMSResourceHandler(CommandContext ctx) {
         super(ctx, "create-jms-resource", true);
         this.addRequiredPath("/subsystem=messaging-activemq");
     }

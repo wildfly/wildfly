@@ -51,7 +51,7 @@ public enum ModeConfig {
     private final String value;
     private final ServiceController.Mode mode;
 
-    private ModeConfig(final String value, final ServiceController.Mode mode) {
+    ModeConfig(final String value, final ServiceController.Mode mode) {
         this.value = value;
         this.mode = mode;
     }

@@ -129,9 +129,9 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
 
     }
 
-    protected abstract void handleIsIdenticalMethod(final ComponentConfiguration componentConfiguration, final ViewConfiguration configuration, final DeploymentReflectionIndex index, final Method method);
+    protected abstract void handleIsIdenticalMethod(ComponentConfiguration componentConfiguration, ViewConfiguration configuration, DeploymentReflectionIndex index, Method method);
 
-    protected abstract void handleRemoveMethod(final ComponentConfiguration componentConfiguration, final ViewConfiguration configuration, final DeploymentReflectionIndex index, final Method method) throws DeploymentUnitProcessingException;
+    protected abstract void handleRemoveMethod(ComponentConfiguration componentConfiguration, ViewConfiguration configuration, DeploymentReflectionIndex index, Method method) throws DeploymentUnitProcessingException;
 
 
     private static final InterceptorFactory PRIMARY_KEY_INTERCEPTOR = new ImmediateInterceptorFactory(new Interceptor() {

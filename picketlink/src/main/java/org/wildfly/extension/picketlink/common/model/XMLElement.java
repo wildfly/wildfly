@@ -42,7 +42,7 @@ public enum XMLElement {
     SERVICE_PROVIDERS("service-providers"),
     HANDLERS("handlers");
 
-    private static final Map<String, XMLElement> xmlElements = new HashMap<String, XMLElement>();
+    private static final Map<String, XMLElement> xmlElements = new HashMap<>();
 
     static {
         for (XMLElement element : values()) {
@@ -52,7 +52,7 @@ public enum XMLElement {
 
     private final String name;
 
-    private XMLElement(String name) {
+    XMLElement(String name) {
         this.name = name;
     }
 

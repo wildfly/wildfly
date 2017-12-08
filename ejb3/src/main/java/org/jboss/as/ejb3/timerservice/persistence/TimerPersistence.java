@@ -73,7 +73,7 @@ public interface TimerPersistence {
      * @param timedObjectId The timed object id to load timers for
      * @return A list of all active timers
      */
-    List<TimerImpl> loadActiveTimers(String timedObjectId, final TimerServiceImpl timerService);
+    List<TimerImpl> loadActiveTimers(String timedObjectId, TimerServiceImpl timerService);
 
     /**
      *
@@ -83,7 +83,7 @@ public interface TimerPersistence {
      * @param listener The listener
      * @return A Closable that can be used to unregister the listener
      */
-    Closeable registerChangeListener(String timedObjectId, final TimerChangeListener listener);
+    Closeable registerChangeListener(String timedObjectId, TimerChangeListener listener);
 
     /**
      * Listener that gets invoked when a new timer is added to the underlying store.

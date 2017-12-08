@@ -53,5 +53,5 @@ public interface JndiViewExtensionContext {
      * @param current The current result node.
      * @param context The current naming context.
      */
-    void addEntries(final ModelNode current, final Context context) throws NamingException;
+    void addEntries(ModelNode current, Context context) throws NamingException;
 }

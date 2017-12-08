@@ -71,7 +71,7 @@ public class StatefulIdentityInterceptor implements Interceptor {
     private static class SessionIdHolder {
         private final SessionID sessionId;
 
-        public SessionIdHolder(final SessionID sessionId) {
+        SessionIdHolder(final SessionID sessionId) {
             this.sessionId = sessionId;
         }
     }

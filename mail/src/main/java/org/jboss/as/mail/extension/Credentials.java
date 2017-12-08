@@ -30,7 +30,7 @@ class Credentials {
     private final String username;
     private final String password;
 
-    public Credentials(String username, String password) {
+    Credentials(String username, String password) {
         this.password = password;
         this.username = username;
     }

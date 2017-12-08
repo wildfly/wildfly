@@ -434,7 +434,7 @@ public class InMemoryNamingStore implements WritableNamingStore {
             throw notAContextException(targetName);
         }
 
-        protected abstract T foundBindContext(final ContextNode contextNode) throws NamingException;
+        protected abstract T foundBindContext(ContextNode contextNode) throws NamingException;
     }
 
     private final class BindVisitor extends BindingContextVisitor<Void> {

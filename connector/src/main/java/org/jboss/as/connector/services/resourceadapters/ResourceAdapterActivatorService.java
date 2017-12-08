@@ -153,7 +153,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
 
         private final Activation activation;
 
-        public ResourceAdapterActivator(ServiceTarget serviceTarget, URL url, String deploymentName, File root,
+        ResourceAdapterActivator(ServiceTarget serviceTarget, URL url, String deploymentName, File root,
                 ClassLoader cl, Connector cmd, Activation activation) {
             super(serviceTarget, url, deploymentName, root, cl, cmd, null);
             this.activation = activation;

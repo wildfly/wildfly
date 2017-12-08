@@ -117,7 +117,7 @@ public class WebModuleDeploymentTestCase {
 
 
         Indexer indexer = new Indexer();
-        try (final InputStream resource = ModuleServlet.class.getResourceAsStream(ModuleServlet.class.getSimpleName() + ".class")) {
+        try (InputStream resource = ModuleServlet.class.getResourceAsStream(ModuleServlet.class.getSimpleName() + ".class")) {
             indexer.index(resource);
         }
         Index index = indexer.complete();

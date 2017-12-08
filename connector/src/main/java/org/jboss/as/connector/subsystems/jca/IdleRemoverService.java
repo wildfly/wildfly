@@ -37,7 +37,7 @@ final class IdleRemoverService implements Service<IdleRemover> {
     /**
      * Constructor
      */
-    public IdleRemoverService() {
+    IdleRemoverService() {
     }
 
     @Override

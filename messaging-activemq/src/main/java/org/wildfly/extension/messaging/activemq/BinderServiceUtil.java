@@ -138,7 +138,7 @@ public class BinderServiceUtil {
         /**
          * @param name original JNDI name
          */
-        public AliasManagedReferenceFactory(String name) {
+        AliasManagedReferenceFactory(String name) {
             this.name = name;
         }
 

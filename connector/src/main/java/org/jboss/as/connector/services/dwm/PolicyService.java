@@ -38,7 +38,7 @@ final class PolicyService implements Service<Policy> {
     /**
      * Constructor
      */
-    public PolicyService(Policy  policy) {
+    PolicyService(Policy  policy) {
         this.policy = policy;
     }
 

@@ -42,7 +42,7 @@ final class ConnectionPropertiesService implements Service<String> {
     /**
      * create an instance *
      */
-    public ConnectionPropertiesService(String name, String value) {
+    ConnectionPropertiesService(String name, String value) {
         this.name = name;
         this.value = value;
     }

@@ -14,7 +14,7 @@ import org.junit.Assert;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 abstract class AbstractBatchTestCase extends AbstractSubsystemBaseTest {
-    public AbstractBatchTestCase(final String mainSubsystemName, final Extension mainExtension) {
+    AbstractBatchTestCase(final String mainSubsystemName, final Extension mainExtension) {
         super(mainSubsystemName, mainExtension);
     }
 

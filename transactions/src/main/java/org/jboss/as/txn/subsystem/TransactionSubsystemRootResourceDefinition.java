@@ -334,7 +334,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     private static class AliasedHandler implements OperationStepHandler {
         private String aliasedName;
 
-        public AliasedHandler(String aliasedName) {
+        AliasedHandler(String aliasedName) {
             this.aliasedName = aliasedName;
         }
 
@@ -357,7 +357,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     }
 
     private static class ObjectStoreMutualWriteHandler extends ReloadRequiredWriteAttributeHandler {
-        public ObjectStoreMutualWriteHandler(final AttributeDefinition... definitions) {
+        ObjectStoreMutualWriteHandler(final AttributeDefinition... definitions) {
             super(definitions);
         }
 
@@ -388,7 +388,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     private static class JdbcStoreDatasourceWriteHandler extends ReloadRequiredWriteAttributeHandler {
 
-        public JdbcStoreDatasourceWriteHandler(AttributeDefinition... definitions) {
+        JdbcStoreDatasourceWriteHandler(AttributeDefinition... definitions) {
             super(definitions);
         }
 
@@ -419,7 +419,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     }
 
     private static class ProcessIdWriteHandler extends ReloadRequiredWriteAttributeHandler {
-        public ProcessIdWriteHandler(final AttributeDefinition... definitions) {
+        ProcessIdWriteHandler(final AttributeDefinition... definitions) {
             super(definitions);
         }
 
@@ -485,7 +485,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     }
 
     private static class DefaultTimeoutHandler extends AbstractWriteAttributeHandler<Void> {
-        public DefaultTimeoutHandler(final AttributeDefinition... definitions) {
+        DefaultTimeoutHandler(final AttributeDefinition... definitions) {
             super(definitions);
         }
 
@@ -514,7 +514,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
         private volatile CoordinatorEnvironmentBean coordinatorEnvironmentBean;
 
-        public StatisticsEnabledHandler(final AttributeDefinition... definitions) {
+        StatisticsEnabledHandler(final AttributeDefinition... definitions) {
             super(definitions);
         }
 

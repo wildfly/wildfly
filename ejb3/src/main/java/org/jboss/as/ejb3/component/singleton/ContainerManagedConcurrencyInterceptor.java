@@ -45,7 +45,7 @@ class ContainerManagedConcurrencyInterceptor implements Interceptor {
 
     private final Map<Method, Method> viewMethodToComponentMethodMap;
 
-    public ContainerManagedConcurrencyInterceptor(SingletonComponent component, Map<Method, Method> viewMethodToComponentMethodMap) {
+    ContainerManagedConcurrencyInterceptor(SingletonComponent component, Map<Method, Method> viewMethodToComponentMethodMap) {
         this.viewMethodToComponentMethodMap = viewMethodToComponentMethodMap;
         if (component == null) {
             throw EjbLogger.ROOT_LOGGER.componentIsNull(SingletonComponent.class.getName());

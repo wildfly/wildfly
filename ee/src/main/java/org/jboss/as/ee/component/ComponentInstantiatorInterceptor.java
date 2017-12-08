@@ -48,7 +48,7 @@ class ComponentInstantiatorInterceptor implements Interceptor {
      * @param contextKey       the context key
      * @param setTarget
      */
-    public ComponentInstantiatorInterceptor(final ComponentFactory componentFactory, final Object contextKey, final boolean setTarget) {
+    ComponentInstantiatorInterceptor(final ComponentFactory componentFactory, final Object contextKey, final boolean setTarget) {
         this.setTarget = setTarget;
         if (componentFactory == null) {
             throw EeLogger.ROOT_LOGGER.nullVar("componentFactory");

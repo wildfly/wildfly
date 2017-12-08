@@ -199,7 +199,7 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         private final String lookup;
         private final PropertyReplacer propertyReplacer;
 
-        public EJBResourceWrapper(AnnotationInstance annotation, PropertyReplacer propertyReplacer) {
+        EJBResourceWrapper(AnnotationInstance annotation, PropertyReplacer propertyReplacer) {
             this.propertyReplacer = propertyReplacer;
             name = stringValueOrNull(annotation, "name");
             beanInterface = classValueOrNull(annotation, "beanInterface");

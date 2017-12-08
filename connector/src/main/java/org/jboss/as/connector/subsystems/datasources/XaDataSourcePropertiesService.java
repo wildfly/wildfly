@@ -42,7 +42,7 @@ final class XaDataSourcePropertiesService implements Service<String> {
     /**
      * create an instance *
      */
-    public XaDataSourcePropertiesService(String name, String value) {
+    XaDataSourcePropertiesService(String name, String value) {
         this.name = name;
         this.value = value;
     }

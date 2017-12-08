@@ -97,7 +97,7 @@ class LegacySupport {
         }
 
 
-        public JASPIAuthenticationModulesAttributeDefinition() {
+        JASPIAuthenticationModulesAttributeDefinition() {
             super(LegacySupportListAttributeBuilder.of(Constants.AUTH_MODULES, Constants.AUTH_MODULE, validator));
         }
 
@@ -182,7 +182,7 @@ class LegacySupport {
         }
 
 
-        public LoginModulesAttributeDefinition(String name, String xmlName) {
+        LoginModulesAttributeDefinition(String name, String xmlName) {
             super(LegacySupportListAttributeBuilder.of(name, xmlName, validator).setDeprecated(ModelVersion.create(1, 2, 0)));
         }
 
@@ -262,7 +262,7 @@ class LegacySupport {
         }
 
 
-        public MappingModulesAttributeDefinition() {
+        MappingModulesAttributeDefinition() {
             super(LegacySupportListAttributeBuilder.of(Constants.MAPPING_MODULES, Constants.MAPPING_MODULE, validator)
                             .setDeprecated(ModelVersion.create(1, 2, 0))
             );
@@ -333,7 +333,7 @@ class LegacySupport {
         }
 
 
-        public ProviderModulesAttributeDefinition(String name, String xmlName) {
+        ProviderModulesAttributeDefinition(String name, String xmlName) {
             super(LegacySupportListAttributeBuilder.of(name, xmlName, validator)
                             .setDeprecated(ModelVersion.create(1, 2, 0))
             );

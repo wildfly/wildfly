@@ -81,7 +81,7 @@ class JobRepositoryDefinition extends SimpleResourceDefinition {
 
     private static class JobRepositoryAdd extends AbstractAddStepHandler {
 
-        public JobRepositoryAdd(final AttributeDefinition... attributes) {
+        JobRepositoryAdd(final AttributeDefinition... attributes) {
             super(attributes);
         }
 

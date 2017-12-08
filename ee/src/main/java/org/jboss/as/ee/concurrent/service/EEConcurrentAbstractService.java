@@ -61,7 +61,7 @@ abstract class EEConcurrentAbstractService<T> implements Service<T> {
      * @param context
      * @throws StartException
      */
-    abstract void startValue(final StartContext context) throws StartException;
+    abstract void startValue(StartContext context) throws StartException;
 
     private void bindValueToJndi(final StartContext context) {
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
@@ -81,6 +81,6 @@ abstract class EEConcurrentAbstractService<T> implements Service<T> {
      * Stops the service's value.
      * @param context
      */
-    abstract void stopValue(final StopContext context);
+    abstract void stopValue(StopContext context);
 
 }

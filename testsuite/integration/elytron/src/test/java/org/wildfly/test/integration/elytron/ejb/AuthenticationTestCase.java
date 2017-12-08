@@ -466,7 +466,7 @@ public class AuthenticationTestCase {
     // 17.6.10 - Audit Trail
 
     static class EjbSecurityDomainSetup extends EjbElytronDomainSetup {
-        public EjbSecurityDomainSetup() {
+        EjbSecurityDomainSetup() {
             super(new File(AuthenticationTestCase.class.getResource("users.properties").getFile()).getAbsolutePath(),
                     new File(AuthenticationTestCase.class.getResource("roles.properties").getFile()).getAbsolutePath());
         }

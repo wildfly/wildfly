@@ -65,7 +65,7 @@ public enum EJBComponentType {
     private final Class<? extends EJBComponent> componentClass;
     private final Class<? extends EJBComponentDescription> componentDescriptionClass;
 
-    private EJBComponentType(final String resourceType, final Class<? extends EJBComponent> componentClass,
+    EJBComponentType(final String resourceType, final Class<? extends EJBComponent> componentClass,
                              final Class<? extends EJBComponentDescription> componentDescriptionClass) {
         this.resourceType = resourceType;
         this.componentClass = componentClass;

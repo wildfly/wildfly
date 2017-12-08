@@ -33,8 +33,7 @@ import javax.inject.Qualifier;
 @Retention(RUNTIME)
 public @interface Bravo {
 
-    @SuppressWarnings("all")
-    public static class Literal extends AnnotationLiteral<Bravo> implements Bravo {
+    class Literal extends AnnotationLiteral<Bravo> implements Bravo {
 
         private Literal() {
         }

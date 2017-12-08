@@ -161,7 +161,7 @@ public enum ModelElement {
 
     private final String name;
 
-    private ModelElement(String name) {
+    ModelElement(String name) {
         this.name = name;
     }
 

@@ -43,7 +43,7 @@ final class AdminObjectService implements Service<ModifiableAdminObject> {
 
 
     /** create an instance **/
-    public AdminObjectService(ModifiableAdminObject value) {
+    AdminObjectService(ModifiableAdminObject value) {
         this.value = value;
     }
 

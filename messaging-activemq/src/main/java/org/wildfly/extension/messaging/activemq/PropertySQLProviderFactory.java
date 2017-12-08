@@ -139,7 +139,7 @@ public class PropertySQLProviderFactory implements SQLProvider.Factory {
 
         private final String tableName;
 
-        public PropertySQLProvider(String tableName, DatabaseStoreType storeType) {
+        PropertySQLProvider(String tableName, DatabaseStoreType storeType) {
             this.tableName = tableName;
         }
 

@@ -29,6 +29,6 @@ package org.jboss.as.ee.component;
  */
 public interface ResourceInjectionTarget {
 
-    void addResourceInjection(final ResourceInjectionConfiguration injection);
+    void addResourceInjection(ResourceInjectionConfiguration injection);
 
 }

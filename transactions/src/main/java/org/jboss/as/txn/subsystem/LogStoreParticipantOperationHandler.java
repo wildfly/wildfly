@@ -36,7 +36,7 @@ abstract class LogStoreParticipantOperationHandler implements OperationStepHandl
 
     private String operationName;
 
-    public LogStoreParticipantOperationHandler(String operationName) {
+    LogStoreParticipantOperationHandler(String operationName) {
         this.operationName = operationName;
     }
 

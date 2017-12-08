@@ -45,7 +45,7 @@ final class TracerService implements Service<TracerService.Tracer> {
     /**
      * create an instance *
      */
-    public TracerService(Tracer value) {
+    TracerService(Tracer value) {
         this.value = value;
     }
 
@@ -72,7 +72,7 @@ final class TracerService implements Service<TracerService.Tracer> {
     public static class Tracer {
         private final boolean enabled;
 
-        public Tracer(boolean enabled) {
+        Tracer(boolean enabled) {
             this.enabled = enabled;
         }
 

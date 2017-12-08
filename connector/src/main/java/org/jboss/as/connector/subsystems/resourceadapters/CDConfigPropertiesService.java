@@ -45,7 +45,7 @@ final class CDConfigPropertiesService implements Service<String> {
 
 
         /** create an instance **/
-        public CDConfigPropertiesService(String name, String value) {
+        CDConfigPropertiesService(String name, String value) {
             this.name = name;
             this.value = value;
         }

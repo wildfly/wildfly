@@ -77,7 +77,7 @@ public abstract class NamespaceContextSelector {
      * @param identifier The context identifier
      * @return The context for this identifier
      */
-    public abstract Context getContext(final String identifier);
+    public abstract Context getContext(String identifier);
 
     public static void setDefault(NamespaceContextSelector selector) {
         defaultSelector = selector;

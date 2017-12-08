@@ -55,7 +55,7 @@ public abstract class AbstractResourceInjectionServices {
         this.module = module;
     }
 
-    protected abstract ContextNames.BindInfo getBindInfo(final String result);
+    protected abstract ContextNames.BindInfo getBindInfo(String result);
 
     protected ManagedReferenceFactory getManagedReferenceFactory(ContextNames.BindInfo ejbBindInfo) {
         try {

@@ -232,7 +232,7 @@ public class CorbaORBService implements Service<ORB> {
 
         private ORB orb;
 
-        public ORBRunner(ORB orb) {
+        ORBRunner(ORB orb) {
             this.orb = orb;
         }
 
@@ -254,7 +254,7 @@ public class CorbaORBService implements Service<ORB> {
 
         private StopContext context;
 
-        public ORBDestroyer(ORB orb, StopContext context) {
+        ORBDestroyer(ORB orb, StopContext context) {
             this.orb = orb;
             this.context = context;
         }

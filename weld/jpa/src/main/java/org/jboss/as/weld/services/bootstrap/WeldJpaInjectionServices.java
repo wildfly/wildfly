@@ -123,7 +123,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
         private final TransactionManager transactionManager;
 
-        public EntityManagerResourceReferenceFactory(String scopedPuName, EntityManagerFactory entityManagerFactory, PersistenceContext context, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) {
+        EntityManagerResourceReferenceFactory(String scopedPuName, EntityManagerFactory entityManagerFactory, PersistenceContext context, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) {
             this.scopedPuName = scopedPuName;
             this.entityManagerFactory = entityManagerFactory;
             this.context = context;

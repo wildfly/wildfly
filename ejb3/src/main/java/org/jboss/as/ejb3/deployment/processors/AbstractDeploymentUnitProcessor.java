@@ -94,7 +94,7 @@ public abstract class AbstractDeploymentUnitProcessor implements DeploymentUnitP
         // do nothing
     }
 
-    protected abstract void processBeanMetaData(final DeploymentUnit deploymentUnit, final EnterpriseBeanMetaData ejb) throws DeploymentUnitProcessingException;
+    protected abstract void processBeanMetaData(DeploymentUnit deploymentUnit, EnterpriseBeanMetaData ejb) throws DeploymentUnitProcessingException;
 
     protected void processDeploymentDescriptor(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         // find the EJB jar metadata and start processing it

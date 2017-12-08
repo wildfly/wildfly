@@ -40,5 +40,5 @@ public interface DependencyConfigurator<T extends Service> {
      * @param serviceBuilder the service builder
      * @param service
      */
-    void configureDependency(ServiceBuilder<?> serviceBuilder, final T service) throws DeploymentUnitProcessingException;
+    void configureDependency(ServiceBuilder<?> serviceBuilder, T service) throws DeploymentUnitProcessingException;
 }

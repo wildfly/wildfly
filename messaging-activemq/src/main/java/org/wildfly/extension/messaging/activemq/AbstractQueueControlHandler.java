@@ -397,11 +397,11 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
     protected abstract DelegatingQueueControl<T> getQueueControl(ActiveMQServer server, String queueName);
 
-    protected abstract Object handleAdditionalOperation(final String operationName, final ModelNode operation,
-                                                        final OperationContext context, T queueControl) throws OperationFailedException;
+    protected abstract Object handleAdditionalOperation(String operationName, ModelNode operation,
+                                                        OperationContext context, T queueControl) throws OperationFailedException;
 
-    protected abstract void revertAdditionalOperation(final String operationName, final ModelNode operation,
-                                                      final OperationContext context, T queueControl, Object handback);
+    protected abstract void revertAdditionalOperation(String operationName, ModelNode operation,
+                                                      OperationContext context, T queueControl, Object handback);
 
     protected final void throwUnimplementedOperationException(final String operationName) {
         // Bug

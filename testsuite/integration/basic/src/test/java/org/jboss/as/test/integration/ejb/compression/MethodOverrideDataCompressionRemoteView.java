@@ -10,10 +10,10 @@ import org.jboss.ejb.client.annotation.CompressionHint;
 public interface MethodOverrideDataCompressionRemoteView {
 
     @CompressionHint(compressRequest = false)
-    String echoWithResponseCompress(final String msg);
+    String echoWithResponseCompress(String msg);
 
     @CompressionHint(compressResponse = false)
-    String echoWithRequestCompress(final String msg);
+    String echoWithRequestCompress(String msg);
 
     String echoWithNoExplicitDataCompressionHintOnMethod(String msg);
 }

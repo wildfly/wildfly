@@ -43,7 +43,7 @@ class ServerConfig {
     private boolean tlsEnabled = false;
     private final Map<String, String> properties;
 
-    public ServerConfig(final String outgoingSocketBinding, final Credentials credentials, boolean ssl, boolean tls, Map<String, String> properties) {
+    ServerConfig(final String outgoingSocketBinding, final Credentials credentials, boolean ssl, boolean tls, Map<String, String> properties) {
         this.outgoingSocketBinding = outgoingSocketBinding;
         this.credentials = credentials;
         this.sslEnabled = ssl;

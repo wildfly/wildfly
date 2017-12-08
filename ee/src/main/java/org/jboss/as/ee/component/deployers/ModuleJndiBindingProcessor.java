@@ -260,7 +260,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
 
         private final BinderService binderService;
 
-        public BinderReleaseListener(final BinderService binderService) {
+        BinderReleaseListener(final BinderService binderService) {
             this.binderService = binderService;
         }
 

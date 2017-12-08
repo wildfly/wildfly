@@ -56,7 +56,7 @@ class MailSessionDefinitionInjectionSource extends ResourceDefinitionInjectionSo
 
     private final SessionProvider provider;
 
-    public MailSessionDefinitionInjectionSource(final String jndiName, final SessionProvider provider) {
+    MailSessionDefinitionInjectionSource(final String jndiName, final SessionProvider provider) {
         super(jndiName);
         this.provider = provider;
     }

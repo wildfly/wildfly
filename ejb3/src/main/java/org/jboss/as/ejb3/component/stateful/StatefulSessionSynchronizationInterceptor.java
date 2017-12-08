@@ -218,7 +218,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
 
         private final TransactionManagementType type;
 
-        public Factory(final TransactionManagementType type) {
+        Factory(final TransactionManagementType type) {
             this.type = type;
         }
 

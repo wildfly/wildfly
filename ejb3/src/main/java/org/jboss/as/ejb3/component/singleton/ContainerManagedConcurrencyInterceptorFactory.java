@@ -41,7 +41,7 @@ class ContainerManagedConcurrencyInterceptorFactory extends ComponentInterceptor
 
     private final Map<Method, Method> viewMethodToComponentMethodMap;
 
-    public ContainerManagedConcurrencyInterceptorFactory(Map<Method, Method> viewMethodToComponentMethodMap) {
+    ContainerManagedConcurrencyInterceptorFactory(Map<Method, Method> viewMethodToComponentMethodMap) {
 
         this.viewMethodToComponentMethodMap = viewMethodToComponentMethodMap;
     }

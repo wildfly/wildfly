@@ -155,7 +155,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * An option specifying which Java reference type should be used to refer
      * to a key and/or value.
      */
-    public static enum ReferenceType {
+    public enum ReferenceType {
         /** Indicates a normal Java strong reference should be used */
         STRONG,
         /** Indicates a {@link WeakReference} should be used */
@@ -165,7 +165,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
     };
 
 
-    public static enum Option {
+    public enum Option {
         /** Indicates that referential-equality (== instead of .equals()) should
          * be used when locating keys. This offers similar behavior to {@link java.util.IdentityHashMap} */
         IDENTITY_COMPARISONS
@@ -876,7 +876,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * negative or the load factor or concurrencyLevel are
      * nonpositive.
      */
-    public ConcurrentReferenceHashMap(int initialCapacity,
+    ConcurrentReferenceHashMap(int initialCapacity,
                              float loadFactor, int concurrencyLevel,
                              ReferenceType keyType, ReferenceType valueType,
                              EnumSet<Option> options) {
@@ -929,7 +929,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * negative or the load factor or concurrencyLevel are
      * nonpositive.
      */
-    public ConcurrentReferenceHashMap(int initialCapacity,
+     ConcurrentReferenceHashMap(int initialCapacity,
                              float loadFactor, int concurrencyLevel) {
         this(initialCapacity, loadFactor, concurrencyLevel,
                 DEFAULT_KEY_TYPE, DEFAULT_VALUE_TYPE, null);
@@ -950,7 +950,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      *
      * @since 1.6
      */
-    public ConcurrentReferenceHashMap(int initialCapacity, float loadFactor) {
+    ConcurrentReferenceHashMap(int initialCapacity, float loadFactor) {
         this(initialCapacity, loadFactor, DEFAULT_CONCURRENCY_LEVEL);
     }
 
@@ -966,7 +966,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * @throws IllegalArgumentException if the initial capacity of
      * elements is negative.
      */
-    public ConcurrentReferenceHashMap(int initialCapacity,
+    ConcurrentReferenceHashMap(int initialCapacity,
             ReferenceType keyType, ReferenceType valueType) {
         this(initialCapacity, DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL,
                 keyType, valueType, null);
@@ -982,7 +982,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * @throws IllegalArgumentException if the initial capacity of
      * elements is negative.
      */
-    public ConcurrentReferenceHashMap(int initialCapacity) {
+    ConcurrentReferenceHashMap(int initialCapacity) {
         this(initialCapacity, DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL);
     }
 
@@ -991,7 +991,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * reference types (weak keys, strong values), default
      * load factor (0.75) and concurrencyLevel (16).
      */
-    public ConcurrentReferenceHashMap() {
+    ConcurrentReferenceHashMap() {
         this(DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL);
     }
 
@@ -1003,7 +1003,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      *
      * @param m the map
      */
-    public ConcurrentReferenceHashMap(Map<? extends K, ? extends V> m) {
+    ConcurrentReferenceHashMap(Map<? extends K, ? extends V> m) {
         this(Math.max((int) (m.size() / DEFAULT_LOAD_FACTOR) + 1,
                       DEFAULT_INITIAL_CAPACITY),
              DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL);
@@ -1515,12 +1515,12 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
         private final K key;
         private V value;
 
-        public SimpleEntry(K key, V value) {
+        SimpleEntry(K key, V value) {
             this.key = key;
             this.value = value;
         }
 
-        public SimpleEntry(Entry<? extends K, ? extends V> entry) {
+        SimpleEntry(Entry<? extends K, ? extends V> entry) {
             this.key = entry.getKey();
             this.value = entry.getValue();
         }

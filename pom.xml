@@ -67,7 +67,7 @@
 
         <version.surefire.plugin>2.18.1</version.surefire.plugin>
         <!-- use older version of checkstyle as otherwise lots of checks fail -->
-        <version.checkstyle>6.8</version.checkstyle>
+        <version.checkstyle>8.5</version.checkstyle>
         <!--
             Dependency versions. Please keep alphabetical.
 
@@ -216,7 +216,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.arquillian>2.1.0.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.build-tools>1.2.2.Final</version.org.wildfly.build-tools>
-        <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
+        <version.org.wildfly.checkstyle-config>1.0.6.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>4.0.0.Alpha4</version.org.wildfly.core>
         <version.org.wildfly.plugin>1.2.1.Final</version.org.wildfly.plugin>
         <version.org.wildfly.http-client>1.0.8.Final</version.org.wildfly.http-client>

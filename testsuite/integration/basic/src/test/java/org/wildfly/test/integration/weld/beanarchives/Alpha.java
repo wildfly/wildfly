@@ -34,7 +34,7 @@ import javax.inject.Qualifier;
 public @interface Alpha {
 
     @SuppressWarnings("all")
-    public static class Literal extends AnnotationLiteral<Alpha> implements Alpha {
+    class Literal extends AnnotationLiteral<Alpha> implements Alpha {
 
         private Literal() {
         }

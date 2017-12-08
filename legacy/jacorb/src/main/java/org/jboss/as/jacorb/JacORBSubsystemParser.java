@@ -1017,7 +1017,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
          *
          * @param namespaceURI a {@code String} representing the namespace {@code URI}.
          */
-        private Namespace(final String namespaceURI) {
+        Namespace(final String namespaceURI) {
             this.namespaceURI = namespaceURI;
         }
 

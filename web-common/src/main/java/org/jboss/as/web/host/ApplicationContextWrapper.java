@@ -13,5 +13,5 @@ package org.jboss.as.web.host;
  */
 public interface ApplicationContextWrapper {
 
-    Object wrap(final Object context);
+    Object wrap(Object context);
 }

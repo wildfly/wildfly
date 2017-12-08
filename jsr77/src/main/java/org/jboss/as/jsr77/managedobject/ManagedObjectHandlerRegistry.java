@@ -167,7 +167,7 @@ public class ManagedObjectHandlerRegistry {
     private static class ExactNameMatcher implements NameMatcher {
         final String search;
 
-        public ExactNameMatcher(String search) {
+        ExactNameMatcher(String search) {
             this.search = search;
         }
 
@@ -186,7 +186,7 @@ public class ManagedObjectHandlerRegistry {
     private static class WildcardPatternNameMatcher implements NameMatcher {
         final Pattern pattern;
 
-        public WildcardPatternNameMatcher(Pattern pattern) {
+        WildcardPatternNameMatcher(Pattern pattern) {
             this.pattern = pattern;
         }
 

@@ -26,5 +26,5 @@ package org.jboss.as.test.integration.legacy.ejb.remote.client.api.tx;
  * User: jpai
  */
 public interface BatchRetriever {
-    Batch fetchBatch(final String batchName);
+    Batch fetchBatch(String batchName);
 }

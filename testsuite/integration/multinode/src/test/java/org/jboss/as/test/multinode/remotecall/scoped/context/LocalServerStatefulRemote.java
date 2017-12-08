@@ -33,9 +33,9 @@ public interface LocalServerStatefulRemote {
 
     int incrementCountByInvokingOnRemoteServerBean();
 
-    String getEchoByInvokingOnRemoteServerBean(final String msg);
+    String getEchoByInvokingOnRemoteServerBean(String msg);
 
-    void registerPassivationNotificationLatch(final CountDownLatch latch);
+    void registerPassivationNotificationLatch(CountDownLatch latch);
 
     boolean wasPostActivateInvoked();
 

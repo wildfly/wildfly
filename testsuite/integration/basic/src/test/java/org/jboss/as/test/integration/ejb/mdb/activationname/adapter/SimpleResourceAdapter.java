@@ -97,7 +97,7 @@ public class SimpleResourceAdapter implements ResourceAdapter {
         private SimpleActivationSpec spec;
         private MessageEndpointFactory endpointFactory;
 
-        public SimpleActivation(SimpleResourceAdapter ra,
+        SimpleActivation(SimpleResourceAdapter ra,
                                 MessageEndpointFactory endpointFactory,
                                 SimpleActivationSpec spec)
                 throws ResourceException {

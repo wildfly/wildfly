@@ -70,7 +70,7 @@ public class JacORBSubsystemResource extends SimpleResourceDefinition {
     }
 
     private static class JacorbReloadRequiredWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
-        public JacorbReloadRequiredWriteAttributeHandler(List<AttributeDefinition> definitions) {
+        JacorbReloadRequiredWriteAttributeHandler(List<AttributeDefinition> definitions) {
             super(definitions);
         }
 

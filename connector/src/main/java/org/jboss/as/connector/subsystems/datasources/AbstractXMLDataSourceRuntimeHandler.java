@@ -73,7 +73,7 @@ public abstract class AbstractXMLDataSourceRuntimeHandler<T> extends AbstractRun
         dataSourceConfigs.remove(address);
     }
 
-    protected abstract void executeReadAttribute(final String attributeName, final OperationContext context, final T dataSource, final PathAddress address);
+    protected abstract void executeReadAttribute(String attributeName, OperationContext context, T dataSource, PathAddress address);
 
     private static IllegalStateException unknownOperation(String opName) {
         throw ConnectorLogger.ROOT_LOGGER.unknownOperation(opName);

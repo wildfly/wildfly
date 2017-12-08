@@ -49,7 +49,7 @@ final class ResourceAdapterService implements Service<Activation> {
 
 
     /** create an instance **/
-    public ResourceAdapterService(ModifiableResourceAdapter value, String name) {
+    ResourceAdapterService(ModifiableResourceAdapter value, String name) {
         this.value = value;
         this.name = name;
     }

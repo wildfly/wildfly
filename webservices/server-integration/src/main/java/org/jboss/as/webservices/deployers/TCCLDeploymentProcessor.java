@@ -60,5 +60,5 @@ public abstract class TCCLDeploymentProcessor implements DeploymentUnitProcessor
 
     public abstract void internalDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException;
 
-    public abstract void internalUndeploy(final DeploymentUnit context);
+    public abstract void internalUndeploy(DeploymentUnit context);
 }

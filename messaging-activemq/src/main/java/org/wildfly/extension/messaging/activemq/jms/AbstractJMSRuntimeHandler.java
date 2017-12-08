@@ -69,7 +69,7 @@ public abstract class AbstractJMSRuntimeHandler<T> extends AbstractRuntimeOnlyHa
         resources.remove(new ResourceConfig(server, name));
     }
 
-    protected abstract void executeReadAttribute(final String attributeName, final OperationContext context, final T destination, final PathAddress address, final boolean includeDefault);
+    protected abstract void executeReadAttribute(String attributeName, OperationContext context, T destination, PathAddress address, boolean includeDefault);
 
     private static IllegalStateException unknownOperation(String opName) {
         throw MessagingLogger.ROOT_LOGGER.operationNotValid(opName);

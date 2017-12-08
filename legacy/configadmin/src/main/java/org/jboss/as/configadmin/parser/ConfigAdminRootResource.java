@@ -33,7 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
  */
 class ConfigAdminRootResource extends SimpleResourceDefinition {
 
-    public ConfigAdminRootResource() {
+    ConfigAdminRootResource() {
         super(ConfigAdminExtension.SUBSYSTEM_PATH, ConfigAdminExtension.getResourceDescriptionResolver(SUBSYSTEM), ConfigAdminAdd.INSTANCE, new ReloadRequiredRemoveStepHandler());
     }
 

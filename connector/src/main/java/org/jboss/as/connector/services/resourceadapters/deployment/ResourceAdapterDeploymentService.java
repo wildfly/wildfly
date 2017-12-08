@@ -209,7 +209,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         private final Activation activation;
         private final boolean fromModule;
 
-        public WildFLyRaDeployer(ServiceTarget serviceContainer, URL url, String deploymentName, File root, ClassLoader cl,
+        WildFLyRaDeployer(ServiceTarget serviceContainer, URL url, String deploymentName, File root, ClassLoader cl,
                                  Connector cmd, Activation activation, final ServiceName deploymentServiceName, final boolean fromModule) {
             super(serviceContainer, url, deploymentName, root, cl, cmd, deploymentServiceName);
             this.activation = activation;

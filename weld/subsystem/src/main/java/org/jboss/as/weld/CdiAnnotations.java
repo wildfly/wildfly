@@ -129,7 +129,7 @@ public enum CdiAnnotations {
      * @param prefix qualified name part
      * @param simpleName simple class name
      */
-    private CdiAnnotations(final DotName prefix, final String simpleName) {
+    CdiAnnotations(final DotName prefix, final String simpleName) {
         this.simpleName = simpleName;
         this.dotName = DotName.createComponentized(prefix, simpleName);
     }

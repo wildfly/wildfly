@@ -160,7 +160,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
 
         private final Iterable<ComponentDescriptionProcessor> componentDescriptionProcessors;
 
-        public Components(DeploymentUnit deploymentUnit, Map<ResourceRoot, Index> indexes) {
+        Components(DeploymentUnit deploymentUnit, Map<ResourceRoot, Index> indexes) {
 
             componentDescriptionProcessors = ServiceLoader.load(ComponentDescriptionProcessor.class,
                     WildFlySecurityManager.getClassLoaderPrivileged(BeanArchiveProcessor.class));

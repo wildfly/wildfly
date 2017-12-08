@@ -158,7 +158,7 @@ abstract class MailSubsystemTestBase extends AbstractSubsystemBaseTest {
     public static class DefaultInitializer extends AdditionalInitialization {
         protected final Map<String, Integer> sockets = new HashMap<>();
 
-        public DefaultInitializer() {
+        DefaultInitializer() {
             sockets.put("mail-imap", 432);
             sockets.put("mail-pop3", 1234);
             sockets.put("mail-smtp", 25);

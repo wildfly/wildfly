@@ -57,7 +57,7 @@ class JASPICSecurityContext extends SecurityContextImpl {
     private final JASPIServerAuthenticationManager manager;
     private Account cachedAuthenticatedAccount;
 
-    public JASPICSecurityContext(final HttpServerExchange exchange, final AuthenticationMode mode, final IdentityManager identityManager,
+    JASPICSecurityContext(final HttpServerExchange exchange, final AuthenticationMode mode, final IdentityManager identityManager,
                                  final String securityDomain) {
         super (exchange, mode, identityManager);
         this.exchange = exchange;

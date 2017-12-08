@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.inflow;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.resource.ResourceException;
 import javax.resource.spi.ApplicationServerInternalException;
 import javax.resource.spi.LocalTransactionException;
@@ -34,9 +37,6 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -44,6 +44,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
+@SuppressWarnings("checkstyle:equalshashcode")
 public class MessageEndpointInvocationHandler extends AbstractInvocationHandler implements MessageEndpoint {
     private final MessageEndpointService service;
     private final Object delegate;

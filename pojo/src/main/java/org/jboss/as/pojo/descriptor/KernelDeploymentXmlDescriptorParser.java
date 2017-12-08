@@ -91,7 +91,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
             }
         }
 
-        private Element(final String localPart) {
+        Element(final String localPart) {
             this.localPart = localPart;
         }
 
@@ -136,7 +136,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
             }
         }
 
-        private Attribute(final String localPart) {
+        Attribute(final String localPart) {
             this.localPart = localPart;
         }
 

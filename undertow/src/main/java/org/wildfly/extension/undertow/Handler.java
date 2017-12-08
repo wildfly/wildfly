@@ -37,6 +37,6 @@ public interface Handler {
 
     Class<? extends HttpHandler> getHandlerClass();
 
-    HttpHandler createHttpHandler(final Predicate predicate, final ModelNode model, final HttpHandler next);
+    HttpHandler createHttpHandler(Predicate predicate, ModelNode model, HttpHandler next);
 
 }

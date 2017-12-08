@@ -34,15 +34,15 @@ public class TestConfig {
         void invoke(TxManagerException txManagerException) throws Exception;
     }
 
-    public static enum EjbType {
+    public enum EjbType {
         EJB2, EJB3
     }
 
-    public static enum TxContext {
+    public enum TxContext {
         RUN_IN_TX_STARTED_BY_CALLER, START_CONTAINER_MANAGED_TX, START_BEAN_MANAGED_TX
     }
 
-    public static enum TxManagerException {
+    public enum TxManagerException {
         NONE, HEURISTIC_CAUSED_BY_XA_EXCEPTION, HEURISTIC_CAUSED_BY_RM_SPECIFIC_XA_EXCEPTION, ROLLBACK_CAUSED_BY_XA_EXCEPTION, ROLLBACK_CAUSED_BY_RM_SPECIFIC_XA_EXCEPTION
     }
 

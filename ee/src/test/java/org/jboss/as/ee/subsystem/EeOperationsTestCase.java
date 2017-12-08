@@ -168,7 +168,7 @@ public class EeOperationsTestCase extends AbstractSubsystemBaseTest {
     }
 
     class EeInitializer extends ControllerInitializer {
-        public EeInitializer() {
+        EeInitializer() {
             addSystemProperty("test.queue-length", "0");
             addSystemProperty("test.core-threads", "0");
         }

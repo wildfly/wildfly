@@ -58,7 +58,7 @@ public interface ComponentView {
      * @param interceptorContext The context of the invocation
      * @return The result of the invocation
      */
-    Object invoke(final InterceptorContext interceptorContext) throws Exception;
+    Object invoke(InterceptorContext interceptorContext) throws Exception;
 
     /**
      * Get the associated component.
@@ -92,7 +92,7 @@ public interface ComponentView {
      * @return The method that corresponds to the given name and descriptor
      * @throws IllegalArgumentException If the method cannot be found
      */
-    Method getMethod(final String name, final String descriptor);
+    Method getMethod(String name, String descriptor);
 
     /**
      * Provides a mechanism to attach arbitrary data to the component view
@@ -102,6 +102,6 @@ public interface ComponentView {
     <T> T getPrivateData(Class<T> clazz);
 
 
-    boolean isAsynchronous(final Method method);
+    boolean isAsynchronous(Method method);
 
 }

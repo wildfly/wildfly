@@ -10,7 +10,7 @@ import org.jboss.as.naming.ManagedReferenceFactory;
  */
 public interface EEClassIntrospector {
 
-    ManagedReferenceFactory createFactory(final Class<?> clazz);
+    ManagedReferenceFactory createFactory(Class<?> clazz);
 
     ManagedReference createInstance(Object instance);
 }

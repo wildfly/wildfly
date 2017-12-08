@@ -103,7 +103,7 @@ public abstract class AbstractHAAuthorizationForwardingTestCase extends Abstract
         final URL whoamiBackupUrl = new URL(
                 server1backup.getApplicationHttpUrl() + "/" + WAR_ENTRY_SERVLET_FORM + WhoAmIServlet.SERVLET_PATH);
 
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
             assertEquals("Unexpected result from WhoAmIServlet", "admin",
                     doHttpRequestFormAuthn(httpClient, whoamiUrl, true, "admin", "admin", SC_OK));
             assertEquals("Unexpected result from WhoAmIServlet (backup-server)", "admin",
@@ -129,7 +129,7 @@ public abstract class AbstractHAAuthorizationForwardingTestCase extends Abstract
         final URL whoamiUrl = new URL(
                 server1backup.getApplicationHttpUrl() + "/" + WAR_ENTRY_SERVLET_FORM + WhoAmIServlet.SERVLET_PATH);
 
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
             assertEquals("Unexpected result from WhoAmIServlet (backup-server)", "admin",
                     doHttpRequestFormAuthn(httpClient, whoamiUrl, true, "admin", "admin", SC_OK));
             assertEquals("Unexpected result from EntryServlet", "admin", doHttpRequest(httpClient, entryServletUrl, SC_OK));

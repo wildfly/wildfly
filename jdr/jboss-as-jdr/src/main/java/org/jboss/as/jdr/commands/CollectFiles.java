@@ -130,7 +130,7 @@ public class CollectFiles extends JdrCommand {
         private long limit = -1;
         private boolean done = false;
 
-        public Limiter(long limit){
+        Limiter(long limit){
             this.limit = limit;
         }
 

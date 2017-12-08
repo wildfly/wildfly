@@ -27,5 +27,5 @@ package org.jboss.as.testsuite.integration.secman.ejbs;
  * @author <a href="mailto:istudens@redhat.com">Ivo Studensky</a>
  */
 public interface ReadSystemPropertyLocal {
-    String readSystemProperty(final String propertyName);
+    String readSystemProperty(String propertyName);
 }

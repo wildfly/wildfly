@@ -28,9 +28,9 @@ package org.jboss.as.test.integration.ejb.pool.lifecycle;
  */
 public interface LifecycleTracker {
 
-    void trackPostConstructOn(final String beanImplementationClassName);
-    void trackPreDestroyOn(final String beanImplementationClassName);
+    void trackPostConstructOn(String beanImplementationClassName);
+    void trackPreDestroyOn(String beanImplementationClassName);
     void clearState();
-    boolean wasPostConstructInvokedOn(final String beanImplClassName);
-    boolean wasPreDestroyInvokedOn(final String beanImplClassName);
+    boolean wasPostConstructInvokedOn(String beanImplClassName);
+    boolean wasPreDestroyInvokedOn(String beanImplClassName);
 }

@@ -288,7 +288,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
     private static class CorrectFalseToTrue extends FailedOperationTransformationConfig.AttributesPathAddressConfig<CorrectFalseToTrue>{
 
-        public CorrectFalseToTrue(AttributeDefinition...defs) {
+        CorrectFalseToTrue(AttributeDefinition...defs) {
             super(convert(defs));
         }
 
@@ -386,7 +386,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
         private final PathAddress rejectedFileDataStoreAddress;
         private ModelNode removedResourceModel;
 
-        public RemoveExtraFileStoreConfig(KernelServices kernelServices, PathAddress timerServiceAddress) {
+        RemoveExtraFileStoreConfig(KernelServices kernelServices, PathAddress timerServiceAddress) {
             this.kernelServices = kernelServices;
             this.timerServiceAddress = timerServiceAddress;
             rejectedFileDataStoreAddress = timerServiceAddress.append(EJB3SubsystemModel.FILE_DATA_STORE_PATH.getKey(), "file-data-store-rejected");

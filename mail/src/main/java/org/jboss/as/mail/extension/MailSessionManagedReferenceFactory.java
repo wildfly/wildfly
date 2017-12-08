@@ -37,7 +37,7 @@ class MailSessionManagedReferenceFactory implements ContextListAndJndiViewManage
 
     private final MailSessionService service;
 
-    public MailSessionManagedReferenceFactory(MailSessionService service) {
+    MailSessionManagedReferenceFactory(MailSessionService service) {
         this.service = service;
     }
 

@@ -144,7 +144,7 @@ public class TransactionUtil {
                                             // decremented when a thread is disassociated from transaction.
                                             // synchronization on this object protects associationCounter.
 
-        public SessionSynchronization(EntityManager session, String scopedPuName) {
+        SessionSynchronization(EntityManager session, String scopedPuName) {
             this.manager = session;
             this.scopedPuName = scopedPuName;
         }

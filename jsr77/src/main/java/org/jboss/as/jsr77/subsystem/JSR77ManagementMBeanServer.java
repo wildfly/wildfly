@@ -60,7 +60,7 @@ class JSR77ManagementMBeanServer implements MBeanServerPlugin {
 
     final ModelController controller;
 
-    public JSR77ManagementMBeanServer(ModelController controller) {
+    JSR77ManagementMBeanServer(ModelController controller) {
         this.controller = controller;
     }
 

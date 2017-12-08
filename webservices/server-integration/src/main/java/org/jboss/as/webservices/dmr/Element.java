@@ -59,7 +59,7 @@ enum Element {
 
     private final String name;
 
-    private Element(final String name) {
+    Element(final String name) {
         this.name = name;
     }
 

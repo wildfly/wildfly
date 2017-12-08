@@ -87,7 +87,7 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
         final PersistenceUnitMetadata pu;
         private static final String ENTITY_MANAGER_FACTORY_CLASS = "javax.persistence.EntityManagerFactory";
 
-        public PersistenceUnitJndiInjectable(
+        PersistenceUnitJndiInjectable(
             final ServiceName puServiceName,
             final ServiceRegistry serviceRegistry,
             final String injectionTypeName,

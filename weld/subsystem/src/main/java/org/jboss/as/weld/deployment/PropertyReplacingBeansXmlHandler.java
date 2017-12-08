@@ -40,7 +40,7 @@ class PropertyReplacingBeansXmlHandler extends BeansXmlHandler {
 
     private final PropertyReplacer replacer;
 
-    public PropertyReplacingBeansXmlHandler(URL file, PropertyReplacer replacer) {
+    PropertyReplacingBeansXmlHandler(URL file, PropertyReplacer replacer) {
         super(file);
         this.replacer = replacer;
     }

@@ -45,7 +45,7 @@ public abstract class InjectionTarget {
      * @param name The target name
      * @param declaredValueClassName The type of injection
      */
-    protected InjectionTarget(final String className, final String name, final String declaredValueClassName) {
+    protected InjectionTarget(String className, String name, String declaredValueClassName) {
         this.className = className;
         this.name = name;
         this.declaredValueClassName = declaredValueClassName;
@@ -91,7 +91,7 @@ public abstract class InjectionTarget {
      * @throws DeploymentUnitProcessingException
      *          if an error occurs
      */
-    public abstract InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit, final boolean optional) throws DeploymentUnitProcessingException;
+    public abstract InterceptorFactory createInjectionInterceptorFactory(Object targetContextKey, Object valueContextKey, Value<ManagedReferenceFactory> factoryValue, DeploymentUnit deploymentUnit, boolean optional) throws DeploymentUnitProcessingException;
 
     /**
      * Indicates if the target has the staic modifier.
@@ -100,7 +100,7 @@ public abstract class InjectionTarget {
      * @return true
      * @throws DeploymentUnitProcessingException if an error occurs
      */
-    public abstract boolean isStatic(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException;
+    public abstract boolean isStatic(DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException;
 
     @Override
     public boolean equals(final Object o) {

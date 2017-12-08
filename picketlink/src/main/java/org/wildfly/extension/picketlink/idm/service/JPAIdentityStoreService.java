@@ -275,7 +275,7 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
         private final TransactionManager transactionManager;
         private final EntityManager entityManager;
 
-        public EntityManagerInvocationHandler(EntityManager entityManager, Module entitiesModule, TransactionManager transactionManager) {
+        EntityManagerInvocationHandler(EntityManager entityManager, Module entitiesModule, TransactionManager transactionManager) {
             this.entityManager = entityManager;
             this.entityModule = entitiesModule;
             this.transactionManager = transactionManager;

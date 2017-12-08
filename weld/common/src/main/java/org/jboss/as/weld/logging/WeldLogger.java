@@ -185,7 +185,7 @@ public interface WeldLogger extends BasicLogger {
     IllegalStateException ejbNotResolved(Object ejb, Member member);
 
     @Message(id = 35, value = "Resolved more than one EJB for @EJB injection of %s on %s. Found %s")
-    IllegalStateException moreThanOneEjbResolved(Object ejb, Member member, final Set<ViewDescription> viewService);
+    IllegalStateException moreThanOneEjbResolved(Object ejb, Member member, Set<ViewDescription> viewService);
 
     @Message(id = 36, value = "Could not determine bean class from injection point type of %s")
     IllegalArgumentException couldNotDetermineUnderlyingType(Type type);

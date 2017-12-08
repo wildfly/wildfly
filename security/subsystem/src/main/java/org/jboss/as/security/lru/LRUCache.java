@@ -305,7 +305,7 @@ public class LRUCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K
     private class WrappedEntrySet extends AbstractSet<Entry<K, V>> {
         private Set<Entry<K, CacheEntry<K, V>>> set;
 
-        public WrappedEntrySet(Set<Entry<K, CacheEntry<K, V>>> set) {
+        WrappedEntrySet(Set<Entry<K, CacheEntry<K, V>>> set) {
             this.set = set;
         }
 
@@ -384,7 +384,7 @@ public class LRUCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K
             LRUCache.this.remove(last.key());
         }
 
-        public WrappedIterator(Iterator<Entry<K, CacheEntry<K, V>>> iterator) {
+        WrappedIterator(Iterator<Entry<K, CacheEntry<K, V>>> iterator) {
             this.iterator = iterator;
         }
     }

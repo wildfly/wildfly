@@ -639,13 +639,13 @@ public interface MessagingLogger extends BasicLogger {
 
 
     @Message(id = 55, value = "Could not parse file %s")
-    DeploymentUnitProcessingException couldNotParseDeployment(final String file, @Cause Throwable cause);
+    DeploymentUnitProcessingException couldNotParseDeployment(String file, @Cause Throwable cause);
 
     @Message(id = 56, value = "Handler cannot handle operation %s")
-    IllegalStateException operationNotValid(final String operation);
+    IllegalStateException operationNotValid(String operation);
 
     @Message(id = 57, value = "No message destination registered at address %s")
-    String noDestinationRegisteredForAddress(final PathAddress address);
+    String noDestinationRegisteredForAddress(PathAddress address);
 
     @Message(id = 58, value = "SecurityDomainContext has not been set")
     IllegalStateException securityDomainContextNotSet();
@@ -718,7 +718,7 @@ public interface MessagingLogger extends BasicLogger {
      * @return an {@link OperationFailedException} for the error.
      */
     @Message(id = 67, value = "The broadcast group '%s' defines reference to nonexistent connector '%s'. Available connectors '%s'.")
-    OperationFailedException wrongConnectorRefInBroadCastGroup(final String bgName, final String connectorRef, final Collection<String> presentConnectors);
+    OperationFailedException wrongConnectorRefInBroadCastGroup(String bgName, String connectorRef, Collection<String> presentConnectors);
 
 
     /**
@@ -831,15 +831,15 @@ public interface MessagingLogger extends BasicLogger {
 
     @LogMessage(level = DEBUG)
     @Message(id = 91, value = "Failed to authenticate username %s. Exception message: %s")
-    void failedAuthenticationWithException(@Cause final Throwable cause, final String username, final String message);
+    void failedAuthenticationWithException(@Cause Throwable cause, String username, String message);
 
     @LogMessage(level = DEBUG)
     @Message(id = 92, value = "Failed to authenticate username %s: cannot verify username/password pair")
-    void failedAuthentication(final String username);
+    void failedAuthentication(String username);
 
     @LogMessage(level = DEBUG)
     @Message(id = 93, value = "Failed to authorize username %s: missing permissions")
-    void failedAuthorization(final String username);
+    void failedAuthorization(String username);
 
     @LogMessage(level = WARN)
     @Message(id = 94, value = "Unable to detect database dialect from connection metadata or JDBC driver name. Please configure this manually using the 'journal-database' property in your configuration.  Known database dialect strings are %s")

@@ -51,7 +51,7 @@ class LogStoreConstants {
 
 
 
-    static enum ParticipantStatus {
+    enum ParticipantStatus {
         PENDING,
         PREPARED,
         FAILED,

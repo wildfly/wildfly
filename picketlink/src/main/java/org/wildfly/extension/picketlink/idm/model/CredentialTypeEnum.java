@@ -55,7 +55,7 @@ public enum CredentialTypeEnum {
     private final String alias;
     private final String type;
 
-    private CredentialTypeEnum(String alias, String type) {
+    CredentialTypeEnum(String alias, String type) {
         this.alias = alias;
         this.type = type;
     }

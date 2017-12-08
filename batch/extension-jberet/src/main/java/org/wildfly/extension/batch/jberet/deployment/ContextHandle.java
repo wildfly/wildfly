@@ -67,7 +67,7 @@ interface ContextHandle {
 
         private final Collection<ContextHandle> contextHandles;
 
-        public ChainedContextHandle(final ContextHandle... contextHandles) {
+        ChainedContextHandle(final ContextHandle... contextHandles) {
             this.contextHandles = Arrays.asList(contextHandles);
         }
 

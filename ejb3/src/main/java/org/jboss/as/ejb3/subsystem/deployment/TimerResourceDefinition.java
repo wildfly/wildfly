@@ -400,6 +400,6 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
 
-        protected abstract void readAttribute(final TimerImpl timer, final ModelNode toSet);
+        protected abstract void readAttribute(TimerImpl timer, ModelNode toSet);
     }
 }

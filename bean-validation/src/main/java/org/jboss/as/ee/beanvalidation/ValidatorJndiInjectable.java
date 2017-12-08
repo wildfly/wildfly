@@ -36,7 +36,7 @@ import org.jboss.as.naming.ManagedReference;
 final class ValidatorJndiInjectable implements ContextListAndJndiViewManagedReferenceFactory {
     private final ValidatorFactory factory;
 
-    public ValidatorJndiInjectable(ValidatorFactory factory) {
+    ValidatorJndiInjectable(ValidatorFactory factory) {
         this.factory = factory;
     }
 

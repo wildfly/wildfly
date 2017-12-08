@@ -45,7 +45,7 @@ final class AOConfigPropertiesService implements Service<String> {
 
 
         /** create an instance **/
-        public AOConfigPropertiesService(String name, String value) {
+        AOConfigPropertiesService(String name, String value) {
             this.name = name;
             this.value = value;
         }

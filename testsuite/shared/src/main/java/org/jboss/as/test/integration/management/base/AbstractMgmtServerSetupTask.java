@@ -22,5 +22,5 @@ public abstract class AbstractMgmtServerSetupTask extends AbstractMgmtTestBase i
         doSetup(managementClient);
     }
 
-    protected abstract void doSetup(final ManagementClient managementClient) throws Exception;
+    protected abstract void doSetup(ManagementClient managementClient) throws Exception;
 }

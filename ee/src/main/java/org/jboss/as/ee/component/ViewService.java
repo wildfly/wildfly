@@ -246,7 +246,7 @@ public final class ViewService implements Service<ComponentView> {
             private final String name;
             private final String descriptor;
 
-            public MethodDescription(final String name, final String descriptor) {
+            MethodDescription(final String name, final String descriptor) {
                 this.name = name;
                 this.descriptor = descriptor;
             }

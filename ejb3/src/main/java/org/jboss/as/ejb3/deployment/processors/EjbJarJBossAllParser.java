@@ -58,7 +58,7 @@ public class EjbJarJBossAllParser implements JBossAllXMLParser<EjbJarMetaData> {
     //TODO: move this to JBMETA
     private static final class EjbJarParser extends JBossEjb3MetaDataParser {
 
-        public EjbJarParser(Map<String, AbstractMetaDataParser<?>> parsers) {
+        EjbJarParser(Map<String, AbstractMetaDataParser<?>> parsers) {
             super(parsers);
         }
 
