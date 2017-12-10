@@ -103,7 +103,12 @@ final class ManagedReferenceFieldInjectionInterceptorFactory implements Intercep
             boolean ok = false;
             try {
                 componentInstance.setInstanceData(valueContextKey, reference);
-                field.set(target, reference.getInstance());
+                Object injected = reference.getInstance();
+                try {
+                    field.set(target, injected);
+                } catch (IllegalArgumentException e) {
+                    throw EeLogger.ROOT_LOGGER.cannotSetField(field.getName(), injected.getClass(), injected.getClass().getClassLoader(), field.getType(), field.getType().getClassLoader());
+                }
                 Object result = context.proceed();
                 ok = true;
                 return result;
