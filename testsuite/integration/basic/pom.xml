@@ -156,6 +156,7 @@
                                         <include>org/jboss/as/test/integration/ee/injection/resource/basic/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ee/naming/defaultbindings/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</include>
                                     </includes>
 
                                     <environmentVariables>
@@ -216,6 +217,7 @@
                                         <exclude>org/jboss/as/test/integration/ee/naming/defaultbindings/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jca/moduledeployment/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</exclude>
                                     </excludes>
 
                                     <environmentVariables>
