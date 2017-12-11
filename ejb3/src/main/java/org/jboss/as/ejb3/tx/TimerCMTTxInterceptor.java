@@ -48,13 +48,13 @@ public class TimerCMTTxInterceptor extends CMTTxInterceptor {
     public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new TimerCMTTxInterceptor());
 
     @Override
-    public void handleExceptionInOurTx(final InterceptorContext invocation, final Throwable t, final Transaction tx, final EJBComponent component) throws Exception {
+    public Exception handleExceptionInOurTx(final InterceptorContext invocation, final Throwable t, final Transaction tx, final EJBComponent component) throws Exception {
         EXCEPTION.set(t);
-        super.handleExceptionInOurTx(invocation, t, tx, component);
+        return super.handleExceptionInOurTx(invocation, t, tx, component);
     }
 
     @Override
-    protected void endTransaction(final TransactionManager tm, final Transaction tx) {
+    protected void endTransaction(final TransactionManager tm, final Transaction tx, Exception rollbackException) {
         try {
             boolean rolledBack = false;
             try {
@@ -64,7 +64,7 @@ public class TimerCMTTxInterceptor extends CMTTxInterceptor {
             } catch (SystemException e) {
                 throw new RuntimeException(e);
             } finally {
-                super.endTransaction(tm, tx);
+                super.endTransaction(tm, tx, rollbackException);
             }
             if (rolledBack && EXCEPTION.get() == null) {
                 throw EjbLogger.ROOT_LOGGER.timerInvocationRolledBack();

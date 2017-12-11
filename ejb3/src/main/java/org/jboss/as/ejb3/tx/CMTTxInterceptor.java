@@ -76,7 +76,7 @@ public class CMTTxInterceptor implements Interceptor {
      * @param tm a <code>TransactionManager</code> value
      * @param tx a <code>Transaction</code> value
      */
-    protected void endTransaction(final TransactionManager tm, final Transaction tx) {
+    protected void endTransaction(final TransactionManager tm, final Transaction tx, final Exception rollbackException) {
         try {
             if (! tx.equals(tm.getTransaction())) {
                 throw EjbLogger.ROOT_LOGGER.wrongTxOnThread(tx, tm.getTransaction());
@@ -94,6 +94,10 @@ public class CMTTxInterceptor implements Interceptor {
                 // handle reaper canceled (rolled back) tx case (see WFLY-1346)
                 // clear current tx state and throw RollbackException (EJBTransactionRolledbackException)
                 tm.rollback();
+                if (rollbackException != null) {
+                    //WFLY-6885 log information about the exception in transaction even if it was reaped before
+                    EjbLogger.ROOT_LOGGER.rolledbackTransactionUnderlyingException(tx, rollbackException);
+                }
                 throw EjbLogger.ROOT_LOGGER.transactionAlreadyRolledBack(tx);
             } else if (txStatus == Status.STATUS_UNKNOWN) {
                 // STATUS_UNKNOWN isn't expected to be reached here but if it does, we need to clear current thread tx.
@@ -167,7 +171,7 @@ public class CMTTxInterceptor implements Interceptor {
         throw toThrow;
     }
 
-    public void handleExceptionInOurTx(InterceptorContext invocation, Throwable t, Transaction tx, final EJBComponent component) throws Exception {
+    public Exception handleExceptionInOurTx(InterceptorContext invocation, Throwable t, Transaction tx, final EJBComponent component) throws Exception {
         ApplicationExceptionDetails ae = component.getApplicationException(t.getClass(), invocation.getMethod());
         if (ae != null) {
             if (ae.isRollback()) setRollbackOnly(tx);
@@ -186,12 +190,12 @@ public class CMTTxInterceptor implements Interceptor {
                 t = new EJBException((Exception) t);
             } else {
                 // an application exception
-                throw (Exception) t;
+                return (Exception) t;
             }
         }
 
         setRollbackOnly(tx);
-        throw (Exception) t;
+        return (Exception) t;
     }
 
     public void handleExceptionInNoTx(InterceptorContext invocation, Throwable t, final EJBComponent component) throws Exception {
@@ -269,12 +273,14 @@ public class CMTTxInterceptor implements Interceptor {
     protected Object invokeInOurTx(InterceptorContext invocation, TransactionManager tm, final EJBComponent component) throws Exception {
         for (int i = 0; i < MAX_RETRIES; i++) {
             Transaction tx = beginTransaction(tm);
+            Exception rollbackException = null;
             try {
                 return invocation.proceed();
             } catch (Throwable t) {
-                handleExceptionInOurTx(invocation, t, tx, component);
+                rollbackException = handleExceptionInOurTx(invocation, t, tx, component);
+                throw rollbackException;
             } finally {
-                endTransaction(tm, tx);
+                endTransaction(tm, tx, rollbackException);
             }
         }
         throw new RuntimeException("UNREACHABLE");
