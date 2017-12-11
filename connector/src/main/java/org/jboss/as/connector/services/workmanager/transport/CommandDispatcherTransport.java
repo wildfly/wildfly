@@ -26,7 +26,6 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -40,12 +39,14 @@ import org.jboss.jca.core.api.workmanager.DistributedWorkManager;
 import org.jboss.jca.core.spi.workmanager.Address;
 import org.jboss.jca.core.workmanager.transport.remote.AbstractRemoteTransport;
 import org.jboss.jca.core.workmanager.transport.remote.ProtocolMessages.Request;
+import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.dispatcher.CommandResponse;
-import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.GroupListener;
+import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.service.concurrent.ServiceExecutor;
 import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
@@ -56,13 +57,14 @@ import org.wildfly.common.function.ExceptionSupplier;
  * The current implementation is a direct translation of {@link org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport}.
  * @author Paul Ferraro
  */
-public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> implements Group.Listener {
+public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> implements GroupListener {
 
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
     private final CommandDispatcherFactory dispatcherFactory;
     private final String name;
 
     private volatile CommandDispatcher<CommandDispatcherTransport> dispatcher;
+    private volatile Registration groupListenerRegistration;
     private volatile boolean initialized = false;
 
     public CommandDispatcherTransport(CommandDispatcherFactory dispatcherFactory, String name) {
@@ -78,7 +80,7 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
     @Override
     public void startup() throws Exception {
         this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.name, this);
-        this.dispatcherFactory.getGroup().addListener(this);
+        this.groupListenerRegistration = this.dispatcherFactory.getGroup().register(this);
         this.broadcast(new JoinCommand());
     }
 
@@ -90,7 +92,7 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
             } catch (WorkException e) {
                 ConnectorLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
             } finally {
-                this.dispatcherFactory.getGroup().removeListener(this);
+                this.groupListenerRegistration.close();
                 this.dispatcher.close();
             }
         });
@@ -108,7 +110,7 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
 
     @Override
     protected Node getOwnAddress() {
-        return this.dispatcherFactory.getGroup().getLocalNode();
+        return this.dispatcherFactory.getGroup().getLocalMember();
     }
 
     @Override
@@ -206,29 +208,29 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
     }
 
     @Override
-    public void membershipChanged(List<Node> previousMembers, List<Node> members, boolean merged) {
+    public void membershipChanged(Membership previousMembership, Membership membership, boolean merged) {
         Runnable task = () -> {
-            Set<Node> leavers = new HashSet<>(previousMembers);
-            leavers.removeAll(members);
+            Set<Node> leavers = new HashSet<>(previousMembership.getMembers());
+            leavers.removeAll(membership.getMembers());
             // Handle abrupt leavers
             for (Node leaver : leavers) {
                 this.leave(leaver);
             }
 
             if (merged) {
-                this.join(members);
+                this.join(membership);
             }
         };
         this.executor.execute(task);
     }
 
     public void join() {
-        this.join(this.dispatcherFactory.getGroup().getNodes());
+        this.join(this.dispatcherFactory.getGroup().getMembership());
     }
 
-    private void join(List<Node> members) {
+    private void join(Membership membership) {
         Map<Node, Future<Set<Address>>> futures = new HashMap<>();
-        for (Node member : members) {
+        for (Node member : membership.getMembers()) {
             if (!this.getOwnAddress().equals(member) && !this.nodes.containsValue(member)) {
                 try {
                     futures.put(member, this.dispatcher.submitOnNode(new GetWorkManagersCommand(), member));
