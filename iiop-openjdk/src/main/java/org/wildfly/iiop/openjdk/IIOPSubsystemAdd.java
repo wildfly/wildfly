@@ -169,7 +169,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // if a security domain has been specified, add a dependency to the domain service.
         String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
         if (securityDomain != null) {
-            builder.addDependency(context.getCapabilityServiceName(Capabilities.CAPABILITY_LEGACY_SECURITY_DOMAIN, securityDomain, null));
+            builder.addDependency(context.getCapabilityServiceName(Capabilities.LEGACY_SECURITY_DOMAIN_CAPABILITY, securityDomain, null));
             builder.addDependency(DefaultNamespaceContextSelectorService.SERVICE_NAME);
         }
 
