@@ -28,7 +28,6 @@ import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -77,7 +76,11 @@ public class ApplicationSecurityDomainService implements Service<ApplicationSecu
 
     public String[] getDeployments() {
         synchronized(registrations) {
-            Set<String> deploymentNames = registrations.stream().map(r -> r.deploymentName).collect(Collectors.toSet());
+            Set<String> deploymentNames = new HashSet<>();
+            for (RegistrationImpl r : registrations) {
+                String deploymentName = r.deploymentName;
+                deploymentNames.add(deploymentName);
+            }
             return deploymentNames.toArray(new String[deploymentNames.size()]);
         }
     }

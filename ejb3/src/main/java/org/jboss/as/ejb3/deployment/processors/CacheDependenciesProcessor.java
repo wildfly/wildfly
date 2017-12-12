@@ -1,10 +1,14 @@
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
@@ -47,12 +51,18 @@ public class CacheDependenciesProcessor implements DeploymentUnitProcessor {
 
         final CapabilityServiceSupport support = unit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
         final ServiceTarget target = context.getServiceTarget();
+        List<ValueDependency<CacheFactoryBuilder>> list = new ArrayList<>();
+        Set<InjectedValueDependency<CacheFactoryBuilder>> uniqueValues = new HashSet<>();
+        for (ComponentDescription description : moduleDescription.getComponentDescriptions()) {
+            if (description instanceof StatefulComponentDescription) {
+                InjectedValueDependency<CacheFactoryBuilder> cacheFactoryBuilderInjectedValueDependency = new InjectedValueDependency<>(getCacheFactoryBuilderServiceName((StatefulComponentDescription) description), CacheFactoryBuilder.class);
+                if (uniqueValues.add(cacheFactoryBuilderInjectedValueDependency)) {
+                    list.add(cacheFactoryBuilderInjectedValueDependency);
+                }
+            }
+        }
         @SuppressWarnings("rawtypes")
-        Collection<ValueDependency<CacheFactoryBuilder>> cacheDependencies = moduleDescription.getComponentDescriptions().stream()
-                .filter(StatefulComponentDescription.class::isInstance)
-                .map(description -> new InjectedValueDependency<>(getCacheFactoryBuilderServiceName((StatefulComponentDescription) description), CacheFactoryBuilder.class))
-                .distinct()
-                .collect(Collectors.toList());
+        Collection<ValueDependency<CacheFactoryBuilder>> cacheDependencies = list;
         Service<Void> service = new AbstractService<Void>() {
             @Override
             public void start(StartContext context) {
@@ -64,7 +74,9 @@ public class CacheDependenciesProcessor implements DeploymentUnitProcessor {
             }
         };
         ServiceBuilder<Void> builder = target.addService(name.append("cache-dependencies-installer"), service);
-        cacheDependencies.forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<CacheFactoryBuilder> dependency : cacheDependencies) {
+            dependency.register(builder);
+        }
         builder.install();
 
         // Install versioned marshalling configuration

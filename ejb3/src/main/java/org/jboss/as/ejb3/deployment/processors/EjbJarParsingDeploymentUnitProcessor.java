@@ -315,7 +315,9 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
 
     static Map<String, AbstractMetaDataParser<?>> createJbossEjbJarParsers() {
         Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<String, AbstractMetaDataParser<?>>();
-        EnumSet.allOf(ClusteringSchema.class).forEach(schema -> parsers.put(schema.getNamespaceUri(), new EJBBoundClusteringMetaDataParser(schema)));
+        for (ClusteringSchema schema : EnumSet.allOf(ClusteringSchema.class)) {
+            parsers.put(schema.getNamespaceUri(), new EJBBoundClusteringMetaDataParser(schema));
+        }
         parsers.put(EJBBoundSecurityMetaDataParser.LEGACY_NAMESPACE_URI, EJBBoundSecurityMetaDataParser.INSTANCE);
         parsers.put(EJBBoundSecurityMetaDataParser.NAMESPACE_URI_1_0, EJBBoundSecurityMetaDataParser.INSTANCE);
         parsers.put(EJBBoundSecurityMetaDataParser11.NAMESPACE_URI_1_1, EJBBoundSecurityMetaDataParser11.INSTANCE);

@@ -81,7 +81,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
@@ -356,7 +355,12 @@ final class AssociationImpl implements Association, AutoCloseable {
         final DeploymentRepositoryListener listener = new DeploymentRepositoryListener() {
             @Override
             public void listenerAdded(final DeploymentRepository repository) {
-                moduleAvailabilityListener.moduleAvailable(repository.getModules().keySet().stream().map(AssociationImpl::toModuleIdentifier).collect(Collectors.toList()));
+                List<EJBModuleIdentifier> list = new ArrayList<>();
+                for (DeploymentModuleIdentifier deploymentModuleIdentifier : repository.getModules().keySet()) {
+                    EJBModuleIdentifier ejbModuleIdentifier = toModuleIdentifier(deploymentModuleIdentifier);
+                    list.add(ejbModuleIdentifier);
+                }
+                moduleAvailabilityListener.moduleAvailable(list);
             }
 
             @Override
@@ -417,12 +421,11 @@ final class AssociationImpl implements Association, AutoCloseable {
         @Override
         public void addedEntries(Map<String, List<ClientMapping>> added) {
             ClusterTopologyListener.ClusterInfo info = getClusterInfo(added);
-            this.clusterTopologyListeners.forEach(listener -> {
-                // Synchronize each listener to ensure that the initial topology was set before processing new entries
+            for (ClusterTopologyListener listener : this.clusterTopologyListeners) {// Synchronize each listener to ensure that the initial topology was set before processing new entries
                 synchronized (listener) {
                     listener.clusterNewNodesAdded(info);
                 }
-            });
+            }
         }
 
         @Override
@@ -433,12 +436,11 @@ final class AssociationImpl implements Association, AutoCloseable {
         @Override
         public void removedEntries(Map<String, List<ClientMapping>> removed) {
             List<ClusterTopologyListener.ClusterRemovalInfo> removals = Collections.singletonList(new ClusterTopologyListener.ClusterRemovalInfo(this.clientMappingRegistry.getGroup().getName(), new ArrayList<>(removed.keySet())));
-            this.clusterTopologyListeners.forEach(listener -> {
-                // Synchronize each listener to ensure that the initial topology was set before processing removed entries
+            for (ClusterTopologyListener listener : this.clusterTopologyListeners) {// Synchronize each listener to ensure that the initial topology was set before processing removed entries
                 synchronized (listener) {
                     listener.clusterNodesRemoved(removals);
                 }
-            });
+            }
         }
 
         ListenerHandle registerClusterTopologyListener(ClusterTopologyListener listener) {

@@ -32,7 +32,9 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -55,6 +57,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public class JaccInterceptor implements Interceptor {
+
+    private static final Principal[] NO_PRINCIPALS = new Principal[0];
 
     private final String viewClassName;
     private final Method viewMethod;
@@ -157,7 +161,15 @@ public class JaccInterceptor implements Interceptor {
     public static Principal[] getGrantedRoles(SecurityIdentity securityIdentity) {
         Set<String> roles = new HashSet<>();
 
-        securityIdentity.getRoles("ejb").forEach(roles::add);
-        return roles.stream().map((Function<String, Principal>) roleName -> (Principal) () -> roleName).toArray(Principal[]::new);
+        for (String s : securityIdentity.getRoles("ejb")) {
+            roles.add(s);
+        }
+        List<Principal> list = new ArrayList<>();
+        Function<String, Principal> mapper = roleName -> (Principal) () -> roleName;
+        for (String role : roles) {
+            Principal principal = mapper.apply(role);
+            list.add(principal);
+        }
+        return list.toArray(NO_PRINCIPALS);
     }
 }
