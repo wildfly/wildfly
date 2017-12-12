@@ -22,10 +22,10 @@
 
 package org.wildfly.clustering.server.registry;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.function.Consumers;
@@ -82,7 +82,9 @@ public class RegistryBuilder<K, V> implements CapabilityServiceBuilder<Registry<
         Supplier<Registry<K, V>> supplier = () -> this.factory.getValue().createRegistry(this.entry.getValue());
         Service<Registry<K, V>> service = new SuppliedValueService<>(Function.identity(), supplier, Consumers.close());
         ServiceBuilder<Registry<K, V>> builder = new AsynchronousServiceBuilder<>(this.name, service).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.factory, this.entry).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.factory, this.entry)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 }

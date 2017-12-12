@@ -162,7 +162,14 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
 
         LegacyAddOperationTransformation(Set<? extends org.jboss.as.clustering.controller.Attribute> attributes) {
             // If none of the specified attributes are defined, then this is a legacy operation
-            this(operation -> attributes.stream().noneMatch(attribute -> operation.hasDefined(attribute.getName())));
+            this(operation -> {
+                for (org.jboss.as.clustering.controller.Attribute attribute : attributes) {
+                    if (operation.hasDefined(attribute.getName())) {
+                        return false;
+                    }
+                }
+                return true;
+            });
         }
 
         LegacyAddOperationTransformation(String... legacyProperties) {

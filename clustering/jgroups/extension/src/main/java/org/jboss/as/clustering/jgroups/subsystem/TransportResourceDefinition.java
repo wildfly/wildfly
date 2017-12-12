@@ -28,11 +28,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.Definable;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.WriteAttributeStepHandler;
@@ -215,7 +213,9 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
             // Reject thread pool configuration, discard if undefined, support EAP 6.x slaves using deprecated attributes
             builder.addChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
         } else {
-            EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(p -> p.buildTransformation(version, parent));
+            for (ThreadPoolResourceDefinition p : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
+                p.buildTransformation(version, parent);
+            }
         }
     }
 
@@ -242,7 +242,14 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
                 .addExtraParameters(ThreadingAttribute.class)
                 .addRequiredChildren(ThreadPoolResourceDefinition.class)
             , builderFactory, parentBuilderFactory, (parent, registration) -> {
-                new WriteAttributeStepHandler(() -> EnumSet.allOf(ThreadingAttribute.class).stream().map(Definable::getDefinition).collect(Collectors.toList())) {
+                new WriteAttributeStepHandler(() -> {
+                    final EnumSet<ThreadingAttribute> enumSet = EnumSet.allOf(ThreadingAttribute.class);
+                    List<AttributeDefinition> list = new ArrayList<>(enumSet.size());
+                    for (ThreadingAttribute threadingAttribute : enumSet) {
+                        list.add(threadingAttribute.getDefinition());
+                    }
+                    return list;
+                }) {
                     @Override
                     protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
                         // Add a new step to validate instead of doing it directly in this method.
@@ -267,7 +274,9 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
                 }.register(registration);
 
                 if (registration.getPathAddress().getLastElement().isWildcard()) {
-                    EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> pool.register(registration));
+                    for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
+                        pool.register(registration);
+                    }
                 }
 
                 if (registration.getPathAddress().getLastElement().isWildcard()) {

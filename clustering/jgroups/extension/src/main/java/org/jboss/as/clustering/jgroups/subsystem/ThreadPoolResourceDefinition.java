@@ -25,10 +25,8 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.BiFunction;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.Attribute;
-import org.jboss.as.clustering.controller.Definable;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
@@ -39,6 +37,7 @@ import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -152,9 +151,10 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(this.definition);
 
         if (JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
-            Stream.of(this.minThreads, this.maxThreads, this.queueLength)
-                    .map(Definable::getDefinition)
-                    .forEach(attribute -> builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(attribute), attribute));
+            for (Attribute attribute : Arrays.asList(this.minThreads, this.maxThreads, this.queueLength)) {
+                AttributeDefinition attribute1Definition = attribute.getDefinition();
+                builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(attribute1Definition), attribute1Definition);
+            }
         }
     }
 }

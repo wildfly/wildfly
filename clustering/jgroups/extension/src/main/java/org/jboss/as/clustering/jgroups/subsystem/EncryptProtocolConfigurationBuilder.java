@@ -27,7 +27,7 @@ import static org.jboss.as.clustering.jgroups.subsystem.EncryptProtocolResourceD
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.util.stream.Stream;
+import java.util.Arrays;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.CredentialSourceDependency;
@@ -73,7 +73,9 @@ public class EncryptProtocolConfigurationBuilder<P extends EncryptBase & Encrypt
     @Override
     public ServiceBuilder<ProtocolConfiguration<P>> build(ServiceTarget target) {
         ServiceBuilder<ProtocolConfiguration<P>> builder = super.build(target);
-        Stream.of(this.keyStore, this.credentialSource).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.keyStore, this.credentialSource)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 

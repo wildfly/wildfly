@@ -51,6 +51,8 @@ public class OperationHandler<C> extends ExecutionHandler<C, Operation<C>> imple
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        this.operations.forEach(operation -> registration.registerOperationHandler(operation.getDefinition(), this));
+        for (Operation<C> operation : this.operations) {
+            registration.registerOperationHandler(operation.getDefinition(), this);
+        }
     }
 }

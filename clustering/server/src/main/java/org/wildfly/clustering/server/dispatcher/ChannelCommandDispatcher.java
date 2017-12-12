@@ -125,7 +125,10 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
         Map<Node, Future<R>> results = new ConcurrentHashMap<>();
         FutureListener<RspList<R>> listener = future -> {
             try {
-                future.get().keySet().stream().map(address -> this.factory.createNode(address)).forEach(node -> results.remove(node));
+                for (Address address : future.get().keySet()) {
+                    Node node = this.factory.createNode(address);
+                    results.remove(node);
+                }
             } catch (CancellationException e) {
                 // Ignore
             } catch (ExecutionException e) {

@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore;
-import java.util.stream.Stream;
+import java.util.Arrays;
 
 import javax.crypto.Cipher;
 
@@ -76,7 +76,9 @@ public class CipherAuthTokenBuilder extends AuthTokenBuilder<CipherAuthToken> {
     @Override
     public ServiceBuilder<CipherAuthToken> build(ServiceTarget target) {
         ServiceBuilder<CipherAuthToken> builder = super.build(target);
-        Stream.of(this.keyStore, this.keyCredentialSource).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.keyStore, this.keyCredentialSource)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 

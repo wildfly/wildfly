@@ -109,7 +109,9 @@ public class TransportConfigurationBuilder<T extends TP> extends AbstractProtoco
         }
 
         PathAddress address = context.getCurrentAddress();
-        EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.TIMER)).forEach(pool -> this.threadPoolFactories.put(pool, new InjectedValueDependency<>(new ThreadPoolServiceNameProvider(address, pool.getPathElement()), ThreadPoolFactory.class)));
+        for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.TIMER))) {
+            this.threadPoolFactories.put(pool, new InjectedValueDependency<>(new ThreadPoolServiceNameProvider(address, pool.getPathElement()), ThreadPoolFactory.class));
+        }
         this.timerFactory = new InjectedValueDependency<>(new ThreadPoolServiceNameProvider(address, ThreadPoolResourceDefinition.TIMER.getPathElement()), TimerFactory.class);
 
         return super.configure(context, model);

@@ -65,6 +65,11 @@ public class InfinispanBeanGroupEntry<I, T> implements BeanGroupEntry<I, T> {
 
     @Override
     public int totalUsage() {
-        return this.usage.values().stream().mapToInt((AtomicInteger usage) -> usage.get()).sum();
+        int sum = 0;
+        for (AtomicInteger atomicInteger : this.usage.values()) {
+            int i = atomicInteger.get();
+            sum += i;
+        }
+        return sum;
     }
 }

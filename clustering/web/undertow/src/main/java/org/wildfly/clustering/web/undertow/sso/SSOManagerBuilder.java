@@ -24,8 +24,8 @@ package org.wildfly.clustering.web.undertow.sso;
 
 import java.io.Externalizable;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.marshalling.MarshallingConfiguration;
@@ -113,7 +113,9 @@ public class SSOManagerBuilder<A, D, S, L> implements CapabilityServiceBuilder<S
     @Override
     public ServiceBuilder<SSOManager<A, D, S, L, Batch>> build(ServiceTarget target) {
         ServiceBuilder<SSOManager<A, D, S, L, Batch>> builder = target.addService(this.getServiceName(), this);
-        Stream.of(this.factory, this.generator).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.factory, this.generator)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 

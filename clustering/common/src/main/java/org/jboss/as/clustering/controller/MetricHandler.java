@@ -51,6 +51,8 @@ public class MetricHandler<C> extends ExecutionHandler<C, Metric<C>> implements 
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        this.metrics.forEach(metric -> registration.registerReadOnlyAttribute(metric.getDefinition(), this));
+        for (Metric<C> metric : this.metrics) {
+            registration.registerReadOnlyAttribute(metric.getDefinition(), this);
+        }
     }
 }

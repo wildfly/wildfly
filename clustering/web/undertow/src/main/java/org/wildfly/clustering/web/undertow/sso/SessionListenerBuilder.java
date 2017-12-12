@@ -22,6 +22,8 @@
 
 package org.wildfly.clustering.web.undertow.sso;
 
+import java.util.Optional;
+
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -73,7 +75,14 @@ public class SessionListenerBuilder implements CapabilityServiceBuilder<SessionL
         try (Batch batch = manager.getBatcher().createBatch()) {
             Sessions<String, String> sessions = manager.findSessionsContaining(oldSessionId);
             if (sessions != null) {
-                String deployment = sessions.getDeployments().stream().filter(key -> sessions.getSession(key) != null).findFirst().get();
+                Optional<String> found = Optional.empty();
+                for (String key : sessions.getDeployments()) {
+                    if (sessions.getSession(key) != null) {
+                        found = Optional.of(key);
+                        break;
+                    }
+                }
+                String deployment = found.get();
                 sessions.removeSession(deployment);
                 sessions.addSession(deployment, session.getId());
             }

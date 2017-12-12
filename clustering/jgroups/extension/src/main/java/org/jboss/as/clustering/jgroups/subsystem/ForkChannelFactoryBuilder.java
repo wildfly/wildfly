@@ -21,7 +21,9 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -88,7 +90,12 @@ public class ForkChannelFactoryBuilder extends CapabilityServiceNameProvider imp
     @Override
     public Builder<ChannelFactory> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         Resource resource = context.getCurrentAddress().equals(this.address) ? context.readResourceFromRoot(this.address, false) : PlaceholderResource.INSTANCE;
-        this.protocols = resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).stream().map(entry -> new InjectedValueDependency<>(new ProtocolServiceNameProvider(this.address, entry.getPathElement()), ProtocolConfiguration.class)).collect(Collectors.toList());
+        final Set<Resource.ResourceEntry> children = resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey());
+        final List<ValueDependency<ProtocolConfiguration>> list = new ArrayList<>(children.size());
+        for (Resource.ResourceEntry entry : children) {
+            list.add(new InjectedValueDependency<>(new ProtocolServiceNameProvider(this.address, entry.getPathElement()), ProtocolConfiguration.class));
+        }
+        this.protocols = list;
         String channelName = this.address.getParent().getLastElement().getValue();
         this.parentChannel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(context, channelName), Channel.class);
         this.parentFactory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, channelName), ChannelFactory.class);

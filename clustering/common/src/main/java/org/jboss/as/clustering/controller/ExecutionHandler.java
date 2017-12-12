@@ -23,9 +23,9 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
@@ -35,8 +35,8 @@ import org.jboss.dmr.ModelNode;
 /**
  * Generic operation handler for an executable management object.
  * @author Paul Ferraro
- * @param C the execution context
- * @param E the contextual executable
+ * @param <C> the execution context
+ * @param <E> the contextual executable
  */
 public class ExecutionHandler<C, E extends Executable<C>> extends AbstractRuntimeOnlyHandler {
 
@@ -48,11 +48,15 @@ public class ExecutionHandler<C, E extends Executable<C>> extends AbstractRuntim
      * Constructs a new ExecutionHandler
      * @param executor an executor
      * @param executables the executables sharing this handler
-     * @param name a function returning the name of an executable
+     * @param nameExtractor a function returning the name of an executable
      */
     public ExecutionHandler(Executor<C, E> executor, Collection<? extends E> executables, Function<E, String> nameFactory, Function<ModelNode, String> nameExtractor) {
         this.executor = executor;
-        this.executables = executables.stream().collect(Collectors.toMap(nameFactory, Function.identity()));
+        Map<String, E> map = new HashMap<>();
+        for (E executable : executables) {
+            map.put(nameFactory.apply(executable), executable);
+        }
+        this.executables = map;
         this.nameExtractor = nameExtractor;
     }
 

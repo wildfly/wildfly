@@ -97,11 +97,21 @@ public enum XMLElement {
             }
         }
 
-        ProtocolType.MULTICAST_SOCKET.forEach(protocol -> protocols.put(protocol, XMLElement.SOCKET_PROTOCOL));
-        ProtocolType.JDBC.forEach(protocol -> protocols.put(protocol, XMLElement.JDBC_PROTOCOL));
-        ProtocolType.ENCRYPT.forEach(protocol -> protocols.put(protocol, XMLElement.ENCRYPT_PROTOCOL));
-        ProtocolType.SOCKET_DISCOVERY.forEach(protocol -> protocols.put(protocol, XMLElement.SOCKET_DISCOVERY_PROTOCOL));
-        ProtocolType.AUTH.forEach(protocol -> protocols.put(protocol, XMLElement.AUTH_PROTOCOL));
+        for (String protocol : ProtocolType.MULTICAST_SOCKET) {
+            protocols.put(protocol, XMLElement.SOCKET_PROTOCOL);
+        }
+        for (String protocol : ProtocolType.JDBC) {
+            protocols.put(protocol, XMLElement.JDBC_PROTOCOL);
+        }
+        for (String protocol : ProtocolType.ENCRYPT) {
+            protocols.put(protocol, XMLElement.ENCRYPT_PROTOCOL);
+        }
+        for (String protocol : ProtocolType.SOCKET_DISCOVERY) {
+            protocols.put(protocol, XMLElement.SOCKET_DISCOVERY_PROTOCOL);
+        }
+        for (String protocol : ProtocolType.AUTH) {
+            protocols.put(protocol, XMLElement.AUTH_PROTOCOL);
+        }
 
         tokens.put(PlainAuthTokenResourceDefinition.PATH.getValue(), XMLElement.PLAIN_TOKEN);
         tokens.put(DigestAuthTokenResourceDefinition.PATH.getValue(), XMLElement.DIGEST_TOKEN);

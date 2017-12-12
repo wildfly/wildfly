@@ -210,7 +210,9 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                     try {
                         Collection<T> services = this.dispatcher.executeOnNode(new GetLocalServicesCommand<>(), joinedMember).get();
                         try (Batch batch = this.batcher.createBatch()) {
-                            services.forEach(service -> this.register(joinedMember, service));
+                            for (T service : services) {
+                                this.register(joinedMember, service);
+                            }
                         }
                     } catch (Exception e) {
                         ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);

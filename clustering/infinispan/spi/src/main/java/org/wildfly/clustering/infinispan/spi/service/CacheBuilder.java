@@ -21,9 +21,9 @@
  */
 package org.wildfly.clustering.infinispan.spi.service;
 
+import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
@@ -86,7 +86,9 @@ public class CacheBuilder<K, V> implements CapabilityServiceBuilder<Cache<K, V>>
         };
         Service<Cache<K, V>> service = new SuppliedValueService<>(Function.identity(), supplier, Cache::stop);
         ServiceBuilder<Cache<K, V>> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), service).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.configuration, this.container).forEach(dependency -> dependency.register(builder));
+        for (Dependency dependency : Arrays.asList(this.configuration, this.container)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 }

@@ -37,7 +37,12 @@ public enum SessionAttributeImmutability implements Predicate<Object> {
         @Override
         public boolean test(Object object) {
             // Skip Collection test, we override this below to extend the immutability test for collection elements.
-            return EnumSet.complementOf(EnumSet.of(Immutability.COLLECTION)).stream().anyMatch(predicate -> predicate.test(object));
+            for (Immutability predicate : EnumSet.complementOf(EnumSet.of(Immutability.COLLECTION))) {
+                if (predicate.test(object)) {
+                    return true;
+                }
+            }
+            return false;
         }
     },
     COLLECTION() {
@@ -54,6 +59,13 @@ public enum SessionAttributeImmutability implements Predicate<Object> {
     },
     ;
 
-    public static final Predicate<Object> INSTANCE = object -> EnumSet.allOf(SessionAttributeImmutability.class).stream().anyMatch(predicate -> predicate.test(object));
+    public static final Predicate<Object> INSTANCE = object -> {
+        for (SessionAttributeImmutability predicate : EnumSet.allOf(SessionAttributeImmutability.class)) {
+            if (predicate.test(object)) {
+                return true;
+            }
+        }
+        return false;
+    };
     static final Predicate<Object> COLLECTION_INSTANCE = new CollectionImmutability(INSTANCE);
 }

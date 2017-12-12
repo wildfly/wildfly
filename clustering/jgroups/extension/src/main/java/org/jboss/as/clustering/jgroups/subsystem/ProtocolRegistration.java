@@ -23,10 +23,10 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.Registration;
@@ -61,7 +61,11 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
         }
 
         ProtocolType(String... protocols) {
-            this.protocols = Collections.unmodifiableSet(Stream.of(protocols).collect(Collectors.toSet()));
+            Set<String> set = new HashSet<>();
+            for (String protocol : protocols) {
+                set.add(protocol);
+            }
+            this.protocols = Collections.unmodifiableSet(set);
         }
 
         @Override
@@ -137,30 +141,32 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
         new GenericProtocolResourceDefinition<>(this.descriptorConfigurator, address -> ProtocolType.MULTICAST.contains(address.getLastElement().getValue()) ? new MulticastProtocolConfigurationBuilder<>(address) : new ProtocolConfigurationBuilder<>(address), this.parentBuilderFactory).register(registration);
 
         // Override definitions for protocol types
-        ProtocolType.MULTICAST_SOCKET.forEach(protocol -> new SocketBindingProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, address -> new MulticastSocketProtocolConfigurationBuilder<>(address), this.parentBuilderFactory).register(registration));
+        for (String protocol : ProtocolType.MULTICAST_SOCKET) {
+            new SocketBindingProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, address -> new MulticastSocketProtocolConfigurationBuilder<>(address), this.parentBuilderFactory).register(registration);
+        }
 
-        ProtocolType.JDBC.forEach(protocol -> {
+        for (String protocol : ProtocolType.JDBC) {
             new JDBCProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
             // Add deprecated override definition for legacy variant
             new GenericProtocolResourceDefinition<>(protocol, JGroupsModel.VERSION_5_0_0, address -> new ProtocolConfigurationBuilder<>(address), this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
-        });
+        }
 
-        ProtocolType.ENCRYPT.forEach(protocol -> {
+        for (String protocol : ProtocolType.ENCRYPT) {
             new EncryptProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
             // Add deprecated override definition for legacy variant
             new GenericProtocolResourceDefinition<>(protocol, JGroupsModel.VERSION_5_0_0, address -> new ProtocolConfigurationBuilder<>(address), this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
-        });
+        }
 
-        ProtocolType.SOCKET_DISCOVERY.forEach(protocol -> {
+        for (String protocol : ProtocolType.SOCKET_DISCOVERY) {
             new SocketDiscoveryProtocolResourceDefinition<>(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
             // Add deprecated override definition for legacy variant
             new GenericProtocolResourceDefinition<>(protocol, JGroupsModel.VERSION_5_0_0, address -> new ProtocolConfigurationBuilder<>(address), this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
-        });
+        }
 
-        ProtocolType.AUTH.forEach(protocol -> {
+        for (String protocol : ProtocolType.AUTH) {
             new AuthProtocolResourceDefinition(protocol, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
             // Add deprecated override definition for legacy variant
             new GenericProtocolResourceDefinition<>(protocol, JGroupsModel.VERSION_5_0_0, address -> new ProtocolConfigurationBuilder<>(address), this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
-        });
+        }
     }
 }

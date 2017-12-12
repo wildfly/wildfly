@@ -21,7 +21,7 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.util.stream.Stream;
+import java.util.Arrays;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
@@ -81,7 +81,9 @@ public class InfinispanRouteLocatorBuilder implements CapabilityServiceBuilder<R
     public ServiceBuilder<RouteLocator> build(ServiceTarget target) {
         Value<RouteLocator> value = () -> new InfinispanRouteLocator(this);
         ServiceBuilder<RouteLocator> builder = target.addService(this.getServiceName(), new ValueService<>(value));
-        Stream.of(this.factory, this.registry, this.cache).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.factory, this.registry, this.cache)) {
+            dependency.register(builder);
+        }
         return builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 

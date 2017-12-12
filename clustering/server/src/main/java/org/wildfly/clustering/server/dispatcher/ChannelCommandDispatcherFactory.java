@@ -119,10 +119,10 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
             this.dispatcher.stop();
             this.dispatcher.getChannel().setUpHandler(null);
             // Cleanup any stray listeners
-            this.listeners.values().forEach(executor -> {
-                PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
+            for (ExecutorService executorService : this.listeners.values()) {
+                PrivilegedAction<List<Runnable>> action = () -> executorService.shutdownNow();
                 WildFlySecurityManager.doUnchecked(action);
-            });
+            }
             this.listeners.clear();
         });
     }

@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.stream.Stream;
+import java.util.Arrays;
 
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.jdbc.configuration.JdbcMixedStoreConfiguration;
@@ -51,7 +51,9 @@ public class MixedKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcMixedStoreC
     @Override
     public ServiceBuilder<PersistenceConfiguration> build(ServiceTarget target) {
         ServiceBuilder<PersistenceConfiguration> builder = super.build(target);
-        Stream.of(this.binaryTable, this.stringTable).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<TableManipulationConfiguration> dependency : Arrays.asList(this.binaryTable, this.stringTable)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 

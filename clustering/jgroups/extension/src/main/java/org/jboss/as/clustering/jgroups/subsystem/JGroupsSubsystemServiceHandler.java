@@ -27,8 +27,10 @@ import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResource
 import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition.CAPABILITIES;
 import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition.CLUSTERING_CAPABILITIES;
 
+import java.util.Map;
 import java.util.ServiceLoader;
 
+import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.dmr.ModelNodes;
@@ -75,7 +77,9 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
         new ProtocolDefaultsBuilder().build(target).install();
 
         ModelNodes.optionalString(DEFAULT_CHANNEL.resolveModelAttribute(context, model)).ifPresent(defaultChannel -> {
-            CAPABILITIES.entrySet().forEach(entry -> new AliasServiceBuilder<>(entry.getValue().getServiceName(address), entry.getKey().getServiceName(context, defaultChannel), entry.getKey().getType()).build(target).install());
+            for (Map.Entry<JGroupsRequirement, Capability> entry : CAPABILITIES.entrySet()) {
+                new AliasServiceBuilder<>(entry.getValue().getServiceName(address), entry.getKey().getServiceName(context, defaultChannel), entry.getKey().getType()).build(target).install();
+            }
 
             if (!defaultChannel.equals(JndiNameFactory.DEFAULT_LOCAL_NAME)) {
                 new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(JndiNameFactory.DEFAULT_LOCAL_NAME), JGroupsRequirement.CHANNEL.getServiceName(context, defaultChannel), JGroupsRequirement.CHANNEL.getType()).build(target).install();
@@ -105,7 +109,9 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
                 context.removeService(JGroupsBindingFactory.createChannelBinding(JndiNameFactory.DEFAULT_LOCAL_NAME).getBinderServiceName());
             }
 
-            CAPABILITIES.values().forEach(capability -> context.removeService(capability.getServiceName(address)));
+            for (Capability capability : CAPABILITIES.values()) {
+                context.removeService(capability.getServiceName(address));
+            }
         });
 
         context.removeService(ProtocolDefaultsBuilder.SERVICE_NAME);

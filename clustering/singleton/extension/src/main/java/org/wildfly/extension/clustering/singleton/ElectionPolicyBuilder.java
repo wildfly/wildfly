@@ -67,7 +67,9 @@ public abstract class ElectionPolicyBuilder extends CapabilityServiceNameProvide
     public ServiceBuilder<SingletonElectionPolicy> build(ServiceTarget target) {
         Value<SingletonElectionPolicy> value = () -> this.preferences.isEmpty() ? this.getValue() : new PreferredSingletonElectionPolicy(this.getValue(), this.preferences);
         ServiceBuilder<SingletonElectionPolicy> builder = target.addService(this.getServiceName(), new ValueService<>(value));
-        this.dependencies.forEach(dependency -> dependency.register(builder));
+        for (Dependency dependency : this.dependencies) {
+            dependency.register(builder);
+        }
         return builder;
     }
 
@@ -76,14 +78,18 @@ public abstract class ElectionPolicyBuilder extends CapabilityServiceNameProvide
         this.preferences.clear();
         this.dependencies.clear();
         ModelNodes.optionalList(SOCKET_BINDING_PREFERENCES.resolveModelAttribute(context, model)).ifPresent(bindings -> {
-            bindings.stream().map(ModelNode::asString).forEach(bindingName -> {
+            for (ModelNode modelNode : bindings) {
+                String bindingName = modelNode.asString();
                 InjectedValueDependency<OutboundSocketBinding> binding = new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, bindingName), OutboundSocketBinding.class);
                 this.preferences.add(new OutboundSocketBindingPreference(binding));
                 this.dependencies.add(binding);
-            });
+            }
         });
         ModelNodes.optionalList(NAME_PREFERENCES.resolveModelAttribute(context, model)).ifPresent(names -> {
-            names.stream().map(ModelNode::asString).forEach(name -> this.preferences.add(new NamePreference(name)));
+            for (ModelNode name : names) {
+                String asString = name.asString();
+                this.preferences.add(new NamePreference(asString));
+            }
         });
         return this;
     }

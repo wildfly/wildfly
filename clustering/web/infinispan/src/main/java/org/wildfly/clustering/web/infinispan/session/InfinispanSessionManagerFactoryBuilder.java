@@ -21,9 +21,9 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -134,7 +134,9 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability, L
                 .addDependency(this.cacheBuilder.getServiceName(), Cache.class, this.cache)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 ;
-        Stream.of(this.group, this.affinityFactory, this.dispatcherFactory).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.group, this.affinityFactory, this.dispatcherFactory)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 

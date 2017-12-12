@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.jgroups.subsystem.SocketDiscoveryProtocolR
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -60,16 +61,21 @@ public class SocketDiscoveryProtocolConfigurationBuilder<P extends Protocol & So
 
     @Override
     public Builder<ProtocolConfiguration<P>> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.bindings = StringListAttributeDefinition.unwrapValue(context, OUTBOUND_SOCKET_BINDINGS.resolveModelAttribute(context, model)).stream()
-                .map(binding -> new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class))
-                .collect(Collectors.toList());
+        final List<String> value = StringListAttributeDefinition.unwrapValue(context, OUTBOUND_SOCKET_BINDINGS.resolveModelAttribute(context, model));
+        List<ValueDependency<OutboundSocketBinding>> list = new ArrayList<>(value.size());
+        for (String binding : value) {
+            list.add(new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class));
+        }
+        this.bindings = list;
         return super.configure(context, model);
     }
 
     @Override
     public ServiceBuilder<ProtocolConfiguration<P>> build(ServiceTarget target) {
         ServiceBuilder<ProtocolConfiguration<P>> builder = super.build(target);
-        this.bindings.forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<OutboundSocketBinding> dependency : this.bindings) {
+            dependency.register(builder);
+        }
         return builder;
     }
 

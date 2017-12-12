@@ -113,7 +113,9 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
     @Override
     public void close() {
         if (!this.properties.isTransactional()) {
-            this.mutations.values().forEach(Mutator::mutate);
+            for (Mutator mutator : this.mutations.values()) {
+                mutator.mutate();
+            }
         }
         this.mutations.clear();
     }

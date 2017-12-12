@@ -120,6 +120,9 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         context.removeService(new XAResourceRecoveryBuilder(cacheAddress).getServiceName());
         context.removeService(CacheComponent.MODULE.getServiceName(cacheAddress));
 
-        EnumSet.allOf(CacheResourceDefinition.Capability.class).stream().map(capability -> capability.getServiceName(cacheAddress)).forEach(serviceName -> context.removeService(serviceName));
+        for (CacheResourceDefinition.Capability capability : EnumSet.allOf(CacheResourceDefinition.Capability.class)) {
+            ServiceName serviceName = capability.getServiceName(cacheAddress);
+            context.removeService(serviceName);
+        }
     }
 }

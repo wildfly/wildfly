@@ -21,9 +21,9 @@
  */
 package org.wildfly.clustering.web.undertow.sso;
 
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -86,7 +86,9 @@ public class SessionManagerRegistryBuilder implements CapabilityServiceBuilder<S
     @Override
     public ServiceBuilder<SessionManagerRegistry> build(ServiceTarget target) {
         ServiceBuilder<SessionManagerRegistry> builder = target.addService(this.name, this).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.listener, this.service, this.host).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.listener, this.service, this.host)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 
@@ -98,12 +100,16 @@ public class SessionManagerRegistryBuilder implements CapabilityServiceBuilder<S
     @Override
     public void start(StartContext context) throws StartException {
         this.service.getValue().registerListener(this);
-        this.host.getValue().getDeployments().forEach(deployment -> this.addDeployment(deployment));
+        for (Deployment deployment : this.host.getValue().getDeployments()) {
+            this.addDeployment(deployment);
+        }
     }
 
     @Override
     public void stop(StopContext context) {
-        this.host.getValue().getDeployments().forEach(deployment -> this.removeDeployment(deployment));
+        for (Deployment deployment : this.host.getValue().getDeployments()) {
+            this.removeDeployment(deployment);
+        }
         this.service.getValue().unregisterListener(this);
     }
 

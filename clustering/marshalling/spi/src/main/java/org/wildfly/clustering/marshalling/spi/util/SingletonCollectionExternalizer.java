@@ -43,7 +43,7 @@ public class SingletonCollectionExternalizer<T extends Collection<Object>> imple
 
     @Override
     public void writeObject(ObjectOutput output, T collection) throws IOException {
-        output.writeObject(collection.stream().findFirst().get());
+        output.writeObject(collection.iterator().next());
     }
 
     @Override

@@ -25,8 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.*;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.*;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
@@ -88,7 +88,9 @@ public class CacheConfigurationBuilder extends CapabilityServiceNameProvider imp
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
         ServiceBuilder<Configuration> builder = this.builder.build(target);
-        Stream.of(this.eviction, this.expiration, this.locking, this.persistence, this.transaction, this.module).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.eviction, this.expiration, this.locking, this.persistence, this.transaction, this.module)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 
@@ -106,7 +108,9 @@ public class CacheConfigurationBuilder extends CapabilityServiceNameProvider imp
             }
 
             GroupsConfigurationBuilder groupsBuilder = builder.clustering().hash().groups().enabled();
-            this.module.getValue().loadService(Grouper.class).forEach(grouper -> groupsBuilder.addGrouper(grouper));
+            for (Grouper grouper : this.module.getValue().loadService(Grouper.class)) {
+                groupsBuilder.addGrouper(grouper);
+            }
         })).configure(context);
         return this;
     }

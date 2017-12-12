@@ -25,10 +25,10 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.*;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.*;
 
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -87,8 +87,12 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
         this.module = new InjectedValueDependency<>(CacheContainerComponent.MODULE.getServiceName(address), Module.class);
         this.transport = new InjectedValueDependency<>(CacheContainerComponent.TRANSPORT.getServiceName(address), TransportConfiguration.class);
         this.site = new InjectedValueDependency<>(CacheContainerComponent.SITE.getServiceName(address), SiteConfiguration.class);
-        EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> this.pools.put(pool, new InjectedValueDependency<>(pool.getServiceName(address), ThreadPoolConfiguration.class)));
-        EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).forEach(pool -> this.schedulers.put(pool, new InjectedValueDependency<>(pool.getServiceName(address), ThreadPoolConfiguration.class)));
+        for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
+            this.pools.put(pool, new InjectedValueDependency<>(pool.getServiceName(address), ThreadPoolConfiguration.class));
+        }
+        for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
+            this.schedulers.put(pool, new InjectedValueDependency<>(pool.getServiceName(address), ThreadPoolConfiguration.class));
+        }
     }
 
     @Override
@@ -153,9 +157,17 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
         ServiceBuilder<GlobalConfiguration> builder = target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 ;
-        this.pools.values().forEach(dependency -> dependency.register(builder));
-        this.schedulers.values().forEach(dependency -> dependency.register(builder));
-        Stream.of(this.module, this.transport, this.site, this.server).filter(Objects::nonNull).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<ThreadPoolConfiguration> dependency : this.pools.values()) {
+            dependency.register(builder);
+        }
+        for (ValueDependency<ThreadPoolConfiguration> dependency : this.schedulers.values()) {
+            dependency.register(builder);
+        }
+        for (ValueDependency<?> dependency : Arrays.asList(this.module, this.transport, this.site, this.server)) {
+            if (dependency != null) {
+                dependency.register(builder);
+            }
+        }
         return builder;
     }
 }

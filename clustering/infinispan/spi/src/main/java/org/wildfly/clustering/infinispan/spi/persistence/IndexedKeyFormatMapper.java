@@ -22,11 +22,11 @@
 
 package org.wildfly.clustering.infinispan.spi.persistence;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 
@@ -44,7 +44,11 @@ public class IndexedKeyFormatMapper implements TwoWayKey2StringMapper {
 
     @SuppressWarnings("unchecked")
     public IndexedKeyFormatMapper(Collection<? extends KeyFormat<?>> keyFormats) {
-        this.keyFormats = keyFormats.stream().map(format -> (KeyFormat<Object>) format).collect(Collectors.toList());
+        List<KeyFormat<Object>> list = new ArrayList<>(keyFormats.size());
+        for (KeyFormat<?> format : keyFormats) {
+            list.add((KeyFormat<Object>) format);
+        }
+        this.keyFormats = list;
         for (int i = 0; i < this.keyFormats.size(); ++i) {
             this.indexes.put(this.keyFormats.get(i).getTargetClass(), i);
         }

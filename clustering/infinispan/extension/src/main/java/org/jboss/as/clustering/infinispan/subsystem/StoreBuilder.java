@@ -44,6 +44,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -87,7 +88,11 @@ public abstract class StoreBuilder<C extends StoreConfiguration, B extends Abstr
         this.purge = PURGE.resolveModelAttribute(context, model).asBoolean();
         this.shared = SHARED.resolveModelAttribute(context, model).asBoolean();
         this.singleton = SINGLETON.resolveModelAttribute(context, model).asBoolean();
-        ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).ifPresent(list -> list.forEach(property -> this.properties.setProperty(property.getName(), property.getValue().asString())));
+        ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).ifPresent(list -> {
+            for (Property property : list) {
+                this.properties.setProperty(property.getName(), property.getValue().asString());
+            }
+        });
         return this;
     }
 

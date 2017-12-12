@@ -57,9 +57,14 @@ public class ForkChannelFactory implements ChannelFactory {
     public Channel createChannel(String id) throws Exception {
         JGroupsLogger.ROOT_LOGGER.debugf("Creating fork channel %s from channel %s", id, this.channel.getClusterName());
 
-        String stackName = this.protocols.isEmpty() ? this.channel.getClusterName() : id;
+        final List<ProtocolConfiguration<? extends Protocol>> protocols = this.protocols;
+        String stackName = protocols.isEmpty() ? this.channel.getClusterName() : id;
 
-        return new ForkChannel(this.channel, stackName, id, this.protocols.stream().map(pc -> pc.createProtocol(this.parentFactory.getProtocolStackConfiguration())).toArray(Protocol[]::new));
+        Protocol[] array = new Protocol[protocols.size()];
+        for (int i = 0; i < protocols.size(); i++) {
+            array[i] = protocols.get(i).createProtocol(this.parentFactory.getProtocolStackConfiguration());
+        }
+        return new ForkChannel(this.channel, stackName, id, array);
     }
 
     @Override

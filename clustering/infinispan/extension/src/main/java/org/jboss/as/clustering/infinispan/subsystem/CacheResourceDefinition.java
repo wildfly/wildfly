@@ -86,7 +86,9 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
 
     static final Map<ClusteringCacheRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringCacheRequirement.class);
     static {
-        EnumSet.allOf(ClusteringCacheRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new BinaryRequirementCapability(requirement)));
+        for (ClusteringCacheRequirement requirement : EnumSet.allOf(ClusteringCacheRequirement.class)) {
+            CLUSTERING_CAPABILITIES.put(requirement, new BinaryRequirementCapability(requirement));
+        }
     }
 
     static class CapabilityServiceNameRegistry implements ServiceNameRegistry<ClusteringCacheRequirement> {

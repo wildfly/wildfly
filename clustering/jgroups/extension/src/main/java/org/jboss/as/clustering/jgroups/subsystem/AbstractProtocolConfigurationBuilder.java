@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
@@ -88,7 +87,11 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
     @Override
     public Builder<C> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.moduleName = MODULE.resolveModelAttribute(context, model).asString();
-        this.properties = ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).orElse(Collections.emptyList()).stream().collect(Collectors.toMap(Property::getName, property -> property.getValue().asString()));
+        Map<String, String> map = new HashMap<>();
+        for (Property property : ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).orElse(Collections.emptyList())) {
+            map.put(property.getName(), property.getValue().asString());
+        }
+        this.properties = map;
         this.statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBooleanOrNull();
         return this;
     }

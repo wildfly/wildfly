@@ -124,7 +124,9 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     }
 
     public ResourceDescriptor addAttributes(Collection<? extends Attribute> attributes) {
-        attributes.forEach(attribute -> this.attributes.add(attribute.getDefinition()));
+        for (Attribute attribute : attributes) {
+            this.attributes.add(attribute.getDefinition());
+        }
         return this;
     }
 
@@ -137,7 +139,9 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     }
 
     public ResourceDescriptor addExtraParameters(Collection<? extends Attribute> parameters) {
-        parameters.forEach(attribute -> this.parameters.add(attribute.getDefinition()));
+        for (Attribute attribute : parameters) {
+            this.parameters.add(attribute.getDefinition());
+        }
         return this;
     }
 
@@ -167,12 +171,16 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     }
 
     public ResourceDescriptor addCapabilities(Predicate<ModelNode> predicate, Collection<? extends Capability> capabilities) {
-        capabilities.forEach(capability -> this.capabilities.put(capability, predicate));
+        for (Capability capability : capabilities) {
+            this.capabilities.put(capability, predicate);
+        }
         return this;
     }
 
     public <E extends Enum<E> & ResourceDefinition> ResourceDescriptor addRequiredChildren(Class<E> enumClass) {
-        EnumSet.allOf(enumClass).forEach(definition -> this.requiredChildren.add(definition.getPathElement()));
+        for (E definition : EnumSet.allOf(enumClass)) {
+            this.requiredChildren.add(definition.getPathElement());
+        }
         return this;
     }
 
@@ -182,7 +190,9 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     }
 
     public <E extends Enum<E> & ResourceDefinition> ResourceDescriptor addRequiredSingletonChildren(Class<E> enumClass) {
-        EnumSet.allOf(enumClass).forEach(definition -> this.requiredSingletonChildren.add(definition.getPathElement()));
+        for (E definition : EnumSet.allOf(enumClass)) {
+            this.requiredSingletonChildren.add(definition.getPathElement());
+        }
         return this;
     }
 

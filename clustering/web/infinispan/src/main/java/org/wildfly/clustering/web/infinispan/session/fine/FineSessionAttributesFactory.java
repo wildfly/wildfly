@@ -23,12 +23,18 @@
 package org.wildfly.clustering.web.infinispan.session.fine;
 
 import java.util.AbstractMap;
+<<<<<<< HEAD
 import java.util.HashMap;
+=======
+>>>>>>> [WFLY-9613] Reduce lambda usage (clustering)
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+<<<<<<< HEAD
 import java.util.function.Predicate;
+=======
+>>>>>>> [WFLY-9613] Reduce lambda usage (clustering)
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
@@ -80,34 +86,41 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
                 SessionAttributeKey sessionAttributeKey = new SessionAttributeKey(id, attributeId);
                 attributes.put(sessionAttributeKey, this.attributeCache.getAdvancedCache().get(sessionAttributeKey));
             }
-            Predicate<Map.Entry<String, V>> invalidAttribute = attribute -> {
-                V value = attribute.getValue();
-                if (value == null) {
-                    InfinispanWebLogger.ROOT_LOGGER.missingSessionAttributeCacheEntry(id, attribute.getKey());
-                    return true;
+            for (Map.Entry<String, Integer> nameEntry : names.entrySet()) {
+                AbstractMap.SimpleImmutableEntry<String, V> mapEntry = new AbstractMap.SimpleImmutableEntry<>(nameEntry.getKey(), attributes.get(new SessionAttributeKey(id, nameEntry.getValue())));
+
+                if (testInvalidAttribute(id, mapEntry)) {
+                    // If any attributes are invalid - remove them all
+                    this.remove(id);
+                    return null;
                 }
-                try {
-                    this.marshaller.read(attribute.getValue());
-                    return false;
-                } catch (InvalidSerializedFormException e) {
-                    InfinispanWebLogger.ROOT_LOGGER.failedToActivateSessionAttribute(e, id, attribute.getKey());
-                    return true;
-                }
-            };
-            if (names.entrySet().stream().map(name -> new AbstractMap.SimpleImmutableEntry<>(name.getKey(), attributes.get(new SessionAttributeKey(id, name.getValue())))).anyMatch(invalidAttribute)) {
-                // If any attributes are invalid - remove them all
-                this.remove(id);
-                return null;
             }
         }
         return entry;
+    }
+
+    private boolean testInvalidAttribute(String id, Map.Entry<String, V> attribute) {
+        V value = attribute.getValue();
+        if (value == null) {
+            InfinispanWebLogger.ROOT_LOGGER.missingSessionAttributeCacheEntry(id, attribute.getKey());
+            return true;
+        }
+        try {
+            this.marshaller.read(attribute.getValue());
+            return false;
+        } catch (InvalidSerializedFormException e) {
+            InfinispanWebLogger.ROOT_LOGGER.failedToActivateSessionAttribute(e, id, attribute.getKey());
+            return true;
+        }
     }
 
     @Override
     public boolean remove(String id) {
         SessionAttributeNamesEntry entry = this.namesCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(new SessionAttributeNamesKey(id));
         if (entry == null) return false;
-        entry.getNames().values().forEach(attributeId -> this.attributeCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAttributeKey(id, attributeId)));
+        for (Integer attributeId : entry.getNames().values()) {
+            this.attributeCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAttributeKey(id, attributeId));
+        }
         return true;
     }
 
@@ -116,13 +129,13 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
         SessionAttributeNamesKey key = new SessionAttributeNamesKey(id);
         SessionAttributeNamesEntry entry = this.namesCache.getAdvancedCache().withFlags(EVICTION_FLAGS).get(key);
         if (entry != null) {
-            entry.getNames().entrySet().stream().forEach(attribute -> {
+            for (Map.Entry<String, Integer> attribute : entry.getNames().entrySet()) {
                 try {
                     this.attributeCache.evict(new SessionAttributeKey(id, attribute.getValue()));
                 } catch (Throwable e) {
                     InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSessionAttribute(e, id, attribute.getKey());
                 }
-            });
+            }
             this.namesCache.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).evict(key);
         }
         return (entry != null);

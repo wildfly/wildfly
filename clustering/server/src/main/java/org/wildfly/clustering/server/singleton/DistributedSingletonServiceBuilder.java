@@ -22,8 +22,8 @@
 
 package org.wildfly.clustering.server.singleton;
 
+import java.util.Arrays;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -72,7 +72,9 @@ public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBu
     public ServiceBuilder<T> build(ServiceTarget target) {
         SingletonService<T> service = new DistributedSingletonService<>(this);
         ServiceBuilder<T> installer = target.addService(this.serviceName, service);
-        Stream.of(this.registry, this.dispatcherFactory).forEach(dependency -> dependency.register(installer));
+        for (ValueDependency<?> dependency : Arrays.asList(this.registry, this.dispatcherFactory)) {
+            dependency.register(installer);
+        }
         return installer;
     }
 

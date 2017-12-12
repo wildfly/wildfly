@@ -50,6 +50,8 @@ public class CapabilityRegistration implements Registration<ManagementResourceRe
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        this.capabilities.forEach(capability -> registration.registerCapability(capability.getDefinition()));
+        for (Capability capability : this.capabilities) {
+            registration.registerCapability(capability.getDefinition());
+        }
     }
 }

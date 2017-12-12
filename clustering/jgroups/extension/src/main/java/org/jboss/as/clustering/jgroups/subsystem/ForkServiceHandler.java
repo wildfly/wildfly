@@ -94,7 +94,9 @@ public class ForkServiceHandler extends SimpleResourceServiceHandler<ChannelFact
         context.removeService(JGroupsBindingFactory.createChannelBinding(name).getBinderServiceName());
         context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());
 
-        EnumSet.complementOf(EnumSet.of(FORK_CHANNEL_FACTORY)).forEach(capability -> context.removeService(capability.getServiceName(address)));
+        for (ForkResourceDefinition.Capability capability : EnumSet.complementOf(EnumSet.of(FORK_CHANNEL_FACTORY))) {
+            context.removeService(capability.getServiceName(address));
+        }
 
         super.removeServices(context, model);
     }

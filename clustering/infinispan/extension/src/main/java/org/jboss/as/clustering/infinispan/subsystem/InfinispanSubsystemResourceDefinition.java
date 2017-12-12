@@ -58,17 +58,21 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
 
     static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> LOCAL_CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
     static {
-        EnumSet.allOf(ClusteringRequirement.class).forEach(requirement -> LOCAL_CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement) {
-            @Override
-            public RuntimeCapability<Void> resolve(PathAddress address) {
-                return this.getDefinition().fromBaseCapability(LocalGroupBuilderProvider.LOCAL);
-            }
-        }));
+        for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
+            LOCAL_CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement) {
+                @Override
+                public RuntimeCapability<Void> resolve(PathAddress address) {
+                    return this.getDefinition().fromBaseCapability(LocalGroupBuilderProvider.LOCAL);
+                }
+            });
+        }
     }
 
     static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
     static {
-        EnumSet.allOf(ClusteringRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new RequirementCapability(requirement.getDefaultRequirement(), builder -> builder.setAllowMultipleRegistrations(true))));
+        for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
+            CLUSTERING_CAPABILITIES.put(requirement, new RequirementCapability(requirement.getDefaultRequirement(), builder -> builder.setAllowMultipleRegistrations(true)));
+        }
     }
 
     static TransformationDescription buildTransformation(ModelVersion version) {

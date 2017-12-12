@@ -25,7 +25,7 @@ package org.wildfly.extension.clustering.singleton;
 import static org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinition.Attribute.*;
 import static org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinition.Capability.*;
 
-import java.util.stream.Stream;
+import java.util.Arrays;
 
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
@@ -69,7 +69,9 @@ public class SingletonPolicyBuilder extends CapabilityServiceNameProvider implem
     public ServiceBuilder<SingletonPolicy> build(ServiceTarget target) {
         Service<SingletonPolicy> service = new ValueService<>(new ImmediateValue<>(this));
         ServiceBuilder<SingletonPolicy> builder = target.addService(this.getServiceName(), service).setInitialMode(ServiceController.Mode.PASSIVE);
-        Stream.of(this.policy, this.factory).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.policy, this.factory)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 

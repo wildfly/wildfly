@@ -29,7 +29,6 @@ import io.undertow.server.session.SessionListener;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -97,16 +96,22 @@ public class DistributableSingleSignOnManagerBuilder implements CapabilityServic
 
     @Override
     public Builder<SingleSignOnManager> configure(CapabilityServiceSupport support) {
-        this.builders.forEach(builder -> builder.configure(support));
+        for (CapabilityServiceBuilder<?> builder : this.builders) {
+            builder.configure(support);
+        }
         return this;
     }
 
     @Override
     public ServiceBuilder<SingleSignOnManager> build(ServiceTarget target) {
-        this.builders.forEach(builder -> builder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install());
+        for (CapabilityServiceBuilder<?> capabilityServiceBuilder : this.builders) {
+            capabilityServiceBuilder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        }
         Value<SingleSignOnManager> manager = () -> new DistributableSingleSignOnManager(this.manager.getValue(), this.registry.getValue());
         ServiceBuilder<SingleSignOnManager> builder = target.addService(this.name, new ValueService<>(manager)).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.manager, this.registry).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.manager, this.registry)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 }
