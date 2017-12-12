@@ -89,7 +89,9 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        EnumSet.allOf(ModClusterSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), schema.getXMLReaderSupplier()));
+        for (ModClusterSchema schema : EnumSet.allOf(ModClusterSchema.class)) {
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), schema.getXMLReaderSupplier());
+        }
     }
 
 }

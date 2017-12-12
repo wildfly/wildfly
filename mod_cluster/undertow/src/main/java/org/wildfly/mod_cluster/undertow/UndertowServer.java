@@ -49,8 +49,12 @@ public class UndertowServer implements Server {
     @Override
     public Iterable<Engine> getEngines() {
         // Currently, the mod_cluster subsystem only supports the default server
-        org.wildfly.extension.undertow.Server defaultServer = this.service.getServers().stream().filter(server -> server.getName().equals(this.service.getDefaultServer())).findFirst().get();
-        return Collections.singleton(new UndertowEngine(defaultServer, this.service, this.connector));
+        for (org.wildfly.extension.undertow.Server server : service.getServers()) {
+            if (server.getName().equals(service.getDefaultServer())) {
+                return Collections.singleton(new UndertowEngine(server, service, connector));
+            }
+        }
+        throw new IllegalStateException();
     }
 
     @Override
