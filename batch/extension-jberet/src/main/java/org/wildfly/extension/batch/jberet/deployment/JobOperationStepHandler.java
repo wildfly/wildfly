@@ -33,6 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.batch.jberet.BatchServiceNames;
@@ -97,8 +98,9 @@ abstract class JobOperationStepHandler implements OperationStepHandler {
         // Get the properties
         final Properties properties = new Properties();
         if (operation.hasDefined(attribute.getName())) {
-            resolveValue(context, operation, attribute).asPropertyList()
-                    .forEach(p -> properties.put(p.getName(), p.getValue().asString()));
+            for (Property p : resolveValue(context, operation, attribute).asPropertyList()) {
+                properties.put(p.getName(), p.getValue().asString());
+            }
         }
         return properties;
     }
