@@ -28,9 +28,8 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore;
-import java.util.Objects;
+import java.util.Arrays;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import javax.net.ssl.SSLContext;
 
@@ -87,7 +86,11 @@ public class SingleSignOnSessionFactoryBuilder extends SingleSignOnSessionFactor
     @Override
     public ServiceBuilder<SingleSignOnSessionFactory> build(ServiceTarget target) {
         ServiceBuilder<SingleSignOnSessionFactory> builder = target.addService(this.getServiceName(), new ValueService<>(this));
-        Stream.of(this.manager, this.keyStore, this.credentialSource, this.sslContext).filter(Objects::nonNull).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.manager, this.keyStore, this.credentialSource, this.sslContext)) {
+            if (dependency != null) {
+                dependency.register(builder);
+            }
+        }
         return builder;
     }
 
