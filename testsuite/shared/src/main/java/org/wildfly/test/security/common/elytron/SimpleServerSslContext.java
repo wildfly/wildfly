@@ -21,8 +21,7 @@
  */
 package org.wildfly.test.security.common.elytron;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import java.util.StringJoiner;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
@@ -60,8 +59,13 @@ public class SimpleServerSslContext extends AbstractConfigurableElement implemen
             sb.append("key-manager=\"").append(keyManager).append("\", ");
         }
         if (protocols != null) {
+            StringJoiner joiner = new StringJoiner(", ");
+            for (String s : protocols) {
+                String s1 = "\"" + s + "\"";
+                joiner.add(s1);
+            }
             sb.append("protocols=[")
-                    .append(Arrays.stream(protocols).map(s -> "\"" + s + "\"").collect(Collectors.joining(", "))).append("], ");
+                    .append(joiner.toString()).append("], ");
         }
         if (StringUtils.isNotBlank(trustManager)) {
             sb.append("trust-manager=\"").append(trustManager).append("\", ");

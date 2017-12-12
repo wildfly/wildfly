@@ -25,7 +25,7 @@ package org.wildfly.test.security.common.elytron;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.StringJoiner;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
@@ -55,10 +55,12 @@ public class SimplePermissionMapper extends AbstractConfigurableElement implemen
         }
         cliCommand.append("permission-mappings=[");
 
-        cliCommand.append(mappings
-                .stream()
-                .map(PermissionMapping::toCLIString)
-                .collect(Collectors.joining(",")));
+        StringJoiner joiner = new StringJoiner(",");
+        for (PermissionMapping mapping : mappings) {
+            String toCLIString = mapping.toCLIString();
+            joiner.add(toCLIString);
+        }
+        cliCommand.append(joiner.toString());
 
         cliCommand.append("]");
         cliCommand.append(")");
@@ -145,9 +147,12 @@ public class SimplePermissionMapper extends AbstractConfigurableElement implemen
         public String toCLIString() {
             StringBuilder result = new StringBuilder();
             result.append("{permissions=[");
-            result.append(permissions.stream()
-                    .map(PermissionRef::toCLIString)
-                    .collect(Collectors.joining(",")));
+            StringJoiner joiner = new StringJoiner(",");
+            for (PermissionRef permission : permissions) {
+                String toCLIString = permission.toCLIString();
+                joiner.add(toCLIString);
+            }
+            result.append(joiner.toString());
             result.append("]");
             if (principals.size() > 0) {
                 result.append(",principals=[");

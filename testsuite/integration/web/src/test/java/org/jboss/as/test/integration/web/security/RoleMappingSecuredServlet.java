@@ -29,7 +29,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
@@ -79,7 +78,12 @@ public class RoleMappingSecuredServlet extends HttpServlet {
                     return o1.getRoleName().compareTo(o2.getRoleName());
                 }
             });
-            String output = String.join(":", roles.stream().map(r -> r.getRoleName()).collect(Collectors.toList()));
+            List<String> list = new ArrayList<>();
+            for (Role r : roles) {
+                String roleName = r.getRoleName();
+                list.add(roleName);
+            }
+            String output = String.join(":", list);
             writer.write(output);
         }
     }
