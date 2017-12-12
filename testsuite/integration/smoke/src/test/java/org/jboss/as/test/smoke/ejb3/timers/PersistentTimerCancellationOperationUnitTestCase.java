@@ -25,9 +25,9 @@ package org.jboss.as.test.smoke.ejb3.timers;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -84,12 +84,26 @@ public class PersistentTimerCancellationOperationUnitTestCase {
         Set<String> timerIDs = timersNode.keys();
         assertThat(timerIDs.size(), is(2));     // 2 timers expected
 
-        List<ModelNode> timers = timerIDs.stream().map(id -> timersNode.get(id)).collect(Collectors.toList());
+        List<ModelNode> timers = new ArrayList<>();
+        for (String id : timerIDs) {
+            ModelNode modelNode = timersNode.get(id);
+            timers.add(modelNode);
+        }
 
-        List<ModelNode> nonCancelledTimers = timers.stream().filter(n -> n.hasDefined("info")).collect(Collectors.toList());
+        List<ModelNode> nonCancelledTimers = new ArrayList<>();
+        for (ModelNode timer : timers) {
+            if (timer.hasDefined("info")) {
+                nonCancelledTimers.add(timer);
+            }
+        }
         assertThat(nonCancelledTimers.size(), is(1));   // one and only one with timer information, ie the one non cancelled
 
-        List<ModelNode> cancelledTimers = timers.stream().filter(n -> !n.hasDefined("info")).collect(Collectors.toList());
+        List<ModelNode> cancelledTimers = new ArrayList<>();
+        for (ModelNode n : timers) {
+            if (! n.hasDefined("info")) {
+                cancelledTimers.add(n);
+            }
+        }
         assertThat(cancelledTimers.size(), is(1));   // one without timer information, the one cancelled
     }
 }
