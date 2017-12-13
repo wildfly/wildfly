@@ -23,6 +23,14 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <profiles>
 
         <!-- ********************************************************************************** -->

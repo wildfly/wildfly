@@ -67,6 +67,10 @@ public class ServerReload {
         executeReloadAndWaitForCompletion(client, timeout, false, null, -1);
     }
 
+    public static void executeReloadAndWaitForCompletion(ModelControllerClient client, String serverHost, int serverPort) {
+        executeReloadAndWaitForCompletion(client, TIMEOUT, false, serverHost, serverPort);
+    }
+
     /**
      *
      * @param client
