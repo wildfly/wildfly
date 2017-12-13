@@ -28,7 +28,6 @@ import javax.ejb.EJBContext;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
-import javax.persistence.PersistenceUnits;
 
 /**
  * stateless session bean
@@ -36,10 +35,9 @@ import javax.persistence.PersistenceUnits;
  * @author Scott Marlow
  */
 @Stateless
-@PersistenceUnits({
-        @PersistenceUnit(name = "pu1", unitName = "pu1"),
-        @PersistenceUnit(name = "pu2", unitName = "pu2")
-})
+@PersistenceUnit(name = "pu1", unitName = "pu1")
+@PersistenceUnit(name = "pu2", unitName = "pu2")
+
 public class SLSBPersistenceUnits {
 
     @Resource
