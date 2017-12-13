@@ -55,9 +55,11 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.service.BinaryRequirement;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * Base class for cache resources which require common cache attributes only.
@@ -85,6 +87,19 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
     static final Map<ClusteringCacheRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringCacheRequirement.class);
     static {
         EnumSet.allOf(ClusteringCacheRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new BinaryRequirementCapability(requirement)));
+    }
+
+    static class CapabilityServiceNameRegistry implements ServiceNameRegistry<ClusteringCacheRequirement> {
+        private final PathAddress address;
+
+        CapabilityServiceNameRegistry(PathAddress address) {
+            this.address = address;
+        }
+
+        @Override
+        public ServiceName getServiceName(ClusteringCacheRequirement requirement) {
+            return CLUSTERING_CAPABILITIES.get(requirement).getServiceName(this.address);
+        }
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {

@@ -36,7 +36,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.ServiceNameProvider;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * @author Paul Ferraro
@@ -57,8 +59,10 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
 
         String channel = transportBuilder.getChannel();
 
+        ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry(address);
+
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name, channel)) {
+            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(registry, name, channel)) {
                 builder.configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
             }
         }
@@ -70,8 +74,10 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
         PathAddress containerAddress = address.getParent();
         String name = containerAddress.getLastElement().getValue();
 
+        ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry(address);
+
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (ServiceNameProvider builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name, null)) {
+            for (ServiceNameProvider builder : provider.getBuilders(registry, name, null)) {
                 context.removeService(builder.getServiceName());
             }
         }

@@ -37,7 +37,9 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * @author Paul Ferraro
@@ -57,6 +59,19 @@ public abstract class TransportResourceDefinition extends ChildResourceDefinitio
                 return super.resolve(address.getParent());
             }
         }));
+    }
+
+    static class CapabilityServiceNameRegistry implements ServiceNameRegistry<ClusteringRequirement> {
+        private PathAddress address;
+
+        CapabilityServiceNameRegistry(PathAddress address) {
+            this.address = address;
+        }
+
+        @Override
+        public ServiceName getServiceName(ClusteringRequirement requirement) {
+            return CLUSTERING_CAPABILITIES.get(requirement).getServiceName(this.address);
+        }
     }
 
     private final Registration<ManagementResourceRegistration> registrar;
