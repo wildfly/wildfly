@@ -45,6 +45,9 @@
                 subsystems="configuration/host/subsystems.xml"
                 output-file="domain/configuration/host-slave.xml" />
     </config>
+    <copy-artifacts>
+        <copy-artifact artifact="javax.validation:validation-api:::${version.javax.validation.ee7}" to-location="modules/system/layers/base/javax/validation/api/main/"/>
+    </copy-artifacts>
     <file-permissions>
         <permission value="755">
             <filter pattern="*.sh" include="true"/>

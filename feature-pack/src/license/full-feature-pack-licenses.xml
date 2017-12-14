@@ -1687,7 +1687,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.hibernate</groupId>
+      <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator</artifactId>
       <licenses>
         <license>
@@ -1698,7 +1698,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.hibernate</groupId>
+      <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator-cdi</artifactId>
       <licenses>
         <license>
