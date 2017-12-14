@@ -37,6 +37,7 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.as.weld.util.Reflections;
 import org.jboss.as.weld.util.Utils;
+import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.DispatcherType;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
@@ -103,8 +104,13 @@ public class DevelopmentModeProcessor implements DeploymentUnitProcessor {
                     return;
                 }
 
-                final boolean devModeContextParam = webMetaData.getContextParams().stream()
-                        .anyMatch(param -> CONTEXT_PARAM_DEV_MODE.equals(param.getParamName()) && Boolean.valueOf(param.getParamValue()));
+                boolean devModeContextParam = false;
+                for (ParamValueMetaData param : webMetaData.getContextParams()) {
+                    if (CONTEXT_PARAM_DEV_MODE.equals(param.getParamName()) && Boolean.valueOf(param.getParamValue())) {
+                        devModeContextParam = true;
+                        break;
+                    }
+                }
 
                 if (!devModeContextParam) {
                     return;
