@@ -27,6 +27,7 @@ import io.undertow.jsp.JspFileHandler;
 import io.undertow.jsp.JspServletBuilder;
 import io.undertow.predicate.Predicate;
 import io.undertow.security.api.AuthenticationMechanism;
+import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.security.api.AuthenticationMode;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
@@ -408,7 +409,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 deploymentInfo.addOuterHandlerChainWrapper(GlobalRequestControllerHandler.wrapper(controlPoint, allowSuspendedRequests));
             }
 
-            container.getValue().getAuthenticationMechanisms().entrySet().forEach(e -> deploymentInfo.addAuthenticationMechanism(e.getKey(), e.getValue()));
+            for (Map.Entry<String, AuthenticationMechanismFactory> e : container.getValue().getAuthenticationMechanisms().entrySet()) {
+                deploymentInfo.addAuthenticationMechanism(e.getKey(), e.getValue());
+            }
             deploymentInfo.setUseCachedAuthenticationMechanism(!deploymentInfo.getAuthenticationMechanisms().containsKey(SingleSignOnService.AUTHENTICATION_MECHANISM_NAME));
 
             this.deploymentInfo = deploymentInfo;

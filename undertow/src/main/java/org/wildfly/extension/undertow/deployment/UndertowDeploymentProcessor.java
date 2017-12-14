@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow.deployment;
 
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,7 +34,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import javax.security.jacc.PolicyConfiguration;
 
@@ -402,7 +402,9 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             CapabilityServiceBuilder<SessionIdentifierCodec> codecBuilder = getSessionIdentifierCodecBuilder(deploymentServiceName, serverInstanceName, deploymentName, metaData);
             infoBuilder.addDependency(codecBuilder.getServiceName(), SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
 
-            Stream.of(factoryBuilder, codecBuilder).forEach(builder -> builder.configure(support).build(serviceTarget).setInitialMode(Mode.ON_DEMAND).install());
+            for (CapabilityServiceBuilder<?> builder : Arrays.asList(factoryBuilder, codecBuilder)) {
+                builder.configure(support).build(serviceTarget).setInitialMode(Mode.ON_DEMAND).install();
+            }
         }
 
         infoBuilder.install();

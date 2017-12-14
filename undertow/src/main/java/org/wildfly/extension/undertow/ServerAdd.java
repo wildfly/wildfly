@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow;
 
 import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
 
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -85,7 +86,11 @@ class ServerAdd extends AbstractAddStepHandler {
         builder.install();
 
         ServiceTarget target = context.getServiceTarget();
-        DistributableSessionIdentifierCodecBuilderProvider.INSTANCE.ifPresent(provider -> provider.getServerBuilders(name).forEach(b -> b.configure(context).build(target).install()));
+        DistributableSessionIdentifierCodecBuilderProvider.INSTANCE.ifPresent(provider -> {
+            for (CapabilityServiceBuilder<?> b : provider.getServerBuilders(name)) {
+                b.configure(context).build(target).install();
+            }
+        });
     }
 
     @Override
