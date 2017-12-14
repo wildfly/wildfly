@@ -69,7 +69,9 @@ public abstract class AbstractJMSContext implements Serializable {
     @PreDestroy
     void cleanUp() {
         ROOT_LOGGER.debugf("Clean up JMSContext created from %s", this);
-        contexts.values().forEach(JMSContext::close);
+        for (JMSContext jmsContext : contexts.values()) {
+            jmsContext.close();
+        }
         contexts.clear();
     }
 
