@@ -47,7 +47,7 @@ public abstract class BuildConfigurationTestBase {
 
     static final String masterAddress = System.getProperty("jboss.test.host.master.address", "localhost");
 
-    static final File CONFIG_DIR = new File("target/jbossas/domain/configuration/");
+    static final File CONFIG_DIR = new File("target/wildfly/domain/configuration/");
 
     static WildFlyManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName, final String testConfiguration) {
         return createConfiguration(domainXmlName, hostXmlName, testConfiguration, "master", masterAddress, 9999);
@@ -143,7 +143,7 @@ public abstract class BuildConfigurationTestBase {
         return file.toFile();
     }
 
-    static File hackFixDomainConfig(File domainConfigFile) {
+    private static File hackFixDomainConfig(File domainConfigFile) {
         final File file;
 
         try {

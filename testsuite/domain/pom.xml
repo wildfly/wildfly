@@ -44,9 +44,6 @@
              ts.copy-jbossas.groups execution assumes it's the same as jboss.dist -->
         <jboss.home>${jboss.dist}</jboss.home>
 
-        <!-- Used to provide an absolute location for the XSLT scripts. -->
-        <!-- This value is overridden in submodules with the correct relative path. -->
-        <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
         <enforcer.skip>true</enforcer.skip>
         <jbossas.ts.dir>${basedir}/..</jbossas.ts.dir>
 
@@ -202,7 +199,7 @@
                         <!-- Disabled assertions until new version of core with fix for WFCORE-1630 is used -->
                         <!--<jboss.options>-ea</jboss.options>-->
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                        <jboss.home>${project.basedir}/target/jbossas</jboss.home>
+                        <jboss.home>${project.basedir}/target/wildfly</jboss.home>
                         <module.path>${jboss.dist}/modules</module.path>
                         <jboss.test.host.master.address>${node0}</jboss.test.host.master.address>
                         <jboss.test.host.slave.address>${node1}</jboss.test.host.slave.address>
@@ -247,7 +244,7 @@
                             <systemPropertyVariables>
                                 <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                                 <jboss.options>-ea</jboss.options>
-                                <jboss.home>${project.basedir}/target/jbossas</jboss.home>
+                                <jboss.home>${project.basedir}/target/wildfly</jboss.home>
                                 <module.path>${jboss.dist}/modules</module.path>
                                 <jboss.test.host.master.address>${node0}</jboss.test.host.master.address>
                                 <jboss.test.host.slave.address>${node1}</jboss.test.host.slave.address>
@@ -294,7 +291,7 @@
                             <scripts>
                                 <script>${ts.elytron.cli}</script>
                             </scripts>
-                            <jboss-home>${project.build.directory}/jbossas</jboss-home>
+                            <jboss-home>${project.build.directory}/wildfly</jboss-home>
                             <stdout>none</stdout>
                             <java-opts>${modular.jdk.args}</java-opts>
                             <system-properties>

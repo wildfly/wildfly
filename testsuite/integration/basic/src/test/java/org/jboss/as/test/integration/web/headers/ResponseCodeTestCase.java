@@ -27,7 +27,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -49,13 +49,11 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class ResponseCodeTestCase {
-    private static final HttpClient HTTP_CLIENT = new DefaultHttpClient();
+    private static final HttpClient HTTP_CLIENT = HttpClients.createDefault();
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsnoap.war");
-        // war.addPackage(HttpRequest.class.getPackage());
-        // war.addPackage(JaxrsAsyncTestCase.class.getPackage());
         war.addClass(RSCodeResponder.class);
         war.addAsWebInfResource(WebXml.get("<servlet-mapping>\n"
                 + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
@@ -102,8 +100,12 @@ public class ResponseCodeTestCase {
         final HttpResponse response = HTTP_CLIENT.execute(get);
         doContentTypeChecks(response, 500);
     }
-
-     @Test
+    /*
+    This test is commented out as it is testing server info data and not response codes.
+    It should be moved to maybe somke testsuite that works on top of "real" distribution
+    and not trimmed down one that is used in rest of testsuite.
+     */
+   /*  @Test
     public void testServerInfo() throws Exception {
         final HttpGet get = new HttpGet(url.toExternalForm() + "jaxrs/test/server/info");
         final HttpResponse response = HTTP_CLIENT.execute(get);
@@ -111,12 +113,8 @@ public class ResponseCodeTestCase {
          Assert.assertNotNull("Null entity!", entity);
          final String content = EntityUtils.toString(response.getEntity());
          Assert.assertTrue("Wrong content! " + content, content.matches("WildFly Full .*\\(WildFly Core .*\\) - .*"));
-    }
+    }*/
 
-    /**
-     * @param execute
-     * @param i
-     */
     private void doContentTypeChecks(final HttpResponse response, final int code) throws Exception {
         doContentTypeChecks(response, code, true);
     }

@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.Paths;
 
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.ModelParserUtils;
@@ -79,7 +80,7 @@ public class ParseAndMarshalModelsTestCase {
 
     private static final Version[] AS_VERSIONS = {Version.AS_7_1_3, Version.AS_7_2_0};
 
-    private static final File JBOSS_HOME = new File(".." + File.separatorChar + "jbossas-parse-marshal");
+    private static final File JBOSS_HOME = Paths.get("target" ,"jbossas-parse-marshal").toFile();
 
     @Test
     public void testStandaloneXml() throws Exception {

@@ -21,8 +21,6 @@
 */
 package org.wildfly.test.extension.rts;
 
-import java.io.File;
-
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
@@ -67,7 +65,7 @@ public final class InboundBridgeTestCase extends AbstractTestCase {
     public static WebArchive getDeployment() {
         return AbstractTestCase.getDeployment()
                 .addClasses(InboundBridgeResource.class, LoggingXAResource.class, LoggingRestATResource.class)
-                .addAsWebInfResource(new File("../test-classes", "web.xml"), "web.xml")
+                .addAsWebInfResource(InboundBridgeTestCase.class.getClassLoader().getResource("web.xml"),"web.xml")
                 .addAsManifestResource(new StringAsset(DEPENDENCIES), "MANIFEST.MF");
     }
 

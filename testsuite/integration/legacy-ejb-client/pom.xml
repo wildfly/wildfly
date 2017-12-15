@@ -90,15 +90,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
-                        <includes>
-                            <include>**/*Test*.java</include>
-                        </includes>
                         <!-- Parameters to test cases. -->
                         <systemPropertyVariables combine.children="append">
                             <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
-                            <jboss.inst>${basedir}/target/jbossas</jboss.inst>
-                            <!-- EJB client library hack, see WFLY-4973-->
-                            <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>

@@ -253,7 +253,7 @@ public class TransportGuaranteeTestCase {
         private static final Logger log = Logger.getLogger(ListenerSetup.class);
 
         private static final String NAME = TransportGuaranteeTestCase.class.getSimpleName();
-        private static final File WORK_DIR = new File("..", "jbossas" + File.separator + "standalone" + File
+        private static final File WORK_DIR = new File("target", "wildfly" + File.separator + "standalone" + File
                 .separator + "configuration");
         private static final File SERVER_KEYSTORE_FILE = new File(WORK_DIR, "application.keystore");
         private static final String PASSWORD = "password";
