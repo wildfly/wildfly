@@ -36,7 +36,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.clustering.CLIBatchServerSetupTask;
+import org.jboss.as.test.clustering.CLIServerSetupTask;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful.RemoteStatefulSB;
 import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.common.CommonStatefulSB;
@@ -70,7 +70,7 @@ import org.wildfly.common.function.ExceptionSupplier;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({AbstractRemoteEJBForwardingTestCase.ClusterAServerSetup.class, AbstractRemoteEJBForwardingTestCase.ClusterBServerSetup.class})
+@ServerSetup(AbstractRemoteEJBForwardingTestCase.ServerSetupTask.class)
 public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractClusteringTestCase {
 
     @BeforeClass
@@ -226,33 +226,27 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
         }
     }
 
-    public static class ClusterAServerSetup extends CLIBatchServerSetupTask {
-        public ClusterAServerSetup() {
-            super(new String[]{NODE_1, NODE_2},
-                    new String[]{
-                            "/subsystem=jgroups/channel=ee:write-attribute(name=cluster,value=ejb-forwarder)",
-                            String.format("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-remote-ejb-connection:add(host=%s,port=8280)", TESTSUITE_NODE3),
-                            "/core-service=management/security-realm=PasswordRealm:add",
-                            "/core-service=management/security-realm=PasswordRealm/server-identity=secret:add(value=\"cmVtQHRlZWpicGFzc3dkMQ==\")",
-                            "/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:add(outbound-socket-binding-ref=binding-remote-ejb-connection,protocol=http-remoting,security-realm=PasswordRealm,username=remoteejbuser)",
-                    },
-                    new String[]{
-                            "/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:remove",
-                            "/core-service=management/security-realm=PasswordRealm:remove",
-                            "/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-remote-ejb-connection:remove",
-                            "/subsystem=jgroups/channel=ee:write-attribute(name=cluster,value=ejb)",
-                    });
-        }
-    }
+    public static class ServerSetupTask extends CLIServerSetupTask {
+        public ServerSetupTask() {
+            this.builder
+                    // clusterA
+                    .node(NODE_1, NODE_2)
+                    .setup("/subsystem=jgroups/channel=ee:write-attribute(name=cluster,value=ejb-forwarder)")
+                    .setup(String.format("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-remote-ejb-connection:add(host=%s,port=8280)", TESTSUITE_NODE3))
+                    .setup("/core-service=management/security-realm=PasswordRealm:add")
+                    .setup("/core-service=management/security-realm=PasswordRealm/server-identity=secret:add(value=\"cmVtQHRlZWpicGFzc3dkMQ==\")")
+                    .setup("/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:add(outbound-socket-binding-ref=binding-remote-ejb-connection,protocol=http-remoting,security-realm=PasswordRealm,username=remoteejbuser)")
+                    .teardown("/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:remove")
+                    .teardown("/core-service=management/security-realm=PasswordRealm:remove")
+                    .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-remote-ejb-connection:remove")
+                    .teardown("/subsystem=jgroups/channel=ee:write-attribute(name=cluster,value=ejb)")
+                    .parent()
+                    // clusterB
+                    .node(NODE_3, NODE_4)
+                    .setup("/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=%s)", TESTSUITE_MCAST1)
+                    .teardown("/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=\"${jboss.default.multicast.address:230.0.0.4}\"")
+            ;
 
-    public static class ClusterBServerSetup extends CLIBatchServerSetupTask {
-        public ClusterBServerSetup() {
-            super(new String[]{NODE_3, NODE_4},
-                    new String[]{
-                            String.format("/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=%s)", TESTSUITE_MCAST1),
-                    }, new String[]{
-                            "/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=\"${jboss.default.multicast.address:230.0.0.4}\"",
-                    });
         }
     }
 }
