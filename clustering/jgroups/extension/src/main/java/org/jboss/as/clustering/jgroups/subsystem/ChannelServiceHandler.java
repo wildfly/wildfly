@@ -43,8 +43,10 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.ServiceNameProvider;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * @author Paul Ferraro
@@ -69,8 +71,10 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
 
         // Install group services for channel
+        ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry(address);
+
         for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
-            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name)) {
+            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(registry, name)) {
                 JGroupsLogger.ROOT_LOGGER.debugf("Installing %s for channel %s", builder.getServiceName(), name);
                 builder.configure(context).build(target).install();
             }
@@ -87,8 +91,10 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
         context.removeService(JGroupsBindingFactory.createChannelBinding(name).getBinderServiceName());
         context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());
 
+        ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry(address);
+
         for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
-            for (ServiceNameProvider builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name)) {
+            for (ServiceNameProvider builder : provider.getBuilders(registry, name)) {
                 JGroupsLogger.ROOT_LOGGER.debugf("Removing %s for channel %s", builder.getServiceName(), name);
                 context.removeService(builder.getServiceName());
             }

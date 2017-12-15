@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.CLUSTERING_CAPABILITIES;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.*;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.*;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.*;
 
@@ -48,6 +48,8 @@ import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.CacheBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * @author Paul Ferraro
@@ -87,8 +89,10 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName), CONFIGURATION.getServiceName(cacheAddress), Configuration.class).build(target).install();
         new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(containerName, cacheName), CACHE.getServiceName(cacheAddress), Cache.class).build(target).install();
 
+        ServiceNameRegistry<ClusteringCacheRequirement> registry = new CapabilityServiceNameRegistry(cacheAddress);
+
         for (CacheBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
-            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(cacheAddress), containerName, cacheName)) {
+            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(registry, containerName, cacheName)) {
                 builder.configure(context).build(target).install();
             }
         }
@@ -102,8 +106,10 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         String containerName = containerAddress.getLastElement().getValue();
         String cacheName = cacheAddress.getLastElement().getValue();
 
+        ServiceNameRegistry<ClusteringCacheRequirement> registry = new CapabilityServiceNameRegistry(cacheAddress);
+
         for (CacheBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
-            for (ServiceNameProvider builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(cacheAddress), containerName, cacheName)) {
+            for (ServiceNameProvider builder : provider.getBuilders(registry, containerName, cacheName)) {
                 context.removeService(builder.getServiceName());
             }
         }
