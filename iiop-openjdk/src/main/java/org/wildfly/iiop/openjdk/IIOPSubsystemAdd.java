@@ -39,6 +39,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.InitialContext;
+import org.jboss.as.naming.service.DefaultNamespaceContextSelectorService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -173,6 +174,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
         if (securityDomain != null) {
             builder.addDependency(context.getCapabilityServiceName(Capabilities.CAPABILITY_LEGACY_SECURITY_DOMAIN, securityDomain, null));
+            builder.addDependency(DefaultNamespaceContextSelectorService.SERVICE_NAME);
         }
 
         // add dependencies to the ssl context services if needed.
