@@ -44,7 +44,8 @@ public @interface Version {
         EAP_6_2_0(EAP, 6, 2, 0),
         EAP_6_3_0(EAP, 6, 3, 0),
         EAP_6_4_0(EAP, 6, 4, 0),
-        EAP_7_0_0(EAP, 7, 0, 0);
+        EAP_7_0_0(EAP, 7, 0, 0),
+        EAP_7_1_0(EAP, 7, 1, 0);
 
 
         final String basename;
@@ -91,6 +92,19 @@ public @interface Version {
 
         public int getMicro() {
             return micro;
+        }
+
+        int compare(int major, int minor) {
+            if (this.major < major) {
+                return -1;
+            }
+            if (this.major > major) {
+                return  1;
+            }
+            if (this.minor == minor) {
+                return 0;
+            }
+            return this.minor < minor ? -1 : 1;
         }
     }
 }
