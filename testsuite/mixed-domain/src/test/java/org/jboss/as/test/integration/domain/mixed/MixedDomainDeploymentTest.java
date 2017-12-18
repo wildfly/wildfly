@@ -68,6 +68,7 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -234,6 +235,9 @@ public abstract class MixedDomainDeploymentTest {
 
     @Test
     public void testExplodedDeployment() throws Exception {
+        // TODO WFLY-9634
+        Assume.assumeFalse(supportManagedExplodedDeployment());
+
         ModelNode composite = createEmptyOperation(COMPOSITE, PathAddress.EMPTY_ADDRESS);
         ModelNode steps = composite.get(STEPS);
         ModelNode op = createAddOperation(ROOT_DEPLOYMENT_ADDRESS);
