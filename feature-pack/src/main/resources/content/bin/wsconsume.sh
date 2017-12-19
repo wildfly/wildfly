@@ -1,5 +1,7 @@
 #!/bin/sh
 
+GREP="grep"
+
 # Extract the directory and the program name
 # takes care of symlinks
 PRG="$0"
@@ -61,7 +63,7 @@ fi
 JAVA_OPTS="$JAVA_OPTS -Dprogram.name=wsconsume.sh"
 
 # Setup classpath
-JBOSS_CLASSPATH=$JAVA_HOME/lib/tools.jar:$JBOSS_HOME/jboss-modules.jar
+JBOSS_CLASSPATH=$JAVA_HOME/lib/tools.jar
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
@@ -70,10 +72,35 @@ if $cygwin; then
     JBOSS_CLASSPATH=`cygpath --path --windows "$JBOSS_CLASSPATH"`
 fi
 
+if [ "x$JBOSS_MODULEPATH" = "x" ]; then
+    JBOSS_MODULEPATH="$JBOSS_HOME/modules"
+fi
+
+# Process the JAVA_OPTS and fail the script of a java.security.manager was found
+SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "java\.security\.manager"`
+if [ "x$SECURITY_MANAGER_SET" != "x" ]; then
+    echo "ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable."
+    exit 1
+fi
+
+# remove -secmgr from JAVA_OPTS. This flag must reside in a different location
+NEW_SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "-secmgr"`
+if [ "xNEW_SECURITY_MANAGER_SET" != "x" ]; then
+    SECMGR="true"
+    JAVA_OPTS=${JAVA_OPTS/-secmgr/}
+fi
+
+# Set up the module arguments
+MODULE_OPTS=""
+if [ "$SECMGR" = "true" ]; then
+    MODULE_OPTS="-secmgr";
+fi
+
 # Execute the command
 eval \"$JAVA\" $JAVA_OPTS \
     -classpath \""$JBOSS_CLASSPATH"\" \
-    org.jboss.modules.Main \
-    -mp \""$JBOSS_HOME"/modules\" \
+    -jar \""$JBOSS_HOME"/jboss-modules.jar\" \
+    $MODULE_OPTS \
+    -mp \""${JBOSS_MODULEPATH}"\" \
     org.jboss.ws.tools.wsconsume \
     '"$@"'
