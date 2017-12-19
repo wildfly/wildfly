@@ -21,7 +21,11 @@
  */
 package org.jboss.as.test.integration.web.servlet.overlays;
 
+import java.io.File;
+import java.io.FilePermission;
 import java.net.URL;
+import java.nio.file.Paths;
+import java.util.PropertyPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -33,11 +37,14 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.path.BasicPath;
+import org.jboss.vfs.VirtualFilePermission;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  */
@@ -53,6 +60,12 @@ public class ServletResourceOverlaysTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "single.war");
         war.addAsWebResource(new StringAsset("a"), "a.txt");
         war.addAsWebResource(new StringAsset("b"), "b.txt");
+        war.addClass(PathAccessCheckServlet.class);
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new FilePermission("/-", "read"),
+                new PropertyPermission("java.io.tmpdir","read"),
+                new VirtualFilePermission(Paths.get(System.getProperty("java.io.tmpdir"), "noaccess.txt").toFile().getAbsolutePath(), "read")
+        ), "permissions.xml");
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test.jar");
         jar.addAsManifestResource(new StringAsset("b - overlay"), new BasicPath("resources", "b.txt"));
@@ -75,5 +88,28 @@ public class ServletResourceOverlaysTestCase {
         assertEquals("b", result);
         result = performCall(url, "c.txt");
         assertEquals("c - overlay", result);
+    }
+
+    /**
+     * Tests that a servlet (through the use of {@link javax.servlet.ServletContext#getResourceAsStream(String)} (or similar APIs)
+     * cannot access paths outside of the deployment
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testPathAccess() throws Exception {
+        final String aTxtPath = "a.txt";
+        final String aTxtAccess = performCall(url, "/check-path-access?path=a.txt&expected-accessible=true");
+        assertEquals("Unexpected result from call to " + aTxtPath, PathAccessCheckServlet.ACCESS_CHECKS_CORRECTLY_VALIDATED, aTxtAccess);
+        File fileUnderTest = Paths.get(System.getProperty("java.io.tmpdir"), "noaccess.txt").toFile();
+        fileUnderTest.createNewFile();
+
+        if ( fileUnderTest.exists() ){
+            final String pathOutsideOfDeployment = "/../../../../../../../../"+ fileUnderTest.getAbsolutePath();
+            final String outsidePathAccessCheck = performCall(url, "/check-path-access?path=" + pathOutsideOfDeployment + "&expected-accessible=false");
+            assertEquals("Unexpected result from call to " + pathOutsideOfDeployment, PathAccessCheckServlet.ACCESS_CHECKS_CORRECTLY_VALIDATED, outsidePathAccessCheck);
+        } else {
+            fail("Cannot create the file under test: " + fileUnderTest.getAbsolutePath() );
+        }
     }
 }
