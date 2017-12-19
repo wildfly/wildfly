@@ -53,6 +53,7 @@ public class ServletResourceOverlaysTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "single.war");
         war.addAsWebResource(new StringAsset("a"), "a.txt");
         war.addAsWebResource(new StringAsset("b"), "b.txt");
+        war.addClass(PathAccessCheckServlet.class);
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test.jar");
         jar.addAsManifestResource(new StringAsset("b - overlay"), new BasicPath("resources", "b.txt"));
@@ -75,5 +76,23 @@ public class ServletResourceOverlaysTestCase {
         assertEquals("b", result);
         result = performCall(url, "c.txt");
         assertEquals("c - overlay", result);
+    }
+
+    /**
+     * Tests that a servlet (through the use of {@link javax.servlet.ServletContext#getResourceAsStream(String)} (or similar APIs)
+     * cannot access paths outside of the deployment
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testPathAccess() throws Exception {
+        final String aTxtPath = "a.txt";
+        final String aTxtAccess = performCall(url, "/check-path-access?path=a.txt&expected-accessible=true");
+        assertEquals("Unexpected result from call to " + aTxtPath, PathAccessCheckServlet.ACCESS_CHECKS_CORRECTLY_VALIDATED, aTxtAccess);
+
+        final String pathOutsideOfDeployment = "/../../../../../../../..//etc/passwd";
+        final String outsidePathAccessCheck = performCall(url, "/check-path-access?path=" + pathOutsideOfDeployment + "&expected-accessible=false");
+        assertEquals("Unexpected result from call to " + pathOutsideOfDeployment, PathAccessCheckServlet.ACCESS_CHECKS_CORRECTLY_VALIDATED, outsidePathAccessCheck);
+
     }
 }
