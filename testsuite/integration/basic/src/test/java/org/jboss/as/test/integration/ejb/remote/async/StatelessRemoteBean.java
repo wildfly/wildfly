@@ -64,6 +64,12 @@ public class StatelessRemoteBean implements RemoteInterface, LocalInterface {
 
     @Override
     @Asynchronous
+    public Future<Void> alwaysFail() throws AppException {
+        throw new AppException("Intentionally thrown");
+    }
+
+    @Override
+    @Asynchronous
     public void passByReference(final String[] array) {
         try {
             if(!startLatch.await(5, TimeUnit.SECONDS)) {
