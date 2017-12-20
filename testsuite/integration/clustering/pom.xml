@@ -112,8 +112,7 @@
                                      to the includes in the following execution. -->
                                     <excludes>
                                         <exclude>${test-group}/dispatcher/**/*TestCase.java</exclude>
-                                        <exclude>${test-group}/ejb/forwarding/**/*TestCase.java</exclude>
-                                        <exclude>${test-group}/ejb/remote/**/*TestCase.java</exclude>
+                                        <exclude>${test-group}/ejb/**/*TestCase.java</exclude>
                                         <exclude>${test-group}/ejb2/**/*TestCase.java</exclude>
                                         <exclude>${test-group}/provider/**/*TestCase.java</exclude>
                                         <exclude>${test-group}/registry/**/*TestCase.java</exclude>
@@ -129,7 +128,7 @@
                                         <mcast2>${mcast2}</mcast2>
                                         <mcast3>${mcast3}</mcast3>
                                         <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
                                     </systemPropertyVariables>
@@ -148,8 +147,7 @@
                                     <reuseForks>false</reuseForks>
                                     <includes>
                                         <include>${test-group}/dispatcher/**/*TestCase.java</include>
-                                        <include>${test-group}/ejb/forwarding/**/*TestCase.java</include>
-                                        <include>${test-group}/ejb/remote/**/*TestCase.java</include>
+                                        <include>${test-group}/ejb/**/*TestCase.java</include>
                                         <include>${test-group}/ejb2/**/*TestCase.java</include>
                                         <include>${test-group}/provider/**/*TestCase.java</include>
                                         <include>${test-group}/registry/**/*TestCase.java</include>
