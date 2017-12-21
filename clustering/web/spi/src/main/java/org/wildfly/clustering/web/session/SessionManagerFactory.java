@@ -27,7 +27,7 @@ import org.wildfly.clustering.ee.Batch;
  * A factory for creating a session manager.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactory<L, B extends Batch> {
+public interface SessionManagerFactory<L, B extends Batch> extends AutoCloseable {
     /**
      * Create as session manager using the specified context and identifier factory.
      * @param context a session context
@@ -35,4 +35,7 @@ public interface SessionManagerFactory<L, B extends Batch> {
      * @return a new session manager
      */
     SessionManager<L, B> createSessionManager(SessionManagerConfiguration configuration);
+
+    @Override
+    void close();
 }
