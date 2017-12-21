@@ -27,10 +27,6 @@ package org.wildfly.clustering.web.session;
  * @author Paul Ferraro
  */
 public interface ActiveSessionStatistics {
-    /**
-     * @return the maximum number of active sessions allowed by this session manager
-     */
-    int getMaxActiveSessions();
 
     /**
      * @return The number of active sessions

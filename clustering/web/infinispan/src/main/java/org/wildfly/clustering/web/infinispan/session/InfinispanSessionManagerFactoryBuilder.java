@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
@@ -31,14 +32,14 @@ import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.function.Consumers;
+import org.jboss.as.clustering.function.Functions;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
@@ -49,6 +50,7 @@ import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilde
 import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.SuppliedValueService;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
@@ -127,8 +129,8 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability, L
         this.configurationBuilder.build(target).install();
         this.cacheBuilder.build(target).install();
 
-        Value<SessionManagerFactory<L, TransactionBatch>> value = () -> new InfinispanSessionManagerFactory<>(this);
-        ServiceBuilder<SessionManagerFactory<L, TransactionBatch>> builder = target.addService(this.getServiceName(), new ValueService<>(value))
+        Supplier<SessionManagerFactory<L, TransactionBatch>> value = () -> new InfinispanSessionManagerFactory<>(this);
+        ServiceBuilder<SessionManagerFactory<L, TransactionBatch>> builder = target.addService(this.getServiceName(), new SuppliedValueService<>(Functions.identity(), value, Consumers.close()))
                 .addDependency(this.cacheBuilder.getServiceName(), Cache.class, this.cache)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 ;

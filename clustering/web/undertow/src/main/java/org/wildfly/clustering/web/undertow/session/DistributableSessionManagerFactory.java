@@ -34,6 +34,7 @@ import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.undertow.IdentifierFactoryAdapter;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerConfiguration;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionListeners;
@@ -48,9 +49,11 @@ import io.undertow.servlet.api.ThreadSetupHandler;
 public class DistributableSessionManagerFactory implements io.undertow.servlet.api.SessionManagerFactory {
 
     private final SessionManagerFactory<LocalSessionContext, Batch> factory;
+    private final DistributableSessionManagerConfiguration config;
 
-    public DistributableSessionManagerFactory(SessionManagerFactory<LocalSessionContext, Batch> factory) {
+    public DistributableSessionManagerFactory(SessionManagerFactory<LocalSessionContext, Batch> factory, DistributableSessionManagerConfiguration config) {
         this.factory = factory;
+        this.config = config;
     }
 
     @Override
@@ -98,7 +101,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
                 };
             }
         });
-        RecordableSessionManagerStatistics statistics = (inactiveSessionStatistics != null) ? new DistributableSessionManagerStatistics(manager, inactiveSessionStatistics) : null;
+        RecordableSessionManagerStatistics statistics = (inactiveSessionStatistics != null) ? new DistributableSessionManagerStatistics(manager, inactiveSessionStatistics, this.config.getMaxActiveSessions()) : null;
         return new DistributableSessionManager(info.getDeploymentName(), manager, listeners, statistics);
     }
 }
