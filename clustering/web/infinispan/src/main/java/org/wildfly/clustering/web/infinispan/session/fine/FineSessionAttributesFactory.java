@@ -23,12 +23,12 @@
 package org.wildfly.clustering.web.infinispan.session.fine;
 
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
@@ -74,7 +74,12 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
         SessionAttributeNamesEntry entry = this.namesCache.get(new SessionAttributeNamesKey(id));
         if (entry != null) {
             ConcurrentMap<String, Integer> names = entry.getNames();
-            Map<SessionAttributeKey, V> attributes = this.attributeCache.getAdvancedCache().getAll(names.values().stream().map(attributeId -> new SessionAttributeKey(id, attributeId)).collect(Collectors.toSet()));
+            // ISPN-8459 Replace with org.infinispan.AdvancedCache#getAll once reliable (misses entries in dist caches on topology change)
+            Map<SessionAttributeKey, V> attributes = new HashMap<>();
+            for (Integer attributeId : names.values()) {
+                SessionAttributeKey sessionAttributeKey = new SessionAttributeKey(id, attributeId);
+                attributes.put(sessionAttributeKey, this.attributeCache.getAdvancedCache().get(sessionAttributeKey));
+            }
             Predicate<Map.Entry<String, V>> invalidAttribute = attribute -> {
                 V value = attribute.getValue();
                 if (value == null) {
