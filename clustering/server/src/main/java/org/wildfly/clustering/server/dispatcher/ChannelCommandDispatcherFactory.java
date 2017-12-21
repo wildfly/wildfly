@@ -64,6 +64,7 @@ import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 import org.wildfly.clustering.server.group.AddressableNode;
+import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
 import org.wildfly.clustering.service.concurrent.ServiceExecutor;
 import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
@@ -76,7 +77,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * all of which will share the same {@link MessageDispatcher} instance.
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory, RequestHandler, AutoCloseable, org.wildfly.clustering.server.group.Group<Address>, MembershipListener {
+public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDispatcherFactory, RequestHandler, org.wildfly.clustering.server.group.Group<Address>, MembershipListener {
 
     private static ThreadFactory createThreadFactory(Class<?> targetClass) {
         PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
@@ -150,7 +151,9 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
 
     @Override
     public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
-        this.contexts.put(id, Optional.ofNullable(context));
+        if (this.contexts.putIfAbsent(id, Optional.ofNullable(context)) != null) {
+            throw ClusteringServerLogger.ROOT_LOGGER.commandDispatcherAlreadyExists(id);
+        }
         CommandMarshaller<C> marshaller = new CommandDispatcherMarshaller<>(this.marshallingContext, id);
         CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalMember(), context);
         return new ChannelCommandDispatcher<>(this.dispatcher, marshaller, this, this.timeout, localDispatcher, () -> {

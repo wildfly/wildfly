@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
@@ -31,14 +32,14 @@ import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.function.Consumers;
+import org.jboss.as.clustering.function.Functions;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
@@ -49,6 +50,7 @@ import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilde
 import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.SuppliedValueService;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
@@ -57,13 +59,13 @@ import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 
-public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability> implements CapabilityServiceBuilder<SessionManagerFactory<TransactionBatch>>, InfinispanSessionManagerFactoryConfiguration<C> {
+public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability, L> implements CapabilityServiceBuilder<SessionManagerFactory<L, TransactionBatch>>, InfinispanSessionManagerFactoryConfiguration<C, L> {
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
 
-    private final SessionManagerFactoryConfiguration<C> configuration;
+    private final SessionManagerFactoryConfiguration<C, L> configuration;
     private final String containerName;
     private final CapabilityServiceBuilder<?> configurationBuilder;
     private final CapabilityServiceBuilder<?> cacheBuilder;
@@ -73,7 +75,7 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability> i
     private volatile ValueDependency<KeyAffinityServiceFactory> affinityFactory;
     private volatile ValueDependency<CommandDispatcherFactory> dispatcherFactory;
 
-    public InfinispanSessionManagerFactoryBuilder(SessionManagerFactoryConfiguration<C> configuration) {
+    public InfinispanSessionManagerFactoryBuilder(SessionManagerFactoryConfiguration<C, L> configuration) {
         this.configuration = configuration;
 
         ServiceName baseServiceName = ServiceName.JBOSS.append("infinispan");
@@ -112,7 +114,7 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability> i
     }
 
     @Override
-    public Builder<SessionManagerFactory<TransactionBatch>> configure(CapabilityServiceSupport support) {
+    public Builder<SessionManagerFactory<L, TransactionBatch>> configure(CapabilityServiceSupport support) {
         this.configurationBuilder.configure(support);
         this.cacheBuilder.configure(support);
 
@@ -123,12 +125,12 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability> i
     }
 
     @Override
-    public ServiceBuilder<SessionManagerFactory<TransactionBatch>> build(ServiceTarget target) {
+    public ServiceBuilder<SessionManagerFactory<L, TransactionBatch>> build(ServiceTarget target) {
         this.configurationBuilder.build(target).install();
         this.cacheBuilder.build(target).install();
 
-        Value<SessionManagerFactory<TransactionBatch>> value = () -> new InfinispanSessionManagerFactory<>(this);
-        ServiceBuilder<SessionManagerFactory<TransactionBatch>> builder = target.addService(this.getServiceName(), new ValueService<>(value))
+        Supplier<SessionManagerFactory<L, TransactionBatch>> value = () -> new InfinispanSessionManagerFactory<>(this);
+        ServiceBuilder<SessionManagerFactory<L, TransactionBatch>> builder = target.addService(this.getServiceName(), new SuppliedValueService<>(Functions.identity(), value, Consumers.close()))
                 .addDependency(this.cacheBuilder.getServiceName(), Cache.class, this.cache)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 ;
@@ -137,7 +139,7 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability> i
     }
 
     @Override
-    public SessionManagerFactoryConfiguration<C> getSessionManagerFactoryConfiguration() {
+    public SessionManagerFactoryConfiguration<C, L> getSessionManagerFactoryConfiguration() {
         return this.configuration;
     }
 
