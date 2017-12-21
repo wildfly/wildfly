@@ -28,9 +28,8 @@ import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -39,6 +38,7 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
@@ -57,7 +57,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SharedSessionFailoverTestCase extends ClusterAbstractTestCase {
+public class SharedSessionTestCase extends ClusterAbstractTestCase {
 
     private static final String MODULE = "shared";
     private static final String MODULE_1 = "war1";
@@ -80,13 +80,15 @@ public class SharedSessionFailoverTestCase extends ClusterAbstractTestCase {
         jar.addClass(Mutable.class);
         WebArchive war1 = ShrinkWrap.create(WebArchive.class, MODULE_1 + ".war");
         war1.addClass(SimpleServlet.class);
+        war1.setWebXML(AbstractWebFailoverTestCase.class.getPackage(), "web.xml");
         WebArchive war2 = ShrinkWrap.create(WebArchive.class, MODULE_2 + ".war");
         war2.addClass(SimpleServlet.class);
+        war2.setWebXML(AbstractWebFailoverTestCase.class.getPackage(), "web.xml");
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, MODULE + ".ear");
         ear.addAsLibraries(jar);
         ear.addAsModule(war1);
         ear.addAsModule(war2);
-        ear.addAsManifestResource(SharedSessionFailoverTestCase.class.getPackage(), "jboss-all.xml", "jboss-all.xml");
+        ear.addAsManifestResource(SharedSessionTestCase.class.getPackage(), "jboss-all.xml", "jboss-all.xml");
         return ear;
     }
 
@@ -104,36 +106,25 @@ public class SharedSessionFailoverTestCase extends ClusterAbstractTestCase {
         URI uri22 = SimpleServlet.createURI(baseURI2.resolve(MODULE_2 + "/"));
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            HttpResponse response = client.execute(new HttpGet(uri11));
-            try {
+            int expected = 1;
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri11))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
+                Assert.assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
             }
 
-            response = client.execute(new HttpGet(uri12));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri12))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
+                Assert.assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
             }
 
-            response = client.execute(new HttpGet(uri21));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri21))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(3, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
+                Assert.assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
             }
 
-            response = client.execute(new HttpGet(uri22));
-            try {
+            try (CloseableHttpResponse response = client.execute(new HttpGet(uri22))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(4, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
+                Assert.assertEquals(expected++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
             }
         }
     }
