@@ -110,10 +110,10 @@ public class PropertiesAttributeDefinition extends MapAttributeDefinition {
 
         public Builder(String name) {
             super(name);
-            this.allowNull = true;
+            setRequired(false);
             this.setAllowNullElement(false);
-            this.attributeMarshaller = MARSHALLER;
-            this.parser = PARSER;
+            setAttributeMarshaller(MARSHALLER);
+            setAttributeParser(PARSER);
         }
 
         public Builder(PropertiesAttributeDefinition basis) {
@@ -123,7 +123,7 @@ public class PropertiesAttributeDefinition extends MapAttributeDefinition {
         @Override
         public PropertiesAttributeDefinition build() {
             if (this.elementValidator == null) {
-                this.elementValidator = new ModelTypeValidator(ModelType.STRING, this.allowNull, this.allowExpression);
+                this.elementValidator = new ModelTypeValidator(ModelType.STRING, this.isAllowNull(), this.isAllowExpression());
             }
             return new PropertiesAttributeDefinition(this);
         }
