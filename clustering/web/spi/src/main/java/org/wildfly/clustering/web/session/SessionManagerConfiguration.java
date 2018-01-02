@@ -25,12 +25,10 @@ import javax.servlet.ServletContext;
 
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.LocalContextFactory;
 
-public interface SessionManagerConfiguration<C> {
+public interface SessionManagerConfiguration {
     ServletContext getServletContext();
     IdentifierFactory<String> getIdentifierFactory();
     SessionExpirationListener getExpirationListener();
-    LocalContextFactory<C> getLocalContextFactory();
     Recordable<ImmutableSession> getInactiveSessionRecorder();
 }

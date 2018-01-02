@@ -27,7 +27,7 @@ public class CommandDispatcherBean implements CommandDispatcher<Node> {
 
     @PostConstruct
     public void init() {
-        this.dispatcher = this.factory.createCommandDispatcher("CommandDispatcherTestCase", this.factory.getGroup().getLocalMember());
+        this.dispatcher = this.factory.createCommandDispatcher("CommandDispatcherTestCase", this.getContext());
     }
 
     @PreDestroy
@@ -58,5 +58,10 @@ public class CommandDispatcherBean implements CommandDispatcher<Node> {
     @Override
     public void close() {
         this.dispatcher.close();
+    }
+
+    @Override
+    public Node getContext() {
+        return this.factory.getGroup().getLocalMember();
     }
 }

@@ -47,7 +47,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
 
-    final C context;
+    private final C context;
     private final Node node;
     private final ExecutorService executor;
 
@@ -64,6 +64,11 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
         this.node = node;
         this.context = context;
         this.executor = executor;
+    }
+
+    @Override
+    public C getContext() {
+        return this.context;
     }
 
     @Override
@@ -89,12 +94,7 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
 
     @Override
     public <R> Future<R> submitOnNode(final Command<R, ? super C> command, Node node) {
-        Callable<R> task = new Callable<R>() {
-            @Override
-            public R call() throws Exception {
-                return command.execute(LocalCommandDispatcher.this.context);
-            }
-        };
+        Callable<R> task = () -> command.execute(this.context);
         return this.executor.submit(task);
     }
 
