@@ -22,6 +22,12 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALLOW_EXECUTION;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
@@ -30,8 +36,12 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.EXECUTE_IN_WORKER;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REFRESH_INTERVAL;
 import static org.jboss.as.ejb3.subsystem.StrictMaxPoolResourceDefinition.DERIVE_SIZE;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -42,6 +52,7 @@ import org.jboss.as.controller.transform.CombinedTransformer;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -87,8 +98,22 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
 
     private static void registerTransformers_1_2_1_and_1_3_0(SubsystemTransformerRegistration subsystemRegistration, ModelVersion version) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        builder.getAttributeBuilder().addRename(DEFAULT_SFSB_CACHE, EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE);
-        builder.getAttributeBuilder().addRename(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, DEFAULT_SFSB_CACHE);
+
+        StatefulCacheRefTransformer statefulCacheRefTransformer = new StatefulCacheRefTransformer();
+        builder.setCustomResourceTransformer(statefulCacheRefTransformer);
+
+        for (String name : Arrays.asList(WRITE_ATTRIBUTE_OPERATION, UNDEFINE_ATTRIBUTE_OPERATION, READ_ATTRIBUTE_OPERATION)) {
+            builder.addOperationTransformationOverride(name)
+                    .inheritResourceAttributeDefinitions()
+                    .setCustomOperationTransformer(statefulCacheRefTransformer)
+                    .end();
+        }
+
+        builder.addOperationTransformationOverride(ADD)
+                .inheritResourceAttributeDefinitions()
+                .setCustomOperationTransformer(new AddStatefulCacheRefTransformer())
+                .end();
+
         //This used to behave as 'true' and it is now defaulting as 'true'
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS);
@@ -301,4 +326,70 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode().set(TimeUnit.SECONDS.name()), true), EJB3SubsystemModel.IDLE_TIMEOUT_UNIT)
         ;
     }
+
+    /**
+     * This Combined Transformer manages this transformation from EAP7 to previous versions (attribute definition/xml markup):
+     *
+     * DEFAULT_SFSB_CACHE / cache-ref --> DEFAULT_CLUSTERED_SFSB_CACHE / clustered-cache-ref
+     * DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE / passivation-disabled-cache-ref --> DEFAULT_SFSB_CACHE / cache-ref
+     *
+     */
+    private static class StatefulCacheRefTransformer implements CombinedTransformer {
+        private final Map<String, String> renames;
+
+        public StatefulCacheRefTransformer(){
+            renames = new HashMap<>();
+            renames.put(DEFAULT_SFSB_CACHE, EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE);
+            renames.put(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, EJB3SubsystemModel.DEFAULT_SFSB_CACHE);
+        }
+
+        @Override
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
+            if (operation != null && !(operation.hasDefined(OPERATION_HEADERS) && operation.get(OPERATION_HEADERS, "push-to-servers").asBoolean(false)) ){
+                String originalAttribute = Operations.getAttributeName(operation);
+                if (renames.containsKey(originalAttribute)){
+                    operation = operation.clone();
+                    operation.get(NAME).set(renames.get(originalAttribute));
+                }
+            }
+
+            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+        }
+
+        @Override
+        public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+            Resource untransformedResource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            ModelNode untransformedModel = Resource.Tools.readModel(untransformedResource);
+
+            String statefulCache = untransformedModel.get(DEFAULT_SFSB_CACHE).asString();
+            String statefulPassivationDisabledCache = untransformedModel.get(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE).asString();
+
+            ModelNode transformed = resource.getModel();
+            transformed.get(DEFAULT_SFSB_CACHE).set(statefulPassivationDisabledCache);
+            transformed.get(EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE).set(statefulCache);
+            transformed.remove(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
+
+            final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+            childContext.processChildren(resource);
+        }
+    }
+
+    private static class AddStatefulCacheRefTransformer implements OperationTransformer{
+
+        @Override
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
+            if (operation != null && !(operation.hasDefined(OPERATION_HEADERS) && operation.get(OPERATION_HEADERS, "push-to-servers").asBoolean(false)) ){
+                operation = operation.clone();
+
+                String statefulCache = operation.get(DEFAULT_SFSB_CACHE).asString();
+                String statefulPassivationDisabledCache = operation.get(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE).asString();
+
+                operation.get(DEFAULT_SFSB_CACHE).set(statefulPassivationDisabledCache);
+                operation.get(EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE).set(statefulCache);
+                operation.remove(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
+            }
+            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+        }
+    }
+
 }

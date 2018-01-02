@@ -3,7 +3,7 @@
         <stateless>
             <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
         </stateless>
-        <stateful default-access-timeout="${prop.default-access-timeout:5000}" cache-ref="distributable" clustered-cache-ref="distributable"/>
+        <stateful default-access-timeout="${prop.default-access-timeout:5000}" cache-ref="distributable" clustered-cache-ref="distributable" passivation-disabled-cache-ref="simple"/>
         <singleton default-access-timeout="${prop.default-access-timeout:5000}"/>
     </session-bean>
     <entity-bean>
