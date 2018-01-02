@@ -46,6 +46,7 @@ import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
+import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
 import org.jboss.as.jpa.config.JPADeploymentSettings;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
@@ -365,8 +366,8 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
         final AnnotationValue puName = annotation.value("unitName");
         String searchName = null;   // note:  a null searchName will match the first PU definition found
 
-        if (puName != null) {
-            searchName = puName.asString();
+        if (puName != null && (searchName = puName.asString()) != null) {
+            searchName = SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit).replaceProperties(searchName);
         }
         ROOT_LOGGER.debugf("persistence unit search for unitName=%s referenced from class=%s (annotation=%s)", searchName, classDescription.getClassName(), annotation.toString());
         PersistenceUnitMetadata pu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, searchName);
