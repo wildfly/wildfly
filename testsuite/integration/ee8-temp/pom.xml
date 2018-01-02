@@ -45,6 +45,12 @@
             <artifactId>wildfly-arquillian-container-managed</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.faces</groupId>
+            <artifactId>jboss-jsf-api_2.3_spec</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>

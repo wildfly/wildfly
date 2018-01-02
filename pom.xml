@@ -89,7 +89,13 @@
         <version.com.google.guava>20.0</version.com.google.guava>
         <version.com.h2database>1.4.193</version.com.h2database>
         <version.com.microsoft.azure>5.0.0</version.com.microsoft.azure>
-        <version.com.sun.faces>2.2.13.SP5</version.com.sun.faces>
+        <!--
+            Be careful, the EE 7 jsf-impl 2.2.x version is temporarily being hardcoded in
+            the com.sun.jsf-impl module.xml file until EE 8 support is complete. For JSF
+            2.2.x component upgrades, please update the hardcoded version in the module.xml
+            file. For JSF 2.3.x component upgrades, please update the property here.
+        -->
+        <version.com.sun.faces>2.3.3.SP1</version.com.sun.faces>
         <version.com.sun.istack>3.0.5</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
         <version.commons-beanutils>1.9.3</version.commons-beanutils>
@@ -184,6 +190,7 @@
         <version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>1.0.11.Final</version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>
         <version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>1.0.1.Final</version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>
         <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>2.2.14</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>
+        <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.3_spec>2.3.3.SP1</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.3_spec>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>1.0.2.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>1.0.2.Final</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>1.0.1.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>
@@ -5396,6 +5403,12 @@
                 <groupId>org.jboss.spec.javax.faces</groupId>
                 <artifactId>jboss-jsf-api_2.2_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.faces</groupId>
+                <artifactId>jboss-jsf-api_2.3_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.faces.jboss-jsf-api_2.3_spec}</version>
             </dependency>
 
             <dependency>
