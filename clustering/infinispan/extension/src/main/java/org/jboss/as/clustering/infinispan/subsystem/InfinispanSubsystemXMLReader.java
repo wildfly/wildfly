@@ -644,10 +644,11 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
             }
             case BACKUP_FOR: {
-                if (this.schema.since(InfinispanSchema.VERSION_2_0)) {
+                if (this.schema.since(InfinispanSchema.VERSION_2_0) && !this.schema.since(InfinispanSchema.VERSION_5_0)) {
                     this.parseBackupFor(reader, address, operations);
                     break;
                 }
+                throw ParseUtils.unexpectedElement(reader);
             }
             case PARTITION_HANDLING: {
                 if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
@@ -813,7 +814,6 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         PathAddress address = cacheAddress.append(BackupForResourceDefinition.PATH);
         ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));

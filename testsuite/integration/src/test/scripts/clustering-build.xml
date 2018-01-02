@@ -214,8 +214,6 @@
         <!-- create a named backup cache based on repl for LON:web:dist and mark as backup-for -->
         <ts.config-as.copy-cache name="wildfly-xsite-SFO-0-backupFor" container.name="web"
                                        cache-type="distributed-cache" cache.base="dist" cache.name="LON"/>
-        <ts.config-as.add-xsite-backup-for name="wildfly-xsite-SFO-0-backupFor" container="web"
-                                       cache-type="distributed-cache" cache="LON" remote-site="LON" remote-cache="dist"/>
         <ts.config-as.configure-multicast-ttl name="wildfly-xsite-SFO-0-backupFor" mcast.ttl="${mcast.ttl}"/>
 
     </target>

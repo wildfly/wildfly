@@ -63,7 +63,6 @@
                     <take-offline after-failures="3" min-wait="10000"/>
                 </backup>
             </backups>
-            <backup-for remote-cache="users" remote-site="LON"/>
         </replicated-cache>
         <distributed-cache name="dist" mode="SYNC" l1-lifespan="1200000" owners="4" remote-timeout="35000" segments="12" statistics-enabled="false">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
@@ -91,7 +90,6 @@
                     <take-offline after-failures="3" min-wait="10000"/>
                 </backup>
             </backups>
-            <backup-for remote-cache="users" remote-site="LON"/>
         </distributed-cache>
     </cache-container>
 </subsystem>
