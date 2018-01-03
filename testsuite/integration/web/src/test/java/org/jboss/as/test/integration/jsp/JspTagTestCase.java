@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.jsp;
 
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -33,9 +36,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.net.URL;
-import java.util.concurrent.TimeUnit;
-
 /**
  * See WFLY-2690
  */
@@ -43,12 +43,12 @@ import java.util.concurrent.TimeUnit;
 @RunAsClient
 public class JspTagTestCase {
 
-    private static final String RESULT = "This is a header\n" +
-            "\n" +
-            "\n" +
-            "<div>tag</div>\n" +
-            "\n" +
-            "Static content\n";
+    private static final String RESULT = "This is a header" + System.lineSeparator() +
+            System.lineSeparator() +
+            System.lineSeparator() +
+            "<div>tag</div>" + System.lineSeparator() +
+            System.lineSeparator() +
+            "Static content" + System.lineSeparator();
 
     @Deployment
     public static WebArchive deploy() {
