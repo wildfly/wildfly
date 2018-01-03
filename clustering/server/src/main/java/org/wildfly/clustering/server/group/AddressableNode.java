@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.server.group;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 
@@ -36,7 +37,7 @@ import org.wildfly.clustering.server.Addressable;
 public class AddressableNode implements Node, Addressable, Comparable<AddressableNode>, Serializable {
     private static final long serialVersionUID = -7707210981640344598L;
 
-    private final Address address;
+    private transient Address address;
     private final String name;
     private final InetSocketAddress socketAddress;
 
@@ -83,5 +84,15 @@ public class AddressableNode implements Node, Addressable, Comparable<Addressabl
     @Override
     public InetSocketAddress getSocketAddress() {
         return this.socketAddress;
+    }
+
+    private void writeObject(java.io.ObjectOutputStream output) throws IOException {
+        output.defaultWriteObject();
+        AddressSerializer.INSTANCE.write(output, this.address);
+    }
+
+    private void readObject(java.io.ObjectInputStream input) throws IOException, ClassNotFoundException {
+        input.defaultReadObject();
+        this.address = AddressSerializer.INSTANCE.read(input);
     }
 }
