@@ -21,19 +21,37 @@
  */
 package org.wildfly.clustering.web.infinispan.session.fine;
 
+import java.util.function.Function;
+
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
+import org.wildfly.clustering.web.infinispan.SessionKeyFormat;
 
 /**
- * Externalizer for {@link SessionAttributeNamesKey}.
+ * Resolver for {@link SessionAttributeNamesKey}.
  * @author Paul Ferraro
  */
-@MetaInfServices({ Externalizer.class, KeyFormat.class })
-public class SessionAttributeNamesKeyExternalizer extends SessionKeyExternalizer<SessionAttributeNamesKey> {
+public enum SessionAttributeNamesKeyResolver implements Function<String, SessionAttributeNamesKey> {
+    INSTANCE;
 
-    public SessionAttributeNamesKeyExternalizer() {
-        super(SessionAttributeNamesKey.class, SessionAttributeNamesKey::new);
+    @Override
+    public SessionAttributeNamesKey apply(String sessionId) {
+        return new SessionAttributeNamesKey(sessionId);
+    }
+
+    @MetaInfServices(Externalizer.class)
+    public static class SessionAttributeNamesKeyExternalizer extends SessionKeyExternalizer<SessionAttributeNamesKey> {
+        public SessionAttributeNamesKeyExternalizer() {
+            super(SessionAttributeNamesKey.class, INSTANCE);
+        }
+    }
+
+    @MetaInfServices(KeyFormat.class)
+    public static class SessionAttributeNamesKeyFormat extends SessionKeyFormat<SessionAttributeNamesKey> {
+        public SessionAttributeNamesKeyFormat() {
+            super(SessionAttributeNamesKey.class, INSTANCE);
+        }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session.fine;
+package org.wildfly.clustering.web.infinispan;
 
-import java.io.IOException;
+import java.util.function.BiFunction;
+import java.util.function.ToIntFunction;
 
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.wildfly.clustering.infinispan.spi.persistence.DelimitedKeyFormat;
 
 /**
- * Unit test for {@link SessionAttributeNamesKeyExternalizer}.
  * @author Paul Ferraro
  */
-public class SessionAttributeNamesKeyExternalizerTestCase {
+public class IndexedSessionKeyFormat<K extends Key<String>> extends DelimitedKeyFormat<K> {
 
-    @Test
-    public void test() throws ClassNotFoundException, IOException {
-        new ExternalizerTester<>(new SessionAttributeNamesKeyExternalizer()).test(new SessionAttributeNamesKey("ABC123"));
+    protected IndexedSessionKeyFormat(Class<K> targetClass, ToIntFunction<K> index, BiFunction<String, Integer, K> resolver) {
+        super(targetClass, "#", parts -> resolver.apply(parts[0], Integer.valueOf(parts[1])), key -> new String[] { key.getValue(), Integer.toString(index.applyAsInt(key)) });
     }
 }

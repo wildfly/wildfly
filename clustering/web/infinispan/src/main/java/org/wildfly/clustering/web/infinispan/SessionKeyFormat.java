@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session.coarse;
+package org.wildfly.clustering.web.infinispan;
 
-import java.io.IOException;
+import java.util.function.Function;
 
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
 
 /**
- * Unit test for {@link SessionAttributesKeyExternalizer}.
+ * Base {@link org.wildfly.clustering.infinispan.spi.persistence.KeyFormat} for cache keys containing session identifiers.
  * @author Paul Ferraro
  */
-public class SessionAttributesKeyExternalizerTestCase {
+public class SessionKeyFormat<K extends Key<String>> extends SimpleKeyFormat<K> {
 
-    @Test
-    public void test() throws ClassNotFoundException, IOException {
-        new ExternalizerTester<>(new SessionAttributesKeyExternalizer()).test(new SessionAttributesKey("ABC123"));
+    protected SessionKeyFormat(Class<K> targetClass, Function<String, K> resolver) {
+        super(targetClass, resolver, Key::getValue);
     }
 }

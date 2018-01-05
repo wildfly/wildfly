@@ -20,21 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.web.infinispan.session.fine;
 
 import java.io.IOException;
 
 import org.junit.Test;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.web.infinispan.session.fine.SessionAttributeKeyResolver.SessionAttributeKeyExternalizer;
+import org.wildfly.clustering.web.infinispan.session.fine.SessionAttributeKeyResolver.SessionAttributeKeyFormat;
 
 /**
- * Unit test for {@link SessionCreationMetaDataKeyExternalizer}.
+ * Unit test for {@link SessionAttributeKeyResolver}.
  * @author Paul Ferraro
  */
-public class SessionCreationMetaDataKeyExternalizerTestCase {
+public class SessionAttributeKeyResolverTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        new ExternalizerTester<>(new SessionCreationMetaDataKeyExternalizer()).test(new SessionCreationMetaDataKey("ABC123"));
+        SessionAttributeKey key = new SessionAttributeKey("ABC123", 10);
+        new ExternalizerTester<>(new SessionAttributeKeyExternalizer()).test(key);
+        new KeyFormatTester<>(new SessionAttributeKeyFormat()).test(key);
     }
 }

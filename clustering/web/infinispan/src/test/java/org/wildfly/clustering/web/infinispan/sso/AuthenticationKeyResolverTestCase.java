@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.web.infinispan.sso;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
+import java.io.IOException;
+
+import org.junit.Test;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
+import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.web.infinispan.sso.AuthenticationKeyResolver.AuthenticationKeyExternalizer;
+import org.wildfly.clustering.web.infinispan.sso.AuthenticationKeyResolver.AuthenticationKeyFormat;
 
 /**
- * Externalizer for {@link SessionAccessMetaDataKey}
+ * Unit test for {@link AuthenticationKeyResolver}.
  * @author Paul Ferraro
  */
-@MetaInfServices({ Externalizer.class, KeyFormat.class })
-public class SessionAccessMetaDataKeyExternalizer extends SessionKeyExternalizer<SessionAccessMetaDataKey> {
+public class AuthenticationKeyResolverTestCase {
 
-    public SessionAccessMetaDataKeyExternalizer() {
-        super(SessionAccessMetaDataKey.class, SessionAccessMetaDataKey::new);
+    @Test
+    public void test() throws ClassNotFoundException, IOException {
+        AuthenticationKey key = new AuthenticationKey("ABC123");
+        new ExternalizerTester<>(new AuthenticationKeyExternalizer()).test(key);
+        new KeyFormatTester<>(new AuthenticationKeyFormat()).test(key);
     }
 }

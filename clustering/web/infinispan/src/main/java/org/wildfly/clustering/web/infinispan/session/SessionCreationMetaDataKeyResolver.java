@@ -22,18 +22,37 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.util.function.Function;
+
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
+import org.wildfly.clustering.web.infinispan.SessionKeyFormat;
 
 /**
+ * Resolver for a {@link SessionCreationMetaDataKey}.
  * @author Paul Ferraro
  */
-@MetaInfServices({ Externalizer.class, KeyFormat.class })
-public class SessionCreationMetaDataKeyExternalizer extends SessionKeyExternalizer<SessionCreationMetaDataKey> {
+public enum SessionCreationMetaDataKeyResolver implements Function<String, SessionCreationMetaDataKey> {
+    INSTANCE;
 
-    public SessionCreationMetaDataKeyExternalizer() {
-        super(SessionCreationMetaDataKey.class, SessionCreationMetaDataKey::new);
+    @Override
+    public SessionCreationMetaDataKey apply(String sessionId) {
+        return new SessionCreationMetaDataKey(sessionId);
+    }
+
+    @MetaInfServices(Externalizer.class)
+    public static class SessionCreationMetaDataKeyExternalizer extends SessionKeyExternalizer<SessionCreationMetaDataKey> {
+        public SessionCreationMetaDataKeyExternalizer() {
+            super(SessionCreationMetaDataKey.class, INSTANCE);
+        }
+    }
+
+    @MetaInfServices(KeyFormat.class)
+    public static class SessionCreationMetaDataKeyFormat extends SessionKeyFormat<SessionCreationMetaDataKey> {
+        public SessionCreationMetaDataKeyFormat() {
+            super(SessionCreationMetaDataKey.class, INSTANCE);
+        }
     }
 }

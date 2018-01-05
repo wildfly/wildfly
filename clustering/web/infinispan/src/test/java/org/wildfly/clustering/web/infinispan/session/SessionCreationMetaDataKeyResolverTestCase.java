@@ -25,16 +25,21 @@ package org.wildfly.clustering.web.infinispan.session;
 import java.io.IOException;
 
 import org.junit.Test;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKeyResolver.SessionCreationMetaDataKeyExternalizer;
+import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKeyResolver.SessionCreationMetaDataKeyFormat;
 
 /**
- * Unit test for {@link SessionAccessMetaDataKeyExternalizer}.
+ * Unit test for {@link SessionCreationMetaDataKeyResolver}.
  * @author Paul Ferraro
  */
-public class SessionAccessMetaDataKeyExternalizerTestCase {
+public class SessionCreationMetaDataKeyResolverTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        new ExternalizerTester<>(new SessionAccessMetaDataKeyExternalizer()).test(new SessionAccessMetaDataKey("ABC123"));
+        SessionCreationMetaDataKey key = new SessionCreationMetaDataKey("ABC123");
+        new ExternalizerTester<>(new SessionCreationMetaDataKeyExternalizer()).test(key);
+        new KeyFormatTester<>(new SessionCreationMetaDataKeyFormat()).test(key);
     }
 }

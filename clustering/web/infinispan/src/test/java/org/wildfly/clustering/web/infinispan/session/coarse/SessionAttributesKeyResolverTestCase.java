@@ -20,21 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.sso.coarse;
+package org.wildfly.clustering.web.infinispan.session.coarse;
 
 import java.io.IOException;
 
 import org.junit.Test;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesKeyResolver.SessionAttributesKeyExternalizer;
+import org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesKeyResolver.SessionAttributesKeyFormat;
 
 /**
- * Unit test for {@link CoarseSessionsKeyExternalizer}.
+ * Unit test for {@link SessionAttributesKeyResolver}.
  * @author Paul Ferraro
  */
-public class CoarseSessionsKeyExternalizerTestCase {
+public class SessionAttributesKeyResolverTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        new ExternalizerTester<>(new CoarseSessionsKeyExternalizer()).test(new CoarseSessionsKey("ABC123"));
+        SessionAttributesKey key = new SessionAttributesKey("ABC123");
+        new ExternalizerTester<>(new SessionAttributesKeyExternalizer()).test(key);
+        new KeyFormatTester<>(new SessionAttributesKeyFormat()).test(key);
     }
 }

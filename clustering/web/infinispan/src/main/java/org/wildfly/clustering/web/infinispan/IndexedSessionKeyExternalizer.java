@@ -29,22 +29,22 @@ import java.util.function.BiFunction;
 import java.util.function.ToIntFunction;
 
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
-import org.wildfly.clustering.infinispan.spi.persistence.DelimitedKeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class IndexedSessionKeyExternalizer<K extends Key<String>> extends DelimitedKeyFormat<K> implements Externalizer<K> {
+public class IndexedSessionKeyExternalizer<K extends Key<String>> implements Externalizer<K> {
 
     private static final Externalizer<String> EXTERNALIZER = SessionKeyExternalizer.EXTERNALIZER;
 
+    private final Class<K> targetClass;
     private final BiFunction<String, Integer, K> resolver;
     private final ToIntFunction<K> index;
 
     protected IndexedSessionKeyExternalizer(Class<K> targetClass, ToIntFunction<K> index, BiFunction<String, Integer, K> resolver) {
-        super(targetClass, "#", parts -> resolver.apply(parts[0], Integer.valueOf(parts[1])), key -> new String[] { key.getValue(), Integer.toString(index.applyAsInt(key)) });
+        this.targetClass = targetClass;
         this.index = index;
         this.resolver = resolver;
     }
@@ -60,5 +60,10 @@ public class IndexedSessionKeyExternalizer<K extends Key<String>> extends Delimi
         String id = EXTERNALIZER.readObject(input);
         int index = IndexExternalizer.VARIABLE.readData(input);
         return this.resolver.apply(id, index);
+    }
+
+    @Override
+    public Class<K> getTargetClass() {
+        return this.targetClass;
     }
 }

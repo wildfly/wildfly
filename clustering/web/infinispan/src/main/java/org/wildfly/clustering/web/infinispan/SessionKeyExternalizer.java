@@ -27,10 +27,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ServiceLoader;
 import java.util.function.Function;
-import java.util.stream.StreamSupport;
 
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
-import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.web.IdentifierExternalizerProvider;
 
@@ -38,14 +36,22 @@ import org.wildfly.clustering.web.IdentifierExternalizerProvider;
  * Base externalizer for cache keys containing session identifiers.
  * @author Paul Ferraro
  */
-public abstract class SessionKeyExternalizer<K extends Key<String>> extends SimpleKeyFormat<K> implements Externalizer<K> {
+public class SessionKeyExternalizer<K extends Key<String>> implements Externalizer<K> {
 
-    static final Externalizer<String> EXTERNALIZER = StreamSupport.stream(ServiceLoader.load(IdentifierExternalizerProvider.class, IdentifierExternalizerProvider.class.getClassLoader()).spliterator(), false).findFirst().get().getExternalizer();
+    static final Externalizer<String> EXTERNALIZER = loadIdentifierExternalizer(IdentifierExternalizerProvider.class.getClassLoader());
 
+    private static Externalizer<String> loadIdentifierExternalizer(ClassLoader loader) {
+        for (IdentifierExternalizerProvider provider : ServiceLoader.load(IdentifierExternalizerProvider.class, loader)) {
+            return provider.getExternalizer();
+        }
+        throw new IllegalStateException();
+    }
+
+    private final Class<K> targetClass;
     private final Function<String, K> resolver;
 
     protected SessionKeyExternalizer(Class<K> targetClass, Function<String, K> resolver) {
-        super(targetClass, resolver, Key::getValue);
+        this.targetClass = targetClass;
         this.resolver = resolver;
     }
 
@@ -57,5 +63,10 @@ public abstract class SessionKeyExternalizer<K extends Key<String>> extends Simp
     @Override
     public K readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         return this.resolver.apply(EXTERNALIZER.readObject(input));
+    }
+
+    @Override
+    public Class<K> getTargetClass() {
+        return this.targetClass;
     }
 }
