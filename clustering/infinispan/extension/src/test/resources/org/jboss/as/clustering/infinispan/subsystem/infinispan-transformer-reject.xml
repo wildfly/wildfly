@@ -55,7 +55,7 @@
                 <property name="location">location</property>
                 <property name="property2">location2</property>
             </store>
-            <state-transfer timeout="60000" chunk-size="10000"/>
+            <state-transfer timeout="0" chunk-size="10000"/>
             <backups>
                 <backup site="NYC" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="false"/>
                 <backup site="SFO" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="true"/>
