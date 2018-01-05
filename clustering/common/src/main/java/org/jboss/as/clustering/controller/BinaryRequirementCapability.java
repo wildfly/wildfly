@@ -25,7 +25,6 @@ package org.jboss.as.clustering.controller;
 
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.wildfly.clustering.service.BinaryRequirement;
 
@@ -36,7 +35,6 @@ import org.wildfly.clustering.service.BinaryRequirement;
 public class BinaryRequirementCapability implements Capability {
 
     private final RuntimeCapability<Void> definition;
-    private final BinaryRequirement requirement;
 
     /**
      * Creates a new capability based on the specified requirement
@@ -51,18 +49,16 @@ public class BinaryRequirementCapability implements Capability {
      * @param requirement the requirement basis
      * @param configurator configures the capability
      */
-    public BinaryRequirementCapability(BinaryRequirement requirement, UnaryOperator<RuntimeCapability.Builder<Void>> configurator) {
-        this.definition = configurator.apply(RuntimeCapability.Builder.of(requirement.getName(), true).setServiceType(requirement.getType())).build();
-        this.requirement = requirement;
+    public BinaryRequirementCapability(final BinaryRequirement requirement, UnaryOperator<RuntimeCapability.Builder<Void>> configurator) {
+        RuntimeCapability.Builder<Void> builder = RuntimeCapability.Builder.of(requirement.getName(), true)
+                .setServiceType(requirement.getType())
+                .setDynamicNameMapper(address -> new String[] { address.getParent().getLastElement().getValue(), address.getLastElement().getValue() })
+                ;
+        this.definition = configurator.apply(builder).build();
     }
 
     @Override
     public RuntimeCapability<Void> getDefinition() {
         return this.definition;
-    }
-
-    @Override
-    public RuntimeCapability<Void> resolve(PathAddress address) {
-        return RuntimeCapability.Builder.of(this.requirement.resolve(address.getParent().getLastElement().getValue(), address.getLastElement().getValue()), this.definition.getCapabilityServiceValueType()).build();
     }
 }

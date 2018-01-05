@@ -38,7 +38,6 @@ public class UnaryRequirementCapability implements Capability {
     /**
      * Creates a new capability based on the specified unary requirement
      * @param requirement the unary requirement basis
-     * @param requirements a list of requirements of this capability
      */
     public UnaryRequirementCapability(UnaryRequirement requirement) {
         this(requirement, UnaryOperator.identity());
