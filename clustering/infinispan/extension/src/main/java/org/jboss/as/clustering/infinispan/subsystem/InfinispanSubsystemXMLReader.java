@@ -720,10 +720,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case ENABLED: {
-                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                    if (this.schema == InfinispanSchema.VERSION_4_0) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
-                    ROOT_LOGGER.attributeDeprecated(attribute.getLocalName(), reader.getLocalName());
+                    readAttribute(reader, i, operation, StateTransferResourceDefinition.Attribute.ENABLED);
                     break;
                 }
                 case TIMEOUT: {

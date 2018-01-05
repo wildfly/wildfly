@@ -735,9 +735,20 @@
     </xs:complexType>
 
     <xs:complexType name="state-transfer">
+        <xs:attribute name="enabled" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Enables initial state transfer.
+                    Disabling initial state transfer can leave cache vulnerable to data-loss, especially when using distribution mode with a minimal number of owners.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="timeout" type="xs:long" default="240000">
             <xs:annotation>
-                <xs:documentation>The maximum amount of time (ms) to wait for state from neighboring caches, before throwing an exception and aborting startup.</xs:documentation>
+                <xs:documentation>
+                    The maximum amount of time (in ms) to wait for state from neighboring caches, before throwing an exception and aborting startup.
+                    A timeout of 0 means the cache will be available immediately after joining, and initial state transfer is non-blocking.
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="chunk-size" type="xs:integer" default="512">
@@ -1062,5 +1073,4 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-
 </xs:schema>

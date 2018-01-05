@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.StateTransferResourceDefinition.Attribute.CHUNK_SIZE;
+import static org.jboss.as.clustering.infinispan.subsystem.StateTransferResourceDefinition.Attribute.ENABLED;
 import static org.jboss.as.clustering.infinispan.subsystem.StateTransferResourceDefinition.Attribute.TIMEOUT;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -37,7 +38,7 @@ import org.wildfly.clustering.service.Builder;
  * @author Paul Ferraro
  */
 public class StateTransferBuilder extends ComponentBuilder<StateTransferConfiguration> {
-
+    private volatile boolean enabled;
     private volatile int chunkSize;
     private volatile long timeout;
 
@@ -48,14 +49,16 @@ public class StateTransferBuilder extends ComponentBuilder<StateTransferConfigur
     @Override
     public StateTransferConfiguration getValue() {
         return new ConfigurationBuilder().clustering().stateTransfer()
+                .fetchInMemoryState(this.enabled)
+                .awaitInitialTransfer(this.timeout > 0)
                 .chunkSize(this.chunkSize)
-                .fetchInMemoryState(true)
                 .timeout(this.timeout)
                 .create();
     }
 
     @Override
     public Builder<StateTransferConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.enabled = ENABLED.resolveModelAttribute(context, model).asBoolean();
         this.chunkSize = CHUNK_SIZE.resolveModelAttribute(context, model).asInt();
         this.timeout = TIMEOUT.resolveModelAttribute(context, model).asLong();
         return this;

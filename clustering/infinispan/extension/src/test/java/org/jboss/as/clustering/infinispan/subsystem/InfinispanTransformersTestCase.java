@@ -382,6 +382,13 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         PathAddress subsystemAddress = PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH);
         PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
 
+        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version) && !InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            for (PathElement path : Arrays.asList(DistributedCacheResourceDefinition.WILDCARD_PATH, ReplicatedCacheResourceDefinition.WILDCARD_PATH)) {
+                PathAddress cacheAddress = containerAddress.append(path);
+                config.addFailedAttribute(cacheAddress.append(StateTransferResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(StateTransferResourceDefinition.Attribute.ENABLED.getName()));
+            }
+        }
+
         if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
             for (PathElement path : Arrays.asList(DistributedCacheResourceDefinition.WILDCARD_PATH, ReplicatedCacheResourceDefinition.WILDCARD_PATH)) {
                 PathAddress cacheAddress = containerAddress.append(path);
