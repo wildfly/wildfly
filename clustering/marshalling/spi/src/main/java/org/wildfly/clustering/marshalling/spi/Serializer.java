@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,31 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.group;
+package org.wildfly.clustering.marshalling.spi;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-
-import org.jgroups.util.UUID;
-import org.junit.Assert;
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
 
 /**
- * Unit tests for {@link AddressableNodeExternalizer}.
+ * Writes/reads an object to/from a binary stream.
  * @author Paul Ferraro
  */
-public class AddressableNodeExternalizerTestCase {
+public interface Serializer<T> {
 
-    @Test
-    public void test() throws ClassNotFoundException, IOException {
-        new ExternalizerTester<>(new AddressableNodeExternalizer(), AddressableNodeExternalizerTestCase::assertEquals).test(new AddressableNode(UUID.randomUUID(), "node1", new InetSocketAddress(InetAddress.getLoopbackAddress(), Short.MAX_VALUE)));
-    }
+    /**
+     * Writes the specified object to the specified output stream
+     * @param output the data output stream
+     * @param value an object to serialize
+     * @throws IOException if an I/O error occurs
+     */
+    void write(DataOutput output, T value) throws IOException;
 
-    static void assertEquals(AddressableNode node1, AddressableNode node2) {
-        Assert.assertEquals(node1, node2);
-        Assert.assertEquals(node1.getName(), node2.getName());
-        Assert.assertEquals(node1.getSocketAddress(), node2.getSocketAddress());
-    }
+    /**
+     * Reads an object from the specified input stream.
+     * @param input a data input stream
+     * @return the deserialized object
+     * @throws IOException if an I/O error occurs
+     */
+    T read(DataInput input) throws IOException;
 }

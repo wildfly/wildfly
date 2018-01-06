@@ -24,8 +24,6 @@ package org.wildfly.clustering.server.group;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
@@ -34,35 +32,21 @@ import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.persistence.BinaryKeyFormat;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.Serializer;
 import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.SerializerExternalizer;
 
 /**
  * Marshalling externalizer for an {@link AddressableNode}.
  * @author Paul Ferraro
  */
-@MetaInfServices({ Externalizer.class, KeyFormat.class })
-public class AddressableNodeExternalizer extends BinaryKeyFormat<AddressableNode> implements Externalizer<AddressableNode> {
+public enum AddressableNodeSerializer implements Serializer<AddressableNode> {
 
-    public AddressableNodeExternalizer() {
-        super(AddressableNode.class, AddressableNodeExternalizer::read, AddressableNodeExternalizer::write);
-    }
+    INSTANCE;
 
-    private static AddressableNode read(DataInput input) throws IOException {
-        try {
-            Address jgroupsAddress = org.jgroups.util.Util.readAddress(input);
-            String name = input.readUTF();
-            byte[] address = new byte[IndexExternalizer.UNSIGNED_BYTE.readData(input)];
-            input.readFully(address);
-            int port = IndexExternalizer.UNSIGNED_SHORT.readData(input);
-            return new AddressableNode(jgroupsAddress, name, new InetSocketAddress(InetAddress.getByAddress(address), port));
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
-    }
-
-    private static void write(DataOutput output, AddressableNode node) throws IOException {
+    @Override
+    public void write(DataOutput output, AddressableNode node) throws IOException {
+        // Awkward exception handling due to JGRP-2242
         try {
             org.jgroups.util.Util.writeAddress(node.getAddress(), output);
             output.writeUTF(node.getName());
@@ -80,12 +64,33 @@ public class AddressableNodeExternalizer extends BinaryKeyFormat<AddressableNode
     }
 
     @Override
-    public AddressableNode readObject(ObjectInput input) throws IOException {
-        return read(input);
+    public AddressableNode read(DataInput input) throws IOException {
+        // Awkward exception handling due to JGRP-2242
+        try {
+            Address jgroupsAddress = org.jgroups.util.Util.readAddress(input);
+            String name = input.readUTF();
+            byte[] address = new byte[IndexExternalizer.UNSIGNED_BYTE.readData(input)];
+            input.readFully(address);
+            int port = IndexExternalizer.UNSIGNED_SHORT.readData(input);
+            return new AddressableNode(jgroupsAddress, name, new InetSocketAddress(InetAddress.getByAddress(address), port));
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
     }
 
-    @Override
-    public void writeObject(ObjectOutput output, AddressableNode node) throws IOException {
-        write(output, node);
+    @MetaInfServices(Externalizer.class)
+    public static class AddressableNodeExternalizer extends SerializerExternalizer<AddressableNode> {
+        public AddressableNodeExternalizer() {
+            super(AddressableNode.class, INSTANCE);
+        }
+    }
+
+    @MetaInfServices(KeyFormat.class)
+    public static class AddressableNodeKeyFormat extends BinaryKeyFormat<AddressableNode> {
+        public AddressableNodeKeyFormat() {
+            super(AddressableNode.class, INSTANCE);
+        }
     }
 }
