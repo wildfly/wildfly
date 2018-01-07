@@ -33,32 +33,32 @@ import java.util.function.Supplier;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.IdentifierExternalizer;
+import org.wildfly.clustering.marshalling.spi.Serializer;
+import org.wildfly.clustering.web.IdentifierSerializer;
 
 import io.undertow.server.session.SecureRandomSessionIdGenerator;
 
 /**
- * Unit test for {@link IdentifierExternalizer}.
+ * Unit test for {@link IdentifierSerializer}.
  *
  * @author Paul Ferraro
  */
-public class IdentifierExternalizerTestCase {
+public class IdentifierSerializerTestCase {
 
     @Test
-    public void testUTF8() throws ClassNotFoundException, IOException {
-        test(IdentifierExternalizer.UTF8, () -> UUID.randomUUID().toString());
+    public void testUTF8() throws IOException {
+        test(IdentifierSerializer.UTF8, () -> UUID.randomUUID().toString());
     }
 
     @Test
-    public void testBase64() throws ClassNotFoundException, IOException {
+    public void testBase64() throws IOException {
         io.undertow.server.session.SessionIdGenerator generator = new SecureRandomSessionIdGenerator();
-        test(IdentifierExternalizer.BASE64, () -> generator.createSessionId());
+        test(IdentifierSerializer.BASE64, () -> generator.createSessionId());
     }
 
     @Test
-    public void testHex() throws ClassNotFoundException, IOException {
-        test(IdentifierExternalizer.HEX, () -> {
+    public void testHex() throws IOException {
+        test(IdentifierSerializer.HEX, () -> {
             // Adapted from org.apache.catalina.util.StandardSessionIdGenerator
             byte[] buffer = new byte[16];
             int sessionIdLength = 16;
@@ -89,15 +89,15 @@ public class IdentifierExternalizerTestCase {
         });
     }
 
-    private static void test(Externalizer<String> externalizer, Supplier<String> generator) throws IOException, ClassNotFoundException {
+    private static void test(Serializer<String> externalizer, Supplier<String> generator) throws IOException {
         for (int i = 0; i < 100; ++i) {
             String id = generator.get();
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             try (ObjectOutputStream output = new ObjectOutputStream(bytes)) {
-                externalizer.writeObject(output, id);
+                externalizer.write(output, id);
             }
             try (ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray()))) {
-                Assert.assertEquals(id, externalizer.readObject(input));
+                Assert.assertEquals(id, externalizer.read(input));
             }
         }
     }

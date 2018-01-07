@@ -22,28 +22,28 @@
 
 package org.wildfly.clustering.web;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Base64;
 
 import javax.xml.bind.DatatypeConverter;
 
-import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.Serializer;
 
 /**
  * Strategies for externalizing a session identifier.
  * @author Paul Ferraro
  */
-public enum IdentifierExternalizer implements Externalizer<String> {
+public enum IdentifierSerializer implements Serializer<String> {
     UTF8() {
         @Override
-        public void writeObject(ObjectOutput output, String id) throws IOException {
+        public void write(DataOutput output, String id) throws IOException {
             output.writeUTF(id);
         }
 
         @Override
-        public String readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        public String read(DataInput input) throws IOException {
             return input.readUTF();
         }
     },
@@ -52,16 +52,16 @@ public enum IdentifierExternalizer implements Externalizer<String> {
      */
     BASE64() {
         @Override
-        public void writeObject(ObjectOutput output, String id) throws IOException {
+        public void write(DataOutput output, String id) throws IOException {
             byte[] bytes = Base64.getUrlDecoder().decode(id);
             output.writeByte(bytes.length);
             output.write(bytes);
         }
 
         @Override
-        public String readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        public String read(DataInput input) throws IOException {
             byte[] decoded = new byte[input.readUnsignedByte()];
-            input.read(decoded);
+            input.readFully(decoded);
             return Base64.getUrlEncoder().encodeToString(decoded);
         }
     },
@@ -70,23 +70,18 @@ public enum IdentifierExternalizer implements Externalizer<String> {
      */
     HEX() {
         @Override
-        public void writeObject(ObjectOutput output, String id) throws IOException {
+        public void write(DataOutput output, String id) throws IOException {
             byte[] bytes = DatatypeConverter.parseHexBinary(id);
             output.writeByte(bytes.length);
             output.write(bytes);
         }
 
         @Override
-        public String readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        public String read(DataInput input) throws IOException {
             byte[] decoded = new byte[input.readUnsignedByte()];
-            input.read(decoded);
+            input.readFully(decoded);
             return DatatypeConverter.printHexBinary(decoded);
         }
     },
     ;
-
-    @Override
-    public Class<String> getTargetClass() {
-        return String.class;
-    }
 }

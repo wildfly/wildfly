@@ -23,18 +23,18 @@
 package org.wildfly.clustering.web.undertow;
 
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.IdentifierExternalizer;
-import org.wildfly.clustering.web.IdentifierExternalizerProvider;
+import org.wildfly.clustering.marshalling.spi.Serializer;
+import org.wildfly.clustering.web.IdentifierSerializer;
+import org.wildfly.clustering.web.IdentifierSerializerProvider;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(IdentifierExternalizerProvider.class)
-public class UndertowIdentifierExternalizerProvider implements IdentifierExternalizerProvider {
+@MetaInfServices(IdentifierSerializerProvider.class)
+public class UndertowIdentifierSerializerProvider implements IdentifierSerializerProvider {
 
     @Override
-    public Externalizer<String> getExternalizer() {
-        return IdentifierExternalizer.BASE64;
+    public Serializer<String> getSerializer() {
+        return IdentifierSerializer.BASE64;
     }
 }

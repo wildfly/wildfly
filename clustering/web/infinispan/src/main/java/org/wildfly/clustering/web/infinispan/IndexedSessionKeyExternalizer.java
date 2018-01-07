@@ -37,8 +37,6 @@ import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
  */
 public class IndexedSessionKeyExternalizer<K extends Key<String>> implements Externalizer<K> {
 
-    private static final Externalizer<String> EXTERNALIZER = SessionKeyExternalizer.EXTERNALIZER;
-
     private final Class<K> targetClass;
     private final BiFunction<String, Integer, K> resolver;
     private final ToIntFunction<K> index;
@@ -51,13 +49,13 @@ public class IndexedSessionKeyExternalizer<K extends Key<String>> implements Ext
 
     @Override
     public void writeObject(ObjectOutput output, K key) throws IOException {
-        EXTERNALIZER.writeObject(output, key.getValue());
+        SessionKeyExternalizer.SESSION_ID_SERIALIZER.write(output, key.getValue());
         IndexExternalizer.VARIABLE.writeData(output, this.index.applyAsInt(key));
     }
 
     @Override
-    public K readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        String id = EXTERNALIZER.readObject(input);
+    public K readObject(ObjectInput input) throws IOException {
+        String id = SessionKeyExternalizer.SESSION_ID_SERIALIZER.read(input);
         int index = IndexExternalizer.VARIABLE.readData(input);
         return this.resolver.apply(id, index);
     }

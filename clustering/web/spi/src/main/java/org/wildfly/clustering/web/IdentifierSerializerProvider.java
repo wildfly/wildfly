@@ -20,21 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan;
+package org.wildfly.clustering.web;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.IdentifierExternalizer;
-import org.wildfly.clustering.web.IdentifierExternalizerProvider;
+import org.wildfly.clustering.marshalling.spi.Serializer;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(IdentifierExternalizerProvider.class)
-public class TestIdentifierExternalizerProvider implements IdentifierExternalizerProvider {
-
-    @Override
-    public Externalizer<String> getExternalizer() {
-        return IdentifierExternalizer.UTF8;
-    }
+public interface IdentifierSerializerProvider {
+    Serializer<String> getSerializer();
 }
