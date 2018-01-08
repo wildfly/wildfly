@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan.group;
+package org.wildfly.clustering.ejb.infinispan.bean;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -28,17 +28,22 @@ import java.util.UUID;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.UUIDSessionID;
 import org.junit.Test;
+import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKeySerializer.InfinispanBeanKeyExternalizer;
+import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKeySerializer.InfinispanBeanKeyFormat;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
 
 /**
- * Unit test for {@link InfinispanBeanGroupKeyExternalizer}.
+ * Unit test for {@link InfinispanBeanKeySerializer}.
  * @author Paul Ferraro
  */
-public class InfinispanBeanGroupKeyExternalizerTestCase {
+public class InfinispanBeanKeySerializerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        SessionID id = new UUIDSessionID(UUID.randomUUID());
-        new ExternalizerTester<>(new InfinispanBeanGroupKeyExternalizer()).test(new InfinispanBeanGroupKey<>(id));
+        InfinispanBeanKey<SessionID> key = new InfinispanBeanKey<>(new UUIDSessionID(UUID.randomUUID()));
+
+        new ExternalizerTester<>(new InfinispanBeanKeyExternalizer()).test(key);
+        new KeyFormatTester<>(new InfinispanBeanKeyFormat()).test(key);
     }
 }

@@ -20,25 +20,43 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan.bean;
+package org.wildfly.clustering.ejb.infinispan;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.UUID;
 
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.UUIDSessionID;
 import org.junit.Test;
+import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer.BasicSessionIDExternalizer;
+import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer.UUIDSessionIDExternalizer;
+import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer.UnknownSessionIDExternalizer;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
 
 /**
- * Unit test for {@link InfinispanBeanKeyExternalizer}.
+ * Unit test for {@link SessionIDSerializer}.
  * @author Paul Ferraro
  */
-public class InfinispanBeanKeyExternalizerTestCase {
+public class SessionIDSerializerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        SessionID id = new UUIDSessionID(UUID.randomUUID());
-        new ExternalizerTester<>(new InfinispanBeanKeyExternalizer()).test(new InfinispanBeanKey<>(id));
+        UUID uuid = UUID.randomUUID();
+
+        new ExternalizerTester<>(new UUIDSessionIDExternalizer()).test(new UUIDSessionID(uuid));
+
+        ByteBuffer buffer = ByteBuffer.wrap(new byte[20]);
+        buffer.putInt(0x07000000);
+        buffer.putLong(uuid.getMostSignificantBits());
+        buffer.putLong(uuid.getLeastSignificantBits());
+
+        new ExternalizerTester<>(new BasicSessionIDExternalizer()).test(SessionID.createSessionID(buffer.array()));
+
+        buffer = ByteBuffer.wrap(new byte[16]);
+        buffer.putLong(uuid.getMostSignificantBits());
+        buffer.putLong(uuid.getLeastSignificantBits());
+
+        new ExternalizerTester<>(new UnknownSessionIDExternalizer()).test(SessionID.createSessionID(buffer.array()));
     }
 }

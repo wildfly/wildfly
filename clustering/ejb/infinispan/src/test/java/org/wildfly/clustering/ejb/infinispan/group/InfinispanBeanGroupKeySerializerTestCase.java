@@ -20,43 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ejb.infinispan.group;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.UUID;
 
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.UUIDSessionID;
 import org.junit.Test;
-import org.wildfly.clustering.ejb.infinispan.SessionIDExternalizer.BasicSessionIDExternalizer;
-import org.wildfly.clustering.ejb.infinispan.SessionIDExternalizer.UUIDSessionIDExternalizer;
-import org.wildfly.clustering.ejb.infinispan.SessionIDExternalizer.UnknownSessionIDExternalizer;
+import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupKeySerializer.InfinispanBeanGroupKeyExternalizer;
+import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupKeySerializer.InfinispanBeanGroupKeyFormat;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
 
 /**
- * Unit test for {@link SessionIDExternalizer}.
+ * Unit test for {@link InfinispanBeanGroupKeySerializer}.
  * @author Paul Ferraro
  */
-public class SessionIDExternalizerTestCase {
+public class InfinispanBeanGroupKeySerializerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        UUID uuid = UUID.randomUUID();
+        InfinispanBeanGroupKey<SessionID> key = new InfinispanBeanGroupKey<>(new UUIDSessionID(UUID.randomUUID()));
 
-        new ExternalizerTester<>(new UUIDSessionIDExternalizer()).test(new UUIDSessionID(uuid));
-
-        ByteBuffer buffer = ByteBuffer.wrap(new byte[20]);
-        buffer.putInt(0x07000000);
-        buffer.putLong(uuid.getMostSignificantBits());
-        buffer.putLong(uuid.getLeastSignificantBits());
-
-        new ExternalizerTester<>(new BasicSessionIDExternalizer()).test(SessionID.createSessionID(buffer.array()));
-
-        buffer = ByteBuffer.wrap(new byte[16]);
-        buffer.putLong(uuid.getMostSignificantBits());
-        buffer.putLong(uuid.getLeastSignificantBits());
-
-        new ExternalizerTester<>(new UnknownSessionIDExternalizer()).test(SessionID.createSessionID(buffer.array()));
+        new ExternalizerTester<>(new InfinispanBeanGroupKeyExternalizer()).test(key);
+        new KeyFormatTester<>(new InfinispanBeanGroupKeyFormat()).test(key);
     }
 }

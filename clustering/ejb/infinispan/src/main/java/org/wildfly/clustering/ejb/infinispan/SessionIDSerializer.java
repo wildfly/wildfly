@@ -21,66 +21,61 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Base64;
 
 import org.jboss.ejb.client.BasicSessionID;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.UUIDSessionID;
 import org.jboss.ejb.client.UnknownSessionID;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
+import org.wildfly.clustering.marshalling.spi.Serializer;
+import org.wildfly.clustering.marshalling.spi.SerializerExternalizer;
 
 /**
  * @author Paul Ferraro
  */
-public class SessionIDExternalizer extends SimpleKeyFormat<SessionID> implements Externalizer<SessionID> {
-
-    public static final SessionIDExternalizer INSTANCE = new SessionIDExternalizer(SessionID.class);
-
-    SessionIDExternalizer(Class<SessionID> targetClass) {
-        super(targetClass, value -> SessionID.createSessionID(Base64.getDecoder().decode(value)), id -> Base64.getEncoder().encodeToString(id.getEncodedForm()));
-    }
+public enum SessionIDSerializer implements Serializer<SessionID> {
+    INSTANCE;
 
     @Override
-    public void writeObject(ObjectOutput output, SessionID id) throws IOException {
+    public void write(DataOutput output, SessionID id) throws IOException {
         byte[] encoded = id.getEncodedForm();
         IndexSerializer.UNSIGNED_BYTE.writeInt(output, encoded.length);
         output.write(encoded);
     }
 
     @Override
-    public SessionID readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public SessionID read(DataInput input) throws IOException {
         byte[] encoded = new byte[IndexSerializer.UNSIGNED_BYTE.readInt(input)];
         input.readFully(encoded);
         return SessionID.createSessionID(encoded);
     }
 
     @MetaInfServices(Externalizer.class)
-    public static class BasicSessionIDExternalizer extends SessionIDExternalizer {
+    public static class BasicSessionIDExternalizer extends SerializerExternalizer<SessionID> {
         @SuppressWarnings("unchecked")
         public BasicSessionIDExternalizer() {
-            super((Class<SessionID>) (Class<?>) BasicSessionID.class);
+            super((Class<SessionID>) (Class<?>) BasicSessionID.class, INSTANCE);
         }
     }
 
     @MetaInfServices(Externalizer.class)
-    public static class UnknownSessionIDExternalizer extends SessionIDExternalizer {
+    public static class UnknownSessionIDExternalizer extends SerializerExternalizer<SessionID> {
         @SuppressWarnings("unchecked")
         public UnknownSessionIDExternalizer() {
-            super((Class<SessionID>) (Class<?>) UnknownSessionID.class);
+            super((Class<SessionID>) (Class<?>) UnknownSessionID.class, INSTANCE);
         }
     }
 
     @MetaInfServices(Externalizer.class)
-    public static class UUIDSessionIDExternalizer extends SessionIDExternalizer {
+    public static class UUIDSessionIDExternalizer extends SerializerExternalizer<SessionID> {
         @SuppressWarnings("unchecked")
         public UUIDSessionIDExternalizer() {
-            super((Class<SessionID>) (Class<?>) UUIDSessionID.class);
+            super((Class<SessionID>) (Class<?>) UUIDSessionID.class, INSTANCE);
         }
     }
 }
