@@ -293,7 +293,7 @@ public class PropertySQLProviderFactory implements SQLProvider.Factory {
 
         @Override
         public String tryReleaseBackupLockSQL() {
-            return format(sql("try-release-lock"), tableName, LIVE_LOCK_ROW_ID);
+            return format(sql("try-release-lock"), tableName, BACKUP_LOCK_ROW_ID);
         }
 
         @Override
