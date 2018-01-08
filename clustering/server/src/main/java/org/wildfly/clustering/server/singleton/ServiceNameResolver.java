@@ -21,34 +21,40 @@
  */
 package org.wildfly.clustering.server.singleton;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.util.function.Function;
 
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.StringExternalizer;
 
 /**
  * {@link Externalizer} for a {@link ServiceName}.
  * @author Paul Ferraro
  */
-@MetaInfServices({ Externalizer.class, KeyFormat.class })
-public class ServiceNameExternalizer extends SimpleKeyFormat<ServiceName> implements Externalizer<ServiceName> {
-
-    public ServiceNameExternalizer() {
-        super(ServiceName.class, ServiceName::parse, ServiceName::getCanonicalName);
-    }
+public enum ServiceNameResolver implements Function<String, ServiceName> {
+    RESOLVER;
 
     @Override
-    public void writeObject(ObjectOutput output, ServiceName name) throws IOException {
-        output.writeUTF(name.getCanonicalName());
+    public ServiceName apply(String name) {
+        return ServiceName.parse(name);
     }
 
-    @Override
-    public ServiceName readObject(ObjectInput input) throws IOException {
-        return ServiceName.parse(input.readUTF());
+    static final Function<ServiceName, String> PARSER = ServiceName::getCanonicalName;
+
+    @MetaInfServices(Externalizer.class)
+    public static class ServiceNameExternalizer extends StringExternalizer<ServiceName> {
+        public ServiceNameExternalizer() {
+            super(ServiceName.class, RESOLVER, PARSER);
+        }
+    }
+
+    @MetaInfServices(KeyFormat.class)
+    public static class ServiceNameKeyFormat extends SimpleKeyFormat<ServiceName> {
+        public ServiceNameKeyFormat() {
+            super(ServiceName.class, RESOLVER, PARSER);
+        }
     }
 }

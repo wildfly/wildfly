@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,35 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.group;
+package org.wildfly.clustering.server.singleton;
 
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
-import org.wildfly.clustering.marshalling.Externalizer;
+import org.jboss.msc.service.ServiceName;
+import org.junit.Test;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
+import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.server.singleton.ServiceNameResolver.ServiceNameExternalizer;
+import org.wildfly.clustering.server.singleton.ServiceNameResolver.ServiceNameKeyFormat;
 
 /**
- * Marshalling externalizer for a {@link LocalNode}.
+ * Unit test for {@link ServiceNameResolver}.
  * @author Paul Ferraro
  */
-@MetaInfServices({ Externalizer.class, KeyFormat.class })
-public class LocalNodeExternalizer extends SimpleKeyFormat<LocalNode> implements Externalizer<LocalNode> {
+public class ServiceNameResolverTestCase {
 
-    public LocalNodeExternalizer() {
-        super(LocalNode.class, LocalNode::new, LocalNode::getName);
-    }
+    @Test
+    public void test() throws ClassNotFoundException, IOException {
+        ServiceName name = ServiceName.JBOSS.append("service");
 
-    @Override
-    public void writeObject(ObjectOutput output, LocalNode node) throws IOException {
-        output.writeUTF(node.getName());
-    }
-
-    @Override
-    public LocalNode readObject(ObjectInput input) throws IOException {
-        return new LocalNode(input.readUTF());
+        new ExternalizerTester<>(new ServiceNameExternalizer()).test(name);
+        new KeyFormatTester<>(new ServiceNameKeyFormat()).test(name);
     }
 }

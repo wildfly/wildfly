@@ -20,22 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.singleton;
+package org.wildfly.clustering.server.group;
 
 import java.io.IOException;
 
-import org.jboss.msc.service.ServiceName;
 import org.junit.Test;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.server.group.LocalNodeResolver.LocalNodeExternalizer;
+import org.wildfly.clustering.server.group.LocalNodeResolver.LocalNodeKeyFormat;
 
 /**
- * Unit test for {@link ServiceNameExternalizer}.
+ * Unit test for {@link LocalNodeResolver}.
  * @author Paul Ferraro
  */
-public class ServiceNameExternalizerTestCase {
+public class LocalNodeResolverTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        new ExternalizerTester<>(new ServiceNameExternalizer()).test(ServiceName.JBOSS.append("service"));
+        LocalNode node = new LocalNode("name");
+
+        new ExternalizerTester<>(new LocalNodeExternalizer()).test(node);
+        new KeyFormatTester<>(new LocalNodeKeyFormat()).test(node);
     }
 }
