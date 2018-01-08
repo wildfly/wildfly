@@ -30,13 +30,11 @@ import java.security.Policy;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 import javax.security.jacc.WebResourcePermission;
 import javax.security.jacc.WebRoleRefPermission;
@@ -156,12 +154,11 @@ public class JACCAuthorizationManager implements AuthorizationManager {
 
         roles.addAll(principalVersusRolesMap.getOrDefault(account.getPrincipal().getName(), Collections.emptySet()));
 
-        List<Principal> list = new ArrayList<>();
-        Function<String, Principal> mapper = roleName -> (Principal) () -> roleName;
+        Principal[] principals = new Principal[roles.size()];
+        int index = 0;
         for (String role : roles) {
-            Principal principal = mapper.apply(role);
-            list.add(principal);
+            principals[index++] = () -> role;
         }
-        return list.toArray(new Principal[0]);
+        return principals;
     }
 }
