@@ -30,7 +30,7 @@ import java.util.SortedSet;
 import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * Externalizers for implementations of {@link SortedSet}.
@@ -58,7 +58,7 @@ public class SortedSetExternalizer<T extends SortedSet<Object>> implements Exter
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         @SuppressWarnings("unchecked")
         Comparator<? super Object> comparator = (Comparator<? super Object>) input.readObject();
-        int size = IndexExternalizer.VARIABLE.readData(input);
+        int size = IndexSerializer.VARIABLE.readInt(input);
         return CollectionExternalizer.readCollection(input, this.factory.apply(comparator), size);
     }
 

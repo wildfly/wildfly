@@ -30,7 +30,7 @@ import java.time.MonthDay;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * Externalizer for a {@link MonthDay}.
@@ -41,13 +41,13 @@ public class MonthDayExternalizer implements Externalizer<MonthDay> {
     @Override
     public void writeObject(ObjectOutput output, MonthDay monthDay) throws IOException {
         DefaultExternalizer.MONTH.cast(Month.class).writeObject(output, monthDay.getMonth());
-        IndexExternalizer.UNSIGNED_BYTE.writeData(output, monthDay.getDayOfMonth());
+        IndexSerializer.UNSIGNED_BYTE.writeInt(output, monthDay.getDayOfMonth());
     }
 
     @Override
     public MonthDay readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         Month month = DefaultExternalizer.MONTH.cast(Month.class).readObject(input);
-        int day = IndexExternalizer.UNSIGNED_BYTE.readData(input);
+        int day = IndexSerializer.UNSIGNED_BYTE.readInt(input);
         return MonthDay.of(month, day);
     }
 

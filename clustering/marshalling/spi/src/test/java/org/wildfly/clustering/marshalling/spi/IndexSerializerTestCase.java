@@ -34,10 +34,10 @@ import java.util.stream.IntStream;
 import org.junit.Test;
 
 /**
- * Unit test for {@link IndexExternalizer}.
+ * Unit test for {@link IndexSerializer}.
  * @author Paul Ferraro
  */
-public class IndexExternalizerTestCase {
+public class IndexSerializerTestCase {
 
     @Test
     public void test() throws IOException {
@@ -54,36 +54,36 @@ public class IndexExternalizerTestCase {
         IntStream.Builder builder = IntStream.builder();
 
         try {
-            builder.add(size(IndexExternalizer.UNSIGNED_BYTE, index));
+            builder.add(size(IndexSerializer.UNSIGNED_BYTE, index));
         } catch (IndexOutOfBoundsException e) {
             assertTrue(index > Byte.MAX_VALUE - Byte.MIN_VALUE);
         }
 
         try {
-            builder.add(size(IndexExternalizer.UNSIGNED_SHORT, index));
+            builder.add(size(IndexSerializer.UNSIGNED_SHORT, index));
         } catch (IndexOutOfBoundsException e) {
             assertTrue(index > Short.MAX_VALUE - Short.MIN_VALUE);
         }
 
-        builder.add(size(IndexExternalizer.VARIABLE, index));
+        builder.add(size(IndexSerializer.VARIABLE, index));
 
-        builder.add(size(IndexExternalizer.INTEGER, index));
+        builder.add(size(IndexSerializer.INTEGER, index));
 
         // Ensure that our IndexExternalizer.select(...) chooses the optimal externalizer
-        assertEquals(builder.build().min().getAsInt(), size(IndexExternalizer.select(index), index));
+        assertEquals(builder.build().min().getAsInt(), size(IndexSerializer.select(index), index));
     }
 
-    public static int size(IndexExternalizer externalizer, int index) throws IOException {
+    public static int size(IntSerializer externalizer, int index) throws IOException {
 
         ByteArrayOutputStream externalizedOutput = new ByteArrayOutputStream();
         try (DataOutputStream output = new DataOutputStream(externalizedOutput)) {
-            externalizer.writeData(output, index);
+            externalizer.writeInt(output, index);
         }
 
         byte[] externalizedBytes = externalizedOutput.toByteArray();
 
         try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(externalizedBytes))) {
-            int result = externalizer.readData(input);
+            int result = externalizer.readInt(input);
             assertEquals(index, result);
         }
 

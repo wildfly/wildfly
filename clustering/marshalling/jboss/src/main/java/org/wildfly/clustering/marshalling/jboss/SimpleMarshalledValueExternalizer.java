@@ -28,7 +28,7 @@ import java.io.ObjectOutput;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * @author Paul Ferraro
@@ -38,7 +38,7 @@ public class SimpleMarshalledValueExternalizer<T> implements Externalizer<Simple
 
     @Override
     public SimpleMarshalledValue<T> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        int size = IndexExternalizer.VARIABLE.readData(input);
+        int size = IndexSerializer.VARIABLE.readInt(input);
         byte[] bytes = (size > 0) ? new byte[size] : null;
         if (bytes != null) {
             input.readFully(bytes);
@@ -49,7 +49,7 @@ public class SimpleMarshalledValueExternalizer<T> implements Externalizer<Simple
     @Override
     public void writeObject(ObjectOutput output, SimpleMarshalledValue<T> object) throws IOException {
         byte[] bytes = object.getBytes();
-        IndexExternalizer.VARIABLE.writeData(output, (bytes != null) ? bytes.length : 0);
+        IndexSerializer.VARIABLE.writeInt(output, (bytes != null) ? bytes.length : 0);
         if (bytes != null) {
             output.write(bytes);
         }

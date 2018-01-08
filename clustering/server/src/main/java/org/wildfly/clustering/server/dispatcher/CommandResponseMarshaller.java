@@ -34,7 +34,7 @@ import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.util.Buffer;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * Marshalling strategy for the command response.
@@ -56,7 +56,7 @@ public class CommandResponseMarshaller implements RpcDispatcher.Marshaller {
         int version = this.context.getCurrentVersion();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (DataOutputStream output = new DataOutputStream(bytes)) {
-            IndexExternalizer.VARIABLE.writeData(output, version);
+            IndexSerializer.VARIABLE.writeInt(output, version);
             try (Marshaller marshaller = this.context.createMarshaller(version)) {
                 marshaller.start(Marshalling.createByteOutput(output));
                 marshaller.writeObject(object);
@@ -70,7 +70,7 @@ public class CommandResponseMarshaller implements RpcDispatcher.Marshaller {
     public Object objectFromBuffer(byte[] buffer, int offset, int length) throws Exception {
         if (this.factory.isUnknownForkResponse(ByteBuffer.wrap(buffer, offset, length))) return NoSuchService.INSTANCE;
         try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(buffer, offset, length))) {
-            int version = IndexExternalizer.VARIABLE.readData(input);
+            int version = IndexSerializer.VARIABLE.readInt(input);
             try (Unmarshaller unmarshaller = this.context.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 return unmarshaller.readObject();

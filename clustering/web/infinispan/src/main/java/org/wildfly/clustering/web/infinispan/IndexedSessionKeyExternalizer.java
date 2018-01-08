@@ -30,7 +30,7 @@ import java.util.function.ToIntFunction;
 
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * @author Paul Ferraro
@@ -50,13 +50,13 @@ public class IndexedSessionKeyExternalizer<K extends Key<String>> implements Ext
     @Override
     public void writeObject(ObjectOutput output, K key) throws IOException {
         SessionKeyExternalizer.SESSION_ID_SERIALIZER.write(output, key.getValue());
-        IndexExternalizer.VARIABLE.writeData(output, this.index.applyAsInt(key));
+        IndexSerializer.VARIABLE.writeInt(output, this.index.applyAsInt(key));
     }
 
     @Override
     public K readObject(ObjectInput input) throws IOException {
         String id = SessionKeyExternalizer.SESSION_ID_SERIALIZER.read(input);
-        int index = IndexExternalizer.VARIABLE.readData(input);
+        int index = IndexSerializer.VARIABLE.readInt(input);
         return this.resolver.apply(id, index);
     }
 

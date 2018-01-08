@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,38 +22,32 @@
 
 package org.wildfly.clustering.marshalling.spi;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
-import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * Base {@link Externalizer} for enumerations.
+ * Writes/reads an integer to/from a binary stream.
  * @author Paul Ferraro
  */
-public class EnumExternalizer<E extends Enum<E>> implements Externalizer<E> {
-
-    private final IntSerializer ordinalExternalizer;
-    private final Class<E> enumClass;
-
-    public EnumExternalizer(Class<E> enumClass) {
-        this.ordinalExternalizer = IndexSerializer.select(enumClass.getEnumConstants().length);
-        this.enumClass = enumClass;
+public interface IntSerializer {
+    /**
+     * Writes the specified integer to the specified output stream
+     * @param output the data output stream
+     * @param value an integer value
+     * @throws IOException if an I/O error occurs
+     */
+    default void writeInt(DataOutput output, int value) throws IOException {
+        output.writeInt(value);
     }
 
-    @Override
-    public void writeObject(ObjectOutput output, E value) throws IOException {
-        this.ordinalExternalizer.writeInt(output, value.ordinal());
-    }
-
-    @Override
-    public E readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return this.enumClass.getEnumConstants()[this.ordinalExternalizer.readInt(input)];
-    }
-
-    @Override
-    public Class<E> getTargetClass() {
-        return this.enumClass;
+    /**
+     * Read an integer from the specified input stream.
+     * @param input a data input stream
+     * @return the integer value
+     * @throws IOException if an I/O error occurs
+     */
+    default int readInt(DataInput input) throws IOException {
+        return input.readInt();
     }
 }

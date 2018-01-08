@@ -30,7 +30,7 @@ import java.util.Collection;
 import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * Externalizers for copy-on-write implementations of {@link Collection}.
@@ -54,7 +54,7 @@ public class CopyOnWriteCollectionExternalizer<T extends Collection<Object>> imp
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        int size = IndexExternalizer.VARIABLE.readData(input);
+        int size = IndexSerializer.VARIABLE.readInt(input);
         // Collect all elements first to avoid COW costs per element.
         return this.factory.apply(CollectionExternalizer.readCollection(input, new ArrayList<>(size), size));
     }

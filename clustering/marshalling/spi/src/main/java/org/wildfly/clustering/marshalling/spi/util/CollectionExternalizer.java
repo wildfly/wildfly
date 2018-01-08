@@ -29,7 +29,7 @@ import java.util.Collection;
 import java.util.function.IntFunction;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * Externalizers for non-concurrent implementations of {@link Collection}.
@@ -52,7 +52,7 @@ public class CollectionExternalizer<T extends Collection<Object>> implements Ext
     }
 
     static <T extends Collection<Object>> void writeCollection(ObjectOutput output, T collection) throws IOException {
-        IndexExternalizer.VARIABLE.writeData(output, collection.size());
+        IndexSerializer.VARIABLE.writeInt(output, collection.size());
         for (Object element : collection) {
             output.writeObject(element);
         }
@@ -60,7 +60,7 @@ public class CollectionExternalizer<T extends Collection<Object>> implements Ext
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        int size = IndexExternalizer.VARIABLE.readData(input);
+        int size = IndexSerializer.VARIABLE.readInt(input);
         return readCollection(input, this.factory.apply(size), size);
     }
 

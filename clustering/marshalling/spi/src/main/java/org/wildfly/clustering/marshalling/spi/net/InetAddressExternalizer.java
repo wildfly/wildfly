@@ -29,7 +29,7 @@ import java.net.InetAddress;
 import java.util.OptionalInt;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * @author Paul Ferraro
@@ -47,7 +47,7 @@ public class InetAddressExternalizer<A extends InetAddress> implements Externali
     @Override
     public void writeObject(ObjectOutput output, A address) throws IOException {
         if (!this.size.isPresent()) {
-            IndexExternalizer.UNSIGNED_BYTE.writeData(output, (address != null) ? address.getAddress().length : 0);
+            IndexSerializer.UNSIGNED_BYTE.writeInt(output, (address != null) ? address.getAddress().length : 0);
         }
         if (address != null) {
             output.write(address.getAddress());
@@ -56,7 +56,7 @@ public class InetAddressExternalizer<A extends InetAddress> implements Externali
 
     @Override
     public A readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        int size = this.size.isPresent() ? this.size.getAsInt() : IndexExternalizer.UNSIGNED_BYTE.readData(input);
+        int size = this.size.isPresent() ? this.size.getAsInt() : IndexSerializer.UNSIGNED_BYTE.readInt(input);
         if (size == 0) return null;
         byte[] bytes = new byte[size];
         input.readFully(bytes);

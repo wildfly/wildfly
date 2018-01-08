@@ -33,7 +33,7 @@ import org.wildfly.clustering.infinispan.spi.persistence.BinaryKeyFormat;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.Serializer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 import org.wildfly.clustering.marshalling.spi.SerializerExternalizer;
 
 /**
@@ -53,9 +53,9 @@ public enum AddressableNodeSerializer implements Serializer<AddressableNode> {
             InetSocketAddress socketAddress = node.getSocketAddress();
             // Socket address will always contain a resolved address
             byte[] address = socketAddress.getAddress().getAddress();
-            IndexExternalizer.UNSIGNED_BYTE.writeData(output, address.length);
+            IndexSerializer.UNSIGNED_BYTE.writeInt(output, address.length);
             output.write(address);
-            IndexExternalizer.UNSIGNED_SHORT.writeData(output, socketAddress.getPort());
+            IndexSerializer.UNSIGNED_SHORT.writeInt(output, socketAddress.getPort());
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
@@ -69,9 +69,9 @@ public enum AddressableNodeSerializer implements Serializer<AddressableNode> {
         try {
             Address jgroupsAddress = org.jgroups.util.Util.readAddress(input);
             String name = input.readUTF();
-            byte[] address = new byte[IndexExternalizer.UNSIGNED_BYTE.readData(input)];
+            byte[] address = new byte[IndexSerializer.UNSIGNED_BYTE.readInt(input)];
             input.readFully(address);
-            int port = IndexExternalizer.UNSIGNED_SHORT.readData(input);
+            int port = IndexSerializer.UNSIGNED_SHORT.readInt(input);
             return new AddressableNode(jgroupsAddress, name, new InetSocketAddress(InetAddress.getByAddress(address), port));
         } catch (IOException e) {
             throw e;

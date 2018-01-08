@@ -35,7 +35,8 @@ import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.ObjectTable;
 import org.jboss.marshalling.Unmarshaller;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
+import org.wildfly.clustering.marshalling.spi.IntSerializer;
 import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
@@ -46,7 +47,7 @@ public class ExternalizerObjectTable implements ObjectTable {
 
     private final Externalizer<Object>[] externalizers;
     private final Map<Class<?>, Writer> writers = new IdentityHashMap<>();
-    private final IndexExternalizer indexExternalizer;
+    private final IntSerializer indexSerializer;
 
     public ExternalizerObjectTable(ClassLoader loader) {
         this(Stream.concat(EnumSet.allOf(DefaultExternalizer.class).stream(), StreamSupport.stream(ServiceLoader.load(Externalizer.class, loader).spliterator(), false))
@@ -55,12 +56,12 @@ public class ExternalizerObjectTable implements ObjectTable {
 
     @SafeVarargs
     public ExternalizerObjectTable(Externalizer<Object>... externalizers) {
-        this(IndexExternalizer.select(externalizers.length), externalizers);
+        this(IndexSerializer.select(externalizers.length), externalizers);
     }
 
     @SafeVarargs
-    private ExternalizerObjectTable(IndexExternalizer indexExternalizer, Externalizer<Object>... externalizers) {
-        this.indexExternalizer = indexExternalizer;
+    private ExternalizerObjectTable(IntSerializer indexSerializer, Externalizer<Object>... externalizers) {
+        this.indexSerializer = indexSerializer;
         this.externalizers = externalizers;
         for (int i = 0; i < externalizers.length; ++i) {
             final Externalizer<Object> externalizer = externalizers[i];
@@ -70,7 +71,7 @@ public class ExternalizerObjectTable implements ObjectTable {
                 Writer writer = new Writer() {
                     @Override
                     public void writeObject(Marshaller marshaller, Object object) throws IOException {
-                        indexExternalizer.writeData(marshaller, index);
+                        indexSerializer.writeInt(marshaller, index);
                         externalizer.writeObject(marshaller, object);
                     }
                 };
@@ -94,7 +95,7 @@ public class ExternalizerObjectTable implements ObjectTable {
 
     @Override
     public Object readObject(Unmarshaller unmarshaller) throws IOException, ClassNotFoundException {
-        int index = this.indexExternalizer.readData(unmarshaller);
+        int index = this.indexSerializer.readInt(unmarshaller);
         if (index >= this.externalizers.length) {
             throw new IllegalStateException();
         }

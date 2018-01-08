@@ -33,12 +33,11 @@ import org.jboss.ejb.client.UnknownSessionID;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * @author Paul Ferraro
  */
-
 public class SessionIDExternalizer extends SimpleKeyFormat<SessionID> implements Externalizer<SessionID> {
 
     public static final SessionIDExternalizer INSTANCE = new SessionIDExternalizer(SessionID.class);
@@ -50,13 +49,13 @@ public class SessionIDExternalizer extends SimpleKeyFormat<SessionID> implements
     @Override
     public void writeObject(ObjectOutput output, SessionID id) throws IOException {
         byte[] encoded = id.getEncodedForm();
-        IndexExternalizer.UNSIGNED_BYTE.writeData(output, encoded.length);
+        IndexSerializer.UNSIGNED_BYTE.writeInt(output, encoded.length);
         output.write(encoded);
     }
 
     @Override
     public SessionID readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        byte[] encoded = new byte[IndexExternalizer.UNSIGNED_BYTE.readData(input)];
+        byte[] encoded = new byte[IndexSerializer.UNSIGNED_BYTE.readInt(input)];
         input.readFully(encoded);
         return SessionID.createSessionID(encoded);
     }

@@ -25,25 +25,21 @@ package org.wildfly.clustering.marshalling.spi;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
-import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * Various strategies for marshalling an array/collection index (i.e. an unsigned integer).
  * @author Paul Ferraro
  */
-public enum IndexExternalizer implements Externalizer<Integer> {
+public enum IndexSerializer implements IntSerializer {
 
     UNSIGNED_BYTE() {
         @Override
-        public int readData(DataInput input) throws IOException {
+        public int readInt(DataInput input) throws IOException {
             return input.readUnsignedByte();
         }
 
         @Override
-        public void writeData(DataOutput output, int index) throws IOException {
+        public void writeInt(DataOutput output, int index) throws IOException {
             if (index > (Byte.MAX_VALUE - Byte.MIN_VALUE)) {
                 throw new IndexOutOfBoundsException(Integer.toString(index));
             }
@@ -52,29 +48,19 @@ public enum IndexExternalizer implements Externalizer<Integer> {
     },
     UNSIGNED_SHORT() {
         @Override
-        public int readData(DataInput input) throws IOException {
+        public int readInt(DataInput input) throws IOException {
             return input.readUnsignedShort();
         }
 
         @Override
-        public void writeData(DataOutput output, int index) throws IOException {
+        public void writeInt(DataOutput output, int index) throws IOException {
             if (index > (Short.MAX_VALUE - Short.MIN_VALUE)) {
                 throw new IndexOutOfBoundsException(Integer.toString(index));
             }
             output.writeShort(index);
         }
     },
-    INTEGER() {
-        @Override
-        public int readData(DataInput input) throws IOException {
-            return input.readInt();
-        }
-
-        @Override
-        public void writeData(DataOutput output, int index) throws IOException {
-            output.writeInt(index);
-        }
-    },
+    INTEGER(),
     /**
      * Reads/write an unsigned integer using a variable-length format.
      * Format requires between 1 and 5 bytes, depending on the index size.
@@ -84,7 +70,7 @@ public enum IndexExternalizer implements Externalizer<Integer> {
      */
     VARIABLE() {
         @Override
-        public int readData(DataInput input) throws IOException {
+        public int readInt(DataInput input) throws IOException {
             byte b = input.readByte();
             int i = b & 0x7F;
             for (int shift = 7; (b & 0x80) != 0; shift += 7) {
@@ -95,7 +81,7 @@ public enum IndexExternalizer implements Externalizer<Integer> {
         }
 
         @Override
-        public void writeData(DataOutput output, int index) throws IOException {
+        public void writeInt(DataOutput output, int index) throws IOException {
             int i = index;
             while ((i & ~0x7F) != 0) {
                 output.writeByte((byte) ((i & 0x7f) | 0x80));
@@ -111,42 +97,10 @@ public enum IndexExternalizer implements Externalizer<Integer> {
      * @param size the size of the index
      * @return an index externalizer
      */
-    public static final IndexExternalizer select(int size) {
+    public static final IntSerializer select(int size) {
         if (size < 256) return UNSIGNED_BYTE;
         if (size < 65536) return UNSIGNED_SHORT;
         if (size < 268435456) return VARIABLE;
         return INTEGER;
-    }
-
-    /**
-     * Read an index from the specified input stream.
-     * @param input a data input stream
-     * @return the index
-     * @throws IOException if an I/O error occurs
-     */
-    public abstract int readData(DataInput input) throws IOException;
-
-    /**
-     * Writes the specified index to the specified output stream
-     * @param output the data output stream
-     * @param index the index
-     * @throws IOException if an I/O error occurs
-     */
-    public abstract void writeData(DataOutput output, int index) throws IOException;
-
-    @Override
-    public Integer readObject(ObjectInput input) throws IOException {
-        return Integer.valueOf(this.readData(input));
-    }
-
-    @Override
-    public void writeObject(ObjectOutput output, Integer index) throws IOException {
-        assert index != null;
-        this.writeData(output, index.intValue());
-    }
-
-    @Override
-    public Class<Integer> getTargetClass() {
-        return Integer.class;
     }
 }

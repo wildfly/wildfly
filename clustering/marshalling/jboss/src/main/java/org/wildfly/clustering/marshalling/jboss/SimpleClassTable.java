@@ -28,7 +28,8 @@ import java.util.Map;
 import org.jboss.marshalling.ClassTable;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Unmarshaller;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
+import org.wildfly.clustering.marshalling.spi.IntSerializer;
 
 /**
  * Simple {@link ClassTable} implementation based on an array of recognized classes.
@@ -38,21 +39,21 @@ public class SimpleClassTable implements ClassTable {
 
     private final Class<?>[] classes;
     private final Map<Class<?>, Writer> writers = new IdentityHashMap<>();
-    private final IndexExternalizer indexExternalizer;
+    private final IntSerializer indexSerializer;
 
     public SimpleClassTable(Class<?>... classes) {
-        this(IndexExternalizer.select(classes.length), classes);
+        this(IndexSerializer.select(classes.length), classes);
     }
 
-    private SimpleClassTable(IndexExternalizer indexExternalizer, Class<?>... classes) {
-        this.indexExternalizer = indexExternalizer;
+    private SimpleClassTable(IntSerializer indexSerializer, Class<?>... classes) {
+        this.indexSerializer = indexSerializer;
         this.classes = classes;
         for (int i = 0; i < classes.length; i++) {
             final int index = i;
             Writer writer = new Writer() {
                 @Override
                 public void writeClass(Marshaller output, Class<?> clazz) throws IOException {
-                    indexExternalizer.writeData(output, index);
+                    indexSerializer.writeInt(output, index);
                 }
             };
             this.writers.put(classes[i], writer);
@@ -66,6 +67,6 @@ public class SimpleClassTable implements ClassTable {
 
     @Override
     public Class<?> readClass(Unmarshaller input) throws IOException, ClassNotFoundException {
-        return this.classes[this.indexExternalizer.readData(input)];
+        return this.classes[this.indexSerializer.readInt(input)];
     }
 }
