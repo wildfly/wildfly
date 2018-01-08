@@ -86,11 +86,12 @@ class ServerAdd extends AbstractAddStepHandler {
         builder.install();
 
         ServiceTarget target = context.getServiceTarget();
-        DistributableSessionIdentifierCodecBuilderProvider.INSTANCE.ifPresent(provider -> {
+        DistributableSessionIdentifierCodecBuilderProvider provider = DistributableSessionIdentifierCodecBuilderProvider.INSTANCE.orElse(null);
+        if (provider != null) {
             for (CapabilityServiceBuilder<?> b : provider.getServerBuilders(name)) {
                 b.configure(context).build(target).install();
             }
-        });
+        }
     }
 
     @Override
