@@ -838,14 +838,13 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             };
         }
 
-        private String[] getDeployments() {
-            synchronized(registrations) {
-                List<String> list = new ArrayList<>();
-                for (RegistrationImpl r : registrations) {
-                    String deploymentName = r.deploymentInfo.getDeploymentName();
-                    list.add(deploymentName);
+        private List<String> getDeployments() {
+            synchronized (registrations) {
+                List<String> deployments = new ArrayList<>(registrations.size());
+                for (RegistrationImpl registration : registrations) {
+                    deployments.add(registration.deploymentInfo.getDeploymentName());
                 }
-                return list.toArray(new String[registrations.size()]);
+                return deployments;
             }
         }
 
@@ -903,7 +902,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         private class RegistrationImpl implements Registration {
 
-            private final DeploymentInfo deploymentInfo;
+            final DeploymentInfo deploymentInfo;
 
             private RegistrationImpl(DeploymentInfo deploymentInfo) {
                 this.deploymentInfo = deploymentInfo;
