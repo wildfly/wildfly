@@ -58,7 +58,7 @@ public class JMSTopicRemove extends AbstractRemoveStepHandler {
         JMSServerManager server = JMSServerManager.class.cast(service.getValue());
 
         try {
-            server.destroyTopic(name, true);
+            server.destroyTopic("jms.topic." + name, true);
         } catch (Exception e) {
             throw new OperationFailedException(e);
         }

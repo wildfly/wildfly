@@ -61,7 +61,7 @@ public class JMSQueueRemove extends AbstractRemoveStepHandler {
         ServiceController<?> service = context.getServiceRegistry(true).getService(jmsServiceName);
         JMSServerManager server = JMSServerManager.class.cast(service.getValue());
         try {
-            server.destroyQueue(name, true);
+            server.destroyQueue("jms.queue." + name, true);
         } catch (Exception e) {
             throw new OperationFailedException(e);
         }
