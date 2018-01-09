@@ -819,4 +819,7 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 88, value = "Can not migrate attribute failback-delay to resource %s. Artemis detects failback deterministically and it no longer requires to specify a delay for failback to occur.")
     String couldNotMigrateFailbackDelayAttribute(PathAddress address);
+
+    @Message(id = 89, value = "Changed the cluster-connection-address attribute to \"\" for resource %s. Artemis no longer uses jms as a prefix for addresses corresponding to JMS destinations).")
+    String changingClusterConnectionAddress(PathAddress address);
 }

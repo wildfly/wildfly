@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:messaging-activemq:2.0">
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:3.0">
     <server name="default"
             persistence-enabled="${persistence.enabled:false}"
             persist-id-cache="${persist.id.cache:false}"
@@ -112,7 +112,11 @@
                          slow-consumer-policy="${slow.consumer.policy:KILL}"
                          slow-consumer-threshold="${slow.consumer.threshold:456}"
                          auto-create-jms-queues="${auto.create.jms.queue:true}"
-                         auto-delete-jms-queues="${auto.delete.jms.queue:true}"/>
+                         auto-delete-jms-queues="${auto.delete.jms.queue:true}"
+                         auto-create-queues="true"
+                         auto-delete-queues="true"
+                         auto-create-addresses="true"
+                         auto-delete-addresses="true" />
 
         <http-connector name="http"
                         socket-binding="http"

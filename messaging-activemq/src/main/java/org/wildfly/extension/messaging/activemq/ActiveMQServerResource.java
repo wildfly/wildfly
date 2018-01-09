@@ -240,12 +240,17 @@ public class ActiveMQServerResource implements Resource {
 
     private boolean hasAddressControl(PathElement element) {
         final ManagementService managementService = getManagementService();
-        return managementService == null ? false : managementService.getResource(ResourceNames.CORE_ADDRESS + element.getValue()) != null;
+        return managementService == null ? false : managementService.getResource(ResourceNames.ADDRESS + element.getValue()) != null;
     }
 
     private boolean hasQueueControl(String name) {
         final ManagementService managementService = getManagementService();
-        return managementService == null ? false : managementService.getResource(ResourceNames.CORE_QUEUE + name) != null;
+        // for backwards compatibility, if the queue name starts with "jms.queue." (as in Artemis 1.x),
+        // we strip it to get only the actual name (as in Artemis 2.x)
+        if (name.startsWith("jms.queue.")) {
+            name = name.substring("jms.queue.".length());
+        }
+        return managementService == null ? false : managementService.getResource(ResourceNames.QUEUE + name) != null;
     }
 
     private Set<String> getCoreAddressNames() {

@@ -48,17 +48,15 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  */
 public class JMSTopicService implements Service<Topic> {
 
+    private static final String JMS_TOPIC_PREFIX = "jms.topic.";
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
 
     private final String name;
-    private final String[] jndi;
-
     private Topic topic;
 
-    public JMSTopicService(String name, String[] jndi) {
+    public JMSTopicService(String name) {
         this.name = name;
-        this.jndi = jndi;
     }
 
     @Override
@@ -68,11 +66,12 @@ public class JMSTopicService implements Service<Topic> {
             @Override
             public void run() {
                 try {
-                    jmsManager.createTopic(false, name, jndi);
-                    topic = new ActiveMQTopic(name);
+                    // add back the jms.topic. prefix to be consistent with ActiveMQ Artemis 1.x addressing scheme
+                    jmsManager.createTopic(false, JMS_TOPIC_PREFIX + name);
+                    topic = new ActiveMQTopic(JMS_TOPIC_PREFIX + name);
                     context.complete();
                 } catch (Throwable e) {
-                    context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "queue"));
+                    context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "topic"));
                 }
             }
         };
@@ -87,27 +86,6 @@ public class JMSTopicService implements Service<Topic> {
 
     @Override
     public synchronized void stop(final StopContext context) {
-        final JMSServerManager jmsManager = jmsServer.getValue();
-        final Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    jmsManager.removeTopicFromBindingRegistry(name);
-                    topic = null;
-                } catch (Throwable e) {
-                    MessagingLogger.ROOT_LOGGER.failedToDestroy(e, "jms topic", name);
-                }
-                context.complete();
-            }
-        };
-        // JMS Server Manager uses locking which waits on service completion, use async to prevent starvation
-        try {
-            executorInjector.getValue().execute(task);
-        } catch (RejectedExecutionException e) {
-            task.run();
-        } finally {
-            context.asynchronous();
-        }
     }
 
     @Override
@@ -115,8 +93,8 @@ public class JMSTopicService implements Service<Topic> {
         return topic;
     }
 
-    public static JMSTopicService installService(final String name, final ServiceName serverServiceName, final ServiceTarget serviceTarget, final String[] jndiBindings) {
-        final JMSTopicService service = new JMSTopicService(name, jndiBindings);
+    public static JMSTopicService installService(final String name, final ServiceName serverServiceName, final ServiceTarget serviceTarget) {
+        final JMSTopicService service = new JMSTopicService(name);
         final ServiceName serviceName = JMSServices.getJmsTopicBaseServiceName(serverServiceName).append(name);
 
         final ServiceBuilder<Topic> serviceBuilder = serviceTarget.addService(serviceName, service)

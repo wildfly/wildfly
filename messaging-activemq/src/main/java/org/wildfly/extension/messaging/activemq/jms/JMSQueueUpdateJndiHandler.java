@@ -39,12 +39,12 @@ public class JMSQueueUpdateJndiHandler extends AbstractUpdateJndiHandler {
 
     @Override
     protected void addJndiName(JMSServerManager jmsServerManager, String resourceName, String jndiName) throws Exception {
-        jmsServerManager.addQueueToBindingRegistry(resourceName, jndiName);
+        jmsServerManager.addQueueToBindingRegistry("jms.queue." + resourceName, jndiName);
     }
 
     @Override
     protected void removeJndiName(JMSServerManager jmsServerManager, String resourceName, String jndiName) throws Exception {
-        jmsServerManager.removeQueueFromBindingRegistry(resourceName, jndiName);
+        jmsServerManager.removeQueueFromBindingRegistry("jms.queue." + resourceName, jndiName);
     }
 
     static void registerOperations(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {

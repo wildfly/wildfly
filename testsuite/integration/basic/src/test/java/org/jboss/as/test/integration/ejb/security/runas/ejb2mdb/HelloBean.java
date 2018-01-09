@@ -65,7 +65,8 @@ public class HelloBean implements Hello {
 
         try {
             ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("java:/ConnectionFactory");
-            String replyMessage = HelloBean.sendMessage(cf);
+            Queue queue = (Queue) initialContext.lookup(HelloBean.QUEUE_NAME_JNDI);
+            String replyMessage = HelloBean.sendMessage(cf, queue);
             return String.format("%s %s, %s", SAYING, getName(), replyMessage);
         } finally {
             initialContext.close();
@@ -75,11 +76,10 @@ public class HelloBean implements Hello {
     /**
      * Helper method to send message to {@link #QUEUE_NAME}.
      */
-    public static String sendMessage(ConnectionFactory cf) throws Exception {
+    public static String sendMessage(ConnectionFactory cf, Queue queue) throws Exception {
         Connection connection = null;
 
         try {
-            Queue queue = cf.createContext("guest", "guest").createQueue(QUEUE_NAME);
             connection = cf.createConnection("guest", "guest");
             connection.start(); // we need to start connection for consumer
 

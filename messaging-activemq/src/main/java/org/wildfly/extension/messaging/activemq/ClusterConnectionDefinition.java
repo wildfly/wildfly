@@ -66,8 +66,12 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
 
     public static final SimpleAttributeDefinition ADDRESS = create("cluster-connection-address", STRING)
             .setXmlName(CommonAttributes.ADDRESS)
-            .setDefaultValue(null)
+            .setDefaultValue(new ModelNode(""))
+            .setRequired(false)
+            // empty string is allowed to route *any* address to the cluster
+            .setValidator(new StringLengthValidator(0))
             .setAllowExpression(true)
+            .setCorrector(ActiveMQAddressCorrector.CORRECTOR)
             .setRestartAllServices()
             .build();
 

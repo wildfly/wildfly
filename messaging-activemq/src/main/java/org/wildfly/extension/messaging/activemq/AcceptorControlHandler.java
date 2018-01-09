@@ -28,7 +28,7 @@ import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.PathAddress;
 
 /**
- * Handler for runtime operations that interact with a ActiveMQ {@link org.apache.activemq.api.core.management.AcceptorControl}.
+ * Handler for runtime operations that interact with a ActiveMQ {@link AcceptorControl}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -39,7 +39,7 @@ public class AcceptorControlHandler extends AbstractActiveMQComponentControlHand
     @Override
     protected AcceptorControl getActiveMQComponentControl(ActiveMQServer activeMQServer, PathAddress address) {
         final String resourceName = address.getLastElement().getValue();
-        return AcceptorControl.class.cast(activeMQServer.getManagementService().getResource(ResourceNames.CORE_ACCEPTOR + resourceName));
+        return AcceptorControl.class.cast(activeMQServer.getManagementService().getResource(ResourceNames.ACCEPTOR + resourceName));
     }
 
     @Override

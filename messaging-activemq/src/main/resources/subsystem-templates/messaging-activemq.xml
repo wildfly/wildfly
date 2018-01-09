@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
     <extension-module>org.wildfly.extension.messaging-activemq</extension-module>
-    <subsystem xmlns="urn:jboss:domain:messaging-activemq:2.0">
+    <subsystem xmlns="urn:jboss:domain:messaging-activemq:3.0">
         <server name="default">
             <?CLUSTERED?>
 
@@ -102,9 +102,9 @@
         </replacement>
         <replacement placeholder="CLUSTER-CONNECTIONS">
                 <cluster-connection name="my-cluster"
-                                    address="jms"
                                     connector-name="http-connector"
-                                    discovery-group="dg-group1" />
+                                    discovery-group="dg-group1"
+                                    address="jms" />
         </replacement>
         <replacement placeholder="REMOTE-CONNECTION-FACTORY">
             <connection-factory name="RemoteConnectionFactory"

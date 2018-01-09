@@ -32,6 +32,7 @@ import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.VERSION_3_0_0;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -218,13 +219,14 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    @Deprecated
     public static final SimpleAttributeDefinition JOURNAL_JMS_BINDINGS_TABLE  = create("journal-jms-bindings-table", STRING)
             .setAttributeGroup("journal")
             .setXmlName("jms-bindings-table")
             .setRequired(false)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJMSBindingsTableName()))
+            .setDefaultValue(new ModelNode("JMS_BINDINGS"))
             .setAllowExpression(true)
-            .setRestartAllServices()
+            .setDeprecated(VERSION_3_0_0)
             .build();
 
     public static final SimpleAttributeDefinition JOURNAL_LARGE_MESSAGES_TABLE  = create("journal-large-messages-table", STRING)
@@ -245,6 +247,19 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultNodeManagerStoreTableName
+     */
+    public static final SimpleAttributeDefinition JOURNAL_NODE_MANAGER_STORE_TABLE = create("journal-node-manager-store-table", STRING)
+            .setAttributeGroup("journal")
+            .setXmlName("node-manager-store-table")
+            .setRequired(false)
+            .setDefaultValue(new ModelNode("NODE_MANAGER_STORE"))
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+
     public static final SimpleAttributeDefinition JOURNAL_PAGE_STORE_TABLE  = create("journal-page-store-table", STRING)
             .setAttributeGroup("journal")
             .setXmlName("page-store-table")
@@ -261,6 +276,46 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
+
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultJdbcLockAcquisitionTimeoutMillis
+     */
+    public static final AttributeDefinition JOURNAL_JDBC_LOCK_ACQUISITION_TIMEOUT = create("journal-jdbc-lock-acquisition-timeout", INT)
+            .setAttributeGroup("journal")
+            .setXmlName("jdbc-lock-acquisition-timeout")
+            .setDefaultValue(new ModelNode(60))
+            .setMeasurementUnit(SECONDS)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultJdbcLockExpirationMillis()
+     */
+    public static final AttributeDefinition JOURNAL_JDBC_LOCK_EXPIRATION = create("journal-jdbc-lock-expiration", INT)
+            .setAttributeGroup("journal")
+            .setXmlName("jdbc-lock-expiration")
+            .setDefaultValue(new ModelNode(20))
+            .setMeasurementUnit(SECONDS)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultJdbcLockRenewPeriodMillis()
+     */
+    public static final AttributeDefinition JOURNAL_JDBC_LOCK_RENEW_PERIOD = create("journal-jdbc-lock-renew-period", INT)
+            .setAttributeGroup("journal")
+            .setXmlName("jdbc-lock-renew-period")
+            .setDefaultValue(new ModelNode(4))
+            .setMeasurementUnit(SECONDS)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
 
     public static final AttributeDefinition JOURNAL_JDBC_NETWORK_TIMEOUT = create("journal-jdbc-network-timeout", INT)
             .setAttributeGroup("journal")
@@ -406,21 +461,30 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setValidator(new IntRangeValidator(Thread.MIN_PRIORITY, Thread.MAX_PRIORITY, true, true))
             .setRestartAllServices()
             .build();
+
+    // Property no longer exists since Artemis 2
+    @Deprecated
     public static final SimpleAttributeDefinition PERF_BLAST_PAGES = create("perf-blast-pages", INT)
             .setAttributeGroup("debug")
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJournalPerfBlastPages()))
+            .setDefaultValue(new ModelNode(-1))
             .setRequired(false)
             .setAllowExpression(true)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
+            .setDeprecated(VERSION_3_0_0)
             .build();
+
+    // Property no longer exists since Artemis 2
+    @Deprecated
     public static final SimpleAttributeDefinition RUN_SYNC_SPEED_TEST = create("run-sync-speed-test", BOOLEAN)
             .setAttributeGroup("debug")
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultRunSyncSpeedTest()))
+            .setDefaultValue(new ModelNode(false))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setDeprecated(VERSION_3_0_0)
             .build();
+
     public static final SimpleAttributeDefinition SERVER_DUMP_INTERVAL = create("server-dump-interval", LONG)
             .setAttributeGroup("debug")
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultServerDumpInterval()))
@@ -557,8 +621,11 @@ public class ServerDefinition extends PersistentResourceDefinition {
             PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY,
             PAGE_MAX_CONCURRENT_IO, CREATE_BINDINGS_DIR, CREATE_JOURNAL_DIR, JOURNAL_TYPE, JOURNAL_BUFFER_TIMEOUT,
             JOURNAL_BUFFER_SIZE,
-            JOURNAL_DATASOURCE, JOURNAL_DATABASE, JOURNAL_JDBC_NETWORK_TIMEOUT,
+            JOURNAL_DATASOURCE, JOURNAL_DATABASE,
+            JOURNAL_JDBC_LOCK_ACQUISITION_TIMEOUT, JOURNAL_JDBC_LOCK_EXPIRATION, JOURNAL_JDBC_LOCK_RENEW_PERIOD,
+            JOURNAL_JDBC_NETWORK_TIMEOUT,
             JOURNAL_MESSAGES_TABLE, JOURNAL_BINDINGS_TABLE, JOURNAL_JMS_BINDINGS_TABLE, JOURNAL_LARGE_MESSAGES_TABLE, JOURNAL_PAGE_STORE_TABLE,
+            JOURNAL_NODE_MANAGER_STORE_TABLE,
             JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
             JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_POOL_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,

@@ -579,6 +579,15 @@ public class MigrateOperation implements OperationStepHandler {
         }
         addOperation.remove(ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.getName());
 
+        ModelNode clusterConnectionAddress = addOperation.get(ClusterConnectionDefinition.ADDRESS.getName());
+        // HornetQ was routing addresses corresponding to JMS destination by using the "jms" address prefix.
+        // Artemis 2 no longer uses this "jms" prefix. Instead, it uses the empty string to denotes any addresses.
+        if (clusterConnectionAddress.isDefined() && clusterConnectionAddress.asString().equals("jms")) {
+            warnings.add(ROOT_LOGGER.changingClusterConnectionAddress(pathAddress(addOperation.get(OP_ADDR))));
+            addOperation.get("cluster-connection-address").set("");
+        }
+
+
         migrateDiscoveryGroupNameAttribute(addOperation);
     }
 

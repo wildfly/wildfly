@@ -56,9 +56,9 @@ import org.wildfly.extension.messaging.activemq.jms.legacy.LegacyConnectionFacto
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
-public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
+public class MessagingSubsystemParser_3_0 extends PersistentResourceXMLParser {
 
-    static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:2.0";
+    static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:3.0";
 
     public PersistentResourceXMLDescription getParserDescription(){
         return builder(MessagingExtension.SUBSYSTEM_PATH, NAMESPACE)
@@ -115,7 +115,11 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                         ServerDefinition.JOURNAL_JMS_BINDINGS_TABLE,
                                         ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE,
                                         ServerDefinition.JOURNAL_PAGE_STORE_TABLE,
+                                        ServerDefinition.JOURNAL_NODE_MANAGER_STORE_TABLE,
                                         ServerDefinition.JOURNAL_DATABASE,
+                                        ServerDefinition.JOURNAL_JDBC_LOCK_ACQUISITION_TIMEOUT,
+                                        ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION,
+                                        ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD,
                                         ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT,
                                         // statistics
                                         ServerDefinition.STATISTICS_ENABLED,
@@ -292,7 +296,11 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                         AddressSettingDefinition.SLOW_CONSUMER_POLICY,
                                                         AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD,
                                                         AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES,
-                                                        AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES))
+                                                        AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES,
+                                                        AddressSettingDefinition.AUTO_CREATE_QUEUES,
+                                                        AddressSettingDefinition.AUTO_DELETE_QUEUES,
+                                                        AddressSettingDefinition.AUTO_CREATE_ADDRESSES,
+                                                        AddressSettingDefinition.AUTO_DELETE_ADDRESSES))
                                 .addChild(
                                         builder(MessagingExtension.HTTP_CONNECTOR_PATH)
                                                 .addAttributes(
@@ -479,6 +487,7 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Common.GROUP_ID,
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                                                        ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE,
                                                         // regular
                                                         ConnectionFactoryAttributes.Regular.FACTORY_TYPE))
                                 .addChild(
@@ -562,6 +571,7 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Common.GROUP_ID,
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                                                        ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE,
                                                         // pooled
                                                         // inbound config
                                                         ConnectionFactoryAttributes.Pooled.USE_JNDI,
@@ -582,7 +592,6 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE,
                                                         ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL,
                                                         ConnectionFactoryAttributes.Pooled.ENLISTMENT_TRACE,
-                                                        ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE,
                                                         ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS,
                                                         ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED)))
                 .addChild(

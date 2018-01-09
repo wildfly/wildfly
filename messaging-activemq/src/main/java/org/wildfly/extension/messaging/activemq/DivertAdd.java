@@ -27,6 +27,7 @@ import java.util.List;
 import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
 import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.DivertConfiguration;
+import org.apache.activemq.artemis.core.config.TransformerConfiguration;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -97,23 +98,26 @@ public class DivertAdd extends AbstractAddStepHandler {
         final boolean exclusive = DivertDefinition.EXCLUSIVE.resolveModelAttribute(context, model).asBoolean();
         final ModelNode filterNode = CommonAttributes.FILTER.resolveModelAttribute(context, model);
         final String filter = filterNode.isDefined() ? filterNode.asString() : null;
-        final ModelNode transformerNode =  CommonAttributes.TRANSFORMER_CLASS_NAME.resolveModelAttribute(context, model);
-        final String transformerClassName = transformerNode.isDefined() ? transformerNode.asString() : null;
-        return new DivertConfiguration()
+        DivertConfiguration config = new DivertConfiguration()
                 .setName(name)
                 .setRoutingName(routingName)
                 .setAddress(address)
                 .setForwardingAddress(forwardingAddress)
                 .setExclusive(exclusive)
-                .setFilterString(filter)
-                .setTransformerClassName(transformerClassName);
+                .setFilterString(filter);
+        final ModelNode transformerClassName =  CommonAttributes.TRANSFORMER_CLASS_NAME.resolveModelAttribute(context, model);
+        if (transformerClassName.isDefined()) {
+            config.setTransformerConfiguration(new TransformerConfiguration(transformerClassName.asString()));
+        }
+        return config;
     }
 
     static void createDivert(String name, DivertConfiguration divertConfiguration, ActiveMQServerControl serverControl) {
         try {
+            String transformerClassName = divertConfiguration.getTransformerConfiguration() != null ? divertConfiguration.getTransformerConfiguration().getClassName() : null;
             serverControl.createDivert(name, divertConfiguration.getRoutingName(), divertConfiguration.getAddress(),
                     divertConfiguration.getForwardingAddress(), divertConfiguration.isExclusive(),
-                    divertConfiguration.getFilterString(), divertConfiguration.getTransformerClassName());
+                    divertConfiguration.getFilterString(), transformerClassName);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

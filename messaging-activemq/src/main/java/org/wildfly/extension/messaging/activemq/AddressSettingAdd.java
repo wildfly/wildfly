@@ -143,6 +143,10 @@ class AddressSettingAdd extends AbstractAddStepHandler {
         // always set the auto-create|delete-jms-queues attributes as their default attribute values differ from Artemis defaults.
         settings.setAutoCreateJmsQueues(AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES.resolveModelAttribute(context, config).asBoolean());
         settings.setAutoDeleteJmsQueues(AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES.resolveModelAttribute(context, config).asBoolean());
+        settings.setAutoCreateQueues(AddressSettingDefinition.AUTO_CREATE_QUEUES.resolveModelAttribute(context, config).asBoolean());
+        settings.setAutoDeleteQueues(AddressSettingDefinition.AUTO_DELETE_QUEUES.resolveModelAttribute(context, config).asBoolean());
+        settings.setAutoCreateAddresses(AddressSettingDefinition.AUTO_CREATE_ADDRESSES.resolveModelAttribute(context, config).asBoolean());
+        settings.setAutoDeleteAddresses(AddressSettingDefinition.AUTO_DELETE_ADDRESSES.resolveModelAttribute(context, config).asBoolean());
         return settings;
     }
 

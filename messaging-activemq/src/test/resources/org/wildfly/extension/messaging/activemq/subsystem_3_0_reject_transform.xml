@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:messaging-activemq:2.0">
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:3.0">
     <global-client thread-pool-max-size="${global.client.thread-pool-max-size:32}"
                    scheduled-thread-pool-max-size="${global.client.scheduled.thread-pool-max-size:54}" />
     <server name="default">
@@ -9,16 +9,26 @@
         </cluster>
         <journal datasource="fooDS"
                  database="mysql"
+                 jdbc-lock-acquisition-timeout="890"
+                 jdbc-lock-expiration="891"
+                 jdbc-lock-renew-period="892"
                  jdbc-network-timeout="4567"
                  messages-table="MY_MESSAGES"
                  bindings-table="MY_BINDINGS"
                  jms-bindings-table="MY_JMS_BINDINGS"
                  large-messages-table="MY_LARGE_MESSAGES"
+                 node-manager-store-table="MY_NODE_MANAGER_STORE"
                  page-store-table="MY_PAGE_STORE" />
 
         <replication-colocated>
             <master />
         </replication-colocated>
+
+        <address-setting name="#"
+                         auto-create-queues="false"
+                         auto-delete-queues="false"
+                         auto-create-addresses="false"
+                         auto-delete-addresses="false" />
 
         <http-connector name="http"
                         socket-binding="http"
@@ -54,7 +64,8 @@
                             discovery-group="groupC"
                             entries="otherConnectionFactory"
                             deserialization-black-list="org.foo.Bar org.foo.Baz"
-                            deserialization-white-list="org.bar.Bar org.baz.Baz" />
+                            deserialization-white-list="org.bar.Bar org.baz.Baz"
+                            initial-message-packet-size="${initial.message.packet.size:12345}"/>
 
         <pooled-connection-factory name="hornetq-ra-local"
                                    transaction="local"

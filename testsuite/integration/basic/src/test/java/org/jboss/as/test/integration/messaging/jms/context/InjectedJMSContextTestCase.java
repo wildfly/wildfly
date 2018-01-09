@@ -65,7 +65,7 @@ public class InjectedJMSContextTestCase {
     @Resource(mappedName = "/JmsXA")
     private ConnectionFactory factory;
 
-    @Resource(mappedName = QUEUE_NAME)
+    @Resource(lookup = QUEUE_NAME)
     private Queue queue;
 
     @EJB
