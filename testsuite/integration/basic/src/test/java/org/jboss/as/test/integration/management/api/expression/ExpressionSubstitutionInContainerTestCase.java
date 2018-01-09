@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.management.api.expression;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.io.FilePermission;
 import java.util.PropertyPermission;
 import javax.ejb.EJB;
 
@@ -32,6 +33,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.logging.Logger;
@@ -81,11 +83,21 @@ public class ExpressionSubstitutionInContainerTestCase {
         jar.addAsManifestResource(new StringAsset(
                         "Manifest-Version: 1.0\n" +
                                 "Class-Path: \n" +  // there has to be a spacer - otherwise you meet "java.io.IOException: invalid header field"
-                                "Dependencies: org.jboss.as.controller-client,org.jboss.as.controller,org.jboss.dmr\n"),
+                                "Dependencies: org.jboss.as.controller-client, org.jboss.as.controller, org.jboss.dmr, org.jboss.remoting3 \n"),
                 "MANIFEST.MF");
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 // Needed by the StatelessBean#addSystemProperty()
-                new PropertyPermission("*", "write")
+                new PropertyPermission("qa.test.*", "write"),
+                new PropertyPermission("qa.test.*", "read"),
+                new RemotingPermission("createEndpoint"),
+                new RemotingPermission("connect"),
+                new PropertyPermission("management.address", "read"),
+                new PropertyPermission("node0", "read"),
+                new PropertyPermission("as.managementPort", "read"),
+                new PropertyPermission("management.port", "read"),
+                new PropertyPermission("jboss.management.user", "read"),
+                new PropertyPermission("jboss.management.password", "read"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
         ), "jboss-permissions.xml");
         return jar;
     }
