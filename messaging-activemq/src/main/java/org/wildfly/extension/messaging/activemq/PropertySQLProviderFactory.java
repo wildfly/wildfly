@@ -341,6 +341,10 @@ public class PropertySQLProviderFactory implements SQLProvider.Factory {
             return format(sql("read-nodeId"), tableName, NODE_ID_ROW_ID);
         }
 
+        @Override
+        public String initializeNodeIdSQL() {
+            return format(sql("initialize-nodeId"), tableName, NODE_ID_ROW_ID);
+        }
 
         private String sql(final String key) {
             if (database != null) {
