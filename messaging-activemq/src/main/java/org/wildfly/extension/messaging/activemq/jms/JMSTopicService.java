@@ -48,6 +48,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  */
 public class JMSTopicService implements Service<Topic> {
 
+    private static final String JMS_TOPIC_PREFIX = "jms.topic.";
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
 
@@ -65,11 +66,12 @@ public class JMSTopicService implements Service<Topic> {
             @Override
             public void run() {
                 try {
-                    jmsManager.createTopic(false, name);
-                    topic = new ActiveMQTopic(name);
+                    // add back the jms.topic. prefix to be consistent with ActiveMQ Artemis 1.x addressing scheme
+                    jmsManager.createTopic(false, JMS_TOPIC_PREFIX + name);
+                    topic = new ActiveMQTopic(JMS_TOPIC_PREFIX + name);
                     context.complete();
                 } catch (Throwable e) {
-                    context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "queue"));
+                    context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "topic"));
                 }
             }
         };

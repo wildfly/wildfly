@@ -50,6 +50,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  */
 public class JMSQueueService implements Service<Queue> {
 
+    private static final String JMS_QUEUE_PREFIX = "jms.queue.";
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
 
@@ -72,8 +73,9 @@ public class JMSQueueService implements Service<Queue> {
             @Override
             public void run() {
                 try {
-                    jmsManager.createQueue(false, queueName, selectorString, durable);
-                    JMSQueueService.this.queue = new ActiveMQQueue(queueName);
+                    // add back the jms.queue. prefix to be consistent with ActiveMQ Artemis 1.x addressing scheme
+                    jmsManager.createQueue(false, JMS_QUEUE_PREFIX + queueName, selectorString, durable);
+                    JMSQueueService.this.queue = new ActiveMQQueue(JMS_QUEUE_PREFIX + queueName);
                     context.complete();
                 } catch (Throwable e) {
                     context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "queue"));
