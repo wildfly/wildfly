@@ -130,7 +130,7 @@ public class JMSQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
 
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
         ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-        QueueControl control = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + queueName));
+        QueueControl control = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + "jms.queue." + queueName));
         return control;
     }
 }

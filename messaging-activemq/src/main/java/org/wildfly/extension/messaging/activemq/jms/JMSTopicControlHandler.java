@@ -143,7 +143,7 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         ServiceController<?> service = context.getServiceRegistry(!readOnly).getService(serviceName);
         ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
        ManagementService managementService = server.getManagementService();
-       AddressControl control = AddressControl.class.cast(managementService.getResource(ResourceNames.ADDRESS + topicName));
+       AddressControl control = AddressControl.class.cast(managementService.getResource(ResourceNames.ADDRESS + "jms.topic." + topicName));
 
         if (control == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
