@@ -46,38 +46,24 @@ public enum AddressableNodeSerializer implements Serializer<AddressableNode> {
 
     @Override
     public void write(DataOutput output, AddressableNode node) throws IOException {
-        // Awkward exception handling due to JGRP-2242
-        try {
-            org.jgroups.util.Util.writeAddress(node.getAddress(), output);
-            output.writeUTF(node.getName());
-            InetSocketAddress socketAddress = node.getSocketAddress();
-            // Socket address will always contain a resolved address
-            byte[] address = socketAddress.getAddress().getAddress();
-            IndexSerializer.UNSIGNED_BYTE.writeInt(output, address.length);
-            output.write(address);
-            IndexSerializer.UNSIGNED_SHORT.writeInt(output, socketAddress.getPort());
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
+        AddressSerializer.INSTANCE.write(output, node.getAddress());
+        output.writeUTF(node.getName());
+        InetSocketAddress socketAddress = node.getSocketAddress();
+        // Socket address will always contain a resolved address
+        byte[] address = socketAddress.getAddress().getAddress();
+        IndexSerializer.UNSIGNED_BYTE.writeInt(output, address.length);
+        output.write(address);
+        IndexSerializer.UNSIGNED_SHORT.writeInt(output, socketAddress.getPort());
     }
 
     @Override
     public AddressableNode read(DataInput input) throws IOException {
-        // Awkward exception handling due to JGRP-2242
-        try {
-            Address jgroupsAddress = org.jgroups.util.Util.readAddress(input);
-            String name = input.readUTF();
-            byte[] address = new byte[IndexSerializer.UNSIGNED_BYTE.readInt(input)];
-            input.readFully(address);
-            int port = IndexSerializer.UNSIGNED_SHORT.readInt(input);
-            return new AddressableNode(jgroupsAddress, name, new InetSocketAddress(InetAddress.getByAddress(address), port));
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
+        Address jgroupsAddress = AddressSerializer.INSTANCE.read(input);
+        String name = input.readUTF();
+        byte[] address = new byte[IndexSerializer.UNSIGNED_BYTE.readInt(input)];
+        input.readFully(address);
+        int port = IndexSerializer.UNSIGNED_SHORT.readInt(input);
+        return new AddressableNode(jgroupsAddress, name, new InetSocketAddress(InetAddress.getByAddress(address), port));
     }
 
     @MetaInfServices(Externalizer.class)
