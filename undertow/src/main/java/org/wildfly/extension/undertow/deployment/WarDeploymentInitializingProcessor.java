@@ -42,7 +42,7 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         String deploymentName = deploymentUnit.getName().toLowerCase(Locale.ENGLISH);
-        if (deploymentName.endsWith(".war") || deploymentName.endsWith(".wab")) {
+        if (deploymentName.endsWith(".war")) {
             DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
         }
     }

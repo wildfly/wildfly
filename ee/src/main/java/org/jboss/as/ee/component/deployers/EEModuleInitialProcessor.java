@@ -44,7 +44,7 @@ public final class EEModuleInitialProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final String deploymentUnitName = deploymentUnit.getName();
         final String moduleName;
-        if (deploymentUnitName.endsWith(".war") || deploymentUnitName.endsWith(".wab") || deploymentUnitName.endsWith(".jar") || deploymentUnitName.endsWith(".ear") || deploymentUnitName.endsWith(".rar")) {
+        if (deploymentUnitName.endsWith(".war") || deploymentUnitName.endsWith(".jar") || deploymentUnitName.endsWith(".ear") || deploymentUnitName.endsWith(".rar")) {
             moduleName = deploymentUnitName.substring(0, deploymentUnitName.length() - 4);
         } else {
             moduleName = deploymentUnitName;
