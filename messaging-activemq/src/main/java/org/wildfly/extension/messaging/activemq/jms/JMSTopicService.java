@@ -48,7 +48,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  */
 public class JMSTopicService implements Service<Topic> {
 
-    private static final String JMS_TOPIC_PREFIX = "jms.topic.";
+    static final String JMS_TOPIC_PREFIX = "jms.topic.";
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
 
@@ -71,7 +71,7 @@ public class JMSTopicService implements Service<Topic> {
                     topic = new ActiveMQTopic(JMS_TOPIC_PREFIX + name);
                     context.complete();
                 } catch (Throwable e) {
-                    context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "topic"));
+                    context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "JMS topic"));
                 }
             }
         };

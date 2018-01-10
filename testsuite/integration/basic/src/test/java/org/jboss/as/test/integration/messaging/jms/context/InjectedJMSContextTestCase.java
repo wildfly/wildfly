@@ -60,7 +60,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class InjectedJMSContextTestCase {
 
-    public static final String QUEUE_NAME = "java:app/InjectedJMSContextTestCaseQueue";
+    public static final String QUEUE_NAME = "java:/InjectedJMSContextTestCaseQueue";
 
     @Resource(mappedName = "/JmsXA")
     private ConnectionFactory factory;
@@ -142,6 +142,8 @@ public class InjectedJMSContextTestCase {
 
     private void sendAndReceiveFromMDB(boolean rollback) throws JMSException {
         String text = "sendAndReceiveFromMDB " + rollback;
+        System.out.println("InjectedJMSContextTestCase.sendAndReceiveFromMDB");
+        System.out.println(">>>> queue = " + queue);
 
         try (JMSContext context = factory.createContext()) {
             TemporaryQueue replyTo = context.createTemporaryQueue();

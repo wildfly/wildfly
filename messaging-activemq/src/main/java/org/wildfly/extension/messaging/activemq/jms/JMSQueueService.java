@@ -50,7 +50,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  */
 public class JMSQueueService implements Service<Queue> {
 
-    private static final String JMS_QUEUE_PREFIX = "jms.queue.";
+    static final String JMS_QUEUE_PREFIX = "jms.queue.";
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
 
@@ -78,7 +78,7 @@ public class JMSQueueService implements Service<Queue> {
                     JMSQueueService.this.queue = new ActiveMQQueue(JMS_QUEUE_PREFIX + queueName);
                     context.complete();
                 } catch (Throwable e) {
-                    context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "queue"));
+                    context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "JMS queue"));
                 }
             }
         };

@@ -65,7 +65,7 @@ public class HelloBean implements Hello {
 
         try {
             ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("java:/ConnectionFactory");
-            Queue queue = (Queue) initialContext.lookup(HelloBean.QUEUE_NAME_JNDI);
+            Queue queue = (Queue) initialContext.lookup(QUEUE_NAME_JNDI);
             String replyMessage = HelloBean.sendMessage(cf, queue);
             return String.format("%s %s, %s", SAYING, getName(), replyMessage);
         } finally {

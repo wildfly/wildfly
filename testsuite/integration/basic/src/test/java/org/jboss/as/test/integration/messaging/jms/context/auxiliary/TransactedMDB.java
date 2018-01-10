@@ -66,6 +66,7 @@ public class TransactedMDB implements MessageListener {
     private MessageDrivenContext mdbContext;
 
     public void onMessage(final Message m) {
+        System.out.println(">>>>>>>> TransactedMDB.onMessage");
         try {
             // ignore redelivered message
             if (m.getJMSRedelivered()) {
