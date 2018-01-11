@@ -71,10 +71,6 @@
             <plugin>
                 <groupId>org.wildfly.build</groupId>
                 <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
-                <!--
-                This is workaround as 1.2.3.Final doesn't properly extract xsd schemas anymore
-                -->
-                <version>1.2.2.Final</version>
                 <executions>
                     <execution>
                         <id>server-provisioning</id>
