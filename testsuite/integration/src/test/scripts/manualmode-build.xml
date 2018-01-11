@@ -26,7 +26,6 @@
 
     <!-- import shared ant targets -->
     <import file="common-targets.xml" as="common"/>
-    <import file="clustering-common-targets.xml" as="clustering-common"/>
 
     <target name="build-manual-mode" description="Builds server configurations for manual mode tests">
 

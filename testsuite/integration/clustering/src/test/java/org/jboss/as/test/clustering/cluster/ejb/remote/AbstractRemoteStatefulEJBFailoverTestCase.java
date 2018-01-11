@@ -26,7 +26,7 @@ import java.util.PropertyPermission;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
@@ -48,7 +48,7 @@ import org.wildfly.common.function.ExceptionSupplier;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class AbstractRemoteStatefulEJBFailoverTestCase extends ClusterAbstractTestCase {
+public abstract class AbstractRemoteStatefulEJBFailoverTestCase extends AbstractClusteringTestCase {
     private static final int COUNT = 20;
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
 
@@ -118,7 +118,7 @@ public abstract class AbstractRemoteStatefulEJBFailoverTestCase extends ClusterA
                 Assert.assertEquals(String.valueOf(i), target, result.getNode());
             }
 
-            stop(this.findContainer(target));
+            stop(target);
 
             result = bean.increment();
             // Bean should failover to other node
@@ -127,7 +127,7 @@ public abstract class AbstractRemoteStatefulEJBFailoverTestCase extends ClusterA
             Assert.assertEquals(count++, result.getValue().intValue());
             Assert.assertNotEquals(target, failoverTarget);
 
-            start(this.findContainer(target));
+            start(target);
 
             // Allow sufficient time for client to receive new topology
             Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);

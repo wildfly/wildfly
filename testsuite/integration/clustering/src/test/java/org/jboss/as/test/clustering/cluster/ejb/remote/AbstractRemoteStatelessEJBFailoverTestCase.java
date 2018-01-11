@@ -33,7 +33,7 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
@@ -56,7 +56,7 @@ import org.wildfly.common.function.ExceptionSupplier;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends ClusterAbstractTestCase {
+public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final int COUNT = 20;
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
@@ -96,7 +96,7 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Cluster
                     Thread.sleep(INVOCATION_WAIT);
                 }
 
-                for (String node : NODES) {
+                for (String node : TWO_NODES) {
                     int frequency = Collections.frequency(results, node);
                     assertTrue(String.valueOf(frequency) + " invocations were routed to " + node, frequency > 0);
                 }
@@ -123,12 +123,12 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Cluster
                     Thread.sleep(INVOCATION_WAIT);
                 }
 
-                for (String node : NODES) {
+                for (String node : TWO_NODES) {
                     int frequency = Collections.frequency(results, node);
                     assertTrue(String.valueOf(frequency) + " invocations were routed to " + node, frequency > 0);
                 }
 
-                stop(CONTAINER_2);
+                stop(NODE_2);
 
                 for (int i = 0; i < COUNT; ++i) {
                     Result<Integer> result = bean.increment();
@@ -139,7 +139,7 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Cluster
                 Assert.assertEquals(COUNT, Collections.frequency(results, NODE_1));
                 Assert.assertEquals(0, Collections.frequency(results, NODE_2));
 
-                start(CONTAINER_2);
+                start(NODE_2);
 
                 // Allow sufficient time for client to receive new topology
                 Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
@@ -150,7 +150,7 @@ public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends Cluster
                     Thread.sleep(INVOCATION_WAIT);
                 }
 
-                for (String node : NODES) {
+                for (String node : TWO_NODES) {
                     int frequency = Collections.frequency(results, node);
                     assertTrue(String.valueOf(frequency) + " invocations were routed to " + node, frequency > 0);
                 }

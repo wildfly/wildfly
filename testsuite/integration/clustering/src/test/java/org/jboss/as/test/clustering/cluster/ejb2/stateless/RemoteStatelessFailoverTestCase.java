@@ -22,15 +22,16 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.stateless;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PropertyPermission;
+
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
@@ -92,17 +93,17 @@ public class RemoteStatelessFailoverTestCase {
         deployed.put(DEPLOYMENT_2, false);
         deployed.put(DEPLOYMENT_1_DD, false);
         deployed.put(DEPLOYMENT_2_DD, false);
-        started.put(CONTAINER_1, false);
-        started.put(CONTAINER_2, false);
+        started.put(NODE_1, false);
+        started.put(NODE_2, false);
 
         List<String> deployments1 = new ArrayList<>();
         deployments1.add(DEPLOYMENT_1);
         deployments1.add(DEPLOYMENT_1_DD);
-        container2deployment.put(CONTAINER_1, deployments1);
+        container2deployment.put(NODE_1, deployments1);
         List<String> deployments2 = new ArrayList<>();
         deployments2.add(DEPLOYMENT_2);
         deployments2.add(DEPLOYMENT_2_DD);
-        container2deployment.put(CONTAINER_2, deployments2);
+        container2deployment.put(NODE_2, deployments2);
     }
 
     @AfterClass
@@ -117,25 +118,25 @@ public class RemoteStatelessFailoverTestCase {
     private Deployer deployer;
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> createDeploymentForContainer1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> createDeploymentForContainer2() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_1_DD, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> createDeploymentOnDescriptorForContainer1() {
         return createDeploymentOnDescriptor();
     }
 
     @Deployment(name = DEPLOYMENT_2_DD, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> createDeploymentOnDescriptorForContainer2() {
         return createDeploymentOnDescriptor();
     }
@@ -184,8 +185,8 @@ public class RemoteStatelessFailoverTestCase {
     }
 
     private void doFailover(boolean isStop, EJBDirectory directory, String deployment1, String deployment2) throws Exception {
-        this.start(CONTAINER_1);
-        this.deploy(CONTAINER_1, deployment1);
+        this.start(NODE_1);
+        this.deploy(NODE_1, deployment1);
 
         // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
         // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset
@@ -196,21 +197,21 @@ public class RemoteStatelessFailoverTestCase {
             StatelessRemoteHome home = directory.lookupHome(StatelessBean.class, StatelessRemoteHome.class);
             StatelessRemote bean = home.create();
 
-            assertEquals("The only " + NODES[0] + " is active. Bean had to be invoked on it but it wasn't.", NODES[0], bean.getNodeName());
+            assertEquals("The only " + TWO_NODES[0] + " is active. Bean had to be invoked on it but it wasn't.", TWO_NODES[0], bean.getNodeName());
 
-            this.start(CONTAINER_2);
-            this.deploy(CONTAINER_2, deployment2);
+            this.start(NODE_2);
+            this.deploy(NODE_2, deployment2);
 
             if (isStop) {
-                this.stop(CONTAINER_1);
+                this.stop(NODE_1);
             } else {
-                this.undeploy(CONTAINER_1, deployment1);
+                this.undeploy(NODE_1, deployment1);
             }
 
-            assertEquals("Only " + NODES[1] + " is active. The bean had to be invoked on it but it wasn't.", NODES[1], bean.getNodeName());
+            assertEquals("Only " + TWO_NODES[1] + " is active. The bean had to be invoked on it but it wasn't.", TWO_NODES[1], bean.getNodeName());
         } finally {
             // need to have the container started to undeploy deployment afterwards
-            this.start(CONTAINER_1);
+            this.start(NODE_1);
             // shutdown the containers
             undeployAll();
             shutdownAll();
@@ -231,10 +232,10 @@ public class RemoteStatelessFailoverTestCase {
      * Basic load balance testing. A random distribution is used amongst nodes for client now.
      */
     private void loadbalance(EJBDirectory directory, String deployment1, String deployment2) throws Exception {
-        this.start(CONTAINER_1);
-        this.deploy(CONTAINER_1, deployment1);
-        this.start(CONTAINER_2);
-        this.deploy(CONTAINER_2, deployment2);
+        this.start(NODE_1);
+        this.deploy(NODE_1, deployment1);
+        this.start(NODE_2);
+        this.deploy(NODE_2, deployment2);
 
         // TODO Elytron: Once support for legacy EJB properties has been added back, actually set the EJB properties
         // that should be used for this test using CLIENT_PROPERTIES and ensure the EJB client context is reset

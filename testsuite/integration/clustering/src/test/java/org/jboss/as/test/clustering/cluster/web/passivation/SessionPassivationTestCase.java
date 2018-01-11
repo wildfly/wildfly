@@ -22,10 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.web.passivation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -36,6 +33,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.stream.Stream;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.Header;
@@ -46,7 +44,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -54,7 +52,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 
-public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase {
+public abstract class SessionPassivationTestCase extends AbstractClusteringTestCase {
 
     private static final int MAX_PASSIVATION_WAIT = TimeoutUtil.adjust(10000);
 
@@ -71,8 +69,8 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
     public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL)
             throws IOException, URISyntaxException {
 
-        String session1 = null;
-        String session2 = null;
+        String session1;
+        String session2;
 
         try (CloseableHttpClient client1 = TestHttpClientUtils.promiscuousCookieHttpClient();
              CloseableHttpClient client2 = TestHttpClientUtils.promiscuousCookieHttpClient()) {

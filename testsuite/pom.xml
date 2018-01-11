@@ -1049,55 +1049,25 @@
                                             </excludes>
                                         </fileset>
                                         <fileset>
-                                            <directory>target/wildfly-tcp-0</directory>
+                                            <directory>target/wildfly-1</directory>
                                             <excludes>
                                                 <exclude>**/*.log</exclude>
                                             </excludes>
                                         </fileset>
                                         <fileset>
-                                            <directory>target/wildfly-tcp-1</directory>
+                                            <directory>target/wildfly-2</directory>
                                             <excludes>
                                                 <exclude>**/*.log</exclude>
                                             </excludes>
                                         </fileset>
                                         <fileset>
-                                            <directory>target/wildfly-clustered-messaging-0</directory>
+                                            <directory>target/wildfly-3</directory>
                                             <excludes>
                                                 <exclude>**/*.log</exclude>
                                             </excludes>
                                         </fileset>
                                         <fileset>
-                                            <directory>target/wildfly-clustered-messaging-1</directory>
-                                            <excludes>
-                                                <exclude>**/*.log</exclude>
-                                            </excludes>
-                                        </fileset>
-                                        <fileset>
-                                            <directory>target/wildfly-xsite-LON-0</directory>
-                                            <excludes>
-                                                <exclude>**/*.log</exclude>
-                                            </excludes>
-                                        </fileset>
-                                        <fileset>
-                                            <directory>target/wildfly-xsite-LON-1</directory>
-                                            <excludes>
-                                                <exclude>**/*.log</exclude>
-                                            </excludes>
-                                        </fileset>
-                                        <fileset>
-                                            <directory>target/wildfly-xsite-NYC-0</directory>
-                                            <excludes>
-                                                <exclude>**/*.log</exclude>
-                                            </excludes>
-                                        </fileset>
-                                        <fileset>
-                                            <directory>target/wildfly-xsite-SFO-0</directory>
-                                            <excludes>
-                                                <exclude>**/*.log</exclude>
-                                            </excludes>
-                                        </fileset>
-                                        <fileset>
-                                            <directory>target/wildfly-xsite-SFO-0-backupFor</directory>
+                                            <directory>target/wildfly-4</directory>
                                             <excludes>
                                                 <exclude>**/*.log</exclude>
                                             </excludes>

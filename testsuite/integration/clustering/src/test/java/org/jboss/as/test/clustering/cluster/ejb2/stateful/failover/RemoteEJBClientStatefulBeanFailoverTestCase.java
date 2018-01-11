@@ -22,6 +22,10 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.stateful.failover;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.util.PropertyPermission;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -34,10 +38,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.PropertyPermission;
-
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests that invocations on a clustered stateful session EJB2 bean from a remote EJB client, failover to
@@ -53,25 +53,25 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 public class RemoteEJBClientStatefulBeanFailoverTestCase extends RemoteEJBClientStatefulFailoverTestBase {
 
     @Deployment(name = DEPLOYMENT_HELPER_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> createDeploymentForContainer1Singleton() {
         return createDeploymentSingleton();
     }
 
     @Deployment(name = DEPLOYMENT_HELPER_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> createDeploymentForContainer2Singleton() {
         return createDeploymentSingleton();
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> createDeploymentForContainer1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> createDeploymentForContainer2() {
         return createDeployment();
     }

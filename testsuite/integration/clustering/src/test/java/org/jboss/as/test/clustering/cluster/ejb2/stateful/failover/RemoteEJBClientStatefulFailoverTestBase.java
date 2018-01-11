@@ -24,7 +24,7 @@ package org.jboss.as.test.clustering.cluster.ejb2.stateful.failover;
 
 import javax.naming.NamingException;
 
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterRemote;
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterRemoteHome;
 import org.jboss.as.test.clustering.cluster.ejb2.stateful.failover.bean.shared.CounterResult;
@@ -43,7 +43,7 @@ import org.junit.BeforeClass;
 /**
  * @author Ondrej Chaloupka
  */
-public abstract class RemoteEJBClientStatefulFailoverTestBase extends ClusterAbstractTestCase {
+public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractClusteringTestCase {
     private static final Logger log = Logger.getLogger(RemoteEJBClientStatefulFailoverTestBase.class);
 
     protected static final String MODULE_NAME = "ejb2-failover-test";
@@ -72,15 +72,15 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends ClusterAbs
 
     @Override
     public void beforeTestMethod() {
-        start(CONTAINERS);
-        deploy(DEPLOYMENT_HELPERS);
-        deploy(DEPLOYMENTS);
+        start(TWO_NODES);
+        deploy(TWO_DEPLOYMENT_HELPERS);
+        deploy(TWO_DEPLOYMENTS);
     }
 
     @Override
-    public void afterTestMethod() {
+    public void afterTestMethod() throws Exception {
         super.afterTestMethod();
-        undeploy(DEPLOYMENT_HELPERS);
+        undeploy(TWO_DEPLOYMENT_HELPERS);
     }
 
     /**
@@ -127,14 +127,14 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends ClusterAbs
                 deployer.undeploy(DEPLOYMENT_1);
                 deployer.undeploy(DEPLOYMENT_HELPER_1);
             } else {
-                stop(CONTAINER_1);
+                stop(NODE_1);
             }
         } else {
             if (undeployOnly) {
                 deployer.undeploy(DEPLOYMENT_2);
                 deployer.undeploy(DEPLOYMENT_HELPER_2);
             } else {
-                stop(CONTAINER_2);
+                stop(NODE_2);
             }
         }
         // invoke again

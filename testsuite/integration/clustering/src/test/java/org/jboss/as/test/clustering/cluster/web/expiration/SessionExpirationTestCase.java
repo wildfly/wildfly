@@ -33,7 +33,7 @@ import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -46,7 +46,7 @@ import org.junit.Test;
  *
  * @author Paul Ferraro
  */
-public abstract class SessionExpirationTestCase extends ClusterAbstractTestCase {
+public abstract class SessionExpirationTestCase extends AbstractClusteringTestCase {
 
     static WebArchive getBaseDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "expiration.war");

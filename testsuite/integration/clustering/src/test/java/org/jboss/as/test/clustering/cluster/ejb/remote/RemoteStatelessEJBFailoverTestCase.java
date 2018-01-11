@@ -38,13 +38,13 @@ public class RemoteStatelessEJBFailoverTestCase extends AbstractRemoteStatelessE
     private static final String MODULE_NAME = "remote-stateless-ejb-failover-test";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> createDeploymentForContainer1() {
         return createDeployment(MODULE_NAME);
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> createDeploymentForContainer2() {
         return createDeployment(MODULE_NAME);
     }

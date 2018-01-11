@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.clustering.cluster.singleton;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -43,7 +45,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.partition.PartitionerServlet;
 import org.jboss.as.test.clustering.cluster.singleton.partition.SingletonServiceActivator;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeService;
@@ -59,8 +61,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-
 /**
  * Test case for BZ-1190029 and https://issues.jboss.org/browse/WFLY-4748.
  * <p/>
@@ -73,20 +73,20 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SingletonPartitionTestCase extends ClusterAbstractTestCase {
+public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
 
     private static final long TOPOLOGY_CHANGE_TIMEOUT = TimeoutUtil.adjust(120_000); // maximum time in ms to wait for cluster topology change
     private static final int SERVICE_TIMEOUT = TimeoutUtil.adjust(5_000); // it takes a little extra time after merge for the singleton service to migrate
     private static final String CONTAINER = "server";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deployment1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deployment2() {
         return createDeployment();
     }
@@ -185,11 +185,11 @@ public class SingletonPartitionTestCase extends ClusterAbstractTestCase {
     }
 
     @Override
-    public void afterTestMethod() {
+    public void afterTestMethod() throws Exception {
         super.afterTestMethod();
 
         // Stop the container to ensure there aren't any remnants since the test operates on a live JGroups channels
-        stop(CONTAINERS);
+        stop(TWO_NODES);
     }
 
     private static void checkSingletonNode(URI serviceUri, String expectedProviderNode) throws IOException {
