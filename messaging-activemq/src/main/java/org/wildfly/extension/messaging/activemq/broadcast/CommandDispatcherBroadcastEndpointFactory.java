@@ -20,39 +20,36 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.messaging.activemq;
+package org.wildfly.extension.messaging.activemq.broadcast;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpoint;
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
-import org.apache.activemq.artemis.api.core.JGroupsBroadcastEndpoint;
-import org.apache.activemq.artemis.api.core.jgroups.JChannelManager;
-import org.jgroups.JChannel;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 
 /**
- * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
+ * A {@link BroadcastEndpointFactory} based on a {@link CommandDispatcherFactory}.
+ * @author Paul Ferraro
  */
 @SuppressWarnings("serial")
-public class JGroupsBroadcastEndpointFactory implements BroadcastEndpointFactory {
-    private final ChannelFactory channelFactory;
-    private final String channelName;
+public class CommandDispatcherBroadcastEndpointFactory implements BroadcastEndpointFactory {
 
-    /**
-     * @param channels a Map of &lt;channel names, JChannel&gt; can will be filled with channels created from the broadcast endpoints
-     */
-    public JGroupsBroadcastEndpointFactory(ChannelFactory channelFactory, String channelName) {
-        this.channelFactory = channelFactory;
-        this.channelName = channelName;
+    private static final Map<String, BroadcastManager> BROADCAST_MANAGERS = new ConcurrentHashMap<>();
+
+    private final CommandDispatcherFactory factory;
+    private final String name;
+    private final BroadcastManager manager;
+
+    public CommandDispatcherBroadcastEndpointFactory(CommandDispatcherFactory factory, String name) {
+        this.factory = factory;
+        this.name = name;
+        this.manager = BROADCAST_MANAGERS.computeIfAbsent(name, key -> new QueueBroadcastManager());
     }
 
     @Override
     public BroadcastEndpoint createBroadcastEndpoint() throws Exception {
-        JGroupsBroadcastEndpoint endpoint = new JGroupsBroadcastEndpoint(JChannelManager.getInstance(), channelName) {
-            @Override
-            public JChannel createChannel() throws Exception {
-                return (JChannel) channelFactory.createChannel(channelName);
-            }
-        };
-        return endpoint.initChannel();
+        return new CommandDispatcherBroadcastEndpoint(this.factory, this.name, this.manager);
     }
 }

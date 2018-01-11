@@ -85,6 +85,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     }
 
     private final ConcurrentMap<Address, Node> members = new ConcurrentHashMap<>();
+    // Store execution context using an Optional so we can differentiate an unknown service from a known service with a null context
     private final Map<Object, Optional<Object>> contexts = new ConcurrentHashMap<>();
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
     private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
