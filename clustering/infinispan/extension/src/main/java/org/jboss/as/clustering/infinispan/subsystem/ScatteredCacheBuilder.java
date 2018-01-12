@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.DistributedCacheResourceDefinition.Attribute.*;
+import static org.jboss.as.clustering.infinispan.subsystem.ScatteredCacheResourceDefinition.Attribute.*;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
@@ -34,24 +34,19 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 
 /**
- * Builds the configuration for a distributed cache.
  * @author Paul Ferraro
  */
-public class DistributedCacheBuilder extends SegmentedCacheBuilder {
+public class ScatteredCacheBuilder extends SegmentedCacheBuilder {
 
-    private volatile int capacityFactor;
-    private volatile int owners;
-    private volatile long l1Lifespan;
+    private volatile int invalidationBatchSize;
 
-    DistributedCacheBuilder(PathAddress address) {
-        super(address, CacheMode.DIST_SYNC);
+    ScatteredCacheBuilder(PathAddress address) {
+        super(address, CacheMode.SCATTERED_SYNC);
     }
 
     @Override
     public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.capacityFactor = CAPACITY_FACTOR.resolveModelAttribute(context, model).asInt();
-        this.l1Lifespan = L1_LIFESPAN.resolveModelAttribute(context, model).asLong();
-        this.owners = OWNERS.resolveModelAttribute(context, model).asInt();
+        this.invalidationBatchSize = INVALIDATION_BATCH_SIZE.resolveModelAttribute(context, model).asInt();
 
         return super.configure(context, model);
     }
@@ -60,9 +55,7 @@ public class DistributedCacheBuilder extends SegmentedCacheBuilder {
     public void accept(ConfigurationBuilder builder) {
         super.accept(builder);
 
-        builder.clustering()
-                .hash().capacityFactor(this.capacityFactor).numOwners(this.owners)
-                .l1().enabled(this.l1Lifespan > 0).lifespan(this.l1Lifespan)
-                ;
+        builder.clustering().invalidationBatchSize(this.invalidationBatchSize);
     }
+
 }

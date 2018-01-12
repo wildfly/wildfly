@@ -247,6 +247,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                         break;
                     }
                 }
+                case SCATTERED_CACHE: {
+                    if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                        this.parseScatteredCache(reader, address, operations);
+                        break;
+                    }
+                }
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }
@@ -378,6 +384,31 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
     }
 
+    private void parseScatteredCache(XMLExtendedStreamReader reader, PathAddress containerAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+
+        String name = require(reader, XMLAttribute.NAME);
+        PathAddress address = containerAddress.append(ScatteredCacheResourceDefinition.pathElement(name));
+        ModelNode operation = Util.createAddOperation(address);
+        operations.put(address, operation);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case INVALIDATION_BATCH_SIZE: {
+                    readAttribute(reader, i, operation, ScatteredCacheResourceDefinition.Attribute.INVALIDATION_BATCH_SIZE);
+                    break;
+                }
+                default: {
+                    this.parseSegmentedCacheAttribute(reader, i, address, operations);
+                }
+            }
+        }
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            this.parseSharedStateCacheElement(reader, address, operations);
+        }
+    }
+
     private void parseDistributedCache(XMLExtendedStreamReader reader, PathAddress containerAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String name = require(reader, XMLAttribute.NAME);
@@ -401,16 +432,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     // AS7-5753: convert any non-expression virtual nodes value to a segments value,
-                    String virtualNodes = readAttribute(reader, i, DistributedCacheResourceDefinition.Attribute.SEGMENTS).asString();
+                    String virtualNodes = readAttribute(reader, i, SegmentedCacheResourceDefinition.Attribute.SEGMENTS).asString();
                     String segments = SegmentsAndVirtualNodeConverter.virtualNodesToSegments(virtualNodes);
-                    setAttribute(reader, segments, operation, DistributedCacheResourceDefinition.Attribute.SEGMENTS);
+                    setAttribute(reader, segments, operation, SegmentedCacheResourceDefinition.Attribute.SEGMENTS);
                     break;
-                }
-                case SEGMENTS: {
-                    if (this.schema.since(InfinispanSchema.VERSION_1_4)) {
-                        readAttribute(reader, i, operation, DistributedCacheResourceDefinition.Attribute.SEGMENTS);
-                        break;
-                    }
                 }
                 case CAPACITY_FACTOR: {
                     if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
@@ -418,14 +443,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                         break;
                     }
                 }
-                case CONSISTENT_HASH_STRATEGY: {
-                    if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
-                        readAttribute(reader, i, operation, DistributedCacheResourceDefinition.Attribute.CONSISTENT_HASH_STRATEGY);
-                        break;
-                    }
-                }
                 default: {
-                    this.parseClusteredCacheAttribute(reader, i, address, operations);
+                    this.parseSegmentedCacheAttribute(reader, i, address, operations);
                 }
             }
         }
@@ -525,6 +544,28 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         if (!this.schema.since(InfinispanSchema.VERSION_1_5)) {
             // We need to explicitly enable statistics (to reproduce old behavior), since the new attribute defaults to false.
             operation.get(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getName()).set(true);
+        }
+    }
+
+    private void parseSegmentedCacheAttribute(XMLExtendedStreamReader reader, int index, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        ModelNode operation = operations.get(address);
+        XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(index));
+        switch (attribute) {
+            case SEGMENTS: {
+                if (this.schema.since(InfinispanSchema.VERSION_1_4)) {
+                    readAttribute(reader, index, operation, SegmentedCacheResourceDefinition.Attribute.SEGMENTS);
+                    break;
+                }
+            }
+            case CONSISTENT_HASH_STRATEGY: {
+                if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                    readAttribute(reader, index, operation, SegmentedCacheResourceDefinition.Attribute.CONSISTENT_HASH_STRATEGY);
+                    break;
+                }
+            }
+            default: {
+                this.parseClusteredCacheAttribute(reader, index, address, operations);
+            }
         }
     }
 

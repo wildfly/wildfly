@@ -130,8 +130,23 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
                             writer.writeStartElement(XMLElement.DISTRIBUTED_CACHE.getLocalName());
 
-                            writeClusteredCacheAttributes(writer, property.getName(), cache);
+                            writeSegmentedCacheAttributes(writer, property.getName(), cache);
                             writeAttributes(writer, cache, EnumSet.allOf(DistributedCacheResourceDefinition.Attribute.class));
+
+                            writeCacheElements(writer, cache);
+
+                            writer.writeEndElement();
+                        }
+                    }
+
+                    if (container.hasDefined(ScatteredCacheResourceDefinition.WILDCARD_PATH.getKey())) {
+                        for (Property property : container.get(ScatteredCacheResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                            ModelNode cache = property.getValue();
+
+                            writer.writeStartElement(XMLElement.SCATTERED_CACHE.getLocalName());
+
+                            writeSegmentedCacheAttributes(writer, property.getName(), cache);
+                            writeAttributes(writer, cache, EnumSet.allOf(ScatteredCacheResourceDefinition.Attribute.class));
 
                             writeCacheElements(writer, cache);
 
@@ -153,6 +168,11 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
     private static void writeClusteredCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
         writeCacheAttributes(writer, name, cache);
         writeAttributes(writer, cache, ClusteredCacheResourceDefinition.Attribute.class);
+    }
+
+    private static void writeSegmentedCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
+        writeClusteredCacheAttributes(writer, name, cache);
+        writeAttributes(writer, cache, SegmentedCacheResourceDefinition.Attribute.class);
     }
 
     private static void writeCacheElements(XMLExtendedStreamWriter writer, ModelNode cache) throws XMLStreamException {

@@ -91,5 +91,12 @@
                 </backup>
             </backups>
         </distributed-cache>
+        <scattered-cache name="scattered" remote-timeout="35000" segments="2" consistent-hash-strategy="INTRA_CACHE" invalidation-batch-size="100" statistics-enabled="true">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
+            <object-memory size="20000"/>
+            <expiration interval="10000" lifespan="10" max-idle="10"/>
+            <partition-handling enabled="true"/>
+            <state-transfer timeout="60000" chunk-size="10000"/>
+        </scattered-cache>
     </cache-container>
 </subsystem>

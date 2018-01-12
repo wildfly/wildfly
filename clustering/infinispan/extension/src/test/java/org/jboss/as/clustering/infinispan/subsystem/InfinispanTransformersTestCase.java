@@ -376,11 +376,20 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         ModelTestUtils.checkFailedTransformedBootOperations(services, version, xmlOps, createFailedOperationConfig(version));
     }
 
+    @SuppressWarnings("deprecation")
     private static FailedOperationTransformationConfig createFailedOperationConfig(ModelVersion version) {
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
         PathAddress subsystemAddress = PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH);
         PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
+
+        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
+            PathAddress cacheAddress = containerAddress.append(ScatteredCacheResourceDefinition.WILDCARD_PATH);
+            config.addFailedAttribute(cacheAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            for (PathElement path : Arrays.asList(LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH, ObjectMemoryResourceDefinition.PATH, ExpirationResourceDefinition.PATH, StateTransferResourceDefinition.PATH, PartitionHandlingResourceDefinition.PATH)) {
+                config.addFailedAttribute(cacheAddress.append(path), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            }
+        }
 
         if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
             for (PathElement path : Arrays.asList(DistributedCacheResourceDefinition.WILDCARD_PATH, ReplicatedCacheResourceDefinition.WILDCARD_PATH)) {
