@@ -94,7 +94,7 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : InfinispanModel.VERSION_5_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, STRING_JDBC_PATH) : parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : (InfinispanModel.VERSION_5_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, STRING_JDBC_PATH) : parent.addChildResource(PATH));
 
         JDBCStoreResourceDefinition.buildTransformation(version, builder, PATH);
 
