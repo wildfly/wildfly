@@ -89,22 +89,27 @@
             <xs:choice maxOccurs="unbounded">
                 <xs:element name="local-cache" type="tns:local-cache">
                     <xs:annotation>
-                        <xs:documentation>Defines a LOCAL mode cache.</xs:documentation>
+                        <xs:documentation>Defines a local mode cache.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
                 <xs:element name="replicated-cache" type="tns:replicated-cache">
                     <xs:annotation>
-                        <xs:documentation>Defines a REPL_* mode cache.</xs:documentation>
+                        <xs:documentation>Defines a replication mode cache.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
                 <xs:element name="invalidation-cache" type="tns:invalidation-cache">
                     <xs:annotation>
-                        <xs:documentation>Defines an INVALIDATION_* mode cache.</xs:documentation>
+                        <xs:documentation>Defines an invalidation mode cache.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
                 <xs:element name="distributed-cache" type="tns:distributed-cache">
                     <xs:annotation>
-                        <xs:documentation>Defines a DIST_* mode cache.</xs:documentation>
+                        <xs:documentation>Defines a distribution mode cache.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="scattered-cache" type="tns:scattered-cache">
+                    <xs:annotation>
+                        <xs:documentation>Defines a scattered mode cache.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
             </xs:choice>
@@ -396,17 +401,32 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="distributed-cache">
+    <xs:complexType name="segmented-cache" abstract="true">
         <xs:complexContent>
             <xs:extension base="tns:shared-state-cache">
-                <xs:attribute name="owners" type="xs:int" default="2">
-                    <xs:annotation>
-                        <xs:documentation>Number of cluster-wide replicas for each cache entry.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
                 <xs:attribute name="segments" type="xs:int" default="256">
                     <xs:annotation>
                         <xs:documentation>Number of hash space segments (per cluster).</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="consistent-hash-strategy" type="tns:consistent-hash-strategy" default="INTER_CACHE">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Defines the consistent hash strategy for the cache.
+                            This determines the consistent hash factory to use for generating the consistent hash.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="distributed-cache">
+        <xs:complexContent>
+            <xs:extension base="tns:segmented-cache">
+                <xs:attribute name="owners" type="xs:int" default="2">
+                    <xs:annotation>
+                        <xs:documentation>Number of cluster-wide replicas for each cache entry.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="l1-lifespan" type="xs:long" default="0">
@@ -419,12 +439,16 @@
                         <xs:documentation>Controls the proportion of entries that will reside on the local node, compared to the other nodes in the cluster.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="consistent-hash-strategy" type="tns:consistent-hash-strategy" default="INTER_CACHE">
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="scattered-cache">
+        <xs:complexContent>
+            <xs:extension base="tns:segmented-cache">
+                <xs:attribute name="invalidation-batch-size" type="xs:int" default="128">
                     <xs:annotation>
-                        <xs:documentation>
-                            Defines the consistent hash strategy for the cache.
-                            This determines the consistent hash factory to use for generating the consistent hash.
-                        </xs:documentation>
+                        <xs:documentation>The threshold after which batched invalidations are sent.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>

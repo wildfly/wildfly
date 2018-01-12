@@ -46,6 +46,6 @@ public class InvalidationCacheResourceDefinition extends ClusteredCacheResourceD
     }
 
     InvalidationCacheResourceDefinition() {
-        super(WILDCARD_PATH, Consumers.empty(), new InvalidationCacheServiceHandler(), Consumers.empty());
+        super(WILDCARD_PATH, Consumers.empty(), new ClusteredCacheServiceHandler(InvalidationCacheBuilder::new), Consumers.empty());
     }
 }

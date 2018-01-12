@@ -240,6 +240,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
 
         JGroupsTransportResourceDefinition.buildTransformation(version, builder);
 
+        ScatteredCacheResourceDefinition.buildTransformation(version, builder);
         DistributedCacheResourceDefinition.buildTransformation(version, builder);
         ReplicatedCacheResourceDefinition.buildTransformation(version, builder);
         InvalidationCacheResourceDefinition.buildTransformation(version, builder);
@@ -304,5 +305,6 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         new InvalidationCacheResourceDefinition().register(registration);
         new ReplicatedCacheResourceDefinition().register(registration);
         new DistributedCacheResourceDefinition().register(registration);
+        new ScatteredCacheResourceDefinition().register(registration);
     }
 }
