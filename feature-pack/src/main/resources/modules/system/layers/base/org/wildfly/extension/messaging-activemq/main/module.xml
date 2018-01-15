@@ -72,7 +72,7 @@
         <module name="org.jboss.jts"/>
         <module name="org.picketbox"/>
         <module name="org.jboss.jboss-transaction-spi"/>
-        <module name="org.wildfly.naming-client"/>
+        <module name="org.wildfly.naming-client" services="import" />
         <module name="org.jboss.threads"/>
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.jboss.weld.api" />
