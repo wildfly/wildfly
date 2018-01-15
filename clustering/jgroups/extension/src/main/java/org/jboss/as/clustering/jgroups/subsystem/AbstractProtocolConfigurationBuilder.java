@@ -24,22 +24,15 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.AbstractProtocolResourceDefinition.Attribute.*;
 
-import java.lang.reflect.Method;
-import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
-import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
-import org.jboss.as.clustering.jgroups.protocol.ProtocolFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.Services;
@@ -53,7 +46,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
-import org.jgroups.stack.Configurator;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
@@ -68,8 +60,8 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
     private final String name;
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
     private final InjectedValue<ProtocolDefaults> defaults = new InjectedValue<>();
+    private final Map<String, String> properties = new HashMap<>();
 
-    private volatile Map<String, String> properties;
     private volatile String moduleName;
     private volatile Boolean statisticsEnabled;
 
@@ -88,7 +80,10 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
     @Override
     public Builder<C> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.moduleName = MODULE.resolveModelAttribute(context, model).asString();
-        this.properties = ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).orElse(Collections.emptyList()).stream().collect(Collectors.toMap(Property::getName, property -> property.getValue().asString()));
+        this.properties.clear();
+        for (Property property : ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).orElse(Collections.emptyList())) {
+            this.properties.put(property.getName(), property.getValue().asString());
+        }
         this.statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBooleanOrNull();
         return this;
     }
@@ -106,47 +101,22 @@ public abstract class AbstractProtocolConfigurationBuilder<P extends Protocol, C
         try {
             Module module = this.loader.getValue().loadModule(this.moduleName);
             Class<? extends Protocol> protocolClass = module.getClassLoader().loadClass(className).asSubclass(Protocol.class);
-            Protocol protocol = ProtocolFactory.newInstance(protocolClass);
-            // Only transform "native" protocols
-            @SuppressWarnings("unchecked")
-            P result = (P) (nativeProtocol ? ProtocolFactory.TRANSFORMER.apply(protocol) : protocol);
             Map<String, String> properties = new HashMap<>(this.defaults.getValue().getProperties(protocolClass));
             properties.putAll(this.properties);
-            Configurator.removeDeprecatedProperties(result, properties);
-            Configurator.resolveAndAssignFields(result, properties);
-            Configurator.resolveAndInvokePropertyMethods(result, properties);
-            for (Object object : this.getConfigurableObjects(result)) {
-                Configurator.removeDeprecatedProperties(object, properties);
-                Configurator.resolveAndAssignFields(object, properties);
-                Configurator.resolveAndInvokePropertyMethods(object, properties);
-            }
-            if (!properties.isEmpty()) {
-                JGroupsLogger.ROOT_LOGGER.ignoredProperties(this.name, properties);
-            }
-            this.accept(result);
-            result.enableStats(this.statisticsEnabled != null ? this.statisticsEnabled : stackConfiguration.isStatisticsEnabled());
-            return result;
+            PrivilegedExceptionAction<Protocol> action = () -> {
+                try {
+                    return protocolClass.newInstance().setProperties(properties);
+                } catch (InstantiationException | IllegalAccessException e) {
+                    throw new IllegalStateException(e);
+                }
+            };
+            @SuppressWarnings("unchecked")
+            P protocol = (P) WildFlySecurityManager.doUnchecked(action);
+            this.accept(protocol);
+            protocol.enableStats(this.statisticsEnabled != null ? this.statisticsEnabled : stackConfiguration.isStatisticsEnabled());
+            return protocol;
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
-        }
-    }
-
-    private List<Object> getConfigurableObjects(P protocol) throws Exception {
-        @SuppressWarnings("unchecked")
-        PrivilegedExceptionAction<List<Object>> action = () -> {
-            // Protocol.getConfigurableObjects() is protected
-            Method method = Protocol.class.getDeclaredMethod("getConfigurableObjects");
-            method.setAccessible(true);
-            try {
-                return (List<Object>) method.invoke(protocol);
-            } finally {
-                method.setAccessible(false);
-            }
-        };
-        try {
-            return Optional.ofNullable(WildFlySecurityManager.doUnchecked(action)).orElse(Collections.emptyList());
-        } catch (PrivilegedActionException e) {
-            throw e.getException();
         }
     }
 }

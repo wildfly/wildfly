@@ -166,7 +166,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
         ProtocolRegistration.buildTransformation(version, builder);
     }
 
-    private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = address -> new JChannelFactoryBuilder(address);
+    private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = JChannelFactoryBuilder::new;
 
     // registration
     public StackResourceDefinition() {

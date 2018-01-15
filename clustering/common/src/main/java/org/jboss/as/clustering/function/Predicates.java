@@ -45,4 +45,8 @@ public class Predicates {
     public static <T> Predicate<T> same(T object) {
         return test -> test == object;
     }
+
+    public static <T> Predicate<T> instanceOf(Class<?> targetClass) {
+        return test -> targetClass.isInstance(test);
+    }
 }

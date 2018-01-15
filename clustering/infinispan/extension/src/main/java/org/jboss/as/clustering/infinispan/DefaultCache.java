@@ -22,13 +22,8 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Set;
-
 import org.infinispan.AdvancedCache;
 import org.infinispan.cache.impl.AbstractDelegatingAdvancedCache;
-import org.infinispan.context.Flag;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
@@ -44,22 +39,20 @@ public class DefaultCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
 
     private final EmbeddedCacheManager manager;
     private final Batcher<? extends Batch> batcher;
-    private final Set<Flag> flags;
 
-    DefaultCache(final EmbeddedCacheManager manager, final Batcher<? extends Batch> batcher, final AdvancedCache<K, V> cache, final Set<Flag> flags) {
+    DefaultCache(EmbeddedCacheManager manager, Batcher<? extends Batch> batcher, AdvancedCache<K, V> cache) {
         super(cache, new AdvancedCacheWrapper<K, V>() {
             @Override
             public AdvancedCache<K, V> wrap(AdvancedCache<K, V> cache) {
-                return new DefaultCache<>(manager, batcher, cache, flags);
+                return new DefaultCache<>(manager, batcher, cache);
             }
         });
         this.manager = manager;
         this.batcher = batcher;
-        this.flags = flags;
     }
 
     public DefaultCache(EmbeddedCacheManager manager, BatcherFactory batcherFactory, AdvancedCache<K, V> cache) {
-        this(manager, batcherFactory.createBatcher(cache), cache, EnumSet.noneOf(Flag.class));
+        this(manager, batcherFactory.createBatcher(cache), cache);
     }
 
     @Override
@@ -91,13 +84,6 @@ public class DefaultCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
             // Disassociate the batch with the current thread no matter what
             CURRENT_BATCH.remove();
         }
-    }
-
-    @Override
-    public AdvancedCache<K, V> withFlags(Flag... flags) {
-        Set<Flag> set = EnumSet.copyOf(this.flags);
-        set.addAll(Arrays.asList(flags));
-        return new DefaultCache<>(this.manager, this.batcher, this.cache.withFlags(flags), set);
     }
 
     @Override

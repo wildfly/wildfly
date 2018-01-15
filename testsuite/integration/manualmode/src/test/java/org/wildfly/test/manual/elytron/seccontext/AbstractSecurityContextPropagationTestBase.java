@@ -712,8 +712,9 @@ public abstract class AbstractSecurityContextPropagationTestBase {
             consoleOut.reset();
             try {
                 commandCtx.handle("if outcome==success of /subsystem=jgroups:read-resource()");
+                // TODO This command is deprecated
                 commandCtx.handle(String.format(
-                        "/subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0, properties={initial_hosts=\"%1$s[7600],%1$s[9600]\",port_range=0,timeout=3000})",
+                        "/subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0, properties={initial_hosts=\"%1$s[7600],%1$s[9600]\",port_range=0})",
                         Utils.stripSquareBrackets(host)));
                 commandCtx.handle("/subsystem=jgroups/stack=tcp/protocol=MPING:remove");
                 commandCtx.handle("/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)");

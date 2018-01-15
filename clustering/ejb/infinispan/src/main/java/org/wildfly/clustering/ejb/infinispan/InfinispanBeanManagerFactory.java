@@ -21,8 +21,9 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.util.concurrent.Executor;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Predicate;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
@@ -70,19 +71,32 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
         Cache<BeanKey<I>, BeanEntry<I>> beanCache = this.configuration.getCache();
         Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> groupCache = this.configuration.getCache();
-        final CacheProperties properties = new InfinispanCacheProperties(groupCache.getCacheConfiguration());
-        final String beanName = this.configuration.getBeanContext().getBeanName();
-        BeanGroupFactory<I, T> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, factory, context, properties);
+        CacheProperties properties = new InfinispanCacheProperties(groupCache.getCacheConfiguration());
+        String beanName = this.configuration.getBeanContext().getBeanName();
+        BeanPassivationConfiguration passivationConfig = this.configuration.getPassivationConfiguration();
+        PassivationConfiguration<T> passivation = new PassivationConfiguration<T>() {
+            @Override
+            public PassivationListener<T> getPassivationListener() {
+                return passivationListener;
+            }
+
+            @Override
+            public BeanPassivationConfiguration getConfiguration() {
+                return passivationConfig;
+            }
+        };
+        Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter = new BeanFilter<>(beanName);
+        BeanGroupFactory<I, T> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, beanFilter, factory, context, properties, passivation);
         Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T>, BeanGroupFactory<I, T>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory);
         BeanFactory<I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, properties, this.configuration.getBeanContext().getTimeout(), properties.isPersistent() ? passivationListener : null);
         Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration = new SimpleConfiguration<>(beanCache, beanFactory);
-        final NodeFactory<Address> nodeFactory = this.configuration.getNodeFactory();
-        final Registry<String, ?> registry = this.configuration.getRegistry();
-        final KeyAffinityServiceFactory affinityFactory = this.configuration.getKeyAffinityServiceFactory();
-        final CommandDispatcherFactory dispatcherFactory = this.configuration.getCommandDispatcherFactory();
-        final Time timeout = this.configuration.getBeanContext().getTimeout();
-        final ScheduledExecutorService scheduler = this.configuration.getScheduler();
-        final ExpirationConfiguration<T> expiration = new ExpirationConfiguration<T>() {
+        NodeFactory<Address> nodeFactory = this.configuration.getNodeFactory();
+        Registry<String, ?> registry = this.configuration.getRegistry();
+        KeyAffinityServiceFactory affinityFactory = this.configuration.getKeyAffinityServiceFactory();
+        CommandDispatcherFactory dispatcherFactory = this.configuration.getCommandDispatcherFactory();
+        Time timeout = this.configuration.getBeanContext().getTimeout();
+        ScheduledExecutorService scheduler = this.configuration.getScheduler();
+        ExpirationConfiguration<T> expiration = new ExpirationConfiguration<T>() {
             @Override
             public Time getTimeout() {
                 return timeout;
@@ -98,28 +112,10 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
                 return scheduler;
             }
         };
-        final Executor executor = this.configuration.getExecutor();
-        final BeanPassivationConfiguration passivationConfig = this.configuration.getPassivationConfiguration();
-        final PassivationConfiguration<T> passivation = new PassivationConfiguration<T>() {
+        InfinispanBeanManagerConfiguration<I, T> configuration = new InfinispanBeanManagerConfiguration<I, T>() {
             @Override
-            public PassivationListener<T> getPassivationListener() {
-                return passivationListener;
-            }
-
-            @Override
-            public BeanPassivationConfiguration getConfiguration() {
-                return passivationConfig;
-            }
-
-            @Override
-            public Executor getExecutor() {
-                return executor;
-            }
-        };
-        InfinispanBeanManagerConfiguration<T> configuration = new InfinispanBeanManagerConfiguration<T>() {
-            @Override
-            public String getBeanName() {
-                return beanName;
+            public Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> getBeanFilter() {
+                return beanFilter;
             }
 
             @Override

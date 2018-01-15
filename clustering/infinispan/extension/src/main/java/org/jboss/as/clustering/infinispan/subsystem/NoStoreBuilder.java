@@ -33,8 +33,8 @@ import org.jboss.as.controller.PathAddress;
  */
 public class NoStoreBuilder extends ComponentBuilder<PersistenceConfiguration> {
 
-    NoStoreBuilder(PathAddress cacheAddress) {
-        super(PERSISTENCE, cacheAddress);
+    NoStoreBuilder(PathAddress address) {
+        super(PERSISTENCE, address);
     }
 
     @Override

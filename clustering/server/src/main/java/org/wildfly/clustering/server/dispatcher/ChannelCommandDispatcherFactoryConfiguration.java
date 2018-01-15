@@ -21,7 +21,7 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
-import org.jgroups.Channel;
+import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 
@@ -31,7 +31,7 @@ import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
  */
 public interface ChannelCommandDispatcherFactoryConfiguration {
     ChannelFactory getChannelFactory();
-    Channel getChannel();
+    JChannel getChannel();
     MarshallingContext getMarshallingContext();
     long getTimeout();
 }

@@ -28,21 +28,18 @@ import org.wildfly.clustering.ejb.Bean;
  * Command that schedules a session.
  * @author Paul Ferraro
  */
-public class ScheduleSchedulerCommand<I> implements Command<Void, SchedulerContext<I>> {
+public class ScheduleSchedulerCommand<I> implements Command<Void, Scheduler<I>> {
     private static final long serialVersionUID = -2606847692331278614L;
 
     private final I beanId;
-    private final I groupId;
 
     public ScheduleSchedulerCommand(Bean<I, ?> bean) {
         this.beanId = bean.getId();
-        this.groupId = bean.getGroupId();
     }
 
     @Override
-    public Void execute(SchedulerContext<I> context) {
-        context.getBeanScheduler().schedule(this.beanId);
-        context.getBeanGroupScheduler().schedule(this.groupId);
+    public Void execute(Scheduler<I> scheduler) {
+        scheduler.schedule(this.beanId);
         return null;
     }
 }
