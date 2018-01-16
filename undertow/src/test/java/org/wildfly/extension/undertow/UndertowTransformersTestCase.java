@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -50,7 +51,8 @@ import org.wildfly.extension.undertow.handlers.ReverseProxyHandler;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class UndertowTransformersTestCase extends AbstractSubsystemBaseTest {
-    private static ModelVersion EAP7_0_0 = ModelVersion.create(3, 1, 0);
+    private static final ModelVersion EAP7_0_0 = ModelVersion.create(3, 1, 0);
+    private static final ModelVersion EAP7_1_0 = ModelVersion.create(4, 0, 0);
 
     public UndertowTransformersTestCase() {
         super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension());
@@ -71,6 +73,12 @@ public class UndertowTransformersTestCase extends AbstractSubsystemBaseTest {
         doRejectTest(ModelTestControllerVersion.EAP_7_0_0, EAP7_0_0);
     }
 
+    @Test
+    public void testConvertTransformersEAP_7_1_0() throws Exception {
+        // https://issues.jboss.org/browse/WFLY-9675 Fix max-post-size LongRangeValidator min to 0.
+        // Test Listener attribute max-post-size value 0 is converted to Long.MAX
+        doConvertTest(ModelTestControllerVersion.EAP_7_1_0, EAP7_1_0);
+    }
 
     private void doRejectTest(ModelTestControllerVersion controllerVersion, ModelVersion targetVersion) throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
@@ -125,6 +133,31 @@ public class UndertowTransformersTestCase extends AbstractSubsystemBaseTest {
         );
     }
 
+    private void doConvertTest(ModelTestControllerVersion controllerVersion, ModelVersion targetVersion) throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, targetVersion)
+                .configureReverseControllerCheck(createAdditionalInitialization(), null)
+                //.skipReverseControllerCheck()
+                .addSingleChildFirstClass(DefaultInitialization.class)
+                .addMavenResourceURL(UndertowDependencies.getUndertowDependencies(controllerVersion))
+                .addMavenResourceURL(String.format("%s:wildfly-undertow:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
+                .dontPersistXml();
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(targetVersion);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        Assert.assertNotNull(legacyServices);
+
+        List<ModelNode> ops = builder.parseXmlResource("undertow-convert.xml");
+        for (ModelNode op : ops) {
+            if (op.hasDefined(Constants.MAX_POST_SIZE) && op.get(Constants.MAX_POST_SIZE).asLong() == 0L) {
+                TransformedOperation transformedOperation = mainServices.transformOperation(targetVersion, op.clone());
+                ModelNode transformed = transformedOperation.getTransformedOperation().get(Constants.MAX_POST_SIZE);
+                Assert.assertEquals(Constants.MAX_POST_SIZE + " should be transformed for value 0.", Long.MAX_VALUE, transformed.asLong());
+            }
+        }
+    }
 
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion undertowVersion) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
