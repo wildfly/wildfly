@@ -40,13 +40,19 @@ public class CoarseWebFailoverTestCase extends AbstractWebFailoverTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
-    public static Archive<?> deployment0() {
+    public static Archive<?> deployment1() {
         return getDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(NODE_2)
-    public static Archive<?> deployment1() {
+    public static Archive<?> deployment2() {
+        return getDeployment();
+    }
+
+    @Deployment(name = DEPLOYMENT_3, managed = false, testable = false)
+    @TargetsContainer(NODE_3)
+    public static Archive<?> deployment3() {
         return getDeployment();
     }
 
