@@ -63,6 +63,12 @@ public class CdiFailoverTestCase extends AbstractWebFailoverTestCase {
         return createDeployment();
     }
 
+    @Deployment(name = DEPLOYMENT_3, managed = false, testable = false)
+    @TargetsContainer(NODE_3)
+    public static Archive<?> deployment3() {
+        return createDeployment();
+    }
+
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
         war.addClasses(Incrementor.class, CdiIncrementorBean.class, CdiServlet.class, SimpleServlet.class, Mutable.class, IncrementorDecorator.class);

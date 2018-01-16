@@ -34,7 +34,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
  * @author Radoslav Husar
- * @version April 2012
  */
 @ServerSetup(ConcurrentWebFailoverServerSetup.class)
 public class ConcurrentFineWebFailoverTestCase extends AbstractWebFailoverTestCase {
@@ -46,13 +45,19 @@ public class ConcurrentFineWebFailoverTestCase extends AbstractWebFailoverTestCa
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
-    public static Archive<?> deployment0() {
+    public static Archive<?> deployment1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(NODE_2)
-    public static Archive<?> deployment1() {
+    public static Archive<?> deployment2() {
+        return createDeployment();
+    }
+
+    @Deployment(name = DEPLOYMENT_3, managed = false, testable = false)
+    @TargetsContainer(NODE_3)
+    public static Archive<?> deployment3() {
         return createDeployment();
     }
 

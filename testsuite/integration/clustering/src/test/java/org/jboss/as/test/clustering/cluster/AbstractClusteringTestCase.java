@@ -84,6 +84,7 @@ public abstract class AbstractClusteringTestCase {
 
     // Timeouts
     public static final int GRACE_TIME_TO_REPLICATE = TimeoutUtil.adjust(3000);
+    public static final int GRACE_TIME_TOPOLOGY_CHANGE = TimeoutUtil.adjust(3000);
     public static final int GRACEFUL_SHUTDOWN_TIMEOUT = TimeoutUtil.adjust(15);
     public static final int GRACE_TIME_TO_MEMBERSHIP_CHANGE = TimeoutUtil.adjust(10000);
     public static final int WAIT_FOR_PASSIVATION_MS = TimeoutUtil.adjust(5);

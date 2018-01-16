@@ -30,9 +30,10 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -49,19 +50,26 @@ import org.junit.runner.RunWith;
  * Test that HTTP session failover on shutdown and undeploy works.
  *
  * @author Radoslav Husar
- * @version Oct 2012
  */
 @RunWith(Arquillian.class)
 public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTestCase {
 
     private final String deploymentName;
-    private final Runnable nonOwnerTask;
+    private final CacheMode cacheMode;
+    private final Runnable nonTxWait;
 
-    protected AbstractWebFailoverTestCase(String deploymentName, TransactionMode mode) {
+    protected AbstractWebFailoverTestCase(String deploymentName, TransactionMode transactionMode) {
+        this(deploymentName, CacheMode.DIST_SYNC, transactionMode);
+    }
+
+    protected AbstractWebFailoverTestCase(String deploymentName, CacheMode cacheMode, TransactionMode transactionMode) {
+        super(THREE_NODES);
+
         this.deploymentName = deploymentName;
-        this.nonOwnerTask = () -> {
+        this.cacheMode = cacheMode;
+        this.nonTxWait = () -> {
             // If the cache is non-transactional, we need to wait for that replication to finish, otherwise the read can be stale
-            if (!mode.isTransactional()) {
+            if (!transactionMode.isTransactional()) {
                 try {
                     Thread.sleep(GRACE_TIME_TO_REPLICATE);
                 } catch (InterruptedException e) {
@@ -71,216 +79,272 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
         };
     }
 
-    /**
-     * Test simple graceful shutdown failover:
-     * <p/>
-     * 1/ Start 2 containers and deploy <distributable/> webapp.
-     * 2/ Query first container creating a web session.
-     * 3/ Shutdown first container.
-     * 4/ Query second container verifying sessions got replicated.
-     * 5/ Bring up the first container.
-     * 6/ Query first container verifying that updated sessions replicated back.
-     */
     @Test
     public void testGracefulSimpleFailover(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws Exception {
-        testFailover(new RestartLifecycle(), baseURL1, baseURL2);
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3) throws Exception {
+        this.testFailover(new RestartLifecycle(), baseURL1, baseURL2, baseURL3);
     }
 
-    /**
-     * Test simple undeploy failover:
-     * 1/ Start 2 containers and deploy <distributable/> webapp.
-     * 2/ Query first container creating a web session.
-     * 3/ Undeploy application from the first container.
-     * 4/ Query second container verifying sessions got replicated.
-     * 5/ Redeploy application to the first container.
-     * 6/ Query first container verifying that updated sessions replicated back.
-     */
     @Test
     public void testGracefulUndeployFailover(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws Exception {
-        testFailover(new RedeployLifecycle(), baseURL1, baseURL2);
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3) throws Exception {
+        this.testFailover(new RedeployLifecycle(), baseURL1, baseURL2, baseURL3);
     }
 
-    private void testFailover(Lifecycle lifecycle, URL baseURL1, URL baseURL2) throws Exception {
-        HttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient();
-
+    private void testFailover(Lifecycle lifecycle, URL baseURL1, URL baseURL2, URL baseURL3) throws Exception {
         URI uri1 = SimpleServlet.createURI(baseURL1);
         URI uri2 = SimpleServlet.createURI(baseURL2);
+        URI uri3 = SimpleServlet.createURI(baseURL3);
 
-        this.establishTopology(baseURL1, TWO_NODES);
+        this.establishTopology(baseURL1, THREE_NODES);
+        int value = 1;
+        // In case updated route information is received, it must be different from the last route
+        String lastOwner;
 
-        try {
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
+                Assert.assertNotNull(entry);
                 Assert.assertEquals(NODE_1, entry.getValue());
+                lastOwner = entry.getValue();
                 Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            // Let's do this twice to have more debug info if failover is slow.
+            this.nonTxWait.run();
+
             response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (entry != null) {
-                    Assert.assertEquals(NODE_1, entry.getValue());
-                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
-                }
+                // Ensure routing is not changed on 2nd query
+                Assert.assertNull(entry);
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            // Gracefully undeploy from/shutdown the 1st container.
             lifecycle.stop(NODE_1);
 
-            this.establishTopology(baseURL2, NODE_2);
+            this.establishTopology(baseURL2, NODE_2, NODE_3);
 
-            // Now check on the 2nd server
-
+            // node2
             response = client.execute(new HttpGet(uri2));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", 3, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertEquals(NODE_2, entry.getValue());
+                // After topology change, the session will have to be re-routed to either of the 2 remaining nodes
+                Assert.assertNotNull(entry);
+                Assert.assertNotEquals(lastOwner, entry.getValue());
+                lastOwner = entry.getValue();
                 Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            // Let's do one more check.
+            this.nonTxWait.run();
+
             response = client.execute(new HttpGet(uri2));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(4, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (entry != null) {
-                    Assert.assertEquals(NODE_2, entry.getValue());
-                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                // Ensure routing is not changed on subsequent query
+                Assert.assertNull(entry);
+            } finally {
+                HttpClientUtils.closeQuietly(response);
+            }
+
+            this.nonTxWait.run();
+
+            // node3
+            response = client.execute(new HttpGet(uri3));
+            try {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Map.Entry<String, String> entry = parseSessionRoute(response);
+                if (cacheMode.isInvalidation()) {
+                    Assert.assertNotNull(entry);
+                    Assert.assertEquals(NODE_3, entry.getValue());
+                } else {
+                    Assert.assertNull(entry);
                 }
+            } finally {
+                HttpClientUtils.closeQuietly(response);
+            }
+
+            this.nonTxWait.run();
+
+            response = client.execute(new HttpGet(uri3));
+            try {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Map.Entry<String, String> entry = parseSessionRoute(response);
+                Assert.assertNull(entry);
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             lifecycle.start(NODE_1);
 
-            this.establishTopology(baseURL2, TWO_NODES);
+            this.establishTopology(baseURL2, THREE_NODES);
 
             response = client.execute(new HttpGet(uri2));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("Session failed to replicate after container 1 was brough up.", 5, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (entry != null) {
-                    Assert.assertEquals(NODE_1, entry.getValue());
+                if (cacheMode.isInvalidation()) {
+                    Assert.assertNotNull(entry);
+                    Assert.assertEquals(NODE_2, entry.getValue());
+                } else if (entry != null) {
+                    Assert.assertNotEquals(lastOwner, entry.getValue());
+                    lastOwner = entry.getValue();
                     Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            // The previous and next requests intentially hit the non-owning node
-            this.nonOwnerTask.run();
+            this.nonTxWait.run();
 
-            // Let's do this twice to have more debug info if failover is slow.
             response = client.execute(new HttpGet(uri2));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(6, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (entry != null) {
-                    Assert.assertEquals(NODE_1, entry.getValue());
-                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                Assert.assertNull(entry);
+            } finally {
+                HttpClientUtils.closeQuietly(response);
+            }
+
+            this.nonTxWait.run();
+
+            response = client.execute(new HttpGet(uri3));
+            try {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Map.Entry<String, String> entry = parseSessionRoute(response);
+                if (cacheMode.isInvalidation()) {
+                    Assert.assertNotNull(entry);
+                    Assert.assertEquals(NODE_3, entry.getValue());
+                } else {
+                    Assert.assertNull(entry);
                 }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            // Until graceful undeploy is supported, we need to wait for replication to complete before undeploy (WFLY-6769).
-            if (lifecycle instanceof RedeployLifecycle) {
-                Thread.sleep(GRACE_TIME_TO_REPLICATE);
-            }
-
-            // Gracefully undeploy from/shutdown the 1st container.
             lifecycle.stop(NODE_2);
 
-            this.establishTopology(baseURL1, NODE_1);
-
-            // Now check on the 2nd server
+            this.establishTopology(baseURL1, NODE_1, NODE_3);
 
             response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", 7, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
                 if (entry != null) {
-                    Assert.assertEquals(NODE_1, entry.getValue());
+                    Assert.assertNotEquals(lastOwner, entry.getValue());
+                    lastOwner = entry.getValue();
                     Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            // Let's do one more check.
+            this.nonTxWait.run();
+
             response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(8, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (entry != null) {
-                    Assert.assertEquals(NODE_1, entry.getValue());
-                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                Assert.assertNull(entry);
+            } finally {
+                HttpClientUtils.closeQuietly(response);
+            }
+
+            this.nonTxWait.run();
+
+            response = client.execute(new HttpGet(uri3));
+            try {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Map.Entry<String, String> entry = parseSessionRoute(response);
+                if (cacheMode.isInvalidation()) {
+                    Assert.assertNotNull(entry);
+                    Assert.assertEquals(NODE_3, entry.getValue());
+                } else {
+                    Assert.assertNull(entry);
                 }
+            } finally {
+                HttpClientUtils.closeQuietly(response);
+            }
+
+            this.nonTxWait.run();
+
+            response = client.execute(new HttpGet(uri3));
+            try {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Map.Entry<String, String> entry = parseSessionRoute(response);
+                Assert.assertNull(entry);
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
             lifecycle.start(NODE_2);
 
-            this.establishTopology(baseURL1, TWO_NODES);
+            this.establishTopology(baseURL1, THREE_NODES);
+
+            this.nonTxWait.run();
 
             response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals("Session failed to replicate after container 1 was brought up.", 9, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (entry != null) {
-                    Assert.assertEquals(NODE_2, entry.getValue());
+                if (cacheMode.isInvalidation()) {
+                    Assert.assertNotNull(entry);
+                    Assert.assertEquals(NODE_1, entry.getValue());
+                } else if (entry != null) {
+                    Assert.assertNotEquals(lastOwner, entry.getValue());
                     Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
                 }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            // Let's do this twice to have more debug info if failover is slow.
+            this.nonTxWait.run();
+
             response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(10, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Assert.assertEquals(value, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (entry != null) {
-                    Assert.assertEquals(NODE_2, entry.getValue());
-                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
-                }
+                Assert.assertNull(entry);
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
     }
 
-    private void establishTopology(URL baseURL, String... nodes) throws URISyntaxException, IOException {
+    private void establishTopology(URL baseURL, String... nodes) throws URISyntaxException, IOException, InterruptedException {
         ClusterHttpClientUtil.establishTopology(baseURL, "web", this.deploymentName, nodes);
+
+        // TODO we should be able to speed this up by observing changes in the routing registry
+        // prevents failing assertions when topology information is expected, e.g.:
+        //java.lang.AssertionError: expected null, but was:<bpAmUlICzeXMtFiOJvTiOCASbXNivRdHTIlQC00c=node-2>
+        Thread.sleep(GRACE_TIME_TOPOLOGY_CHANGE);
     }
 }
