@@ -25,9 +25,9 @@ package org.jboss.as.test.integration.ejb.transaction.exception;
 import java.lang.reflect.Constructor;
 
 import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.jboss.as.test.integration.transactions.TestXAResource;
 import org.jboss.logging.Logger;
 
 import javassist.ClassPool;
@@ -38,104 +38,29 @@ import javassist.CtClass;
  *
  * @author dsimko@redhat.com
  */
-public class TestXAResource implements XAResource {
-
-    private static Logger LOG = Logger.getLogger(TestXAResource.class);
+public class TimeoutTestXAResource extends TestXAResource {
+    private static final Logger log = Logger.getLogger(TimeoutTestXAResource.class);
     private static XAException RM_SPECIFIC_EXCEPTION = createDriverSpecificXAException(XAException.XAER_RMERR);
 
-    public static enum CommitOperation {
-        NONE, THROW_KNOWN_XA_EXCEPTION, THROW_UNKNOWN_XA_EXCEPTION
-    }
-
-    public static enum PrepareOperation {
-        NONE, THROW_KNOWN_XA_EXCEPTION, THROW_UNKNOWN_XA_EXCEPTION
-    }
-
-    private CommitOperation commitOp = CommitOperation.NONE;
-    private PrepareOperation prepareOp = PrepareOperation.NONE;
-
-    public TestXAResource(CommitOperation commitOp) {
-        this.commitOp = commitOp;
-    }
-
-    public TestXAResource(PrepareOperation prepOp) {
-        this.prepareOp = prepOp;
+    public TimeoutTestXAResource(TestAction testAction) {
+        super(testAction);
     }
 
     @Override
     public void commit(Xid xid, boolean onePhase) throws XAException {
-        LOG.debugf("commit xid:[%s], %s one phase", xid, onePhase ? "with" : "without");
-
-        switch (commitOp) {
-        case THROW_KNOWN_XA_EXCEPTION:
-            throw new XAException(XAException.XAER_RMERR);
-        case THROW_UNKNOWN_XA_EXCEPTION:
+        if(super.testAction == TestXAResource.TestAction.COMMIT_THROW_UNKNOWN_XA_EXCEPTION)
             throw RM_SPECIFIC_EXCEPTION;
-        case NONE:
-        default:
-            // do nothing
-        }
-    }
-
-    @Override
-    public void end(Xid xid, int flags) throws XAException {
-        LOG.debugf("end xid:[%s], flag: %s", xid, flags);
-    }
-
-    @Override
-    public void forget(Xid xid) throws XAException {
-        LOG.debugf("forget xid:[%s]", xid);
-    }
-
-    @Override
-    public int getTransactionTimeout() throws XAException {
-        LOG.debugf("getTransactionTimeout: returning timeout: %s", 0);
-        return 0;
-    }
-
-    @Override
-    public boolean isSameRM(XAResource xares) throws XAException {
-        LOG.debugf("isSameRM returning false to xares: %s", xares);
-        return false;
+        else
+            super.commit(xid, onePhase);
     }
 
     @Override
     public int prepare(Xid xid) throws XAException {
-        LOG.debugf("prepare xid: [%s]", xid);
-        switch (prepareOp) {
-        case THROW_KNOWN_XA_EXCEPTION:
-            throw new XAException(XAException.XAER_RMERR);
-        case THROW_UNKNOWN_XA_EXCEPTION:
+        if(super.testAction == TestXAResource.TestAction.PREPARE_THROW_UNKNOWN_XA_EXCEPTION)
             throw RM_SPECIFIC_EXCEPTION;
-        case NONE:
-        default:
-            return XAResource.XA_OK;
-        }
+        else
+            return super.prepare(xid);
     }
-
-    @Override
-    public Xid[] recover(int flag) throws XAException {
-        LOG.debugf("recover with flags: %s", flag);
-        return new Xid[] {};
-    }
-
-    @Override
-    public void rollback(Xid xid) throws XAException {
-        LOG.debugf("rollback xid: [%s]", xid);
-
-    }
-
-    @Override
-    public boolean setTransactionTimeout(int seconds) throws XAException {
-        LOG.debugf("setTransactionTimeout: setting timeout: %s", seconds);
-        return true;
-    }
-
-    @Override
-    public void start(Xid xid, int flags) throws XAException {
-        LOG.debugf("start xid: [%s], flags: %s", xid, flags);
-    }
-
     /**
      * Creates instance of dynamically created XAException class.
      */
@@ -143,7 +68,7 @@ public class TestXAResource implements XAResource {
         try {
             return createInstanceOfDriverSpecificXAException(xaErrorCode, createXATestExceptionClass());
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            log.errorf(e, "Can't create dynamic instance of XAException class", xaErrorCode);
             throw new RuntimeException(e);
         }
     }
