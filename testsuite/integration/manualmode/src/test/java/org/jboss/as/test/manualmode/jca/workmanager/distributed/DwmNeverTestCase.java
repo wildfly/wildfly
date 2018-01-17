@@ -21,16 +21,12 @@
  */
 package org.jboss.as.test.manualmode.jca.workmanager.distributed;
 
-import javax.naming.NamingException;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkException;
-
-import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,21 +39,18 @@ import org.junit.runner.RunWith;
  * for the work instances to actually finish and free the thread pools otherwise. The test methods will still run
  * separately without issues.
  */
-@ServerSetup(DwmNeverTestCase.DwmNeverServerSetupTask.class)
 @RunWith(Arquillian.class)
 @RunAsClient
 public class DwmNeverTestCase extends AbstractDwmTestCase {
 
-    static class DwmNeverServerSetupTask extends AbstractDwmTestCase.DwmServerSetupTask {
-        @Override
-        protected Policy getPolicy() {
-            return Policy.NEVER;
-        }
+    @Override
+    protected Policy getPolicy() {
+        return Policy.NEVER;
+    }
 
-        @Override
-        protected Selector getSelector() {
-            return Selector.MAX_FREE_THREADS;
-        }
+    @Override
+    protected Selector getSelector() {
+        return Selector.MAX_FREE_THREADS;
     }
 
     /**
@@ -66,7 +59,7 @@ public class DwmNeverTestCase extends AbstractDwmTestCase {
      */
     @Test
     @InSequence(1)
-    public void testNeverPolicy() throws IOException, NamingException, WorkException {
+    public void testNeverPolicy() throws WorkException {
         int doWorkAccepted = server1Proxy.getDoWorkAccepted();
 
         for (int i = 0; i < 10; i++) {
