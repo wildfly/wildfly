@@ -64,8 +64,8 @@
             For example: <version.surefire.plugin>2.11</version.surefire.plugin>
           -->
         <maven.min.version>3.3.1</maven.min.version>
-
-        <version.surefire.plugin>2.18.1</version.surefire.plugin>
+        <!-- 2.20.x is broken on JDK10 -->
+        <version.surefire.plugin>2.19.1</version.surefire.plugin>
         <!-- use older version of checkstyle as otherwise lots of checks fail -->
         <version.checkstyle>6.8</version.checkstyle>
         <!--
@@ -2344,6 +2344,10 @@
                         <groupId>xalan</groupId>
                         <artifactId>xalan</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.woodstox</groupId>
+                        <artifactId>woodstox-core-asl</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3750,11 +3754,7 @@
                     </exclusion>
                     <exclusion>
                         <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>wstx-asl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>wstx-core-asl</artifactId>
+                        <artifactId>woodstox-core-asl</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>wsdl4j</groupId>
@@ -6282,13 +6282,13 @@
     <!-- Profiles -->
     <profiles>
         <!--
-                  Name: JDK9
-                  Descr: various workarounds activation for JDK9
+                  Name: JDK9+
+                  Descr: various workarounds activation for JDK9+
                 -->
         <profile>
             <id>jdk9</id>
             <activation>
-                <jdk>9</jdk>
+                <jdk>[9,)</jdk>
             </activation>
             <properties>
                 <modular.jdk.args>
@@ -6303,8 +6303,7 @@
                 <!-- There are lots of issues with checkstyle runtime on JDK9, it somewhat works but really slows down build, disabling it for now-->
                 <checkstyle.skip>true</checkstyle.skip>
                 <!-- we override javassist to version that works on JDK9 -->
-                <version.org.javassist>3.22.0-CR2</version.org.javassist>
-                <version.org.jboss.openjdk-orb>8.0.8.Final</version.org.jboss.openjdk-orb>
+                <version.org.javassist>3.22.0-GA</version.org.javassist>
             </properties>
             <build>
                 <plugins>
@@ -6317,7 +6316,6 @@
                             <compilerArgument>-J--add-modules=java.xml.ws.annotation,jdk.unsupported</compilerArgument>
                         </configuration>
                     </plugin>
-
                 </plugins>
             </build>
         </profile>
