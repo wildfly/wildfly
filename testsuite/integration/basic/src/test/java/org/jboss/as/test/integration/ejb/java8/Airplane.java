@@ -19,16 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.test.integration.ejb.java8.staticMethodInView;
+package org.jboss.as.test.integration.ejb.java8;
 
-import javax.ejb.Stateful;
+import javax.ejb.Local;
 
-@Stateful
-public class AirplaneImpl implements Airplane {
+@Local
+public interface Airplane {
 
-    @Override
-    public boolean takeOff() {
+    static boolean barrelRoll() {
         return true;
     }
 
+    boolean takeOff();
+
+    String getPlaneType();
 }
