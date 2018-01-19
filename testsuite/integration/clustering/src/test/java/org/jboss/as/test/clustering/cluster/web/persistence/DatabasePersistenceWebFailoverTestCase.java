@@ -22,11 +22,15 @@
 
 package org.jboss.as.test.clustering.cluster.web.persistence;
 
+import java.net.URL;
+
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.clustering.CLIServerSetupTask;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
@@ -36,11 +40,15 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 
+/**
+ * @author Tomas Remes
+ * @author Radoslav Husar
+ */
 @RunWith(Arquillian.class)
 @RunAsClient
-@org.junit.Ignore("WFLY-2409")
+@ServerSetup(DatabasePersistenceWebFailoverTestCase.ServerSetupTask.class)
 public class DatabasePersistenceWebFailoverTestCase extends AbstractWebFailoverTestCase {
-    private static final String DEPLOYMENT_NAME = "session-db-cluster.war";
+    private static final String DEPLOYMENT_NAME = DatabasePersistenceWebFailoverTestCase.class.getSimpleName() + ".war";
 
     public DatabasePersistenceWebFailoverTestCase() {
         super(DEPLOYMENT_NAME, TransactionMode.TRANSACTIONAL);
@@ -63,7 +71,24 @@ public class DatabasePersistenceWebFailoverTestCase extends AbstractWebFailoverT
         war.addClasses(SimpleServlet.class, Mutable.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         war.setWebXML(AbstractWebFailoverTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource("jboss-web.xml", "jboss-web.xml");
+        war.addAsWebInfResource(DatabasePersistenceWebFailoverTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         return war;
+    }
+
+    @Override
+    public void testGracefulSimpleFailover(URL baseURL1, URL baseURL2) {
+        // TODO rework to use external database process since H2's AUTO_SERVER doesn't handle server restarts reliably
+    }
+
+    public static class ServerSetupTask extends CLIServerSetupTask {
+        public ServerSetupTask() {
+            builder.node(TWO_NODES)
+                    .setup("/subsystem=datasources/data-source=web-sessions-ds:add(jndi-name=\"java:jboss/datasources/web-sessions-ds\",enabled=true,use-java-context=true,connection-url=\"jdbc:h2:file:./target/h2/web-sessions;AUTO_SERVER=true;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;\",driver-name=h2")
+                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence:add")
+                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/store=jdbc:add(data-source=web-sessions-ds,fetch-state=false,purge=false,shared=true")
+                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/store=jdbc/write=through:add")
+                    .teardown("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence:remove")
+                    .teardown("/subsystem=datasources/data-source=web-sessions-ds:remove");
+        }
     }
 }
