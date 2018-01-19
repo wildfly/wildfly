@@ -322,6 +322,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final boolean nonPortableMode = parentDeploymentUnit.getAttachment(WeldConfiguration.ATTACHMENT_KEY).isNonPortableMode();
         final ExternalConfiguration configuration = new ExternalConfigurationBuilder()
             .add(ConfigurationKey.NON_PORTABLE_MODE.get(), nonPortableMode)
+            .add(ConfigurationKey.ALLOW_OPTIMIZED_CLEANUP.get(), true)
             .build();
         deployment.getServices().add(ExternalConfiguration.class, configuration);
     }

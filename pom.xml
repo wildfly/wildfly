@@ -208,7 +208,7 @@
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.6.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
         <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>2.0.5.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>
         <version.org.jboss.spec.javax.websockets>1.1.3.Final</version.org.jboss.spec.javax.websockets>
-        <version.org.jboss.weld.weld>3.0.2.Final</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld>3.0.3.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>3.0.SP2</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.1.0.Final</version.org.jboss.ws.api>
         <version.org.jboss.ws.spi>3.2.0.Final</version.org.jboss.ws.spi>
@@ -228,6 +228,7 @@
         <version.org.wildfly.arquillian>2.1.0.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.bridge.servlet-api-bridge>1.0.0.Final</version.org.wildfly.bridge.servlet-api-bridge>
         <version.org.wildfly.build-tools>1.2.6.Final</version.org.wildfly.build-tools>
+        <version.org.wildfly.cdi-api-bridge>1.0.0.Final</version.org.wildfly.cdi-api-bridge>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>4.0.0.Alpha10</version.org.wildfly.core>
         <version.org.wildfly.plugin>1.2.1.Final</version.org.wildfly.plugin>
@@ -4657,6 +4658,26 @@
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-validator</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.bridge</groupId>
+                <artifactId>cdi-api-bridge</artifactId>
+                <version>${version.org.wildfly.cdi-api-bridge}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.el</groupId>
+                        <artifactId>javax.el-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.interceptor</groupId>
+                        <artifactId>javax.interceptor-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.inject</groupId>
+                        <artifactId>javax.inject</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
