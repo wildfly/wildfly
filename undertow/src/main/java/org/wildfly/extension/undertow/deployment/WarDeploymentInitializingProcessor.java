@@ -30,7 +30,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.web.common.WebApplicationBundleUtils;
 
 /**
  * Processor that marks a war deployment.
@@ -43,14 +42,8 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         String deploymentName = deploymentUnit.getName().toLowerCase(Locale.ENGLISH);
-        if (deploymentName.endsWith(".war") || deploymentName.endsWith(".wab")) {
+        if (deploymentName.endsWith(".war")) {
             DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
-            return;
-        }
-
-        if (WebApplicationBundleUtils.isWebApplicationBundle(deploymentUnit)) {
-            DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
-            return;
         }
     }
 

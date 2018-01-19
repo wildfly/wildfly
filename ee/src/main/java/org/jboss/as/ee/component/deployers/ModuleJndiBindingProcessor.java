@@ -47,7 +47,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.CircularDependencyException;
@@ -82,7 +81,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        if (moduleConfiguration == null || DeploymentUtils.skipRepeatedActivation(deploymentUnit, 0)) {
+        if (moduleConfiguration == null) {
             return;
         }
         final List<ServiceName> dependencies = deploymentUnit.getAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
