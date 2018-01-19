@@ -37,8 +37,9 @@ public enum JGroupsSchema implements Schema<JGroupsSchema> {
     VERSION_3_0(3, 0), // WildFly 9
     VERSION_4_0(4, 0), // WildFly 10
     VERSION_5_0(5, 0), // WildFly 11
+    VERSION_6_0(6, 0), // WildFly 12
     ;
-    public static final JGroupsSchema CURRENT = VERSION_5_0;
+    public static final JGroupsSchema CURRENT = VERSION_6_0;
 
     private final int major;
     private final int minor;

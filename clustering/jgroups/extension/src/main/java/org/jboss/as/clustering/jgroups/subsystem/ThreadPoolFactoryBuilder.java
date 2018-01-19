@@ -22,41 +22,47 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.jboss.as.clustering.jgroups.ClassLoaderThreadFactory;
-import org.jboss.as.clustering.jgroups.JChannelFactory;
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
-import org.jgroups.util.DefaultThreadFactory;
-import org.jgroups.util.ShutdownRejectedExecutionHandler;
-import org.jgroups.util.ThreadFactory;
+import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.ServiceNameProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class ThreadPoolFactoryBuilder extends AbstractThreadPoolFactoryBuilder<ThreadPoolFactory> {
+public class ThreadPoolFactoryBuilder extends QueuelessThreadPoolFactory implements ResourceServiceBuilder<ThreadPoolFactory> {
+
+    private final ThreadPoolDefinition definition;
+    private final ServiceNameProvider serviceNameProvider;
 
     public ThreadPoolFactoryBuilder(ThreadPoolDefinition definition, PathAddress address) {
-        super(definition, address);
+        this.definition = definition;
+        this.serviceNameProvider = new ThreadPoolServiceNameProvider(address);
+    }
+
+    @Override
+    public ServiceName getServiceName() {
+        return this.serviceNameProvider.getServiceName();
+    }
+
+    @Override
+    public Builder<ThreadPoolFactory> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.setMinThreads(this.definition.getMinThreads().resolveModelAttribute(context, model).asInt());
+        this.setMaxThreads(this.definition.getMaxThreads().resolveModelAttribute(context, model).asInt());
+        this.setKeepAliveTime(this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong());
+        return this;
     }
 
     @Override
     public ServiceBuilder<ThreadPoolFactory> build(ServiceTarget target) {
-        int queueLength = this.getQueueLength();
-        BlockingQueue<Runnable> queue = (queueLength > 0) ? new ArrayBlockingQueue<>(queueLength) : new SynchronousQueue<>();
-        ClassLoader loader = JChannelFactory.class.getClassLoader();
-        ThreadFactory threadFactory = new ClassLoaderThreadFactory(new DefaultThreadFactory(this.getThreadGroupPrefix(), false, true), loader);
-        RejectedExecutionHandler handler = new ShutdownRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
-        ThreadPoolFactory factory = () -> new ThreadPoolExecutor(this.getMinThreads(), this.getMaxThreads(), this.getKeepAliveTime(), TimeUnit.MILLISECONDS, queue, threadFactory, handler);
-        return target.addService(this.getServiceName(), new ValueService<>(new ImmediateValue<>(factory)));
+        return target.addService(this.getServiceName(), new ValueService<>(new ImmediateValue<>(this)));
     }
 }
