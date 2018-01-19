@@ -65,7 +65,7 @@ import org.jboss.as.security.Constants;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.integration.security.loginmodules.common.CustomTestLoginModule;
-import org.jboss.as.test.integration.web.security.SecuredServlet;
+import org.jboss.as.test.integration.security.servlet.SecuredServlet;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
