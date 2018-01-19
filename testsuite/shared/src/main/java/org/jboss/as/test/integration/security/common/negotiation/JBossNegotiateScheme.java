@@ -33,7 +33,6 @@ import org.apache.http.auth.MalformedChallengeException;
 import org.apache.http.impl.auth.AuthSchemeBase;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BufferedHeader;
-import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
 import org.apache.http.util.CharArrayBuffer;
@@ -137,13 +136,7 @@ public class JBossNegotiateScheme extends AuthSchemeBase {
             throw new IllegalStateException("Negotiation authentication process has not been initiated");
         }
         try {
-            String key = null;
-            if (isProxy()) {
-                key = ExecutionContext.HTTP_PROXY_HOST;
-            } else {
-                key = HttpCoreContext.HTTP_TARGET_HOST;
-            }
-
+            String key = HttpCoreContext.HTTP_TARGET_HOST;
             HttpHost host = (HttpHost) context.getAttribute(key);
             if (host == null) {
                 throw new AuthenticationException("Authentication host is not set " + "in the execution context");
