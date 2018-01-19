@@ -220,6 +220,13 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
     }
 
     Function<String, ApplicationSecurityDomainConfig> getKnownSecurityDomainFunction() {
-        return name -> knownApplicationSecurityDomains.stream().filter(applicationSecurityDomainConfig -> applicationSecurityDomainConfig.isSameDomain(name)).findFirst().orElse(null);
+        return name -> {
+            for (ApplicationSecurityDomainConfig applicationSecurityDomainConfig : knownApplicationSecurityDomains) {
+                if (applicationSecurityDomainConfig.isSameDomain(name)) {
+                    return applicationSecurityDomainConfig;
+                }
+            }
+            return null;
+        };
     }
 }
