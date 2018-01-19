@@ -90,9 +90,11 @@ public class ServletResourceOverlaysTestCase {
         final String aTxtAccess = performCall(url, "/check-path-access?path=a.txt&expected-accessible=true");
         assertEquals("Unexpected result from call to " + aTxtPath, PathAccessCheckServlet.ACCESS_CHECKS_CORRECTLY_VALIDATED, aTxtAccess);
 
-        final String pathOutsideOfDeployment = "/../../../../../../../..//etc/passwd";
-        final String outsidePathAccessCheck = performCall(url, "/check-path-access?path=" + pathOutsideOfDeployment + "&expected-accessible=false");
-        assertEquals("Unexpected result from call to " + pathOutsideOfDeployment, PathAccessCheckServlet.ACCESS_CHECKS_CORRECTLY_VALIDATED, outsidePathAccessCheck);
-
+        final String fileUnderTest = performCall(url, "/check-path-access?create_file=true");
+        if ( !"".equals(fileUnderTest) ){
+            final String pathOutsideOfDeployment = "/../../../../../../../../"+fileUnderTest;
+            final String outsidePathAccessCheck = performCall(url, "/check-path-access?path=" + pathOutsideOfDeployment + "&expected-accessible=false");
+            assertEquals("Unexpected result from call to " + pathOutsideOfDeployment, PathAccessCheckServlet.ACCESS_CHECKS_CORRECTLY_VALIDATED, outsidePathAccessCheck);
+        }
     }
 }
