@@ -23,10 +23,11 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.concurrent.Executor;
-import java.util.function.Supplier;
+import java.util.concurrent.ThreadFactory;
+import java.util.function.Function;
 
 /**
  * @author Paul Ferraro
  */
-public interface ThreadPoolFactory extends Supplier<Executor> {
+public interface ThreadPoolFactory extends Function<ThreadFactory, Executor> {
 }

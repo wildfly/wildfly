@@ -416,18 +416,27 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     }
                 }
                 case INTERNAL_THREAD_POOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_6_0)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
                         this.parseThreadPool(ThreadPoolResourceDefinition.INTERNAL, reader, address, operations);
                         break;
                     }
                 }
                 case OOB_THREAD_POOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_6_0)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
                         this.parseThreadPool(ThreadPoolResourceDefinition.OOB, reader, address, operations);
                         break;
                     }
                 }
                 case TIMER_THREAD_POOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_6_0)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
                         this.parseThreadPool(ThreadPoolResourceDefinition.TIMER, reader, address, operations);
                         break;
@@ -794,6 +803,9 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     readAttribute(reader, i, operation, pool.getMaxThreads());
                     break;
                 case QUEUE_LENGTH:
+                    if (this.schema.since(JGroupsSchema.VERSION_6_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
                     readAttribute(reader, i, operation, pool.getQueueLength());
                     break;
                 case KEEPALIVE_TIME:
