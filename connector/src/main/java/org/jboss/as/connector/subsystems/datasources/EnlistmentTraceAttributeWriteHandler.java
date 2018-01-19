@@ -22,8 +22,8 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -64,11 +64,18 @@ public class EnlistmentTraceAttributeWriteHandler extends AbstractWriteAttribute
         try {
             final ManagementRepository repository = (ManagementRepository) managementRepoService.getValue();
             if (repository.getDataSources() != null) {
-                repository.getDataSources().stream().filter(ds -> jndiName.equalsIgnoreCase(ds.getJndiName()))
-                        .forEach(ds -> ds.setEnlistmentTrace(boolValue));
-                handbackHolder.setHandback(repository.getDataSources().stream()
-                        .filter(ds -> jndiName.equalsIgnoreCase(ds.getJndiName()))
-                        .collect(Collectors.toList()));
+                for (DataSource dataSource : repository.getDataSources()) {
+                    if (jndiName.equalsIgnoreCase(dataSource.getJndiName())) {
+                        dataSource.setEnlistmentTrace(boolValue);
+                    }
+                }
+                List<DataSource> list = new ArrayList<>();
+                for (DataSource ds : repository.getDataSources()) {
+                    if (jndiName.equalsIgnoreCase(ds.getJndiName())) {
+                        list.add(ds);
+                    }
+                }
+                handbackHolder.setHandback(list);
             }
 
         } catch (Exception e) {
@@ -85,7 +92,9 @@ public class EnlistmentTraceAttributeWriteHandler extends AbstractWriteAttribute
                                          List<DataSource> handback) throws OperationFailedException {
         Boolean value = Constants.ENLISTMENT_TRACE.resolveValue(context, valueToRestore).asBoolean();
         if (handback != null) {
-            handback.stream().forEach(ds -> ds.setEnlistmentTrace(value));
+            for (DataSource ds : handback) {
+                ds.setEnlistmentTrace(value);
+            }
         }
     }
 
