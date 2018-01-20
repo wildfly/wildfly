@@ -30,7 +30,7 @@ import java.util.SortedMap;
 import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * Externalizers for implementations of {@link SortedMap}.
@@ -58,7 +58,7 @@ public class SortedMapExternalizer<T extends SortedMap<Object, Object>> implemen
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         @SuppressWarnings("unchecked")
         Comparator<? super Object> comparator = (Comparator<? super Object>) input.readObject();
-        int size = IndexExternalizer.VARIABLE.readData(input);
+        int size = IndexSerializer.VARIABLE.readInt(input);
         return MapExternalizer.readMap(input, this.factory.apply(comparator), size);
     }
 

@@ -62,7 +62,7 @@ import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 import org.wildfly.clustering.server.group.AddressableNode;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
@@ -130,7 +130,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     @Override
     public Object handle(Message message) throws Exception {
         try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(message.getRawBuffer(), message.getOffset(), message.getLength()))) {
-            int version = IndexExternalizer.VARIABLE.readData(input);
+            int version = IndexSerializer.VARIABLE.readInt(input);
             try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 Object clientId = unmarshaller.readObject();

@@ -30,7 +30,7 @@ import java.net.InetSocketAddress;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * @author Paul Ferraro
@@ -41,7 +41,7 @@ public class InetSocketAddressExternalizer implements Externalizer<InetSocketAdd
     public void writeObject(ObjectOutput output, InetSocketAddress socketAddress) throws IOException {
         InetAddress address = socketAddress.getAddress();
         DefaultExternalizer.INET_ADDRESS.writeObject(output, address);
-        IndexExternalizer.UNSIGNED_SHORT.writeData(output, socketAddress.getPort());
+        IndexSerializer.UNSIGNED_SHORT.writeInt(output, socketAddress.getPort());
         if (address == null) {
             output.writeUTF(socketAddress.getHostName());
         }
@@ -50,7 +50,7 @@ public class InetSocketAddressExternalizer implements Externalizer<InetSocketAdd
     @Override
     public InetSocketAddress readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         InetAddress address = DefaultExternalizer.INET_ADDRESS.cast(InetAddress.class).readObject(input);
-        int port = IndexExternalizer.UNSIGNED_SHORT.readData(input);
+        int port = IndexSerializer.UNSIGNED_SHORT.readInt(input);
         return (address != null) ? new InetSocketAddress(address, port) : InetSocketAddress.createUnresolved(input.readUTF(), port);
     }
 

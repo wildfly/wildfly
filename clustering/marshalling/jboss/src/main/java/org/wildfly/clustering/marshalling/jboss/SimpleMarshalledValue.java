@@ -34,7 +34,7 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.marshalling.Unmarshaller;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -72,7 +72,7 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         ClassLoader loader = setThreadContextClassLoader(this.context.getClassLoader());
         try (SimpleDataOutput data = new SimpleDataOutput(Marshalling.createByteOutput(output))) {
-            IndexExternalizer.VARIABLE.writeData(data, version);
+            IndexSerializer.VARIABLE.writeInt(data, version);
             try (Marshaller marshaller = this.context.createMarshaller(version)) {
                 marshaller.start(data);
                 marshaller.writeObject(this.object);
@@ -97,7 +97,7 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
                 ByteArrayInputStream input = new ByteArrayInputStream(this.bytes);
                 ClassLoader loader = setThreadContextClassLoader(this.context.getClassLoader());
                 try (SimpleDataInput data = new SimpleDataInput(Marshalling.createByteInput(input))) {
-                    int version = IndexExternalizer.VARIABLE.readData(data);
+                    int version = IndexSerializer.VARIABLE.readInt(data);
                     try (Unmarshaller unmarshaller = context.createUnmarshaller(version)) {
                         unmarshaller.start(data);
                         this.object = (T) unmarshaller.readObject();

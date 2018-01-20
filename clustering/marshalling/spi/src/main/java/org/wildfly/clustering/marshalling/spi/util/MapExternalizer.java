@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.function.IntFunction;
 
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * Externalizers for implementations of {@link Map}.
@@ -52,7 +52,7 @@ public class MapExternalizer<T extends Map<Object, Object>> implements Externali
     }
 
     static <T extends Map<Object, Object>> void writeMap(ObjectOutput output, T map) throws IOException {
-        IndexExternalizer.VARIABLE.writeData(output, map.size());
+        IndexSerializer.VARIABLE.writeInt(output, map.size());
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
             output.writeObject(entry.getKey());
             output.writeObject(entry.getValue());
@@ -61,7 +61,7 @@ public class MapExternalizer<T extends Map<Object, Object>> implements Externali
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        int size = IndexExternalizer.VARIABLE.readData(input);
+        int size = IndexSerializer.VARIABLE.readInt(input);
         return readMap(input, this.factory.apply(size), size);
     }
 

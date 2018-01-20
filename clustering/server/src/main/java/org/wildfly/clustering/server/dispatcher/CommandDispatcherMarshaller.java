@@ -30,7 +30,7 @@ import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * @author Paul Ferraro
@@ -50,7 +50,7 @@ public class CommandDispatcherMarshaller<C> implements CommandMarshaller<C> {
         int version = this.context.getCurrentVersion();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (DataOutputStream output = new DataOutputStream(bytes)) {
-            IndexExternalizer.VARIABLE.writeData(output, version);
+            IndexSerializer.VARIABLE.writeInt(output, version);
             try (Marshaller marshaller = this.context.createMarshaller(version)) {
                 marshaller.start(Marshalling.createByteOutput(output));
                 marshaller.writeObject(this.id);

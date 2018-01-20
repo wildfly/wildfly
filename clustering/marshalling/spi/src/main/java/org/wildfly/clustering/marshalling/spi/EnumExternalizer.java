@@ -34,22 +34,22 @@ import org.wildfly.clustering.marshalling.Externalizer;
  */
 public class EnumExternalizer<E extends Enum<E>> implements Externalizer<E> {
 
-    private final IndexExternalizer ordinalExternalizer;
+    private final IntSerializer ordinalExternalizer;
     private final Class<E> enumClass;
 
     public EnumExternalizer(Class<E> enumClass) {
-        this.ordinalExternalizer = IndexExternalizer.select(enumClass.getEnumConstants().length);
+        this.ordinalExternalizer = IndexSerializer.select(enumClass.getEnumConstants().length);
         this.enumClass = enumClass;
     }
 
     @Override
     public void writeObject(ObjectOutput output, E value) throws IOException {
-        this.ordinalExternalizer.writeData(output, value.ordinal());
+        this.ordinalExternalizer.writeInt(output, value.ordinal());
     }
 
     @Override
     public E readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return this.enumClass.getEnumConstants()[this.ordinalExternalizer.readData(input)];
+        return this.enumClass.getEnumConstants()[this.ordinalExternalizer.readInt(input)];
     }
 
     @Override

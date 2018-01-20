@@ -29,7 +29,7 @@ import java.time.Duration;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * Optimize marshalling of last accessed timestamp.
@@ -40,13 +40,13 @@ public class SessionAccessMetaDataExternalizer implements Externalizer<SimpleSes
 
     @Override
     public void writeObject(ObjectOutput output, SimpleSessionAccessMetaData metaData) throws IOException {
-        IndexExternalizer.VARIABLE.writeData(output, (int) metaData.getLastAccessedDuration().getSeconds());
+        IndexSerializer.VARIABLE.writeInt(output, (int) metaData.getLastAccessedDuration().getSeconds());
     }
 
     @Override
     public SimpleSessionAccessMetaData readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         SimpleSessionAccessMetaData metaData = new SimpleSessionAccessMetaData();
-        metaData.setLastAccessedDuration(Duration.ofSeconds(IndexExternalizer.VARIABLE.readData(input)));
+        metaData.setLastAccessedDuration(Duration.ofSeconds(IndexSerializer.VARIABLE.readInt(input)));
         return metaData;
     }
 
