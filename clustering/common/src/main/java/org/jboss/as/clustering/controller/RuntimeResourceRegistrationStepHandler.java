@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,36 +22,25 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Registration facility for capabilities.
+ * {@link OperationStepHandler} that registers runtime resources.
  * @author Paul Ferraro
  */
-public class CapabilityRegistration implements Registration<ManagementResourceRegistration> {
+public class RuntimeResourceRegistrationStepHandler implements OperationStepHandler {
 
-    private final Collection<? extends Capability> capabilities;
+    private final RuntimeResourceRegistration registration;
 
-    public <E extends Enum<E> & Capability> CapabilityRegistration(Class<E> capabilityClass) {
-        this(EnumSet.allOf(capabilityClass));
-    }
-
-    public CapabilityRegistration(Capability... capabilities) {
-        this.capabilities = Arrays.asList(capabilities);
-    }
-
-    public CapabilityRegistration(Collection<? extends Capability> capabilities) {
-        this.capabilities = capabilities;
+    public RuntimeResourceRegistrationStepHandler(RuntimeResourceRegistration registration) {
+        this.registration = registration;
     }
 
     @Override
-    public void register(ManagementResourceRegistration registration) {
-        for (Capability capability : this.capabilities) {
-            registration.registerCapability(capability.getDefinition());
-        }
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        this.registration.register(context);
     }
 }

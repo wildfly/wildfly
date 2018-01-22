@@ -23,9 +23,9 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
@@ -40,7 +40,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class ExecutionHandler<C, E extends Executable<C>> extends AbstractRuntimeOnlyHandler {
 
-    private final Map<String, E> executables;
+    private final Map<String, E> executables = new HashMap<>();
     private final Executor<C, E> executor;
     private final Function<ModelNode, String> nameExtractor;
 
@@ -52,7 +52,9 @@ public class ExecutionHandler<C, E extends Executable<C>> extends AbstractRuntim
      */
     public ExecutionHandler(Executor<C, E> executor, Collection<? extends E> executables, Function<E, String> nameFactory, Function<ModelNode, String> nameExtractor) {
         this.executor = executor;
-        this.executables = executables.stream().collect(Collectors.toMap(nameFactory, Function.identity()));
+        for (E executable : executables) {
+            this.executables.put(nameFactory.apply(executable), executable);
+        }
         this.nameExtractor = nameExtractor;
     }
 

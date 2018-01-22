@@ -23,16 +23,17 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Map;
-import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -71,29 +72,26 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-        // Determine whether super impl will actually remove the resource
-        boolean remove = !resource.getChildTypes().stream()
-                .anyMatch(type -> resource.getChildren(type).stream()
-                        .filter(entry -> !entry.isRuntime())
-                        .map(entry -> entry.getPathElement())
-                        .anyMatch(path -> resource.hasChild(path)));
-        if (remove) {
+        if (removeInCurrentStep(resource)) {
             // We need to remove capabilities *before* removing the resource, since the capability reference resolution might involve reading the resource
             PathAddress address = context.getCurrentAddress();
-            this.descriptor.getCapabilities().entrySet().stream()
-                    .filter(entry -> entry.getValue().test(model))
-                    .map(Map.Entry::getKey)
-                    .forEach(capability -> context.deregisterCapability(capability.resolve(address).getName()));
+            for (Map.Entry<Capability, Predicate<ModelNode>> entry : this.descriptor.getCapabilities().entrySet()) {
+                if (entry.getValue().test(model)) {
+                    context.deregisterCapability(entry.getKey().resolve(address).getName());
+                }
+            }
 
             ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
-            registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
-                    .filter(Objects::nonNull)
-                    .map(AttributeAccess::getAttributeDefinition)
-                        .filter(Objects::nonNull)
-                        .filter(AttributeDefinition::hasCapabilityRequirements)
-                        .forEach(attribute -> attribute.removeCapabilityRequirements(context, resource, model.get(attribute.getName())));
+            for (String attributeName : registration.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
+                AttributeDefinition attribute = registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName).getAttributeDefinition();
+                if (attribute.hasCapabilityRequirements()) {
+                    attribute.removeCapabilityRequirements(context, resource, model.get(attributeName));
+                }
+            }
 
-            this.descriptor.getResourceCapabilityReferences().forEach((reference, resolver) -> reference.removeCapabilityRequirements(context, resource, null, resolver.apply(address)));
+            for (Map.Entry<CapabilityReferenceRecorder, Function<PathAddress, String>> entry : this.descriptor.getResourceCapabilityReferences().entrySet()) {
+                entry.getKey().removeCapabilityRequirements(context, resource, null, entry.getValue().apply(address));
+            }
 
             if (this.requiresRuntime(context)) {
                 for (RuntimeResourceRegistration runtimeRegistration : this.descriptor.getRuntimeResourceRegistrations()) {
@@ -103,6 +101,20 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
         }
 
         super.performRemove(context, operation, model);
+    }
+
+    /*
+     * Determines whether resource removal happens in this step, or a subsequent step
+     */
+    private static boolean removeInCurrentStep(Resource resource) {
+        for (String childType : resource.getChildTypes()) {
+            for (Resource.ResourceEntry entry : resource.getChildren(childType)) {
+                if (!entry.isRuntime() && resource.hasChild(entry.getPathElement())) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Override
