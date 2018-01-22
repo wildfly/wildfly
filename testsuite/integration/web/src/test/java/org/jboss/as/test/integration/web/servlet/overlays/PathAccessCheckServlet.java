@@ -28,10 +28,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Paths;
 
 /**
  * @author  Jaikiran Pai
@@ -42,17 +40,8 @@ public class PathAccessCheckServlet extends HttpServlet {
     static final String ACCESS_CHECKS_CORRECTLY_VALIDATED = "access-checks-valid";
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        final String action = req.getParameter("create_file");
-        if ( Boolean.valueOf(action) ){
-            File file = Paths.get(System.getProperty("java.io.tmpdir"), "noaccess.txt").toFile();
-            if ( file.createNewFile() ) {
-                resp.getWriter().write(file.getAbsolutePath());
-            }else{
-                resp.getWriter().write("");
-            }
-            return;
-        }
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         final String path = req.getParameter("path");
         final String shouldBeAccessible = req.getParameter("expected-accessible");
         final boolean expectedAccessible = shouldBeAccessible == null ? false : Boolean.parseBoolean(shouldBeAccessible);
