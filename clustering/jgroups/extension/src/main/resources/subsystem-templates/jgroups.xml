@@ -20,7 +20,7 @@
                 <protocol type="pbcast.GMS"/>
                 <protocol type="UFC"/>
                 <?UDP-MULTICAST-FLOW-CONTROL?>
-                <protocol type="FRAG2"/>
+                <protocol type="FRAG3"/>
             </stack>
             <stack name="tcp">
                 <transport type="TCP" socket-binding="jgroups-tcp"/>
@@ -34,7 +34,7 @@
                 <protocol type="pbcast.STABLE"/>
                 <protocol type="pbcast.GMS"/>
                 <?TCP-MULTICAST-FLOW-CONTROL?>
-                <protocol type="FRAG2"/>
+                <protocol type="FRAG3"/>
             </stack>
         </stacks>
     </subsystem>
