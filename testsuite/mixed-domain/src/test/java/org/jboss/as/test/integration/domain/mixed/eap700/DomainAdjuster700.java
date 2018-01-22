@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.domain.mixed.eap700;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.operations.common.Util.createAddOperation;
 import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
 
 import java.util.ArrayList;
@@ -48,6 +49,11 @@ public class DomainAdjuster700 extends DomainAdjuster710 {
 
         list.addAll(removeCoreManagement(profileAddress.append(SUBSYSTEM, "core-management")));
         list.addAll(removeElytron(profileAddress.append(SUBSYSTEM, "elytron")));
+        switch (profileAddress.getElement(0).getValue()) {
+            case "full-ha": {
+                list.addAll(adjustJGroups(profileAddress.append(SUBSYSTEM, "jgroups")));
+            }
+        }
         return list;
     }
 
@@ -65,6 +71,24 @@ public class DomainAdjuster700 extends DomainAdjuster710 {
         //core-management subsystem and extension don't exist
         list.add(createRemoveOperation(subsystem));
         list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.core-management")));
+        return list;
+    }
+
+    private List<ModelNode> adjustJGroups(final PathAddress subsystem) throws Exception {
+        final List<ModelNode> list = new ArrayList<>();
+
+        // FRAG3 does not exist, use FRAG2 instead
+
+        // udp stack
+        PathAddress udp = subsystem.append("stack", "udp");
+        list.add(createRemoveOperation(udp.append("protocol", "FRAG3")));
+        list.add(createAddOperation(udp.append("protocol", "FRAG2")));
+
+        // tcp stack
+        PathAddress tcp = subsystem.append("stack", "tcp");
+        list.add(createRemoveOperation(tcp.append("protocol", "FRAG3")));
+        list.add(createAddOperation(tcp.append("protocol", "FRAG2")));
+
         return list;
     }
 }
