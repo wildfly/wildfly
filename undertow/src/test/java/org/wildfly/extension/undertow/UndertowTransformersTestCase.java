@@ -130,8 +130,9 @@ public class UndertowTransformersTestCase extends AbstractSubsystemBaseTest {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("undertow-transformers.xml");
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, undertowVersion)
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, undertowVersion)
                 .addMavenResourceURL(String.format("%s:wildfly-undertow:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
+                .addSingleChildFirstClass(DefaultInitialization.class)
                 .configureReverseControllerCheck(createAdditionalInitialization(), null)
                 .dontPersistXml();
 
