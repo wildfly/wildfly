@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.mod_cluster;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -41,19 +39,15 @@ public class ProxyListValidator implements ParameterValidator {
             String[] results = str.split(",");
             for (String result : results) {
                 int i = result.lastIndexOf(":");
-                int port = 0;
-                String host = null;
-                if (i > 0) {
-                    host = result.substring(0, i);
-                    port = Integer.valueOf(result.substring(i + 1));
-                }
                 try {
-                    InetAddress.getByName(host);
-                } catch (UnknownHostException e) {
-                    host = null;
-                }
-                if (host == null || port == 0) {
-                    throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.needHostAndPort());
+                    //validate that the port is >0 and that the host is not the empty string
+                    //this also validates that both a host and port have been supplied
+                    //<=1 as we want to make sure the host is not the empty string
+                    if (i <= 1 || Integer.parseInt(result.substring(i + 1)) <= 0) {
+                        throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.needHostAndPort(result));
+                    }
+                } catch (NumberFormatException e) {
+                    throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.needHostAndPort(result));
                 }
             }
         }
