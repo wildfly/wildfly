@@ -14,8 +14,7 @@ WildFly 9 is distributed secured by default, the default security
 mechanism is _username / password_ based making use of *HTTP Digest* for
 the authentication process.
 
-Thus *you need to create a user* with the
-link:add-user_utility.html[add-user.sh] script.
+Thus *you need to create a user* with the add-user.sh script.
 
 [[interacting-with-the-model]]
 == Interacting with the model

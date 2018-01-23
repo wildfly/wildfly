@@ -60,6 +60,7 @@ Default URL
 By default the web interface can be accessed here:
 http://localhost:9990/console.
 
+include::Command_Line_Interface.adoc[leveloffset=+1]
 
 include::Default_HTTP_Interface_Security.adoc[leveloffset=+1]
 
