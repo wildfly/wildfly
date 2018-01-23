@@ -24,7 +24,6 @@ package org.jboss.as.connector.deployers.ra.processors;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
-import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService;
@@ -74,10 +73,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
         final ManagementResourceRegistration baseRegistration = deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
         final ManagementResourceRegistration registration;
         final Resource deploymentResource = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
-
-
-        final ConnectorXmlDescriptor connectorXmlDescriptor = deploymentUnit
-                .getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+        final ConnectorXmlDescriptor connectorXmlDescriptor = deploymentUnit.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
         if (connectorXmlDescriptor == null) {
             return; // Skip non ra deployments
         }
@@ -92,12 +88,8 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
         if (raService != null)
             raxmls = ((ResourceAdaptersService.ModifiableResourceAdaptors) raService.getValue());
 
-
         ROOT_LOGGER.tracef("processing Raxml");
         Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-
-        if (module == null)
-            throw ConnectorLogger.ROOT_LOGGER.failedToGetModuleAttachment(deploymentUnit);
 
         try {
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();

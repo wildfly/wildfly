@@ -35,7 +35,6 @@ import javax.security.auth.Subject;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.deployers.common.DeployException;
@@ -353,15 +352,15 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 37, value = "failed to get metrics: %s")
     String failedToGetMetrics(String message);
 
-    /**
-     * Creates an exception indicating a failure to get the module attachment for the deployment unit represented by
-     * the {@code deploymentUnit} parameter.
-     *
-     * @param deploymentUnit the deployment.
-     * @return a {@link DeploymentUnitProcessingException} for the error.
-     */
-    @Message(id = 38, value = "Failed to get module attachment for %s")
-    DeploymentUnitProcessingException failedToGetModuleAttachment(DeploymentUnit deploymentUnit);
+//    /**
+//     * Creates an exception indicating a failure to get the module attachment for the deployment unit represented by
+//     * the {@code deploymentUnit} parameter.
+//     *
+//     * @param deploymentUnit the deployment.
+//     * @return a {@link DeploymentUnitProcessingException} for the error.
+//     */
+    //@Message(id = 38, value = "Failed to get module attachment for %s")
+    //DeploymentUnitProcessingException failedToGetModuleAttachment(DeploymentUnit deploymentUnit);
 
     /**
      * Creates an exception indicating a failure to get the URL delimiter.
