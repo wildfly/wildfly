@@ -153,40 +153,63 @@ public class QueryName {
             query.length() == 0) {
             return query;
         }
+
+        StringBuilder buff = new StringBuilder(query);
+
         // handle two character transforms first
-        query = query.replace(SQL_NE, NOT_EQUAL__);
-        query = query.replace(NE_BANG, BANG_NOT_EQUAL__);
-        query = query.replace(NE_HAT, HAT_NOT_EQUAL__);
-        query = query.replace(LE, LESS_THAN_EQUAL__);
-        query = query.replace(GE, GREATER_THAN_EQUAL__);
-        query = query.replace(CONCAT, CONCAT__);
-        query = query.replace(LT, LESS_THAN__);
-        query = query.replace(EQ, EQUAL__);
-        query = query.replace(GT, GREATER__);
-        query = query.replace(OPEN, LEFT_PAREN__);
-        query = query.replace(CLOSE, RIGHT_PAREN__);
-        query = query.replace(OPEN_BRACKET, LEFT_BRACKET__);
-        query = query.replace(CLOSE_BRACKET, RIGHT_BRACKET__);
-        query = query.replace(PLUS, PLUS__);
-        query = query.replace(MINUS, MINUS__);
-        query = query.replace(STAR, STAR__);
-        query = query.replace(DIV, DIVIDE__);
-        query = query.replace(MOD, MODULUS__);
-        query = query.replace(COLON, COLON__);
-        query = query.replace(PARAM, PARAM__);
-        query = query.replace(COMMA, COMMA__);
-        query = query.replace(SPACE, SPACE__);
-        query = query.replace(TAB, TAB__);
-        query = query.replace(NEWLINE, NEWLINE__);
-        query = query.replace(LINEFEED, LINEFEED__);
-        query = query.replace(QUOTE, QUOTE__);
-        query = query.replace(DQUOTE, DQUOTE__);
-        query = query.replace(TICK, TICK__);
-        query = query.replace(OPEN_BRACE, OPEN_BRACE__);
-        query = query.replace(CLOSE_BRACE, CLOSE_BRACE__);
-        query = query.replace(HAT, HAT__);
-        query = query.replace(AMPERSAND, AMPERSAND__);
-        return query;
+        subst(buff, SQL_NE, NOT_EQUAL__);
+        subst(buff, NE_BANG, BANG_NOT_EQUAL__);
+        subst(buff, NE_HAT, HAT_NOT_EQUAL__);
+        subst(buff, LE, LESS_THAN_EQUAL__);
+        subst(buff, GE, GREATER_THAN_EQUAL__);
+        subst(buff, CONCAT, CONCAT__);
+        subst(buff, LT, LESS_THAN__);
+        subst(buff, EQ, EQUAL__);
+        subst(buff, GT, GREATER__);
+        subst(buff, OPEN, LEFT_PAREN__);
+        subst(buff, CLOSE, RIGHT_PAREN__);
+        subst(buff, OPEN_BRACKET, LEFT_BRACKET__);
+        subst(buff, CLOSE_BRACKET, RIGHT_BRACKET__);
+        subst(buff, PLUS, PLUS__);
+        subst(buff, MINUS, MINUS__);
+        subst(buff, STAR, STAR__);
+        subst(buff, DIV, DIVIDE__);
+        subst(buff, MOD, MODULUS__);
+        subst(buff, COLON, COLON__);
+        subst(buff, PARAM, PARAM__);
+        subst(buff, COMMA, COMMA__);
+        subst(buff, SPACE, SPACE__);
+        subst(buff, TAB, TAB__);
+        subst(buff, NEWLINE, NEWLINE__);
+        subst(buff, LINEFEED, LINEFEED__);
+        subst(buff, QUOTE, QUOTE__);
+        subst(buff, DQUOTE, DQUOTE__);
+        subst(buff, TICK, TICK__);
+        subst(buff, OPEN_BRACE, OPEN_BRACE__);
+        subst(buff, CLOSE_BRACE, CLOSE_BRACE__);
+        subst(buff, HAT, HAT__);
+        subst(buff, AMPERSAND, AMPERSAND__);
+        return buff.toString();
+    }
+
+    /**
+     * Substitute sub-strings inside of a string.
+     *
+     * @param stringBuilder String buffer to use for substitution (buffer is not reset)
+     * @param from String to substitute from
+     * @param to   String to substitute to
+     */
+    private static void subst(final StringBuilder stringBuilder, final String from, final String to) {
+        int begin = 0, end = 0;
+
+        while ((end = stringBuilder.indexOf(from, end)) != -1) {
+            stringBuilder.delete(end, end + from.length());
+            stringBuilder.insert(end, to);
+
+            // update positions
+            begin = end + to.length();
+            end = begin;
+        }
     }
 
 }
