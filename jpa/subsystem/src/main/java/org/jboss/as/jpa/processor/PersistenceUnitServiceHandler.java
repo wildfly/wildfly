@@ -251,12 +251,6 @@ public class PersistenceUnitServiceHandler {
             final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
             final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             final Collection<ComponentDescription> components = eeModuleDescription.getComponentDescriptions();
-            if (module == null) {
-                // Unresolved OSGi bundles would not have a module attached
-                ROOT_LOGGER.failedToGetModuleAttachment(deploymentUnit);
-                return;
-            }
-
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
             final ModuleClassLoader classLoader = module.getClassLoader();
 

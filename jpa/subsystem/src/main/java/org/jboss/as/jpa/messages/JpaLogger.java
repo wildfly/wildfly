@@ -130,15 +130,15 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 7, value = "Failed to stop persistence unit service %s")
     void failedToStopPUService(@Cause Throwable cause, String name);
 
-    /**
-     * Creates an exception indicating a failure to get the module for the deployment unit represented by the
-     * {@code deploymentUnit} parameter.
-     *
-     * @param deploymentUnit the deployment unit that failed.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 8, value = "Failed to get module attachment for %s")
-    void failedToGetModuleAttachment(DeploymentUnit deploymentUnit);
+//    /**
+//     * Creates an exception indicating a failure to get the module for the deployment unit represented by the
+//     * {@code deploymentUnit} parameter.
+//     *
+//     * @param deploymentUnit the deployment unit that failed.
+//     */
+    //@LogMessage(level = WARN)
+    //@Message(id = 8, value = "Failed to get module attachment for %s")
+    //void failedToGetModuleAttachment(DeploymentUnit deploymentUnit);
 
 //    /**
 //     * warn that the entity class could not be loaded with the
