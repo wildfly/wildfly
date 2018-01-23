@@ -35,7 +35,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 import javax.security.jacc.WebResourcePermission;
 import javax.security.jacc.WebRoleRefPermission;
@@ -155,6 +154,11 @@ public class JACCAuthorizationManager implements AuthorizationManager {
 
         roles.addAll(principalVersusRolesMap.getOrDefault(account.getPrincipal().getName(), Collections.emptySet()));
 
-        return roles.stream().map((Function<String, Principal>) roleName -> (Principal) () -> roleName).toArray(Principal[]::new);
+        Principal[] principals = new Principal[roles.size()];
+        int index = 0;
+        for (String role : roles) {
+            principals[index++] = () -> role;
+        }
+        return principals;
     }
 }

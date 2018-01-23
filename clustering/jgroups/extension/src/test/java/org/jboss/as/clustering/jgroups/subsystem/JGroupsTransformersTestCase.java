@@ -72,9 +72,6 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
 
     private static JGroupsModel getModelVersion(ModelTestControllerVersion controllerVersion) {
         switch (controllerVersion) {
-            case EAP_6_2_0:
-            case EAP_6_3_0:
-                return JGroupsModel.VERSION_1_2_0;
             case EAP_6_4_0:
             case EAP_6_4_7:
                 return JGroupsModel.VERSION_1_3_0;
@@ -87,8 +84,6 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
 
     private static String[] getDependencies(ModelTestControllerVersion version) {
         switch (version) {
-            case EAP_6_2_0:
-            case EAP_6_3_0:
             case EAP_6_4_0:
             case EAP_6_4_7:
                 return new String[] {
@@ -110,16 +105,6 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         return new AdditionalInitialization()
                 .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "jgroups-udp-fd", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr")
                 ;
-    }
-
-    @Test
-    public void testTransformerEAP620() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_6_2_0);
-    }
-
-    @Test
-    public void testTransformerEAP630() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test
@@ -307,16 +292,6 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
 
         op = services.executeInMainAndGetTheTransformedOperation(Util.getWriteAttributeOperation(protocolAddr, MODULE, "reject.this"), version);
         Assert.assertTrue(op.rejectOperation(success()));
-    }
-
-    @Test
-    public void testRejectionsEAP620() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_6_2_0);
-    }
-
-    @Test
-    public void testRejectionsEAP630() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test

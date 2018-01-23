@@ -283,12 +283,8 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         @Override
         protected ModelNode correctValue(final ModelNode toResolve, final boolean isWriteAttribute) {
-            return null;
-        }
-
-        @Override
-        public boolean canCorrectMore(ModelNode operation) {
-            return false;
+            // Correct by providing a value
+            return new ModelNode("token");
         }
     }
 }

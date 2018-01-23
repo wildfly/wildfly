@@ -22,30 +22,17 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
 
 /**
  * @author Paul Ferraro
  */
 @MetaInfServices(Externalizer.class)
-public class SessionCreationMetaDataKeyFilterExternalizer implements Externalizer<SessionCreationMetaDataKeyFilter> {
+public class SessionCreationMetaDataKeyFilterExternalizer extends ValueExternalizer<SessionCreationMetaDataKeyFilter> {
 
-    @Override
-    public void writeObject(ObjectOutput output, SessionCreationMetaDataKeyFilter filter) throws IOException {
-    }
-
-    @Override
-    public SessionCreationMetaDataKeyFilter readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return new SessionCreationMetaDataKeyFilter();
-    }
-
-    @Override
-    public Class<SessionCreationMetaDataKeyFilter> getTargetClass() {
-        return SessionCreationMetaDataKeyFilter.class;
+    public SessionCreationMetaDataKeyFilterExternalizer() {
+        super(new SessionCreationMetaDataKeyFilter());
     }
 }

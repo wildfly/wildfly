@@ -38,10 +38,6 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.EJ
 
 import java.net.URI;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
-
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -51,7 +47,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ejb3.clustering.ClusteredSingletonServiceCreator;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -419,13 +414,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             final EJBUtilities utilities = new EJBUtilities();
             ServiceBuilder<EJBUtilities> ejbUtilsBuilder = serviceTarget.addService(EJBUtilities.SERVICE_NAME, utilities)
                     .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, utilities.getResourceAdapterRepositoryInjector())
-                    .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, utilities.getTransactionManagerInjector())
-                    .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, utilities.getTransactionSynchronizationRegistryInjector())
-                    .addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, utilities.getUserTransactionInjector())
-                    .setInitialMode(ServiceController.Mode.ACTIVE);
-            if (context.hasOptionalCapability(LEGACY_SECURITY_CAPABILITY_NAME, EJB3SubsystemRootResourceDefinition.EJB_CAPABILITY.getName(), null)) {
-                ejbUtilsBuilder.addDependency(context.getCapabilityServiceName(LEGACY_SECURITY_CAPABILITY_NAME, ServerSecurityManager.class), ServerSecurityManager.class, utilities.getSecurityManagerInjector());
-            }
+                    .setInitialMode(ServiceController.Mode.PASSIVE);
             ejbUtilsBuilder.install();
 
 

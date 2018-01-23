@@ -37,6 +37,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.xerces.JSFManagedBean;
 import org.jboss.as.test.integration.xerces.XercesUsageServlet;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -85,6 +86,13 @@ public class XercesUsageTestCase {
         ear.addAsModule(war);
         // add the xerces jar in the .ear/lib
         ear.addAsLibrary("xerces/xercesImpl.jar", "xercesImpl.jar");
+        ear.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+            new RuntimePermission("accessClassInPackage.org.apache.xerces.util"),
+            new RuntimePermission("accessClassInPackage.org.apache.xerces.xni.grammars"),
+            new RuntimePermission("accessClassInPackage.org.apache.xerces.impl.validation"),
+            new RuntimePermission("accessClassInPackage.org.apache.xerces.impl.dtd"),
+            new RuntimePermission("accessClassInPackage.org.apache.xerces.impl.*")
+        ), "permissions.xml");
 
         return ear;
     }
@@ -106,6 +114,11 @@ public class XercesUsageTestCase {
         ear.addAsModule(war);
         // add the xerces jar in the .ear/lib
         ear.addAsLibrary("xerces/xercesImpl.jar", "xercesImpl.jar");
+        ear.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+            new RuntimePermission("accessClassInPackage.org.apache.xerces.util"),
+            new RuntimePermission("accessClassInPackage.org.apache.xerces.impl.*"),
+            new RuntimePermission("accessClassInPackage.org.apache.xerces.xni.grammars")
+        ), "permissions.xml");
 
         return ear;
     }

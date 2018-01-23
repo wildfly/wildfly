@@ -30,8 +30,8 @@ import java.time.Instant;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
-import org.wildfly.clustering.marshalling.spi.time.InstantExternalizer;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * Externalizer for {@link SessionCreationMetaDataEntry}
@@ -39,19 +39,18 @@ import org.wildfly.clustering.marshalling.spi.time.InstantExternalizer;
  */
 @MetaInfServices(Externalizer.class)
 public class SessionCreationMetaDataEntryExternalizer implements Externalizer<SessionCreationMetaDataEntry<Object>> {
-    private static final Externalizer<Instant> INSTANT_EXTERNALIZER = new InstantExternalizer();
 
     @Override
     public void writeObject(ObjectOutput output, SessionCreationMetaDataEntry<Object> entry) throws IOException {
         SessionCreationMetaData metaData = entry.getMetaData();
-        INSTANT_EXTERNALIZER.writeObject(output, metaData.getCreationTime());
-        IndexExternalizer.VARIABLE.writeData(output, (int) metaData.getMaxInactiveInterval().getSeconds());
+        DefaultExternalizer.INSTANT.cast(Instant.class).writeObject(output, metaData.getCreationTime());
+        IndexSerializer.VARIABLE.writeInt(output, (int) metaData.getMaxInactiveInterval().getSeconds());
     }
 
     @Override
     public SessionCreationMetaDataEntry<Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        SessionCreationMetaData metaData = new SimpleSessionCreationMetaData(INSTANT_EXTERNALIZER.readObject(input));
-        metaData.setMaxInactiveInterval(Duration.ofSeconds(IndexExternalizer.VARIABLE.readData(input)));
+        SessionCreationMetaData metaData = new SimpleSessionCreationMetaData(DefaultExternalizer.INSTANT.cast(Instant.class).readObject(input));
+        metaData.setMaxInactiveInterval(Duration.ofSeconds(IndexSerializer.VARIABLE.readInt(input)));
         return new SessionCreationMetaDataEntry<>(metaData);
     }
 

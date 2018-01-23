@@ -29,7 +29,7 @@
 
     <resources>
         <artifact name="${org.wildfly:wildfly-jsf-injection}"/>
-        <artifact name="${org.jboss.weld:weld-core-jsf}"/>
+        <artifact name="${org.jboss.weld.module:weld-jsf}"/>
     </resources>
 
     <dependencies>
@@ -42,6 +42,7 @@
         <module name="javax.enterprise.api"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.api"/>
 
         <!-- added this for MyFacesAnnotationProvider -->
         <module name="javax.faces.api"/>

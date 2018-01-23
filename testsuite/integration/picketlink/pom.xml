@@ -87,6 +87,34 @@
 
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>ts.copy-pl-config</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <!-- Add the Picketlink config to the standalone/config directory, so it will be processed as well -->
+                                            <directory>${jboss.home}/docs/examples/configs</directory>
+                                            <includes>
+                                                <include>standalone-picketlink.xml</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
                     <!-- TODO once PL is fixed to properly handle ipv6 trust domains, this can be used
                     see https://issues.jboss.org/browse/WFLY-8301
                     -->
@@ -107,7 +135,7 @@
                             <scripts>
                                 <script>modify-picketlink-config.cli</script>
                             </scripts>
-                            <jboss-home>${project.build.directory}/jbossas</jboss-home>
+                            <jboss-home>${project.build.directory}/wildfly</jboss-home>
                             <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
                             <system-properties>
                                 <module.path>${jboss.dist}/modules</module.path>
@@ -127,16 +155,15 @@
                                 <goals>
                                     <goal>transform</goal>
                                 </goals>
-                                <inherited>true</inherited>
                                 <configuration>
                                     <transformationSets>
                                         <!-- IPs. -->
                                         <transformationSet>
-                                            <dir>${basedir}/target/jbossas/standalone/configuration</dir>
-                                            <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                            <dir>${basedir}/target/wildfly/standalone/configuration</dir>
+                                            <outputDir>${basedir}/target/wildfly/standalone/configuration</outputDir>
                                             <stylesheet>${xslt.scripts.dir}/changeIPAddresses.xsl</stylesheet>
                                             <includes>
-                                                <include>standalone*.xml</include>
+                                                <include>standalone-picketlink.xml</include>
                                             </includes>
                                             <parameters>
                                                 <parameter>
@@ -188,7 +215,7 @@
                                 <include>org/wildfly/test/integration/security/picketlink/**/*TestCase.java</include>
                             </includes>
                             <systemPropertyVariables>
-                                <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.dirs} -Dnode0=${node0} -Dnode1=${node1}</server.jvm.args>
+                                <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.dirs} -Dnode0=${node0} -Dnode1=${node1} ${extra.server.jvm.args}</server.jvm.args>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

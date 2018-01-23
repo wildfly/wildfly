@@ -22,10 +22,6 @@
 
 package org.wildfly.clustering.marshalling.spi.util;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -37,6 +33,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NavigableSet;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -44,11 +45,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.function.BiConsumer;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
+import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * Unit test for {@link CollectionExternalizer} externalizers.
@@ -56,49 +57,43 @@ import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
  */
 public class CollectionExternalizerTestCase {
 
+    @SuppressWarnings("unchecked")
     @Test
     public void test() throws ClassNotFoundException, IOException {
         Collection<Object> basis = Arrays.<Object>asList(1, 2, 3, 4, 5);
-        test(new CollectionExternalizer.ArrayDequeExternalizer(), new ArrayDeque<>(basis));
-        test(new CollectionExternalizer.ArrayListExternalizer(), new ArrayList<>(basis));
-        test(new CollectionExternalizer.ConcurrentLinkedDequeExternalizer(), new ConcurrentLinkedDeque<>(basis));
-        test(new CollectionExternalizer.ConcurrentLinkedQueueExternalizer(), new ConcurrentLinkedQueue<>(basis));
-        test(new CollectionExternalizer.HashSetExternalizer(), new HashSet<>(basis));
-        test(new CollectionExternalizer.LinkedHashSetExternalizer(), new LinkedHashSet<>(basis));
-        test(new CollectionExternalizer.LinkedListExternalizer(), new LinkedList<>(basis));
+
+        new ExternalizerTester<>(DefaultExternalizer.ARRAY_DEQUE.cast(ArrayDeque.class), CollectionExternalizerTestCase::assertCollectionEquals).test(new ArrayDeque<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.ARRAY_LIST.cast(ArrayList.class), CollectionExternalizerTestCase::assertCollectionEquals).test(new ArrayList<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.CONCURRENT_LINKED_DEQUE.cast(ConcurrentLinkedDeque.class), CollectionExternalizerTestCase::assertCollectionEquals).test(new ConcurrentLinkedDeque<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.CONCURRENT_LINKED_QUEUE.cast(ConcurrentLinkedQueue.class), CollectionExternalizerTestCase::assertCollectionEquals).test(new ConcurrentLinkedQueue<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.HASH_SET.cast(HashSet.class), CollectionExternalizerTestCase::assertCollectionEquals).test(new HashSet<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.LINKED_HASH_SET.cast(LinkedHashSet.class), CollectionExternalizerTestCase::assertCollectionEquals).test(new LinkedHashSet<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.LINKED_LIST.cast(LinkedList.class), CollectionExternalizerTestCase::assertCollectionEquals).test(new LinkedList<>(basis));
+
         ConcurrentHashMap.KeySetView<Object, Boolean> keySetView = ConcurrentHashMap.newKeySet();
         keySetView.addAll(basis);
-        test(new CollectionExternalizer.ConcurrentHashSetExternalizer(), keySetView);
+        new ExternalizerTester<>(DefaultExternalizer.CONCURRENT_HASH_SET.cast(ConcurrentHashMap.KeySetView.class), CollectionExternalizerTestCase::assertCollectionEquals).test(keySetView);
 
-        test(new CopyOnWriteCollectionExternalizer.CopyOnWriteArrayListExternalizer(), new CopyOnWriteArrayList<>(basis));
-        test(new CopyOnWriteCollectionExternalizer.CopyOnWriteArraySetExternalizer(), new CopyOnWriteArraySet<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.COPY_ON_WRITE_ARRAY_LIST.cast(CopyOnWriteArrayList.class), CollectionExternalizerTestCase::assertCollectionEquals).test(new CopyOnWriteArrayList<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.COPY_ON_WRITE_ARRAY_SET.cast(CopyOnWriteArraySet.class), CollectionExternalizerTestCase::assertCollectionEquals).test(new CopyOnWriteArraySet<>(basis));
 
-        test(new EmptyCollectionExternalizer.EmptyEnumerationExternalizer(), Collections.emptyEnumeration());
-        test(new EmptyCollectionExternalizer.EmptyIteratorExternalizer(), Collections.emptyIterator());
-        test(new EmptyCollectionExternalizer.EmptyListExternalizer(), Collections.emptyList());
-        test(new EmptyCollectionExternalizer.EmptyListIteratorExternalizer(), Collections.emptyListIterator());
-        test(new EmptyCollectionExternalizer.EmptyNavigableSetExternalizer(), Collections.emptyNavigableSet());
-        test(new EmptyCollectionExternalizer.EmptySetExternalizer(), Collections.emptySet());
-        test(new EmptyCollectionExternalizer.EmptySortedSetExternalizer(), Collections.emptySortedSet());
+        new ExternalizerTester<>(DefaultExternalizer.EMPTY_ENUMERATION.cast(Enumeration.class), Assert::assertSame).test(Collections.emptyEnumeration());
+        new ExternalizerTester<>(DefaultExternalizer.EMPTY_ITERATOR.cast(Iterator.class), Assert::assertSame).test(Collections.emptyIterator());
+        new ExternalizerTester<>(DefaultExternalizer.EMPTY_LIST.cast(List.class), Assert::assertSame).test(Collections.emptyList());
+        new ExternalizerTester<>(DefaultExternalizer.EMPTY_LIST_ITERATOR.cast(ListIterator.class), Assert::assertSame).test(Collections.emptyListIterator());
+        new ExternalizerTester<>(DefaultExternalizer.EMPTY_NAVIGABLE_SET.cast(NavigableSet.class), Assert::assertSame).test(Collections.emptyNavigableSet());
+        new ExternalizerTester<>(DefaultExternalizer.EMPTY_SET.cast(Set.class), Assert::assertSame).test(Collections.emptySet());
+        new ExternalizerTester<>(DefaultExternalizer.EMPTY_SORTED_SET.cast(SortedSet.class), Assert::assertSame).test(Collections.emptySortedSet());
 
-        test(new SingletonCollectionExternalizer.SingletonListExternalizer(), Collections.singletonList(1));
-        test(new SingletonCollectionExternalizer.SingletonSetExternalizer(), Collections.singleton(1));
+        new ExternalizerTester<>(DefaultExternalizer.SINGLETON_LIST.cast(List.class), CollectionExternalizerTestCase::assertCollectionEquals).test(Collections.singletonList(1));
+        new ExternalizerTester<>(DefaultExternalizer.SINGLETON_SET.cast(Set.class), CollectionExternalizerTestCase::assertCollectionEquals).test(Collections.singleton(1));
 
-        test(new SortedSetExternalizer.ConcurrentSkipListSetExternalizer(), new ConcurrentSkipListSet<>(basis));
-        test(new SortedSetExternalizer.TreeSetExternalizer(), new TreeSet<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.CONCURRENT_SKIP_LIST_SET.cast(ConcurrentSkipListSet.class), CollectionExternalizerTestCase::assertCollectionEquals).test(new ConcurrentSkipListSet<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.TREE_SET.cast(TreeSet.class), CollectionExternalizerTestCase::assertCollectionEquals).test(new TreeSet<>(basis));
     }
 
-    public static <T extends Collection<Object>> void test(Externalizer<T> externalizer, T collection) throws ClassNotFoundException, IOException {
-        BiConsumer<T, T> assertSize = (expected, actual) -> assertEquals(expected.size(), actual.size());
-        BiConsumer<T, T> assertContents = (expected, actual) -> assertTrue(actual.containsAll(expected));
-        ExternalizerTestUtil.test(externalizer, collection, assertSize.andThen(assertContents));
-    }
-
-    public static <T extends Enumeration<Object>> void test(Externalizer<T> externalizer, T enumeration) throws ClassNotFoundException, IOException {
-        ExternalizerTestUtil.test(externalizer, enumeration, (expected, actual) -> assertFalse(actual.hasMoreElements()));
-    }
-
-    public static <T extends Iterator<Object>> void test(Externalizer<T> externalizer, T iterator) throws ClassNotFoundException, IOException {
-        ExternalizerTestUtil.test(externalizer, iterator, (expected, actual) -> assertFalse(actual.hasNext()));
+    static <T extends Collection<Object>> void assertCollectionEquals(T expected, T actual) {
+        Assert.assertEquals(expected.size(), actual.size());
+        Assert.assertTrue(expected.containsAll(actual));
     }
 }

@@ -22,6 +22,8 @@
 package org.wildfly.clustering.server.group;
 
 import org.infinispan.Cache;
+import org.jgroups.Address;
+import org.wildfly.clustering.spi.NodeFactory;
 
 /**
  * Configuration for a {@link CacheGroup}.
@@ -29,5 +31,5 @@ import org.infinispan.Cache;
  */
 public interface CacheGroupConfiguration {
     Cache<?, ?> getCache();
-    InfinispanNodeFactory getNodeFactory();
+    NodeFactory<Address> getMemberFactory();
 }

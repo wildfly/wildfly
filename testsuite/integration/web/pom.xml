@@ -60,7 +60,6 @@
                     <!-- Parameters to test cases. -->
                     <systemPropertyVariables combine.children="append">
                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                     </systemPropertyVariables>
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>

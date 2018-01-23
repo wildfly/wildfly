@@ -27,14 +27,12 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.time.Duration;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * Externalizer for a {@link Duration}.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
 public class DurationExternalizer implements Externalizer<Duration> {
 
     @Override

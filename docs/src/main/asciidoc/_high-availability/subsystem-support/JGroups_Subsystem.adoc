@@ -1,0 +1,277 @@
+= JGroups Subsystem
+
+[[purpose]]
+== Purpose
+
+The JGroups subsystem provides group communication support for HA
+services in the form of JGroups channels.
+
+Named channel instances permit application peers in a cluster to
+communicate as a group and in such a way that the communication
+satisfies defined properties (e.g. reliable, ordered,
+failure-sensitive). Communication properties are configurable for each
+channel and are defined by the protocol stack used to create the
+channel. Protocol stacks consist of a base transport layer (used to
+transport messages around the cluster) together with a user-defined,
+ordered stack of protocol layers, where each protocol layer supports a
+given communication property.
+
+The JGroups subsystem provides the following features:
+
+* allows definition of named protocol stacks
+* view run-time metrics associated with channels
+* specify a default stack for general use
+
+In the following sections, we describe the JGroups subsystem.
+
+[IMPORTANT]
+
+JGroups channels are created transparently as part of the clustering
+functionality (e.g. on clustered application deployment, channels will
+be created behind the scenes to support clustered features such as
+session replication or transmission of SSO contexts around the cluster).
+
+[[configuration-example]]
+== Configuration example
+
+What follows is a sample JGroups subsystem configuration showing all of
+the possible elements and attributes which may be configured. We shall
+use this example to explain the meaning of the various elements and
+attributes.
+
+[IMPORTANT]
+
+The schema for the subsystem, describing all valid elements and
+attributes, can be found in the Wildfly distribution, in the docs/schema
+directory.
+
+[source, java]
+----
+<subsystem xmlns="urn:jboss:domain:jgroups:2.0" default-stack="udp">
+    <stack name="udp">
+        <transport type="UDP" socket-binding="jgroups-udp" diagnostics-socket-binding="jgroups-diagnostics"
+            default-executor="jgroups" oob-executor="jgroups-oob" timer-executor="jgroups-timer"
+            shared="false" thread-factory="jgroups-thread-factory"
+            machine="machine1" rack="rack1" site="site1"/>
+        <protocol type="PING">
+            <property name="timeout">100</property>
+        </protocol>
+        <protocol type="MERGE3"/>
+        <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
+        <protocol type="FD"/>
+        <protocol type="VERIFY_SUSPECT"/>
+        <protocol type="pbcast.NAKACK2"/>
+        <protocol type="UNICAST2"/>
+        <protocol type="pbcast.STABLE"/>
+        <protocol type="pbcast.GMS"/>
+        <protocol type="UFC"/>
+        <protocol type="MFC"/>
+        <protocol type="FRAG2"/>
+        <protocol type="RSVP"/>
+    </stack>
+    <stack name="tcp">
+        <transport type="TCP" socket-binding="jgroups-tcp"/>
+        <protocol type="MPING" socket-binding="jgroups-mping"/>
+        <protocol type="MERGE2"/>
+        <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+        <protocol type="FD"/>
+        <protocol type="VERIFY_SUSPECT"/>
+        <protocol type="pbcast.NAKACK2"/>
+        <protocol type="UNICAST2"/>
+        <protocol type="pbcast.STABLE"/>
+        <protocol type="pbcast.GMS"/>
+        <protocol type="MFC"/>
+        <protocol type="FRAG2"/>
+        <protocol type="RSVP"/>
+    </stack>
+    <stack name="udp-xsite">
+        <transport type="UDP" socket-binding="jgroups-udp"/>
+        <protocol type="PING" socket-binding="jgroups-mping"/>
+        <protocol type="MERGE2"/>
+        <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+        <protocol type="FD"/>
+        <protocol type="VERIFY_SUSPECT"/>
+        <protocol type="pbcast.NAKACK2"/>
+        <protocol type="UNICAST2"/>
+        <protocol type="pbcast.STABLE"/>
+        <protocol type="pbcast.GMS"/>
+        <protocol type="MFC"/>
+        <protocol type="FRAG2"/>
+        <protocol type="RSVP"/>
+        <relay site="LONDON">
+            <remote-site name="SFO" stack="tcp" cluster="global"/>
+            <remote-site name="NYC" stack="tcp" cluster="global"/>
+        </relay>
+    </stack>
+</subsystem>
+----
+
+[[subsystem]]
+=== <subsystem>
+
+This element is used to configure the subsystem within a Wildfly system
+profile.
+
+* `xmlns` This attribute specifies the XML namespace of the JGroups
+subsystem and, in particular, its version.
+
+* `default-stack` This attribute is used to specify a default stack for
+the JGroups subsystem. This default stack will be used whenever a stack
+is required but no stack is specified.
+
+[[stack]]
+=== <stack>
+
+This element is used to configure a JGroups protocol stack.
+
+* `name` This attribute is used to specify the name of the stack.
+
+[[transport]]
+=== <transport>
+
+This element is used to configure the transport layer (required) of the
+protocol stack.
+
+* `type` This attribute specifies the transport type (e.g. UDP, TCP,
+TCPGOSSIP)
+* `socket-binding` This attribute references a defined socket binding in
+the server profile. It is used when JGroups needs to create general
+sockets internally.
+* `diagnostics-socket-binding` This attribute references a defined
+socket binding in the server profile. It is used when JGroups needs to
+create sockets for use with the diagnostics program. For more about the
+use of diagnostics, see the JGroups documentation for probe.sh.
+* `default-executor` This attribute references a defined thread pool
+executor in the threads subsystem. It governs the allocation and
+execution of runnable tasks to handle incoming JGroups messages.
+* `oob-executor` This attribute references a defined thread pool
+executor in the threads subsystem. It governs the allocation and
+execution of runnable tasks to handle incoming JGroups OOB
+(out-of-bound) messages.
+* `timer-executor` This attribute references a defined thread pool
+executor in the threads subsystem. It governs the allocation and
+execution of runnable timer-related tasks.
+* `shared` This attribute indicates whether or not this transport is
+shared amongst several JGroups stacks or not.
+* `thread-factory` This attribute references a defined thread factory in
+the threads subsystem. It governs the allocation of threads for running
+tasks which are not handled by the executors above.
+* `site` This attribute defines a site (data centre) id for this node.
+* `rack` This attribute defines a rack (server rack) id for this node.
+* `machine` This attribute defines a machine (host) is for this node.
+
+[IMPORTANT]
+
+site, rack and machine ids are used by the Infinispan topology-aware
+consistent hash function, which when using dist mode, prevents dist mode
+replicas from being stored on the same host, rack or site
+
+.
+
+[[property]]
+==== <property>
+
+This element is used to configure a transport property.
+
+* `name` This attribute specifies the name of the protocol property. The
+value is provided as text for the property element.
+
+[[protocol]]
+=== <protocol>
+
+This element is used to configure a (non-transport) protocol layer in
+the JGroups stack. Protocol layers are ordered within the stack.
+
+* `type` This attribute specifies the name of the JGroups protocol
+implementation (e.g. MPING, pbcast.GMS), with the package prefix
+org.jgroups.protocols removed.
+* `socket-binding` This attribute references a defined socket binding in
+the server profile. It is used when JGroups needs to create general
+sockets internally for this protocol instance.
+
+[[property-1]]
+==== <property>
+
+This element is used to configure a protocol property.
+
+* `name` This attribute specifies the name of the protocol property. The
+value is provided as text for the property element.
+
+[[relay]]
+=== <relay>
+
+This element is used to configure the RELAY protocol for a JGroups
+stack. RELAY is a protocol which provides cross-site replication between
+defined sites (data centres). In the RELAY protocol, defined sites
+specify the names of remote sites (backup sites) to which their data
+should be backed up. Channels are defined between sites to permit the
+RELAY protocol to transport the data from the current site to a backup
+site.
+
+* `site` This attribute specifies the name of the current site. Site
+names can be referenced elsewhere (e.g. in the JGroups remote-site
+configuration elements, as well as backup configuration elements in the
+Infinispan subsystem)
+
+[[remote-site]]
+==== <remote-site>
+
+This element is used to configure a remote site for the RELAY protocol.
+
+* `name` This attribute specifies the name of the remote site to which
+this configuration applies.
+* `stack` This attribute specifies a JGroups protocol stack to use for
+communication between this site and the remote site.
+* `cluster` This attribute specifies the name of the JGroups channel to
+use for communication between this site and the remote site.
+
+[[use-cases]]
+== Use Cases
+
+In many cases, channels will be configured via XML as in the example
+above, so that the channels will be available upon server startup.
+However, channels may also be added, removed or have their
+configurations changed in a running server by making use of the Wildfly
+management API command-line interface (CLI). In this section, we present
+some key use cases for the JGroups management API.
+
+The key use cases covered are:
+
+* adding a stack
+* adding a protocol to an existing stack
+* adding a property to a protocol
+
+[IMPORTANT]
+
+The Wildfly management API command-line interface (CLI) itself can be
+used to provide extensive information on the attributes and commands
+available in the JGroups subsystem interface used in these examples.
+
+[[add-a-stack]]
+=== Add a stack
+
+[source, java]
+----
+/subsystem=jgroups/stack=mystack:add(transport={}, protocols={})
+----
+
+[[add-a-protocol-to-a-stack]]
+=== Add a protocol to a stack
+
+[source, java]
+----
+/subsystem=jgroups/stack=mystack/transport=TRANSPORT:add(type=<type>, socket-binding=<socketbinding>)
+----
+
+[source, java]
+----
+/subsystem=jgroups/stack=mystack:add-protocol(type=<type>, socket-binding=<socketbinding>)
+----
+
+[[add-a-property-to-a-protocol]]
+=== Add a property to a protocol
+
+[source, java]
+----
+/subsystem=jgroups/stack=mystack/transport=TRANSPORT/property=<property>:add(value=<value>)
+----

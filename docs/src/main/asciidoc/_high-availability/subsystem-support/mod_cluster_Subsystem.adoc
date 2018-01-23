@@ -1,0 +1,396 @@
+[[mod_cluster-subsystem]]
+= mod_cluster Subsystem
+
+The mod_cluster integration is done via the
+http://docs.jboss.org/mod_cluster/1.1.0/html/java.AS7config.html[modcluster
+subsystem].
+
+[[configuration]]
+== Configuration
+
+[[instance-id-or-jvmroute]]
+=== Instance ID or JVMRoute
+
+The instance-id or JVMRoute defaults to jboss.node.name property passed
+on server startup (e.g. via -Djboss.node.name=XYZ).
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] /subsystem=undertow/:read-attribute(name=instance-id)
+{
+    "outcome" => "success",
+    "result" => expression "${jboss.node.name}"
+}
+----
+
+To configure instance-id statically, configure the corresponding
+property in Undertow subsystem:
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] /subsystem=undertow/:write-attribute(name=instance-id,value=myroute)
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-reload" => true,
+        "process-state" => "reload-required"
+    }
+}
+----
+
+[[proxies]]
+=== Proxies
+
+By default, mod_cluster is configured for multicast-based discovery. To
+specify a static list of proxies, create a remote-socket-binding for
+each proxy and then reference them in the 'proxies' attribute. See the
+following example for configuration in the domain mode:
+
+[source, ruby]
+----
+[domain@localhost:9990 /] /socket-binding-group=ha-sockets/remote-destination-outbound-socket-binding=proxy1:add(host=10.21.152.86, port=6666)
+{
+    "outcome" => "success",
+    "result" => undefined,
+    "server-groups" => undefined
+}
+[domain@localhost:9990 /] /socket-binding-group=ha-sockets/remote-destination-outbound-socket-binding=proxy2:add(host=10.21.152.87, port=6666)
+{
+    "outcome" => "success",
+    "result" => undefined,
+    "server-groups" => undefined
+}
+[domain@localhost:9990 /] /profile=ha/subsystem=modcluster/mod-cluster-config=configuration/:write-attribute(name=proxies, value=[proxy1, proxy2]
+{
+    "outcome" => "success",
+    "result" => undefined,
+    "server-groups" => undefined
+}
+[domain@localhost:9990 /] :reload-servers
+{
+    "outcome" => "success",
+    "result" => undefined,
+    "server-groups" => undefined
+}
+----
+
+[[runtime-operations]]
+== Runtime Operations
+
+The modcluster subsystem supports several operations:
+
+[source, ruby]
+----
+[standalone@localhost:9999 subsystem=modcluster] :read-operation-names
+{
+    "outcome" => "success",
+    "result" => [
+        "add",
+        "add-custom-metric",
+        "add-metric",
+        "add-proxy",
+        "disable",
+        "disable-context",
+        "enable",
+        "enable-context",
+        "list-proxies",
+        "read-attribute",
+        "read-children-names",
+        "read-children-resources",
+        "read-children-types",
+        "read-operation-description",
+        "read-operation-names",
+        "read-proxies-configuration",
+        "read-proxies-info",
+        "read-resource",
+        "read-resource-description",
+        "refresh",
+        "remove-custom-metric",
+        "remove-metric",
+        "remove-proxy",
+        "reset",
+        "stop",
+        "stop-context",
+        "validate-address",
+        "write-attribute"
+    ]
+}
+----
+
+The operations specific to the modcluster subsystem are divided in 3
+categories the ones that affects the configuration and require a restart
+of the subsystem, the one that just modify the behaviour temporarily and
+the ones that display information from the httpd part.
+
+[[operations-displaying-httpd-informations]]
+=== operations displaying httpd informations
+
+There are 2 operations that display how Apache httpd sees the node:
+
+[[read-proxies-configuration]]
+==== read-proxies-configuration
+
+Send a DUMP message to all Apache httpd the node is connected to and
+display the message received from Apache httpd.
+
+[source, ruby]
+----
+[standalone@localhost:9999 subsystem=modcluster] :read-proxies-configuration
+{
+    "outcome" => "success",
+    "result" => [
+        "neo3:6666",
+        "balancer: [1] Name: mycluster Sticky: 1 [JSESSIONID]/[jsessionid] remove: 0 force: 1 Timeout: 0 Maxtry: 1
+node: [1:1],Balancer: mycluster,JVMRoute: 498bb1f0-00d9-3436-a341-7f012bc2e7ec,Domain: [],Host: 127.0.0.1,Port: 8080,Type: http,flushpackets: 0,flushwait: 10,ping: 10,smax: 26,ttl: 60,timeout: 0
+host: 1 [example.com] vhost: 1 node: 1
+host: 2 [localhost] vhost: 1 node: 1
+host: 3 [default-host] vhost: 1 node: 1
+context: 1 [/myapp] vhost: 1 node: 1 status: 1
+context: 2 [/] vhost: 1 node: 1 status: 1
+",
+        "jfcpc:6666",
+        "balancer: [1] Name: mycluster Sticky: 1 [JSESSIONID]/[jsessionid] remove: 0 force: 1 Timeout: 0 maxAttempts: 1
+node: [1:1],Balancer: mycluster,JVMRoute: 498bb1f0-00d9-3436-a341-7f012bc2e7ec,LBGroup: [],Host: 127.0.0.1,Port: 8080,Type: http,flushpackets: 0,flushwait: 10,ping: 10,smax: 26,ttl: 60,timeout: 0
+host: 1 [default-host] vhost: 1 node: 1
+host: 2 [localhost] vhost: 1 node: 1
+host: 3 [example.com] vhost: 1 node: 1
+context: 1 [/] vhost: 1 node: 1 status: 1
+context: 2 [/myapp] vhost: 1 node: 1 status: 1
+"
+    ]
+}
+----
+
+[[read-proxies-info]]
+==== read-proxies-info
+
+Send a INFO message to all Apache httpd the node is connected to and
+display the message received from Apache httpd.
+
+[source, ruby]
+----
+[standalone@localhost:9999 subsystem=modcluster] :read-proxies-info
+{
+    "outcome" => "success",
+    "result" => [
+        "neo3:6666",
+        "Node: [1],Name: 498bb1f0-00d9-3436-a341-7f012bc2e7ec,Balancer: mycluster,Domain: ,Host: 127.0.0.1,Port: 8080,Type: http,Flushpackets: Off,Flushwait: 10000,Ping: 10000000,Smax: 26,Ttl: 60000000,Elected: 0,Read: 0,Transfered: 0,Connected: 0,Load: -1
+Vhost: [1:1:1], Alias: example.com
+Vhost: [1:1:2], Alias: localhost
+Vhost: [1:1:3], Alias: default-host
+Context: [1:1:1], Context: /myapp, Status: ENABLED
+Context: [1:1:2], Context: /, Status: ENABLED
+",
+        "jfcpc:6666",
+        "Node: [1],Name: 498bb1f0-00d9-3436-a341-7f012bc2e7ec,Balancer: mycluster,LBGroup: ,Host: 127.0.0.1,Port: 8080,Type: http,Flushpackets: Off,Flushwait: 10,Ping: 10,Smax: 26,Ttl: 60,Elected: 0,Read: 0,Transfered: 0,Connected: 0,Load: 1
+Vhost: [1:1:1], Alias: default-host
+Vhost: [1:1:2], Alias: localhost
+Vhost: [1:1:3], Alias: example.com
+Context: [1:1:1], Context: /, Status: ENABLED
+Context: [1:1:2], Context: /myapp, Status: ENABLED
+"
+    ]
+}
+----
+
+[[operations-that-handle-the-proxies-the-node-is-connected-too]]
+==== operations that handle the proxies the node is connected too
+
+there are 3 operation that could be used to manipulate the list of
+Apache httpd the node is connected too.
+
+[[list-proxies]]
+==== list-proxies:
+
+Displays the httpd that are connected to the node. The httpd could be
+discovered via the Advertise protocol or via the proxy-list attribute.
+
+[source, ruby]
+----
+[standalone@localhost:9999 subsystem=modcluster] :list-proxies
+{
+    "outcome" => "success",
+    "result" => [
+        "proxy1:6666",
+        "proxy2:6666"
+    ]
+}
+----
+
+[[remove-proxy]]
+==== remove-proxy
+
+Remove a proxy from the discovered proxies or temporarily from the
+proxy-list attribute.
+
+[source, ruby]
+----
+[standalone@localhost:9999 subsystem=modcluster] :remove-proxy(host=jfcpc, port=6666)
+{"outcome" => "success"}
+----
+
+[[add-proxy]]
+==== add-proxy
+
+Add a proxy to the discovered proxies or temporarily to the proxy-list
+attribute.
+
+[source, java]
+----
+[standalone@localhost:9999 subsystem=modcluster] :add-proxy(host=jfcpc, port=6666)
+{"outcome" => "success"}
+----
+
+[[context-related-operations]]
+=== Context related operations
+
+Those operations allow to send context related commands to Apache httpd.
+They are send automatically when deploying or undeploying webapps.
+
+[[enable-context]]
+==== enable-context
+
+Tell Apache httpd that the context is ready receive requests.
+
+[source, ruby]
+----
+[standalone@localhost:9999 subsystem=modcluster] :enable-context(context=/myapp, virtualhost=default-host)
+{"outcome" => "success"}
+----
+
+[[disable-context]]
+==== disable-context
+
+Tell Apache httpd that it shouldn't send new session requests to the
+context of the virtualhost.
+
+[source, java]
+----
+[standalone@localhost:9999 subsystem=modcluster] :disable-context(context=/myapp, virtualhost=default-host)
+{"outcome" => "success"}
+----
+
+[[stop-context]]
+==== stop-context
+
+Tell Apache httpd that it shouldn't send requests to the context of the
+virtualhost.
+
+[source, java]
+----
+[standalone@localhost:9999 subsystem=modcluster] :stop-context(context=/myapp, virtualhost=default-host, waittime=50)
+{"outcome" => "success"}
+----
+
+[[node-related-operations]]
+=== Node related operations
+
+Those operations are like the context operation but they apply to all
+webapps running on the node and operation that affect the whole node.
+
+[[refresh]]
+==== refresh
+
+Refresh the node by sending a new CONFIG message to Apache httpd.
+
+[[reset]]
+==== reset
+
+reset the connection between Apache httpd and the node
+
+[[configuration-1]]
+=== Configuration
+
+[[metric-configuration]]
+==== Metric configuration
+
+There are 4 metric operations corresponding to add and remove load
+metrics to the dynamic-load-provider. Note that when nothing is defined
+a simple-load-provider is use with a fixed load factor of one.
+
+[source, ruby]
+----
+[standalone@localhost:9999 subsystem=modcluster] :read-resource(name=mod-cluster-config)
+{
+    "outcome" => "success",
+    "result" => {"simple-load-provider" => {"factor" => "1"}}
+}
+----
+
+that corresponds to the following configuration:
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:modcluster:1.0">
+            <mod-cluster-config>
+                <simple-load-provider factor="1"/>
+            </mod-cluster-config>
+ </subsystem>
+----
+
+[[add-metric]]
+===== add-metric
+
+Add a metric to the dynamic-load-provider, the dynamic-load-provider in
+configuration is created if needed.
+
+[source, ruby]
+----
+[standalone@localhost:9999 subsystem=modcluster] :add-metric(type=cpu)
+{"outcome" => "success"}
+[standalone@localhost:9999 subsystem=modcluster] :read-resource(name=mod-cluster-config)
+{
+    "outcome" => "success",
+    "result" => {
+        "dynamic-load-provider" => {
+            "history" => 9,
+            "decay" => 2,
+            "load-metric" => [{
+                "type" => "cpu"
+            }]
+        }
+    }
+}
+----
+
+[[remove-metric]]
+===== remove-metric
+
+Remove a metric from the dynamic-load-provider.
+
+[source, ruby]
+----
+[standalone@localhost:9999 subsystem=modcluster] :remove-metric(type=cpu)
+{"outcome" => "success"}
+----
+
+[[add-custom-metric-remove-custom-metric]]
+===== add-custom-metric / remove-custom-metric
+
+like the add-metric and remove-metric except they require a class
+parameter instead the type. Usually they needed additional properties
+which can be specified
+
+[source, ruby]
+----
+[standalone@localhost:9999 subsystem=modcluster] :add-custom-metric(class=myclass, property=[("pro1" => "value1"), ("pro2" => "value2")]
+{"outcome" => "success"}
+----
+
+which corresponds the following in the xml configuration file:
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:modcluster:1.0">
+            <mod-cluster-config>
+                <dynamic-load-provider history="9" decay="2">
+                    <custom-load-metric class="myclass">
+                        <property name="pro1" value="value1"/>
+                        <property name="pro2" value="value2"/>
+                    </custom-load-metric>
+                </dynamic-load-provider>
+            </mod-cluster-config>
+</subsystem>
+----
+
+include::SSL_Configuration_using_Elytron_Subsystem.adoc[leveloffset=+1]

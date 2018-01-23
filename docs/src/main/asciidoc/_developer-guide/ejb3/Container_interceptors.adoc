@@ -1,0 +1,189 @@
+= Container interceptors
+
+[[overview]]
+== Overview
+
+JBoss AS versions prior to WildFly8 allowed a JBoss specific way to
+plug-in user application specific interceptors on the server side so
+that those interceptors get invoked during an EJB invocation. Such
+interceptors differed from the typical (portable) spec provided Java EE
+interceptors. The Java EE interceptors are expected to run after the
+container has done necessary invocation processing which involves
+security context propagation, transaction management and other such
+duties. As a result, these Java EE interceptors come too late into the
+picture, if the user applications have to intercept the call before
+certain container specific interceptor(s) are run.
+
+[[typical-ejb-invocation-call-path-on-the-server]]
+== Typical EJB invocation call path on the server
+
+A typical EJB invocation looks like this:
+
+Client application
+
+[source, java]
+----
+MyBeanInterface bean = lookupBean();
+ 
+bean.doSomething();
+----
+
+The invocation on the bean.doSomething() triggers the following (only
+relevant portion of the flow shown below):
+
+1.  WildFly specific interceptor (a.k.a container interceptor) 1
+2.  WildFly specific interceptor (a.k.a container interceptor) 2
+3.  ....
+4.  WildFly specific interceptor (a.k.a container interceptor) N
+5.  User application specific Java EE interceptor(s) (if any)
+6.  Invocation on the EJB instance's method
+
+The WildFly specific interceptors include the security context
+propagation, transaction management and other container provided
+services. In some cases, the " `container interceptors`" (let's call
+them that) might even decide break the invocation flow and not let the
+invocation proceed (for example: due to the invoking caller not being
+among the allowed user roles who can invoke the method on the bean).
+
+Previous versions of JBoss AS allowed a way to plug-in the user
+application specific interceptors (which relied on JBoss AS specific
+libraries) into this invocation flow so that they do run some
+application specific logic before the control reaches step#5 above. For
+example, AS5 allowed the use of JBoss AOP interceptors to do this.
+
+As of WildFly 8, this feature was implemented.
+
+[[configuring-container-interceptors]]
+== Configuring container interceptors
+
+As you can see from the JIRA https://issues.jboss.org/browse/AS7-5897,
+one of the goals of this feature implementation was to make sure that we
+don't introduce any new WildFly specific library dependencies for the
+container interceptors. So we decided to allow the Java EE interceptors
+(which are just POJO classes with lifecycle callback annotations) to be
+used as container interceptors. As such you won't need any dependency on
+any WildFly specific libraries. That will allow us to support this
+feature for a longer time in future versions of WildFly.
+
+Furthermore, configuring these container interceptors is similar to
+configuring the Java EE interceptors for EJBs. In fact, it uses the same
+xsd elements that are allowed in ejb-jar.xml for 3.1 version of ejb-jar
+deployment descriptor.
+
+[IMPORTANT]
+
+Container interceptors can only be configured via deployment
+descriptors. There's no annotation based way to configure container
+interceptors. This was an intentional decision, taken to avoid
+introducing any WildFly specific library dependency for the annotation.
+
+Configuring the container interceptors can be done in jboss-ejb3.xml
+file, which then gets placed under the META-INF folder of the EJB
+deployment, just like the ejb-jar.xml. Here's an example of how the
+container interceptor(s) can be configured in jboss-ejb3.xml:
+
+.jboss-ejb3.xml
+
+[source, xml]
+----
+<jboss xmlns="http://www.jboss.com/xml/ns/javaee"
+       xmlns:jee="http://java.sun.com/xml/ns/javaee"
+       xmlns:ci ="urn:container-interceptors:1.0">
+ 
+    <jee:assembly-descriptor>
+        <ci:container-interceptors>
+            <!-- Default interceptor -->
+            <jee:interceptor-binding>
+                <ejb-name>*</ejb-name>
+                <interceptor-class>org.jboss.as.test.integration.ejb.container.interceptor.ContainerInterceptorOne</interceptor-class>
+            </jee:interceptor-binding>
+            <!-- Class level container-interceptor -->
+            <jee:interceptor-binding>
+                <ejb-name>AnotherFlowTrackingBean</ejb-name>
+                <interceptor-class>org.jboss.as.test.integration.ejb.container.interceptor.ClassLevelContainerInterceptor</interceptor-class>
+            </jee:interceptor-binding>
+            <!-- Method specific container-interceptor -->
+            <jee:interceptor-binding>
+                <ejb-name>AnotherFlowTrackingBean</ejb-name>
+                <interceptor-class>org.jboss.as.test.integration.ejb.container.interceptor.MethodSpecificContainerInterceptor</interceptor-class>
+                <method>
+                    <method-name>echoWithMethodSpecificContainerInterceptor</method-name>
+                </method>
+            </jee:interceptor-binding>
+            <!-- container interceptors in a specific order -->
+            <jee:interceptor-binding>
+                <ejb-name>AnotherFlowTrackingBean</ejb-name>
+                <interceptor-order>
+                    <interceptor-class>org.jboss.as.test.integration.ejb.container.interceptor.ClassLevelContainerInterceptor</interceptor-class>
+                    <interceptor-class>org.jboss.as.test.integration.ejb.container.interceptor.MethodSpecificContainerInterceptor</interceptor-class>
+                    <interceptor-class>org.jboss.as.test.integration.ejb.container.interceptor.ContainerInterceptorOne</interceptor-class>
+                </interceptor-order>
+                <method>
+                    <method-name>echoInSpecificOrderOfContainerInterceptors</method-name>
+                </method>
+            </jee:interceptor-binding>
+        </ci:container-interceptors>
+    </jee:assembly-descriptor>
+</jboss>
+----
+
+* The usage of urn:container-interceptors:1.0 namespace which allows the
+container-interceptors elements to be configured
+* The container-interceptors element which contain the interceptor
+bindings
+* The interceptor bindings themselves are the same elements as what the
+EJB3.1 xsd allows for standard Java EE interceptors
+* The interceptors can be bound either to all EJBs in the deployment
+(using the the * wildcard) or individual bean level (using the specific
+EJB name) or at specific method level for the EJBs.
+
+[IMPORTANT]
+
+The xsd for the urn:container-interceptors:1.0 namespace is available
+here
+https://github.com/jbossas/jboss-as/blob/master/ejb3/src/main/resources/jboss-ejb-container-interceptors_1_0.xsd
+
+The interceptor classes themselves are simple POJOs and use the
+`@javax.annotation.AroundInvoke` to mark the around invoke method which
+will get invoked during the invocation on the bean. Here's an example of
+the interceptor:
+
+.Example of container interceptor
+
+[source, java]
+----
+public class ClassLevelContainerInterceptor {
+    @AroundInvoke
+    private Object iAmAround(final InvocationContext invocationContext) throws Exception {
+        return this.getClass().getName() + " " + invocationContext.proceed();
+    }
+ 
+}
+----
+
+[[container-interceptor-positioning-in-the-interceptor-chain]]
+== Container interceptor positioning in the interceptor chain
+
+The container interceptors configured for a EJB are guaranteed to be run
+before the WildFly provided security interceptors, transaction
+management interceptors and other such interceptors thus allowing the
+user application specific container interceptors to setup any relevant
+context data before the invocation proceeds.
+
+[[semantic-difference-between-container-interceptors-and-java-ee-interceptors-api]]
+== Semantic difference between container interceptor(s) and Java EE
+interceptor(s) API
+
+Although the container interceptors are modeled to be similar to the
+Java EE interceptors, there are some differences in the API semantics.
+One such difference is that invoking on
+javax.interceptor.InvocationContext.getTarget() method is illegal for
+container interceptors since these interceptors are invoked way before
+the EJB components are setup or instantiated.
+
+[[testcase]]
+== Testcase
+
+This testcase in the WildFly codebase can be used for reference for
+implementing container interceptors in user applications
+https://github.com/wildfly/wildfly/blob/master/testsuite/integration/basic/src/test/java/org/jboss/as/test/integration/ejb/container/interceptor/ContainerInterceptorsTestCase.java

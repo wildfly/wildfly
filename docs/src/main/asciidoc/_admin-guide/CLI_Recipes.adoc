@@ -1,0 +1,462 @@
+= CLI Recipes
+
+[[properties]]
+== Properties
+
+[[adding-reading-and-removing-system-property-using-cli]]
+=== Adding, reading and removing system property using CLI
+
+For standalone mode:
+
+[source, ruby]
+----
+$ ./bin/jboss-cli.sh --connect controller=IP_ADDRESS
+[standalone@IP_ADDRESS:9990 /] /system-property=foo:add(value=bar)
+[standalone@IP_ADDRESS:9990 /] /system-property=foo:read-resource
+{
+    "outcome" => "success",
+    "result" => {"value" => "bar"}
+}
+[standalone@IP_ADDRESS:9990 /] /system-property=foo:remove
+{"outcome" => "success"}
+----
+
+For domain mode the same commands are used, you can add/read/remove
+system properties for: +
+All hosts and server instances in domain
+
+[source, ruby]
+----
+[domain@IP_ADDRESS:9990 /] /system-property=foo:add(value=bar)
+[domain@IP_ADDRESS:9990 /] /system-property=foo:read-resource
+[domain@IP_ADDRESS:9990 /] /system-property=foo:remove
+----
+
+Host and its server instances
+
+[source, ruby]
+----
+[domain@IP_ADDRESS:9990 /] /host=master/system-property=foo:add(value=bar)
+[domain@IP_ADDRESS:9990 /] /host=master/system-property=foo:read-resource
+[domain@IP_ADDRESS:9990 /] /host=master/system-property=foo:remove
+----
+
+Just one server instance
+
+[source, ruby]
+----
+[domain@IP_ADDRESS:9990 /] /host=master/server-config=server-one/system-property=foo:add(value=bar)
+[domain@IP_ADDRESS:9990 /] /host=master/server-config=server-one/system-property=foo:read-resource
+[domain@IP_ADDRESS:9990 /] /host=master/server-config=server-one/system-property=foo:remove
+----
+
+[[overview-of-all-system-properties]]
+=== Overview of all system properties
+
+Overview of all system properties in WildFly including OS system
+properties and properties specified on command line using -D, -P or
+--properties arguments.
+
+Standalone
+
+[source, ruby]
+----
+[standalone@IP_ADDRESS:9990 /] /core-service=platform-mbean/type=runtime:read-attribute(name=system-properties)
+----
+
+Domain
+
+[source, ruby]
+----
+[domain@IP_ADDRESS:9990 /] /host=master/core-service=platform-mbean/type=runtime:read-attribute(name=system-properties)
+[domain@IP_ADDRESS:9990 /] /host=master/server=server-one/core-service=platform-mbean/type=runtime:read-attribute(name=system-properties)
+----
+
+[[configuration]]
+== Configuration
+
+[[list-subsystems]]
+=== List Subsystems
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] /:read-children-names(child-type=subsystem)
+{
+    "outcome" => "success",
+    "result" => [
+        "batch",
+        "datasources",
+        "deployment-scanner",
+        "ee",
+        "ejb3",
+        "infinispan",
+        "io",
+        "jaxrs",
+        "jca",
+        "jdr",
+        "jmx",
+        "jpa",
+        "jsf",
+        "logging",
+        "mail",
+        "naming",
+        "pojo",
+        "remoting",
+        "resource-adapters",
+        "sar",
+        "security",
+        "threads",
+        "transactions",
+        "undertow",
+        "webservices",
+        "weld"
+    ]
+}
+----
+
+[[list-description-of-available-attributes-and-childs]]
+=== List description of available attributes and childs
+
+Descriptions, possible attribute type and values, permission and whether
+expressions ( _$\{ ... }_ ) are allowed from the underlying model are
+shown by the read-resource-description command.
+
+[source, ruby]
+----
+/subsystem=datasources/data-source=ExampleDS:read-resource-description
+{
+    "outcome" => "success",
+    "result" => {
+        "description" => "A JDBC data-source configuration",
+        "head-comment-allowed" => true,
+        "tail-comment-allowed" => true,
+        "attributes" => {
+            "connection-url" => {
+                "type" => STRING,
+                "description" => "The JDBC driver connection URL",
+                "expressions-allowed" => true,
+                "nillable" => false,
+                "min-length" => 1L,
+                "max-length" => 2147483647L,
+                "access-type" => "read-write",
+                "storage" => "configuration",
+                "restart-required" => "no-services"
+            },
+            "driver-class" => {
+                "type" => STRING,
+                "description" => "The fully qualified name of the JDBC driver class",
+                "expressions-allowed" => true,
+                "nillable" => true,
+                "min-length" => 1L,
+                "max-length" => 2147483647L,
+                "access-type" => "read-write",
+                "storage" => "configuration",
+                "restart-required" => "no-services"
+            },
+            "datasource-class" => {
+                "type" => STRING,
+                "description" => "The fully qualified name of the JDBC datasource class",
+                "expressions-allowed" => true,
+                "nillable" => true,
+                "min-length" => 1L,
+                "max-length" => 2147483647L,
+                "access-type" => "read-write",
+                "storage" => "configuration",
+                "restart-required" => "no-services"
+            },
+            "jndi-name" => {
+                "type" => STRING,
+                "description" => "Specifies the JNDI name for the datasource",
+                "expressions-allowed" => true,
+                "nillable" => false,
+                "access-type" => "read-write",
+                "storage" => "configuration",
+                "restart-required" => "no-services"
+            },
+           ...
+----
+
+[[view-configuration-as-xml-for-domain-model-or-host-model]]
+=== View configuration as XML for domain model or host model
+
+Assume you have a host that is called master
+
+[source, ruby]
+----
+[domain@localhost:9990 /] /host=master:read-config-as-xml
+----
+
+Just for the domain or standalone
+
+[source, ruby]
+----
+[domain@localhost:9990 /] :read-config-as-xml
+----
+
+[[take-a-snapshot-of-what-the-current-domain-is]]
+=== Take a snapshot of what the current domain is
+
+[source, ruby]
+----
+[domain@localhost:9990 /] :take-snapshot()
+{
+    "outcome" => "success",
+    "result" => {
+        "domain-results" => {"step-1" => {"name" => "JBOSS_HOME/domain/configuration/domain_xml_history/snapshot/20110908-165222603domain.xml"}},
+        "server-operations" => undefined
+    }
+}
+----
+
+[[take-the-latest-snapshot-of-the-host.xml-for-a-particular-host]]
+=== Take the latest snapshot of the host.xml for a particular host
+
+Assume you have a host that is called master
+
+[source, ruby]
+----
+[domain@localhost:9990 /]  /host=master:take-snapshot
+{
+    "outcome" => "success",
+    "result" => {
+        "domain-results" => {"step-1" => {"name" => "JBOSS_HOME/domain/configuration/host_xml_history/snapshot/20110908-165640215host.xml"}},
+        "server-operations" => undefined
+    }
+}
+----
+
+[[how-to-get-interface-address]]
+=== How to get interface address
+
+The attribute for interface is named "resolved-address". It's a runtime
+attribute so it does not show up in :read-resource by default. You have
+to add the "include-runtime" parameter.
+
+[source, ruby]
+----
+./jboss-cli.sh --connect
+Connected to standalone controller at localhost:9990
+[standalone@localhost:9990 /] cd interface=public
+[standalone@localhost:9990 interface=public] :read-resource(include-runtime=true)
+{
+     "outcome" => "success",
+     "result" => {
+         "any" => undefined,
+         "any-address" => undefined,
+         "any-ipv4-address" => undefined,
+         "any-ipv6-address" => undefined,
+         "criteria" => [("inet-address" => expression "${jboss.bind.address:127.0.0.1}")],
+         "inet-address" => expression "${jboss.bind.address:127.0.0.1}",
+         "link-local-address" => undefined,
+         "loopback" => undefined,
+         "loopback-address" => undefined,
+         "multicast" => undefined,
+         "name" => "public",
+         "nic" => undefined,
+         "nic-match" => undefined,
+         "not" => undefined,
+         "point-to-point" => undefined,
+         "public-address" => undefined,
+         "resolved-address" => "127.0.0.1",
+         "site-local-address" => undefined,
+         "subnet-match" => undefined,
+         "up" => undefined,
+         "virtual" => undefined
+     }
+}
+[standalone@localhost:9990 interface=public] :read-attribute(name=resolved-address)
+{
+     "outcome" => "success",
+     "result" => "127.0.0.1"
+}
+----
+
+It's similar for domain, just specify path to server instance:
+
+[source, ruby]
+----
+[domain@localhost:9990 /] /host=master/server=server-one/interface=public:read-attribute(name=resolved-address)
+{
+    "outcome" => "success",
+    "result" => "127.0.0.1"
+}
+----
+
+[[runtime]]
+== Runtime
+
+[[get-all-configuration-and-runtime-details-from-cli]]
+=== Get all configuration and runtime details from CLI
+
+[source, ruby]
+----
+./bin/jboss-cli.sh -c command=":read-resource(include-runtime=true, recursive=true, recursive-depth=10)"
+----
+
+[[scripting]]
+== Scripting
+
+[[windows-and-press-any-key-to-continue-...-issue]]
+=== Windows and "Press any key to continue ..." issue
+
+WildFly scripts for Windows end with "Press any key to continue ...".
+This behavior is useful when script is executed by double clicking the
+script but not when you need to invoke several commands from custom
+script (e.g. 'bin/jboss-admin.bat --connect command=:shutdown').
+
+To avoid "Press any key to continue ..." message you need to specify
+NOPAUSE variable. Call 'set NOPAUSE=true' in command line before running
+any WildFly {wildflyVersion} .bat script or include it in your custom script before
+invoking scripts from WildFly.
+
+[[statistics]]
+== Statistics
+
+[[read-statistics-of-active-datasources]]
+=== Read statistics of active datasources
+
+[source, ruby]
+----
+/subsystem=datasources/data-source=ExampleDS/statistics=pool:read-resource(include-runtime=true)
+/subsystem=datasources/data-source=ExampleDS/statistics=jdbc:read-resource(include-runtime=true)
+----
+
+or
+
+[source, ruby]
+----
+/subsystem=datasources/data-source=ExampleDS:read-resource(include-runtime=true,recursive=true)
+----
+
+[[deployment]]
+== Deployment
+
+[[undeploying-and-redeploying-multiple-deployments]]
+=== Undeploying and redeploying multiple deployments
+
+CLI offers a way to efficiently undeploy or redeploy deployments in one
+simple command.
+
+* To disable all enabled deployments: _undeploy --keep-content *_
+* To redeploy all disabled deployments: _deploy --name=*_
+
+[[incremental-deployment-with-the-cli]]
+=== Incremental deployment with the CLI
+
+It can be desirable to incrementally create and(or) update a WildFly
+deployment. This chapter details how this can be achieved using the
+WildFly CLI tool.
+
+Steps to create an empty deployment and add an index html file.
+
+1.  Create an empty deployment named my app:
++
+[source, ruby]
+----
+[standalone@localhost:9990 /] /deployment=myapp:add(content=[{empty=true}])
+----
+2.  Add an index.html to my app:
++
+[source, ruby]
+----
+[standalone@localhost:9990 /] /deployment=myapp:add-content(content=[{input-stream-index=<press TAB>
+----
++
+Then use completion to navigate to your index.html file.
+3.  Provide a target name for index.html inside the deployment and
+execute the operation:
++
+[source,ruby]
+----
+[standalone@localhost:9990 /] /deployment=myapp:add-content(content=[{input-stream-index=./index.html, target-path=index.xhtml}]
+----
+4.  Your content has been added, you can browse the content of a
+deployment using the browse-content operation:
++
+[source,ruby]
+----
+[standalone@localhost:9990 /] /deployment=myapp:browse-content(path=./)
+----
+5.  You can display (or save) the content of a deployed file using the
+_attachement_ command:
++
+[source,ruby]
+----
+attachment display --operation=/deployment=myapp:read-content(path=index.xhtml)
+----
+6.  You can remove content from a deployment:
++
+[source,ruby]
+----
+/deployment=myapp:remove-content(paths=[./index.xhtml])
+----
+
+Tips
+
+[TIP]
+
+* _add-content_ operation allows you to add more than one file (
+_content_ argument is a list of complex types).
+* CLI offers completion for __browse-conten__t's _path_ and
+_remove-content_'s _paths_ argument.
+* You can safely use operations that are using attached streams in batch
+operations. In the case of batch operations, streams are attached to the
+composite operation.
+
+[WARNING]
+
+On Windows, path separator '\' needs to be escaped, this is a limitation
+of CLI handling complex types. The file path completion is automatically
+escaping the paths it is proposing.
+
+[[notes-for-server-side-operation-handler-implementors]]
+==== Notes for server side operation Handler implementors
+
+In order to benefit from CLI support for attached file streams and file
+system completion, you need to properly structure your operation
+arguments. Steps to create an operation that receives a list of file
+streams attached to the operation:
+
+1.  Define your operation argument as a _LIST_ of _INT_ (The _LIST_
+_value-type_ must be of type _INT_).
+2.  In the description of your argument, add the 2 following boolean
+descriptors: _filesystem-path_ and _attached-streams_
+
+When your operation is called from the CLI, file system completion will
+be automatically proposed for your argument. At execution time, the file
+system paths will be automatically converted onto the index of the
+attached streams.
+
+[[downloading-files-with-the-cli]]
+== Downloading files with the CLI
+
+Some management resources are exposing the content of files in the
+matter of _streams_. Streams returned by a management operation are
+attached to the headers of the management response. The CLI command
+_attachment_ (see CLI help for a detailed description of this command)
+allows to display or save the content of the attached streams.
+
+* Displaying the content of server.log file:
++
+[source, ruby]
+----
+attachment display --operation=/subsystem=logging/log-file=server.log:read-resource(include-runtime)
+----
+* Saving locally the server.log file:
++
+[source, ruby]
+----
+attachment save --operation=/subsystem=logging/log-file=server.log:read-resource(include-runtime) --file=./server.log
+----
+* Displaying the content of a deployed file:
++
+[source,ruby]
+----
+attachment display --operation=/deployment=myapp:read-content(path=index.xhtml)
+----
+
+[TIP]
+
+* By default existing files will be preserved. Use the option
+_--overwrite_ to overwrite existing file.
+* _attachment_ can be used in batch mode.

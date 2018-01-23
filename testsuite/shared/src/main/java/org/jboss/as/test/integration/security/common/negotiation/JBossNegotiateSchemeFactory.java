@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.security.common.negotiation;
 
-import org.apache.http.annotation.Immutable;
 import org.apache.http.auth.AuthScheme;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.protocol.HttpContext;
@@ -32,7 +31,6 @@ import org.apache.http.protocol.HttpContext;
  *
  * @author Josef Cacek
  */
-@Immutable
 public class JBossNegotiateSchemeFactory implements AuthSchemeProvider {
 
     // Constructors ----------------------------------------------------------

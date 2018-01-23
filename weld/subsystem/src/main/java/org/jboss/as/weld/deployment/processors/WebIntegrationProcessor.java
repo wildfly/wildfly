@@ -49,9 +49,9 @@ import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.weld.servlet.ConversationFilter;
-import org.jboss.weld.servlet.WeldInitialListener;
-import org.jboss.weld.servlet.WeldTerminalListener;
+import org.jboss.weld.module.web.servlet.ConversationFilter;
+import org.jboss.weld.module.web.servlet.WeldInitialListener;
+import org.jboss.weld.module.web.servlet.WeldTerminalListener;
 import org.jboss.weld.servlet.api.InitParameters;
 
 /**

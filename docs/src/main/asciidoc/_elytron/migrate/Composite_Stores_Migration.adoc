@@ -1,0 +1,174 @@
+= Composite Stores Migration
+
+When using either PicketBox or the legacy security realms it is possible to define a configuration where authentication is performed against one identity store whilst the information used for authorization is loaded from a different store, when using WildFly Elytron this can be achieved by using an aggregate security realm.
+
+The example here makes use of a properties file for authentication and then searches LDAP to load group / role information. Both of these are based on the previous examples within this document so the environmental information is not repeated here.
+
+
+== PicketBox Based Configuration
+
+[source, ruby]
+----
+./subsystem=security/security-domain=application-security:add
+./subsystem=security/security-domain=application-security/authentication=classic:add(login-modules=[ \
+{code=UsersRoles, flag=Required, module-options={ \
+password-stacking=useFirstPass, \
+usersProperties=file://${jboss.server.config.dir}/example-users.properties, \
+rolesProperties=file://${jboss.server.config.dir}/example-roles.properties}} \
+{code=LdapExtended, flag=Required, module-options={ \
+password-stacking=useFirstPass, \
+java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory, \
+java.naming.provider.url=ldap://localhost:10389, \
+java.naming.security.authentication=simple, \
+bindDN="uid=admin,ou=system", \
+bindCredential=secret, \
+baseCtxDN="ou=users,dc=group-to-principal,dc=wildfly,dc=org", \
+baseFilter="(uid={0})", \
+rolesCtxDN="ou=groups,dc=group-to-principal,dc=wildfly,dc=org",\
+roleFilter="(uniqueMember={1})", \
+roleAttributeID="uid" \
+}}])
+----
+
+This results in the following domain definition
+
+[source, xml]
+----
+<security-domain name="application-security">
+  <authentication>
+    <login-module code="UsersRoles" flag="required">
+      <module-option name="password-stacking" value="useFirstPass"/>
+      <module-option name="usersProperties" value="file://${jboss.server.config.dir}/example-users.properties"/>
+      <module-option name="rolesProperties" value="file://${jboss.server.config.dir}/example-roles.properties"/>
+    </login-module>
+    <login-module code="LdapExtended" flag="required">
+      <module-option name="password-stacking" value="useFirstPass"/>
+      <module-option name="java.naming.factory.initial" value="com.sun.jndi.ldap.LdapCtxFactory"/>
+      <module-option name="java.naming.provider.url" value="ldap://localhost:10389"/>
+      <module-option name="java.naming.security.authentication" value="simple"/>
+      <module-option name="bindDN" value="uid=admin,ou=system"/>
+      <module-option name="bindCredential" value="secret"/>
+      <module-option name="baseCtxDN" value="ou=users,dc=group-to-principal,dc=wildfly,dc=org"/>
+      <module-option name="baseFilter" value="(uid={0})"/>
+      <module-option name="rolesCtxDN" value="ou=groups,dc=group-to-principal,dc=wildfly,dc=org"/>
+      <module-option name="roleFilter" value="(uniqueMember={1})"/>
+      <module-option name="roleAttributeID" value="uid"/>
+    </login-module>
+  </authentication>
+</security-domain>
+----
+
+During an authentication attempt the 'UsersRoles' login module will first be called to perform authentication based on the supplied credential, then the 'LdapExtLoginModule' will be called which will proceed to query LDAP to load the roles for the identity.
+
+[source, ruby]
+----
+./core-service=management/ldap-connection=MyLdapConnection:add(url="ldap://localhost:10389", search-dn="uid=admin,ou=system", search-credential="secret")
+
+./core-service=management/security-realm=ApplicationSecurity:add
+./core-service=management/security-realm=ApplicationSecurity/authentication=properties:add(path=example-users.properties, relative-to=jboss.server.config.dir, plain-text=true)
+
+batch
+./core-service=management/security-realm=ApplicationSecurity/authorization=ldap:add(connection=MyLdapConnection)
+./core-service=management/security-realm=ApplicationSecurity/authorization=ldap/username-to-dn=username-filter:add(attribute=uid, base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org")
+./core-service=management/security-realm=ApplicationSecurity/authorization=ldap/group-search=group-to-principal:add(base-dn="ou=groups,dc=group-to-principal,dc=wildfly,dc=org", iterative=true, prefer-original-connection=true, principal-attribute=uniqueMember, search-by=DISTINGUISHED_NAME, group-name=SIMPLE, group-name-attribute=uid)
+run-batch
+----
+
+This results in the following realm definition:
+
+[source, xml]
+----
+<security-realm name="ApplicationSecurity">
+  <authentication>
+    <properties path="example-users.properties" relative-to="jboss.server.config.dir" plain-text="true"/>
+  </authentication>
+  <authorization>
+    <ldap connection="MyLdapConnection">
+      <username-to-dn>
+        <username-filter base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org" attribute="uid"/>
+      </username-to-dn>
+      <group-search group-name="SIMPLE" iterative="true" group-name-attribute="uid">
+        <group-to-principal search-by="DISTINGUISHED_NAME" base-dn="ou=groups,dc=group-to-principal,dc=wildfly,dc=org" prefer-original-connection="true">
+          <membership-filter principal-attribute="uniqueMember"/>
+        </group-to-principal>
+      </group-search>
+    </ldap>
+  </authorization>
+</security-realm>
+
+<outbound-connections>
+  <ldap name="MyLdapConnection" url="ldap://localhost:10389" search-dn="uid=admin,ou=system" search-credential="secret"/>
+</outbound-connections>
+----
+
+As with the PicketBox example, authentication is first performed using the properties file - then group searching is performed against LDAP.
+
+== Migrated WildFly Elytron Configuration
+
+The equivalent WildFly Elytron configuration can be defined with the following commands:
+
+[source, ruby]
+----
+./subsystem=elytron/dir-context=ldap-connection:add(url=ldap://localhost:10389, principal="uid=admin,ou=system", credential-reference={clear-text=secret})
+
+./subsystem=elytron/ldap-realm=ldap-realm:add(dir-context=ldap-connection, \
+direct-verification=true, \
+identity-mapping={search-base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org", \
+rdn-identifier="uid", \
+attribute-mapping=[{filter-base-dn="ou=groups,dc=group-to-principal,dc=wildfly,dc=org",filter="(uniqueMember={1})",from="uid",to="Roles"}]})
+
+./subsystem=elytron/properties-realm=application-properties:add(users-properties={path=example-users.properties, relative-to=jboss.server.config.dir, plain-text=true, digest-realm-name="Application Security"}, groups-properties={path=example-roles.properties, relative-to=jboss.server.config.dir}, groups-attribute=Roles)
+
+./subsystem=elytron/aggregate-realm=combined-realm:add(authentication-realm=application-properties, authorization-realm=ldap-realm)
+
+./subsystem=elytron/security-domain=application-security:add(realms=[{realm=combined-realm}], default-realm=combined-realm, permission-mapper=default-permission-mapper)
+./subsystem=elytron/http-authentication-factory=application-security-http:add(http-server-mechanism-factory=global, security-domain=application-security, mechanism-configurations=[{mechanism-name=BASIC}])
+----
+
+This results in the following realm definition:
+
+[source, xml]
+----
+<subsystem xmlns="urn:wildfly:elytron:1.1" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+  ...
+  <security-domains>
+    ...
+    <security-domain name="application-security" default-realm="combined-realm" permission-mapper="default-permission-mapper">
+      <realm name="combined-realm"/>
+    </security-domain>
+  </security-domains>
+  <security-realms>
+    <aggregate-realm name="combined-realm" authentication-realm="application-properties" authorization-realm="ldap-realm"/>
+      ...
+      <properties-realm name="application-properties" groups-attribute="Roles">
+        <users-properties path="example-users.properties" relative-to="jboss.server.config.dir" digest-realm-name="Application Security" plain-text="true"/>
+        <groups-properties path="example-roles.properties" relative-to="jboss.server.config.dir"/>
+      </properties-realm>
+      <ldap-realm name="ldap-realm" dir-context="ldap-connection" direct-verification="true">
+        <identity-mapping rdn-identifier="uid" search-base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org">
+          <attribute-mapping>
+            <attribute from="uid" to="Roles" filter="(uniqueMember={1})" filter-base-dn="ou=groups,dc=group-to-principal,dc=wildfly,dc=org"/>
+          </attribute-mapping>
+        </identity-mapping>
+      </ldap-realm>
+  </security-realms>
+  ...
+  <http>
+    ...
+    <http-authentication-factory name="application-security-http" http-server-mechanism-factory="global" security-domain="application-security">
+      <mechanism-configuration>
+        <mechanism mechanism-name="BASIC"/>
+      </mechanism-configuration>
+    </http-authentication-factory>
+    ...
+  </http>
+  ...
+  <dir-contexts>
+    <dir-context name="ldap-connection" url="ldap://localhost:10389" principal="uid=admin,ou=system">
+      <credential-reference clear-text="secret"/>
+    </dir-context>
+  </dir-contexts>
+</subsystem>
+----
+
+Within the WildFly Elytron example a new security realm 'aggregate-realm' has been defined, this definition specifies which of the defined security realms should be used for the authentication step and which of the security realms should be used for the loading of the identity used for subsequent authorization decisions.

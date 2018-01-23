@@ -1,0 +1,489 @@
+= <authentication-client /> - WildFly Elytron
+
+The _<authentication-client/>_ element can be added to the wildfly-config.xml configuration to define configuration in relation to authentication configuration for outbound connections and SSL configuration for outbound connections e.g.
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <authentication-client xmlns="urn:elytron:1.0">
+       ...
+    </authentication-client>
+</configuration>
+----
+
+_Note: A single wildfly-config.xml could be used by multiple projects using multiple versions of Wildfly Elytron, newer versions of WildFly Elytron will introduce new configuration using later namespace versions however they will still continue to support the previously released schemas until advertised otherwise.  For the configuration to be compatible with this either use a schema and namespace compatible with all the versions in use, or multiple authentication-client elements can be added, these should be added ordered by namespace youngest to oldest.  If a configuration with a later namespace is discovered by a newer WildFly Elytron client it will be used and parsing will not look for an older version as well._
+
+The _<authentication-client />_ configuration can contain the following sections: -
+
+ <credential-stores />:: Definitions of credential stores to be referenced from elsewhere in the configuration.
+ <key-stores />:: Definitions of KeyStores to be referenced elsewhere in the configuration.
+ <authentication-rules />:: Rules to be applied for outbound connections to match against an appropriate authentication configuration.
+ <authentication-configurations />:: The individual authentication configurations that will be matched by the authentication rules.
+ <net-authenticator />:: Flag to enable integration with the [java.net.Authenticator|https://docs.oracle.com/javase/8/docs/api/java/net/Authenticator.html].
+ <ssl-context-rules />:: Rules to be applied for outbound connections to match against an appropriate SSL context configuration.
+ <ssl-contexts />:: Individual SSL context definitions that will be matched by the ssl context rules.
+ <providers/>:: Definition of how [java.security.Provider|https://docs.oracle.com/javase/8/docs/api/java/security/Provider.html] instances will be discovered.
+
+== <credential-stores />
+
+The <credential-stores />  element can be used to define individual named credential stores that can subsequently be used elsewhere in the configuration to reference stored credentials as an alternative to the credentials being embedded in the configuration.
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <authentication-client xmlns="urn:elytron:1.0">
+        <credential-stores>
+            <credential-store name="..." type="..." provider="..." >
+                <attributes>
+                    <attribute name="..." value="..." />
+                </attributes>
+                <protection-parameter-credentials>...</protection-parameter-credentials>
+            </credential-store>
+        </credential-stores>
+    </authentication-client>
+</configuration>
+----
+
+In addition to the name an individual <credential-store /> definition can contain the following optional attributes: -
+
+type:: The type of the credential store, e.g.KeyStoreCredentialStore.
+provider:: The name of the [java.security.Provider|https://docs.oracle.com/javase/8/docs/api/java/security/Provider.html] to use to load the credential store.
+
+The following child elements can also be added to configure the credential store.
+
+ <attributes .>:: Definition of configuration attributes used to initialise the credential store.
+
+e.g.
+
+[source, xml]
+----
+<attributes>
+    <attribute name="..." value="..." />
+</attributes>
+----
+
+The <attribute/> element can be repeated as many times as is required for the configuration.
+
+[[client-credentials-type]]
+ <protection-parameter-credentials />:: One or more credentials to be assembled into a protection parameter when initialising the credential store.
+
+The <protection-paramter-credentials /> element can contain one more more child elements, which of these are actually supported will depend on the credential store implementation: -
+
+[source, xml]
+----
+<protection-parameter-credentials>
+    <key-store-reference>...</key-store-reference>
+    <credential-store-reference store="..." alias="..." clear-text="..." />
+    <clear-password password="..." />
+    <key-pair public-key-pem="..." private-key-pem="..." />
+    <certificate private-key-pem="..." pem="..." />
+    <public-key-pem>...</public-key-pem>
+    <bearer-token value="..." />
+    <oauth2-bearer-token token-endpoint-uri="...">...</oauth2-bearer-token>
+</protection-parameter-credentials>
+----
+
+The potential child elements of <protection-parameter-credentials /> are: -
+
+ <key-store-reference>:: Defines a reference to an entry within a KeyStore for an entry to use.
+
+The overall structure of this element is: -
+
+[source, xml]
+----
+<key-store-reference key-store-name="..." alias="...">
+   <key-store-clear-password password="..." />
+   <credential-store-reference store="..." alias="..." clear-text="..." />
+   <key-store-credential>...</key-store-credential>
+</key-store-reference>
+----
+
+This structure is identical to the structure use in [<key-store-credential />|#key-store-credential].
+
+ <credential-store-reference store="..." alias="..." clear-text="..." />:: Reference to a credential stored in a credential store.
+
+ <clear-password password="..." />:: A password specified in the clear.
+
+ <key-pair public-key-pem="..." private-key-pem="..." />:: A public and private key pair.
+
+* <certificate private-key-pem="..." pem="..." />:: A pem encoded private key and corresponding certificate.
+
+ <public-key-pem>...</public-key-pem>:: A pem encoded public key.
+
+* <bearer-token value="..." />:: A bearer token
+
+ <oauth2-bearer-token>...</oauth2-bearer-token>:: An oath2 bearer token.
+
+The full structure of this element is: -
+
+[source, xml]
+----
+<oauth2-bearer-token token-endpoint-uri="...">
+    <client-credentials client-id="..." client-secret="..." />
+    <resource-owner-credentials name="..." password="..." />
+</oauth2-bearer-token>
+----
+
+
+== <key-stores />
+
+The <key-stores /> element can be used to define individual key-store definitions that can subsequently be referenced from alternative locations within the configuration.
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <authentication-client xmlns="urn:elytron:1.0">
+        <key-stores>
+            <key-store name="...">
+               <!-- One of the following to specify where to load the KeyStore from. -->
+               <file-name name="..." />
+               <load-from uri-"..." />
+               <resource name="..." />
+               <!-- One of the following to specify the protection parameter to unlock the KeyStore. -->
+               <key-store-clear-password password="..." />
+               <key-store-credential>...</key-store-credential>
+            </key-store>
+        </key-stores>
+       ...
+    </authentication-client>
+</configuration>
+----
+
+An individual <key-store /> definition must contain exactly one of the following elements to define where to load the store from.
+
+ <file name="..." />*:: Load from file where 'name' is the name of the file.
+ <load-from uri="..." />:: Load the file from the URI specified.
+ <resource name="..." />:: Load as a resource from the Thread context classloader where 'name' is the name of the resource to load.
+
+Exactly one of the following elements must also be present to specify the protection parameter for initialisation of the KeyStore.
+
+key-store-clear-password password="..." />:: A password specified in the clear.
+<key-store-credential>...</key-store-credential>:: A reference to another KeyStore to obtain an Entry to use as the protection parameter to access this KeyStore.
+
+[[key-store-credential]]
+The structure of the <key-store-credential /> element is.
+
+[source, xml]
+----
+<key-store-credential key-store-name="..." alias="...">
+   <key-store-clear-password password="..." />
+   <credential-store-reference store="..." alias="..." clear-text="..." />
+   <key-store-credential>...</key-store-credential>
+</key-store-credential>
+----
+
+This element contains two attributes: -
+
+ key-store-name:: _(Mandatory)_ - Name of the KeyStore being referenced to load the entry from.
+ alias:: _(Optional)_ - The alias of the entry to load from the referenced KeyStore, this can only be omitted for KeyStores that contain only a single entry.
+
+Java KeyStores also make use of a protection parameter when accessing a single entry in addition to the protection parameter to load the KeyStore, exactly one of the following elements must be present to specify the protection parameter of the entry being loaded.
+
+ <key-store-clear-password password="..." />:: A password specified in the clear.
+ <credential-store-reference store="..." alias="..." clear-text="..." />:: Reference to a credential stored in a credential store.
+ <key-store-credential>...</key-store-credential>:: A reference to another KeyStore to obtain an Entry to use as the protection parameter to access the alias.
+
+The <key-store-credential /> is exactly the same, this means theoretically a chain of references could be used to lead to the unlocking of the required alias.
+
+[[Rules]]
+== <authentication-rules /> and <ssl-context-rules />
+
+When either an authentication-configuration or an ssl-context is required the URI of the resources being accessed as well as an optional abstract type and abstract type authority and matched against the rules defined in the configuration to identify which authentication-configuration or ssl-context should be used.
+
+The rules to match <authentication-configuration /> instances are defined within the <authentication-rules /> element.
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <authentication-client xmlns="urn:elytron:1.0">
+        <authentication-rules>
+            <rule use-configuration="...">
+                ...
+            </rule>
+        </authentication-rules>
+       ...
+    </authentication-client>
+</configuration>
+----
+
+The rules to match against the <ssl-context /> definitions are contains within the <ssl-context-rules /> element.
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <authentication-client xmlns="urn:elytron:1.0">
+        <ssl-context-rules>
+            <rule use-ssl-context="...">
+                ...
+            </rule>
+        </ssl-context-rules>
+       ...
+    </authentication-client>
+</configuration>
+----
+
+Overall this means that authentication configuration matching is independent of SSLContext matching.  By separating the rules from the configurations is means multiple rules can be defined that match against the same configuration.
+
+The rules applied so first match wins and not most specific match wins, to achieve a most specific match wins configuration place the most specific rules at the beginning leaving the more general matches towards the end.
+
+For both the <authentication-rules />  and the <ssl-context-rules /> the structure of the rules is identical other than one references an authentication configuration and the other references an SSLContext.
+
+[source, xml]
+----
+<rule use-configuration|use-ssl-context="...">
+    <!-- At most one of the following two can be defined. -->
+    <match-no-user />
+    <match-user name="..." />
+    <!-- Each of the following can be defined at most once. -->
+    <match-protocol name="..." />
+    <match-host name="..." />
+    <match-path name="..." />
+    <match-port number="..." />
+    <match-urn name="..." />
+    <match-domain name="..." />
+    <match-abstract-type name="..." authority="..." />
+</rule>
+----
+
+Where multiple matches are defined within a rule they must all match for the rule to apply.  If a rule is defined with no match elements then it becomes a match all rule and will match anything, these can be useful at the end of the configuration to ensure something matches.
+
+The individual match elements are: -
+
+ <match-no-user />:: user-info can be embedded within a URI, this rule matches when there is no user-info.
+ <match-user name="..." /> - Matches when the user-info embedded in the URI matches the name specified within this element.
+ <match-protocol name="..." /> - Matches the protocol within the URI against the name specified in this match element.
+ <match-host-name name="..." /> - Matches the host name from within the URI against the name specified in this match element.
+ <match-path name="..." /> - Matches the path from the URI against the name specified in this match element.
+ <match-port number="..." /> - Matches the port number specified within the URI against the number in this match element.  This only matches against the number specified within the URI and not against any default derrived from the protocol.
+ <match-urn name="..." />" - Matches the scheme specific part of the URI against the name specified within this element.
+* <match-domain-name name="..."/>:: Matches where the protocol of the URI is 'domain' and the scheme specific part of the URI is the name specified within this match element.
+ <match-abstract-type name="..." authority="..." />:: Matches the abstract type and/or authority against the values specified within this match element.
+
+== <authentication-configurations />
+
+The <authentication-configurations /> element contains named configurations that can then be matched from the <authentication-rules />
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <authentication-client xmlns="urn:elytron:1.0">
+        <authentication-configurations>
+            <configuration name="...">
+                <!-- Destination Overrides. -->
+                <set-host name="..." />
+                <set-port number="..." />
+                <set-protocol name="..." />
+                <!-- At most one of the following two elements. -->
+                <set-user-name name="..." />
+                <set-anonymous />
+                <set-mechanism-realm name="..." />
+                <rewrite-user-name-regex pattern="..." replacement="..." />
+                <sasl-mechanism-selector selector="..." />
+                <set-mechanism-properties>
+                   <property key="..." value="..." />
+                </set-mechanism-properties>
+                <credentials>...</credentials>
+                <set-authorization-name name="..." />
+                <providers>...</providers>
+                <!-- At most one of the following two elements. -->
+                <use-provider-sasl-factory />
+                <use-service-loader-sasl-factory module-name="..." />
+            </configuration>
+        </authentication-configurations>
+    </authentication-client>
+</configuration>
+----
+
+The elements within the <configuration /> element provide the following features: -
+
+The first three elements override the destination.
+
+ <set-host-name name="..." />:: Override the host name for the authenticated call.
+ <set-port-number number="..." />:: Override the port number for the authenticated call.
+ <set-protocol name="..."/>:: Override the protocol for the authenticated call.
+
+The next two are mutually exclusive and can be used to set the name for authentication or switch to anonymous authentication.
+
+ <set-user-name name="..."/>:: Set the user name to use for authentication.
+ <set-anonymous />:: Switch to anonymous authentication.
+
+ <set-mechanism-realm-name name="..." />:: Specify the name of the realm that will be selected by the SASL mechanism if required.
+ <rewrite-user-name-regex pattern="..." replacement="..." />:: A regular expression pattern and replacement to re-write the user name used for authentication.
+ <sasl-mechanism-selector selector="..." />:: A SASL mechanism selector using the syntax from [org.wildfly.security.sasl.SaslMechanismSelector,fromString()|https://github.com/wildfly-security/wildfly-elytron/blob/1.1.4.Final/src/main/java/org/wildfly/security/sasl/SaslMechanismSelector.java#L544]
+ <set-mechanism-properties>...</set-mechanism-properties>:: One or more properties defined as <property key="..." value="..." /> to be passed to the authentication mechanisms.
+
+ <credentials>...</credentials>:: One or more credentials available for use during authentication.
+
+The content of this element is the same as documented for [<protection-parameter-credentials />|#client-credentials-type]
+
+[source, xml]
+----
+<credentials>
+    <key-store-reference>...</key-store-reference>
+    <credential-store-reference store="..." alias="..." clear-text="..." />
+    <clear-password password="..." />
+    <key-pair public-key-pem="..." private-key-pem="..." />
+    <certificate private-key-pem="..." pem="..." />
+    <public-key-pem>...</public-key-pem>
+    <bearer-token value="..." />
+    <oauth2-bearer-token token-endpoint-uri="...">...</oauth2-bearer-token>
+</credentials>
+----
+
+ <set-authorization-name name="..." />:: Specify the name that should be used for authorization if different from the authentication identity.
+ <providers/>:: This element is described in more detail within [<providers />|#Providers] and overrides the default or inherited provider discovery with a definition specific to this authentication configuration definition.
+
+The final two elements are mutually exclusive and define how the SASL mechanism factories will be discovered for authentication.
+
+ <use-provider-sasl-factory />:: The [java.security.Provider|https://docs.oracle.com/javase/8/docs/api/java/security/Provider.html] instances either inherited or defined in this configuration will be used to locate the available SASL client factories.
+ <use-service-loader-sasl-factory module-name="..." />:: SASL client factories will be discovered using service loader discovery on the specified module or if not specified using the ClassLoader loading the configuration.
+
+== <net-authenticator />
+
+This element contains no specific configuration, however if present the [org.wildfly.security.auth.util.ElytronAuthenticator|http://wildfly-security.github.io/wildfly-elytron/1.1.x/org/wildfly/security/auth/util/ElytronAuthenticator.html] will be registered with [java.net.Authenticator.setDefault(Authenticator)|https://docs.oracle.com/javase/8/docs/api/java/net/Authenticator.html#setDefault-java.net.Authenticator-] meaning that the WildFly Elytron authentication client configuration can be used for authentication where the JDK APIs are used for HTTP calls which require authentication.
+
+There are some limitations within this integration as the JDK will cache the authentication JVM wide from the first call so is better used in stand alone processes that don't require different credentials for different calls to the same URI,
+
+[[SSLContexts]]
+== <ssl-contexts />
+
+The <ssl-contexts /> element holds individual names SSLContext definitions that can subsequently be matched by the  [<ssl-context-rules />|#Rules].
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <authentication-client xmlns="urn:elytron:1.0">
+        <ssl-contexts>
+            <default-ssl-context name="..."/>
+            <ssl-context name="...">
+                <key-store-ssl-certificate>...</key-store-ssl-certificate>
+                <trust-store key-store-name="..." />
+                <cipher-suite selector="..." />
+                <protocol names="... ..." />
+                <provider-name name="..." />
+                <providers>...</providers>
+                <certificate-revocation-list path="..." maximum-cert-path="..." />
+            </ssl-context>
+        </ssl-contexts>
+    </authentication-client>
+</configuration>
+----
+
+The element <default-ssl-context name="..." /> simply takes the SSLContext obtainable from [javax.net.ssl.SSLContext.getDefault()|https://docs.oracle.com/javase/8/docs/api/javax/net/ssl/SSLContext.html#getDefault--] and assigns it a name so it can referenced from the [<ssl-context-rules />|#Rules].  This element can be repeated meaning the default SSLContext can be referenced using different names.
+
+The element <ssl-context /> is used to define a named configured SSLContext, each of the child elements is optional and can be specified at most once to build up the configuration of the SSLContext.
+
+ <key-store-ssl-certificate>:: Defines a reference to an entry within a KeyStore for the key and certificate to use in this SSLContext.
+
+The overall structure of this element is: -
+
+[source, xml]
+----
+<key-store-ssl-certificate key-store-name="..." alias="...">
+   <key-store-clear-password password="..." />
+    <credential-store-reference store="..." alias="..." clear-text="..." />
+   <key-store-credential>...</key-store-credential>
+</key-store-ssl-certificate>
+----
+
+This structure is identical to the structure use in [<key-store-credential />|#key-store-credential], the only difference being it is now to obtain the entry for the key and certificate, the nested elements however remain the protection parameter to unlock the entry.
+
+ <trust-store-key-store-name />:: A reference to a KeyStore that will be used to initialise the TrustManager.
+
+ <cipher-suite-selector />:: Configuration to filter the enabled cipher suites, the format of the selector is [org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)|http://wildfly-security.github.io/wildfly-elytron/1.1.x/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-].
+
+The following would be a cipher suite selector performing the default filtering.
+
+[source, xml]
+----
+<cipher-suite selector="DEFAULT" />
+----
+
+ <protocol />:: used to define a space separated list of the protocols to be supported.
+
+ <provider-name />:: Once the available providers have been identified only the provider with the name defined on this element will be used.
+
+ <providers/>:: This element is described in more detail within [<providers />|#Providers] and overrides the default or inherited provider discovery with a definition specific to this SSLContext definition.
+
+ <certificate-revocation-list />:: The presence of this element enabled checking the peer's certificate against a certificate revocation list, this element defines both a path to the certificate revocation list and also specifies the maximum number of non-self-issued intermediate certificates that may exist in a certification path
+
+[[Providers]]
+== <providers />
+
+The _<providers />_ element is used to define how [java.security.Provider|https://docs.oracle.com/javase/8/docs/api/java/security/Provider.html] instances are located when required.  The other configuration sections of _<authentication-client />_ are independent of each other, the _<providers />_ configuration however applies to the current element and it's children unless overridden, this configuration can be specified in the following locations.
+
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <authentication-client xmlns="urn:elytron:1.0">
+        <providers />
+        ...
+        <credential-stores>
+            <credential-store name="..">
+                ...
+                <providers />
+            </credential-store>
+        <credential-stores>
+        ...
+        <authentication-configurations>
+            <authentication-configuration name="...">
+                ...
+                <providers />
+            </authentication-configuration>
+        </authentication-configurations>
+        ...
+        <ssl-contexts>
+            <ssl-context name="...">
+                ...
+                <providers />
+            </ssl-context>
+        </ssl-contexts>
+    </authentication-client>
+</configuration>
+----
+
+If an individual <credential-store />, <authentication-configuration />, or <ssl-context /> contains a <providers /> definition that that definition will apply specifically to that instance.  If a configured item does not contain a <providers /> definition but a top level <providers /> is defined within <authentication-configuration /> then that will be used instead.
+
+The <providers /> element can be defined as: -
+
+[source, xml]
+----
+<providers>
+    <global />
+    <use-service-loader module-name="..." />
+</providers>
+----
+
+Both the child elements are optional, can appear in any order and can be repeated although repeating <global /> would not really be beneficial.
+
+ <global />:: The providers from [java.security.Security.getProviders()|https://docs.oracle.com/javase/8/docs/api/java/security/Security.html#getProviders--]
+ <credential-stores />:: Providers loaded using service loader discovery from the module specified, if no module is specified the ClassLoader which loaded the authentication client is used.
+
+Where no <provider /> configuration exists the default behaviour is the equivalent of: -
+
+[source, xml]
+----
+<providers>
+    <use-service-loader />
+    <global />
+</providers>
+----
+
+This gives the WildFly Elytron Provider priority over any globally registered Providers but also allows for the globally registered providers to be used.

@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.server.group;
 
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 
 import org.jgroups.Address;
@@ -32,7 +33,8 @@ import org.wildfly.clustering.server.Addressable;
  * and transport socket binding.
  * @author Paul Ferraro
  */
-public class AddressableNode implements Node, Addressable, Comparable<AddressableNode> {
+public class AddressableNode implements Node, Addressable, Comparable<AddressableNode>, Serializable {
+    private static final long serialVersionUID = -7707210981640344598L;
 
     private final Address address;
     private final String name;

@@ -51,7 +51,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
@@ -69,16 +69,16 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class JSFFailoverTestCase extends ClusterAbstractTestCase {
+public class JSFFailoverTestCase extends AbstractClusteringTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deployment1() {
         return createDeployment();
     }
@@ -243,7 +243,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             Assert.assertEquals("9", state.remainingGuesses);
 
             // Gracefully shutdown the 1st container.
-            stop(CONTAINER_1);
+            stop(NODE_1);
 
             // Now we do a JSF POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
             response = client.execute(buildPostRequest(url2, state.sessionId, state.jsfViewState, "100"));
@@ -275,7 +275,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("98", state.biggest);
 
-            start(CONTAINER_1);
+            start(NODE_1);
 
             // And now we go back to the first node, guessing 2
             response = client.execute(buildPostRequest(url1, state.sessionId, state.jsfViewState, "2"));

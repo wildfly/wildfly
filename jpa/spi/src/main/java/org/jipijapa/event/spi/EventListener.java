@@ -70,7 +70,6 @@ public interface EventListener {
      *
      * @param cacheType
      * @param wrapper
-     * @param skipStop will be true if the cache shouldn't be stopped
      */
-    void stopCache(Classification cacheType, Wrapper wrapper, boolean skipStop);
+    void stopCache(Classification cacheType, Wrapper wrapper);
 }

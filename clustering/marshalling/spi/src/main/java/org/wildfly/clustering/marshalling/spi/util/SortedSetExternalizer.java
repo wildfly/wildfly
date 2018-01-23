@@ -27,13 +27,10 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Comparator;
 import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Function;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * Externalizers for implementations of {@link SortedSet}.
@@ -46,7 +43,7 @@ public class SortedSetExternalizer<T extends SortedSet<Object>> implements Exter
     private final Function<Comparator<? super Object>, T> factory;
 
     @SuppressWarnings("unchecked")
-    SortedSetExternalizer(Class<?> targetClass, Function<Comparator<? super Object>, T> factory) {
+    public SortedSetExternalizer(Class<?> targetClass, Function<Comparator<? super Object>, T> factory) {
         this.targetClass = (Class<T>) targetClass;
         this.factory = factory;
     }
@@ -61,26 +58,12 @@ public class SortedSetExternalizer<T extends SortedSet<Object>> implements Exter
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         @SuppressWarnings("unchecked")
         Comparator<? super Object> comparator = (Comparator<? super Object>) input.readObject();
-        int size = IndexExternalizer.VARIABLE.readData(input);
+        int size = IndexSerializer.VARIABLE.readInt(input);
         return CollectionExternalizer.readCollection(input, this.factory.apply(comparator), size);
     }
 
     @Override
     public Class<T> getTargetClass() {
         return this.targetClass;
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class ConcurrentSkipListSetExternalizer extends SortedSetExternalizer<ConcurrentSkipListSet<Object>> {
-        public ConcurrentSkipListSetExternalizer() {
-            super(ConcurrentSkipListSet.class, ConcurrentSkipListSet<Object>::new);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class TreeSetExternalizer extends SortedSetExternalizer<TreeSet<Object>> {
-        public TreeSetExternalizer() {
-            super(TreeSet.class, TreeSet<Object>::new);
-        }
     }
 }

@@ -43,7 +43,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
+import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -85,7 +85,9 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
 
     @Override
     public void registerCapabilities(ManagementResourceRegistration registration) {
-        EnumSet.allOf(DWmCapabilities.class).forEach(capability -> registration.registerCapability(capability.getRuntimeCapability()));
+        for (DWmCapabilities capability : EnumSet.allOf(DWmCapabilities.class)) {
+            registration.registerCapability(capability.getRuntimeCapability());
+        }
     }
 
     enum DWmParameters {
@@ -167,7 +169,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
     }
 
     enum DWmCapabilities {
-        CHANNEL_FACTORY(RuntimeCapability.Builder.of("org.wildfly.connector.workmanager").addRequirements(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName()).build());
+        CHANNEL_FACTORY(RuntimeCapability.Builder.of("org.wildfly.connector.workmanager").addRequirements(ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName()).build());
 
         private final RuntimeCapability<Void> capability;
 

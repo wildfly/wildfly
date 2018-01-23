@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -145,9 +144,12 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
 
         @Override
         public void start(StartContext context) throws StartException {
-            outflowSecurityDomains.addAll(outflowSecurityDomainInjectors.stream()
-                    .map(InjectedValue<SecurityDomain>::getValue)
-                    .collect(Collectors.toCollection(HashSet::new)));
+            HashSet<SecurityDomain> securityDomains = new HashSet<>();
+            for (InjectedValue<SecurityDomain> outflowSecurityDomainInjector : outflowSecurityDomainInjectors) {
+                SecurityDomain value = outflowSecurityDomainInjector.getValue();
+                securityDomains.add(value);
+            }
+            outflowSecurityDomains.addAll(securityDomains);
         }
 
         private Set<SecurityIdentity> outflowIdentity(final SecurityIdentity securityIdentity) {

@@ -31,7 +31,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
+import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * Unit test for java.util.concurrent.atomic externalizers.
@@ -41,9 +42,9 @@ public class AtomicExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        ExternalizerTestUtil.test(new AtomicBooleanExternalizer(), new AtomicBoolean(Boolean.TRUE), (expected, actual) -> assertEquals(expected.get(), actual.get()));
-        ExternalizerTestUtil.test(new AtomicIntegerExternalizer(), new AtomicInteger(Integer.MAX_VALUE), (expected, actual) -> assertEquals(expected.get(), actual.get()));
-        ExternalizerTestUtil.test(new AtomicLongExternalizer(), new AtomicLong(Long.MAX_VALUE), (expected, actual) -> assertEquals(expected.get(), actual.get()));
-        ExternalizerTestUtil.test(new AtomicReferenceExternalizer(), new AtomicReference<Object>(Boolean.TRUE), (expected, actual) -> assertEquals(expected.get(), actual.get()));
+        new ExternalizerTester<>(DefaultExternalizer.ATOMIC_BOOLEAN.cast(AtomicBoolean.class), (expected, actual) -> assertEquals(expected.get(), actual.get())).test(new AtomicBoolean(true));
+        new ExternalizerTester<>(DefaultExternalizer.ATOMIC_INTEGER.cast(AtomicInteger.class), (expected, actual) -> assertEquals(expected.get(), actual.get())).test(new AtomicInteger(Integer.MAX_VALUE));
+        new ExternalizerTester<>(DefaultExternalizer.ATOMIC_LONG.cast(AtomicLong.class), (expected, actual) -> assertEquals(expected.get(), actual.get())).test(new AtomicLong(Long.MAX_VALUE));
+        new ExternalizerTester<>(DefaultExternalizer.ATOMIC_REFERENCE.cast(AtomicReference.class), (expected, actual) -> assertEquals(expected.get(), actual.get())).test(new AtomicReference<Object>(Boolean.TRUE));
     }
 }

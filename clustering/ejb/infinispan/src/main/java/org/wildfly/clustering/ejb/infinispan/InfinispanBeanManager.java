@@ -70,13 +70,13 @@ import org.wildfly.clustering.ejb.Time;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
 import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -208,7 +208,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     @Override
     public Affinity getStrictAffinity() {
         Group group = this.registry.getGroup();
-        return this.cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new ClusterAffinity(group.getName()) : new NodeAffinity(this.registry.getEntry(group.getLocalNode()).getKey());
+        return this.cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new ClusterAffinity(group.getName()) : new NodeAffinity(this.registry.getEntry(group.getLocalMember()).getKey());
     }
 
     @Override
@@ -250,7 +250,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     Node locatePrimaryOwner(I id) {
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
         Address address = (dist != null) ? dist.getPrimaryLocation(id) : null;
-        return (address != null) ? this.nodeFactory.createNode(address) : this.registry.getGroup().getLocalNode();
+        return (address != null) ? this.nodeFactory.createNode(address) : this.registry.getGroup().getLocalMember();
     }
 
     @Override

@@ -32,7 +32,7 @@ public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
                 nodes.add(response.get());
             }
 
-            Node localNode = this.factory.getGroup().getLocalNode();
+            Node localNode = this.factory.getGroup().getLocalMember();
             String local = this.dispatcher.executeOnNode(this.command, localNode).get();
 
             responses = this.dispatcher.executeOnCluster(this.command, localNode).values();

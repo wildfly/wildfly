@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.clustering.single.dispatcher;
 
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1;
 import static org.junit.Assert.*;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;

@@ -63,9 +63,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
-import org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceDefinition;
-import org.jboss.as.clustering.jgroups.subsystem.StackResourceDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
@@ -362,9 +359,9 @@ public abstract class SimpleMixedDomainTest  {
 
     private static ModelNode createProtocolPutPropertyOperation(String stackName, String protocolName, String propertyName, String propertyValue) {
         PathAddress address = PathAddress.pathAddress(PathElement.pathElement(PROFILE, ACTIVE_PROFILE))
-                .append(JGroupsSubsystemResourceDefinition.PATH)
-                .append(StackResourceDefinition.pathElement(stackName))
-                .append(ProtocolResourceDefinition.pathElement(protocolName));
+                .append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "jgroups"))
+                .append(PathElement.pathElement("stack", stackName))
+                .append(PathElement.pathElement("protocol", protocolName));
 
         ModelNode operation = Util.createOperation(MapOperations.MAP_PUT_DEFINITION, address);
         operation.get(ModelDescriptionConstants.NAME).set("properties");

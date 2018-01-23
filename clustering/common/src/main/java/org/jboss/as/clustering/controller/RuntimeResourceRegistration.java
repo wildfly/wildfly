@@ -40,5 +40,5 @@ public interface RuntimeResourceRegistration {
      * Removes runtime resources created during {@link #register(OperationContext)}.
      * @param context an operation context
      */
-    void unregister(OperationContext context);
+    void unregister(OperationContext context) throws OperationFailedException;
 }

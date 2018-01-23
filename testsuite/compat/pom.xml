@@ -38,20 +38,10 @@
 
         <!-- This project's testsuite dir. To be changed for every submodule (until we figure out how to do it automatically). -->
         <jbossas.ts.dir>${basedir}/..</jbossas.ts.dir>
-
-        <!-- ${jbossas.project.dir} defined in /testsuite. But for separated runs runs, let's duplicate it here. -->
-        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-
+        
         <!-- Used to provide an absolute location for the distribution under test. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <jboss.dist>${jbossas.project.dir}/${wildfly.build.output.dir}</jboss.dist>
-        <jboss.home>${jboss.dist}</jboss.home>
-
-        <!-- Used to provide an absolute location for the XSLT scripts. -->
-        <!-- This value is overridden in submodules with the correct relative path. -->
-        <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
-        <surefire.excludeTests />
-
         <ts.elytron.cli>../shared/enable-elytron.cli</ts.elytron.cli>
     </properties>
 
@@ -190,31 +180,14 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <!--<basedir>${jbossas.ts.integ.dir}</basedir>  <!- - "The base directory of the project being tested." Sets ${basedir}. -->
                     <workingDirectory>${basedir}/target/workdir</workingDirectory> <!-- Work in submodule's own dir. -->
 
                     <!-- System properties to forked surefire JVM which runs clients. -->
                     <argLine>${jvm.args.ip.client} ${jvm.args.timeouts} ${surefire.system.args}</argLine>
-                    <excludes>
-                        <exclude>${surefire.excludeTests}</exclude>
-                    </excludes>
                     <!-- System properties passed to test cases -->
                     <systemPropertyVariables combine.children="append">
                         <node0>${node0}</node0>
-                        <node1>${node1}</node1>
-                        <mcast>${mcast}</mcast>
-
-                        <jbossas.ts.submodule.dir>${basedir}</jbossas.ts.submodule.dir>
-                        <jbossas.ts.integ.dir>${jbossas.ts.integ.dir}</jbossas.ts.integ.dir>
-                        <jbossas.ts.dir>${jbossas.ts.dir}</jbossas.ts.dir>
-                        <jbossas.project.dir>${jbossas.project.dir}</jbossas.project.dir>
-                        <jboss.dist>${jboss.dist}</jboss.dist>
-
-                        <!--
-                            Used in arquillian.xml - arguments for all JBoss AS instances.
-                            System properties are duplicated here until ARQ-647 is implemented.
-                        -->
-                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Declipselink.archive.factory=org.jipijapa.eclipselink.JBossArchiveFactoryImpl</server.jvm.args>
+                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.timeouts} -Declipselink.archive.factory=org.jipijapa.eclipselink.JBossArchiveFactoryImpl ${extra.server.jvm.args}</server.jvm.args>
                     </systemPropertyVariables>
 
                 </configuration>
@@ -223,17 +196,6 @@
     </build>
 
     <profiles>
-        <profile>
-            <id>jdk9</id>
-            <activation>
-                <jdk>9</jdk>
-            </activation>
-            <properties>
-                <!--WFLY-6777 We disable OpenJPA test on JDK9, as openjdk-s serp bytecode enhancer hangs deployment. -->
-                <surefire.excludeTests>**/OpenJPASharedModuleProviderTestCase.java</surefire.excludeTests>
-            </properties>
-        </profile>
-
         <profile>
             <id>elytron.profile</id>
             <activation>
@@ -247,31 +209,30 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
-                                <id>enable-elytron-cli</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-resources</phase>
                                 <goals>
-                                    <goal>exec</goal>
+                                    <goal>execute-commands</goal>
                                 </goals>
-                                <configuration>
-                                    <executable>${java.home}/bin/java</executable>
-                                    <arguments>
-                                        <argument>-jar</argument>
-                                        <argument>${project.build.directory}/jbossas/jboss-modules.jar</argument>
-                                        <argument>-mp</argument>
-                                        <argument>${jboss.dist}/modules</argument>
-                                        <argument>org.jboss.as.cli</argument>
-                                        <argument>--file=${ts.elytron.cli}</argument>
-                                    </arguments>
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${project.build.directory}/jbossas</JBOSS_HOME>
-                                    </environmentVariables>
-                                </configuration>
                             </execution>
                         </executions>
+                        <configuration>
+                            <offline>true</offline>
+                            <scripts>
+                                <script>${ts.elytron.cli}</script>
+                            </scripts>
+                            <jboss-home>${project.build.directory}/wildfly</jboss-home>
+                            <stdout>none</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
+                            <system-properties>
+                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${jboss.dist}/modules</module.path>
+                            </system-properties>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

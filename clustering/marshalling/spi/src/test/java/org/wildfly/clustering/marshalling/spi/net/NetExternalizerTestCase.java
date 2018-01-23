@@ -23,11 +23,14 @@
 package org.wildfly.clustering.marshalling.spi.net;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URL;
 
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
+import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * Unit test for {@link URIExternalizer}.
@@ -37,7 +40,13 @@ public class NetExternalizerTestCase {
 
     @Test
     public void test() throws ClassNotFoundException, IOException {
-        ExternalizerTestUtil.test(new URIExternalizer(), URI.create("http://wildfly.org/news/"));
-        ExternalizerTestUtil.test(new URLExternalizer(), new URL("http://wildfly.org/news/"));
+        new ExternalizerTester<>(DefaultExternalizer.URI.cast(URI.class)).test(URI.create("http://wildfly.org/news/"));
+        new ExternalizerTester<>(DefaultExternalizer.URL.cast(URL.class)).test(new URL("http://wildfly.org/news/"));
+
+        new ExternalizerTester<>(DefaultExternalizer.INET_ADDRESS.cast(InetAddress.class)).test(InetAddress.getLoopbackAddress());
+        new ExternalizerTester<>(DefaultExternalizer.INET4_ADDRESS.cast(InetAddress.class)).test(InetAddress.getByName("127.0.0.1"));
+        new ExternalizerTester<>(DefaultExternalizer.INET6_ADDRESS.cast(InetAddress.class)).test(InetAddress.getByName("::1"));
+        new ExternalizerTester<>(DefaultExternalizer.INET_SOCKET_ADDRESS.cast(InetSocketAddress.class)).test(InetSocketAddress.createUnresolved("hostname", 0));
+        new ExternalizerTester<>(DefaultExternalizer.INET_SOCKET_ADDRESS.cast(InetSocketAddress.class)).test(new InetSocketAddress(InetAddress.getLoopbackAddress(), Short.MAX_VALUE));
     }
 }

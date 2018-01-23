@@ -31,20 +31,12 @@
 
         <echo message="Copying and configuring instance jbossas-multinode-client"/>
         <copy todir="target/jbossas-multinode-client">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <ts.config-as.add-remote-outbound-connection name="jbossas-multinode-client" node="${node1}" remotePort="8180" protocol="http-remoting" securityRealm="PasswordRealm" userName="user1"/>
         <ts.config-as.add-identity-realm name="jbossas-multinode-client" realmName="PasswordRealm" secret="cGFzc3dvcmQx"/>
 
-        <echo message="Copying and configuring instance jbossas-multinode-server"/>
-        <copy todir="target/jbossas-multinode-server">
-            <fileset dir="target/jbossas"/>
-        </copy>
-        <ts.config-as.ip-with-multicast name="jbossas-multinode-server"
-            node="${node1}"
-            mcast="${mcast}"
-        />
-        <ts.config-as.add-port-offset name="jbossas-multinode-server" offset="100" nativePort="9999" httpPort="9990"/>
+   
     </target>
 
 </project>

@@ -89,7 +89,7 @@ public class WeldExecutorServices extends AbstractExecutorServices implements Se
         if (executor != null) {
             context.asynchronous();
             new Thread(() -> {
-                super.cleanup();
+                super.shutdown();
                 executor = null;
                 context.complete();
             }).start();

@@ -52,14 +52,14 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.service.BinaryRequirement;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * Base class for cache resources which require common cache attributes only.
@@ -89,9 +89,21 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         EnumSet.allOf(ClusteringCacheRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new BinaryRequirementCapability(requirement)));
     }
 
+    static class CapabilityServiceNameRegistry implements ServiceNameRegistry<ClusteringCacheRequirement> {
+        private final PathAddress address;
+
+        CapabilityServiceNameRegistry(PathAddress address) {
+            this.address = address;
+        }
+
+        @Override
+        public ServiceName getServiceName(ClusteringCacheRequirement requirement) {
+            return CLUSTERING_CAPABILITIES.get(requirement).getServiceName(this.address);
+        }
+    }
+
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         MODULE("module", ModelType.STRING, builder -> builder.setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())),
-        JNDI_NAME("jndi-name", ModelType.STRING, UnaryOperator.identity()),
         STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN, builder -> builder.setDefaultValue(new ModelNode(false))),
         ;
         private final AttributeDefinition definition;
@@ -111,6 +123,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         @Deprecated BATCHING("batching", ModelType.BOOLEAN, builder -> builder.setDefaultValue(new ModelNode(false)), InfinispanModel.VERSION_3_0_0),
         @Deprecated INDEXING("indexing", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode(Index.NONE.name())).setValidator(new EnumValidator<>(Index.class)), InfinispanModel.VERSION_4_0_0),
         @Deprecated INDEXING_PROPERTIES("indexing-properties", InfinispanModel.VERSION_4_0_0),
+        @Deprecated JNDI_NAME("jndi-name", ModelType.STRING, UnaryOperator.identity(), InfinispanModel.VERSION_6_0_0),
         @Deprecated START("start", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode(StartMode.LAZY.name())).setValidator(new EnumValidator<>(StartMode.class)), InfinispanModel.VERSION_3_0_0),
         ;
         private final AttributeDefinition definition;
@@ -170,14 +183,6 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
                 }
             };
             builder.setCustomResourceTransformer(batchingTransformer);
-        }
-
-        if (InfinispanModel.VERSION_1_5_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), Attribute.STATISTICS_ENABLED.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.STATISTICS_ENABLED.getDefinition())
-                    .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), Attribute.STATISTICS_ENABLED.getDefinition());
         }
 
         LockingResourceDefinition.buildTransformation(version, builder);

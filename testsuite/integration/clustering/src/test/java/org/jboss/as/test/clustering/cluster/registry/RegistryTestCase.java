@@ -1,8 +1,7 @@
 package org.jboss.as.test.clustering.cluster.registry;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.PropertyPermission;
@@ -11,7 +10,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetriever;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
@@ -24,17 +23,17 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public class RegistryTestCase extends ClusterAbstractTestCase {
+public class RegistryTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = "registry";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> createDeploymentForContainer1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> createDeploymentForContainer2() {
         return createDeployment();
     }
@@ -69,13 +68,13 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
             assertTrue(names.contains(NODE_1));
             assertTrue(names.contains(NODE_2));
 
-            stop(CONTAINER_2);
+            stop(NODE_2);
 
             names = bean.getNodes();
             assertEquals(1, names.size());
             assertTrue(names.contains(NODE_1));
 
-            start(CONTAINER_2);
+            start(NODE_2);
 
             names = bean.getNodes();
             assertEquals(2, names.size());

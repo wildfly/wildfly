@@ -51,7 +51,7 @@ public class SimpleServlet extends HttpServlet {
         return createURI(baseURL.toURI());
     }
 
-    public static URI createURI(URI baseURI) throws URISyntaxException {
+    public static URI createURI(URI baseURI) {
         return baseURI.resolve(SERVLET_NAME);
     }
 
@@ -59,7 +59,7 @@ public class SimpleServlet extends HttpServlet {
         return createURI(baseURL.toURI(), requestDuration);
     }
 
-    public static URI createURI(URI baseURI, int requestDuration) throws URISyntaxException {
+    public static URI createURI(URI baseURI, int requestDuration) {
         return baseURI.resolve(SERVLET_NAME + '?' + REQUEST_DURATION_PARAM + '=' + requestDuration);
     }
 

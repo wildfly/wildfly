@@ -25,6 +25,11 @@
       </dependency>
 
       <dependency>
+          <groupId>org.jboss.weld.module</groupId>
+          <artifactId>weld-ejb</artifactId>
+      </dependency>
+
+      <dependency>
          <groupId>org.jboss.logging</groupId>
          <artifactId>jboss-logging</artifactId>
       </dependency>

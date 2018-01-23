@@ -1,3 +1,0 @@
-org.wildfly.clustering.server.dispatcher.CommandDispatcherFactoryAliasBuilderProvider
-org.wildfly.clustering.server.group.GroupAliasBuilderProvider
-org.wildfly.clustering.server.group.GroupNodeFactoryAliasBuilderProvider

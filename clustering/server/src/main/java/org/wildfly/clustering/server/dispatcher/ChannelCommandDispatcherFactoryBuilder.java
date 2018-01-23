@@ -50,13 +50,11 @@ import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
-import org.wildfly.clustering.server.group.JGroupsNodeFactory;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.SuppliedValueService;
 import org.wildfly.clustering.service.ValueDependency;
-import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * Builds a channel-based {@link org.wildfly.clustering.dispatcher.CommandDispatcherFactory} service.
@@ -94,7 +92,6 @@ public class ChannelCommandDispatcherFactoryBuilder implements CapabilityService
 
     private volatile ValueDependency<ChannelFactory> channelFactory;
     private volatile ValueDependency<Channel> channel;
-    private volatile ValueDependency<JGroupsNodeFactory> nodeFactory;
     private volatile ValueDependency<Module> module;
     private volatile long timeout = TimeUnit.MINUTES.toMillis(1);
 
@@ -113,19 +110,18 @@ public class ChannelCommandDispatcherFactoryBuilder implements CapabilityService
         this.channel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(support, this.group), Channel.class);
         this.channelFactory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_FACTORY.getServiceName(support, this.group), ChannelFactory.class);
         this.module = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_MODULE.getServiceName(support, this.group), Module.class);
-        this.nodeFactory = new InjectedValueDependency<>(ClusteringRequirement.NODE_FACTORY.getServiceName(support, this.group), JGroupsNodeFactory.class);
         return this;
     }
 
     @Override
     public ServiceBuilder<CommandDispatcherFactory> build(ServiceTarget target) {
-        Supplier<ChannelCommandDispatcherFactory> supplier = () -> new ChannelCommandDispatcherFactory(this);
+        Supplier<AutoCloseableCommandDispatcherFactory> supplier = () -> new ManagedCommandDispatcherFactory(new ChannelCommandDispatcherFactory(this));
         Service<CommandDispatcherFactory> service = new SuppliedValueService<>(Functions.identity(), supplier, Consumers.close());
         ServiceBuilder<CommandDispatcherFactory> builder = new AsynchronousServiceBuilder<>(this.name, service).build(target)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 .setInitialMode(ServiceController.Mode.PASSIVE)
                 ;
-        Stream.of(this.channel, this.channelFactory, this.module, this.nodeFactory).forEach(dependency -> dependency.register(builder));
+        Stream.of(this.channel, this.channelFactory, this.module).forEach(dependency -> dependency.register(builder));
         return builder;
     }
 
@@ -147,11 +143,6 @@ public class ChannelCommandDispatcherFactoryBuilder implements CapabilityService
     @Override
     public Channel getChannel() {
         return this.channel.getValue();
-    }
-
-    @Override
-    public JGroupsNodeFactory getNodeFactory() {
-        return this.nodeFactory.getValue();
     }
 
     @Override

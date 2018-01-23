@@ -33,11 +33,9 @@ import static org.hibernate.cache.infinispan.InfinispanRegionFactory.TIMESTAMPS_
 import static org.jboss.as.jpa.hibernate4.infinispan.InfinispanRegionFactory.CACHE_CONTAINER;
 import static org.jboss.as.jpa.hibernate4.infinispan.InfinispanRegionFactory.DEFAULT_CACHE_CONTAINER;
 
-import java.util.Objects;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.hibernate.cfg.AvailableSettings;
 import org.jboss.as.jpa.hibernate4.infinispan.SharedInfinispanRegionFactory;
@@ -55,13 +53,8 @@ public class HibernateSecondLevelCache {
 
     public static final String CACHE_TYPE = "cachetype";    // shared (jpa) or private (for native applications)
     public static final String CONTAINER = "container";
-    public static final String COLLECTION = "collection";
-    public static final String ENTITY = "entity";
     public static final String NAME = "name";
-    public static final String NATURAL_ID = "natural-id";
-    public static final String QUERY = "query";
-    public static final String TIMESTAMPS = "timestamps";
-    public static final String CUSTOM = "custom";
+    public static final String CACHES = "caches";
 
     public static void addSecondLevelCacheDependencies(Properties mutableProperties, String scopedPersistenceUnitName) {
 
@@ -89,37 +82,34 @@ public class HibernateSecondLevelCache {
              * AS will need the ServiceBuilder<?> builder that used to be passed to PersistenceProviderAdaptor.addProviderDependencies
              */
             Properties cacheSettings = new Properties();
-            cacheSettings.put(CONTAINER, container);
-            cacheSettings.put(ENTITY, mutableProperties.getProperty(ENTITY_CACHE_RESOURCE_PROP, DEF_ENTITY_RESOURCE));
-            cacheSettings.put(COLLECTION, mutableProperties.getProperty(COLLECTION_CACHE_RESOURCE_PROP, DEF_ENTITY_RESOURCE));
-            cacheSettings.put(NATURAL_ID, mutableProperties.getProperty(NATURAL_ID_CACHE_RESOURCE_PROP, DEF_ENTITY_RESOURCE));
-            if (Boolean.parseBoolean(mutableProperties.getProperty(AvailableSettings.USE_QUERY_CACHE))) {
-                cacheSettings.put(QUERY, mutableProperties.getProperty(QUERY_CACHE_RESOURCE_PROP, DEF_QUERY_RESOURCE));
-                cacheSettings.put(TIMESTAMPS, mutableProperties.getProperty(TIMESTAMPS_CACHE_RESOURCE_PROP, DEF_QUERY_RESOURCE));
-            }
-
-            // Collect distinct cache configurations for standard regions
-            Set<String> standardRegionConfigs = Stream.of(ENTITY, COLLECTION, NATURAL_ID, QUERY, TIMESTAMPS)
-                    .map(region -> cacheSettings.getProperty(region))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
-
-            int length = INFINISPAN_CONFIG_RESOURCE_PROP.length();
-            String customRegionPrefix = INFINISPAN_CONFIG_RESOURCE_PROP.substring(0, length - 3) + mutableProperties.getProperty(AvailableSettings.CACHE_REGION_PREFIX, "");
-            String customRegionSuffix = INFINISPAN_CONFIG_RESOURCE_PROP.substring(length - 4, length);
-
-            // Collect distinct cache configurations for custom regions
-            Set<String> customRegionConfigs = mutableProperties.stringPropertyNames().stream()
-                    .filter(name -> name.startsWith(customRegionPrefix) && name.endsWith(customRegionSuffix))
-                    .map(name -> mutableProperties.getProperty(name))
-                    .filter(config -> !standardRegionConfigs.contains(config))
-                    .collect(Collectors.toSet());
-
-            if (!customRegionConfigs.isEmpty()) {
-                cacheSettings.setProperty(CUSTOM, String.join(" ", customRegionConfigs));
-            }
+            cacheSettings.setProperty(CONTAINER, container);
+            cacheSettings.setProperty(CACHES, String.join(" ", findCaches(mutableProperties)));
 
             Notification.addCacheDependencies(Classification.INFINISPAN, cacheSettings);
         }
+    }
+
+    public static Set<String> findCaches(Properties properties) {
+        Set<String> caches = new HashSet<>();
+
+        caches.add(properties.getProperty(ENTITY_CACHE_RESOURCE_PROP, DEF_ENTITY_RESOURCE));
+        caches.add(properties.getProperty(COLLECTION_CACHE_RESOURCE_PROP, DEF_ENTITY_RESOURCE));
+        caches.add(properties.getProperty(NATURAL_ID_CACHE_RESOURCE_PROP, DEF_ENTITY_RESOURCE));
+        if (Boolean.parseBoolean(properties.getProperty(AvailableSettings.USE_QUERY_CACHE))) {
+            caches.add(properties.getProperty(QUERY_CACHE_RESOURCE_PROP, DEF_QUERY_RESOURCE));
+            caches.add(properties.getProperty(TIMESTAMPS_CACHE_RESOURCE_PROP, DEF_QUERY_RESOURCE));
+        }
+
+        int length = INFINISPAN_CONFIG_RESOURCE_PROP.length();
+        String customRegionPrefix = INFINISPAN_CONFIG_RESOURCE_PROP.substring(0, length - 3) + properties.getProperty(AvailableSettings.CACHE_REGION_PREFIX, "");
+        String customRegionSuffix = INFINISPAN_CONFIG_RESOURCE_PROP.substring(length - 4, length);
+
+        for (String propertyName : properties.stringPropertyNames()) {
+            if (propertyName.startsWith(customRegionPrefix) && propertyName.endsWith(customRegionSuffix)) {
+                caches.add(properties.getProperty(propertyName));
+            }
+        }
+
+        return caches;
     }
 }

@@ -368,7 +368,12 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
             if (this.methodsDescriptions.size() > 0) {
                 return true;
             }
-            return this.subLocatorDescriptions.stream().anyMatch(p -> p.containsMethodResources());
+            for (JaxrsResourceLocatorDescription p : this.subLocatorDescriptions) {
+                if (p.containsMethodResources()) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

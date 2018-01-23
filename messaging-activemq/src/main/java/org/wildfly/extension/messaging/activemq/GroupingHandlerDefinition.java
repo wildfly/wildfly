@@ -67,6 +67,7 @@ public class GroupingHandlerDefinition extends PersistentResourceDefinition {
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
+            .setValidator(InfiniteOrPositiveValidators.LONG_INSTANCE)
             .setRestartAllServices()
             .build();
 

@@ -37,7 +37,7 @@ public class SimpleKeyFormatTestCase {
     public void test() {
         Function<String, Object> parser = mock(Function.class);
         Function<Object, String> formatter = mock(Function.class);
-        KeyFormat<Object> keyFormat = new SimpleKeyFormat<>(Object.class, parser, formatter);
+        KeyFormat<Object> format = new SimpleKeyFormat<>(Object.class, parser, formatter);
 
         Object object = new Object();
         String result = "foo";
@@ -45,7 +45,6 @@ public class SimpleKeyFormatTestCase {
         when(formatter.apply(object)).thenReturn(result);
         when(parser.apply(result)).thenReturn(object);
 
-        Assert.assertSame(result, keyFormat.format(object));
-        Assert.assertSame(object, keyFormat.parse(result));
+        new KeyFormatTester<>(format, Assert::assertSame).test(object);
     }
 }

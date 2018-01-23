@@ -1,0 +1,148 @@
+= Before you add a test
+
+Every added test, whether ported or new should follow the same
+guidelines:
+
+== Verify the test belongs in WildFly
+AS6 has a lot of tests for things that are discontinued. For example
+the +
+legacy JBoss Transaction Manager which was replaced by Arjuna. Also we +
+had tests for SPIs that no longer exist. None of these things should
+be +
+migrated.
+
+== Only add CORRECT and UNDERSTANDABLE tests
+If you don't understand what a test is doing (perhaps too complex), or +
+it's going about things in a strange way that might not be correct,
+THEN +
+DO NOT PORT IT. Instead we should have a simpler, understandable, and +
+correct test. Write a new one, ping the author, or skip it altogether.
+
+== Do not add duplicate tests
+Always check that the test you are adding doesn't have coverage +
+elsewhere (try using "git grep"). As mentioned above we have some +
+overlap between 6 and 7. The 7 test version will likely be better.
+
+== Don't name tests after JIRAs
+A JIRA number is useless without an internet connection, and they are +
+hard to read. If I get a test failure thats XDGR-843534578 I have to
+dig +
+to figure out the context. It's perfectly fine though to link to a
+JIRA +
+number in the comments of the test. Also the commit log is always
+available.
+
+== Tests should contain javadoc that explains what is being tested
+This is especially critical if the test is non-trivial
+
+== Prefer expanding an EXISTING test over a new test class
+If you are looking at migrating or creating a test with similar +
+functionality to an exiting test, it is better to +
+expand upon the existing one by adding more test methods, rather than +
+creating a whole new test. In general each +
+new test class adds at least 300ms to execution time, so as long as it +
+makes sense it is better to add it to an +
+existing test case.
+
+== Organize tests by subsystem
+Integration tests should be packaged in subpackages under the relevant +
+subsystem (e.g org.jboss.as.test.integration.ejb.async). When a test +
+impacts multiple subsystems this is a bit of a judgement call, but in +
+general the tests should go into the package of +
+the spec that defines the functionality (e.g. CDI based constructor +
+injection into an EJB, even though this involves CDI and EJB, +
+the CDI spec defines this behaviour)
+
+== Explain non-obvious spec behavior in comments
+The EE spec is full of odd requirements. If the test is covering +
+behavior that is not obvious then please add something like "Verifies
+EE +
+X.T.Z - The widget can't have a foobar if it is declared like blah"
+
+== Put integration test resources in the source directory of the test
+At the moment there is not real organization of these files. It makes +
+sense for most apps to have this separation, however the testsuite is +
+different. e.g. most apps will have a single deployment descriptor of
+a +
+given type, for the testsuite will have hundreds, and maintaining
+mirroring +
+package structures is error prone. +
+This also makes the tests easier to understand, as all the artifacts
+in +
+the deployment are in one place, and that place tends to be small
+(only +
+a handful of files).
+
+== Do not hard-code values likely to need configuration (URLs, ports, ...)
+URLs hardcoded to certain address (localhost) or port (like the default
+8080 for web) prevent running the test against different address or with
+IPv6 adress. +
+Always use the configurable values provided by Arquillian or as a system
+property. +
+If you come across a value which is not configurable but you think it
+should be, file an WildFly {wildflyVersion} jira issue with component "Test suite". +
+See
+https://github.com/arquillian/arquillian/blob/master/examples/junit/src/test/java/com/acme/web/LocalRunServletTestCase.java[@ArquillianResourrce
+usage example].
+
+== Follow best committing practices
+* Only do changes related to the topic of the jira/pull request.
+* Do not clutter your pull request with e.g. reformatting, fixing typos
+spotted along the way - do another pull request for such.
+* Prefer smaller changes in more pull request over one big pull request
+which are difficult to merge.
+* Keep the code consistent across commits - e.g. when renaming
+something, be sure to update all references to it.
+* Describe your commits properly as they will appear in master's linear
+history.
+* If you're working on a jira issue, include it's ID in the commit
+message(s).
+
+== Do not use blind timeouts
+Do not use Thread.sleep() without checking for the actual condition you
+need to be fulfilled. +
+You may use active waiting with a timeout, but prefer using timeouts of
+the API/SPI you test where available.
+
+Make the timeouts configurable: For a group of similar test, use a
+configurable timeout value with a default if not set.
+
+== Provide messages in assert*() and fail() calls
+Definitely, it's better to see "File x/y/z.xml not found" instead of:
+
+[source, java]
+----
+junit.framework.AssertionFailedError
+     at junit.framework.Assert.fail(Assert.java:48) [arquillian-service:]
+     at junit.framework.Assert.assertTrue(Assert.java:20) [arquillian-service:]
+     at junit.framework.Assert.assertTrue(Assert.java:27) [arquillian-service:]
+     at org.jboss.as.test.smoke.embedded.parse.ParseAndMarshalModelsTestCase.getOriginalStandaloneXml(ParseAndMarshalModelsTestCase.java:554) [bogus.jar:]
+----
+
+== Provide configuration properties hints in exceptions
+If your test uses some configuration property and it fails possibly due
+to misconfiguration, note the property and it's value in the exception:
+
+[source, java]
+----
+File jdbcJar = new File( System.getProperty("jbossas.ts.dir", "."),
+       "integration/src/test/resources/mysql-connector-java-5.1.15.jar");
+    if( !jdbcJar.exists() )
+        throw new IllegalStateException("Can't find " + jdbcJar + " using $\{jbossas.ts.dir} == " + System.getProperty("jbossas.ts.dir") );
+----
+
+== Clean up
+* Close sockets, connections, file descriptors;
+* Don't put much data to static fields, or clean them in a finaly {...} block.
+* Don't alter AS config (unless you are absolutely sure that it will
+reload in a final \{...} block or an @After* method)
+
+== Keep the tests configurable
+Keep these things in properties, set them at the beginning of the test:
+* Timeouts
+* Paths
+* URLs
+* Numbers (of whatever)
+
+They either will be or already are provided in form of system
+properties, or a simple testsuite until API (soon to come).

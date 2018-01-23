@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.arjuna.ats.internal.jta.recovery.arjunacore.SubordinateAtomicActionRecoveryModule;
 import com.arjuna.ats.internal.jta.recovery.jts.JCAServerTransactionRecoveryModule;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
@@ -103,6 +104,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
         recoveryExtensions.add(CommitMarkableResourceRecordRecoveryModule.class.getName()); // must be first
         recoveryExtensions.add(AtomicActionRecoveryModule.class.getName());
         recoveryExtensions.add(TORecoveryModule.class.getName());
+        recoveryExtensions.add(SubordinateAtomicActionRecoveryModule.class.getName());
 
         final List<String> expiryScanners;
         if (System.getProperty("RecoveryEnvironmentBean.expiryScannerClassNames") != null) {

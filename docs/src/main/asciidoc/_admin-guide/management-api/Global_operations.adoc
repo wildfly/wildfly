@@ -1,0 +1,318 @@
+= Global operations
+
+The WildFly management API includes a number of operations that apply to
+every resource.
+
+[[the-read-resource-operation]]
+== The read-resource operation
+
+Reads a management resource's attribute values along with either basic
+or complete information about any child resources. Supports the +
+following parameters, none of which are required:
+
+* `recursive` – (boolean, default is `false`) – whether to include
+complete information about child resources, recursively.
+* `recursive-depth` – (int) – The depth to which information about child
+resources should be included if `recursive` is `true`. If not set, the
+depth will be unlimited; i.e. all descendant resources will be included.
+* `proxies` – (boolean, default is `false`) – whether to include remote
+resources in a recursive query (i.e. host level resources from slave
+Host Controllers in a query of the Domain Controller; running server
+resources in a query of a host).
+* `include-runtime` – (boolean, default is `false`) – whether to include
+runtime attributes (i.e. those whose value does not come from the
+persistent configuration) in the response.
+* `include-defaults` – (boolean, default is `true`) – whether to include
+in the result default values not set by users. Many attributes have a
+default value that will be used in the runtime if the users have not
+provided an explicit value. If this parameter is `false` the value for
+such attributes in the result will be `undefined`. If `true` the result
+will include the default value for such parameters.
+
+[[the-read-attribute-operation]]
+== The read-attribute operation
+
+Reads the value of an individual attribute. Takes a single, required,
+parameter:
+
+* `name` – (string) – the name of the attribute to read.
+* `include-defaults` – (boolean, default is `true`) – whether to include
+in the result default values not set by users. Many attributes have a
+default value that will be used in the runtime if the users have not
+provided an explicit value. If this parameter is `false` the value for
+such attributes in the result will be `undefined`. If `true` the result
+will include the default value for such parameters.
+
+[[the-write-attribute-operation]]
+== The write-attribute operation
+
+Writes the value of an individual attribute. Takes two required
+parameters:
+
+* `name` – (string) – the name of the attribute to write.
+* `value` – (type depends on the attribute being written) – the new
+value.
+
+[[the-undefine-attribute-operation]]
+== The undefine-attribute operation
+
+Sets the value of an individual attribute to the `undefined` value, if
+such a value is allowed for the attribute. The operation will fail if
+the `undefined` value is not allowed. Takes a single required parameter:
+
+* `name` – (string) – the name of the attribute to write.
+
+[[the-list-add-operation]]
+== The list-add operation
+
+Adds an element to the value of a list attribute, adding the element to
+the end of the list unless the optional attribute `index` is passed:
+
+* `name` – (string) – the name of the list attribute to add new value
+to.
+* `value` – (type depends on the element being written) – the new
+element to be added to the attribute value.
+* `index` – (int, optional) – index where in the list to add the new
+element. By default it is `undefined` meaning add at the end. Index is
+zero based.
+
+This operation will fail if the specified attribute is not a list.
+
+[[the-list-remove-operation]]
+== The list-remove operation
+
+Removes an element from the value of a list attribute, either the
+element at a specified `index`, or the first element whose value matches
+a specified `value`:
+
+* `name` – (string) – the name of the list attribute to add new value
+to.
+* `value` – (type depends on the element being written, optional) – the
+element to be removed. Optional and ignored if `index` is specified.
+* `index` – (int, optional) – index in the list whose element should be
+removed. By default it is `undefined`, meaning `value` should be
+specified.
+
+This operation will fail if the specified attribute is not a list.
+
+[[the-list-get-operation]]
+== The list-get operation
+
+Gets one element from a list attribute by its index
+
+* `name` – (string) – the name of the list attribute
+* `index` – (int, required) – index of element to get from list
+
+This operation will fail if the specified attribute is not a list.
+
+[[the-list-clear-operation]]
+== The list-clear operation
+
+Empties the list attribute. It is different from `:undefine-attribute`
+as it results in attribute of type list with 0 elements, whereas
+`:undefine-attribute` results in an `undefined` value for the attribute
+
+* `name` – (string) – the name of the list attribute
+
+This operation will fail if the specified attribute is not a list.
+
+[[the-map-put-operation]]
+== The map-put operation
+
+Adds an key/value pair entry to the value of a map attribute:
+
+* `name` – (string) – the name of the map attribute to add the new entry
+to.
+* `key` – (string) – the key of the new entry to be added.
+* `value` – (type depends on the entry being written) – the value of the
+new entry to be added to the attribute value.
+
+This operation will fail if the specified attribute is not a map.
+
+[[the-map-remove-operation]]
+== The map-remove operation
+
+Removes an entry from the value of a map attribute:
+
+* `name` – (string) – the name of the map attribute to remove the new
+entry from.
+* `key` – (string) – the key of the entry to be removed.
+
+This operation will fail if the specified attribute is not a map.
+
+[[the-map-get-operation]]
+== The map-get operation
+
+Gets the value of one entry from a map attribute
+
+* `name` – (string) – the name of the map attribute
+* `key` – (string) – the key of the entry.
+
+This operation will fail if the specified attribute is not a map.
+
+[[the-map-clear-operation]]
+== The map-clear operation
+
+Empties the map attribute. It is different from `:undefine-attribute` as
+it results in attribute of type map with 0 entries, whereas
+`:undefine-attribute` results in an `undefined` value for the attribute
+
+* `name` – (string) – the name of the map attribute
+
+This operation will fail if the specified attribute is not a map.
+
+[[the-read-resource-description-operation]]
+== The read-resource-description operation
+
+Returns the description of a resource's attributes, types of children
+and, optionally, operations. Supports the +
+following parameters, none of which are required:
+
+* `recursive` – (boolean, default is `false`) – whether to include
+information about child resources, recursively.
+* `proxies` – (boolean, default is `false`) – whether to include remote
+resources in a recursive query (i.e. host level resources from slave
+Host Controllers in a query of the Domain Controller; running server
+resources in a query of a host)
+* `operations` – (boolean, default is `false`) – whether to include
+descriptions of the resource's operations
+* `inherited` – (boolean, default is `true`) – if `operations` is
+`true`, whether to include descriptions of operations inherited from
+higher level resources. The global operations described in this section
+are themselves inherited from the root resource, so the primary effect
+of setting `inherited` to `false` is to exclude the descriptions of the
+global operations from the output.
+
+See link:Description_of_the_Management_Model.html[Description of the
+Management Model] for details on the result of this operation.
+
+[[the-read-operation-names-operation]]
+== The read-operation-names operation
+
+Returns a list of the names of all the operations the resource supports.
+Takes no parameters.
+
+[[the-read-operation-description-operation]]
+== The read-operation-description operation
+
+Returns the description of an operation, along with details of its
+parameter types and its return value. Takes a single, required,
+parameter:
+
+* `name` – (string) – the name of the operation
+
+See link:Description_of_the_Management_Model.html[Description of the
+Management Model] for details on the result of this operation.
+
+[[the-read-children-types-operation]]
+== The read-children-types operation
+
+Returns a list of the
+link:Management_resources.html#src-557064_Managementresources-Address[types
+of child resources] the resource supports. Takes two optional
+parameters:
+
+* `include-aliases` – (boolean, default is `false`) – whether to include
+alias children (i.e. those which are aliases of other sub-resources) in
+the response.
+* `include-singletons` – (boolean, default is `false`) – whether to
+include singleton children (i.e. those are children that acts as
+resource aggregate and are registered with a wildcard name) in the
+response
+http://lists.jboss.org/pipermail/wildfly-dev/2014-August/002701.html[wildfly-dev
+discussion around this topic].
+
+[[the-read-children-names-operation]]
+== The read-children-names operation
+
+Returns a list of the names of all child resources of a given
+link:Management_resources.html#src-557064_Managementresources-Address[type].
+Takes a single, required, parameter:
+
+* `child-type` – (string) – the name of the type
+
+[[the-read-children-resources-operation]]
+== The read-children-resources operation
+
+Returns information about all of a resource's children that are of a
+given
+link:Management_resources.html#src-557064_Managementresources-Address[type].
+For each child resource, the returned information is equivalent to
+executing the `read-resource` operation on that resource. Takes the
+following parameters, of which only \{\{child-type} is required:
+
+* `child-type` – (string) – the name of the type of child resource
+* `recursive` – (boolean, default is `false`) – whether to include
+complete information about child resources, recursively.
+* `recursive-depth` – (int) – The depth to which information about child
+resources should be included if `recursive` is \{\{true}. If not set,
+the depth will be unlimited; i.e. all descendant resources will be
+included.
+* `proxies` – (boolean, default is `false`) – whether to include remote
+resources in a recursive query (i.e. host level resources from slave
+Host Controllers in a query of the Domain Controller; running server
+resources in a query of a host)
+* `include-runtime` – (boolean, default is `false`) – whether to include
+runtime attributes (i.e. those whose value does not come from the
+persistent configuration) in the response.
+* `include-defaults` – (boolean, default is `true`) – whether to include
+in the result default values not set by users. Many attributes have a
+default value that will be used in the runtime if the users have not
+provided an explicit value. If this parameter is `false` the value for
+such attributes in the result will be `undefined`. If `true` the result
+will include the default value for such parameters.
+
+[[the-read-attribute-group-operation]]
+== The read-attribute-group operation
+
+Returns a list of attributes of a
+link:Management_resources.html#src-557064_Managementresources-Address[type]
+for a given attribute group name. For each attribute the returned
+information is equivalent to executing the `read-attribute` operation of
+that resource. Takes the following parameters, of which only \{\{name}
+is required:
+
+* `name` – (string) – the name of the attribute group to read.
+* `include-defaults` – (boolean, default is `true`) – whether to include
+in the result default values not set by users. Many attributes have a
+default value that will be used in the runtime if the users have not
+provided an explicit value. If this parameter is `false` the value for
+such attributes in the result will be `undefined`. If `true` the result
+will include the default value for such parameters.
+* `include-runtime` – (boolean, default is `false`) – whether to include
+runtime attributes (i.e. those whose value does not come from the
+persistent configuration) in the response.
+* `include-aliases` – (boolean, default is `false`) – whether to include
+alias attributes (i.e. those which are alias of other attributes) in the
+response.
+
+[[the-read-attribute-group-names-operation]]
+== The read-attribute-group-names operation
+
+Returns a list of attribute groups names for a given
+link:Management_resources.html#src-557064_Managementresources-Address[type].
+Takes no parameters.
+
+[[standard-operations]]
+== Standard Operations
+
+Besides the global operations described above, by convention nearly
+every resource should expose an `add` operation and a `remove`
+operation. Exceptions to this convention are the root resource, and
+resources that do not store persistent configuration and are created
+dynamically at runtime (e.g. resources representing the JVM's platform
+mbeans or resources representing aspects of the running state of a
+deployment.)
+
+[[the-add-operation]]
+=== The add operation
+
+The operation that creates a new resource must be named `add`. The
+operation may take zero or more parameters; what those parameters are
+depends on the resource being created.
+
+[[the-remove-operation]]
+=== The remove operation
+
+The operation that removes an existing resource must be named `remove`.
+The operation should take no parameters.

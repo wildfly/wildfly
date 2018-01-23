@@ -31,7 +31,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.integration.web.sso.LogoutServlet;
 import org.jboss.as.test.integration.web.sso.SSOTestBase;
 import org.jboss.logging.Logger;
@@ -44,18 +44,18 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ClusteredSingleSignOnTestCase extends ClusterAbstractTestCase {
+public class ClusteredSingleSignOnTestCase extends AbstractClusteringTestCase {
 
     private static Logger log = Logger.getLogger(ClusteredSingleSignOnTestCase.class);
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deployment1() {
         return createArchive();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deployment2() {
         return createArchive();
     }
@@ -76,10 +76,10 @@ public class ClusteredSingleSignOnTestCase extends ClusterAbstractTestCase {
 
     @Test
     @InSequence(-2)
-    public void startServers() throws Exception {
+    public void startServers() {
 
-        controller.start(CONTAINER_1);
-        controller.start(CONTAINER_2);
+        controller.start(NODE_1);
+        controller.start(NODE_2);
 
     }
 
@@ -93,9 +93,9 @@ public class ClusteredSingleSignOnTestCase extends ClusterAbstractTestCase {
         SSOTestBase.addSso(client1.getControllerClient());
         SSOTestBase.addSso(client2.getControllerClient());
 
-        stop(CONTAINERS);
-        start(CONTAINERS);
-        deploy(DEPLOYMENTS);
+        stop(TWO_NODES);
+        start(TWO_NODES);
+        deploy(TWO_DEPLOYMENTS);
     }
 
     @Test
@@ -107,8 +107,8 @@ public class ClusteredSingleSignOnTestCase extends ClusterAbstractTestCase {
         SSOTestBase.removeSso(client1.getControllerClient());
         SSOTestBase.removeSso(client2.getControllerClient());
 
-        undeploy(DEPLOYMENTS);
-        stop(CONTAINERS);
+        undeploy(TWO_DEPLOYMENTS);
+        stop(TWO_NODES);
     }
 
 

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.clustering.single.singleton;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.IOException;

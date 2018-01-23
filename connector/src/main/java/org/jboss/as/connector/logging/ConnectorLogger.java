@@ -906,4 +906,7 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 112, value = "Datasource %s is disabled")
     IllegalArgumentException datasourceIsDisabled(String jndiName);
 
+    @LogMessage(level = ERROR)
+    @Message(id =113, value = "Unexcepted error during worker execution : %s")
+    void unexceptedWorkerCompletionError(String errorMessage, @Cause Throwable t);
 }

@@ -67,6 +67,10 @@ public class ServerReload {
         executeReloadAndWaitForCompletion(client, timeout, false, null, -1);
     }
 
+    public static void executeReloadAndWaitForCompletion(ManagementClient managementClient) {
+        executeReloadAndWaitForCompletion(managementClient.getControllerClient(), TIMEOUT, false, managementClient.getMgmtAddress(), managementClient.getMgmtPort());
+    }
+
     /**
      *
      * @param client
@@ -90,7 +94,7 @@ public class ServerReload {
         try {
             ModelNode result = client.execute(operation);
             if (!"success".equals(result.get(ClientConstants.OUTCOME).asString())) {
-                fail("Reload operation didn't finished successfully: " + result.asString());
+                fail("Reload operation didn't finish successfully: " + result.asString());
             }
         } catch(IOException e) {
             final Throwable cause = e.getCause();
@@ -153,6 +157,17 @@ public class ServerReload {
         if ("reload-required".equalsIgnoreCase(runningState)) {
             log.trace("Server reload is required. The reload will be executed.");
             executeReloadAndWaitForCompletion(controllerClient);
+        } else {
+            log.debugf("Server reload is not required; server-state is %s", runningState);
+            Assert.assertEquals("Server state 'running' is expected", "running", runningState);
+        }
+    }
+
+    public static void reloadIfRequired(final ManagementClient managementClient) throws Exception {
+        String runningState = getContainerRunningState(managementClient);
+        if ("reload-required".equalsIgnoreCase(runningState)) {
+            log.trace("Server reload is required. The reload will be executed.");
+            executeReloadAndWaitForCompletion(managementClient);
         } else {
             log.debugf("Server reload is not required; server-state is %s", runningState);
             Assert.assertEquals("Server state 'running' is expected", "running", runningState);

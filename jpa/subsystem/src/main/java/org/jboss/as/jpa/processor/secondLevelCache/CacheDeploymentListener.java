@@ -112,7 +112,7 @@ public class CacheDeploymentListener implements EventListener {
     }
 
     @Override
-    public void stopCache(Classification classification, Wrapper wrapper, boolean skipStop) {
-        delegates.get(classification.getLocalName()).stopCache(classification, wrapper, skipStop);
+    public void stopCache(Classification classification, Wrapper wrapper) {
+        delegates.get(classification.getLocalName()).stopCache(classification, wrapper);
     }
 }

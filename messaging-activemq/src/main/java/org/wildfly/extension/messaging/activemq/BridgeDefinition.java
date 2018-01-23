@@ -77,6 +77,7 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             .setRequired(false)
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultBridgeInitialConnectAttempts()))
             .setAllowExpression(true)
+            .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
 
@@ -90,6 +91,7 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             .setMeasurementUnit(BYTES)
             .setRequired(false)
             .setAllowExpression(true)
+            .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
 
@@ -130,6 +132,7 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             .setRequired(false)
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultBridgeReconnectAttempts()))
             .setAllowExpression(true)
+            .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
 

@@ -27,14 +27,12 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.time.Period;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
  * Externalizer for a {@link Period}.
  * @author Paul Ferraro
  */
-@MetaInfServices(Externalizer.class)
 public class PeriodExternalizer implements Externalizer<Period> {
 
     @Override

@@ -132,15 +132,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName, descriptorData);
     }
 
-    /**
-     * Returns true if this session bean component type allows concurrent access to the component instances.
-     * <p/>
-     * For example: Singleton and stateful beans allow concurrent access to the bean instances, whereas stateless beans don't.
-     *
-     * @return
-     */
-    public abstract boolean allowsConcurrentAccess();
-
     public void addLocalBusinessInterfaceViews(final Collection<String> classNames) {
         for (final String viewClassName : classNames) {
             assertNoRemoteView(viewClassName);
@@ -172,10 +163,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     public EJBViewDescription addWebserviceEndpointView() {
         return registerView(getEJBClassName(), MethodIntf.SERVICE_ENDPOINT);
-    }
-
-    public EJBViewDescription addWebserviceEndpointView(final String wsEndpointViewName) {
-        return registerView(wsEndpointViewName, MethodIntf.SERVICE_ENDPOINT);
     }
 
     public void addRemoteBusinessInterfaceViews(final Collection<String> classNames) {

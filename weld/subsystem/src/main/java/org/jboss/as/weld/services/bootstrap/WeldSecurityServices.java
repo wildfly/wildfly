@@ -21,7 +21,10 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
+import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.util.function.Consumer;
 
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.weld.ServiceNames;
@@ -32,8 +35,12 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.security.SecurityContext;
+import org.jboss.security.SecurityContextAssociation;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 public class WeldSecurityServices implements Service<WeldSecurityServices>, SecurityServices {
 
@@ -58,7 +65,7 @@ public class WeldSecurityServices implements Service<WeldSecurityServices>, Secu
 
     @Override
     public Principal getPrincipal() {
-        SecurityDomain elytronDomain = SecurityDomain.getCurrent();
+        SecurityDomain elytronDomain = getCurrentSecurityDomain();
         if(elytronDomain != null) {
             return elytronDomain.getCurrentSecurityIdentity().getPrincipal();
         }
@@ -75,5 +82,76 @@ public class WeldSecurityServices implements Service<WeldSecurityServices>, Secu
 
     public InjectedValue<SimpleSecurityManager> getSecurityManagerValue() {
         return securityManagerValue;
+    }
+
+    @Override
+    public org.jboss.weld.security.spi.SecurityContext getSecurityContext() {
+        SecurityContext ctx;
+        if (WildFlySecurityManager.isChecking()) {
+            ctx = AccessController.doPrivileged((PrivilegedAction<SecurityContext>) () -> SecurityContextAssociation.getSecurityContext());
+        } else {
+            ctx = SecurityContextAssociation.getSecurityContext();
+        }
+        return new WeldSecurityContext(ctx);
+    }
+
+    @Override
+    public Consumer<Runnable> getSecurityContextAssociator(){
+        SecurityDomain elytronDomain = getCurrentSecurityDomain();
+        if(elytronDomain != null) {
+            // store the identity from the original thread and use it in callback which will be invoked in a different thread
+            SecurityIdentity storedSecurityIdentity = elytronDomain.getCurrentSecurityIdentity();
+            return (action) -> storedSecurityIdentity.runAs(action);
+        } else {
+            return SecurityServices.super.getSecurityContextAssociator();
+        }
+    }
+
+    private SecurityDomain getCurrentSecurityDomain() {
+        if (WildFlySecurityManager.isChecking()) {
+            return AccessController.doPrivileged((PrivilegedAction<SecurityDomain>) () -> SecurityDomain.getCurrent());
+        } else {
+            return SecurityDomain.getCurrent();
+        }
+    }
+
+    static class WeldSecurityContext implements org.jboss.weld.security.spi.SecurityContext, PrivilegedAction<Void> {
+
+        private final SecurityContext ctx;
+
+        WeldSecurityContext(SecurityContext ctx) {
+            this.ctx = ctx;
+        }
+
+        @Override
+        public void associate() {
+            if (WildFlySecurityManager.isChecking()) {
+                AccessController.doPrivileged((PrivilegedAction<Void>) () -> this.run());
+            } else {
+                run();
+            }
+        }
+
+        @Override
+        public void dissociate() {
+            if (WildFlySecurityManager.isChecking()) {
+                AccessController.doPrivileged((PrivilegedAction<Void>)() -> {
+                    SecurityContextAssociation.clearSecurityContext();
+                    return null;
+                });
+            } else {
+                SecurityContextAssociation.clearSecurityContext();
+            }
+        }
+
+        @Override
+        public void close() {
+        }
+
+        @Override
+        public Void run() {
+            SecurityContextAssociation.setSecurityContext(ctx);
+            return null;
+        }
     }
 }

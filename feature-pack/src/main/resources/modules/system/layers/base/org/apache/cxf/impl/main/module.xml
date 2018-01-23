@@ -39,7 +39,7 @@
         <artifact name="${org.apache.cxf:cxf-rt-frontend-jaxws}"/>
         <artifact name="${org.apache.cxf:cxf-rt-frontend-simple}"/>
         <artifact name="${org.apache.cxf:cxf-rt-management}"/>
-        <artifact name="${org.apache.cxf:cxf-rt-security?jandex}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-security}"/>
         <artifact name="${org.apache.cxf:cxf-rt-security-saml}"/>
         <artifact name="${org.apache.cxf:cxf-rt-transports-http}"/>
         <artifact name="${org.apache.cxf:cxf-rt-transports-http-hc}"/>

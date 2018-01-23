@@ -26,7 +26,8 @@ import java.io.IOException;
 import java.util.AbstractMap;
 
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.spi.ExternalizerTestUtil;
+import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * Unit test for {@link MapEntryExternalizer} externalizers
@@ -38,7 +39,7 @@ public class MapEntryExternalizerTestCase {
     public void test() throws ClassNotFoundException, IOException {
         Object key = "key";
         Object value = "value";
-        ExternalizerTestUtil.test(new MapEntryExternalizer.SimpleEntryExternalizer(), new AbstractMap.SimpleEntry<>(key, value));
-        ExternalizerTestUtil.test(new MapEntryExternalizer.SimpleImmutableEntryExternalizer(), new AbstractMap.SimpleImmutableEntry<>(key, value));
+        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_ENTRY.cast(AbstractMap.SimpleEntry.class)).test(new AbstractMap.SimpleEntry<>(key, value));
+        new ExternalizerTester<>(DefaultExternalizer.SIMPLE_IMMUTABLE_ENTRY.cast(AbstractMap.SimpleImmutableEntry.class)).test(new AbstractMap.SimpleImmutableEntry<>(key, value));
     }
 }

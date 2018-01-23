@@ -22,8 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.web.context;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -43,7 +42,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
@@ -58,18 +57,18 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class InvalidateConversationTestCase extends ClusterAbstractTestCase {
+public class InvalidateConversationTestCase extends AbstractClusteringTestCase {
 
     private static final String DEPLOYMENT_NAME = "conversation.war";
 
     @Deployment(name = DEPLOYMENT_1, managed = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
         return getDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deployment1() {
         return getDeployment();
     }
@@ -90,7 +89,7 @@ public class InvalidateConversationTestCase extends ClusterAbstractTestCase {
 
         String conversation = null;
 
-        establishTopology(baseURL1, NODES);
+        establishTopology(baseURL1, TWO_NODES);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(ConversationServlet.createURI(baseURL1)));

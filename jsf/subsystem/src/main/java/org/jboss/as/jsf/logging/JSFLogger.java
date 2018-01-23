@@ -100,4 +100,8 @@ public interface JSFLogger extends BasicLogger {
 
     @Message(id = 14, value = "Default JSF implementation slot '%s' is invalid")
     DeploymentUnitProcessingException invalidDefaultJSFImpl(String defaultJsfVersion);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15, value = "Failed to parse %s, phase listeners defined in this file will not be available")
+    void phaseListenersConfigParseFailed(VirtualFile facesConfig);
 }

@@ -1,0 +1,358 @@
+= Message Driven Beans Controlled Delivery
+
+There are three mechanisms in Wildfly that allow controlling if a
+specific MDB is actively receiving or not messages:
+
+* delivery active
+* delivery groups
+* clustered singleton
+
+We will see each one of them in the following sections.
+
+[[delivery-active]]
+== Delivery Active
+
+Delivery active is simply an attribute associated with the MDB that
+indicates if the MDB is receiving messages or not. If an MDB is not
+currently receiving messages, the messages will be saved in the queue or
+topic for later, according to the rules of the topic/queue.
+
+You can configure delivery active using xml or annotations, and you can
+change its value after deployment using the cli.
+
+* jboss-ejb3.xml:
+
+In the jboss-ejb3 xml file, configure the value of active as false to
+mark that the MDB will not be receiving messages as soon as it is
+deployed:
+
+[source, xml]
+----
+<?xml version="1.1" encoding="UTF-8"?>
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+               xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:d="urn:delivery-active:1.1"
+               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"                version="3.1"
+               impl-version="2.0">
+    <assembly-descriptor>
+        <d:delivery>
+            <ejb-name>HelloWorldQueueMDB</ejb-name>
+            <d:active>false</d:active>
+        </d:delivery>
+    </assembly-descriptor>
+</jboss:ejb-jar>
+----
+
+You can use a wildcard "*" in the place of ejb-name if you want to apply
+that active value to all MDBs in your application.
+
+* annotation
+
+Alternatively, you can use the org.jboss.ejb3.annotation.DeliveryActive
+annotation, as in the example below:
+
+[source, java]
+----
+@MessageDriven(name = "HelloWorldMDB", activationConfig = {
+ 
+ @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+ 
+ @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/HELLOWORLDMDBQueue"),
+ 
+ @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
+ 
+@DeliveryActive(false)
+ 
+public class HelloWorldMDB implements MessageListener {
+    public void onMessage(Message rcvMessage) {
+      // ...
+    }
+}
+----
+
+[[start-delivery-and-stop-delivery]]
+=== Start-delivery and Stop-Delivery
+
+These management operations dynamically change the value of the active
+attribute, enabling or disabling delivery for the MDB. at runtime To use
+them, connect to the Wildfly instance you want to manage, then enter the
+path of the MDB you want to manage delivery for:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /] cd deployment=jboss-helloworld-mdb.war/subsystem=ejb3/message-driven-bean=HelloWorldMDB
+ 
+[standalone@localhost:9990 message-driven-bean=HelloWorldMDB] :stop-delivery
+{"outcome" => "success"}
+ 
+[standalone@localhost:9990 message-driven-bean=HelloWorldMDB] :start-delivery
+{"outcome" => "success"}
+----
+
+[[delivery-groups]]
+== Delivery Groups
+
+Delivery groups provide a straightforward way to manage delivery for a
+group of MDBs. Every MDB belonging to a delivery group has delivery
+active if and only if that group is active, and has delivery inactive
+whenever the group is not active.
+
+You can add a delivery group to the ejb3 subsystem using either the
+subsystem xml or cli. Next, we will see examples of each case. In those
+examples we will add only a single delivery group, but keep in mind that
+you can add as many delivery groups as you need to a Wildfly instance.
+
+* the ejb3 subsystem xml (located in your configuration xml, such as
+standalone.xml)
+
+[source,xml]
+----
+<subsystem xmlns="urn:jboss:domain:ejb3:4.0">
+    ...
+    <mdb>
+        ...
+        <delivery-groups>
+            <delivery-group name="mdb-group-name" active="true"/>
+        </delivery-groups>
+    </mdb>
+    ...
+</subsystem>
+----
+
+The example above adds a delivery group named "mdb-group-name" (you can
+use whatever name suits you best as the group name). The "true" active
+attribute indicates that all MDBs belonging to that group will have
+delivery active right after deployment. If you mark that attribute as
+false, you are indicating that every MDB belonging to the group will not
+start receiving messages after deployment, a condition that will remain
+until the group becomes active.
+
+* jboss-cli
+
+You can add a mdb-delivery-group using the add command as below:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /] ./subsystem=ejb3/mdb-delivery-group=mdb-group-name:add
+{"outcome" => "success"}
+----
+
+[[reading-and-writing-the-delivery-state-of-a-delivery-group]]
+=== Reading and Writing the Delivery State of a Delivery Group
+
+You can check whether delivery is active for a group by reading the
+active attribute, which defaults to true:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /] ./subsystem=ejb3/mdb-delivery-group=mdb-group-name:read-attribute(name=active)
+{ "outcome" => "success", "result" => true }
+----
+
+To make the the delivery-group inactive, just write the active attribute
+with a false value:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /] ./subsystem=ejb3/mdb-delivery-group=mdb-group-name:write-attribute(name=active,value=false)
+{"outcome" => "success"}
+ 
+[standalone@localhost:9990 /] ./subsystem=ejb3/mdb-delivery-group=mdb-group-name:read-attribute(name=active)
+{ "outcome" => "success", "result" => false }
+----
+
+To make it active again, write the attribute with a true value:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /] ./subsystem=ejb3/mdb-delivery-group=mdb-group-name:write-attribute(name=active,value=true)
+{"outcome" => "success"}
+ 
+[standalone@localhost:9990 /] ./subsystem=ejb3/mdb-delivery-group=mdb-group-name:read-attribute(name=active)
+{ "outcome" => "success", "result" => true }
+----
+
+[[using-delivery-groups]]
+=== Using Delivery Groups
+
+To mark that an MDB belongs to a delivery-group, declare so in the
+jboss-ejb3.xml file:
+
+[source,xml]
+----
+<?xml version="1.1" encoding="UTF-8"?>
+ 
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+               xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:d="urn:delivery-active:1.1"
+               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+               version="3.1"
+               impl-version="2.0">
+    <assembly-descriptor>
+        <d:delivery>
+            <ejb-name>HelloWorldMDB</ejb-name>
+            <d:group>mdb-delivery-group</d:group>
+        </d:delivery>
+    </assembly-descriptor>
+</jboss:ejb-jar>
+----
+
+You can also use a wildcard to mark that all MDBs in your application
+belong to a delivery-group. In the following example, we add all MDBs in
+the application to group1, except for HelloWorldMDB, that is added to
+group2:
+
+[source,xml]
+----
+<?xml version="1.1" encoding="UTF-8"?>
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+               xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:d="urn:delivery-active:1.1"
+               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+               version="3.1"
+               impl-version="2.0">
+    <assembly-descriptor>
+        <d:delivery>
+            <ejb-name>*</ejb-name>
+            <d:group>group1</d:group>
+        </d:delivery>
+        <d:delivery>
+            <ejb-name>HelloWorldMDB</ejb-name>
+            <d:group>group2</d:group>
+        </d:delivery>
+    </assembly-descriptor>
+</jboss:ejb-jar>
+----
+
+Another option is to use org.jboss.ejb3.annotation.DeliveryGroup
+annotation on each MDB class belonging to a group:
+
+[source, java]
+----
+@MessageDriven(name = "HelloWorldQueueMDB", activationConfig = {
+ @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+ @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/HELLOWORLDMDBQueue"),
+ @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
+ 
+@DeliveryGroup("group2")
+ 
+public class HelloWorldMDB implements MessageListener {
+    ...
+}
+----
+
+A MDB cannot belong to more than one delivery group. Also, all the
+delivery-groups used by an application must be installed in the Wildfly
+server upon deployment, or the deployment will fail with a message
+stating that the delivery-group is missing.
+
+[[clustered-singleton-delivery]]
+== Clustered Singleton Delivery
+
+Delivery can be marked as singleton in a clustered environment. In this
+case, only one node in the cluster will have delivery active for that
+MDB, whereas in all other nodes, delivery will be inactive. This option
+can be used for applications that are deployed in all nodes of the
+cluster. Such applications will be active in all nodes of the cluster,
+except for the MDBs that are marked as clustered singleton. For those
+MDBs, only one cluster node will be processing their messages. In case
+that node stops, another node will have delivery activated, guaranteeing
+that there is always one node processing the messages. This node is what
+we call the MDB clustered singleton master node.
+
+Notice that applications using clustered singleton delivery can only be
+deployed in clustered Wildfly servers (i.e., servers that are using the
+ha configuration).
+
+To mark delivery as clustered singleton, you can use the jboss-ejb3.xml
+or the @ClusteredSingleton annotation:
+
+* jboss-ejb3.xml:
+
+[source,xml]
+----
+<?xml version="1.1" encoding="UTF-8"?>
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+               xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:c="urn:clustering:1.1"
+               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+               version="3.1"
+               impl-version="2.0">
+    <assembly-descriptor>
+        <c:clustering>
+            <ejb-name>HelloWorldMDB</ejb-name>
+            <c:clustered-singleton>true</c:clustered-singleton>
+        </c:clustering>
+    </assembly-descriptor>
+</jboss:ejb-jar>
+----
+
+As in the previous jboss-ejb3.xml examples, a wildcard can be used in
+the place of the ejb-name to indicate that all MDBs in the application
+are singleton clustered.
+
+* annotation
+
+You can use the org.jboss.ejb3.annotation.ClusteredSingleton annotation
+to mark an MDB as clustered singleton:
+
+[source, java]
+----
+@MessageDriven(name = "HelloWorldQueueMDB", activationConfig = {
+ @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+ @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/HELLOWORLDMDBQueue"),
+ @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
+ 
+@ClusteredSingleton
+ 
+public class HelloWorldMDB implements MessageListener { ... }
+----
+
+[[using-multiple-mdb-delivery-control-mechanisms]]
+== Using Multiple MDB Delivery Control Mechanisms
+
+The previous d eliver y control mechanisms can be used together in a
+single MDB. In this case, they work as a set of restrictions for
+delivery to be active in a MDB.
+
+For example, if an MDB belongs to a delivery group and is also a
+clustered singleton MDB, the delivery will be active for that MDB only
+if the delivery group is active in the cluster node that was elected as
+the singleton master.
+
+Also, if you use jboss-cli to stopDelivery on a MDB that belongs to a
+delivery group, the MDB will stop receiving messages in case that group
+was active. If that group was not active, the MDB will continue in the
+same, inactive state. But, once that group is active, the MDB will not
+receive messages, unless a startDelivery operation is executed to revert
+the previously exectued stopDelivery operation.
+
+Invoking stopDelivery on an MDB that is marked as clustered singleton
+will work in a similar way: no visible effect if the current node is not
+the clustered singleton master; but it will stop delivery of messages
+for that MDB if the current node is the clustered singleton master. If
+the current node is not the master, but eventually becomes so, the
+delivery of messages will not be active for that MDB, unless a
+startDelivery operation is invoked.
+
+In other words, when more than one delivery control mechanism is used in
+conjunction, they act as a set of restrictions that need all to be true
+in order for the MDB to receive messages:
+
+* *delivery-group + stop-delivery*: the delivery group needs to be
+active and the delivery needs to be started in order for that MDB to
+start receiving messages;
+
+* *delivery-group + clustered singleton*: the delivery group needs to be
+active and the current node needs to be the clustered singleton master
+node in order for that MDB to start receiving messages;
+
+* *delivery-group + clustered singleton + stop-delivery*: as above,
+delivery-group active, current node equals the clustered singleton
+master node, plus, start-delivery needs to be invoked on that MDB, only
+with these three factors being true the MDB will start receiving
+messages.

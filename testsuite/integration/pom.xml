@@ -44,6 +44,7 @@
         <enforcer.skip>true</enforcer.skip>
 
         <ts.elytron.cli>../../shared/enable-elytron.cli</ts.elytron.cli>
+        <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
     </properties>
 
     <profiles>
@@ -262,8 +263,8 @@
                             <scripts>
                                 <script>${ts.elytron.cli}</script>
                             </scripts>
-                            <jboss-home>${project.build.directory}/jbossas</jboss-home>
-                            <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                            <jboss-home>${wildfly.dir}</jboss-home>
+                            <stdout>none</stdout>
                             <java-opts>${modular.jdk.args}</java-opts>
                             <system-properties>
                                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
@@ -294,27 +295,12 @@
                         <goals><goal>copy-resources</goal></goals>
                         <inherited>true</inherited>
                         <configuration>
-                            <outputDirectory>${basedir}/target/jbossas/standalone/configuration</outputDirectory>
+                            <outputDirectory>${basedir}/target/wildfly/standalone/configuration</outputDirectory>
                             <overwrite>true</overwrite>
                             <resources>
                                 <resource>
                                     <directory>../../shared/src/main/resources</directory>
                                     <includes><include>*.properties</include></includes>
-                                </resource>
-                                <resource>
-                                    <!-- Add the XTS config to the standalone/config directory, so it will be processed as well -->
-                                    <directory>${basedir}/target/jbossas/docs/examples/configs</directory>
-                                    <includes>
-                                         <include>standalone-xts.xml</include>
-                                         <include>standalone-rts.xml</include>
-                                         <include>standalone-ec2-*.xml</include>
-                                         <include>standalone-gossip-*.xml</include>
-                                    </includes>
-                                </resource>
-                                <resource>
-                                    <!-- Add the Picketlink config to the standalone/config directory, so it will be processed as well -->
-                                    <directory>${basedir}/target/jbossas/docs/examples/configs</directory>
-                                    <includes><include>standalone-picketlink.xml</include></includes>
                                 </resource>
                             </resources>
                         </configuration>
@@ -337,9 +323,7 @@
                     <!-- Prevent test and server output appearing in console. -->
                     <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                     <enableAssertions>true</enableAssertions>
-                    <!--<basedir>${jbossas.ts.integ.dir}</basedir>  <!- - "The base directory of the project being tested." Sets ${basedir}. -->
-                    <workingDirectory>${basedir}/target/workdir</workingDirectory> <!-- Work in submodule's own dir. -->
-
+                 
                     <!-- System properties to forked surefire JVM which runs clients. -->
                     <argLine>${surefire.system.args} ${surefire.memory.args} ${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
 
@@ -364,10 +348,18 @@
                             Used in arquillian.xml - arguments for all JBoss AS instances.
                             System properties are duplicated here until ARQ-647 is implemented.
                         -->
-                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs}</server.jvm.args>
+                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
+                        <cli.jvm.args>${modular.jdk.args} -Dmaven.repo.local=${settings.localRepository}</cli.jvm.args>
                         <modular.jdk.args>${modular.jdk.args}</modular.jdk.args>
                     </systemPropertyVariables>
 
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <configuration>
+                    <skip>${skip.antrun}</skip>
                 </configuration>
             </plugin>
         </plugins>

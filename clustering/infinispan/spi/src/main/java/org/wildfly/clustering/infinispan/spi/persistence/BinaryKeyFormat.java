@@ -24,15 +24,12 @@ package org.wildfly.clustering.infinispan.spi.persistence;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
 import java.io.DataInputStream;
-import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 
-import org.wildfly.common.function.ExceptionBiConsumer;
-import org.wildfly.common.function.ExceptionFunction;
+import org.wildfly.clustering.marshalling.spi.Serializer;
 
 /**
  * {@link KeyFormat} implementation for binary keys.
@@ -41,13 +38,11 @@ import org.wildfly.common.function.ExceptionFunction;
 public class BinaryKeyFormat<K> implements KeyFormat<K> {
 
     private final Class<K> targetClass;
-    private final ExceptionFunction<DataInput, K, IOException> reader;
-    private final ExceptionBiConsumer<DataOutput, K, IOException> writer;
+    private final Serializer<K> serializer;
 
-    public BinaryKeyFormat(Class<K> targetClass, ExceptionFunction<DataInput, K, IOException> reader, ExceptionBiConsumer<DataOutput, K, IOException> writer) {
+    public BinaryKeyFormat(Class<K> targetClass, Serializer<K> serializer) {
         this.targetClass = targetClass;
-        this.reader = reader;
-        this.writer = writer;
+        this.serializer = serializer;
     }
 
     @Override
@@ -57,8 +52,9 @@ public class BinaryKeyFormat<K> implements KeyFormat<K> {
 
     @Override
     public K parse(String value) {
-        try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(Base64.getDecoder().decode(value)))) {
-            return this.reader.apply(input);
+        byte[] bytes = Base64.getDecoder().decode(value);
+        try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(bytes))) {
+            return this.serializer.read(input);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -68,7 +64,7 @@ public class BinaryKeyFormat<K> implements KeyFormat<K> {
     public String format(K key) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (DataOutputStream output = new DataOutputStream(bytes)) {
-            this.writer.accept(output, key);
+            this.serializer.write(output, key);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }

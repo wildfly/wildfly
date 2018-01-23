@@ -52,7 +52,6 @@ import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptor
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.StatelessRemoteViewInstanceFactory;
 import org.jboss.as.ejb3.component.session.StatelessWriteReplaceInterceptor;
-import org.jboss.as.ejb3.concurrency.ContainerManagedConcurrencyInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.ejb3.tx.EjbBMTInterceptor;
@@ -196,11 +195,6 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     public void initOnStartup() {
         this.initOnStartup = true;
 
-    }
-
-    @Override
-    public boolean allowsConcurrentAccess() {
-        return true;
     }
 
     @Override

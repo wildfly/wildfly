@@ -15,8 +15,8 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.activemq.artemis.core.security.CheckType;
 import org.apache.activemq.artemis.core.security.Role;
@@ -69,7 +69,13 @@ public class ElytronSecurityManager implements ActiveMQSecurityManager {
             return true;
 
         final SecurityIdentity identity = this.authenticate(username, password);
-        final Set<String> filteredRoles = roles.stream().filter(checkType::hasRole).map(Role::getName).collect(Collectors.toSet());
+        final Set<String> filteredRoles = new HashSet<>();
+        for (Role role : roles) {
+            if (checkType.hasRole(role)) {
+                String name = role.getName();
+                filteredRoles.add(name);
+            }
+        }
         return identity.getRoles().containsAny(filteredRoles);
     }
 

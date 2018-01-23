@@ -22,12 +22,10 @@
 
 package org.wildfly.clustering.web.infinispan;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.stream.IntStream;
 
-import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
-import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyMapperTester;
 import org.wildfly.clustering.web.infinispan.session.SessionAccessMetaDataKey;
 import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKey;
 import org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesKey;
@@ -42,53 +40,17 @@ import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessionsKey;
 public class KeyMapperTestCase {
     @Test
     public void test() {
-        TwoWayKey2StringMapper mapper = new KeyMapper();
-        Assert.assertTrue(mapper.isSupportedType(SessionCreationMetaDataKey.class));
-        Assert.assertTrue(mapper.isSupportedType(SessionAccessMetaDataKey.class));
-        Assert.assertTrue(mapper.isSupportedType(SessionAttributesKey.class));
-        Assert.assertTrue(mapper.isSupportedType(SessionAttributeNamesKey.class));
-        Assert.assertTrue(mapper.isSupportedType(SessionAttributeKey.class));
-        Assert.assertTrue(mapper.isSupportedType(AuthenticationKey.class));
-        Assert.assertTrue(mapper.isSupportedType(CoarseSessionsKey.class));
+        KeyMapperTester tester = new KeyMapperTester(new KeyMapper());
 
-        Set<String> formatted = new HashSet<>();
         String id = "ABC123";
 
-        SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
-        String formattedCreationMetaDataKey = mapper.getStringMapping(creationMetaDataKey);
-        Assert.assertEquals(creationMetaDataKey, mapper.getKeyMapping(formattedCreationMetaDataKey));
-        Assert.assertTrue(formatted.add(formattedCreationMetaDataKey));
+        tester.test(new SessionCreationMetaDataKey(id));
+        tester.test(new SessionAccessMetaDataKey(id));
+        tester.test(new SessionAttributesKey(id));
+        tester.test(new SessionAttributeNamesKey(id));
+        IntStream.range(0, 10).mapToObj(i -> new SessionAttributeKey(id, i)).forEach(key -> tester.test(key));
 
-        SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);
-        String formattedAccessMetaDataKey = mapper.getStringMapping(accessMetaDataKey);
-        Assert.assertEquals(accessMetaDataKey, mapper.getKeyMapping(formattedAccessMetaDataKey));
-        Assert.assertTrue(formatted.add(formattedAccessMetaDataKey));
-
-        SessionAttributesKey attributesKey = new SessionAttributesKey(id);
-        String formattedAttributesKey = mapper.getStringMapping(attributesKey);
-        Assert.assertEquals(attributesKey, mapper.getKeyMapping(formattedAttributesKey));
-        Assert.assertTrue(formatted.add(formattedAttributesKey));
-
-        SessionAttributeNamesKey attributeNamesKey = new SessionAttributeNamesKey(id);
-        String formattedAttributeNamesKey = mapper.getStringMapping(attributeNamesKey);
-        Assert.assertEquals(attributeNamesKey, mapper.getKeyMapping(formattedAttributeNamesKey));
-        Assert.assertTrue(formatted.add(formattedAttributeNamesKey));
-
-        for (int i = 0; i < 10; ++i) {
-            SessionAttributeKey attributeKey = new SessionAttributeKey(id, i);
-            String formattedAttributeKey = mapper.getStringMapping(attributeKey);
-            Assert.assertEquals(attributeKey, mapper.getKeyMapping(formattedAttributeKey));
-            Assert.assertTrue(formatted.add(formattedAttributeKey));
-        }
-
-        AuthenticationKey authKey = new AuthenticationKey(id);
-        String formattedAuthKey = mapper.getStringMapping(authKey);
-        Assert.assertEquals(authKey, mapper.getKeyMapping(formattedAuthKey));
-        Assert.assertTrue(formatted.add(formattedAuthKey));
-
-        CoarseSessionsKey sessionsKey = new CoarseSessionsKey(id);
-        String formattedSessionsKey = mapper.getStringMapping(sessionsKey);
-        Assert.assertEquals(sessionsKey, mapper.getKeyMapping(formattedSessionsKey));
-        Assert.assertTrue(formatted.add(formattedSessionsKey));
+        tester.test(new AuthenticationKey(id));
+        tester.test(new CoarseSessionsKey(id));
     }
 }

@@ -44,7 +44,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.xpc.bean.StatefulBean;
 import org.jboss.as.test.clustering.cluster.ejb.xpc.servlet.StatefulServlet;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
@@ -60,11 +60,10 @@ import org.junit.runner.RunWith;
 /**
  * @author Paul Ferraro
  * @author Scott Marlow
- * @version Oct 2012
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
+public class StatefulWithXPCFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final String persistence_xml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
@@ -83,13 +82,13 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
                     "</persistence>";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deployment1() {
         return createDeployment();
     }
@@ -122,7 +121,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
     public void testSecondLevelCache(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, InterruptedException, URISyntaxException {
+            throws IOException, URISyntaxException {
 
         URI xpc1_create_url = StatefulServlet.createEmployeeURI(baseURL1);
         URI xpc2_create_url = StatefulServlet.createEmployeeURI(baseURL2);
@@ -202,7 +201,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         URI xpc2_getdestroy_url = StatefulServlet.destroyURI(baseURL2);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            stop(CONTAINER_2);
+            stop(NODE_2);
 
             // extended persistence context is available on node1
 
@@ -217,7 +216,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             employeeName = executeUrlWithAnswer(client, xpc1_getempsecond_url, "1. xpc on node1, node1 should be able to read entity from second bean on node1");
             assertEquals(employeeName, "Tom Brady");
 
-            start(CONTAINER_2);
+            start(NODE_2);
 
             log.trace(new Date() + "2. started node2 + deployed, about to read entity on node1");
 
@@ -227,7 +226,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(employeeName, "Tom Brady");
 
             // failover to deployment2
-            stop(CONTAINER_1); // failover #1 to node 2
+            stop(NODE_1); // failover #1 to node 2
 
             log.trace(new Date() + "3. stopped node1 to force failover, about to read entity on node2");
 

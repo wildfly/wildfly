@@ -55,7 +55,7 @@ public class WeldJspExpressionFactoryWrapper implements ExpressionFactoryWrapper
 
         // register compositeELResolver with JSP
         jspAppContext.addELResolver(beanManager.getELResolver());
-        jspAppContext.addELContextListener(Reflections.<ELContextListener>newInstance("org.jboss.weld.el.WeldELContextListener", getClass().getClassLoader()));
+        jspAppContext.addELContextListener(Reflections.<ELContextListener>newInstance("org.jboss.weld.module.web.el.WeldELContextListener", getClass().getClassLoader()));
 
         return beanManager.wrapExpressionFactory(expressionFactory);
     }

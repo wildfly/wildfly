@@ -98,7 +98,6 @@
                                 <id>ts.config-as.copy-rbac-users</id>
                                 <phase>generate-test-resources</phase>
                                 <goals><goal>copy-resources</goal></goals>
-                                <inherited>true</inherited>
                                 <configuration>
                                     <outputDirectory>${basedir}/target/jbossas/standalone/configuration</outputDirectory>
                                     <overwrite>true</overwrite>
@@ -134,7 +133,6 @@
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>

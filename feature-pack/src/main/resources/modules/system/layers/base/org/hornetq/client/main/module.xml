@@ -40,5 +40,6 @@
         <module name="io.netty"/>
         <module name="org.jboss.logging"/>
         <module name="org.jgroups"/>
+        <module name="org.wildfly.naming-client" services="import" />
     </dependencies>
 </module>

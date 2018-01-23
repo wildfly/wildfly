@@ -1,0 +1,365 @@
+= OnBehalfOf WS-Trust Scenario
+
+The OnBehalfOf feature is used in scenarios that use the proxy pattern.
+In such scenarios, the client cannot access the STS directly, instead it
+communicates through a proxy gateway. The proxy gateway authenticates
+the caller and puts information about the caller into the OnBehalfOf
+element of the RequestSecurityToken (RST) sent to the real STS for
+processing. The resulting token contains only claims related to the
+client of the proxy, making the proxy completely transparent to the
+receiver of the issued token.
+
+OnBehalfOf is nothing more than a new sub-element in the RST. It
+provides additional information about the original caller when a token
+is negotiated with the STS. The OnBehalfOf element usually takes the
+form of a token with identity claims such as name, role, and
+authorization code, for the client to access the service.
+
+The OnBehalfOf scenario is an extension of
+link:#src-557281_OnBehalfOfWS-TrustScenario-ABasicWS-TrustScenario[the
+basic WS-Trust scenario]. In this example the OnBehalfOf service calls
+the ws-service on behalf of a user. There are only a couple of additions
+to the basic scenario's code. An OnBehalfOf web service provider and
+callback handler have been added. The OnBehalfOf web services' WSDL
+imposes the same security policies as the ws-provider.
+UsernameTokenCallbackHandler is a utility shared with ActAs. It
+generates the content for the OnBehalfOf element. And lastly there are
+code additions in the STS that both OnBehalfOf and ActAs share in
+common.
+
+Infor here [
+http://coheigea.blogspot.it/2012/01/apache-cxf-251-sts-updates.html[Open
+Source Security: Apache CXF 2.5.1 STS updates] ]
+
+[[web-service-provider]]
+== Web service provider
+
+This section examines the web service elements from the basic WS-Trust
+scenario that have been changed to address the needs of the OnBehalfOf
+example. The components are.
+
+* web service provider's WSDL
+* web service provider's Interface and Implementation classes.
+* OnBehalfOfCallbackHandler class
+
+[[web-service-provider-wsdl]]
+=== Web service provider WSDL
+
+The OnBehalfOf web service provider's WSDL is a clone of the
+ws-provider's WSDL. The wsp:Policy section is the same. There are
+changes to the service endpoint, targetNamespace, portType, binding
+name, and service.
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="http://www.jboss.org/jbossws/ws-extensions/onbehalfofwssecuritypolicy" name="OnBehalfOfService"
+             xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/onbehalfofwssecuritypolicy"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:wsp="http://www.w3.org/ns/ws-policy"
+             xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
+             xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+             xmlns:wsaws="http://www.w3.org/2005/08/addressing"
+             xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702"
+             xmlns:t="http://docs.oasis-open.org/ws-sx/ws-trust/200512">
+    <types>
+        <xsd:schema>
+            <xsd:import namespace="http://www.jboss.org/jbossws/ws-extensions/onbehalfofwssecuritypolicy"
+                  schemaLocation="OnBehalfOfService_schema1.xsd"/>
+        </xsd:schema>
+    </types>
+    <message name="sayHello">
+        <part name="parameters" element="tns:sayHello"/>
+    </message>
+    <message name="sayHelloResponse">
+        <part name="parameters" element="tns:sayHelloResponse"/>
+    </message>
+    <portType name="OnBehalfOfServiceIface">
+        <operation name="sayHello">
+            <input message="tns:sayHello"/>
+            <output message="tns:sayHelloResponse"/>
+        </operation>
+    </portType>
+    <binding name="OnBehalfOfServicePortBinding" type="tns:OnBehalfOfServiceIface">
+        <wsp:PolicyReference URI="#AsymmetricSAML2Policy" />
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+        <operation name="sayHello">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:body use="literal"/>
+                <wsp:PolicyReference URI="#Input_Policy" />
+            </input>
+            <output>
+                <soap:body use="literal"/>
+                <wsp:PolicyReference URI="#Output_Policy" />
+            </output>
+        </operation>
+    </binding>
+    <service name="OnBehalfOfService">
+        <port name="OnBehalfOfServicePort" binding="tns:OnBehalfOfServicePortBinding">
+            <soap:address location="http://@jboss.bind.address@:8080/jaxws-samples-wsse-policy-trust-onbehalfof/OnBehalfOfService"/>
+        </port>
+    </service>
+</definitions>
+----
+
+[[web-service-interface]]
+=== Web Service Interface
+
+The web service provider interface class, OnBehalfOfServiceIface, is a
+simple web service definition.
+
+[source, java]
+----
+package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.onbehalfof;
+ 
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+ 
+@WebService
+(
+   targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/onbehalfofwssecuritypolicy"
+)
+public interface OnBehalfOfServiceIface
+{
+   @WebMethod
+   String sayHello();
+}
+----
+
+[[web-service-implementation]]
+=== Web Service Implementation
+
+The web service provider implementation class, OnBehalfOfServiceImpl, is
+a simple POJO. It uses the standard WebService annotation to define the
+service endpoint and two Apache WSS4J annotations, EndpointProperties
+and EndpointProperty used for configuring the endpoint for the CXF
+runtime. The WSS4J configuration information provided is for WSS4J's
+Crypto Merlin implementation.
+
+OnBehalfOfServiceImpl is calling the ServiceImpl acting on behalf of the
+user. Method setupService performs the requisite configuration setup.
+
+[source, java]
+----
+package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.onbehalfof;
+ 
+import org.apache.cxf.Bus;
+import org.apache.cxf.BusFactory;
+import org.apache.cxf.annotations.EndpointProperties;
+import org.apache.cxf.annotations.EndpointProperty;
+import org.apache.cxf.ws.security.SecurityConstants;
+import org.apache.cxf.ws.security.trust.STSClient;
+import org.jboss.test.ws.jaxws.samples.wsse.policy.trust.service.ServiceIface;
+import org.jboss.test.ws.jaxws.samples.wsse.policy.trust.shared.WSTrustAppUtils;
+ 
+import javax.jws.WebService;
+import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.Service;
+import java.net.*;
+import java.util.Map;
+ 
+@WebService
+(
+   portName = "OnBehalfOfServicePort",
+   serviceName = "OnBehalfOfService",
+   wsdlLocation = "WEB-INF/wsdl/OnBehalfOfService.wsdl",
+   targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/onbehalfofwssecuritypolicy",
+   endpointInterface = "org.jboss.test.ws.jaxws.samples.wsse.policy.trust.onbehalfof.OnBehalfOfServiceIface"
+)
+ 
+@EndpointProperties(value = {
+      @EndpointProperty(key = "ws-security.signature.username", value = "myactaskey"),
+      @EndpointProperty(key = "ws-security.signature.properties", value =  "actasKeystore.properties"),
+      @EndpointProperty(key = "ws-security.encryption.properties", value = "actasKeystore.properties"),
+      @EndpointProperty(key = "ws-security.callback-handler", value = "org.jboss.test.ws.jaxws.samples.wsse.policy.trust.onbehalfof.OnBehalfOfCallbackHandler")
+})
+ 
+public class OnBehalfOfServiceImpl implements OnBehalfOfServiceIface
+{
+   public String sayHello() {
+      try {
+ 
+         ServiceIface proxy = setupService();
+         return "OnBehalfOf " + proxy.sayHello();
+ 
+      } catch (MalformedURLException e) {
+         e.printStackTrace();
+      }
+      return null;
+   }
+ 
+   /**
+    *
+    * @return
+    * @throws MalformedURLException
+    */
+   private  ServiceIface setupService()throws MalformedURLException {
+      ServiceIface proxy = null;
+      Bus bus = BusFactory.newInstance().createBus();
+ 
+      try {
+         BusFactory.setThreadDefaultBus(bus);
+ 
+         final String serviceURL = "http://" + WSTrustAppUtils.getServerHost() + ":8080/jaxws-samples-wsse-policy-trust/SecurityService";
+         final QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "SecurityService");
+         final URL wsdlURL = new URL(serviceURL + "?wsdl");
+         Service service = Service.create(wsdlURL, serviceName);
+         proxy = (ServiceIface) service.getPort(ServiceIface.class);
+ 
+         Map<String, Object> ctx = ((BindingProvider) proxy).getRequestContext();
+         ctx.put(SecurityConstants.CALLBACK_HANDLER, new OnBehalfOfCallbackHandler());
+ 
+         ctx.put(SecurityConstants.SIGNATURE_PROPERTIES,
+            Thread.currentThread().getContextClassLoader().getResource(
+            "actasKeystore.properties" ));
+         ctx.put(SecurityConstants.SIGNATURE_USERNAME, "myactaskey" );
+         ctx.put(SecurityConstants.ENCRYPT_PROPERTIES,
+            Thread.currentThread().getContextClassLoader().getResource(
+            "../../META-INF/clientKeystore.properties" ));
+         ctx.put(SecurityConstants.ENCRYPT_USERNAME, "myservicekey");
+ 
+         STSClient stsClient = new STSClient(bus);
+         Map<String, Object> props = stsClient.getProperties();
+         props.put(SecurityConstants.USERNAME, "bob");
+         props.put(SecurityConstants.ENCRYPT_USERNAME, "mystskey");
+         props.put(SecurityConstants.STS_TOKEN_USERNAME, "myactaskey" );
+         props.put(SecurityConstants.STS_TOKEN_PROPERTIES,
+            Thread.currentThread().getContextClassLoader().getResource(
+            "actasKeystore.properties" ));
+         props.put(SecurityConstants.STS_TOKEN_USE_CERT_FOR_KEYINFO, "true");
+ 
+         ctx.put(SecurityConstants.STS_CLIENT, stsClient);
+ 
+      } finally {
+         bus.shutdown(true);
+      }
+ 
+      return proxy;
+   }
+ 
+}
+----
+
+[[onbehalfofcallbackhandler]]
+=== OnBehalfOfCallbackHandler
+
+OnBehalfOfCallbackHandler is a callback handler for the WSS4J Crypto
+API. It is used to obtain the password for the private key in the
+keystore. This class enables CXF to retrieve the password of the user
+name to use for the message signature. This class has been revised to
+return the passwords for this service, myactaskey and the "OnBehalfOf"
+user, alice.
+
+[source, java]
+----
+ package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.onbehalfof;
+ 
+import org.jboss.wsf.stack.cxf.extensions.security.PasswordCallbackHandler;
+import java.util.HashMap;
+import java.util.Map;
+ 
+public class OnBehalfOfCallbackHandler extends PasswordCallbackHandler {
+ 
+   public OnBehalfOfCallbackHandler()
+   {
+      super(getInitMap());
+   }
+ 
+   private static Map<String, String> getInitMap()
+   {
+      Map<String, String> passwords = new HashMap<String, String>();
+      passwords.put("myactaskey", "aspass");
+      passwords.put("alice", "clarinet");
+      passwords.put("bob", "trombone");
+      return passwords;
+   }
+ 
+}
+----
+
+[[web-service-requester]]
+== Web service requester
+
+This section examines the ws-requester elements from the basic WS-Trust
+scenario that have been changed to address the needs of the OnBehalfOf
+example. The component is
+
+* OnBehalfOf web service requester implementation class
+
+[[web-service-requester-implementation]]
+=== Web service requester Implementation
+
+The OnBehalfOf ws-requester, the client, uses standard procedures for
+creating a reference to the web service in the first four lines. To
+address the endpoint security requirements, the web service's "Request
+Context" is configured via the BindingProvider. Information needed in
+the message generation is provided through it. The OnBehalfOf user,
+alice, is declared in this section and the callbackHandler,
+UsernameTokenCallbackHandler is provided to the STSClient for generation
+of the contents for the OnBehalfOf message element. In this example a
+STSClient object is created and provided to the proxy's request context.
+The alternative is to provide keys tagged with the ".it" suffix as was
+done in
+link:#src-557281_OnBehalfOfWS-TrustScenario-WebservicerequesterImplementation[the
+Basic Scenario client]. The use of OnBehalfOf is configured by the
+method call stsClient.setOnBehalfOf. The alternative is to use the key
+SecurityConstants.STS_TOKEN_ON_BEHALF_OF and a value in the props map.
+
+[source, java]
+----
+final QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/onbehalfofwssecuritypolicy", "OnBehalfOfService");
+final URL wsdlURL = new URL(serviceURL + "?wsdl");
+Service service = Service.create(wsdlURL, serviceName);
+OnBehalfOfServiceIface proxy = (OnBehalfOfServiceIface) service.getPort(OnBehalfOfServiceIface.class);
+ 
+ 
+Bus bus = BusFactory.newInstance().createBus();
+try {
+ 
+    BusFactory.setThreadDefaultBus(bus);
+ 
+    Map<String, Object> ctx = proxy.getRequestContext();
+ 
+    ctx.put(SecurityConstants.CALLBACK_HANDLER, new ClientCallbackHandler());
+    ctx.put(SecurityConstants.ENCRYPT_PROPERTIES,
+        Thread.currentThread().getContextClassLoader().getResource(
+        "META-INF/clientKeystore.properties"));
+    ctx.put(SecurityConstants.ENCRYPT_USERNAME, "myactaskey");
+    ctx.put(SecurityConstants.SIGNATURE_PROPERTIES,
+        Thread.currentThread().getContextClassLoader().getResource(
+        "META-INF/clientKeystore.properties"));
+    ctx.put(SecurityConstants.SIGNATURE_USERNAME, "myclientkey");
+ 
+    // user and password OnBehalfOf user
+    // UsernameTokenCallbackHandler will extract this information when called
+    ctx.put(SecurityConstants.USERNAME,"alice");
+    ctx.put(SecurityConstants.PASSWORD, "clarinet");
+ 
+    STSClient stsClient = new STSClient(bus);
+ 
+    // Providing the STSClient the mechanism to create the claims contents for OnBehalfOf
+    stsClient.setOnBehalfOf(new UsernameTokenCallbackHandler());
+ 
+    Map<String, Object> props = stsClient.getProperties();
+    props.put(SecurityConstants.CALLBACK_HANDLER, new ClientCallbackHandler());
+    props.put(SecurityConstants.ENCRYPT_PROPERTIES,
+        Thread.currentThread().getContextClassLoader().getResource(
+        "META-INF/clientKeystore.properties"));
+    props.put(SecurityConstants.ENCRYPT_USERNAME, "mystskey");
+    props.put(SecurityConstants.STS_TOKEN_USERNAME, "myclientkey");
+    props.put(SecurityConstants.STS_TOKEN_PROPERTIES,
+        Thread.currentThread().getContextClassLoader().getResource(
+        "META-INF/clientKeystore.properties"));
+    props.put(SecurityConstants.STS_TOKEN_USE_CERT_FOR_KEYINFO, "true");
+ 
+    ctx.put(SecurityConstants.STS_CLIENT, stsClient);
+ 
+} finally {
+    bus.shutdown(true);
+}
+proxy.sayHello();
+----

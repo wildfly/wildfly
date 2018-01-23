@@ -8,10 +8,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -19,6 +22,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -124,12 +128,29 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
                 skipReverseControllerCheck();
 
         KernelServices services = builder.build();
+        KernelServices legacyServices = services.getLegacyServices(model);
 
         Assert.assertTrue(services.isSuccessfulBoot());
-        Assert.assertTrue(services.getLegacyServices(model).isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         // check that both versions of the legacy model are the same and valid
         checkSubsystemModelTransformation(services, model, null);
+
+        PathAddress ejb3PathAddress = PathAddress.pathAddress(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
+        Map<String, String> attributeRenames = new HashMap<>();
+        attributeRenames.put(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.getName(), EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.getName());
+        attributeRenames.put(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE.getName(), EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.getName());
+
+        for (Map.Entry<String, String> renames : attributeRenames.entrySet()){
+            ModelNode operation = Util.getWriteAttributeOperation(ejb3PathAddress, renames.getKey(), "test");
+            testAttributeRenameTransform(model, services, legacyServices, operation, renames.getKey(), renames.getValue());
+
+            operation = Util.getReadAttributeOperation(ejb3PathAddress, renames.getKey());
+            testAttributeRenameTransform(model, services, legacyServices, operation, renames.getKey(), renames.getValue());
+
+            operation = Util.getUndefineAttributeOperation(ejb3PathAddress, renames.getKey());
+            testAttributeRenameTransform(model, services, legacyServices, operation, renames.getKey(), renames.getValue());
+        }
     }
 
     @Test
@@ -440,5 +461,20 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
                 ModelNode result = ModelTestUtils.checkOutcome(kernelServices.executeOperation(add)).get(RESULT);
             }
         }
+    }
+
+    private void testAttributeRenameTransform(ModelVersion modelVersion, KernelServices mainServices, KernelServices legacyServices, ModelNode operation, String attributeName, String legacyAttributeName) {
+        OperationTransformer.TransformedOperation op = mainServices.executeInMainAndGetTheTransformedOperation(operation, modelVersion);
+        if (op.getTransformedOperation() != null) {
+            ModelTestUtils.checkOutcome(mainServices.getLegacyServices(modelVersion).executeOperation(op.getTransformedOperation()));
+        }
+
+        ModelNode mainModel = mainServices.readWholeModel();
+        ModelNode legacyModel = legacyServices.readWholeModel();
+
+        ModelNode mainEjbSubsystem = mainModel.get(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
+        ModelNode legacyEjbSubsystem = legacyModel.get(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
+
+        Assert.assertEquals(mainEjbSubsystem.get(attributeName), legacyEjbSubsystem.get(legacyAttributeName));
     }
 }

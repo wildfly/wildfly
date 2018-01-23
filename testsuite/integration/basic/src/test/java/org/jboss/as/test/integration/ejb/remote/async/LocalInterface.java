@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.ejb.remote.async;
 
 import javax.ejb.Local;
+import java.util.concurrent.Future;
 
 /**
  * @author Stuart Douglas
@@ -29,5 +30,7 @@ import javax.ejb.Local;
 @Local
 public interface LocalInterface {
     void passByReference(String[] value);
+
+    Future<Void> alwaysFail() throws AppException;
 
 }

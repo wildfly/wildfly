@@ -33,6 +33,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.api.management.ConnectionManager;
+import org.jboss.jca.core.api.management.Connector;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.msc.service.ServiceController;
 
@@ -61,12 +62,14 @@ public class EnlistmentTraceAttributeWriteHandler extends AbstractWriteAttribute
             final ManagementRepository repository = (ManagementRepository) managementRepoService.getValue();
             if (repository.getConnectors() != null) {
                 List<ConnectionManager> handback = new LinkedList<>();
-                repository.getConnectors().stream().forEach(connector -> connector.getConnectionManagers().stream().
-                        filter(cm -> jndiName.equalsIgnoreCase(cm.getUniqueId()))
-                        .forEach(cm -> {
+                for (Connector connector : repository.getConnectors()) {
+                    for (ConnectionManager cm : connector.getConnectionManagers()) {
+                        if (jndiName.equalsIgnoreCase(cm.getUniqueId())) {
                             cm.setEnlistmentTrace(boolValue);
                             handback.add(cm);
-                        }));
+                        }
+                    }
+                }
                 handbackHolder.setHandback(handback);
 
             }
@@ -85,7 +88,9 @@ public class EnlistmentTraceAttributeWriteHandler extends AbstractWriteAttribute
 
         Boolean value = Constants.ENLISTMENT_TRACE.resolveValue(context, valueToRestore).asBoolean();
         if (handback != null) {
-            handback.stream().forEach(ds -> ds.setEnlistmentTrace(value));
+            for (ConnectionManager ds : handback) {
+                ds.setEnlistmentTrace(value);
+            }
         }
     }
 

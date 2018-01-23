@@ -29,8 +29,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.function.LongFunction;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.LongExternalizer;
 
 /**
@@ -39,35 +37,13 @@ import org.wildfly.clustering.marshalling.spi.LongExternalizer;
  */
 public class DateExternalizer<D extends Date> extends LongExternalizer<D> {
 
-    DateExternalizer(LongFunction<D> factory, Class<D> targetClass) {
+    public DateExternalizer(Class<D> targetClass, LongFunction<D> factory) {
         super(targetClass, factory, Date::getTime);
     }
 
-    @MetaInfServices(Externalizer.class)
-    public static class UtilDateExternalizer extends DateExternalizer<Date> {
-        public UtilDateExternalizer() {
-            super(Date::new, Date.class);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class SqlDateExternalizer extends DateExternalizer<java.sql.Date> {
-        public SqlDateExternalizer() {
-            super(java.sql.Date::new, java.sql.Date.class);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class SqlTimeExternalizer extends DateExternalizer<java.sql.Time> {
-        public SqlTimeExternalizer() {
-            super(java.sql.Time::new, java.sql.Time.class);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class SqlTimestampExternalizer extends DateExternalizer<java.sql.Timestamp> {
+    public static class SqlTimestampExternalizer extends DateExternalizer<Timestamp> {
         public SqlTimestampExternalizer() {
-            super(java.sql.Timestamp::new, java.sql.Timestamp.class);
+            super(Timestamp.class, Timestamp::new);
         }
 
         @Override

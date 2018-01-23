@@ -1,0 +1,1160 @@
+= The native management API
+
+A standalone WildFly process, or a managed domain Domain Controller or
+slave Host Controller process can be configured to listen for remote
+management requests using its "native management interface":
+
+[source,xml]
+----
+<native-interface interface="management" port="9999" security-realm="ManagementRealm"/>
+----
+
+~(See standalone/configuration/standalone.xml or
+domain/configuration/host.xml)~
+
+The CLI tool that comes with the application server uses this interface,
+and user can develop custom clients that use it as well. In this section
+we'll cover the basics on how to develop such a client. We'll also cover
+details on the format of low-level management operation requests and
+responses – information that should prove useful for users of the CLI
+tool as well.
+
+[[native-management-client-dependencies]]
+== Native Management Client Dependencies
+
+The native management interface uses an open protocol based on the JBoss
+Remoting library. JBoss Remoting is used to establish a communication
+channel from the client to the process being managed. Once the
+communication channel is established the primary traffic over the
+channel is management requests initiated by the client and asynchronous
+responses from the target process.
+
+A custom Java-based client should have the maven artifact
+`org.jboss.as:jboss-as-controller-client` and its dependencies on the
+classpath. The other dependencies are:
+
+[cols=",",options="header"]
+|=======================================================================
+|Maven Artifact |Purpose
+
+|org.jboss.remoting:jboss-remoting |Remote communication
+
+|org.jboss:jboss-dmr |Detyped representation of the management model
+
+|org.jboss.as:jboss-as-protocol |Wire protocol for remote WildFly
+management
+
+|org.jboss.sasl:jboss-sasl |SASL authentication
+
+|org.jboss.xnio:xnio-api |Non-blocking IO
+
+|org.jboss.xnio:xnio-nio |Non-blocking IO
+
+|org.jboss.logging:jboss-logging |Logging
+
+|org.jboss.threads:jboss-threads |Thread management
+
+|org.jboss.marshalling:jboss-marshalling |Marshalling and unmarshalling
+data to/from streams
+|=======================================================================
+
+The client API is entirely within the
+`org.jboss.as:jboss-as-controller-client` artifact; the other
+dependencies are part of the internal implementation of
+`org.jboss.as:jboss-as-controller-client` and are not compile-time
+dependencies of any custom client based on it.
+
+The management protocol is an open protocol, so a completely custom
+client could be developed without using these libraries (e.g. using
+Python or some other language.)
+
+[[working-with-a-modelcontrollerclient]]
+== Working with a ModelControllerClient
+
+The `org.jboss.as.controller.client.ModelControllerClient` class is the
+main class a custom client would use to manage a WildFly server instance
+or a Domain Controller or slave Host Controller.
+
+The custom client must have maven artifact
+`org.jboss.as:jboss-as-controller-client` and its dependencies on the
+classpath.
+
+[[creating-the-modelcontrollerclient]]
+=== Creating the ModelControllerClient
+
+To create a management client that can connect to your target process's
+native management socket, simply:
+
+....
+ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+....
+
+The address and port are what is configured in the target process'
+`<management><management-interfaces><native-interface.../>` element.
+
+Typically, however, the native management interface will be secured,
+requiring clients to authenticate. On the client side, the custom client
+will need to provide the user's authentication credentials, obtained in
+whatever manner is appropriate for the client (e.g. from a dialog box in
+a GUI-based client.) Access to these credentials is provided by passing
+in an implementation of the
+`javax.security.auth.callback.CallbackHandler` interface. For example:
+
+[source, java]
+----
+static ModelControllerClient createClient(final InetAddress host, final int port,
+                  final String username, final char[] password, final String securityRealmName) {
+ 
+    final CallbackHandler callbackHandler = new CallbackHandler() {
+ 
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            for (Callback current : callbacks) {
+                if (current instanceof NameCallback) {
+                    NameCallback ncb = (NameCallback) current;
+                    ncb.setName(username);
+                } else if (current instanceof PasswordCallback) {
+                    PasswordCallback pcb = (PasswordCallback) current;
+                    pcb.setPassword(password.toCharArray());
+                } else if (current instanceof RealmCallback) {
+                    RealmCallback rcb = (RealmCallback) current;
+                    rcb.setText(rcb.getDefaultText());
+                } else {
+                    throw new UnsupportedCallbackException(current);
+                }
+            }
+        }
+    };
+ 
+    return ModelControllerClient.Factory.create(host, port, callbackHandler);
+}
+----
+
+[[creating-an-operation-request-object]]
+=== Creating an operation request object
+
+Management requests are formulated using the `org.jboss.dmr.ModelNode`
+class from the `jboss-dmr` library. The `jboss-dmr` library allows the
+complete WildFly management model to be expressed using a very small
+number of Java types. See
+link:Detyped_management_and_the_jboss-dmr_library.html[Detyped
+management and the jboss-dmr library] for full details on using this
+library.
+
+Let's show an example of creating an operation request object that can
+be used to
+link:Global_operations.html#src-557234_Globaloperations-read-resource-description[read
+the resource description] for the web subsystem's HTTP connector:
+
+[source, java]
+----
+ModelNode op = new ModelNode();
+op.get("operation").set("read-resource-description");
+ 
+ModelNode address = op.get("address");
+address.add("subsystem", "web");
+address.add("connector", "http");
+ 
+op.get("recursive").set(true);
+op.get("operations").set(true);
+----
+
+What we've done here is created a ModelNode of type `ModelType.OBJECT`
+with the following fields:
+
+* `operation` – the name of the operation to invoke. All operation
+requests *must* include this field and its value must be a String.
+* `address` – the address of the resource to invoke the operation
+against. This field's must be of `ModelType.LIST` with each element in
+the list being a `ModelType.PROPERTY`. If this field is omitted the
+operation will target the root resource. The operation can be targeted
+at any address in the management model; here we are targeting it at the
+resource for the web subsystem's http connector.
+
+In this case, the request includes two optional parameters:
+
+* `recursive` – true means you want the description of child resources
+under this resource. Default is false
+* `operations` – true means you want the description of operations
+exposed by the resource to be included. Default is false.
+
+Different operations take different parameters, and some take no
+parameters at all.
+
+See link:#src-557212_ThenativemanagementAPI-request-format[Format of a
+Detyped Operation Request] for full details on the structure of a
+ModelNode that will represent an operation request.
+
+The example above produces an operation request ModelNode equivalent to
+what the CLI produces internally when it parses and executes the
+following low-level CLI command:
+
+[source,ruby]
+----
+[localhost:9999 /] /subsystem=web/connector=http:read-resource-description(recursive=true,operations=true)
+----
+
+[[execute-the-operation-and-manipulate-the-result]]
+=== Execute the operation and manipulate the result:
+
+The `execute` method sends the operation request ModelNode to the
+process being managed and returns a ModelNode the contains the process'
+response:
+
+[source, java]
+----
+ModelNode returnVal = client.execute(op);
+System.out.println(returnVal.get("result").toString());
+----
+
+See link:#src-557212_ThenativemanagementAPI-response-format[Format of a
+Detyped Operation Response] for general details on the structure of the
+"returnVal" ModelNode.
+
+The `execute` operation shown above will block the calling thread until
+the response is received from the process being managed.
+`ModelControllerClient` also exposes and API allowing asynchronous
+invocation:
+
+[source, java]
+----
+Future<ModelNode> future = client.executeAsync(op);
+. . .  // do other stuff
+ModelNode returnVal = future.get();
+System.out.println(returnVal.get("result").toString());
+----
+
+[[close-the-modelcontrollerclient]]
+=== Close the ModelControllerClient
+
+A `ModelControllerClient` can be reused for multiple requests. Creating
+a new `ModelControllerClient` for each request is an anti-pattern.
+However, when the `ModelControllerClient` is no longer needed, it should
+always be explicitly closed, allowing it to close down any connections
+to the process it was managing and release other resources:
+
+[source, java]
+----
+client.close();
+----
+
+[[format-of-a-detyped-operation-request]]
+== Format of a Detyped Operation Request
+
+The basic method a user of the WildFly {wildflyVersion} programmatic management API
+would use is very simple:
+
+[source, java]
+----
+ModelNode execute(ModelNode operation) throws IOException;
+----
+
+where the return value is the detyped representation of the response,
+and `operation` is the detyped representation of the operation being
+invoked.
+
+The purpose of this section is to document the structure of `operation`.
+
+See link:#src-557212_ThenativemanagementAPI-response-format[Format of a
+Detyped Operation Response] for a discussion of the format of the
+response.
+
+[[simple-operations]]
+=== Simple Operations
+
+A text representation of simple operation would look like this:
+
+[source,ruby]
+----
+{
+    "operation" => "write-attribute",
+    "address" => [
+        ("profile" => "production"),
+        ("subsystem" => "threads"),
+        ("bounded-queue-thread-pool" => "pool1")
+    ],
+    "name" => "count",
+    "value" => 20
+}
+----
+
+Java code to produce that output would be:
+
+[source, java]
+----
+ModelNode op = new ModelNode();
+op.get("operation").set("write-attribute");
+ModelNode addr = op.get("address");
+addr.add("profile", "production");
+addr.add("subsystem", "threads");
+addr.add("bounded-queue-thread-pool", "pool1");
+op.get("name").set("count");
+op.get("value").set(20);
+System.out.println(op);
+----
+
+The order in which the outermost elements appear in the request is not
+relevant. The required elements are:
+
+* `operation` – String – The name of the operation being invoked.
+* `address` – the address of the managed resource against which the
+request should be executed. If not set, the address is the root
+resource. The address is an ordered list of key-value pairs describing
+where the resource resides in the overall management resource tree.
+Management resources are organized in a tree, so the order in which
+elements in the address occur is important.
+
+The other key/value pairs are parameter names and their values. The
+names and values should match what is specified in the
+link:Description_of_the_Management_Model.html#src-557210_DescriptionoftheManagementModel-operation-description[operation's
+description].
+
+Parameters may have any name, except for the reserved words `operation`,
+`address` and `operation-headers`.
+
+[[operation-headers]]
+=== Operation Headers
+
+Besides the special operation and address values discussed above,
+operation requests can also include special "header" values that help
+control how the operation executes. These headers are created under the
+special reserved word `operation-headers`:
+
+[source, java]
+----
+ModelNode op = new ModelNode();
+op.get("operation").set("write-attribute");
+ModelNode addr = op.get("address");
+addr.add("base", "domain");
+addr.add("profile", "production");
+addr.add("subsystem", "threads");
+addr.add("bounded-queue-thread-pool", "pool1");
+op.get("name").set("count");
+op.get("value").set(20);
+op.get("operation-headers", "rollback-on-runtime-failure").set(false);
+System.out.println(op);
+----
+
+This produces:
+
+[source, ruby]
+----
+{
+    "operation" => "write-attribute",
+    "address" => [
+        ("profile" => "production"),
+        ("subsystem" => "threads"),
+        ("bounded-queue-thread-pool" => "pool1")
+    ],
+    "name" => "count",
+    "value" => 20,
+    "operation-headers" => {
+        "rollback-on-runtime-failure => false
+    }
+}
+----
+
+The following operation headers are supported:
+
+* `rollback-on-runtime-failure` – boolean, optional, defaults to true.
+Whether an operation that successfully updates the persistent
+configuration model should be reverted if it fails to apply to the
+runtime. Operations that affect the persistent configuration are applied
+in two stages – first to the configuration model and then to the actual
+running services. If there is an error applying to the configuration
+model the operation will be aborted with no configuration change and no
+change to running services will be attempted. However, operations are
+allowed to change the configuration model even if there is a failure to
+apply the change to the running services – if and only if this
+`rollback-on-runtime-failure` header is set to `false`. So, this header
+only deals with what happens if there is a problem applying an operation
+to the running state of a server (e.g. actually increasing the size of a
+runtime thread pool.)
+* `rollout-plan` – only relevant to requests made to a Domain Controller
+or Host Controller. See "
+link:#src-557212_ThenativemanagementAPI-rollout-plan[Operations with a
+Rollout Plan]" for details.
+* `allow-resource-service-restart` – boolean, optional, defaults to
+false. Whether an operation that requires restarting some runtime
+services in order to take effect should do so. See discussion of
+`resource-services` in the
+link:Description_of_the_Management_Model.html#src-557210_DescriptionoftheManagementModel-applying-runtime-updates["Applying
+Updates to Runtime Services" section of the Description of the
+Management Model section] for further details.
+* `roles` – String or list of strings. Name(s) of RBAC role(s) the
+permissions for which should be used when making access control
+decisions instead of those from the roles normally associated with the
+user invoking the operation. Only respected if the user is normally
+associated with a role with all permissions (i.e. SuperUser), meaning
+this can only be used to reduce permissions for a caller, not to
+increase permissions.
+* `blocking-timeout` – int, optional, defaults to 300. Maximum time, in
+seconds, that the operation should block at various points waiting for
+completion. If this period is exceeded, the operation will roll back.
+Does not represent an overall maximum execution time for an operation;
+rather it is meant to serve as a sort of fail-safe measure to prevent
+problematic operations indefinitely tying up resources.
+
+[[composite-operations]]
+=== Composite Operations
+
+The root resource for a Domain or Host Controller or an individual
+server will expose an operation named " `composite`". This operation
+executes a list of other operations as an atomic unit (although the
+atomicity requirement can be
+link:#src-557212_ThenativemanagementAPI-rollback-on-runtime-failure[relaxed].
+The structure of the request for the " `composite`" operation has the
+same fundamental structure as a simple operation (i.e. operation name,
+address, params as key value pairs).
+
+[source, ruby]
+----
+{
+    "operation" => "composite",
+    "address" => [],
+    "steps" => [
+         {
+              "operation" => "write-attribute",
+              "address" => [
+                   ("profile" => "production"),
+                   ("subsystem" => "threads"),
+                   ("bounded-queue-thread-pool" => "pool1")
+              ],
+              "count" => "count",
+              "value" => 20
+         },
+         {
+              "operation" => "write-attribute",
+              "address" => [
+                   ("profile" => "production"),
+                   ("subsystem" => "threads"),
+                   ("bounded-queue-thread-pool" => "pool2")
+              ],
+              "name" => "count",
+              "value" => 10
+         }
+    ],
+    "operation-headers" => {
+        "rollback-on-runtime-failure => false
+    }
+}
+----
+
+The "composite" operation takes a single parameter:
+
+* `steps` – a list, where each item in the list has the same structure
+as a simple operation request. In the example above each of the two
+steps is modifying the thread pool configuration for a different pool.
+There need not be any particular relationship between the steps. Note
+that the `rollback-on-runtime-failure` and `rollout-plan` operation
+headers are not supported for the individual steps in a composite
+operation.
+
+ +
+The `rollback-on-runtime-failure` operation header discussed above has a
+particular meaning when applied to a composite operation, controlling
+whether steps that successfully execute should be reverted if other
+steps fail at runtime. Note that if any steps modify the persistent
+configuration, and any of those steps fail, all steps will be reverted.
+Partial/incomplete changes to the persistent configuration are not
+allowed.
+
+[[operations-with-a-rollout-plan]]
+=== Operations with a Rollout Plan
+
+Operations targeted at domain or host level resources can potentially
+impact multiple servers. Such operations can include a "rollout plan"
+detailing the sequence in which the operation should be applied to
+servers as well as policies for detailing whether the operation should
+be reverted if it fails to execute successfully on some servers.
+
+If the operation includes a rollout plan, the structure is as follows:
+
+[source,ruby]
+----
+{
+    "operation" => "write-attribute",
+    "address" => [
+        ("profile" => "production"),
+        ("subsystem" => "threads"),
+        ("bounded-queue-thread-pool" => "pool1")
+    ],
+    "name" => "count",
+    "value" => 20,
+    "operation-headers" => {
+        "rollout-plan" => {
+            "in-series" => [
+                {
+                    "concurrent-groups" => {
+                        "groupA" => {
+                            "rolling-to-servers" => true,
+                            "max-failure-percentage" => 20
+                        },
+                        "groupB" => undefined
+                    }
+                },
+                {
+                   "server-group" => {
+                        "groupC" => {
+                            "rolling-to-servers" => false,
+                            "max-failed-servers" => 1
+                        }
+                    }
+                },
+                {
+                    "concurrent-groups" => {
+                        "groupD" => {
+                            "rolling-to-servers" => true,
+                            "max-failure-percentage" => 20
+                        },
+                        "groupE" => undefined
+                    }
+                }
+            ],
+            "rollback-across-groups" => true
+        }
+    }
+}
+----
+
+As you can see, the rollout plan is another structure in the
+operation-headers section. The root node of the structure allows two
+children:
+
+* `in-series` – a list – A list of activities that are to be performed
+in series, with each activity reaching completion before the next step
+is executed. Each activity involves the application of the operation to
+the servers in one or more server groups. See below for details on each
+element in the list.
+* `rollback-across-groups` – boolean – indicates whether the need to
+rollback the operation on all the servers in one server group should
+trigger a rollback across all the server groups. This is an optional
+setting, and defaults to `false`.
+
+Each element in the list under the `in-series` node must have one or the
+other of the following structures:
+
+* `concurrent-groups` – a map of server group names to policies
+controlling how the operation should be applied to that server group.
+For each server group in the map, the operation may be applied
+concurrently. See below for details on the per-server-group policy
+configuration.
+* `server-group` – a single key/value mapping of a server group name to
+a policy controlling how the operation should be applied to that server
+group. See below for details on the policy configuration. (Note: there
+is no difference in plan execution between this and a "
+`concurrent-groups`" map with a single entry.)
+
+The policy controlling how the operation is applied to the servers
+within a server group has the following elements, each of which is
+optional:
+
+* `rolling-to-servers` – boolean – If true, the operation will be
+applied to each server in the group in series. If false or not
+specified, the operation will be applied to the servers in the group
+concurrently.
+* `max-failed-servers` – int – Maximum number of servers in the group
+that can fail to apply the operation before it should be reverted on all
+servers in the group. The default value if not specified is zero; i.e.
+failure on any server triggers rollback across the group.
+* `max-failure-percentage` – int between 0 and 100 – Maximum percentage
+of the total number of servers in the group that can fail to apply the
+operation before it should be reverted on all servers in the group. The
+default value if not specified is zero; i.e. failure on any server
+triggers rollback across the group.
+
+If both `max-failed-servers` and `max-failure-percentage` are set,
+`max-failure-percentage` takes precedence.
+
+Looking at the (contrived) example above, application of the operation
+to the servers in the domain would be done in 3 phases. If the policy
+for any server group triggers a rollback of the operation across the
+server group, all other server groups will be rolled back as well. The 3
+phases are:
+
+1.  Server groups groupA and groupB will have the operation applied
+concurrently. The operation will be applied to the servers in groupA in
+series, while all servers in groupB will handle the operation
+concurrently. If more than 20% of the servers in groupA fail to apply
+the operation, it will be rolled back across that group. If any servers
+in groupB fail to apply the operation it will be rolled back across that
+group.
+2.  Once all servers in groupA and groupB are complete, the operation
+will be applied to the servers in groupC. Those servers will handle the
+operation concurrently. If more than one server in groupC fails to apply
+the operation it will be rolled back across that group.
+3.  Once all servers in groupC are complete, server groups groupD and
+groupE will have the operation applied concurrently. The operation will
+be applied to the servers in groupD in series, while all servers in
+groupE will handle the operation concurrently. If more than 20% of the
+servers in groupD fail to apply the operation, it will be rolled back
+across that group. If any servers in groupE fail to apply the operation
+it will be rolled back across that group.
+
+[[default-rollout-plan]]
+==== Default Rollout Plan
+
+All operations that impact multiple servers will be executed with a
+rollout plan. However, actually specifying the rollout plan in the
+operation request is not required. If no `rollout-plan` operation header
+is specified, a default plan will be generated. The plan will have the
+following characteristics:
+
+* There will only be a single high level phase. All server groups
+affected by the operation will have the operation applied concurrently.
+* Within each server group, the operation will be applied to all servers
+concurrently.
+* Failure on any server in a server group will cause rollback across the
+group.
+* Failure of any server group will result in rollback of all other
+server groups.
+
+[[creating-and-reusing-a-rollout-plan]]
+==== Creating and reusing a Rollout Plan
+
+Since a rollout plan may be quite complex, having to pass it as a header
+every time can become quickly painful. So instead we can store it in the
+model and then reference it when we want to use it. +
+To create a rollout plan you can use the operation `rollout-plan add`
+like this :
+
+----
+rollout-plan add --name=simple --content={"rollout-plan" => {"in-series" => [{"server-group" => {"main-server-group" => {"rolling-to-servers" => false,"max-failed-servers" => 1}}}, {"server-group" => {"other-server-group" => {"rolling-to-servers" => true,"max-failure-percentage" => 20}}}],"rollback-across-groups" => true}}
+----
+
+This will create a rollout plan called `simple` in the content
+repository.
+
+[source, ruby]
+----
+[domain@192.168.1.20:9999 /] /management-client-content=rollout-plans/rollout-plan=simple:read-resource
+{
+    "outcome" => "success",
+    "result" => {
+        "content" => {"rollout-plan" => {
+            "in-series" => [
+                {"server-group" => {"main-server-group" => {
+                    "rolling-to-servers" => false,
+                    "max-failed-servers" => 1
+                }}},
+                {"server-group" => {"other-server-group" => {
+                    "rolling-to-servers" => true,
+                    "max-failure-percentage" => 20
+                }}}
+            ],
+            "rollback-across-groups" => true
+        }},
+        "hash" => bytes {
+            0x13, 0x12, 0x76, 0x65, 0x8a, 0x28, 0xb8, 0xbc,
+            0x34, 0x3c, 0xe9, 0xe6, 0x9f, 0x24, 0x05, 0xd2,
+            0x30, 0xff, 0xa4, 0x34
+        }
+    }
+}
+----
+
+Now you may reference the roolout plan in your command by adding a
+header just like this :
+
+----
+deploy /quickstart/ejb-in-war/target/wildfly-ejb-in-war.war --all-server-groups --headers={rollout name=simple}
+----
+
+[[format-of-a-detyped-operation-response]]
+== Format of a Detyped Operation Response
+
+As noted previously, the basic method a user of the WildFly {wildflyVersion}
+programmatic management API would use is very simple:
+
+[source, java]
+----
+ModelNode execute(ModelNode operation) throws IOException;
+----
+
+where the return value is the detyped representation of the response,
+and `operation` is the detyped representation of the operating being
+invoked.
+
+The purpose of this section is to document the structure of the return
+value.
+
+For the format of the request, see
+link:#src-557212_ThenativemanagementAPI-request-format[Format of a
+Detyped Operation Request].
+
+[[simple-responses]]
+=== Simple Responses
+
+Simple responses are provided by the following types of operations:
+
+* Non-composite operations that target a single server. (See below for
+more on composite operations).
+* Non-composite operations that target a Domain Controller or slave Host
+Controller and don't require the responder to apply the operation on
+multiple servers and aggregate their results (e.g. a simple read of a
+domain configuration property.)
+
+The response will always include a simple boolean outcome field, with
+one of three possible values:
+
+* `success` – the operation executed successfully
+* `failed` – the operation failed
+* `cancelled` – the execution of the operation was cancelled. (This
+would be an unusual outcome for a simple operation which would generally
+very rapidly reach a point in its execution where it couldn't be
+cancelled.)
+
+The other fields in the response will depend on whether the operation
+was successful.
+
+The response for a failed operation:
+
+[source, ruby]
+----
+{
+    "outcome" => "failed",
+    "failure-description" => "[JBAS-12345] Some failure message"
+}
+----
+
+A response for a successful operation will include an additional field:
+
+* `result` – the return value, or `undefined` for void operations or
+those that return null
+
+A non-void result:
+
+[source, ruby]
+----
+{
+    "outcome" => "success",
+    "result" => {
+        "name" => "Brian",
+        "age" => 22
+    }
+}
+----
+
+A void result:
+
+[source, ruby]
+----
+{
+    "outcome" => "success",
+    "result" => undefined
+}
+----
+
+The response for a cancelled operation has no other fields:
+
+[source, ruby]
+----
+{
+    "outcome" => "cancelled"
+}
+----
+
+[[response-headers]]
+=== Response Headers
+
+Besides the standard `outcome`, `result` and `failure-description`
+fields described above, the response may also include various headers
+that provide more information about the affect of the operation or about
+the overall state of the server. The headers will be child element under
+a field named `response-headers`. For example:
+
+[source, ruby]
+----
+{
+    "outcome" => "success",
+    "result" => undefined,
+    "response-headers" => {
+        "operation-requires-reload" => true,
+        "process-state" => "reload-required"
+    }
+}
+----
+
+A response header is typically related to whether an operation could be
+applied to the targeted runtime without requiring a restart of some or
+all services, or even of the target process itself. Please see the
+link:Description_of_the_Management_Model.html#src-557210_DescriptionoftheManagementModel-applying-runtime-updates["Applying
+Updates to Runtime Services" section of the Description of the
+Management Model section] for a discussion of the basic concepts related
+to what happens if an operation requires a service restart to be
+applied.
+
+The current possible response headers are:
+
+* `operation-requires-reload` – boolean – indicates that the specific
+operation that has generated this response requires a restart of all
+services in the process in order to take effect in the runtime. This
+would typically only have a value of 'true'; the absence of the header
+is the same as a value of 'false.'
+* `operation-requires-restart` – boolean – indicates that the specific
+operation that has generated this response requires a full process
+restart in order to take effect in the runtime. This would typically
+only have a value of 'true'; the absence of the header is the same as a
+value of 'false.'
+* `process-state` – enumeration – Provides information about the overall
+state of the target process. One of the following values:
+** `starting` – the process is starting
+** `running` – the process is in a normal running state. The
+`process-state` header would typically not be seen with this value; the
+absence of the header is the same as a value of 'running'.
+** `reload-required` – some operation (not necessarily this one) has
+executed that requires a restart of all services in order for a
+configuration change to take effect in the runtime.
+** `restart-required` – some operation (not necessarily this one) has
+executed that requires a full process restart in order for a
+configuration change to take effect in the runtime.
+** `stopping` – the process is stopping
+
+[[basic-composite-operation-responses]]
+=== Basic Composite Operation Responses
+
+A composite operation is one that incorporates more than one simple
+operation in a list and executes them atomically. See the
+link:#src-557212_ThenativemanagementAPI-composite-operations["Composite
+Operations" section] for more information.
+
+Basic composite responses are provided by the following types of
+operations:
+
+* Composite operations that target a single server.
+* Composite operations that target a Domain Controller or a slave Host
+Controller and don't require the responder to apply the operation on
+multiple servers and aggregate their results (e.g. a list of simple
+reads of domain configuration properties.)
+
+The high level format of a basic composite operation response is largely
+the same as that of a simple operation response, although there is an
+important semantic difference. For a composite operation, the meaning of
+the outcome flag is controlled by the value of the operation request's
+`rollback-on-runtime-failure` header field. If that field was `false`
+(default is true), the outcome flag will be success if all steps were
+successfully applied to the persistent configuration even if *none* of
+the composite operation's steps was successfully applied to the runtime.
+
+What's distinctive about a composite operation response is the `result`
+field. First, even if the operation was not successful, the `result`
+field will usually be present. (It won't be present if there was some
+sort of immediate failure that prevented the responder from even
+attempting to execute the individual operations.) Second, the content of
+the `result` field will be a map. Each entry in the map will record the
+result of an element in the `steps` parameter of the composite operation
+request. The key for each item in the map will be the string " `step-X`"
+where "X" is the 1-based index of the step's position in the request's
+`steps` list. So each individual operation in the composite operation
+will have its result recorded.
+
+The individual operation results will have the same basic format as the
+simple operation results described above. However, there are some
+differences from the simple operation case when the individual
+operation's `outcome` flag is `failed`. These relate to the fact that in
+a composite operation, individual operations can be rolled back or not
+even attempted.
+
+If an individual operation was not even attempted (because the overall
+operation was cancelled or, more likely, a prior operation failed):
+
+[source, ruby]
+----
+{
+    "outcome" => "cancelled"
+}
+----
+
+An individual operation that failed and was rolled back:
+
+[source, ruby]
+----
+{
+    "outcome" => "failed",
+    "failure-description" => "[JBAS-12345] Some failure message",
+    "rolled-back" => true
+}
+----
+
+An individual operation that itself succeeded but was rolled back due to
+failure of another operation:
+
+[source, ruby]
+----
+{
+    "outcome" => "failed",
+    "result" => {
+        "name" => "Brian",
+        "age" => 22
+    },
+    "rolled-back" => true
+}
+----
+
+An operation that failed and was rolled back:
+
+[source, ruby]
+----
+{
+    "outcome" => "failed",
+    "failure-description" => "[JBAS-12345] Some failure message",
+    "rolled-back" => true
+}
+----
+
+Here's an example of the response for a successful 2 step composite
+operation:
+
+[source, ruby]
+----
+{
+    "outcome" => "success",
+    "result" => [
+        {
+            "outcome" => "success",
+            "result" => {
+                "name" => "Brian",
+                "age" => 22
+            }
+        },
+        {
+            "outcome" => "success",
+            "result" => undefined
+        }
+    ]
+}
+----
+
+And for a failed 3 step composite operation, where the first step
+succeeded and the second failed, triggering cancellation of the 3rd and
+rollback of the others:
+
+[source, ruby]
+----
+{
+    "outcome" => "failed",
+    "failure-description" => "[JBAS-99999] Composite operation failed; see individual operation results for details",
+    "result" => [
+        {
+            "outcome" => "failed",
+            "result" => {
+                "name" => "Brian",
+                "age" => 22
+            },
+            "rolled-back" => true
+        },
+        {
+            "outcome" => "failed",
+            "failure-description" => "[JBAS-12345] Some failure message",
+            "rolled-back" => true
+        },
+        {
+            "outcome" => "cancelled"
+        }
+    ]
+}
+----
+
+[[multi-server-responses]]
+=== Multi-Server Responses
+
+Multi-server responses are provided by operations that target a Domain
+Controller or slave Host Controller and require the responder to apply
+the operation on multiple servers and aggregate their results (e.g.
+nearly all domain or host configuration updates.)
+
+Multi-server operations are executed in several stages.
+
+First, the operation may need to be applied against the authoritative
+configuration model maintained by the Domain Controller (for
+`domain.xml` confgurations) or a Host Controller (for a `host.xml`
+configuration). If there is a failure at this stage, the operation is
+automatically rolled back, with a response like this:
+
+[source, ruby]
+----
+{
+    "outcome" => "failed",
+    "failure-description" => {
+        "domain-failure-description" => "[JBAS-33333] Failed to apply X to the domain model"
+    }
+}
+----
+
+If the operation was addressed to the domain model, in the next stage
+the Domain Controller will ask each slave Host Controller to apply it to
+its local copy of the domain model. If any Host Controller fails to do
+so, the Domain Controller will tell all Host Controllers to revert the
+change, and it will revert the change locally as well. The response to
+the client will look like this:
+
+[source, ruby]
+----
+{
+    "outcome" => "failed",
+    "failure-description" => {
+        "host-failure-descriptions" => {
+            "hostA" => "[DOM-3333] Failed to apply to the domain model",
+            "hostB" => "[DOM-3333] Failed to apply to the domain model"
+        }
+    }
+}
+----
+
+If the preceding stages succeed, the operation will be pushed to all
+affected servers. If the operation is successful on all servers, the
+response will look like this (this example operation has a void
+response, hence the result for each server is undefined):
+
+[source, ruby]
+----
+{
+    "outcome" => "success",
+    "result" => undefined,
+    "server-groups" => {
+        "groupA" => {
+            "serverA-1" => {
+                "host" => "host1",
+                "response" => {
+                    "outcome" => "success",
+                    "result" => undefined
+                }
+            },
+            "serverA-2" => {
+                "host" => "host2",
+                "response" => {
+                    "outcome" => "success",
+                    "result" => undefined
+                }
+            }
+        },
+        "groupB" => {
+            "serverB-1" => {
+                "host" => "host1",
+                "response" => {
+                    "outcome" => "success",
+                    "result" => undefined
+                }
+            },
+            "serverB-2" => {
+                "host" => "host2",
+                "response" => {
+                    "outcome" => "success",
+                    "result" => undefined
+                }
+            }
+        }
+    }
+}
+----
+
+The operation need not succeed on all servers in order to get an
+`"outcome" => "success"` result. All that is required is that it succeed
+on at least one server without the rollback policies in the rollout plan
+triggering a rollback on that server. An example response in such a
+situation would look like this:
+
+[source, ruby]
+----
+{
+    "outcome" => "success",
+    "result" => undefined,
+    "server-groups" => {
+        "groupA" => {
+            "serverA-1" => {
+                "host" => "host1",
+                "response" => {
+                    "outcome" => "success",
+                    "result" => undefined
+                }
+            },
+            "serverA-2" => {
+                "host" => "host2",
+                "response" => {
+                    "outcome" => "success",
+                    "result" => undefined
+                }
+            }
+        },
+        "groupB" => {
+            "serverB-1" => {
+                "host" => "host1",
+                "response" => {
+                    "outcome" => "success",
+                    "result" => undefined,
+                    "rolled-back" => true
+                }
+            },
+            "serverB-2" => {
+                "host" => "host2",
+                "response" => {
+                    "outcome" => "success",
+                    "result" => undefined,
+                    "rolled-back" => true
+                }
+            },
+            "serverB-3" => {
+                "host" => "host3",
+                "response" => {
+                    "outcome" => "failed",
+                    "failure-description" => "[DOM-4556] Something didn't work right",
+                    "rolled-back" => true
+                }
+            }
+        }
+    }
+}
+----
+
+Finally, if the operation fails or is rolled back on all servers, an
+example response would look like this:
+
+[source, ruby]
+----
+{
+    "outcome" => "failed",
+    "server-groups" => {
+        "groupA" => {
+            "serverA-1" => {
+                "host" => "host1",
+                "response" => {
+                    "outcome" => "success",
+                    "result" => undefined
+                }
+            },
+            "serverA-2" => {
+                "host" => "host2",
+                "response" => {
+                    "outcome" => "success",
+                    "result" => undefined
+                }
+            }
+        },
+        "groupB" => {
+            "serverB-1" => {
+                "host" => "host1",
+                "response" => {
+                    "outcome" => "failed",
+                    "result" => undefined,
+                    "rolled-back" => true
+                }
+            },
+            "serverB-2" => {
+                "host" => "host2",
+                "response" => {
+                    "outcome" => "failed",
+                    "result" => undefined,
+                    "rolled-back" => true
+                }
+            },
+            "serverB-3" => {
+                "host" => "host3",
+                "response" => {
+                    "outcome" => "failed",
+                    "failure-description" => "[DOM-4556] Something didn't work right",
+                    "rolled-back" => true
+                }
+            }
+        }
+    }
+}
+----

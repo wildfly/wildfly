@@ -23,14 +23,13 @@ package org.wildfly.clustering.server.dispatcher;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.net.InetSocketAddress;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -44,6 +43,7 @@ import org.jboss.marshalling.Unmarshaller;
 import org.jboss.threads.JBossThreadFactory;
 import org.jgroups.Address;
 import org.jgroups.Channel;
+import org.jgroups.Event;
 import org.jgroups.MembershipListener;
 import org.jgroups.MergeView;
 import org.jgroups.Message;
@@ -51,18 +51,24 @@ import org.jgroups.View;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestCorrelator;
 import org.jgroups.blocks.RequestHandler;
+import org.jgroups.stack.IpAddress;
 import org.jgroups.stack.Protocol;
+import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.GroupListener;
+import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
-import org.wildfly.clustering.server.group.JGroupsNodeFactory;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
+import org.wildfly.clustering.server.group.AddressableNode;
+import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
 import org.wildfly.clustering.service.concurrent.ServiceExecutor;
 import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
+import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -71,24 +77,24 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * all of which will share the same {@link MessageDispatcher} instance.
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory, RequestHandler, AutoCloseable, Group, MembershipListener {
+public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDispatcherFactory, RequestHandler, org.wildfly.clustering.server.group.Group<Address>, MembershipListener {
 
     private static ThreadFactory createThreadFactory(Class<?> targetClass) {
         PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
         return new ClassLoaderThreadFactory(WildFlySecurityManager.doUnchecked(action), targetClass.getClassLoader());
     }
 
+    private final ConcurrentMap<Address, Node> members = new ConcurrentHashMap<>();
+    // Store execution context using an Optional so we can differentiate an unknown service from a known service with a null context
     private final Map<Object, Optional<Object>> contexts = new ConcurrentHashMap<>();
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
-    private final Map<Listener, ExecutorService> listeners = new ConcurrentHashMap<>();
+    private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final AtomicReference<View> view = new AtomicReference<>();
-    private final JGroupsNodeFactory nodeFactory;
     private final MarshallingContext marshallingContext;
     private final MessageDispatcher dispatcher;
     private final long timeout;
 
     public ChannelCommandDispatcherFactory(ChannelCommandDispatcherFactoryConfiguration config) {
-        this.nodeFactory = config.getNodeFactory();
         this.marshallingContext = config.getMarshallingContext();
         this.timeout = config.getTimeout();
         this.dispatcher = new MessageDispatcher() {
@@ -124,7 +130,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
     @Override
     public Object handle(Message message) throws Exception {
         try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(message.getRawBuffer(), message.getOffset(), message.getLength()))) {
-            int version = IndexExternalizer.VARIABLE.readData(input);
+            int version = IndexSerializer.VARIABLE.readInt(input);
             try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 Object clientId = unmarshaller.readObject();
@@ -132,13 +138,8 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
                 if (context == null) return NoSuchService.INSTANCE;
                 @SuppressWarnings("unchecked")
                 Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
-                Callable<Optional<Object>> task = new Callable<Optional<Object>>() {
-                    @Override
-                    public Optional<Object> call() throws Exception {
-                        // Wrap in an Optional, since command execution might return null
-                        return Optional.ofNullable(command.execute(context.orElse(null)));
-                    }
-                };
+                // Wrap execution result in an Optional, since command execution might return null
+                ExceptionSupplier<Optional<Object>, Exception> task = () -> Optional.ofNullable(command.execute(context.orElse(null)));
                 return this.executor.execute(task).orElse(Optional.of(NoSuchService.INSTANCE)).orElse(null);
             }
         }
@@ -151,22 +152,24 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
 
     @Override
     public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
-        this.contexts.put(id, Optional.ofNullable(context));
+        if (this.contexts.putIfAbsent(id, Optional.ofNullable(context)) != null) {
+            throw ClusteringServerLogger.ROOT_LOGGER.commandDispatcherAlreadyExists(id);
+        }
         CommandMarshaller<C> marshaller = new CommandDispatcherMarshaller<>(this.marshallingContext, id);
-        CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalNode(), context);
-        return new ChannelCommandDispatcher<>(this.dispatcher, marshaller, this.nodeFactory, this.timeout, localDispatcher, () -> {
+        CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalMember(), context);
+        return new ChannelCommandDispatcher<>(this.dispatcher, marshaller, this, this.timeout, localDispatcher, () -> {
             localDispatcher.close();
             this.contexts.remove(id);
         });
     }
 
     @Override
-    public void addListener(Listener listener) {
+    public Registration register(GroupListener listener) {
         this.listeners.computeIfAbsent(listener, key -> Executors.newSingleThreadExecutor(createThreadFactory(listener.getClass())));
+        return () -> this.unregister(listener);
     }
 
-    @Override
-    public void removeListener(Listener listener) {
+    private void unregister(GroupListener listener) {
         ExecutorService executor = this.listeners.remove(listener);
         if (executor != null) {
             executor.shutdownNow();
@@ -178,78 +181,73 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
         }
     }
 
+    @Deprecated
+    @Override
+    public void removeListener(Listener listener) {
+        this.unregister(listener);
+    }
+
     @Override
     public String getName() {
         return this.dispatcher.getChannel().getClusterName();
     }
 
     @Override
-    public boolean isCoordinator() {
-        return this.dispatcher.getChannel().getAddress().equals(this.getCoordinatorAddress());
+    public Membership getMembership() {
+        return new ViewMembership(this.dispatcher.getChannel().getAddress(), this.view.get(), this);
     }
 
     @Override
-    public Node getLocalNode() {
-        return this.nodeFactory.createNode(this.dispatcher.getChannel().getAddress());
+    public Node getLocalMember() {
+        return this.createNode(this.dispatcher.getChannel().getAddress());
     }
 
     @Override
-    public Node getCoordinatorNode() {
-        return this.nodeFactory.createNode(this.getCoordinatorAddress());
-    }
-
-    @Override
-    public List<Node> getNodes() {
-        return getNodes(this.view.get());
-    }
-
-    @Override
-    public boolean isLocal() {
+    public boolean isSingleton() {
         return false;
     }
 
-    private Address getCoordinatorAddress() {
-        List<Address> members = this.view.get().getMembers();
-        return !members.isEmpty() ? members.get(0) : null;
-    }
-
-    private List<Node> getNodes(View view) {
-        return (view != null) ? this.getNodes(view.getMembers()) : Collections.<Node>emptyList();
-    }
-
-    private List<Node> getNodes(List<Address> addresses) {
-        List<Node> nodes = new ArrayList<>(addresses.size());
-        for (Address address: addresses) {
-            nodes.add(this.nodeFactory.createNode(address));
-        }
-        return nodes;
+    @Override
+    public Node createNode(Address address) {
+        return this.members.computeIfAbsent(address, key -> {
+            Channel channel = this.dispatcher.getChannel();
+            IpAddress physicalAddress = (IpAddress) channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, address));
+            // Physical address might be null if node is no longer a member of the cluster
+            if (physicalAddress == null) return null;
+            InetSocketAddress socketAddress = new InetSocketAddress(physicalAddress.getIpAddress(), physicalAddress.getPort());
+            String logicalName = channel.getName(address);
+            // If no logical name exists, create one using physical address
+            return new AddressableNode(address, (logicalName != null) ? logicalName : String.format("%s:%s", socketAddress.getHostString(), socketAddress.getPort()), socketAddress);
+        });
     }
 
     @Override
     public void viewAccepted(View view) {
         View oldView = this.view.getAndSet(view);
         if (oldView != null) {
-            List<Node> oldNodes = this.getNodes(oldView);
-            List<Node> newNodes = this.getNodes(view);
-
             List<Address> leftMembers = View.leftMembers(oldView, view);
             if (leftMembers != null) {
-                this.nodeFactory.invalidate(leftMembers);
+                this.members.keySet().removeAll(leftMembers);
             }
 
-            for (Map.Entry<Listener, ExecutorService> entry : this.listeners.entrySet()) {
-                try {
-                    Listener listener = entry.getKey();
+            if (this.listeners.isEmpty()) {
+                Address localAddress = this.dispatcher.getChannel().getAddress();
+                ViewMembership oldMembership = new ViewMembership(localAddress, oldView, this);
+                ViewMembership membership = new ViewMembership(localAddress, view, this);
+                for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
+                    GroupListener listener = entry.getKey();
                     ExecutorService executor = entry.getValue();
-                    executor.submit(() -> {
-                        try {
-                            listener.membershipChanged(oldNodes, newNodes, view instanceof MergeView);
-                        } catch (Throwable e) {
-                            ClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-                        }
-                    });
-                } catch (RejectedExecutionException e) {
-                    // Executor was shutdown
+                    try {
+                        executor.submit(() -> {
+                            try {
+                                listener.membershipChanged(oldMembership, membership, view instanceof MergeView);
+                            } catch (Throwable e) {
+                                ClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+                            }
+                        });
+                    } catch (RejectedExecutionException e) {
+                        // Executor was shutdown
+                    }
                 }
             }
         }

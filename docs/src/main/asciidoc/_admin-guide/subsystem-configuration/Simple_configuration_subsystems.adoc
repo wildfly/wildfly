@@ -1,0 +1,34 @@
+= Simple configuration subsystems
+
+The following subsystems currently have no configuration beyond its root
+element in the configuration
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
+<subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
+<subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
+<subsystem xmlns="urn:jboss:domain:sar:1.0"/>
+----
+
+The presence of each of these turns on a piece of functionality:
+
+[cols=",",options="header"]
+|=======================================================================
+|Name |Description
+
+|jaxrs |Enables the deployment and functionality of JAX-RS applications
+
+|jdr |Enables the gathering of diagnostic data for use in remote
+analysis of error conditions. Although the data is in a simple format
+and could be useful to anyone, primarily useful for JBoss EAP
+subscribers who would provide the data to Red Hat when requesting
+support
+
+|pojo |Enables the deployment of applications containing JBoss
+Microcontainer services, as supported by previous versions of JBoss
+Application Server
+
+|sar |Enables the deployment of .SAR archives containing MBean services,
+as supported by previous versions of JBoss Application Server
+|=======================================================================

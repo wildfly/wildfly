@@ -41,7 +41,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.TimeoutIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.servlet.StatefulServlet;
@@ -60,18 +60,18 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class StatefulTimeoutTestCase extends ClusterAbstractTestCase {
+public class StatefulTimeoutTestCase extends AbstractClusteringTestCase {
     private static final long WAIT_FOR_TIMEOUT = TimeoutUtil.adjust(5000);
     private static final String MODULE_NAME = "stateful-timeout";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deployment1() {
         return createDeployment();
     }

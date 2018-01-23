@@ -1,0 +1,12 @@
+= HTTP Services
+
+This section summarizes the HTTP-based clustering features.
+
+include::Subsystem_Support.adoc[]
+
+include::http-services/Clustered_Web_Sessions.adoc[]
+
+include::http-services/Clustered_SSO.adoc[]
+
+include::http-services/Load_Balancing.adoc[]
+

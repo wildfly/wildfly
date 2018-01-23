@@ -23,17 +23,12 @@ package org.jboss.as.test.integration.domain.mixed;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.PathAddress;
@@ -101,7 +96,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String masterConfig, String slaveConfig,
                                                  String profile, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) throws Exception {
-        final File dir = OldVersionCopier.expandOldVersion(version);
+        final File dir = OldVersionCopier.getOldVersionDir(version).toFile();
         return new MixedDomainTestSupport(version, testClass, domainConfig, masterConfig,
                 slaveConfig, dir.getAbsolutePath(), profile, adjustDomain, legacyConfig, withMasterServers);
     }
@@ -109,7 +104,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig,
                                                 String masterConfig, String slaveConfig, boolean adjustDomain,
                                                 boolean legacyConfig) throws Exception {
-        final File dir = OldVersionCopier.expandOldVersion(version);
+        final File dir = OldVersionCopier.getOldVersionDir(version).toFile();
         return new MixedDomainTestSupport(version, testClass, domainConfig, masterConfig,
                 slaveConfig, dir.getAbsolutePath(), "full-ha", adjustDomain, legacyConfig, false);
     }
@@ -211,54 +206,41 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     }
 
     static String copyDomainFile() {
-        final File originalDomainXml = loadFile("target", "jbossas", "domain", "configuration", "domain.xml");
+        final Path originalDomainXml = loadFile("target", "wildfly", "domain", "configuration", "domain.xml");
         return copyDomainFile(originalDomainXml);
     }
 
-    static String copyDomainFile(final File originalDomainXml) {
+    static String copyDomainFile(final Path originalDomainXml) {
 
-        final File targetDirectory = createDirectory("target", "test-classes", "copied-master-config");
-        final File copiedDomainXml = new File(targetDirectory, "domain.xml");
-        if (copiedDomainXml.exists()) {
-            Assert.assertTrue(copiedDomainXml.delete());
-        }
-        try (InputStream in = new BufferedInputStream(new FileInputStream(originalDomainXml))) {
-            final OutputStream out = new BufferedOutputStream(new FileOutputStream(copiedDomainXml));
-            try {
-                byte[] bytes = new byte[1024];
-                int len = in.read(bytes);
-                while (len != -1) {
-                    out.write(bytes, 0, len);
-                    len = in.read(bytes);
-                }
-            } finally {
-                safeClose(out);
-            }
+        final Path targetDirectory = createDirectory("target", "test-classes", "copied-master-config");
+        final Path copiedDomainXml = targetDirectory.resolve("domain.xml");
+
+        try {
+            Files.copy(originalDomainXml, copiedDomainXml, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return STANDARD_DOMAIN_CONFIG;
     }
 
-    static File loadLegacyDomainXml(Version.AsVersion version) {
+    static Path loadLegacyDomainXml(Version.AsVersion version) {
         String number = version.getVersion().replace('.', '-');
         String fileName = "eap-" + number + ".xml";
         return loadFile("..", "integration", "manualmode", "src", "test", "resources", "legacy-configs", "domain", fileName);
     }
 
-    private static File loadFile(String first, String... parts) {
+    private static Path loadFile(String first, String... parts) {
         final Path p = Paths.get(first, parts);
-        final File file = p.toFile();
-        Assert.assertTrue(file.getAbsolutePath() + " does not exist", file.exists());
-        return file;
+        Assert.assertTrue(p.toAbsolutePath().toString() + " does not exist", Files.exists(p));
+        return p;
     }
 
 
-    private static File createDirectory(String first, String... parts) {
+    private static Path createDirectory(String first, String... parts) {
         Path p = Paths.get(first, parts);
         try {
-            File dir = Files.createDirectories(p).toFile();
-            Assert.assertTrue(dir.exists());
+            Path dir = Files.createDirectories(p);
+            Assert.assertTrue(Files.exists(dir));
             return dir;
         } catch (IOException e) {
             throw new RuntimeException(e);

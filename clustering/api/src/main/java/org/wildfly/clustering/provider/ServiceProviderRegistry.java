@@ -24,6 +24,7 @@ package org.wildfly.clustering.provider;
 
 import java.util.Set;
 
+import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 
@@ -33,7 +34,7 @@ import org.wildfly.clustering.group.Node;
  * @author Paul Ferraro
  * @param <T> a service type
  */
-public interface ServiceProviderRegistry<T> {
+public interface ServiceProviderRegistry<T> extends Registrar<T> {
 
     /**
      * Returns the group with which to register service providers.
@@ -48,6 +49,7 @@ public interface ServiceProviderRegistry<T> {
      * @param service a service to register
      * @return a new service provider registration
      */
+    @Override
     ServiceProviderRegistration<T> register(T service);
 
     /**

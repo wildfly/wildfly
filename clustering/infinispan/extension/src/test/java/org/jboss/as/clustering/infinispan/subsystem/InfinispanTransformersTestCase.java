@@ -25,11 +25,9 @@ import static org.jboss.as.clustering.controller.PropertiesTestUtil.checkMapMode
 import static org.jboss.as.clustering.controller.PropertiesTestUtil.checkMapResults;
 import static org.jboss.as.clustering.controller.PropertiesTestUtil.executeOpInBothControllersWithAttachments;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
@@ -39,7 +37,6 @@ import java.util.List;
 
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -93,10 +90,6 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
 
     private static InfinispanModel getModelVersion(ModelTestControllerVersion controllerVersion) {
         switch (controllerVersion) {
-            case EAP_6_2_0:
-                return InfinispanModel.VERSION_1_4_1;
-            case EAP_6_3_0:
-                return InfinispanModel.VERSION_1_5_0;
             case EAP_6_4_0:
             case EAP_6_4_7:
                 return InfinispanModel.VERSION_1_6_0;
@@ -109,18 +102,6 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
 
     private static String[] getDependencies(ModelTestControllerVersion version) {
         switch (version) {
-            case EAP_6_2_0:
-                return new String[] {
-                        formatEAP6SubsystemArtifact(version),
-                        "org.infinispan:infinispan-core:5.2.7.Final-redhat-2",
-                        "org.infinispan:infinispan-cachestore-jdbc:5.2.7.Final-redhat-2",
-                };
-            case EAP_6_3_0:
-                return new String[] {
-                        formatEAP6SubsystemArtifact(version),
-                        "org.infinispan:infinispan-core:5.2.10.Final-redhat-1",
-                        "org.infinispan:infinispan-cachestore-jdbc:5.2.10.Final-redhat-1",
-                };
             case EAP_6_4_0:
             case EAP_6_4_7:
                 return new String[] {
@@ -157,16 +138,6 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                 .require(JGroupsRequirement.CHANNEL_FACTORY, "maximal-channel")
                 .require(JGroupsDefaultRequirement.CHANNEL_FACTORY)
                 ;
-    }
-
-    @Test
-    public void testTransformerEAP620() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_6_2_0);
-    }
-
-    @Test
-    public void testTransformerEAP630() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test
@@ -367,16 +338,6 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
-    public void testRejectionsEAP620() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_6_2_0);
-    }
-
-    @Test
-    public void testRejectionsEAP630() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_6_3_0);
-    }
-
-    @Test
     public void testRejectionsEAP640() throws Exception {
         testRejections(ModelTestControllerVersion.EAP_6_4_0);
     }
@@ -431,50 +392,6 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
             }
         }
 
-        if (InfinispanModel.VERSION_1_5_0.requiresTransformation(version)) {
-            config.addFailedAttribute(
-                    containerAddress, new ChangeToTrueConfig(CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName()));
-            config.addFailedAttribute(
-                    containerAddress.append(LocalCacheResourceDefinition.WILDCARD_PATH), new ChangeToTrueConfig(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getName()));
-            config.addFailedAttribute(
-                    containerAddress.append(DistributedCacheResourceDefinition.WILDCARD_PATH), new ChangeToTrueConfig(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getName()));
-            config.addFailedAttribute(
-                    containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH), new ChangeToTrueConfig(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getName()));
-            config.addFailedAttribute(
-                    containerAddress.append(InvalidationCacheResourceDefinition.WILDCARD_PATH), new ChangeToTrueConfig(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getName()));
-
-        }
-
         return config;
-    }
-
-    private static class ChangeToTrueConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<ChangeToTrueConfig> {
-        ChangeToTrueConfig(String... attributes) {
-            super(attributes);
-        }
-
-        @Override
-        protected boolean isAttributeWritable(String attributeName) {
-            return true;
-        }
-
-        @Override
-        protected boolean checkValue(ModelNode operation, String attrName, ModelNode attribute, boolean isGeneratedWriteAttribute) {
-            if (!isGeneratedWriteAttribute && Operations.getName(operation).equals(WRITE_ATTRIBUTE_OPERATION) && operation.hasDefined(NAME) && operation.get(NAME).asString().equals(CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE.getName())) {
-                // The attribute won't be defined in the :write-attribute(name=default-cache,.. boot operation so don't reject in that case
-                return false;
-            }
-            return !attribute.equals(new ModelNode(true));
-        }
-
-        @Override
-        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
-            throw new IllegalStateException();
-        }
-
-        @Override
-        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-            return new ModelNode(true);
-        }
     }
 }

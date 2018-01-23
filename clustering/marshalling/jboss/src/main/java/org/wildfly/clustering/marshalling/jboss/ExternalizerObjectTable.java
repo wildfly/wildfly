@@ -23,6 +23,8 @@
 package org.wildfly.clustering.marshalling.jboss;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
+import java.util.EnumSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -33,7 +35,9 @@ import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.ObjectTable;
 import org.jboss.marshalling.Unmarshaller;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
+import org.wildfly.clustering.marshalling.spi.IntSerializer;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 
 /**
  * {@link ObjectTable} implementation that dynamically loads {@link Externalizer} instances available from a given {@link ClassLoader}.
@@ -41,36 +45,33 @@ import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
  */
 public class ExternalizerObjectTable implements ObjectTable {
 
-    private final Externalizer<?>[] externalizers;
+    private final Externalizer<Object>[] externalizers;
     private final Map<Class<?>, Writer> writers = new IdentityHashMap<>();
-    private final IndexExternalizer indexExternalizer;
+    private final IntSerializer indexSerializer;
 
     public ExternalizerObjectTable(ClassLoader loader) {
-        this(Stream.concat(loadExternalizers(ExternalizerObjectTable.class.getClassLoader()), loadExternalizers(loader)).toArray(Externalizer[]::new));
+        this(Stream.concat(EnumSet.allOf(DefaultExternalizer.class).stream(), StreamSupport.stream(ServiceLoader.load(Externalizer.class, loader).spliterator(), false))
+                .toArray(Externalizer[]::new));
     }
 
-    @SuppressWarnings("rawtypes")
-    private static Stream<Externalizer> loadExternalizers(ClassLoader loader) {
-        return StreamSupport.stream(ServiceLoader.load(Externalizer.class, loader).spliterator(), false);
+    @SafeVarargs
+    public ExternalizerObjectTable(Externalizer<Object>... externalizers) {
+        this(IndexSerializer.select(externalizers.length), externalizers);
     }
 
-    public ExternalizerObjectTable(Externalizer<?>... externalizers) {
-        this(IndexExternalizer.select(externalizers.length), externalizers);
-    }
-
-    private ExternalizerObjectTable(IndexExternalizer indexExternalizer, Externalizer<?>... externalizers) {
-        this.indexExternalizer = indexExternalizer;
+    @SafeVarargs
+    private ExternalizerObjectTable(IntSerializer indexSerializer, Externalizer<Object>... externalizers) {
+        this.indexSerializer = indexSerializer;
         this.externalizers = externalizers;
         for (int i = 0; i < externalizers.length; ++i) {
-            @SuppressWarnings("unchecked")
-            final Externalizer<Object> externalizer = (Externalizer<Object>) externalizers[i];
+            final Externalizer<Object> externalizer = externalizers[i];
             final int index = i;
             Class<?> targetClass = externalizer.getTargetClass();
             if (!this.writers.containsKey(targetClass)) {
                 Writer writer = new Writer() {
                     @Override
                     public void writeObject(Marshaller marshaller, Object object) throws IOException {
-                        indexExternalizer.writeData(marshaller, index);
+                        indexSerializer.writeInt(marshaller, index);
                         externalizer.writeObject(marshaller, object);
                     }
                 };
@@ -83,15 +84,18 @@ public class ExternalizerObjectTable implements ObjectTable {
     public Writer getObjectWriter(final Object object) throws IOException {
         Class<?> targetClass = object.getClass();
         Class<?> writerClass = targetClass.isEnum() ? ((Enum<?>) object).getDeclaringClass() : targetClass;
-        while (!this.writers.containsKey(writerClass) && (writerClass.getSuperclass() != null)) {
-            writerClass = writerClass.getSuperclass();
+        Class<?> superClass = writerClass.getSuperclass();
+        // If implementation class has no externalizer, search any abstract superclasses
+        while (!this.writers.containsKey(writerClass) && (superClass != null) && Modifier.isAbstract(superClass.getModifiers())) {
+            writerClass = superClass;
+            superClass = writerClass.getSuperclass();
         }
         return this.writers.get(writerClass);
     }
 
     @Override
     public Object readObject(Unmarshaller unmarshaller) throws IOException, ClassNotFoundException {
-        int index = this.indexExternalizer.readData(unmarshaller);
+        int index = this.indexSerializer.readInt(unmarshaller);
         if (index >= this.externalizers.length) {
             throw new IllegalStateException();
         }

@@ -75,8 +75,8 @@ import org.jboss.as.ee.component.ResourceInjectionTarget;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
 import org.jboss.as.ejb3.component.EJBViewDescription;
+import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
-import org.jboss.as.ejb3.concurrency.LockableComponent;
 import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.ejb3.subsystem.deployment.InstalledComponent;
@@ -102,6 +102,7 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
@@ -859,10 +860,10 @@ public interface EjbLogger extends BasicLogger {
 //    @LogMessage(level = ERROR)
 //    @Message(id = 155, value = "Error during transaction management of transaction id %s")
 //    void errorDuringTransactionManagement(@Cause Throwable cause, XidTransactionID id);
-
-    @LogMessage(level = WARN)
-    @Message(id = 156, value = "%s retrying %d")
-    void retrying(String message, int count);
+//
+//    @LogMessage(level = WARN)
+//    @Message(id = 156, value = "%s retrying %d")
+//    void retrying(String message, int count);
 
     @LogMessage(level = ERROR)
     @Message(id = 157, value = "Failed to get status")
@@ -1531,7 +1532,7 @@ public interface EjbLogger extends BasicLogger {
      * @return a {@link IllegalStateException} for the error.
      */
     @Message(id = 242, value = "Illegal lock type %s on %s for component %s")
-    IllegalStateException failToObtainLockIllegalType(LockType lockType, Method method, LockableComponent lockableComponent);
+    IllegalStateException failToObtainLockIllegalType(LockType lockType, Method method, SingletonComponent lockableComponent);
 
     /**
      * Creates an exception indicating the inability to call the method as something is missing for the invocation.
@@ -1702,8 +1703,8 @@ public interface EjbLogger extends BasicLogger {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 263, value = "Could not load EJB view class ")
-    RuntimeException failToLoadEjbViewClass(@Cause Throwable e);
+//    @Message(id = 263, value = "Could not load EJB view class ")
+//    RuntimeException failToLoadEjbViewClass(@Cause Throwable e);
 
 
     /**
@@ -3132,4 +3133,10 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 497, value = "Failed to persist timer %s on startup. This is likely due to another cluster member making the same change, and should not affect operation.")
     void failedToPersistTimerOnStartup(TimerImpl activeTimer, @Cause  Exception e);
+
+    @Message(id = 498, value = "Business view method %s declared final in %s")
+    DeploymentUnitProcessingException businessViewMethodDeclaredFinal(String method, String bean);
+
+    @Message(id = 499, value = "Cannot read derived size - service %s unreachable")
+    OperationFailedException cannotReadStrictMaxPoolDerivedSize(ServiceName serviceName);
 }

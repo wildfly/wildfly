@@ -27,13 +27,10 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Comparator;
 import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Function;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * Externalizers for implementations of {@link SortedMap}.
@@ -46,7 +43,7 @@ public class SortedMapExternalizer<T extends SortedMap<Object, Object>> implemen
     private final Function<Comparator<? super Object>, T> factory;
 
     @SuppressWarnings("unchecked")
-    SortedMapExternalizer(Class<?> targetClass, Function<Comparator<? super Object>, T> factory) {
+    public SortedMapExternalizer(Class<?> targetClass, Function<Comparator<? super Object>, T> factory) {
         this.targetClass = (Class<T>) targetClass;
         this.factory = factory;
     }
@@ -61,26 +58,12 @@ public class SortedMapExternalizer<T extends SortedMap<Object, Object>> implemen
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         @SuppressWarnings("unchecked")
         Comparator<? super Object> comparator = (Comparator<? super Object>) input.readObject();
-        int size = IndexExternalizer.VARIABLE.readData(input);
+        int size = IndexSerializer.VARIABLE.readInt(input);
         return MapExternalizer.readMap(input, this.factory.apply(comparator), size);
     }
 
     @Override
     public Class<T> getTargetClass() {
         return this.targetClass;
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class ConcurrentSkipListMapExternalizer extends SortedMapExternalizer<ConcurrentSkipListMap<Object, Object>> {
-        public ConcurrentSkipListMapExternalizer() {
-            super(ConcurrentSkipListMap.class, ConcurrentSkipListMap<Object, Object>::new);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class TreeMapExternalizer extends SortedMapExternalizer<TreeMap<Object, Object>> {
-        public TreeMapExternalizer() {
-            super(TreeMap.class, TreeMap<Object, Object>::new);
-        }
     }
 }

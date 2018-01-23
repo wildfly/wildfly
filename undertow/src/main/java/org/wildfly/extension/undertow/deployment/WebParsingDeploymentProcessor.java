@@ -98,7 +98,9 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
                     if (schemaValidation && webMetaData.getSchemaLocation() != null) {
                         XMLSchemaValidator validator = new XMLSchemaValidator(new XMLResourceResolver());
                         InputStream xmlInput = webXml.openStream();
+                        ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
                         try {
+                            Thread.currentThread().setContextClassLoader(WebMetaDataParser.class.getClassLoader());
                             if (webMetaData.is23())
                                 validator.validate("-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN", xmlInput);
                             else if (webMetaData.is24())
@@ -115,6 +117,7 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
                             throw new DeploymentUnitProcessingException("Failed to validate " + webXml, e);
                         } finally {
                             xmlInput.close();
+                            Thread.currentThread().setContextClassLoader(oldCl);
                         }
                     }
                     warMetaData.setWebMetaData(webMetaData);

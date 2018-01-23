@@ -23,11 +23,11 @@ package org.jboss.as.weld.discovery;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
+import java.util.function.Function;
 
 import org.jboss.as.weld.util.Indices;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.weld.util.Function;
 
 public class AnnotationType {
 

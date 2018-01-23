@@ -24,13 +24,13 @@ package org.jboss.as.weld.util;
 import java.lang.annotation.Inherited;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.weld.util.Function;
-import org.jboss.weld.util.Predicate;
 
 /**
  * Utilities for working with Jandex indices.

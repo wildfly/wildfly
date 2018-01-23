@@ -58,6 +58,7 @@ import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.security.SecurityDomain;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.security.credential.store.CredentialStore;
@@ -207,6 +208,7 @@ public class IIOPSubsystemTransformersTestCase extends AbstractSubsystemBaseTest
 
             capabilities.put(buildDynamicCapabilityName("org.wildfly.security.ssl-context", "foo"), SSLContext.class);
 
+            capabilities.put(buildDynamicCapabilityName("org.wildfly.security.legacy-security-domain", "domain"), SecurityDomain.class);
 
             registerServiceCapabilities(capabilityRegistry, capabilities);
             registerCapabilities(capabilityRegistry,

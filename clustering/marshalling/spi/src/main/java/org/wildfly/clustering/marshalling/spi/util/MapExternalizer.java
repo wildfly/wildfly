@@ -25,15 +25,11 @@ package org.wildfly.clustering.marshalling.spi.util;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.IntFunction;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * Externalizers for implementations of {@link Map}.
@@ -45,7 +41,7 @@ public class MapExternalizer<T extends Map<Object, Object>> implements Externali
     private final IntFunction<T> factory;
 
     @SuppressWarnings("unchecked")
-    MapExternalizer(Class<?> targetClass, IntFunction<T> factory) {
+    public MapExternalizer(Class<?> targetClass, IntFunction<T> factory) {
         this.targetClass = (Class<T>) targetClass;
         this.factory = factory;
     }
@@ -56,7 +52,7 @@ public class MapExternalizer<T extends Map<Object, Object>> implements Externali
     }
 
     static <T extends Map<Object, Object>> void writeMap(ObjectOutput output, T map) throws IOException {
-        IndexExternalizer.VARIABLE.writeData(output, map.size());
+        IndexSerializer.VARIABLE.writeInt(output, map.size());
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
             output.writeObject(entry.getKey());
             output.writeObject(entry.getValue());
@@ -65,7 +61,7 @@ public class MapExternalizer<T extends Map<Object, Object>> implements Externali
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        int size = IndexExternalizer.VARIABLE.readData(input);
+        int size = IndexSerializer.VARIABLE.readInt(input);
         return readMap(input, this.factory.apply(size), size);
     }
 
@@ -79,26 +75,5 @@ public class MapExternalizer<T extends Map<Object, Object>> implements Externali
     @Override
     public Class<T> getTargetClass() {
         return this.targetClass;
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class ConcurrentHashMapExternalizer extends MapExternalizer<ConcurrentHashMap<Object, Object>> {
-        public ConcurrentHashMapExternalizer() {
-            super(ConcurrentHashMap.class, ConcurrentHashMap::new);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class HashMapExternalizer extends MapExternalizer<HashMap<Object, Object>> {
-        public HashMapExternalizer() {
-            super(HashMap.class, HashMap::new);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class LinkedHashMapExternalizer extends MapExternalizer<LinkedHashMap<Object, Object>> {
-        public LinkedHashMapExternalizer() {
-            super(LinkedHashMap.class, LinkedHashMap::new);
-        }
     }
 }

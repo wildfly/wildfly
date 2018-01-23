@@ -303,7 +303,9 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     private void getDependencies(DeploymentUnit deploymentUnit, Set<ServiceName> dependencies, ServiceLoader<DeploymentUnitDependenciesProvider> providers) {
-        providers.forEach(provider -> dependencies.addAll(provider.getDependencies(deploymentUnit)));
+        for (DeploymentUnitDependenciesProvider provider : providers) {
+            dependencies.addAll(provider.getDependencies(deploymentUnit));
+        }
     }
 
     @Override

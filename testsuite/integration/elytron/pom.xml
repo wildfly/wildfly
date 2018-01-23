@@ -55,16 +55,9 @@
             <artifactId>jboss-logmanager</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-testsuite-shared</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -91,7 +84,7 @@
                         <goals>
                             <goal>build</goal>
                         </goals>
-                        <phase>process-test-resources</phase>
+                        <phase>generate-test-resources</phase>
                         <configuration>
                             <config-file>server-provisioning.xml</config-file>
                             <server-name>${wildfly.instance.name}</server-name>
@@ -105,7 +98,15 @@
                 <version>${version.resources.plugin}</version>
                 <executions combine.self="override">
                     <execution>
-                        <id>ts.copy-jbossas.groups</id>
+                        <id>ts.config-as.copy-mgmt-users</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>ts.copy-wildfly</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>ts.copy-elytron.config</id>
                         <phase>process-test-resources</phase>
                         <inherited>false</inherited>
                         <configuration combine.self="override">
@@ -172,7 +173,7 @@
                     <systemPropertyVariables>
                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                         <jboss.inst>${wildfly.dir}</jboss.inst>
-                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts}</server.jvm.args>
+                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} ${extra.server.jvm.args}</server.jvm.args>
                         <node0>${node0}</node0>
 
                         <!-- let's override the module.path parent configuration with dummy value, to avoid the "IllegalStateException: Duplicate layer 'base'" -->

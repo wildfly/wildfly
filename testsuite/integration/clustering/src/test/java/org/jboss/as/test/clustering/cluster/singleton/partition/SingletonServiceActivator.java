@@ -36,8 +36,8 @@ import org.wildfly.clustering.singleton.election.NamePreference;
 import org.wildfly.clustering.singleton.election.PreferredSingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_2;
 
 /**
  * @author Tomas Hofman

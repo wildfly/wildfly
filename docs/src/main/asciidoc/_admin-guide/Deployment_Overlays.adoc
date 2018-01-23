@@ -1,0 +1,36 @@
+= Deployment Overlays
+
+Deployment overlays are our way of 'overlaying' content into an existing
+deployment, without physically modifying the contents of the deployment
+archive. Possible use cases include swapping out deployment descriptors,
+modifying static web resources to change the branding of an application,
+or even replacing jar libraries with different versions.
+
+Deployment overlays have a different lifecycle to a deployment. In order
+to use a deployment overlay, you first create the overlay, using the CLI
+or the management API. You then add files to the overlay, specifying the
+deployment paths you want them to overlay. Once you have created the
+overlay you then have to link it to a deployment name (which is done
+slightly differently depending on if you are in standalone or domain
+mode). Once you have created the link any deployment that matches the
+specified deployment name will have the overlay applied.
+
+When you modify or create an overlay it will not affect existing
+deployments, they must be redeployed in order to take effect
+
+[[creating-a-deployment-overlay]]
+== Creating a deployment overlay
+
+To create a deployment overlay the CLI provides a high level command to
+do all the steps specified above in one go. An example command is given
+below for both standalone and domain mode:
+
+[source,ruby]
+----
+deployment-overlay add --name=myOverlay --content=/WEB-INF/web.xml=/myFiles/myWeb.xml,/WEB-INF/ejb-jar.xml=/myFiles/myEjbJar.xml --deployments=test.war,*-admin.war --redeploy-affected
+----
+
+[source,ruby]
+----
+deployment-overlay add --name=myOverlay --content=/WEB-INF/web.xml=/myFiles/myWeb.xml,/WEB-INF/ejb-jar.xml=/myFiles/myEjbJar.xml --deployments=test.war,*-admin.war --server-groups=main-server-group --redeploy-affected
+----

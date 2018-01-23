@@ -1,0 +1,114 @@
+= Deployment Scanner configuration
+
+The deployment scanner is only used in standalone mode. Its job is to
+monitor a directory for new files and to deploy those files. It can be
+found in `standalone.xml`:
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:deployment-scanner:2.0">
+   <deployment-scanner scan-interval="5000"
+      relative-to="jboss.server.base.dir" path="deployments" />
+</subsystem>
+----
+
+You can define more `deployment-scanner` entries to scan for deployments
+from more locations. The configuration showed will scan the
+`JBOSS_HOME/standalone/deployments` directory every five seconds. The
+runtime model is shown below, and uses default values for attributes not
+specified in the xml:
+
+[source, ruby]
+----
+[standalone@localhost:9999 /] /subsystem=deployment-scanner:read-resource(recursive=true)
+{
+    "outcome" => "success",
+    "result" => {"scanner" => {"default" => {
+        "auto-deploy-exploded" => false,
+        "auto-deploy-zipped" => true,
+        "deployment-timeout" => 60L,
+        "name" => "default",
+        "path" => "deployments",
+        "relative-to" => "jboss.server.base.dir",
+        "scan-enabled" => true,
+        "scan-interval" => 5000
+    }}}
+}
+----
+
+The attributes are
+
+[cols=",,",options="header"]
+|=======================================================================
+|Name |Type |Description
+
+|name |STRING |The name of the scanner. default is used if not specified
+
+|path |STRING |The actual filesystem path to be scanned. Treated as an
+absolute path, unless the 'relative-to' attribute is specified, in which
+case the value is treated as relative to that path.
+
+|relative-to |STRING |Reference to a filesystem path defined in the
+"paths" section of the server configuration, or one of the system
+properties specified on startup. In the example above
+jboss.server.base.dir resolves to JBOSS_HOME/standalone
+
+|scan-enabled |BOOLEAN |If true scanning is enabled
+
+|scan-interval |INT |Periodic interval, in milliseconds, at which the
+repository should be scanned for changes. A value of less than 1
+indicates the repository should only be scanned at initial startup.
+
+|auto-deploy-zipped |BOOLEAN |Controls whether zipped deployment content
+should be automatically deployed by the scanner without requiring the
+user to add a .dodeploy marker file.
+
+|auto-deploy-exploded |BOOLEAN |Controls whether exploded deployment
+content should be automatically deployed by the scanner without
+requiring the user to add a .dodeploy marker file. Setting this to
+'true' is not recommended for anything but basic development scenarios,
+as there is no way to ensure that deployment will not occur in the
+middle of changes to the content.
+
+|auto-deploy-xml |BOOLEAN |Controls whether XML content should be
+automatically deployed by the scanner without requiring a .dodeploy
+marker file.
+
+|deployment-timeout |LONG |Timeout, in seconds, a deployment is allows
+to execute before being canceled. The default is 60 seconds.
+|=======================================================================
+
+Deployment scanners can be added by modifying `standalone.xml` before
+starting up the server or they can be added and removed at runtime using
+the CLI
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] /subsystem=deployment-scanner/scanner=new:add(scan-interval=10000,relative-to="jboss.server.base.dir",path="other-deployments")
+{"outcome" => "success"}
+[standalone@localhost:9990 /] /subsystem=deployment-scanner/scanner=new:remove
+{"outcome" => "success"}
+----
+
+You can also change the attributes at runtime, so for example to turn
+off scanning you can do
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] /subsystem=deployment-scanner/scanner=default:write-attribute(name="scan-enabled",value=false)
+{"outcome" => "success"}
+[standalone@localhost:9990 /] /subsystem=deployment-scanner:read-resource(recursive=true)
+{
+    "outcome" => "success",
+    "result" => {"scanner" => {"default" => {
+        "auto-deploy-exploded" => false,
+        "auto-deploy-zipped" => true,
+        "deployment-timeout" => 60L,
+        "name" => "default",
+        "path" => "deployments",
+        "relative-to" => "jboss.server.base.dir",
+        "scan-enabled" => false,
+        "scan-interval" => 5000
+    }}}
+}
+----

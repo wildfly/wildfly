@@ -26,7 +26,6 @@ import static org.mockito.Mockito.*;
 import java.util.UUID;
 
 import org.junit.Test;
-import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -57,7 +56,8 @@ public class ExpiredSessionRemoverTestCase {
         UUID expiredAttributesValue = UUID.randomUUID();
         UUID validMetaDataValue = UUID.randomUUID();
 
-        Remover<String> subject = new ExpiredSessionRemover<>(factory, listener);
+        ExpiredSessionRemover<UUID, UUID, Object> subject = new ExpiredSessionRemover<>(factory);
+        subject.register(listener);
 
         when(factory.getMetaDataFactory()).thenReturn(metaDataFactory);
         when(factory.getAttributesFactory()).thenReturn(attributesFactory);

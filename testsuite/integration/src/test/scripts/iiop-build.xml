@@ -10,7 +10,7 @@
 
         <echo message="Building config jbossas-iiop-client"/>
         <copy todir="target/jbossas-iiop-client">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <ts.config-as.add-jts name="jbossas-iiop-client"/>
         <ts.config-as.ip-with-multicast name="jbossas-iiop-client"
@@ -19,7 +19,7 @@
         />
         <echo message="Building config jbossas-iiop-server"/>
         <copy todir="target/jbossas-iiop-server">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <ts.config-as.add-jts name="jbossas-iiop-server"/>
         <ts.config-as.ip-with-multicast name="jbossas-iiop-server"
@@ -31,7 +31,7 @@
         <!-- SSL Client w Sec Domain -->
         <echo message="Building config jbossas-iiop-ssl-client"/>
         <copy todir="target/jbossas-iiop-ssl-client">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-client"
                                         node="${node0}"
@@ -47,7 +47,7 @@
         <!-- SSL Server with ior-settings transport config -->
         <echo message="Building config jbossas-iiop-ssl-server"/>
         <copy todir="target/jbossas-iiop-ssl-server">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-server"
                                         node="${node1}"
@@ -63,7 +63,7 @@
         <!-- SSL Server with server-requires -->
         <echo message="Building config jbossas-iiop-ssl-legacy-server"/>
         <copy todir="target/jbossas-iiop-ssl-legacy-server">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-legacy-server"
                                         node="${node1}"
@@ -87,7 +87,7 @@
 
         <echo message="Building config jbossas-iiop-client"/>
         <copy todir="target/jbossas-iiop-client">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <ts.config-as.add-jts name="jbossas-iiop-client"/>
         <ts.config-as.ip-with-multicast name="jbossas-iiop-client"
@@ -96,7 +96,7 @@
         />
         <echo message="Building config jbossas-iiop-server"/>
         <copy todir="target/jbossas-iiop-server">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <ts.config-as.add-jts name="jbossas-iiop-server"/>
         <ts.config-as.ip-with-multicast name="jbossas-iiop-server"
@@ -108,7 +108,7 @@
         <!-- SSL Client w Sec Domain -->
         <echo message="Building config jbossas-iiop-ssl-client"/>
         <copy todir="target/jbossas-iiop-ssl-client">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-client"
                                         node="${node0}"
@@ -127,7 +127,7 @@
         <!-- SSL Server with ior-settings transport config -->
         <echo message="Building config jbossas-iiop-ssl-server"/>
         <copy todir="target/jbossas-iiop-ssl-server">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-server"
                                         node="${node1}"
@@ -146,7 +146,7 @@
         <!-- SSL Server with server-requires -->
         <echo message="Building config jbossas-iiop-ssl-legacy-server"/>
         <copy todir="target/jbossas-iiop-ssl-legacy-server">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <ts.config-as.ip-with-multicast name="jbossas-iiop-ssl-legacy-server"
                                         node="${node1}"

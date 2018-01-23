@@ -23,9 +23,10 @@ import javax.faces.application.ViewHandler;
 import javax.faces.application.ViewHandlerWrapper;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
+
 import org.jboss.as.jsf.logging.JSFLogger;
 import org.jboss.as.jsf.deployment.JSFDependencyProcessor;
-import org.jboss.weld.jsf.ConversationAwareViewHandler;
+import org.jboss.weld.module.jsf.ConversationAwareViewHandler;
 
 /**
  * If this is a CDI-enabled app, then delegate to a wrapped Weld ViewHandler.

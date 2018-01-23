@@ -21,12 +21,14 @@
  */
 package org.wildfly.clustering.server.singleton;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
 
 /**
  * Provides the requisite builders for a clustered {@link org.wildfly.clustering.singleton.SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
+@MetaInfServices(DistributedCacheBuilderProvider.class)
 public class CacheSingletonServiceBuilderFactoryBuilderProvider extends SingletonServiceBuilderFactoryBuilderProvider implements DistributedCacheBuilderProvider {
 
     public CacheSingletonServiceBuilderFactoryBuilderProvider() {

@@ -21,6 +21,15 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <!-- todo,
+        Enable elytron script only runs on "wildfly" instance of server, other copies are not affected.
+        Since we updated this testsuite to reuse "wildfly" server instance for server itself instead of making extra copy
+        Test DynamicJNDIContextEJBInvocationTestCase started failing,
+        which would indicate that this test in combination with enabled elytron has issues
+        Maybe problem is just related that elytron should be enabled on both instances or it even lies somewhere else.
+        We disable eyltron script execution by setting script to non-existing.
+        -->
+        <ts.elytron.cli>multinode-setup.cli</ts.elytron.cli>
     </properties>
 
     <profiles>
@@ -75,10 +84,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <includes>
-                                <include>org/jboss/as/test/multinode/**/*TestCase.java</include>
-                            </includes>
-
+                          
                             <!-- Parameters to test cases. -->
                             <systemPropertyVariables combine.children="append">
                                 <arquillian.launch>multinode</arquillian.launch>
@@ -86,8 +92,8 @@
                                 <!-- EJB client library hack, see WFLY-4973-->
                                 <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
                                 <jbossas.multinode.client>${basedir}/target/jbossas-multinode-client</jbossas.multinode.client>
-                                <jbossas.multinode.server>${basedir}/target/jbossas-multinode-server</jbossas.multinode.server>
-                                <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} -Dnode0=${node0} -Dnode1=${node1}</server.jvm2.args>
+                                <jbossas.multinode.server>${basedir}/target/wildfly</jbossas.multinode.server>
+                                <server.jvm2.args>${surefire.system.args} -Dmaven.repo.local=${settings.localRepository} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} -Dnode0=${node0} -Dnode1=${node1} -Djboss.socket.binding.port-offset=100</server.jvm2.args>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

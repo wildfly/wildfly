@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * Externalizer for {@link SessionAttributeNamesEntry}.
@@ -43,22 +43,22 @@ public class SessionAttributeNamesEntryExternalizer implements Externalizer<Sess
 
     @Override
     public void writeObject(ObjectOutput output, SessionAttributeNamesEntry value) throws IOException {
-        IndexExternalizer.VARIABLE.writeData(output, value.getSequence().get());
+        IndexSerializer.VARIABLE.writeInt(output, value.getSequence().get());
         ConcurrentMap<String, Integer> names = value.getNames();
-        IndexExternalizer.VARIABLE.writeData(output, names.size());
+        IndexSerializer.VARIABLE.writeInt(output, names.size());
         for (Map.Entry<String, Integer> entry : names.entrySet()) {
             output.writeUTF(entry.getKey());
-            IndexExternalizer.VARIABLE.writeObject(output, entry.getValue());
+            IndexSerializer.VARIABLE.writeInt(output, entry.getValue());
         }
     }
 
     @Override
     public SessionAttributeNamesEntry readObject(ObjectInput input) throws IOException {
-        AtomicInteger sequence = new AtomicInteger(IndexExternalizer.VARIABLE.readData(input));
-        int size = IndexExternalizer.VARIABLE.readData(input);
+        AtomicInteger sequence = new AtomicInteger(IndexSerializer.VARIABLE.readInt(input));
+        int size = IndexSerializer.VARIABLE.readInt(input);
         ConcurrentMap<String, Integer> names = new ConcurrentHashMap<>(size);
         for (int i = 0; i < size; ++i) {
-            names.put(input.readUTF(), IndexExternalizer.VARIABLE.readObject(input));
+            names.put(input.readUTF(), IndexSerializer.VARIABLE.readInt(input));
         }
         return new SessionAttributeNamesEntry(sequence, names);
     }

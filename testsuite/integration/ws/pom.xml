@@ -74,9 +74,7 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables combine.children="append">
-                                        <!--<node0>${node0}</node0>-->
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                                         <!-- EJB client library hack, see WFLY-4973-->
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
 

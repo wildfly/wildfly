@@ -56,7 +56,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 import javax.security.jacc.WebResourcePermission;
 import javax.security.jacc.WebRoleRefPermission;
@@ -485,13 +484,15 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             final Map<String, Map<String, String>> selectedMechanisms = new LinkedHashMap<>();
             if (overrideDeploymentConfig || (loginConfig == null)) {
                 final Map<String, String> mechanismConfiguration = baseConfiguration;
-                availableMechanisms.forEach(n -> selectedMechanisms.put(n, mechanismConfiguration));
+                for (String n : availableMechanisms) {
+                    selectedMechanisms.put(n, mechanismConfiguration);
+                }
             } else {
                 final List<AuthMethodConfig> authMethods = loginConfig.getAuthMethods();
                 if (authMethods.isEmpty()) {
                     throw ROOT_LOGGER.noMechanismsSelected();
                 }
-                authMethods.forEach(c -> {
+                for (AuthMethodConfig c : authMethods) {
                     String name = c.getName();
                     if (availableMechanisms.contains(name) == false) {
                         throw ROOT_LOGGER.requiredMechanismNotAvailable(name, availableMechanisms);
@@ -507,7 +508,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                         mechanismConfiguration = baseConfiguration;
                     }
                     selectedMechanisms.put(name, mechanismConfiguration);
-                });
+                }
             }
 
             HashMap<Scope, Function<HttpServerExchange, HttpScope>> scopeResolvers = new HashMap<>();
@@ -810,7 +811,9 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
                     permissions.add(new WebResourcePermission(getCanonicalURI(request), request.getMethod()));
 
-                    securityIdentity.getRoles("web", true).forEach(roleName -> permissions.add(new WebRoleRefPermission(getCanonicalURI(request), roleName)));
+                    for (String roleName : securityIdentity.getRoles("web", true)) {
+                        permissions.add(new WebRoleRefPermission(getCanonicalURI(request), roleName));
+                    }
 
                     for (Permission permission : permissions) {
                         if (securityIdentity.implies(permission)) {
@@ -835,9 +838,13 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             };
         }
 
-        private String[] getDeployments() {
-            synchronized(registrations) {
-                return registrations.stream().map(r -> r.deploymentInfo.getDeploymentName()).collect(Collectors.toList()).toArray(new String[registrations.size()]);
+        private List<String> getDeployments() {
+            synchronized (registrations) {
+                List<String> deployments = new ArrayList<>(registrations.size());
+                for (RegistrationImpl registration : registrations) {
+                    deployments.add(registration.deploymentInfo.getDeploymentName());
+                }
+                return deployments;
             }
         }
 
@@ -895,7 +902,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         private class RegistrationImpl implements Registration {
 
-            private final DeploymentInfo deploymentInfo;
+            final DeploymentInfo deploymentInfo;
 
             private RegistrationImpl(DeploymentInfo deploymentInfo) {
                 this.deploymentInfo = deploymentInfo;

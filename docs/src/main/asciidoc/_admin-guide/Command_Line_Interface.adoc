@@ -1,0 +1,443 @@
+= Command Line Interface
+
+The Command Line Interface (CLI) is a management tool for a managed
+domain or standalone server. It allows a user to connect to the domain
+controller or a standalone server and execute management operations
+available through the de-typed management model.
+
+[[running-the-cli]]
+== Running the CLI
+
+Depending on the operating system, the CLI is launched using
+`jboss-cli.sh` or `jboss-cli.bat` located in the WildFly `bin`
+directory. For further information on the default directory structure,
+please consult the " link:Getting_Started_Guide.adoc[Getting Started
+Guide]".
+
+The first thing to do after the CLI has started is to connect to a
+managed WildFly instance. This is done using the command _connect_, e.g.
+
+[source, java]
+----
+./bin/jboss-cli.sh
+You are disconnected at the moment. Type 'connect' to connect to the server
+or 'help' for the list of supported commands.
+[disconnected /]
+ 
+[disconnected /] connect
+[domain@localhost:9990 /]
+ 
+[domain@localhost:9990 /] quit
+Closed connection to localhost:9990
+----
+
+`localhost:9990` is the default host and port combination for the
+WildFly CLI client.
+
+The host and the port of the server can be provided as an optional
+parameter, if the server is not listening on localhost:9990.
+
+[source, java]
+----
+./bin/jboss-cli.sh
+You are disconnected at the moment. Type 'connect' to connect to the server
+[disconnected /] connect 192.168.0.10:9990
+Connected to standalone controller at 192.168.0.1:9990
+----
+
+The :9990 is not required as the CLI will use port 9990 by default. The
+port needs to be provided if the server is listening on some other port.
+
+To terminate the session type _quit_.
+
+[TIP]
+
+The jboss-cli script accepts a --connect parameter: ./jboss-cli.sh
+--connect
+
+The --controller parameter can be used to specify the host and port of
+the server: ./jboss-cli.sh --connect --controller=192.168.0.1:9990
+
+Help is also available:
+
+[source, java]
+----
+[domain@localhost:9990 /] help --commands
+Commands available in the current context:
+batch               connection-factory  deployment-overlay  if                  patch               reload              try
+cd                  connection-info     echo                jdbc-driver-info    pwd                 rollout-plan        undeploy
+clear               data-source         echo-dmr            jms-queue           quit                run-batch           unset
+command             deploy              help                jms-topic           read-attribute      set                 version
+connect             deployment-info     history             ls                  read-operation      shutdown            xa-data-source
+To read a description of a specific command execute 'command_name --help'.
+----
+
+[[non-interactive-mode]]
+== Non-interactive Mode
+
+The CLI can also be run in non-interactive mode to support scripts and
+other types of command line or batch processing. The --command and
+--commands arguments can be used to pass a command or a list of commands
+to execute. Additionally a --file argument is supported which enables
+CLI commands to be provided from a text file.
+
+For example the following command can be used to list all the current
+deployments
+
+[source,bash]
+----
+$ ./bin/jboss-cli.sh --connect --commands=ls\ deployment
+sample.war
+osgi-bundle.jar
+----
+
+The output can be combined with other shell commands for further
+processing, for example to find out what .war files are deployed:
+
+[source,bash]
+----
+$ ./bin/jboss-cli.sh --connect --commands=ls\ deployment | grep war
+sample.war
+----
+
+In order to match a command with its output, you can provide the option
+--echo-command (or add the XML element <echo-command> to the CLI
+configuration file) in order to make the CLI to include the prompt +
+command + options in the output. With this option enabled, any executed
+command will be added to the output.
+
+[[command-timeout]]
+== Command timeout
+
+By default CLI command and operation executions are not timely bounded.
+It means that a command never ending its execution will make the CLI
+process to be stuck and unresponsive. To protect the CLI from this
+behavior, one can set a command execution timeout.
+
+[[command-timeout-behavior]]
+=== Command Timeout behavior
+
+In interactive mode, when a timeout occurs, an error message is
+displayed then the console prompt is made available to type new
+commands. In non interactive mode (executing a script or a list of
+commands), when a timeout occurs, an exception is thrown and the CLI
+execution is stopped. In both modes (interactive and non interactive),
+when a timeout occurs, the CLI will make a best effort to cancel the
+associated server side activities.
+
+[[configuring-the-command-timeout]]
+=== Configuring the Command timeout
+
+* Add the XML element _<command-timeout>\{num
+seconds}</command-timeout>_ to the CLI XML configuration file.
+* Add the option - _-command-timeout=\{num seconds}_ to the CLI command
+line. This will override any value set in the XML configuration file.
+
+[[managing-the-command-timeout]]
+=== Managing the Command Timeout
+
+Once the CLI is running, the timeout can be adjusted to cope with the
+commands to execute. For example a batch command will need a longer
+timeout than a non batch one. The command _command-timeout_ allows to
+get, set and reset the command timeout.
+
+[[retrieving-the-command-timeout]]
+=== Retrieving the command timeout
+
+The command _command-timeout get_ displays the current timeout in
+seconds. A timeout of 0 means no timeout.
+
+[source, java]
+----
+[standalone@localhost:9990 /] command-timeout get
+0
+----
+
+[[setting-the-command-timeout]]
+=== Setting the command timeout
+
+The command _command-timeout set_ update the timeout value to a number
+of seconds. If a timeout has been set via configuration (XML file or
+option), it is overridden by the _set_ action.
+
+[source, java]
+----
+[standalone@localhost:9990 /] command-timeout set 10
+----
+
+[[resetting-the-command-timeout]]
+=== Resetting the command timeout
+
+The command _command-timeout reset \{config|default}_ allows to set the
+timeout to its configuration value (XML file or option) or default value
+(0 second). If no configuration value is set, resetting to the
+configuration value sets the timeout to its default value (0 seconds).
+
+[source, java]
+----
+[standalone@localhost:9990 /] command-timeout reset config
+[standalone@localhost:9990 /] command-timeout reset default
+----
+
+[[default-native-management-interface-security]]
+== Default Native Management Interface Security
+
+The native interface shares the same security configuration as the http
+interface, however we also support a local authentication mechanism
+which means that the CLI can authenticate against the local WildFly
+instance without prompting the user for a username and password. This
+mechanism only works if the user running the CLI has read access to the
+standalone/tmp/auth folder or domain/tmp/auth folder under the
+respective WildFly installation - if the local mechanism fails then the
+CLI will fallback to prompting for a username and password for a user
+configured as in link:#src-557082[Default HTTP Interface Security].
+
+Establishing a CLI connection to a remote server will require a username
+and password by default.
+
+[[operation-requests]]
+== Operation Requests
+
+Operation requests allow for low level interaction with the management
+model. They are different from the high level commands (i.e.
+_create-jms-queue_) in that they allow you to read and modify the server
+configuration as if you were editing the XML configuration files
+directly. The configuration is represented as a tree of addressable
+resources, where each node in the tree (aka resource) offers a set of
+operations to execute.
+
+An operation request basically consists of three parts: The _address_,
+an _operation name_ and an optional set of _parameters_.
+
+The formal specification for an operation request is:
+
+....
+[/node-type=node-name (/node-type=node-name)*] : operation-name [( [parameter-name=parameter-value (,parameter-name=parameter-value)*] )]
+....
+
+For example:
+
+[source,ruby]
+----
+/subsystem=logging/root-logger=ROOT:change-root-log-level(level=WARN)
+----
+
+Tab Completion
+
+[TIP]
+
+Tab-completion is supported for all commands and options, i.e.
+node-types and node-names, operation names and parameter names. We are
+also considering adding aliases that are less verbose for the user, and
+will translate into the corresponding operation requests in the
+background.
+
+Whitespaces between the separators in the operation request strings are
+not significant.
+
+[[addressing-resources]]
+=== Addressing resources
+
+Operation requests might not always have the address part or the
+parameters. E.g.
+
+[source,ruby]
+----
+:read-resource
+----
+
+which will list all the node types for the current node.
+
+To syntactically disambiguate between the commands and operations,
+operations require one of the following prefixes:
+
+To execute an operation against the current node, e.g.
+
+[source,ruby]
+----
+cd subsystem=logging
+:read-resource(recursive="true")
+----
+
+To execute an operation against a child node of the current node, e.g.
+
+[source,bash]
+----
+cd subsystem=logging
+./root-logger=ROOT:change-root-log-level(level=WARN)
+----
+
+To execute an operation against the root node, e.g.
+
+[source,ruby]
+----
+/:read-resource
+----
+
+[[available-operation-types-and-descriptions]]
+=== Available Operation Types and Descriptions
+
+The operation types can be distinguished between common operations that
+exist on any node and specific operations that belong to a particular
+configuration resource (i.e. subsystem). The common operations are:
+
+* add
+* read-attribute
+* read-children-names
+* read-children-resources
+* read-children-types
+* read-operation-description
+* read-operation-names
+* read-resource
+* read-resource-description
+* remove
+* validate-address
+* write-attribute
+
+For a list of specific operations (e.g. operations that relate to the
+logging subsystem) you can always query the model itself. For example,
+to read the operations supported by the logging subsystem resource on a
+standalone server:
+
+[source,ruby]
+----
+[[standalone@localhost:9990 /] /subsystem=logging:read-operation-names
+{
+   "outcome" => "success",
+   "result" => [
+       "add",
+       "change-root-log-level",
+       "read-attribute",
+       "read-children-names",
+       "read-children-resources",
+       "read-children-types",
+       "read-operation-description",
+       "read-operation-names",
+       "read-resource",
+       "read-resource-description",
+       "remove-root-logger",
+       "root-logger-assign-handler",
+       "root-logger-unassign-handler",
+       "set-root-logger",
+       "validate-address",
+       "write-attribute"
+   ]
+}
+----
+
+As you can see, the logging resource offers four additional operations,
+namely _root-logger-assign-handler_, _root-logger-unassign-handler_,
+_set-root-logger_ and _remove-root-logger_.
+
+Further documentation about a resource or operation can be retrieved
+through the description:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /] /subsystem=logging:read-operation-description(name=change-root-log-level)
+{
+   "outcome" => "success",
+   "result" => {
+       "operation-name" => "change-root-log-level",
+       "description" => "Change the root logger level.",
+       "request-properties" => {"level" => {
+           "type" => STRING,
+           "description" => "The log level specifying which message levels will be logged by this logger.
+                            Message levels lower than this value will be discarded.",
+           "required" => true
+       }}
+   }
+}
+----
+
+Full model
+
+[TIP]
+
+To see the full model enter `:read-resource(recursive=true)`.
+
+[[command-history]]
+== Command History
+
+Command (and operation request) history is enabled by default. The
+history is kept both in-memory and in a file on the disk, i.e. it is
+preserved between command line sessions. The history file name is
+.jboss-cli-history and is automatically created in the user's home
+directory. When the command line interface is launched this file is read
+and the in-memory history is initialized with its content.
+
+[TIP]
+
+While in the command line session, you can use the arrow keys to go back
+and forth in the history of commands and operations.
+
+To manipulate the history you can use the _history_ command. If executed
+without any arguments, it will print all the recorded commands and
+operations (up to the configured maximum, which defaults to 500) from
+the in-memory history.
+
+_history_ supports three optional arguments:
+
+* _disable_ - will disable history expansion (but will not clear the
+previously recorded history);
+* _enabled_ - will re-enable history expansion (starting from the last
+recorded command before the history expansion was disabled);
+* _clear_ - will clear the in-memory history (but not the file one).
+
+[[batch-processing]]
+== Batch Processing
+
+The batch mode allows one to group commands and operations and execute
+them together as an atomic unit. If at least one of the commands or
+operations fails, all the other successfully executed commands and
+operations in the batch are rolled back.
+
+Not all of the commands are allowed in the batch. For example, commands
+like _cd_, _ls_, _help_, etc. are not allowed in the batch since they
+don't translate into operation requests. Only the commands that
+translate into operation requests are allowed in the batch. The batch,
+actually, is executed as a composite operation request.
+
+The batch mode is entered by executing command _batch_.
+
+[source,ruby]
+----
+[standalone@localhost:9990 /] batch
+[standalone@localhost:9990 / #] /subsystem=datasources/data-source="java\:\/H2DS":enable
+[standalone@localhost:9990 / #] /subsystem=messaging-activemq/server=default/jms-queue=newQueue:add
+----
+
+You can execute a batch using the _run-batch_ command:
+
+[source,ruby]
+----
+[standalone@localhost:9990 / #] run-batch
+The batch executed successfully.
+----
+
+Exit the batch edit mode without losing your changes:
+
+[source,ruby]
+----
+[standalone@localhost:9990 / #] holdback-batch
+[standalone@localhost:9990 /]
+----
+
+Then activate it later on again:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /] batch
+Re-activated batch
+#1 /subsystem=datasources/data-source=java:/H2DS:\/H2DS:enable
+----
+
+There are several other notable batch commands available as well (tab
+complete to see the list):
+
+* _clear-batch_
+* _edit-batch-line_ (e.g. _edit-batch line 3 create-jms-topic
+name=mytopic_)
+* _remove-batch-line_ (e.g. _remove-batch-line 3_)
+* _move-batch-line_ (e.g. _move-batch-line 3 1_)
+* _discard-batch_

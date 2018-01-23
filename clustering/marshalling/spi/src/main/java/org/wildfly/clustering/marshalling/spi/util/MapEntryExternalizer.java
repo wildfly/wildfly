@@ -25,14 +25,13 @@ package org.wildfly.clustering.marshalling.spi.util;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.AbstractMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
+ * Externalizer for {@link Map.Entry} types
  * @author Paul Ferraro
  */
 public class MapEntryExternalizer<T extends Map.Entry<Object, Object>> implements Externalizer<T> {
@@ -41,7 +40,7 @@ public class MapEntryExternalizer<T extends Map.Entry<Object, Object>> implement
     private final BiFunction<Object, Object, T> factory;
 
     @SuppressWarnings("unchecked")
-    MapEntryExternalizer(Class<?> targetClass, BiFunction<Object, Object, T> factory) {
+    public MapEntryExternalizer(Class<?> targetClass, BiFunction<Object, Object, T> factory) {
         this.targetClass = (Class<T>) targetClass;
         this.factory = factory;
     }
@@ -60,19 +59,5 @@ public class MapEntryExternalizer<T extends Map.Entry<Object, Object>> implement
     @Override
     public Class<T> getTargetClass() {
         return this.targetClass;
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class SimpleEntryExternalizer extends MapEntryExternalizer<AbstractMap.SimpleEntry<Object, Object>> {
-        public SimpleEntryExternalizer() {
-            super(AbstractMap.SimpleEntry.class, AbstractMap.SimpleEntry<Object, Object>::new);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class SimpleImmutableEntryExternalizer extends MapEntryExternalizer<AbstractMap.SimpleImmutableEntry<Object, Object>> {
-        public SimpleImmutableEntryExternalizer() {
-            super(AbstractMap.SimpleImmutableEntry.class, AbstractMap.SimpleImmutableEntry<Object, Object>::new);
-        }
     }
 }

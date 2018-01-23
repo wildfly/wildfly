@@ -72,6 +72,7 @@ public interface EJB3SubsystemModel {
 
     String MAX_POOL_SIZE = "max-pool-size";
     String DERIVE_SIZE = "derive-size";
+    String DERIVED_SIZE = "derived-size";
 
     String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
 

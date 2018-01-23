@@ -72,9 +72,9 @@
         <module name="org.jboss.jts"/>
         <module name="org.picketbox"/>
         <module name="org.jboss.jboss-transaction-spi"/>
-        <module name="org.wildfly.naming-client"/>
+        <module name="org.wildfly.naming-client" services="import" />
         <module name="org.jboss.threads"/>
-        <module name="org.jgroups" optional="true"/>
+        <module name="org.wildfly.clustering.spi"/>
         <module name="org.jboss.weld.api" />
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi" />
@@ -82,7 +82,9 @@
         <module name="org.jboss.xnio" optional="true" />
         <!-- org.jboss.xnio.netty.netty-xnio-transport is required only if http-acceptor are used -->
         <module name="org.jboss.xnio.netty.netty-xnio-transport" optional="true" />
-        <module name="org.wildfly.clustering.jgroups.spi" optional="true"/>
+        <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.service"/>
+        <module name="org.wildfly.clustering.spi"/>
         <!-- Use the HornetQ client module to create the legacy connection factory and destination resources -->
         <module name="org.hornetq.client" />
     </dependencies>

@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.clustering.cluster.ejb2.stateful.passivation;
 
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.*;
+
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -46,8 +48,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-
 /**
  * Clustering ejb passivation of EJB2 beans defined by annotation.
  *
@@ -65,13 +65,13 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
     private Deployer deployer;
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deployment1() {
         return createDeployment();
     }
@@ -86,13 +86,13 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
     @Override
     protected void startServers(ManagementClient client1, ManagementClient client2) {
         if (client1 == null || !client1.isServerInRunningState()) {
-            log.trace("Starting server: " + CONTAINER_1);
-            controller.start(CONTAINER_1);
+            log.trace("Starting server: " + NODE_1);
+            controller.start(NODE_1);
             deployer.deploy(DEPLOYMENT_1);
         }
         if (client2 == null || !client2.isServerInRunningState()) {
-            log.trace("Starting server: " + CONTAINER_2);
-            controller.start(CONTAINER_2);
+            log.trace("Starting server: " + NODE_2);
+            controller.start(NODE_2);
             deployer.deploy(DEPLOYMENT_2);
         }
     }
@@ -117,13 +117,13 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
 
         String nodeName1 = HttpRequest.get(baseURL1.toString() + NodeInfoServlet.URL, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
         node2deployment.put(nodeName1, DEPLOYMENT_1);
-        node2container.put(nodeName1, CONTAINER_1);
+        node2container.put(nodeName1, NODE_1);
         log.trace("URL1 nodename: " + nodeName1);
 
         String nodeName2 = HttpRequest.get(baseURL2.toString() + NodeInfoServlet.URL, HTTP_REQUEST_WAIT_TIME_S, TimeUnit.SECONDS);
 
         node2deployment.put(nodeName2, DEPLOYMENT_2);
-        node2container.put(nodeName2, CONTAINER_2);
+        node2container.put(nodeName2, NODE_2);
         log.trace("URL2 nodename: " + nodeName2);
     }
 
@@ -156,12 +156,12 @@ public class ClusterPassivationTestCase extends ClusterPassivationTestBase {
         if (client1.isServerInRunningState()) {
             unsetPassivationAttributes(client1.getControllerClient());
             deployer.undeploy(DEPLOYMENT_1);
-            controller.stop(CONTAINER_1);
+            controller.stop(NODE_1);
         }
         if (client2.isServerInRunningState()) {
             unsetPassivationAttributes(client2.getControllerClient());
             deployer.undeploy(DEPLOYMENT_2);
-            controller.stop(CONTAINER_2);
+            controller.stop(NODE_2);
         }
     }
 }

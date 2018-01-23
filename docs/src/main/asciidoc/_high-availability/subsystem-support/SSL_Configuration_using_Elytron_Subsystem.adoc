@@ -1,0 +1,115 @@
+= SSL Configuration using Elytron Subsystem
+
+This document provides information how to configure mod_cluster
+subsystem to protect communication between mod_cluster and load balancer
+using SSL/TLS using link:Elytron_Subsystem.html[Elytron Subsystem].
+
+[[overview]]
+== Overview
+
+Elytron subsystem provides a powerful and flexible model to configure
+different security aspects for applications and the application server
+itself. At its core, Elytron subsystem exposes different capabilities to
+the application server in order centralize security related
+configuration in a single place and to allow other subsystems to consume
+these capabilities. One of the security capabilities exposed by Elytron
+subsystem is a Client `ssl-context` that can be used to configure
+mod_cluster subsystem to communicate with a load balancer using SSL/TLS.
+
+When protecting the communication between the application server and the
+load balancer, you need do define a Client `ssl-context` in order to:
+
+* Define a trust store holding the certificate chain that will be used
+to validate load balancer's certificate
+* Define a trust manager to perform validations against the load
+balancer's certificate
+
+[[defining-a-trust-store-with-the-trusted-certificates]]
+== Defining a Trust Store with the Trusted Certificates
+
+To define a trust store in Elytron you can execute the following CLI
+command:
+
+[source, java]
+----
+[standalone@localhost:9990 /] /subsystem=elytron/key-store=default-trust-store:add(type=JKS, relative-to=jboss.server.config.dir, path=application.truststore, credential-reference={clear-text=password})
+----
+
+In order to successfully execute the command above you must have a
+*application.truststore* file inside your
+*JBOSS_HOME/standalone/configuration* directory. Where the trust store
+is protected by a password with a value *password*. The trust store must
+contain the certificates associated with the load balancer or a
+certificate chain in case the load balancer's certificate is signed by a
+CA.
+
+We strongly recommend you to avoid using self-signed certificates with
+your load balancer. Ideally, certificates should be signed by a CA and
+your trust store should contain a certificate chain representing your
+ROOT and Intermediary CAs.
+
+[[defining-a-trust-manager-to-validate-certificates]]
+== Defining a Trust Manager To Validate Certificates
+
+To define a trust manager in Elytron you can execute the following CLI
+command:
+
+[source, java]
+----
+[standalone@localhost:9990 /] /subsystem=elytron/trust-managers=default-trust-manager:add(algorithm=PKIX, key-store=default-trust-store)
+----
+
+Here we are setting the *default-trust-store* as the source of the
+certificates that the application server trusts.
+
+[[defining-a-client-ssl-context-and-configuring-mod_cluster-subsystem]]
+== Defining a Client SSL Context and Configuring mod_cluster Subsystem
+
+Finally, you can create the Client SSL Context that is going to be used
+by the mod_cluster subsystem when connecting to the load balancer using
+SSL/TLS:
+
+[source, java]
+----
+[standalone@localhost:9990 /] /subsystem=elytron/client-ssl-context=modcluster-client-ssl-context:add(trust-managers=default-trust-manager)
+----
+
+Now that the Client `ssl-context` is defined you can configure
+mod_cluster subsystem as follows:
+
+[source, java]
+----
+[standalone@localhost:9990 /] /subsystem=modcluster/mod-cluster-config=configuration:write-attribute(name=ssl-context, value=modcluster-client-ssl-context)
+----
+
+Once you execute the last command above, reload the server:
+
+[source, java]
+----
+[standalone@localhost:9990 /] :reload
+----
+
+[[using-a-certificate-revocation-list]]
+== Using a Certificate Revocation List
+
+In case you want to validate the load balancer certificate against a
+Certificate Revocation List (CRL), you can configure the `trust-manager`
+in Elytron subsystem as follows:
+
+[source, java]
+----
+[standalone@localhost:9990 /] /subsystem=elytron/trust-managers=default-trust-manager:write-attribute(name=certificate-revocation-list.path, value=intermediate.crl.pem)
+----
+
+To use a CRL your trust store must contain the certificate chain in
+order to check validity of both CRL list and the load balancer`s
+certificate.
+
+A different way to configure a CRL is using the _Distribution Points_
+embedded in your certificates. For that, you need to configure a
+`certificate-revocation-list` as follows:
+
+[source, java]
+----
+/subsystem=elytron/trust-managers=default-trust-manager:write-attribute(name=certificate-revocation-list)
+----

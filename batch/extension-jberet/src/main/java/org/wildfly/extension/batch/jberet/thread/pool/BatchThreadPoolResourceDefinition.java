@@ -22,11 +22,11 @@
 
 package org.wildfly.extension.batch.jberet.thread.pool;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.jberet.spi.JobExecutor;
 import org.jboss.as.controller.OperationContext;
@@ -145,19 +145,22 @@ public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition 
         static {
             // Common attributes as copied from the ThreadPoolResourceDescriptionResolver minus the attributes not used
             // for an UnboundedThreadPoolResourceDefinition
-            COMMON_ATTRIBUTE_NAMES = Stream.of(
-                    PoolAttributeDefinitions.ACTIVE_COUNT.getName(),
-                    PoolAttributeDefinitions.COMPLETED_TASK_COUNT.getName(),
-                    PoolAttributeDefinitions.CURRENT_THREAD_COUNT.getName(),
-                    CommonAttributes.KEEPALIVE_TIME,
-                    PoolAttributeDefinitions.LARGEST_THREAD_COUNT.getName(),
-                    PoolAttributeDefinitions.MAX_THREADS.getName(),
-                    PoolAttributeDefinitions.NAME.getName(),
-                    PoolAttributeDefinitions.QUEUE_SIZE.getName(),
-                    PoolAttributeDefinitions.TASK_COUNT.getName(),
-                    PoolAttributeDefinitions.THREAD_FACTORY.getName()
-            )
-                    .collect(Collectors.toSet());
+            Set<String> set = new HashSet<>();
+            for (String s : Arrays.asList(
+                PoolAttributeDefinitions.ACTIVE_COUNT.getName(),
+                PoolAttributeDefinitions.COMPLETED_TASK_COUNT.getName(),
+                PoolAttributeDefinitions.CURRENT_THREAD_COUNT.getName(),
+                CommonAttributes.KEEPALIVE_TIME,
+                PoolAttributeDefinitions.LARGEST_THREAD_COUNT.getName(),
+                PoolAttributeDefinitions.MAX_THREADS.getName(),
+                PoolAttributeDefinitions.NAME.getName(),
+                PoolAttributeDefinitions.QUEUE_SIZE.getName(),
+                PoolAttributeDefinitions.TASK_COUNT.getName(),
+                PoolAttributeDefinitions.THREAD_FACTORY.getName()
+            )) {
+                set.add(s);
+            }
+            COMMON_ATTRIBUTE_NAMES = set;
         }
 
         private static final String COMMON_PREFIX = "threadpool.common";

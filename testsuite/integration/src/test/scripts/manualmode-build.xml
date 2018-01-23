@@ -26,57 +26,56 @@
 
     <!-- import shared ant targets -->
     <import file="common-targets.xml" as="common"/>
-    <import file="clustering-common-targets.xml" as="clustering-common"/>
 
     <target name="build-manual-mode" description="Builds server configurations for manual mode tests">
 
         <!-- Configure all standalone-ha.xml profiles not to be chatty by setting ip_ttl=0 -->
-        <ts.config-as.configure-multicast-ttl name="jbossas" mcast.ttl="${mcast.ttl}"/>
+        <ts.config-as.configure-multicast-ttl name="wildfly" mcast.ttl="${mcast.ttl}"/>
 
-        <ts.config-as.add-interface name="jbossas"
+        <ts.config-as.add-interface name="wildfly"
                                     interface="multicast"
                                     inet-address="${node0}"/>
-        <ts.config-as.change-jgroups-multicast-interface name="jbossas"
+        <ts.config-as.change-jgroups-multicast-interface name="wildfly"
                                                          interface="multicast"/>
 
         <echo message="Copying and configuring instance jbossas-with-remote-outbound-connection"/>
         <copy todir="target/jbossas-with-remote-outbound-connection">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
 
         <echo message="Copying and configuring instance inbound-server"/>
         <copy todir="target/inbound-server">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
 
         <echo message="Copying and configuring instance outbound-server"/>
         <copy todir="target/outbound-server">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
 
         <echo message="Copying and configuring instance seccontext-server1"/>
         <copy todir="target/seccontext-server1">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
 
         <echo message="Copying and configuring instance seccontext-server1-backup"/>
         <copy todir="target/seccontext-server1-backup">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
 
         <echo message="Copying and configuring instance seccontext-server2"/>
         <copy todir="target/seccontext-server2">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
 
         <echo message="Copying and configuring instance seccontext-server3"/>
         <copy todir="target/seccontext-server3">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
 
         <echo message="Copying and configuring instance jbossas-layered"/>
         <copy todir="target/jbossas-layered">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <copy todir="target/jbossas-layered/modules">
             <fileset dir="${jboss.dist}/modules"/>
@@ -84,12 +83,12 @@
 
         <echo message="Copying and configuring instance jbossas-admin-only"/>
         <copy todir="target/jbossas-admin-only">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
 
         <echo message="Copying and configuring instance jbossas-parse-marshal"/>
         <copy todir="target/jbossas-parse-marshal">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <copy todir="target/jbossas-parse-marshal/modules">
             <fileset dir="${jboss.dist}/modules"/>
@@ -97,10 +96,10 @@
 
         <echo message="Copying and configuring instances jbossas-dwm-0 and jbossas-dwm-1  =========  "/>
         <copy todir="target/jbossas-dwm-0" overwrite="true">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <copy todir="target/jbossas-dwm-1" overwrite="true">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <ts.config-as.change-transport-stack name="jbossas-dwm-0"
                                              stack="tcp"/>
@@ -122,12 +121,12 @@
         <delete dir="target/jbossas-messaging-ha-server1"/>
         <echo message="Copying and configuring instance jbossas-messaging-ha-server1"/>
         <copy todir="target/jbossas-messaging-ha-server1">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
         <delete dir="target/jbossas-messaging-ha-server2"/>
         <echo message="Copying and configuring instance jbossas-messaging-ha-server2"/>
         <copy todir="target/jbossas-messaging-ha-server2">
-            <fileset dir="target/jbossas"/>
+            <fileset dir="target/wildfly"/>
         </copy>
     </target>
 

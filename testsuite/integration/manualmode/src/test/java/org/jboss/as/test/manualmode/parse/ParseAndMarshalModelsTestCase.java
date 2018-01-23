@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.Paths;
 
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.ModelParserUtils;
@@ -53,33 +54,45 @@ public class ParseAndMarshalModelsTestCase {
         EAP_6_2_0(true, "6-2-0"),
         EAP_6_3_0(true, "6-3-0"),
         EAP_6_4_0(true, "6-4-0"),
-        EAP_7_0_0(true, "7-0-0");
+        EAP_7_0_0(true, "7-0-0"),
+        EAP_7_1_0(true, "7-1-0");
 
         final boolean eap;
         final String versionQualifier;
+        final int major;
+        final int minor;
+        final int micro;
 
         Version(boolean eap, String versionQualifier) {
             this.eap = eap;
             this.versionQualifier = versionQualifier;
+            final String[] parts = this.versionQualifier.split("-");
+            major = Integer.valueOf(parts[0]);
+            minor = Integer.valueOf(parts[1]);
+            micro = Integer.valueOf(parts[2]);
         }
 
         boolean is6x() {
-            return versionQualifier.startsWith("6-");
+            return major == 6;
         }
 
         boolean is7x() {
-            return versionQualifier.startsWith("7-");
+            return major == 7;
+        }
+
+        boolean isLessThan(int major, int minor) {
+            return (this.major == major && this.minor < minor) || this.major < major;
         }
     }
 
 
     private static final Version[] EAP_VERSIONS = {
             Version.EAP_6_0_0, Version.EAP_6_1_0, Version.EAP_6_2_0,
-            Version.EAP_6_3_0, Version.EAP_6_4_0, Version.EAP_7_0_0};
+            Version.EAP_6_3_0, Version.EAP_6_4_0, Version.EAP_7_0_0, Version.EAP_7_1_0};
 
     private static final Version[] AS_VERSIONS = {Version.AS_7_1_3, Version.AS_7_2_0};
 
-    private static final File JBOSS_HOME = new File(".." + File.separatorChar + "jbossas-parse-marshal");
+    private static final File JBOSS_HOME = Paths.get("target" ,"jbossas-parse-marshal").toFile();
 
     @Test
     public void testStandaloneXml() throws Exception {
@@ -348,6 +361,16 @@ public class ParseAndMarshalModelsTestCase {
         }
     }
 
+    @Test
+    public void testEAPStandaloneLoadBalancerXml() throws Exception {
+        for (Version version : EAP_VERSIONS) {
+            if (version.isLessThan(7, 1)) {
+                // didn't exist yet
+            } else {
+                standaloneXmlTest(getLegacyConfigFile("standalone", version, "load-balancer"));
+            }
+        }
+    }
 
     @Test
     public void testEAPStandaloneRtsXml() throws Exception {

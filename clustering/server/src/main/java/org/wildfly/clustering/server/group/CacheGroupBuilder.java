@@ -40,7 +40,8 @@ import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.SuppliedValueService;
 import org.wildfly.clustering.service.ValueDependency;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.NodeFactory;
 
 /**
  * Builds a {@link Group} service for a cache.
@@ -54,7 +55,8 @@ public class CacheGroupBuilder implements CapabilityServiceBuilder<Group>, Cache
 
     @SuppressWarnings("rawtypes")
     private volatile ValueDependency<Cache> cache;
-    private volatile ValueDependency<InfinispanNodeFactory> factory;
+    @SuppressWarnings("rawtypes")
+    private volatile ValueDependency<NodeFactory> factory;
 
     public CacheGroupBuilder(ServiceName name, String containerName, String cacheName) {
         this.name = name;
@@ -70,7 +72,7 @@ public class CacheGroupBuilder implements CapabilityServiceBuilder<Group>, Cache
     @Override
     public Builder<Group> configure(CapabilityServiceSupport support) {
         this.cache = new InjectedValueDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, this.containerName, this.cacheName), Cache.class);
-        this.factory = new InjectedValueDependency<>(ClusteringCacheRequirement.NODE_FACTORY.getServiceName(support, this.containerName, this.cacheName), InfinispanNodeFactory.class);
+        this.factory = new InjectedValueDependency<>(ClusteringRequirement.GROUP.getServiceName(support, this.containerName), NodeFactory.class);
         return this;
     }
 
@@ -89,7 +91,7 @@ public class CacheGroupBuilder implements CapabilityServiceBuilder<Group>, Cache
     }
 
     @Override
-    public InfinispanNodeFactory getNodeFactory() {
+    public NodeFactory<org.jgroups.Address> getMemberFactory() {
         return this.factory.getValue();
     }
 }

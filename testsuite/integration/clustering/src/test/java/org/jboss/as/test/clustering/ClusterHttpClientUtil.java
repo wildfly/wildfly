@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.clustering;
 
-import static org.junit.Assert.*;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO_REPLICATE;
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.GRACE_TIME_TO_REPLICATE;
+import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -81,7 +81,7 @@ public final class ClusterHttpClientUtil {
      * @throws IOException
      */
     public static HttpResponse tryGet(final HttpClient client, final String url) throws IOException {
-        return tryGet(client, url, ClusteringTestConstants.GRACE_TIME_TO_REPLICATE);
+        return tryGet(client, url, GRACE_TIME_TO_REPLICATE);
     }
 
     public static HttpResponse tryGet(final HttpClient client, final HttpUriRequest r) throws IOException {

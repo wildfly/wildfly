@@ -30,6 +30,9 @@
 
     <resources>
         <artifact name="${org.jboss.weld:weld-core-impl}"/>
+        <artifact name="${org.jboss.weld.module:weld-ejb}"/>
+        <artifact name="${org.jboss.weld.module:weld-jta}"/>
+        <artifact name="${org.jboss.weld.module:weld-web}"/>
     </resources>
 
     <dependencies>
@@ -45,8 +48,8 @@
         <module name="javax.validation.api"/>
         <module name="org.glassfish.javax.el" />
         <module name="org.jboss.classfilewriter"/>
-        <module name="org.jboss.weld.api" />
-        <module name="org.jboss.weld.spi" />
+        <module name="org.jboss.weld.api" export="true"/>
+        <module name="org.jboss.weld.spi" export="true"/>
         <module name="org.jboss.logging" />
         <module name="sun.jdk" optional="true" />
 

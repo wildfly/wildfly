@@ -28,7 +28,7 @@ import java.util.Date;
 
 import org.jboss.ejb.client.SessionID;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ejb.infinispan.SessionIDExternalizer;
+import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer;
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
@@ -37,19 +37,17 @@ import org.wildfly.clustering.marshalling.Externalizer;
 @MetaInfServices(Externalizer.class)
 public class InfinispanBeanEntryExternalizer implements Externalizer<InfinispanBeanEntry<SessionID>> {
 
-    private static final Externalizer<SessionID> EXTERNALIZER = new SessionIDExternalizer();
-
     @Override
     public void writeObject(ObjectOutput output, InfinispanBeanEntry<SessionID> entry) throws IOException {
         output.writeUTF(entry.getBeanName());
-        EXTERNALIZER.writeObject(output, entry.getGroupId());
+        SessionIDSerializer.INSTANCE.write(output, entry.getGroupId());
         Date lastAccessedTime = entry.getLastAccessedTime();
         output.writeLong((lastAccessedTime != null) ? lastAccessedTime.getTime() : 0);
     }
 
     @Override
     public InfinispanBeanEntry<SessionID> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        InfinispanBeanEntry<SessionID> entry = new InfinispanBeanEntry<>(input.readUTF(), EXTERNALIZER.readObject(input));
+        InfinispanBeanEntry<SessionID> entry = new InfinispanBeanEntry<>(input.readUTF(), SessionIDSerializer.INSTANCE.read(input));
         long time = input.readLong();
         if (time > 0) {
             entry.setLastAccessedTime(new Date(time));

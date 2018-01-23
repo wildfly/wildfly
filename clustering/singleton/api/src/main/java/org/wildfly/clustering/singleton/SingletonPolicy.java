@@ -31,10 +31,6 @@ import org.wildfly.clustering.service.Builder;
  * @author Paul Ferraro
  */
 public interface SingletonPolicy {
-    /**
-     * @deprecated Use {@link SingletonRequirement#SINGLETON_POLICY} instead.
-     */
-    @Deprecated String CAPABILITY_NAME = SingletonRequirement.SINGLETON_POLICY.getName();
 
     /**
      * Creates a singleton service builder.

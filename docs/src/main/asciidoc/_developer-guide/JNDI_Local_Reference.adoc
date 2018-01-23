@@ -1,0 +1,236 @@
+= Local JNDI
+
+The Java EE platform specification defines the following JNDI contexts:
+
+* `java:comp` - The namespace is scoped to the current component (i.e.
+EJB)
+* `java:module` - Scoped to the current module
+* `java:app` - Scoped to the current application
+* `java:global` - Scoped to the application server
+
+In addition to the standard namespaces, WildFly also provides the
+following two global namespaces:
+
+* java:jboss
+* java:/
+
+[IMPORTANT]
+
+Only entries within the `java:jboss/exported` context are accessible
+over remote JNDI.
+
+[IMPORTANT]
+
+For web deployments `java:comp` is aliased to `java:module`, so EJB's
+deployed in a war do not have their own comp namespace.
+
+[[binding-entries-to-jndi]]
+== Binding entries to JNDI
+
+There are several methods that can be used to bind entries into JNDI in
+WildFly.
+
+[[using-a-deployment-descriptor]]
+=== Using a deployment descriptor
+
+For Java EE applications the recommended way is to use a
+link:#src-557268[deployment descriptor] to create the binding. For
+example the following `web.xml` binds the string `"Hello World"` to
+`java:global/mystring` and the string `"Hello Module"` to
+`java:comp/env/hello` (any non absolute JNDI name is relative to
+`java:comp/env` context).
+
+[source, java]
+----
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+    <env-entry>
+        <env-entry-name>java:global/mystring</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>Hello World</env-entry-value>
+    </env-entry>
+    <env-entry>
+        <env-entry-name>hello</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>Hello Module</env-entry-value>
+    </env-entry>
+</web-app>
+----
+
+For more details, see the http://jcp.org/en/jsr/detail?id=342[Java EE
+Platform Specification].
+
+[[programatically]]
+=== Programatically
+
+[[java-ee-applications]]
+==== Java EE Applications
+
+Standard Java EE applications may use the standard JNDI API, included
+with Java SE, to bind entries in the global namespaces (the standard
+`java:comp`, `java:module` and `java:app` namespaces are read-only, as
+mandated by the Java EE Platform Specification).
+
+[source, java]
+----
+  InitialContext initialContext = new InitialContext();
+  initialContext.bind("java:global/a", 100);
+----
+
+[IMPORTANT]
+
+There is no need to unbind entries created programatically, since
+WildFly tracks which bindings belong to a deployment, and the bindings
+are automatically removed when the deployment is undeployed.
+
+[[wildfly-modules-and-extensions]]
+==== WildFly Modules and Extensions
+
+With respect to code in WildFly Modules/Extensions, which is executed
+out of a Java EE application context, using the standard JNDI API may
+result in a UnsupportedOperationException if the target namespace uses a
+WritableServiceBasedNamingStore. To work around that, the bind()
+invocation needs to be wrapped using WildFly proprietary APIs:
+
+[source, java]
+----
+  InitialContext initialContext = new InitialContext();
+  WritableServiceBasedNamingStore.pushOwner(serviceTarget);
+  try {
+    initialContext.bind("java:global/a", 100);
+  } finally {
+    WritableServiceBasedNamingStore.popOwner();
+  }
+----
+
+[IMPORTANT]
+
+The ServiceTarget removes the bind when uninstalled, thus using one out
+of the module/extension domain usage should be avoided, unless entries
+are removed using unbind().
+
+[[naming-subsystem-configuration]]
+=== Naming Subsystem Configuration
+
+It is also possible to bind to one of the three global namespaces using
+configuration in the naming subsystem. This can be done by either
+editing the `standalone.xml/domain.xml` file directly, or through the
+management API.
+
+Four different types of bindings are supported:
+
+* Simple - A primitive or java.net.URL entry (default is
+`java.lang.String`).
+* Object Factory - This allows to to specify the
+`javax.naming.spi.ObjectFactory` that is used to create the looked up
+value.
+* External Context - An external context to federate, such as an LDAP
+Directory Service
+* Lookup - The allows to create JNDI aliases, when this entry is looked
+up it will lookup the target and return the result.
+
+An example standalone.xml might look like:
+
+[source, java]
+----
+<subsystem xmlns="urn:jboss:domain:naming:2.0" >
+  <bindings>
+    <simple name="java:global/a" value="100" type="int" />
+    <simple name="java:global/jbossDocs" value="https://docs.jboss.org" type="java.net.URL" />
+    <object-factory name="java:global/b" module="com.acme" class="org.acme.MyObjectFactory" />
+    <external-context name="java:global/federation/ldap/example" class="javax.naming.directory.InitialDirContext" cache="true">
+      <environment>
+        <property name="java.naming.factory.initial" value="com.sun.jndi.ldap.LdapCtxFactory" />
+        <property name="java.naming.provider.url" value="ldap://ldap.example.com:389" />
+        <property name="java.naming.security.authentication" value="simple" />
+        <property name="java.naming.security.principal" value="uid=admin,ou=system" />
+        <property name="java.naming.security.credentials" value="secret" />
+      </environment>
+    </external-context>
+    <lookup name="java:global/c" lookup="java:global/b" />
+ </bindings>
+</subsystem>
+----
+
+The CLI may also be used to bind an entry. As an example:
+
+[source, java]
+----
+/subsystem=naming/binding=java\:global\/mybinding:add(binding-type=simple, type=long, value=1000)
+----
+
+[IMPORTANT]
+
+WildFly's Administrator Guide includes a section describing in detail
+the Naming subsystem configuration.
+
+[[retrieving-entries-from-jndi]]
+== Retrieving entries from JNDI
+
+[[resource-injection]]
+=== Resource Injection
+
+For Java EE applications the recommended way to lookup a JNDI entry is
+to use `@Resource` injection:
+
+[source, java]
+----
+  @Resource(lookup = "java:global/mystring")
+  private String myString;
+ 
+  @Resource(name = "hello")
+  private String hello;
+ 
+  @Resource
+  ManagedExecutorService executor;
+----
+
+Note that `@Resource` is more than a JNDI lookup, it also binds an entry
+in the component's JNDI environment. The new bind JNDI name is defined
+by `@Resource`'s `name` attribute, which value, if unspecified, is the
+Java type concatenated with `/` and the field's name, for instance
+`java.lang.String/myString`. More, similar to when using deployment
+descriptors to bind JNDI entries. unless the name is an absolute JNDI
+name, it is considered relative to `java:comp/env`. For instance, with
+respect to the field named `myString` above, the `@Resource`'s `lookup`
+attribute instructs WildFly to lookup the value in
+`java:global/mystring`, bind it in
+`java:comp/env/java.lang.String/myString`, and then inject such value
+into the field.
+
+With respect to the field named `hello`, there is no `lookup` attribute
+value defined, so the responsibility to provide the entry's value is
+delegated to the deployment descriptor. Considering that the deployment
+descriptor was the `web.xml` previously shown, which defines an
+environment entry with same `hello` name, then WildFly inject the valued
+defined in the deployment descriptor into the field.
+
+The `executor` field has no attributes specified, so the bind's name
+would default to
+`java:comp/env/javax.enterprise.concurrent.ManagedExecutorService/executor`,
+but there is no such entry in the deployment descriptor, and when that
+happens it's up to WildFly to provide a default value or null, depending
+on the field's Java type. In this particular case WildFly would inject
+the default instance of a managed executor service, the value in
+`java:comp/DefaultManagedExecutorService`, as mandated by the EE
+Concurrency Utilities 1.0 Specification (JSR 236).
+
+[[standard-java-se-jndi-api]]
+=== Standard Java SE JNDI API
+
+Java EE applications may use, without any additional configuration
+needed, the standard JNDI API to lookup an entry from JNDI:
+
+[source, java]
+----
+  String myString = (String) new InitialContext().lookup("java:global/mystring");
+----
+
+or simply
+
+[source, java]
+----
+  String myString = InitialContext.doLookup("java:global/mystring");
+----

@@ -1,0 +1,125 @@
+= Implicit module dependencies for deployments
+
+As explained in the link:#src-557203[Class Loading in WildFly] article,
+WildFly {wildflyVersion} is based on module classloading. A class within a module B
+isn't visible to a class within a module A, unless module B adds a
+dependency on module A. Module dependencies can be explicitly (as
+explained in that classloading article) or can be "implicit". This
+article will explain what implicit module dependencies mean and how,
+when and which modules are added as implicit dependencies.
+
+[[whats-an-implicit-module-dependency]]
+== What's an implicit module dependency?
+
+Consider an application deployment which contains EJBs. EJBs typically
+need access to classes from the javax.ejb.* package and other Java EE
+API packages. The jars containing these packages are already shipped in
+WildFly and are available as "modules". The module which contains the
+javax.ejb.* classes has a specific name and so does the module which
+contains all the Java EE API classes. For an application to be able to
+use these classes, it has to add a dependency on the relevant modules.
+Forcing the application developers to add module dependencies like these
+(i.e. dependencies which can be "inferred") isn't a productive approach.
+Hence, whenever an application is being deployed, the deployers within
+the server, which are processing this deployment "implicitly" add these
+module dependencies to the deployment so that these classes are visible
+to the deployment at runtime. This way the application developer doesn't
+have to worry about adding them explicitly. How and when these implicit
+dependencies are added is explained in the next section.
+
+[[how-and-when-is-an-implicit-module-dependency-added]]
+== How and when is an implicit module dependency added?
+
+When a deployment is being processed by the server, it goes through a
+chain of "deployment processors". Each of these processors will have a
+way to check if the deployment meets a certain criteria and if it does,
+the deployment processor adds a implicit module dependency to that
+deployment. Let's take an example - Consider (again) an EJB3 deployment
+which has the following class:
+
+.MySuperDuperBean.java
+
+[source, java]
+----
+@Stateless
+public class MySuperDuperBean {
+ 
+...
+ 
+}
+----
+
+As can be seen, we have a simple @Stateless EJB. When the deployment
+containing this class is being processed, the EJB deployment processor
+will see that the deployment contains a class with the @Stateless
+annotation and thus identifies this as a EJB deployment. *This is just
+one of the several ways, various deployment processors can identify a
+deployment of some specific type.* The EJB deployment processor will
+then add an implicit dependency on the Java EE API module, so that all
+the Java EE API classes are visible to the deployment.
+
+Some subsystems will always add a API classes, even if the trigger
+condition is not met. These are listed separately below.
+
+In the next section, we'll list down the implicit module dependencies
+that are added to a deployment, by various deployers within WildFly.
+
+[[which-are-the-implicit-module-dependencies]]
+== Which are the implicit module dependencies?
+
+[cols=",,,",,options="header"]
+|=======================================================================
+|Subsystem responsible for adding the implicit dependency |Dependencies
+that are always added |Dependencies that are added if a trigger
+condition is met |Trigger which leads to the implicit module dependency
+being added
+
+|Core Server |javax.api sun.jdk org.jboss.vfs |  | 
+
+|Batch Subsystem |javax.batch.api |  | 
+
+|EE Subsystem |javaee.api |  | 
+
+|EJB3 subsystem |  |javaee.api |The presence of ejb-jar.xml (in valid
+locations in the deployment, as specified by spec) or the presence of
+annotation based EJBs (ex: @Stateless, @Stateful, @MessageDriven etc)
+
+|JAX-RS (Resteasy) subsystem |javax.xml.bind.api
+|org.jboss.resteasy.resteasy-atom-provider
+org.jboss.resteasy.resteasy-cdi org.jboss.resteasy.resteasy-jaxrs
+org.jboss.resteasy.resteasy-jaxb-provider
+org.jboss.resteasy.resteasy-jackson-provider
+org.jboss.resteasy.resteasy-jsapi
+org.jboss.resteasy.resteasy-multipart-provider
+org.jboss.resteasy.async-http-servlet-30 |The presence of JAX-RS
+annotations in the deployment
+
+|JCA subsystem |javax.resource.api |javax.jms.api javax.validation.api
+org.jboss.logging org.jboss.ironjacamar.api org.jboss.ironjacamar.impl
+org.hibernate.validator |If the deployment is a resource adaptor (RAR)
+deployment.
+
+|JPA (Hibernate) subsystem |javax.persistence.api |javaee.api
+org.jboss.as.jpa org.hibernate |The presence of an @PersistenceUnit or
+@PersistenceContext annotation, or a <persistence-unit-ref> or
+<persistence-context-ref> in a deployment descriptor..
+
+|Logging Subsystem |org.jboss.logging org.apache.commons.logging
+org.apache.log4j org.slf4j org.jboss.logging.jul-to-slf4j-stub |  | 
+
+|SAR Subsystem |  |org.jboss.logging org.jboss.modules |The deployment
+is a SAR archive
+
+|Security Subsystem |org.picketbox |  | 
+
+|Web Subsystem |  |javaee.api com.sun.jsf-impl org.hibernate.validator
+org.jboss.as.web org.jboss.logging |The deployment is a WAR archive. JSF
+is only added if used. Multiple version options exist for mojarra.
+
+|Web Services Subsystem |org.jboss.ws.api org.jboss.ws.spi |  | 
+
+|Weld (CDI) Subsystem |  |javax.persistence.api javaee.api org.javassist
+org.jboss.interceptor org.jboss.as.weld org.jboss.logging
+org.jboss.weld.core org.jboss.weld.api org.jboss.weld.spi |If a
+beans.xml file is detected in the deployment
+|=======================================================================

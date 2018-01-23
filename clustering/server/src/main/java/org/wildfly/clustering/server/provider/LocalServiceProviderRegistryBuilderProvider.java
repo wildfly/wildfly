@@ -21,12 +21,14 @@
  */
 package org.wildfly.clustering.server.provider;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
 /**
  * Provides the requisite builders for a non-clustered {@link ServiceProviderRegistrationFactory}.
  * @author Paul Ferraro
  */
+@MetaInfServices(LocalCacheBuilderProvider.class)
 public class LocalServiceProviderRegistryBuilderProvider extends ServiceProviderRegistryBuilderProvider implements LocalCacheBuilderProvider {
 
     public LocalServiceProviderRegistryBuilderProvider() {

@@ -49,8 +49,8 @@ import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.server.Addressable;
+import org.wildfly.clustering.spi.NodeFactory;
 
 /**
  * MessageDispatcher-based command dispatcher.
@@ -86,6 +86,11 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
         this.timeout = timeout;
         this.localDispatcher = localDispatcher;
         this.closeTask = closeTask;
+    }
+
+    @Override
+    public C getContext() {
+        return this.localDispatcher.getContext();
     }
 
     @Override

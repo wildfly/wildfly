@@ -1,4 +1,4 @@
 module add --name=javax.faces.api --slot=myfaces-${jsf-version} --resources=myfaces-api-${jsf-version}.jar --module-xml=myfaces-api-module.xml
 module add --name=com.sun.jsf-impl --slot=myfaces-${jsf-version} --resources=myfaces-impl-${jsf-version}.jar --module-xml=myfaces-impl-module.xml
-module add --name=org.jboss.as.jsf-injection --slot=myfaces-${jsf-version} --resources=weld-core-jsf-${version.weld.core}.jar:wildfly-jsf-injection-${version.jboss.as}.jar --resource-delimiter=: --module-xml=myfaces-injection-module.xml
+module add --name=org.jboss.as.jsf-injection --slot=myfaces-${jsf-version} --resources=weld-jsf-${version.weld.core}.jar:wildfly-jsf-injection-${version.jboss.as}.jar --resource-delimiter=: --module-xml=myfaces-injection-module.xml
 module add --name=org.apache.commons.digester --slot=main --resources=commons-digester-1.8.jar --module-xml=myfaces-digester-module.xml

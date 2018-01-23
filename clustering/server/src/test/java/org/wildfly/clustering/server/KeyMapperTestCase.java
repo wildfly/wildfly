@@ -24,45 +24,25 @@ package org.wildfly.clustering.server;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.jboss.msc.service.ServiceName;
 import org.jgroups.util.UUID;
-import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyMapperTester;
 import org.wildfly.clustering.server.group.AddressableNode;
 import org.wildfly.clustering.server.group.LocalNode;
 
 /**
+ * Unit test for {@link KeyMapper}.
  * @author Paul Ferraro
  */
 public class KeyMapperTestCase {
     @Test
-    public void test() throws UnknownHostException {
-        TwoWayKey2StringMapper mapper = new KeyMapper();
-        Assert.assertTrue(mapper.isSupportedType(LocalNode.class));
-        Assert.assertTrue(mapper.isSupportedType(AddressableNode.class));
-        Assert.assertTrue(mapper.isSupportedType(ServiceName.class));
+    public void test() {
+        KeyMapperTester tester = new KeyMapperTester(new KeyMapper());
 
-        Set<String> formatted = new HashSet<>();
-
-        Node localNode = new LocalNode("cluster", "node");
-        String mappedLocalNode = mapper.getStringMapping(localNode);
-        Assert.assertEquals(localNode, mapper.getKeyMapping(mappedLocalNode));
-        Assert.assertTrue(formatted.add(mappedLocalNode));
-
-        Node addressableNode = new AddressableNode(UUID.randomUUID(), "node", new InetSocketAddress(InetAddress.getLocalHost(), 0));
-        String mappedAddressableNode = mapper.getStringMapping(addressableNode);
-        Assert.assertEquals(addressableNode, mapper.getKeyMapping(mappedAddressableNode));
-        Assert.assertTrue(formatted.add(mappedAddressableNode));
-
-        ServiceName serviceName = ServiceName.of("node");
-        String mappedServiceName = mapper.getStringMapping(serviceName);
-        Assert.assertEquals(serviceName, mapper.getKeyMapping(mappedServiceName));
-        Assert.assertTrue(formatted.add(mappedServiceName));
+        tester.test(new LocalNode("node"));
+        tester.test(new AddressableNode(UUID.randomUUID(), "node", new InetSocketAddress(InetAddress.getLoopbackAddress(), Short.MAX_VALUE)));
+        tester.test(ServiceName.JBOSS.append("service"));
     }
 }

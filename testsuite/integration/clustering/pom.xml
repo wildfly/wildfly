@@ -10,11 +10,7 @@
         <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <!-- ********************************************************************************** -->
-    <!-- *********************************** Clustering *********************************** -->
-    <!-- ********************************************************************************** -->
     <artifactId>wildfly-ts-integ-clustering</artifactId>
-
     <name>WildFly Test Suite: Integration - Clustering</name>
 
     <properties>
@@ -26,644 +22,48 @@
     </properties>
 
     <profiles>
-
         <profile>
             <id>clustering.integration.tests.profile</id>
-            <activation><property><name>!ts.noClustering</name></property></activation>
-
-            <!--
-                Server configuration executions.
-            -->
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>ts.config-as.clustering</id>
-                                <phase>process-test-resources</phase>
-                                <goals><goal>run</goal></goals>
-                                <configuration>
-                                    <target>
-                                        <echo>In Maven: node0: ${node0}</echo>
-                                        <echo>In Maven: node1: ${node1}</echo>
-                                        <echo>In Maven: mcast: ${mcast}</echo>
-                                        <echo>In Maven: mcast.ttl: ${mcast.ttl}</echo>
-                                        <!-- Build the TCP server configs in target/ . -->
-                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
-                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
-                                            <property name="node1" value="${node1}"/>
-                                            <property name="mcast" value="${mcast}"/>
-                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
-                                            <property name="cacheLoader" value="binary-keyed" />
-                                            <property name="cacheType" value="replicated" />
-                                            <property name="mode" value="${cacheMode}" />
-                                            <target name="build-clustering"/>
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!--
-                       Surefire test executions.
-                    -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <version>${version.surefire.plugin}</version>
-                        <executions combine.children="append">
-
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals><goal>test</goal></goals>
-                                <phase>none</phase>
-                            </execution>
-
-                            <!-- TCP clustering tests with custom containers with manual deployments. -->
-                            <execution>
-                                <id>ts.surefire.clustering.custom-manual-tcp-sync</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Needed for EJB client tests -->
-                                    <reuseForks>false</reuseForks>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>${test-group}/**/*TestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>clustering-all</arquillian.launch>
-                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
-                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <cacheMode>SYNC</cacheMode>
-                                        <stack>tcp</stack>
-                                    </systemPropertyVariables>
-
-                                    <!-- Differentiate surefire TCP and UDP reports. -->
-                                    <reportNameSuffix>SYNC-tcp</reportNameSuffix>
-                                </configuration>
-                            </execution>
-
-                            <!-- Single node clustering tests. TODO: move from clustering TS. -->
-                            <execution>
-                                <id>ts.surefire.clustering.single-node</id> <phase>test</phase> <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
-                                    </includes>
-                                    <excludes>
-                                        <exclude>org/jboss/as/test/clustering/single/jdbcstore/**/*TestCase.java</exclude>
-                                    </excludes>
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>clustering-udp-single</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-
-                            <!-- TCP clustering tests with custom containers with manual deployments. -->
-                            <execution>
-                                <id>ts.surefire.clustering.custom-manual-messaging</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/messaging/**/*TestCase.java</include>
-                                    </includes>
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>clustered-messaging</arquillian.launch>
-                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
-                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>clustering.integration.tests.profile.extended</id>
-            <activation><property><name>extendedTests</name></property></activation>
-
-            <!--
-                Server configuration executions.
-            -->
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>ts.config-as.clustering.udp</id>
-                                <phase>process-test-resources</phase>
-                                <goals><goal>run</goal></goals>
-                                <configuration>
-                                    <target>
-                                        <echo>In Maven: node0: ${node0}</echo>
-                                        <echo>In Maven: node1: ${node1}</echo>
-                                        <echo>In Maven: mcast: ${mcast}</echo>
-                                        <echo>In Maven: mcast.ttl: ${mcast.ttl}</echo>
-                                        <!-- Build the additional TCP server configs in target/ . -->
-                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
-                                            <property name="node0" value="${node0}"/>
-                                            <property name="node1" value="${node1}"/>
-                                            <property name="mcast" value="${mcast}"/>
-                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
-                                            <target name="build-clustering-extended"/>
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!--
-                       Surefire test executions.
-                    -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals><goal>test</goal></goals>
-                                <phase>none</phase>
-                            </execution>
-
-                            <!-- TCP-ASYNC -->
-                            <execution>
-                                <id>ts.surefire.clustering.multinode-manual-tcp-async</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Needed for EJB client tests -->
-                                    <reuseForks>false</reuseForks>
-                                    <includes>
-                                        <include>${test-group}/**/*TestCase.java</include>
-                                    </includes>
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <cacheMode>ASYNC</cacheMode>
-                                        <stack>tcp</stack>
-                                    </systemPropertyVariables>
-                                    <reportNameSuffix>ASYNC-tcp</reportNameSuffix>
-                                </configuration>
-                            </execution>
-
-                            <!-- UDP-SYNC -->
-                            <execution>
-                                <id>ts.surefire.clustering.multinode-manual-udp-sync</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Needed for EJB client tests -->
-                                    <reuseForks>false</reuseForks>
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
-                                    </includes>
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <cacheMode>SYNC</cacheMode>
-                                        <stack>udp</stack>
-                                    </systemPropertyVariables>
-                                    <reportNameSuffix>SYNC-udp</reportNameSuffix>
-                                </configuration>
-                            </execution>
-
-                            <!-- UDP-ASYNC -->
-                            <execution>
-                                <id>ts.surefire.clustering.multinode-manual-udp-async</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Needed for EJB client tests -->
-                                    <reuseForks>false</reuseForks>
-                                    <includes>
-                                        <include>${test-group}/**/*TestCase.java</include>
-                                    </includes>
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <cacheMode>ASYNC</cacheMode>
-                                        <stack>udp</stack>
-                                    </systemPropertyVariables>
-                                    <reportNameSuffix>ASYNC-udp</reportNameSuffix>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <!--
-           Disable Surefire and AntRun executions when using -Dtest=... which would cause it running twice.
-        -->
-        <profile>
-            <id>ts.clustering.prevent-2nd-run-on-Dtest.profile</id>
-            <activation><property><name>test</name></property></activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ts.config-as.clustering.jdbc-store</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ts.surefire.clustering.jdbc-store</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <id>ts.surefire.clustering.single-node</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        
-
-        <profile>
-            <id>ts.clustering.jdbc-cachestore.profile</id>
-            <activation><property><name>!ts.noClustering</name></property></activation>
-
-            <!--
-                Server configuration executions.
-            -->
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>ts.config-as.clustering.enable-jdbc-store</id>
-                                <phase>process-test-resources</phase>
-                                <goals><goal>run</goal></goals>
-                                <configuration>
-                                    <target>
-                                        <echo>In Maven: node0: ${node0}</echo>
-                                        <echo>In Maven: mcast.ttl: ${mcast.ttl}</echo>
-                                        <!-- Build the UDP server configs in target/ . -->
-                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
-                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
-                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
-                                            <property name="cacheLoader" value="string-keyed" />
-                                            <property name="cacheType" value="local" />
-                                            <property name="mode" value="${cacheMode}" />                                            
-                                            <target name="build-clustering-udp-jdbc-store"/>
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!--
-                       Surefire test executions.
-                    -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals><goal>test</goal></goals>
-                                <phase>none</phase>
-                            </execution>
-
-                            <!-- Single node clustering tests. -->
-                            <execution>
-                                <id>ts.surefire.clustering.jdbc-store</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/single/jdbcstore/*TestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>clustering-udp-single-jdbc-store</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>ts.clustering.xsite.profile</id>
-            <activation><property><name>!ts.noClustering</name></property></activation>
-
-            <!--
-                Server configuration executions.
-            -->
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>ts.config-as.clustering.xsite</id>
-                                <phase>process-test-resources</phase>
-                                <goals><goal>run</goal></goals>
-                                <configuration>
-                                    <target>
-                                        <echo>Creating x-site configurations</echo>
-                                        <!-- Build the UDP server configs in target/ . -->
-                                        <!-- this configuration uses one interface and port offsets -->
-                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
-                                            <property name="node0" value="${node0}"/>
-                                            <property name="node1" value="${node1}"/>
-                                            <property name="node2" value="${node2}"/>
-                                            <property name="node3" value="${node3}"/>
-                                            <property name="mcast-lon" value="${mcast}"/>
-                                            <property name="mcast-nyc" value="${mcast1}"/>
-                                            <property name="mcast-sfo" value="${mcast2}"/>
-                                            <property name="mcast-mping" value="${mcast3}"/>
-                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
-                                            <target name="build-clustering-xsite"/>
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!--
-                       Surefire test executions.
-                    -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals><goal>test</goal></goals>
-                                <phase>none</phase>
-                            </execution>
-
-                            <!-- Single node clustering tests. -->
-                            <execution>
-                                <id>ts.surefire.clustering.xsite</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/xsite/XSiteSimpleTestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>clustering-xsite</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <!--bit of a workaround, we don't include ${jvm.args.ip.server} as clustering does custom binding-->
-                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs}</server.jvm.args>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <!-- If 4 different IP addresses for node0-4 are not available, only two IPs can be used.
-             Set node0/1 to one address and node2/3 to the other one.
-
-             You can ensure to execute this profile by:
-               Linux: -P \!ts.clustering.xsite.profile,ts.clustering.xsite.profile.simple.xsite
-               Windows: -P !ts.clustering.xsite.profile,ts.clustering.xsite.profile.simple.xsite
-        -->
-        <profile>
-            <id>ts.clustering.xsite.profile.simple.xsite</id>
-
-            <!--
-                Server configuration executions.
-            -->
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>ts.config-as.clustering.xsite</id>
-                                <phase>process-test-resources</phase>
-                                <goals><goal>run</goal></goals>
-                                <configuration>
-                                    <target>
-                                        <echo>Creating x-site configurations</echo>
-                                        <!-- Build the UDP server configs in target/ . -->
-                                        <!-- this configuration uses one interface and port offsets -->
-                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
-                                            <property name="node0" value="${node0}"/>
-                                            <property name="node1" value="${node0}"></property>
-                                            <property name="node2" value="${node1}"></property>
-                                            <property name="node3" value="${node1}"></property>
-                                            <property name="mcast-lon" value="${mcast}"/>
-                                            <property name="mcast-nyc" value="${mcast1}"/>
-                                            <property name="mcast-sfo" value="${mcast2}"/>
-                                            <property name="mcast-mping" value="${mcast3}"/>
-                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
-                                            <target name="build-clustering-xsite"/>
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!--
-                       Surefire test executions.
-                    -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals><goal>test</goal></goals>
-                                <phase>none</phase>
-                            </execution>
-
-                            <!-- Single node clustering tests. -->
-                            <execution>
-                                <id>ts.surefire.clustering.xsite</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/xsite/XSiteSimpleTestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>clustering-xsite-simple</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <!--bit of a workaround, we don't include ${jvm.args.ip.server} as clustering does custom binding-->
-                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs}</server.jvm.args>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>ts.clustering.two.clusters.profile</id>
             <activation>
                 <property>
                     <name>!ts.noClustering</name>
                 </property>
             </activation>
+
             <build>
                 <plugins>
+                    <!-- Update server profile with shared configuration changes -->
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
                             <execution>
-                                <id>ts.config-as.clustering.two.clusters</id>
                                 <phase>process-test-resources</phase>
-                                <goals><goal>run</goal></goals>
-                                <configuration>
-                                    <target>
-                                        <echo>Creating two clusters configurations</echo>
-                                        <!-- Build the UDP server configs in target/ . -->
-                                        <!-- this configuration uses one interface and port offsets -->
-                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
-                                            <property name="node0" value="${node0}"/>
-                                            <property name="node1" value="${node1}"/>
-                                            <property name="node2" value="${node2}"/>
-                                            <property name="node3" value="${node3}"/>
-                                            <property name="mcast-clusterA" value="${mcast}"/>
-                                            <property name="mcast-clusterB" value="${mcast1}"/>
-                                            <property name="mcast-mping" value="${mcast2}"/>
-                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
-                                            <target name="build-clustering-two-clusters"/>
-                                        </ant>
-                                    </target>
-                                </configuration>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <offline>true</offline>
+                            <scripts>
+                                <script>clustering-all.cli</script>
+                            </scripts>
+                            <jboss-home>${wildfly.dir}</jboss-home>
+                            <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
+                            <system-properties>
+                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${jboss.dist}/modules</module.path>
+                            </system-properties>
+                        </configuration>
                     </plugin>
-
-                    <!--
-                       Surefire test executions.
-                    -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals><goal>test</goal></goals>
-                                <phase>none</phase>
-                            </execution>
-
-                            <!-- Single node clustering tests. -->
-                            <execution>
-                                <id>ts.surefire.clustering.two.clusters</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Needed for EJB client tests -->
-                                    <reuseForks>false</reuseForks>
-
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/twoclusters/**/*TestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>clustering-two-clusters</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <!--bit of a workaround, we don't include ${jvm.args.ip.server} as clustering does custom binding-->
-                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs}</server.jvm.args>
-                                        <stack>udp</stack>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-
-
-        <profile>
-            <id>ts.clustering.session-db-persistence.profile</id>
-            <activation>
-                <property>
-                    <name>ds</name>
-                </property>
-            </activation>
-            <properties>
-                <cacheLoader>binary-keyed</cacheLoader>
-                <cacheType>replicated</cacheType>
-                <mode>SYNC</mode>
-            </properties>
-            
-            <build>
-                <plugins>
+                    <!-- Copy 4 containers based on the shared configuration -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
-
                             <execution>
                                 <id>ts.config-as.clustering</id>
                                 <phase>process-test-resources</phase>
@@ -672,115 +72,15 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <echo>In Maven: node0: ${node0}</echo>
-                                        <echo>In Maven: node1: ${node1}</echo>
-                                        <echo>In Maven: mcast: ${mcast}</echo>
-                                        <echo>In Maven: mcast.ttl: ${mcast.ttl}</echo>
-                                        <!-- Build the TCP server configs in target/ . -->
                                         <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
-                                            <property name="node0" value="${node0}" /> <!-- inheritAll="true" doesn't work. -->
-                                            <property name="node1" value="${node1}" />
-                                            <property name="mcast" value="${mcast}" />
-                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
-                                            <property name="cacheLoader" value="${cacheLoader}" />
-                                            <property name="cacheType" value="${cacheType}" />
-                                            <property name="mode" value="${mode}" />
-                                            <target name="build-clustering" />
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-
-                            <!-- Session persistence tests. -->
-                            <execution>
-                                <id>ts.surefire.session.persistence</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/cluster/session/persistence/*TestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <cacheMode>SYNC</cacheMode>
-                                        <stack>tcp</stack>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>clustering.integration.tests.modcluster</id>
-            <activation><property><name>!ts.noClustering</name></property></activation>
-            <!--
-                Server configuration executions.
-            -->
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>ts.config-as.clustering.balancer</id>
-                                <phase>process-test-resources</phase>
-                                <goals><goal>run</goal></goals>
-                                <configuration>
-                                    <target>
-                                        <echo>In Maven: node0: ${node0}</echo>
-                                        <echo>In Maven: node1: ${node1}</echo>
-                                        <echo>In Maven: node0: ${node2}</echo>
-                                        <echo>In Maven: mcast: ${mcast}</echo>
-                                        <echo>In Maven: mcast.ttl: ${mcast.ttl}</echo>
-                                        <!-- Build the TCP server configs in target/ . -->
-                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
-                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
-                                            <property name="node1" value="${node1}"/>
-                                            <property name="node2" value="${node2}"/> <!-- balancer -->
-                                            <property name="mcast" value="${mcast}"/>
-                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
-                                            <property name="cacheLoader" value="binary-keyed" />
-                                            <property name="cacheType" value="replicated" />
-                                            <property name="mode" value="${cacheMode}" />
-                                            <target name="build-clustering-balancer"/>
+                                            <target name="build-clustering"/>
                                         </ant>
                                     </target>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
-
-                    <!--
-                       Surefire test executions.
-                    -->
+                    <!-- Surefire test executions -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
@@ -790,30 +90,98 @@
                             <!-- Disable default-test execution. -->
                             <execution>
                                 <id>default-test</id>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <phase>none</phase>
                             </execution>
 
-                            <!-- Worker failover test with custom containers with manual deployments. -->
+                            <!-- Multi-node clustering tests excluding EJB tests -->
                             <execution>
-                                <id>ts.surefire.clustering.balancer</id>
+                                <id>ts.surefire.clustering.all</id>
                                 <phase>test</phase>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/modcluster/WorkerFailoverTestCase.java</include>
+                                        <include>${test-group}/**/*TestCase.java</include>
                                     </includes>
-
+                                    <!-- Exclude test groups that require disabled fork reuse (i.e. tests using EJB client) corresponding
+                                     to the includes in the following execution. -->
+                                    <excludes>
+                                        <exclude>${test-group}/dispatcher/**/*TestCase.java</exclude>
+                                        <exclude>${test-group}/ejb/**/*TestCase.java</exclude>
+                                        <exclude>${test-group}/ejb2/**/*TestCase.java</exclude>
+                                        <exclude>${test-group}/provider/**/*TestCase.java</exclude>
+                                        <exclude>${test-group}/registry/**/*TestCase.java</exclude>
+                                    </excludes>
                                     <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <node0>${node0}</node0>
+                                        <node1>${node1}</node1>
+                                        <node2>${node2}</node2>
+                                        <node3>${node3}</node3>
+                                        <mcast>${mcast}</mcast>
+                                        <mcast1>${mcast1}</mcast1>
+                                        <mcast2>${mcast2}</mcast2>
+                                        <mcast3>${mcast3}</mcast3>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+
+                            <!-- Multi-node clustering tests with fork reuse disabled for EJB tests -->
+                            <execution>
+                                <id>ts.surefire.clustering.all-ejb</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Needed for EJB client tests -->
+                                    <reuseForks>false</reuseForks>
+                                    <includes>
+                                        <include>${test-group}/dispatcher/**/*TestCase.java</include>
+                                        <include>${test-group}/ejb/**/*TestCase.java</include>
+                                        <include>${test-group}/ejb2/**/*TestCase.java</include>
+                                        <include>${test-group}/provider/**/*TestCase.java</include>
+                                        <include>${test-group}/registry/**/*TestCase.java</include>
+                                    </includes>
                                     <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>clustering-balancer</arquillian.launch>
-                                        <!-- <arquillian.launch>clustering-all</arquillian.launch> -->
-                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
-                                        <jboss.server.config.file.standalone>standalone.xml</jboss.server.config.file.standalone>
-                                        <jboss.server.config.file.standalone-ha>standalone-ha.xml</jboss.server.config.file.standalone-ha>
-                                        <cacheMode>SYNC</cacheMode>
-                                        <stack>tcp</stack>
+                                        <node0>${node0}</node0>
+                                        <node1>${node1}</node1>
+                                        <node2>${node2}</node2>
+                                        <node3>${node3}</node3>
+                                        <mcast>${mcast}</mcast>
+                                        <mcast1>${mcast1}</mcast1>
+                                        <mcast2>${mcast2}</mcast2>
+                                        <mcast3>${mcast3}</mcast3>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+
+                            <!-- Single node clustering tests. TODO: move from clustering TS. -->
+                            <execution>
+                                <id>ts.surefire.clustering.single-node</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
+                                    </includes>
+                                    <systemPropertyVariables combine.children="append">
+                                        <arquillian.launch>single</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -822,7 +190,6 @@
                 </plugins>
             </build>
         </profile>
-
         <!-- Enable using -Dts.noClustering. -->
         <profile>
             <id>ts.clustering.do-nothing.profile</id>
@@ -850,6 +217,6 @@
                 </plugins>
             </build>
         </profile>
-	
+
     </profiles>
 </project>

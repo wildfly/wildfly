@@ -129,7 +129,7 @@ public abstract class AsyncInvocationTask implements Runnable, Future<Object> {
 
     @Override
     public boolean isDone() {
-        return status == ST_DONE;
+        return status != ST_RUNNING;
     }
 
     @Override

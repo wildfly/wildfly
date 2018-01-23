@@ -46,6 +46,7 @@ import org.wildfly.extension.undertow.handlers.ReverseProxyHandler;
  */
 public class UndertowTransformers implements ExtensionTransformerRegistration {
     private static final ModelVersion MODEL_VERSION_EAP7_0_0 = ModelVersion.create(3, 1, 0);
+    private static final ModelVersion MODEL_VERSION_EAP7_1_0 = ModelVersion.create(4, 0, 0);
 
     @Override
     public String getSubsystemName() {
@@ -55,8 +56,25 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         registerTransformers_EAP_7_0_0(subsystemRegistration);
+        registerTransformers_EAP_7_1_0(subsystemRegistration);
     }
 
+
+    private static void registerTransformers_EAP_7_1_0(SubsystemTransformerRegistration subsystemRegistration) {
+        final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        subsystemBuilder
+                .addChildResource(UndertowExtension.PATH_SERVLET_CONTAINER)
+                .getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(10 * 1024 * 1024)), ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(100)), ServletContainerDefinition.FILE_CACHE_METADATA_SIZE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_METADATA_SIZE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
+                .end();
+
+        TransformationDescription.Tools.register(subsystemBuilder.build(), subsystemRegistration, MODEL_VERSION_EAP7_1_0);
+    }
 
     private static void registerTransformers_EAP_7_0_0(SubsystemTransformerRegistration subsystemRegistration) {
         final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
@@ -97,16 +115,22 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
         subsystemBuilder
                 .addChildResource(UndertowExtension.PATH_SERVLET_CONTAINER)
                 .getAttributeBuilder()
-                .setDiscard(falseDiscardChecker, ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
-                .setDiscard(falseDiscardChecker, ServletContainerDefinition.DISABLE_SESSION_ID_REUSE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DISABLE_SESSION_ID_REUSE)
+                    .setDiscard(falseDiscardChecker, ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
+                    .setDiscard(falseDiscardChecker, ServletContainerDefinition.DISABLE_SESSION_ID_REUSE)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DISABLE_SESSION_ID_REUSE)
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(10 * 1024 * 1024)), ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE)
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(100)), ServletContainerDefinition.FILE_CACHE_METADATA_SIZE)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_METADATA_SIZE)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
                 .end()
                 .addChildResource(UndertowExtension.PATH_WEBSOCKETS)
                 .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.PER_MESSAGE_DEFLATE, Constants.DEFLATER_LEVEL)
-                .setDiscard(falseDiscardChecker, WebsocketsDefinition.PER_MESSAGE_DEFLATE)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(0)), WebsocketsDefinition.DEFLATER_LEVEL)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.PER_MESSAGE_DEFLATE, Constants.DEFLATER_LEVEL)
+                    .setDiscard(falseDiscardChecker, WebsocketsDefinition.PER_MESSAGE_DEFLATE)
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(0)), WebsocketsDefinition.DEFLATER_LEVEL)
 
                 .end();
 

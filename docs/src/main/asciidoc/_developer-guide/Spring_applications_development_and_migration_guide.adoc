@@ -1,0 +1,175 @@
+= Spring applications development and migration guide
+
+This document details the main points that need to be considered by
+Spring developers that wish to develop new applications or to migrate
+existing applications to be run into WildFly {wildflyVersion}.
+
+[[dependencies-and-modularity]]
+== Dependencies and Modularity
+
+WildFly {wildflyVersion} has a modular class loading strategy, different from previous
+versions of JBoss AS, which enforces a better class loading isolation
+between deployments and the application server itself. A detailed
+description can be found in the documentation dedicated to
+https://docs.jboss.org/author/display/AS7/Class+Loading+in+AS7[class
+loading in WildFly {wildflyVersion}].
+
+This reduces significantly the risk of running into a class loading
+conflict and allows applications to package their own dependencies if
+they choose to do so. This makes it easier for Spring applications that
+package their own dependencies - such as logging frameworks or
+persistence providers to run on WildFly {wildflyVersion}.
+
+At the same time, this does not mean that duplications and conflicts
+cannot exist on the classpath. Some module dependencies are implicit,
+depending on the type of deployment as shown
+https://docs.jboss.org/author/display/AS7/Implicit+module+dependencies+for+deployments[here].
+
+[[persistence-usage-guide]]
+== Persistence usage guide
+
+Depending on the strategy being used, Spring applications can be:
+
+* native Hibernate applications;
+* JPA-based applications;
+* native JDBC applications;
+
+[[native-springhibernate-applications]]
+== Native Spring/Hibernate applications
+
+Applications that use the Hibernate API directly with Spring (i.e.
+through either one of LocalSessionFactoryBean or
+AnnotationSessionFactoryBean) may use a version of Hibernate 3 packaged
+inside the application. Hibernate 4 (which is provided through the
+'org.hibernate' module of WildFly {wildflyVersion}) is not supported by Spring 3.0 and
+Spring 3.1 (and may be supported by Spring 3.2 as described in
+https://jira.springsource.org/browse/SPR-8096[SPR-8096]), so adding this
+module as a dependency is not a solution.
+
+[[jpa-based-applications]]
+== JPA-based applications
+
+Spring applications using JPA may choose between:
+
+* using a server-deployed persistence unit;
+* using a Spring-managed persistence unit.
+
+[[using-server-deployed-persistence-units]]
+=== Using server-deployed persistence units
+
+Applications that use a server-deployed persistence unit must observe
+the typical Java EE rules in what concerns dependency management, i.e.
+the javax.persistence classes and persistence provider (Hibernate) are
+contained in modules which are added automatically by the application
+when the persistence unit is deployed.
+
+In order to use the server-deployed persistence units from within
+Spring, either the persistence context or the persistence unit need to
+be registered in JNDI via web.xml as follows:
+
+[source,xml]
+----
+<persistence-context-ref>
+    <persistence-context-ref-name>persistence/petclinic-em</persistence-unit-ref-name>
+    <persistence-unit-name>petclinic</persistence-unit-name>
+</persistence-context-ref>
+----
+
+or, respectively:
+
+[source,xml]
+----
+<persistence-unit-ref>
+    <persistence-unit-ref-name>persistence/petclinic-emf</persistence-unit-ref-name>
+    <persistence-unit-name>petclinic</persistence-unit-name>
+</persistence-unit-ref>
+----
+
+When doing so, the persistence context or persistence unit are available
+to be looked up in JNDI, as follows:
+
+[source,xml]
+----
+<jee:jndi-lookup id="entityManager" jndi-name="java:comp/env/persistence/petclinic-em" 
+            expected-type="javax.persistence.EntityManager"/>
+----
+
+or
+
+[source,xml]
+----
+<jee:jndi-lookup id="entityManagerFactory" jndi-name="java:comp/env/persistence/petclinic-emf" 
+            expected-type="javax.persistence.EntityManagerFactory"/>
+----
+
+JNDI binding
+
+[NOTE]
+
+JNDI binding via persistence.xml properties is not supported in WildFly
+8.
+
+[[using-spring-managed-persistence-units]]
+=== Using Spring-managed persistence units
+
+Spring applications running in WildFly {wildflyVersion} may also create persistence
+units on their own, using the LocalContainerEntityManagerFactoryBean.
+This is what these applications need to consider:
+
+[[placement-of-the-persistence-unit-definitions]]
+==== Placement of the persistence unit definitions
+
+When the application server encounters a deployment that has a file
+named META-INF/persistence.xml (or, for that matter,
+WEB-INF/classes/META-INF/persistence.xml), it will attempt to create a
+persistence unit based on what is provided in the file. In most cases,
+such definition files are not compliant with the Java EE requirements,
+mostly because required elements such as the datasource of the
+persistence unit are supposed to be provided by the Spring context
+definitions, which will fail the deployment of the persistence unit, and
+consequently of the entire deployment.
+
+Spring applications can easily avoid this type of conflict, by using a
+feature of the LocalContainerEntityManagerFactoryBean which is designed
+for this purpose. Persistence unit definition files can exist in other
+locations than META-INF/persistence.xml and the location can be
+indicated through the persistenceXmlLocation property of the factory
+bean class.
+
+Assuming that the persistence unit is in the
+META-INF/jpa-persistence.xml, the corresponding definition can be:
+
+[source,xml]
+----
+<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"> 
+       <property name="persistenceXmlLocation" value="classpath*:META-INF/jpa-persistence.xml"/> 
+       <!-- other definitions -->
+</bean>
+----
+
+[[managing-dependencies]]
+=== Managing dependencies
+
+Since the LocalContainerEntityManagerFactoryBean and the corresponding
+HibernateJpaVendorAdapter are based on Hibernate 3, it is required to
+use that version with the application. Therefore, the Hibernate 3 jars
+must be included in the deployment. At the same time, due the presence
+of @PersistenceUnit or @PersistenceContext annotations on the
+application classes, the application server will automatically add the
+'org.hibernate' module as a dependency.
+
+This can be avoided by instructing the server to exclude the module from
+the deployment's list of dependencies. In order to do so, include a
+META-INF/jboss-deployment-structure.xml or, for web applications,
+WEB-INF/jboss-deployment-structure.xml with the following content:
+
+[source,xml]
+----
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
+  <deployment>
+    <exclusions>
+       <module name="org.hibernate"/>
+    </exclusions>
+  </deployment>
+</jboss-deployment-structure>
+----

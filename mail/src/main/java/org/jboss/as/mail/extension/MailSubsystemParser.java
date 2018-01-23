@@ -36,11 +36,14 @@ import static org.jboss.as.mail.extension.MailSessionDefinition.DEBUG;
 import static org.jboss.as.mail.extension.MailSessionDefinition.FROM;
 import static org.jboss.as.mail.extension.MailSessionDefinition.JNDI_NAME;
 import static org.jboss.as.mail.extension.MailSubsystemModel.IMAP;
+import static org.jboss.as.mail.extension.MailSubsystemModel.LOGIN;
 import static org.jboss.as.mail.extension.MailSubsystemModel.MAIL_SESSION;
+import static org.jboss.as.mail.extension.MailSubsystemModel.NAME;
 import static org.jboss.as.mail.extension.MailSubsystemModel.POP3;
+import static org.jboss.as.mail.extension.MailSubsystemModel.PROPERTY;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP;
 
-import java.util.EnumSet;
+import java.util.Collections;
 import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -76,7 +79,7 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                 case MAIL_1_0:
                 case MAIL_1_1:
                 case MAIL_1_2: {
-                    final Element element = Element.forName(reader.getLocalName());
+                    final String element = reader.getLocalName();
                     switch (element) {
                         case MAIL_SESSION: {
                             parseMailSession(reader, list, address);
@@ -100,19 +103,23 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         String jndiName = null;
         final ModelNode operation = new ModelNode();
         for (int i = 0; i < reader.getAttributeCount(); i++) {
-            Attribute attr = Attribute.forName(reader.getAttributeLocalName(i));
+            String attr = reader.getAttributeLocalName(i);
             String value = reader.getAttributeValue(i);
-            if (attr == Attribute.JNDI_NAME) {
-                jndiName = value;
-                JNDI_NAME.parseAndSetParameter(value, operation, reader);
-            } else if (attr == Attribute.DEBUG) {
-                DEBUG.parseAndSetParameter(value, operation, reader);
-            } else if (attr == Attribute.FROM) {
-                FROM.parseAndSetParameter(value, operation, reader);
+            switch (attr) {
+                case MailSubsystemModel.JNDI_NAME:
+                    jndiName = value;
+                    JNDI_NAME.parseAndSetParameter(value, operation, reader);
+                    break;
+                case MailSubsystemModel.DEBUG:
+                    DEBUG.parseAndSetParameter(value, operation, reader);
+                    break;
+                case MailSubsystemModel.FROM:
+                    FROM.parseAndSetParameter(value, operation, reader);
+                    break;
             }
         }
         if (jndiName == null) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.JNDI_NAME));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(JNDI_NAME));
         }
         final PathAddress address = parent.append(MAIL_SESSION, jndiName);
         operation.get(OP_ADDR).set(address.toModelNode());
@@ -123,21 +130,21 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                 case MAIL_1_0:
                 case MAIL_1_1:
                 case MAIL_1_2: {
-                    final Element element = Element.forName(reader.getLocalName());
+                    final String element = reader.getLocalName();
                     switch (element) {
-                        case SMTP_SERVER: {
+                        case MailSubsystemModel.SMTP_SERVER: {
                             parseServerConfig(reader, SMTP, address, list);
                             break;
                         }
-                        case POP3_SERVER: {
+                        case MailSubsystemModel.POP3_SERVER: {
                             parseServerConfig(reader, POP3, address, list);
                             break;
                         }
-                        case IMAP_SERVER: {
+                        case MailSubsystemModel.IMAP_SERVER: {
                             parseServerConfig(reader, IMAP, address, list);
                             break;
                         }
-                        case CUSTOM_SERVER: {
+                        case MailSubsystemModel.CUSTOM_SERVER: {
                             parseCustomServerConfig(reader, address, list);
                             break;
                         }
@@ -162,21 +169,25 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
 
         String socketBindingRef = null;
         for (int i = 0; i < reader.getAttributeCount(); i++) {
-            Attribute attr = Attribute.forName(reader.getAttributeLocalName(i));
+            String attr = reader.getAttributeLocalName(i);
             String value = reader.getAttributeValue(i);
-            if (attr == Attribute.OUTBOUND_SOCKET_BINDING_REF) {
-                socketBindingRef = value;
-                OUTBOUND_SOCKET_BINDING_REF.parseAndSetParameter(value, operation, reader);
-            } else if (attr == Attribute.SSL) {
-                SSL.parseAndSetParameter(value, operation, reader);
-            } else if (attr == Attribute.TLS) {
-                TLS.parseAndSetParameter(value, operation, reader);
-            } else {
-                throw ParseUtils.unexpectedAttribute(reader, i);
+            switch (attr) {
+                case MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF:
+                    socketBindingRef = value;
+                    OUTBOUND_SOCKET_BINDING_REF.parseAndSetParameter(value, operation, reader);
+                    break;
+                case MailSubsystemModel.SSL:
+                    SSL.parseAndSetParameter(value, operation, reader);
+                    break;
+                case MailSubsystemModel.TLS:
+                    TLS.parseAndSetParameter(value, operation, reader);
+                    break;
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
             }
         }
         if (socketBindingRef == null) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.OUTBOUND_SOCKET_BINDING_REF));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(OUTBOUND_SOCKET_BINDING_REF));
         }
         parseLogin(reader, operation);
     }
@@ -186,30 +197,35 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         list.add(operation);
         String name = null;
         for (int i = 0; i < reader.getAttributeCount(); i++) {
-            Attribute attr = Attribute.forName(reader.getAttributeLocalName(i));
+            String attr = reader.getAttributeLocalName(i);
             String value = reader.getAttributeValue(i);
-            if (attr == Attribute.OUTBOUND_SOCKET_BINDING_REF) {
-                OUTBOUND_SOCKET_BINDING_REF_OPTIONAL.parseAndSetParameter(value, operation, reader);
-            } else if (attr == Attribute.SSL) {
-                SSL.parseAndSetParameter(value, operation, reader);
-            } else if (attr == Attribute.TLS) {
-                TLS.parseAndSetParameter(value, operation, reader);
-            } else if (attr == Attribute.NAME) {
-                name = value;
-            } else {
-                throw ParseUtils.unexpectedAttribute(reader, i);
+            switch (attr) {
+                case MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF:
+                    OUTBOUND_SOCKET_BINDING_REF_OPTIONAL.parseAndSetParameter(value, operation, reader);
+                    break;
+                case MailSubsystemModel.SSL:
+                    SSL.parseAndSetParameter(value, operation, reader);
+                    break;
+                case MailSubsystemModel.TLS:
+                    TLS.parseAndSetParameter(value, operation, reader);
+                    break;
+                case MailSubsystemModel.NAME:
+                    name = value;
+                    break;
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
             }
         }
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            final Element element = Element.forName(reader.getLocalName());
+            final String element = reader.getLocalName();
             switch (element) {
                 case LOGIN: {
                     for (int i = 0; i < reader.getAttributeCount(); i++) {
                         String att = reader.getAttributeLocalName(i);
                         String value = reader.getAttributeValue(i);
-                        if (att.equals(Attribute.USERNAME.getLocalName())) {
+                        if (att.equals(MailSubsystemModel.USER_NAME)) {
                             MailServerDefinition.USERNAME.parseAndSetParameter(value, operation, reader);
-                        } else if (att.equals(Attribute.PASSWORD.getLocalName())) {
+                        } else if (att.equals(MailSubsystemModel.PASSWORD)) {
                             PASSWORD.parseAndSetParameter(value, operation, reader);
                         }
                     }
@@ -230,7 +246,7 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
 
 
         if (name == null) {
-            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(NAME));
         }
         PathAddress address = parent.append(MailSubsystemModel.CUSTOM, name);
         operation.get(OP_ADDR).set(address.toModelNode());
@@ -238,15 +254,15 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
 
     private void parseLogin(XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            final Element element = Element.forName(reader.getLocalName());
+            final String element = reader.getLocalName();
             switch (element) {
                 case LOGIN: {
                     for (int i = 0; i < reader.getAttributeCount(); i++) {
                         String att = reader.getAttributeLocalName(i);
                         String value = reader.getAttributeValue(i);
-                        if (att.equals(Attribute.USERNAME.getLocalName())) {
+                        if (att.equals(MailSubsystemModel.USER_NAME)) {
                             MailServerDefinition.USERNAME.parseAndSetParameter(value, operation, reader);
-                        } else if (att.equals(Attribute.PASSWORD.getLocalName())) {
+                        } else if (att.equals(MailSubsystemModel.PASSWORD)) {
                             PASSWORD.parseAndSetParameter(value, operation, reader);
                         }
                     }

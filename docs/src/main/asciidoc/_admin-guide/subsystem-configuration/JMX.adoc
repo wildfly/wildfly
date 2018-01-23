@@ -1,0 +1,190 @@
+= JMX subsystem configuration
+
+The JMX subsystem registers a service with the Remoting endpoint so that
+remote access to JMX can be obtained over the exposed Remoting
+connector.
+
+This is switched on by default in standalone mode and accessible over
+port 9990 but in domain mode is switched off so needs to be enabled - in
+domain mode the port will be the port of the Remoting connector for the
+WildFly instance to be monitored.
+
+To use the connector you can access it in the standard way using a
+`service:jmx` URL:
+
+[source, java]
+----
+import javax.management.MBeanServerConnection;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+ 
+public class JMXExample {
+ 
+    public static void main(String[] args) throws Exception {
+        //Get a connection to the WildFly MBean server on localhost
+        String host = "localhost";
+        int port = 9990;  // management-web port
+        String urlString =
+            System.getProperty("jmx.service.url","service:jmx:remote+http://" + host + ":" + port);
+        JMXServiceURL serviceURL = new JMXServiceURL(urlString);
+        JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceURL, null);
+        MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+ 
+        //Invoke on the WildFly MBean server
+        int count = connection.getMBeanCount();
+        System.out.println(count);
+        jmxConnector.close();
+    }
+}
+----
+
+You also need to set your classpath when running the above example. The
+following script covers Linux. If your environment is much different,
+paste your script when you have it working.
+
+[source, bash]
+----
+
+!/bin/bash
+
+# specify your WildFly folder +
+export YOUR_JBOSS_HOME=~/WildFly
+
+java -classpath $YOUR_JBOSS_HOME/bin/client/jboss-client.jar:./
+JMXExample
+
+----
+
+You can also connect using jconsole.
+
+[NOTE]
+
+If using jconsole use the `jconsole.sh` and `jconsole.bat` scripts
+included in the /bin directory of the WildFly distribution as these set
+the classpath as required to connect over Remoting.
+
+In addition to the standard JVM MBeans, the WildFly MBean server
+contains the following MBeans:
+
+[cols=",",options="header"]
+|=======================================================================
+|JMX ObjectName |Description
+
+|jboss.msc:type=container,name=jboss-as |Exposes management operations
+on the JBoss Modular Service Container, which is the dependency
+injection framework at the heart of WildFly. It is useful for debugging
+dependency problems, for example if you are integrating your own
+subsystems, as it exposes operations to dump all services and their
+current states
+
+|jboss.naming:type=JNDIView |Shows what is bound in JNDI
+
+|jboss.modules:type=ModuleLoader,name=* |This collection of MBeans
+exposes management operations on JBoss Modules classloading layer. It is
+useful for debugging dependency problems arising from missing module
+dependencies
+|=======================================================================
+
+[[audit-logging]]
+== Audit logging
+
+Audit logging for the JMX MBean server managed by the JMX subsystem. The
+resource is at `/subsystem=jmx/configuration=audit-log` and its
+attributes are similar to the ones mentioned for
+`/core-service=management/access=audit/logger=audit-log` in
+link:Audit_logging.html[Audit logging].
+
+[cols=",",options="header"]
+|=======================================================================
+|Attribute |Description
+
+|enabled |true to enable logging of the JMX operations
+
+|log-boot |true to log the JMX operations when booting the server, false
+otherwise
+
+|log-read-only |If true all operations will be audit logged, if false
+only operations that change the model will be logged
+|=======================================================================
+
+Then which handlers are used to log the management operations are
+configured as `handler=*` children of the logger. These handlers and
+their formatters are defined in the global
+`/core-service=management/access=audit` section mentioned in
+link:Audit_logging.html[Audit logging].
+
+[[json-formatter]]
+=== JSON Formatter
+
+The same JSON Formatter is used as described in
+link:Audit_logging.html[Audit logging]. However the records for MBean
+Server invocations have slightly different fields from those logged for
+the core management layer.
+
+[source, ruby]
+----
+2013-08-29 18:26:29 - {
+    "type" : "jmx",
+    "r/o" : false,
+    "booting" : false,
+    "version" : "10.0.0.Final",
+    "user" : "$local",
+    "domainUUID" : null,
+    "access" : "JMX",
+    "remote-address" : "127.0.0.1/127.0.0.1",
+    "method" : "invoke",
+    "sig" : [
+        "javax.management.ObjectName",
+        "java.lang.String",
+        "[Ljava.lang.Object;",
+        "[Ljava.lang.String;"
+    ],
+    "params" : [
+        "java.lang:type=Threading",
+        "getThreadInfo",
+        "[Ljava.lang.Object;@5e6c33c",
+        "[Ljava.lang.String;@4b681c69"
+    ]
+}
+----
+
+It includes an optional timestamp and then the following information in
+the json record
+
+[cols=",",options="header"]
+|=======================================================================
+|Field name |Description
+
+|type |This will have the value jmx meaning it comes from the jmx
+subsystem
+
+|r/o |true if the operation has read only impact on the MBean(s)
+
+|booting |true if the operation was executed during the bootup process,
+false if it was executed once the server is up and running
+
+|version |The version number of the WildFly instance
+
+|user |The username of the authenticated user.
+
+|domainUUID |This is not currently populated for JMX operations
+
+|access |This can have one of the following values:*NATIVE - The
+operation came in through the native management interface, for example
+the CLI*HTTP - The operation came in through the domain HTTP interface,
+for example the admin console*JMX - The operation came in through the
+JMX subsystem. See JMX for how to configure audit logging for JMX.
+
+|remote-address |The address of the client executing this operation
+
+|method |The name of the called MBeanServer method
+
+|sig |The signature of the called called MBeanServer method
+
+|params |The actual parameters passed in to the MBeanServer method, a
+simple Object.toString() is called on each parameter.
+
+|error |If calling the MBeanServer method resulted in an error, this
+field will be populated with Throwable.getMessage()
+|=======================================================================

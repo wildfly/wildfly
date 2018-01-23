@@ -25,9 +25,9 @@ package org.wildfly.extension.undertow.deployment;
 import io.undertow.server.session.InMemorySessionManager;
 import io.undertow.servlet.api.SessionManagerFactory;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.SimpleCapabilityServiceBuilder;
@@ -93,7 +93,9 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
                 .map(provider -> provider.getDeploymentBuilder(codecServiceName, serverName, deploymentUnit.getName()))
                 .orElse(new SimpleSessionIdentifierCodecBuilder(codecServiceName, serverName));
 
-        Stream.of(factoryBuilder, codecBuilder).forEach(builder -> builder.configure(support).build(target).setInitialMode(Mode.ON_DEMAND).install());
+        for (CapabilityServiceBuilder<?> builder : Arrays.asList(factoryBuilder, codecBuilder)) {
+            builder.configure(support).build(target).setInitialMode(Mode.ON_DEMAND).install();
+        }
     }
 
     @Override

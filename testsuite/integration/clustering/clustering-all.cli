@@ -1,0 +1,18 @@
+embed-server --server-config=standalone-ha.xml
+
+/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)
+
+/subsystem=jgroups/stack=udp/transport=UDP:map-put(name=properties,key=ip_ttl,value=0)
+/subsystem=jgroups/stack=tcp/protocol=MPING:map-put(name=properties,key=ip_ttl,value=0)
+
+stop-embedded-server
+
+
+embed-server --server-config=standalone-full-ha.xml
+
+/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)
+
+/subsystem=jgroups/stack=udp/transport=UDP:map-put(name=properties,key=ip_ttl,value=0)
+/subsystem=jgroups/stack=tcp/protocol=MPING:map-put(name=properties,key=ip_ttl,value=0)
+
+stop-embedded-server

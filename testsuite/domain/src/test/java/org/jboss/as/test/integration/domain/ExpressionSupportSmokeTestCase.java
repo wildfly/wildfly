@@ -157,6 +157,8 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
     public void setUp() throws IOException {
         final WildFlyManagedConfiguration config = createConfiguration("domain.xml", "host.xml", getClass().getSimpleName());
         config.setAdminOnly(true);
+        config.setReadOnlyDomain(true);
+        config.setReadOnlyHost(true);
 
         // Trigger the servers to fail on boot if there are runtime errors
         String hostProps = config.getHostCommandLineProperties();

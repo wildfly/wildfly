@@ -41,7 +41,7 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.servlet.TraceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -57,20 +57,20 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCase {
+public abstract class SingletonDeploymentTestCase extends AbstractClusteringTestCase {
 
     private static final String DEPLOYMENT_NAME = "singleton-deployment-helper.war";
     static final String SINGLETON_DEPLOYMENT_1 = "singleton-deployment-0";
     static final String SINGLETON_DEPLOYMENT_2 = "singleton-deployment-1";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
+    @TargetsContainer(NODE_1)
     public static Archive<?> deploymentHelper0() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
+    @TargetsContainer(NODE_2)
     public static Archive<?> deploymentHelper1() {
         return createDeployment();
     }
@@ -98,7 +98,7 @@ public abstract class SingletonDeploymentTestCase extends ClusterAbstractTestCas
             throws Exception {
 
         // In order to test undeploy in case another node becomes elected as the master, we need an election policy that will ever trigger that code path (WFLY-8184)
-        executeOnNodesAndReload("/subsystem=singleton/singleton-policy=default/election-policy=simple:write-attribute(name=name-preferences,value=" + Arrays.toString(NODES) + ")", client1, client2);
+        executeOnNodesAndReload("/subsystem=singleton/singleton-policy=default/election-policy=simple:write-attribute(name=name-preferences,value=" + Arrays.toString(TWO_NODES) + ")", client1, client2);
 
         this.deploy(SINGLETON_DEPLOYMENT_1);
         Thread.sleep(DELAY);

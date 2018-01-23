@@ -29,7 +29,7 @@ import java.net.InetAddress;
 import org.jboss.as.network.ClientMapping;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * @author Paul Ferraro
@@ -40,20 +40,20 @@ public class ClientMappingExternalizer implements Externalizer<ClientMapping> {
     @Override
     public void writeObject(ObjectOutput output, ClientMapping mapping) throws IOException {
         byte[] address = mapping.getSourceNetworkAddress().getAddress();
-        IndexExternalizer.UNSIGNED_BYTE.writeData(output, address.length);
+        IndexSerializer.UNSIGNED_BYTE.writeInt(output, address.length);
         output.write(address);
-        IndexExternalizer.UNSIGNED_BYTE.writeData(output, mapping.getSourceNetworkMaskBits());
+        IndexSerializer.UNSIGNED_BYTE.writeInt(output, mapping.getSourceNetworkMaskBits());
         output.writeUTF(mapping.getDestinationAddress());
-        IndexExternalizer.UNSIGNED_SHORT.writeData(output, mapping.getDestinationPort());
+        IndexSerializer.UNSIGNED_SHORT.writeInt(output, mapping.getDestinationPort());
     }
 
     @Override
     public ClientMapping readObject(ObjectInput input) throws IOException {
-        byte[] sourceAddress = new byte[IndexExternalizer.UNSIGNED_BYTE.readData(input)];
+        byte[] sourceAddress = new byte[IndexSerializer.UNSIGNED_BYTE.readInt(input)];
         input.readFully(sourceAddress);
-        int sourceNetworkMaskBits = IndexExternalizer.UNSIGNED_BYTE.readData(input);
+        int sourceNetworkMaskBits = IndexSerializer.UNSIGNED_BYTE.readInt(input);
         String destAddress = input.readUTF();
-        int destPort = IndexExternalizer.UNSIGNED_SHORT.readData(input);
+        int destPort = IndexSerializer.UNSIGNED_SHORT.readInt(input);
         return new ClientMapping(InetAddress.getByAddress(sourceAddress), sourceNetworkMaskBits, destAddress, destPort);
     }
 

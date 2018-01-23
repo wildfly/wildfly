@@ -27,13 +27,10 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Function;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.IndexExternalizer;
+import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
  * Externalizers for copy-on-write implementations of {@link Collection}.
@@ -45,7 +42,7 @@ public class CopyOnWriteCollectionExternalizer<T extends Collection<Object>> imp
     private final Function<Collection<Object>, T> factory;
 
     @SuppressWarnings("unchecked")
-    CopyOnWriteCollectionExternalizer(Class<?> targetClass, Function<Collection<Object>, T> factory) {
+    public CopyOnWriteCollectionExternalizer(Class<?> targetClass, Function<Collection<Object>, T> factory) {
         this.targetClass = (Class<T>) targetClass;
         this.factory = factory;
     }
@@ -57,7 +54,7 @@ public class CopyOnWriteCollectionExternalizer<T extends Collection<Object>> imp
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        int size = IndexExternalizer.VARIABLE.readData(input);
+        int size = IndexSerializer.VARIABLE.readInt(input);
         // Collect all elements first to avoid COW costs per element.
         return this.factory.apply(CollectionExternalizer.readCollection(input, new ArrayList<>(size), size));
     }
@@ -65,19 +62,5 @@ public class CopyOnWriteCollectionExternalizer<T extends Collection<Object>> imp
     @Override
     public Class<T> getTargetClass() {
         return this.targetClass;
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class CopyOnWriteArrayListExternalizer extends CopyOnWriteCollectionExternalizer<CopyOnWriteArrayList<Object>> {
-        public CopyOnWriteArrayListExternalizer() {
-            super(CopyOnWriteArrayList.class, CopyOnWriteArrayList<Object>::new);
-        }
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class CopyOnWriteArraySetExternalizer extends CopyOnWriteCollectionExternalizer<CopyOnWriteArraySet<Object>> {
-        public CopyOnWriteArraySetExternalizer() {
-            super(CopyOnWriteArraySet.class, CopyOnWriteArraySet<Object>::new);
-        }
     }
 }

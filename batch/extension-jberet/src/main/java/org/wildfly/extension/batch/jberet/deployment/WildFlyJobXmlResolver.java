@@ -29,13 +29,14 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.stream.Collectors;
+
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 
@@ -98,10 +99,12 @@ public class WildFlyJobXmlResolver implements JobXmlResolver {
         // access to the EAR/lib directory so those resources need to be processed
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             // Create a new WildFlyJobXmlResolver without jobs from sub-deployments as they'll be processed later
-            final List<ResourceRoot> resources = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)
-                    .stream()
-                    .filter(r -> !SubDeploymentMarker.isSubDeployment(r))
-                    .collect(Collectors.toList());
+            final List<ResourceRoot> resources = new ArrayList<>();
+            for (ResourceRoot r : deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)) {
+                if (! SubDeploymentMarker.isSubDeployment(r)) {
+                    resources.add(r);
+                }
+            }
             resolver = create(classLoader, resources);
             deploymentUnit.putAttachment(BatchAttachments.JOB_XML_RESOLVER, resolver);
         } else {
@@ -235,9 +238,12 @@ public class WildFlyJobXmlResolver implements JobXmlResolver {
     private static void addJobXmlFiles(final Map<String, VirtualFile> foundJobXmlFiles, final VirtualFile jobsDir) throws IOException {
         if (jobsDir != null && jobsDir.exists()) {
             // We may have some job XML files
-            final Map<String, VirtualFile> xmlFiles = jobsDir.getChildren(JobXmlFilter.INSTANCE)
-                    .stream()
-                    .collect(Collectors.toMap(VirtualFile::getName, (f) -> f));
+            final Map<String, VirtualFile> xmlFiles = new HashMap<>();
+            for (VirtualFile f : jobsDir.getChildren(JobXmlFilter.INSTANCE)) {
+                if (xmlFiles.put(f.getName(), f) != null) {
+                    throw new IllegalStateException("Duplicate key");
+                }
+            }
             foundJobXmlFiles.putAll(xmlFiles);
         }
     }
