@@ -193,3 +193,28 @@ applied at both the global and server group levels:
 `/host=master/server-config=server-one:resume`
 
 `/host=master/server-config=server-one:stop(timeout=x)`
+
+[[graceful-shutdown-from-an-os-signal]]
+== Graceful Shutdown via an OS Signal
+
+If you use an OS signal like `TERM` to shut down your WildFly standalone server
+process, e.g. via `kill -15 <pid>`, the WildFly server will shut down gracefully.
+By default, the behavior will be analogous to a CLI `shutdown --timeout=0` command;
+that is the process will not wait in SUSPENDING state for in-flight requests to
+complete before proceeding to SUSPENDED state and then shutting down. A different
+timeout can be configured by setting the `org.wildfly.sigterm.suspend.timeout` 
+system property. The value of the property should be an integer indicating the maximum 
+number of seconds to wait for in-flight requests to complete. A value of `-1` means 
+the server should wait indefinitely.
+
+Graceful shutdown via an OS signal will not work if the server JVM is configured
+to disable signal handling (i.e. with the `-Xrs` argument to java). It also won't
+work if the method used to terminate the process doesn't result in a signal the
+JVM can respond to (e.g. `kill -9`).
+
+In a managed domain, Process Controller and Host Controller processes will not attempt
+any sort of graceful shutdown in response to a signal. A domain mode server may, but
+the proper way to control the lifecycle of a domain mode server process is via the
+management API and its managing Host Controller, not via direct signals to the server
+process.
+
