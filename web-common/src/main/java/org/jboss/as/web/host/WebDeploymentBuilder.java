@@ -18,7 +18,6 @@ public class WebDeploymentBuilder {
     private String contextRoot;
     private File documentRoot;
     private final List<ServletBuilder> servlets = new ArrayList<>();
-    private final Map<String,String> mimeTypes = new HashMap<>();
     public final List<Predicate> allowRequestPredicates = new ArrayList<>();
 
     public ClassLoader getClassLoader() {
@@ -63,12 +62,5 @@ public class WebDeploymentBuilder {
 
     public List<Predicate> getAllowRequestPredicates() {
         return Collections.unmodifiableList(allowRequestPredicates);
-    }
-
-    public Map<String, String> getMimeTypes() {
-        return mimeTypes;
-    }
-    public void addMimeMapping(String type,String mapping){
-        mimeTypes.put(type,mapping);
     }
 }
