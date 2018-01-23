@@ -256,8 +256,6 @@ include::ejb3/Container_interceptors.adoc[]
 
 include::ejb3/EJB3_Clustered_Database_Timers.adoc[]
 
-include::../_admin-guide/subsystem-configuration/EJB3.adoc[]
-
 include::ejb3/EJB_IIOP_Guide.adoc[]
 
 include::ejb3/EJB_over_HTTP.adoc[]

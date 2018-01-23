@@ -243,9 +243,6 @@ The module-option element can be repeated zero or more times to specify
 the module options as required for the login module being configured. It
 requires the name and value attributes.
 
-See link:Authentication_Modules.html[Authentication Modules] for further
-details on the various modules listed above.
-
 [[authentication-jaspi]]
 ==== authentication-jaspi
 
