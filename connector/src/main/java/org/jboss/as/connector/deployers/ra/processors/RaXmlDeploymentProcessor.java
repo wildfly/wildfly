@@ -74,10 +74,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
         final ManagementResourceRegistration baseRegistration = deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
         final ManagementResourceRegistration registration;
         final Resource deploymentResource = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
-
-
-        final ConnectorXmlDescriptor connectorXmlDescriptor = deploymentUnit
-                .getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+        final ConnectorXmlDescriptor connectorXmlDescriptor = deploymentUnit.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
         if (connectorXmlDescriptor == null) {
             return; // Skip non ra deployments
         }
@@ -92,12 +89,8 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
         if (raService != null)
             raxmls = ((ResourceAdaptersService.ModifiableResourceAdaptors) raService.getValue());
 
-
         ROOT_LOGGER.tracef("processing Raxml");
         Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-
-        if (module == null)
-            throw ConnectorLogger.ROOT_LOGGER.failedToGetModuleAttachment(deploymentUnit);
 
         try {
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();

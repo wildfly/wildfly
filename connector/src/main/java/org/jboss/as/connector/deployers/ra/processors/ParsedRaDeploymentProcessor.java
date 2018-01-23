@@ -117,8 +117,6 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 .getAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY);
 
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        if (module == null)
-            throw ConnectorLogger.ROOT_LOGGER.failedToGetModuleAttachment(phaseContext.getDeploymentUnit());
 
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("ParsedRaDeploymentProcessor: Processing=%s", deploymentUnit);
 
