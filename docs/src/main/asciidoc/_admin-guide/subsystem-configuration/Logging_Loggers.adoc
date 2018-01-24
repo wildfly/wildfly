@@ -57,7 +57,7 @@ Filters on loggers are not inherited.
 
 The `handlers` attribute is a list of handler names that should be
 attached to the logger. If the
-link:#src-557085_Loggers-use-parent-handlers[use-parent-handlers]
+<<use-parent-handlers,use-parent-handlers>>
 attribute is set to `true` and the log messages is determined to be
 loggable, parent loggers will continue to be processed.
 

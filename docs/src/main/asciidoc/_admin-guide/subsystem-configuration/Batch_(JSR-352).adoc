@@ -9,7 +9,7 @@ batch applications. http://wildfly.org[WildFly] uses
 https://github.com/jberet/jsr352[JBeret] for it's batch implementation.
 Specific information about JBeret can be found in the
 http://jberet.gitbooks.io/jberet-user-guide/content/[user guide]. The
-resource path, in link:CLI_Recipes.adoc[CLI notation], for the subsystem
+resource path, in <<CLI_Recipes,CLI notation>>, for the subsystem
 is `subsystem=batch-jberet`.
 
 [[default-subsystem-configuration]]

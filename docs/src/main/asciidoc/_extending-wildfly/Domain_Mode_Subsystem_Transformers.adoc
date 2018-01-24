@@ -15,7 +15,7 @@ something the slave HCs can understand.
 [[background]]
 == Background
 
-WildFly comes with a link:Domain_Setup.html[domain mode] which allows
+WildFly comes with a link:Admin_Guide{outfilesuffix}#Domain_Setup[domain mode] which allows
 you to have one Host Controller acting as the Domain Controller. The
 Domain Controller's job is to maintain the centralized domain
 configuration. Another term for the DC is 'Master Host Controller'.

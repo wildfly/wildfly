@@ -183,7 +183,7 @@ section where named socket configurations can be declared. Other
 sections of the configuration can then reference those sockets by their
 logical name, rather than having to include the full details of the
 socket configuration (which may vary on different machines). See
-link:Interfaces_and_ports.html[Interfaces and ports] for full details.
+<<Interfaces_and_ports,Interfaces and ports>> for full details.
 
 [[system-properties]]
 == System Properties
