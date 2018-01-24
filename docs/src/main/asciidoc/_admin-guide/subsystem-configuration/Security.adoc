@@ -21,7 +21,7 @@ identity, this chapter aims to provide additional detail regarding the
 architecture and capability of the security subsystem however if you are
 just looking to define a security domain and leave the rest to the
 container please jump to the
-link:#src-557233_Securitysubsystemconfiguration-security-domains[security-domains]
+<<security-domains,security-domains>>
 section.
 
 The security subsystem operates by using a security context associated
@@ -269,7 +269,7 @@ module. Here is the structure of the authentication-jaspi element:
 The login-module-stack-ref attribute value must be the name of the
 login-module-stack element to be used. The sub-element login-module is
 configured just like in the
-link:#src-557233_Securitysubsystemconfiguration-authentication[authentication]
+<<authentication,authentication>>
 part
 
 [[authorization]]

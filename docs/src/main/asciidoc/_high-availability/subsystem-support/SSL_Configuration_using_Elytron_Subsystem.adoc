@@ -3,7 +3,7 @@
 
 This document provides information how to configure mod_cluster
 subsystem to protect communication between mod_cluster and load balancer
-using SSL/TLS using link:Elytron_Subsystem.html[Elytron Subsystem].
+using SSL/TLS using link:WildFly_Elytron_Security{outfilesuffix}#Elytron_Subsystem[Elytron Subsystem].
 
 [[overview]]
 == Overview

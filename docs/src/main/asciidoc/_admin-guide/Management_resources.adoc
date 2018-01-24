@@ -2,7 +2,7 @@
 = Management resources
 
 When WildFly parses your configuration files at boot, or when you use
-one of the AS's link:Management_Clients.html[Management Clients] you are
+one of the AS's <<Management_Clients,Management Clients>> you are
 adding, removing or modifying _management resources_ in the AS's
 internal management model. A WildFly management resource has the
 following characteristics:
@@ -62,7 +62,7 @@ not). The parameters for the `add` operation vary depending on the
 resource. The `remove` operation has no parameters.
 
 There are also a number of "global" operations that apply to all
-resources. See link:Global_operations.adoc[Global operations] for full
+resources. See <<Global_operations,Global operations>> for full
 details.
 
 The operations a resource supports can themselves be determined by
@@ -330,7 +330,7 @@ via the CLI one could:
 
 All resources expose metadata that describes their attributes,
 operations and child types. This metadata is itself obtained by invoking
-one or more of the link:Global_operations.adoc[global operations] each
+one or more of the <<Global_operations,global operations>> each
 resource supports. We showed examples of the `read-operation-names`,
 `read-operation-description`, `read-children-types` and
 `read-children-names` operations above.
@@ -394,7 +394,7 @@ parameter (i.e.
 the output would have included the description of each operation
 supported by the resource.
 
-See the link:Global_operations.adoc[Global operations] section for
+See the <<Global_operations,Global operations>> section for
 details on other parameters supported by the `read-resource-description`
 operation and all the other globally available operations.
 

@@ -78,7 +78,7 @@ controller or a standalone server and execute management operations
 available through the de-typed management model.
 
 Details on how to use the CLI can be found in the
-link:Command_Line_Interface.adoc[Command Line Interface page].
+<<Command_Line_Interface,Command Line Interface page>>.
 
 [[configuration-files]]
 == Configuration Files
@@ -204,4 +204,4 @@ kept on the filesystem of hosts that will only run as slaves.
 A slave can be configured to keep a locally persisted copy of the domain
 wide configuration and then use it on boot (in case the master is not
 available.) See _--backup and --cached-dc_ under
-link:Command_line_parameters.adoc[Command line parameters].
+<<Command_line_parameters,Command line parameters>>.
