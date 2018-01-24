@@ -7,7 +7,7 @@ WildFly {wildflyVersion} server instances.
 
 If you are looking to secure the management interfaces for the
 management of the domain then you should read the
-link:#src-557233[Securing the Management Interfaces] chapter as the
+<<Security_Realms,Securing the Management Interfaces>> chapter as the
 management interfaces themselves are not run within a WildFly process so
 use a custom configuration.
 

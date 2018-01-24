@@ -126,8 +126,8 @@ In a managed domain, the XML files are found in the
 `domain/configuration` directory. There are two types of configuration
 files – one per host, and then a single domain-wide file managed by the
 master host, aka the Domain Controller. (For more on the types of
-processes in a managed domain, see link:Operating_modes.adoc[Operating
-Modes].)
+processes in a managed domain, see <<Operating_modes,Operating
+Modes>>.)
 
 [[host-specific-configuration-host.xml]]
 ==== Host Specific Configuration – host.xml

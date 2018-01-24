@@ -67,7 +67,7 @@ interface) relate to the notion of managed resources in the AS.
 
 Each subsystem is responsible for managing one or more management
 resources. The conceptual characteristics of a management resource are
-covered in some detail in the link:Management_resources.html[Admin
+covered in some detail in the link:Admin_Guide{outfilesuffix}#Management_resources[Admin
 Guide]; here we'll just summarize the main points. A management resource
 has
 
@@ -273,7 +273,7 @@ The definition includes all the static information about the
 attribute/operation parameter/result field, e.g. the DMR `ModelType` of
 its value, whether its presence is required, whether it supports
 expressions, etc. See
-link:Description_of_the_Management_Model.html[Description of the
+link:Admin_Guide{outfilesuffix}#Description_of_the_Management_Model[Description of the
 Management Model] for a description of the metadata available. Almost
 all of this comes from the `AttributeDefinition`.
 

@@ -120,8 +120,8 @@ Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
 ----
 
 We will talk about these later in the
-link:#src-557103_Examplesubsystem-Testingtheparsers[#Testing the
-parsers] section.
+<<testing-the-parsers,#Testing the
+parsers>> section.
 
 [[create-the-schema]]
 == Create the schema

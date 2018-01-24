@@ -18,13 +18,13 @@ message is loggable.
 
 There are 6 main handlers provided with WildFly and 1 generic handler;
 
-* link:#Handlers-async-handler[async-handler]
-* link:#Handlers-console-handler[console-handler]
-* link:#Handlers-file-handler[file-handler]
-* link:#Handlers-periodic-rotating-file-handler[periodic-rotating-file-handler]
-* link:#Handlers-size-rotating-file-handler[size-rotating-file-handler]
-* link:#Handlers-syslog-handler[syslog-handler]
-* link:#Handlers-custom-handler[custom-handler]
+* <<async-handler,async-handler>>
+* <<console-handler,console-handler>>
+* <<file-handler,file-handler>>
+* <<periodic-rotating-file-handler,periodic-rotating-file-handler>>
+* <<size-rotating-file-handler,size-rotating-file-handler>>
+* <<syslog-handler,syslog-handler>>
+* <<enabled,custom-handler>>
 
 [[async-handler]]
 === async-handler

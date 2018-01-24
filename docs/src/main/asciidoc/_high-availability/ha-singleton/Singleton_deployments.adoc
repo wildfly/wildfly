@@ -28,7 +28,7 @@ e.g.
 ----
 
 The singleton deployment descriptor defines which
-link:#src-557153[singleton policy] should be used to deploy the
+<<Singleton_subsystem,singleton policy>> should be used to deploy the
 application. If undefined, the default singleton policy is used, as
 defined by the singleton subsystem.
 
