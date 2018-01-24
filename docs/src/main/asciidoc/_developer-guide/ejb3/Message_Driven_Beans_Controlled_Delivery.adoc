@@ -1,3 +1,4 @@
+[[Message_Driven_Beans_Controlled_Delivery]]
 = Message Driven Beans Controlled Delivery
 
 There are three mechanisms in Wildfly that allow controlling if a

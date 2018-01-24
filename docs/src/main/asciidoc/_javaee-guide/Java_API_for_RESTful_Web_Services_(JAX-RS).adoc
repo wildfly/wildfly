@@ -1,3 +1,4 @@
+[[Java_API_for_RESTful_Web_Services_(JAX-RS)]]
 = Java API for RESTful Web Services (JAX-RS)
 ifdef::env-github[:imagesdir: ../]
 

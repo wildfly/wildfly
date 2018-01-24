@@ -1,3 +1,4 @@
+[[HTTP_Proxy]]
 = HTTP Proxy
 
 The HTTP Proxy related functionalities of JBoss Web Services are

@@ -1,3 +1,4 @@
+[[Security_Vault_Migration]]
 = Security Vault Migration
 
 Security Vault is primarily used in legacy configurations, a vault is

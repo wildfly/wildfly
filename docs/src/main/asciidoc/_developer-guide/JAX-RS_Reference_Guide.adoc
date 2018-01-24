@@ -1,3 +1,4 @@
+[[JAX-RS_Reference_Guide]]
 = JAX-RS Reference Guide
 
 This page outlines the three options you have for deploying JAX-RS

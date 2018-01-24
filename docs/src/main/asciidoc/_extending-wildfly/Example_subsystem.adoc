@@ -1,3 +1,4 @@
+[[Example_subsystem]]
 = Example subsystem
 
 Our example subsystem will keep track of all deployments of certain

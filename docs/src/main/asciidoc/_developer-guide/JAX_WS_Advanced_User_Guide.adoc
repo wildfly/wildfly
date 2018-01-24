@@ -1,3 +1,4 @@
+[[JAX_WS_Advanced_User_Guide]]
 = Advanced User Guide
 
 [[logging]]

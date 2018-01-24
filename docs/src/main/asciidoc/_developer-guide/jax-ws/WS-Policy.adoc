@@ -1,3 +1,4 @@
+[[WS-Policy]]
 = WS-Policy
 
 [[apache-cxf-ws-policy-support]]

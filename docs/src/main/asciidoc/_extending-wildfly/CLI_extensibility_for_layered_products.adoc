@@ -1,3 +1,4 @@
+[[CLI_extensibility_for_layered_products]]
 = CLI extensibility for layered products
 
 In addition to supporting the ServiceLoader extension mechanism to load

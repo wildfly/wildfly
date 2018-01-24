@@ -1,3 +1,4 @@
+[[EE_Concurrency_Utilities_Configuration]]
 = EE Concurrency Utilities
 
 EE Concurrency Utilities (JSR 236) were introduced with Java EE 7, to

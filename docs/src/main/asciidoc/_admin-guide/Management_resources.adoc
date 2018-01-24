@@ -1,3 +1,4 @@
+[[Management_resources]]
 = Management resources
 
 When WildFly parses your configuration files at boot, or when you use

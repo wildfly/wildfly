@@ -1,3 +1,4 @@
+[[JavaEE_Tutorial]]
 = JavaEE 7 Tutorial
 WildFly team;
 :revnumber: {version}

@@ -1,3 +1,4 @@
+[[OnBehalfOf_WS-Trust_Scenario]]
 = OnBehalfOf WS-Trust Scenario
 
 The OnBehalfOf feature is used in scenarios that use the proxy pattern.

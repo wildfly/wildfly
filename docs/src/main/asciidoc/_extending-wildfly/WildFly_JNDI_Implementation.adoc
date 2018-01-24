@@ -1,3 +1,4 @@
+[[WildFly_JNDI_Implementation]]
 = WildFly 9 JNDI Implementation
 
 [[introduction]]

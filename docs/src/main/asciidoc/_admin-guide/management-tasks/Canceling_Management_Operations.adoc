@@ -1,3 +1,4 @@
+[[Canceling_Management_Operations]]
 = Canceling Management Operations
 
 WildFly includes the ability to use the CLI to cancel management

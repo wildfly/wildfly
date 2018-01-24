@@ -1,3 +1,4 @@
+[[Subsystem_configuration]]
 = Subsystem configuration
 Subsystem configuration reference
 :author: tcerar@redhat.com

@@ -1,3 +1,4 @@
+[[Implicit_module_dependencies_for_deployments]]
 = Implicit module dependencies for deployments
 
 As explained in the link:#src-557203[Class Loading in WildFly] article,

@@ -1,3 +1,4 @@
+[[Authentication]]
 = Authentication
 
 [[authentication]]

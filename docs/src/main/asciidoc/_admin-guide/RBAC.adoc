@@ -1,3 +1,4 @@
+[[RBAC]]
 = Authorizing management actions with Role Based Access Control
 ifdef::env-github[:imagesdir: ../]
 

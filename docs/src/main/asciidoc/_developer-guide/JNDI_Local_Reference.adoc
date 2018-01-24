@@ -1,3 +1,4 @@
+[[JNDI_Local_Reference]]
 = Local JNDI
 
 The Java EE platform specification defines the following JNDI contexts:

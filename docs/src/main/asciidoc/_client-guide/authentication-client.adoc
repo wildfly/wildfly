@@ -1,3 +1,4 @@
+[[authentication-client]]
 = <authentication-client /> - WildFly Elytron
 
 The _<authentication-client/>_ element can be added to the wildfly-config.xml configuration to define configuration in relation to authentication configuration for outbound connections and SSL configuration for outbound connections e.g.

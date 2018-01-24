@@ -1,3 +1,4 @@
+[[Client_Guide]]
 = WildFly Client Configuration
 :revnumber: {version}
 :revdate: {localdate}

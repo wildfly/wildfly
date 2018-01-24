@@ -1,3 +1,4 @@
+[[Messaging_Connect_a_pooled-connection-factory_to_a_Remote_Artemis_Server]]
 = Connect a pooled-connection-factory to a Remote Artemis Server
 
 The `messaging-activemq` subsystem allows to configure a

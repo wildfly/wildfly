@@ -1,3 +1,4 @@
+[[Load_Balancing]]
 = Load Balancing
 
 This section describes load balancing via Apache + mod_jk and Apache +

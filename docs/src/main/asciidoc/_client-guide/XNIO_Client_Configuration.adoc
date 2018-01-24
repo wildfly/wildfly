@@ -1,3 +1,4 @@
+[[XNIO_Client_Configuration]]
 = XNIO Client Configuration
 
 == <worker /> - XNIO Client

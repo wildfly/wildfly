@@ -1,3 +1,4 @@
+[[JVM_settings]]
 = JVM settings
 
 Configuration of the JVM settings is different for a managed domain and

@@ -1,3 +1,4 @@
+[[EJB3]]
 = EJB3 subsystem configuration guide
 
 This page lists the options that are available for configuring the EJB

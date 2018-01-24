@@ -1,3 +1,4 @@
+[[Suspend,_Resume_and_Graceful_shutdown]]
 = Suspend, Resume and Graceful shutdown
 
 [[core-concepts]]

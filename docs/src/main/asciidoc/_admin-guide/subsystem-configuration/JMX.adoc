@@ -1,3 +1,4 @@
+[[JMX]]
 = JMX subsystem configuration
 
 The JMX subsystem registers a service with the Remoting endpoint so that

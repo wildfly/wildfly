@@ -1,3 +1,4 @@
+[[WS-Reliable_Messaging]]
 = WS-Reliable Messaging
 
 JBoss Web Services inherits full WS-Reliable Messaging capabilities from

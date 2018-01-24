@@ -1,3 +1,4 @@
+[[EE]]
 = EE Subsystem Configuration
 :leveloffset: +1
 The EE subsystem provides common functionality in the Java EE platform,

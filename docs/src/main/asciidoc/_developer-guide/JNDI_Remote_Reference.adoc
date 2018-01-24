@@ -1,3 +1,4 @@
+[[JNDI_Remote_Reference]]
 = Remote JNDI Access
 
 WildFly supports two different types of remote JNDI.

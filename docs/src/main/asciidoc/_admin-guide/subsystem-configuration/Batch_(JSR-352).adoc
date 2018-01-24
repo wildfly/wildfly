@@ -1,3 +1,4 @@
+[[Batch_(JSR-352)]]
 = Batch (JSR-352) Subsystem Configuration
 
 [[overview]]

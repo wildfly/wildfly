@@ -1,3 +1,4 @@
+[[Key_Interfaces_and_Classes_Relevant_to_Extension_Developers]]
 = Key Interfaces and Classes Relevant to Extension Developers
 
 In the first major section of this guide, we provided an example of how

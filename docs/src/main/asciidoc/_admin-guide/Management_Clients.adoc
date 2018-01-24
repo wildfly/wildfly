@@ -1,3 +1,4 @@
+[[Management_Clients]]
 = Management Clients
 
 WildFly offers three different approaches to configure and manage

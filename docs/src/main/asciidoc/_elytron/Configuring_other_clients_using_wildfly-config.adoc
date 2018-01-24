@@ -1,3 +1,4 @@
+[[Configuring_other_clients_using_wildfly-config]]
 = Client configuration using wildfly-config.xml
 
 Prior to WildFly 11, many WildFly client libraries used different configuration strategies. WildFly 11 introduces a new `wildfly-config.xml` file which unifies all client configuration in a single place. In addition to being able to configure authentication using Elytron as described in the previous section, a `wildfly-config.xml` file can also be used to:

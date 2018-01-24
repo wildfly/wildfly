@@ -1,3 +1,4 @@
+[[Messaging_Backward_&_Forward_Compatibility]]
 = Backward & Forward Compatibility
 
 WildFly 10 supports both backwards and forwards compatibility with

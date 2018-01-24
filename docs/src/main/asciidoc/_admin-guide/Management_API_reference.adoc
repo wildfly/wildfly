@@ -1,3 +1,4 @@
+[[Management_API_reference]]
 = Management API reference
 
 This section is an in depth reference to the WildFly management API.

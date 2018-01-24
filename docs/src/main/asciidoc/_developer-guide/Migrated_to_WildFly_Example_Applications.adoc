@@ -1,3 +1,4 @@
+[[Migrated_to_WildFly_Example_Applications]]
 = Example Applications - Migrated to WildFly
 
 [[example-applications-migrated-from-previous-releases]]

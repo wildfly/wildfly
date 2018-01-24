@@ -1,3 +1,4 @@
+[[EJB3_Reference_Guide]]
 = EJB 3 Reference Guide
 
 This chapter details the extensions that are available when developing

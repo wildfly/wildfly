@@ -1,3 +1,4 @@
+[[SAML_Holder-Of-Key_Assertion_Scenario]]
 = SAML Holder-Of-Key Assertion Scenario
 
 WS-Trust deals with managing software security tokens. A SAML assertion

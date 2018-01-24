@@ -1,3 +1,4 @@
+[[WildFly_Testsuite_Test_Developer_Guide]]
 = WildFly Testsuite Test Developer Guide
 
 *See also:* link:WildFly_Integration_Testsuite_User_Guide.html[WildFly

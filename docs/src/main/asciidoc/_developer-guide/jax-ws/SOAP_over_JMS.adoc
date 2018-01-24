@@ -1,3 +1,4 @@
+[[SOAP_over_JMS]]
 = SOAP over JMS
 
 JBoss Web Services allows communication over the _JMS_ transport. The

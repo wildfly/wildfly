@@ -1,3 +1,4 @@
+[[WildFly_Elytron_Security]]
 = WildFly Elytron Security
 :revnumber: {version}
 :revdate: {localdate}

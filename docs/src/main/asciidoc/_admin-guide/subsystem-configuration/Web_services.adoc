@@ -1,3 +1,4 @@
+[[Web_services]]
 = Web services configuration
 
 JBossWS components are provided to the application server through the
