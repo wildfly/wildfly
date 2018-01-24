@@ -98,7 +98,7 @@
         <version.com.github.relaxng>2011.1</version.com.github.relaxng>
         <version.com.google.guava>20.0</version.com.google.guava>
         <version.com.h2database>1.4.193</version.com.h2database>
-        <version.com.microsoft.azure>5.0.0</version.com.microsoft.azure>
+        <version.com.microsoft.azure>6.1.0</version.com.microsoft.azure>
         <!--
             Be careful, the EE 7 jsf-impl 2.2.x version is temporarily being hardcoded in
             the com.sun.jsf-impl module.xml file until EE 8 support is complete. For JSF
@@ -233,7 +233,7 @@
         <version.org.jboss.ws.cxf>5.2.0.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jgroups>4.0.10.Final</version.org.jgroups>
-        <version.org.jgroups.azure>1.1.0.Final</version.org.jgroups.azure>
+        <version.org.jgroups.azure>1.2.0.Final</version.org.jgroups.azure>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
         <version.org.kohsuke.metainf-services>1.7</version.org.kohsuke.metainf-services>
         <version.org.opensaml.opensaml>3.3.0</version.org.opensaml.opensaml>
