@@ -1,3 +1,4 @@
+[[WS-Trust_and_STS]]
 = WS-Trust and STS
 
 [[ws-trust-overview]]

@@ -1,3 +1,4 @@
+[[Migrate_Seam_2_Booking_EAR_Binaries_-_Step_by_Step]]
 = Seam 2 Booking Application - Migration of Binaries from EAP5.1 to
 WildFly
 =========================================================================

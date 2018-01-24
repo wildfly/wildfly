@@ -1,3 +1,4 @@
+[[Logging_How_To]]
 = How To
 
 [[how-do-i-add-a-log-category]]

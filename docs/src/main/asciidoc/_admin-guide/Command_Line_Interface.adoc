@@ -1,3 +1,4 @@
+[[Command_Line_Interface]]
 = Command Line Interface
 
 The Command Line Interface (CLI) is a management tool for a managed

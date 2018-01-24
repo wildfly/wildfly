@@ -1,3 +1,4 @@
+[[jboss-ejb3]]
 = jboss-ejb3.xml Reference
 
 `jboss-ejb3.xml` is a custom deployment descriptor that can be placed in

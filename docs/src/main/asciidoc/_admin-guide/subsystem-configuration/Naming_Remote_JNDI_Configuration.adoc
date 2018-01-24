@@ -1,3 +1,4 @@
+[[Naming_Remote_JNDI_Configuration]]
 = Remote JNDI Configuration
 
 The Naming subsystem configuration may be used to (de)activate the

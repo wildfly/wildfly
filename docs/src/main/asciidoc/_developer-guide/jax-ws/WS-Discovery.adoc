@@ -1,3 +1,4 @@
+[[WS-Discovery]]
 = WS-Discovery
 
 Apache CXF includes support for _Web Services Dynamic Discovery_ (

@@ -1,3 +1,4 @@
+[[Global_operations]]
 = Global operations
 
 The WildFly management API includes a number of operations that apply to

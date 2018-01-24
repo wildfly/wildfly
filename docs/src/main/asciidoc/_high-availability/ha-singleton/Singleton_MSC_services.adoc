@@ -1,3 +1,4 @@
+[[Singleton_MSC_services]]
 = Singleton MSC services
 
 WildFly allows any user MSC service to be installed as a singleton MSC

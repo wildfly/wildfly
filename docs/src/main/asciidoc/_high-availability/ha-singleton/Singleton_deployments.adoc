@@ -1,3 +1,4 @@
+[[Singleton_deployments]]
 = Singleton deployments
 
 WildFly 10 resurrects the ability to start a given deployment on a

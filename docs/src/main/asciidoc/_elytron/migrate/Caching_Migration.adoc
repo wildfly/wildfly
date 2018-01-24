@@ -1,3 +1,4 @@
+[[Caching_Migration]]
 = Caching Migration
 
 Where a PicketBox based security domain is defined it is possible to enable caching for that security domain, this enables subsequent hits to the identity store to be avoided as an in memory cache can be used instead, this example demonstrates how caching can be used with a WildFly Elytron based configuration.

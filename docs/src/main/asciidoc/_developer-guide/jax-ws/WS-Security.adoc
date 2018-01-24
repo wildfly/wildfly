@@ -1,3 +1,4 @@
+[[WS-Security]]
 = WS-Security
 ifdef::env-github[:imagesdir: ../../]
 

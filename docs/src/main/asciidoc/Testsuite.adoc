@@ -1,3 +1,4 @@
+[[Testsuite]]
 = WildFly Testsuite
 WildFly team;
 :revnumber: {version}

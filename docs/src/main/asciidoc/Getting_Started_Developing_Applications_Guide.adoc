@@ -1,3 +1,4 @@
+[[Getting_Started_Developing_Applications_Guide]]
 = Getting Started Developing Applications Guide
 WildFly team;
 :revnumber: {version}

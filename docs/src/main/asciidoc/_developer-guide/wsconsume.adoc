@@ -1,3 +1,4 @@
+[[wsconsume]]
 = wsconsume
 
 _wsconsume_ is a command line tool and ant task that "consumes" the

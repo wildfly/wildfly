@@ -1,3 +1,4 @@
+[[Elytron_Subsystem]]
 = Elytron Subsystem
 
 WildFly Elytron is a security framework used to unify security across

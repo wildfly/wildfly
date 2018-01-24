@@ -1,3 +1,4 @@
+[[Migrate_Order_Application_from_EAP5]]
 = Porting the Order Application from EAP 5.1 to WildFly {wildflyVersion}
 
 Andy Miller ported an example Order application that was used for

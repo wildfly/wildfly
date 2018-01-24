@@ -1,3 +1,4 @@
+[[Getting_Started_Guide]]
 = Getting Started Guide
 WildFly team;
 :revnumber: {version}

@@ -1,3 +1,4 @@
+[[Quickstarts]]
 = Quickstarts
 
 WildFly ships with a number of quickstarts that show you how to get

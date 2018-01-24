@@ -1,3 +1,4 @@
+[[EJB_invocations_from_a_remote_server_instance]]
 = EJB invocations from a remote server instance
 
 The purpose of this chapter is to demonstrate how to lookup and invoke

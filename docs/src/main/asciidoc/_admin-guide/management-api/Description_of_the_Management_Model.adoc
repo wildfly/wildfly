@@ -1,3 +1,4 @@
+[[Description_of_the_Management_Model]]
 = Description of the Management Model
 
 A detailed description of the resources, attributes and operations that

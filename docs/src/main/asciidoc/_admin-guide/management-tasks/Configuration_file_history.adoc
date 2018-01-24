@@ -1,3 +1,4 @@
+[[Configuration_file_history]]
 = Configuration file history
 
 The management operations may modify the model. When this occurs the xml

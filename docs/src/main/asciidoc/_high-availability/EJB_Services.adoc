@@ -1,3 +1,4 @@
+[[EJB_Services]]
 = EJB Services
 
 This chapter explains how clustering of EJBs works in WildFly {wildflyVersion}.

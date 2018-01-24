@@ -1,3 +1,4 @@
+[[Application_Client_Reference]]
 = Application Client Reference
 
 As a Java EE6 compliant server, WildFly {wildflyVersion} contains an application

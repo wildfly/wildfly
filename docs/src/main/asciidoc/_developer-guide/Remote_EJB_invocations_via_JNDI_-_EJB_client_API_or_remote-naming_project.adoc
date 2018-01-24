@@ -1,3 +1,4 @@
+[[Remote_EJB_invocations_via_JNDI_-_EJB_client_API_or_remote-naming_project]]
 = Remote EJB invocations via JNDI - EJB client API or remote-naming project
 
 [[purpose]]

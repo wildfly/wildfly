@@ -1,3 +1,4 @@
+[[Working_with_WildFly_Capabilities]]
 = Working with WildFly Capabilities
 
 An extension to WildFly will likely want to make use of services

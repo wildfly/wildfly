@@ -1,3 +1,4 @@
+[[General_Elytron_Architecture]]
 = General Elytron Architecture
 
 The overall architecture for WildFly Elytron is building up a full

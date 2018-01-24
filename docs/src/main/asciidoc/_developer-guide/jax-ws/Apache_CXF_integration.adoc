@@ -1,3 +1,4 @@
+[[Apache_CXF_integration]]
 = Apache CXF integration
 
 [[jbossws-integration-layer-with-apache-cxf]]

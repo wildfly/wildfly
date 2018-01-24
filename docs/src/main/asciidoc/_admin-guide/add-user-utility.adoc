@@ -1,3 +1,4 @@
+[[add-user-utility]]
 = add-user utility
 ifdef::env-github[:imagesdir: ../]
 

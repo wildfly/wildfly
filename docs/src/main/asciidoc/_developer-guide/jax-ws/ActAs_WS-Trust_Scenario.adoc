@@ -1,3 +1,4 @@
+[[ActAs_WS-Trust_Scenario]]
 = ActAs WS-Trust Scenario
 
 The ActAs feature is used in scenarios that require composite

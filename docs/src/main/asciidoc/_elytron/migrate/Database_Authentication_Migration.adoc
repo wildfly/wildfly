@@ -1,3 +1,4 @@
+[[Database_Authentication_Migration]]
 = Database Authentication
 
 The section describing how to migrate from database accessible via JDBC

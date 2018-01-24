@@ -1,3 +1,4 @@
+[[Simple_SSL_Migration]]
 = Simple SSL Migration
 
 [[simple-ssl-migration]]

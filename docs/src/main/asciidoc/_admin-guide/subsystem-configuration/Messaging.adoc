@@ -1,3 +1,4 @@
+[[Messaging]]
 = Messaging configuration
 
 The JMS server configuration is done through the _messaging-activemq_

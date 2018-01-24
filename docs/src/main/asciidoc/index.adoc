@@ -1,3 +1,4 @@
+[[index]]
 = WildFly Documentation
 :ext-relative: {outfilesuffix}
 

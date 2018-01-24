@@ -1,3 +1,4 @@
+[[Operating_modes]]
 = Operating mode
 ifdef::env-github[:imagesdir: ../]
 

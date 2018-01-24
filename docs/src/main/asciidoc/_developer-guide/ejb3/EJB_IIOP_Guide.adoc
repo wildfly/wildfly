@@ -1,3 +1,4 @@
+[[EJB_IIOP_Guide]]
 = EJB IIOP Guide
 
 [[enabling-iiop]]

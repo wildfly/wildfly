@@ -1,3 +1,4 @@
+[[JGroups_Subsystem]]
 = JGroups Subsystem
 
 [[purpose]]

@@ -1,3 +1,4 @@
+[[Client_Authentication_with_Elytron_Client]]
 = Client Authentication with Elytron Client
 
 WildFly Elytron uses the Elytron Client project to enable remote clients

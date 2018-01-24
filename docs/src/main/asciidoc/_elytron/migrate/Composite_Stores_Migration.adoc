@@ -1,3 +1,4 @@
+[[Composite_Stores_Migration]]
 = Composite Stores Migration
 
 When using either PicketBox or the legacy security realms it is possible to define a configuration where authentication is performed against one identity store whilst the information used for authorization is loaded from a different store, when using WildFly Elytron this can be achieved by using an aggregate security realm.

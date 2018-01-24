@@ -1,3 +1,4 @@
+[[Web_Single_Sign_On]]
 = Web Single Sign-On
 
 This document will guide on how to enable single sign-on across different applications deployed into different servers, where these applications belong to same security domain.

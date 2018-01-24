@@ -1,3 +1,4 @@
+[[JAX_WS_JBoss_Modules_and_WS_applications]]
 = JBoss Modules and WS applications
 
 The JBoss Web Services functionalities are provided by a given set of

@@ -1,3 +1,4 @@
+[[Audit_logging]]
 = Audit logging
 
 WildFly comes with audit logging built in for management operations

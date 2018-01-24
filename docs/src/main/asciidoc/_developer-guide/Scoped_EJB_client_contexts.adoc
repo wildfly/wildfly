@@ -1,3 +1,4 @@
+[[Scoped_EJB_client_contexts]]
 = Scoped EJB client contexts
 
 [[overview]]

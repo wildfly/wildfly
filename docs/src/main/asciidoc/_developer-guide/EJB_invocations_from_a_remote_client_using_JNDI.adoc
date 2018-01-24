@@ -1,3 +1,4 @@
+[[EJB_invocations_from_a_remote_client_using_JNDI]]
 = EJB invocations from a remote client using JNDI
 
 This chapter explains how to invoke EJBs from a remote client by using

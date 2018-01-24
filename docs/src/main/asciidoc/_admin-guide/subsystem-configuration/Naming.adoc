@@ -1,3 +1,4 @@
+[[Naming]]
 = Naming Subsystem Configuration
 
 The Naming subsystem provides the JNDI implementation on WildFly, and

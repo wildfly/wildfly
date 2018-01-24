@@ -1,3 +1,4 @@
+[[Infinispan_Subsystem]]
 = Infinispan Subsystem
 
 [[purpose]]

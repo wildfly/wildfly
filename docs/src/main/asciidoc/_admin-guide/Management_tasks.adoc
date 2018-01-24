@@ -1,3 +1,4 @@
+[[Management_tasks]]
 = Management tasks
 :icons: font
 :source-highlighter: coderay
