@@ -67,10 +67,10 @@ default, all the implicit logging API dependencies are added. If set to
 
 The `use-deployment-logging-config` controls whether or not your
 deployment is scanned for
-link:#src-557095_LoggingConfiguration-Per-deploymentLogging[per-deployment
-logging]. If set to `true`, the default,
-link:#src-557095_LoggingConfiguration-Per-deploymentLogging[per-deployment
-logging] is enabled. Set to `false` to disable this feature.
+<<per-deployment-logging,per-deployment
+logging>>. If set to `true`, the default,
+<<per-deployment-logging,per-deployment
+logging>> is enabled. Set to `false` to disable this feature.
 
 [[per-deployment-logging]]
 == Per-deployment Logging

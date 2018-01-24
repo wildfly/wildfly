@@ -12,7 +12,7 @@ available through the de-typed management model.
 Depending on the operating system, the CLI is launched using
 `jboss-cli.sh` or `jboss-cli.bat` located in the WildFly `bin`
 directory. For further information on the default directory structure,
-please consult the " link:Getting_Started_Guide.adoc[Getting Started
+please consult the " link:Getting_Started_Guide{outfilesuffix}[Getting Started
 Guide]".
 
 The first thing to do after the CLI has started is to connect to a
@@ -191,7 +191,7 @@ mechanism only works if the user running the CLI has read access to the
 standalone/tmp/auth folder or domain/tmp/auth folder under the
 respective WildFly installation - if the local mechanism fails then the
 CLI will fallback to prompting for a username and password for a user
-configured as in link:#src-557082[Default HTTP Interface Security].
+configured as in <<Default_HTTP_Interface_Security,Default HTTP Interface Security>>.
 
 Establishing a CLI connection to a remote server will require a username
 and password by default.

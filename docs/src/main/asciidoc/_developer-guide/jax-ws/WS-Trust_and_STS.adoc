@@ -979,7 +979,7 @@ message exchange via SOAP envelopes.
 As was done in the ServiceImpl class, the WSS4J annotations
 EndpointProperties and EndpointProperty are providing endpoint
 configuration for the CXF runtime. This was previous described
-link:#src-557272_WS-TrustandSTS-WebserviceproviderImplementation[here].
+<<web-service-provider-implementation,here>>.
 
 The InInterceptors annotation is used to specify a JBossWS integration
 interceptor to be used for authenticating incoming requests; JAAS

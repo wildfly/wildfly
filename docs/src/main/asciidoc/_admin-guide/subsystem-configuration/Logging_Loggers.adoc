@@ -31,9 +31,9 @@ org.wildfly.example would have a resource path of
 
 A logger as 4 writeable attributes;
 
-* link:#Loggers-filter-spec[filter-spec]
-* link:#Loggers-handlers[#handlers]
-* link:#Loggers-level[#level]
+* <<filter-spec,filter-spec>>
+* <<level,#handlers>>
+* <<level,#level>>
 * link:#Loggers-use-parent-handlers[use-parent-handlers]
 
 [IMPORTANT]
@@ -77,7 +77,7 @@ whether or not parent loggers should also process the log message.
 === Root Logger Resource
 
 The `root-logger` is similar to a
-link:#src-557085_Loggers-LoggerResource[#Logger Resource] only it has no
+<<logger-resource,#Logger Resource>> only it has no
 category and it's name is must be `ROOT`.
 
 [[logger-hierarchy]]

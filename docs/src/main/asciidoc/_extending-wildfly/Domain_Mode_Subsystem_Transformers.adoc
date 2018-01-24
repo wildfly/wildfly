@@ -310,11 +310,11 @@ subsystem ModelVersions. The DC maintains this information in a registry
 for each slave HC, so that it knows which transformers (if any) to
 invoke for a legacy slave. We will see how to write and register
 transformers later on in
-link:#src-557181_DomainModeSubsystemTransformers-HowdoIwriteatransformer[#How
-do I write a transformer]. Slave HCs from version 7.2.0 onwards will
+<<how-do-i-write-a-transformer,#How
+do I write a transformer>>. Slave HCs from version 7.2.0 onwards will
 also include a list of resources that they ignore (see
-link:#src-557181_DomainModeSubsystemTransformers-Ignoringresourcesonlegacyhosts[#Ignoring
-resources on legacy hosts]), and the DC will maintain this information
+<<ignoring-resources-on-legacy-hosts,#Ignoring
+resources on legacy hosts>>), and the DC will maintain this information
 in its registry. The DC will not send across any resources that it knows
 a slave ignores during the initial domain model transfer. When
 forwarding operations onto the slave HCs, the DC will skip forwarding
@@ -331,10 +331,10 @@ reject things that the legacy slave HC will not understand. Rejection,
 in this context, essentially means, that the resource or operation
 cannot safely be transformed to something valid on the slave, so the
 transformation fails. We will see later how to reject attributes in
-link:#src-557181_DomainModeSubsystemTransformers-Rejectingattributes[#Rejecting
-attributes], and child resources in
-link:#src-557181_DomainModeSubsystemTransformers-Rejectchildresource[#Reject
-child resource].
+<<rejecting-attributes,#Rejecting
+attributes>>, and child resources in
+<<reject-child-resource,#Reject
+child resource>>.
 
 Both resource and operation transformers are needed, but take effect at
 different times. Let us use the `weld` subsystem, which is relatively
@@ -445,8 +445,8 @@ operations to legacy slave HCs.
 === Resource transformers
 
 When copying over the centralized domain configuration as mentioned in
-link:#src-557181_DomainModeSubsystemTransformers-Gettingtheinitialdomainmodel[#Getting
-the initial domain model], we need to make sure that the copy of the
+<<getting-the-initial-domain-model,#Getting
+the initial domain model>>, we need to make sure that the copy of the
 domain model is something that the servers running on the legacy slave
 HC understand. So if the centralized domain configuration had any of the
 two new attributes set, we would need to reject the transformation in
@@ -480,8 +480,8 @@ slave HC's servers can understand it.
 
 Only slave HCs from JBoss AS 7.2.0 and newer inform the DC about their
 ignored resources (see
-link:#src-557181_DomainModeSubsystemTransformers-Ignoringresourcesonlegacyhosts[#Ignoring
-resources on legacy hosts]). This means that if a transformer on the DC
+<<ignoring-resources-on-legacy-hosts,#Ignoring
+resources on legacy hosts>>). This means that if a transformer on the DC
 rejects transformation for a legacy slave HC, exactly what happens to
 the slave HC depends on the version of the slave HC. If the slave HC is:
 
@@ -503,13 +503,13 @@ HC to fail to start up.
 === Operation transformers
 
 When
-link:#src-557181_DomainModeSubsystemTransformers-Anoperationchangessomethinginthedomainconfiguration[#An
-operation changes something in the domain configuration] the operation
+<<an-operation-changes-something-in-the-domain-configuration,#An
+operation changes something in the domain configuration>> the operation
 gets sent across to the slave HCs to update their copies of the domain
 model. The slave HCs then forward this operation onto the affected
 servers. The same considerations as in
-link:#src-557181_DomainModeSubsystemTransformers-Resourcetransformers[#Resource
-transformers] are true, although operation transformers give you quicker
+<<resource-transformers,#Resource
+transformers>> are true, although operation transformers give you quicker
 'feedback' if something is not valid. If you try to execute:
 
 [source,ruby]
@@ -886,8 +886,8 @@ this has ModelVersion 2.0.0).
 ----
 
 Here we register a `discard check` and a `reject check`. As mentioned in
-link:#src-557181_DomainModeSubsystemTransformers-Attributetransformationlifecycle[#Attribute
-transformation lifecycle] all attributes are inspected for whether they
+<<attribute-transformation-lifecycle,#Attribute
+transformation lifecycle>> all attributes are inspected for whether they
 should be discarded first. Then all attributes which were not discarded
 are checked for if they should be rejected. We will dig more into what
 this code means in the next few sections, but in short it means that we
@@ -957,10 +957,10 @@ The `ResourceTransformationDescriptionBuilder` contains functionality
 for how to handle child resources, which we will look at in this
 section. It is also the entry point to how to handle transformation of
 attributes as we will see in
-link:#src-557181_DomainModeSubsystemTransformers-AttributeTransformationDescriptionBuilder[#AttributeTransformationDescriptionBuilder].
+<<attributetransformationdescriptionbuilder,#AttributeTransformationDescriptionBuilder>>.
 Also, it allows you to further override operation transformation as
 discussed in
-link:#src-557181_DomainModeSubsystemTransformers-OperationTransformationOverrideBuilder[#OperationTransformationOverrideBuilder].
+<<operationtransformationoverridebuilder,#OperationTransformationOverrideBuilder>>.
 When we have finished with our builder, we register it with the
 `SubsystemRegistration` against the target ModelVersion.
 
@@ -1028,10 +1028,10 @@ operations are invoked on that address. For example the `remoting`
 subsystem did not have a `http-connector=*` child until ModelVersion
 2.0.0, so it is set up to reject that child when transforming to legacy
 HCs for all previous ModelVersions (1.1.0, 1.2.0 and 1.3.0). (See
-link:#src-557181_DomainModeSubsystemTransformers-Rejectioninresourcetransformers[#Rejection
-in resource transformers] and
-link:#src-557181_DomainModeSubsystemTransformers-Rejectioninoperationtransformers[#Rejection
-in operation transformers] for exactly what happens when something is
+<<rejection-in-resource-transformers,#Rejection
+in resource transformers>> and
+<<rejection-in-operation-transformers,#Rejection
+in operation transformers>> for exactly what happens when something is
 rejected).
 
 [[redirect-address-for-child-resource]]
@@ -1161,10 +1161,10 @@ it does not get sent to the legacy slave HC.
 2.  `reject` - All attributes that have been registered for a reject
 check (and which not have been discarded) are checked to see if the
 attribute should be rejected. As explained in
-link:#src-557181_DomainModeSubsystemTransformers-Rejectioninresourcetransformers[#Rejection
-in resource transformers] and
-link:#src-557181_DomainModeSubsystemTransformers-Rejectioninoperationtransformers[#Rejection
-in operation transformers] exactly what happens when something is
+<<rejection-in-resource-transformers,#Rejection
+in resource transformers>> and
+<<rejection-in-operation-transformers,#Rejection
+in operation transformers>> exactly what happens when something is
 rejected varies depending on whether we are transforming a resource or
 an operation, and the version of the legacy slave HC we are transforming
 for. If a transformer rejects an attribute, all other reject
@@ -1174,8 +1174,8 @@ happens. Although this might sound cumbersome, in practice it actually
 makes it easier to write transformers since you only need one kind
 regardless of if it is a resource, an operation, and legacy slave HC
 version. However, as we will see in
-link:#src-557181_DomainModeSubsystemTransformers-Commontransformationuse-cases[Common
-transformation use-cases], it means some extra checks are needed when
+<<common-transformation-use-cases,Common
+transformation use-cases>>, it means some extra checks are needed when
 writing reject and convert transformers.
 3.  `convert` - All attributes that have been registered for conversion
 are checked to see if the attribute should be converted. If the
@@ -1370,8 +1370,8 @@ from the `jpa` subsystem:
 ----
 
 We will come back to the reject checks in the
-link:#src-557181_DomainModeSubsystemTransformers-Rejectingattributes[#Rejecting
-attributes] section. We are saying that we should discard the
+<<rejecting-attributes,#Rejecting
+attributes>> section. We are saying that we should discard the
 `JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE` attribute if it
 has the value `deep`. The reasoning here is that this attribute did not
 exist in the old model, but the legacy slave HCs _implied behaviour_ is
@@ -1472,8 +1472,8 @@ For attributes with several `RejectAttributeChecker` registered, they
 get processed in the order that they have been added. So when checking
 `attr1` for rejection, `rejectCheckerA` gets run before
 `rejectCheckerB`. As mentioned in
-link:#src-557181_DomainModeSubsystemTransformers-Attributetransformationlifecycle[#Attribute
-transformation lifecycle], if an attribute is rejected, we still invoke
+<<attribute-transformation-lifecycle,#Attribute
+transformation lifecycle>>, if an attribute is rejected, we still invoke
 the rest of the reject checkers.
 
 [[the-rejectattributechecker-interface]]
@@ -1599,7 +1599,7 @@ transformed operation, in the case of operation transformation.
 has a defined value. Normally this is because the attribute does not
 exist on the target legacy slave HC. A typical use case for these is for
 the _implied behavior_ example we looked at in the `jpa` subsystem in
-link:#src-557181_DomainModeSubsystemTransformers-DiscardAttributeChecker.DiscardAttributeValueChecker[#DiscardAttributeChecker.DiscardAttributeValueChecker]
+<<discardattributechecker.discardattributevaluechecker,#DiscardAttributeChecker.DiscardAttributeValueChecker>>
 
 [source, java]
 ----
@@ -1959,10 +1959,10 @@ public class SomeExtension implements Extension {
 
 There are a few ways to evolve your transformers:
 
-* link:#src-557181_DomainModeSubsystemTransformers-Theoldway[#The old
-way]
-* link:#src-557181_DomainModeSubsystemTransformers-Chainedtransformers[#Chained
-transformers]
+* <<the-old-way,#The old
+way>>
+* <<chained-transformers,#Chained
+transformers>>
 
 [[the-old-way]]
 === The old way
@@ -1970,8 +1970,8 @@ transformers]
 This is the way that has been used up to WildFly {wildflyVersion}.x. However, in
 WildFly 9 and later, it is strongly recommended to migrate to what is
 mentioned in
-link:#src-557181_DomainModeSubsystemTransformers-Chainedtransformers[#Chained
-transformers]
+<<chained-transformers,#Chained
+transformers>>
 
 Now we need some new transformers from the current ModelVersion to 1.1.0
 where we reject any defined occurrances of our new attribute `new-attr`:

@@ -582,7 +582,7 @@ http://docs.jboss.org/ironjacamar/userguide/1.0/en-US/html/deployment.html#deplo
 ===== Configure Logging in WildFly
 
 WildFly logging can be configured with the web console or the command
-line interface. You can get more detail on the link:#src-557127[Logging
+line interface. You can get more detail on the link:Admin_Guide{outfilesuffix}#Logging[Logging
 Configuration] page.
 
 Turn on debugging for a specific category with CLI:

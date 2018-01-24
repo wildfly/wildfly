@@ -81,7 +81,7 @@ property that corresponds to a JNDI lookup on the local server. +
 When the MDB is consuming from a remote Artemis server, there may not
 have such a JNDI binding in the local WildFly. +
 It is possible to use the naming subsystem to configure
-link:#src-557098[external context federation] to have local JNDI
+<<Naming,external context federation>> to have local JNDI
 bindings delegating to external bindings.
 
 However there is a simpler solution to configure the destination when
