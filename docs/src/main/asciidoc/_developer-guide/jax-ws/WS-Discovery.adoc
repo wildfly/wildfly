@@ -1,3 +1,4 @@
+[[WS-Discovery]]
 = WS-Discovery
 
 Apache CXF includes support for _Web Services Dynamic Discovery_ (
@@ -55,7 +56,7 @@ messages upon undeployment.
 
 Apache CXF comes with a _WS-Discovery_ API that can be used to probe /
 resolve services. When running in-container, a JBoss module
-link:#src-557284[dependency] to the `org.apache.cxf.impl` module is to
+<<JAX_WS_JBoss_Modules_and_WS_applications,dependency>> to the `org.apache.cxf.impl` module is to
 be set to have access to _WS-Discovery_ client functionalities.
 
 The

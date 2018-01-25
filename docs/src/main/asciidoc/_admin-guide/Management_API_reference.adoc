@@ -1,12 +1,13 @@
+[[Management_API_reference]]
 = Management API reference
 
 This section is an in depth reference to the WildFly management API.
 Readers are encouraged to read the
-link:Management_Clients.html[Management clients] and
-link:Core_management_concepts.html[Core management concepts] sections
+<<Management_Clients,Management clients>> and
+<<Core_management_concepts,Core management concepts>> sections
 for fundamental background information, as well as the
-link:Management_tasks.adoc[Management tasks] and
-link:Domain_Setup.adoc[Domain setup] sections for key task oriented
+<<Management_tasks,Management tasks>> and
+<<Domain_Setup,Domain setup>> sections for key task oriented
 information. This section is meant as an in depth reference to delve
 into some of the key details.
 

@@ -1,3 +1,4 @@
+[[Description_of_the_Management_Model]]
 = Description of the Management Model
 
 A detailed description of the resources, attributes and operations that
@@ -5,7 +6,7 @@ make up the management model provided by an individual WildFly instance
 or by any Domain Controller or slave Host Controller process can be
 queried using the `read-resource-description`, `read-operation-names`,
 `read-operation-description` and `read-child-types` operations described
-in the link:Global_operations.html[Global operations] section. In this
+in the <<Global_operations,Global operations>> section. In this
 section we provide details on what's included in those descriptions.
 
 [[description-of-the-wildfly-managed-resources]]
@@ -13,7 +14,7 @@ section we provide details on what's included in those descriptions.
 
 All portions of the management model exposed by WildFly are addressable
 via an ordered list of key/value pairs. For each addressable
-_link:Management_resources.html[Management Resource]_ , the following
+_<<Management_resources,Management Resource>>_ , the following
 descriptive information will be available:
 
 * `description` – String – text description of this portion of the model
@@ -33,12 +34,12 @@ link:#DescriptionoftheManagementModel-attribute-description[below]
 for the representation of each attribute.
 * `operations` – Map of String (the operation name) to complex structure
 – the operations that can be targetted at this address. See
-link:#DescriptionoftheManagementModel-operation-description[below]
+<<description-of-an-operation,below>>
 for the representation of each operation.
 * `children` – Map of String (the type of child) to complex structure –
 the relationship of this portion of the model to other addressable
 portions of the model. See
-link:#DescriptionoftheManagementModel-children-description[below]
+<<description-of-parentchild-relationships,below>>
 for the representation of each child relationship.
 * `head-comment-allowed` – boolean – indicates whether this portion of
 the model can store an XML comment that would be written in the
@@ -86,7 +87,7 @@ For example:
 
 An attribute is a portion of the management model that is not directly
 addressable. Instead, it is conceptually a property of an addressable
-link:Management_resources.html[management resource]. For each attribute
+<<Management_resources,management resource>>. For each attribute
 in the model, the following descriptive information will be available:
 
 * `description` – String – text description of the attribute
@@ -153,8 +154,8 @@ access-type is read-write. Indicates whether execution of a
 write-attribute operation whose name parameter specifies this attribute
 requires a restart of services (or an entire JVM) in order for the
 change to take effect in the runtime . See discussion of "
-link:#DescriptionoftheManagementModel-applying-runtime-updates[Applying
-Updates to Runtime Services]" below. Default value is "no-services".
+<<applying-updates-to-runtime-services,Applying
+Updates to Runtime Services>>" below. Default value is "no-services".
 * `default` – the default value for the attribute that will be used in
 runtime services if the attribute is not explicitly defined and no other
 attributes listed as `alternatives` are defined.
@@ -202,8 +203,8 @@ attributes often map to XML attributes, which don't allow comments.)
 supported. This description key is for future use.)
 * arbitrary key/value pairs that further describe the attribute value,
 e.g. "max" => 2. See "
-link:#DescriptionoftheManagementModel-arbitrary-descriptors[Arbitrary
-Descriptors]" below.
+<<arbitrary-descriptors,Arbitrary
+Descriptors>>" below.
 
 Some examples:
 
@@ -240,19 +241,19 @@ description of an operation will include the following information:
 description of the parameters of the operation. Keys are the names of
 the parameters, values are descriptions of the parameter value types.
 See
-link:#DescriptionoftheManagementModel-param-description[below]
+<<description-of-an-operation-parameter-or-return-value,below>>
 for details on the description of parameter value types.
 * `reply-properties` – complex structure, or empty – description of the
 return value of the operation, with an empty node meaning void. See
-link:#DescriptionoftheManagementModel-param-description[below]
+<<description-of-an-operation-parameter-or-return-value,below>>
 for details on the description of operation return value types.
 * `restart-required` – String – One of "no-services", "all-services",
 "resource-services" or "jvm". Indicates whether the operation makes a
 configuration change that requires a restart of services (or an entire
 JVM) in order for the change to take effect in the runtime. See
 discussion of "
-link:#DescriptionoftheManagementModel-applying-runtime-updates[Applying
-Updates to Runtime Services]" below. Default value is "no-services".
+<<applying-updates-to-runtime-services,Applying
+Updates to Runtime Services>>" below. Default value is "no-services".
 
 [[description-of-an-operation-parameter-or-return-value]]
 ==== Description of an Operation Parameter or Return Value
@@ -305,8 +306,8 @@ access-type is read-write. Indicates whether execution of a
 write-attribute operation whose name parameter specifies this attribute
 requires a restart of services (or an entire JVM) in order for the
 change to take effect in the runtime . See discussion of "
-link:#DescriptionoftheManagementModel-applying-runtime-updates[Applying
-Updates to Runtime Services]" below. Default value is "no-services".
+<<applying-updates-to-runtime-services,Applying
+Updates to Runtime Services>>" below. Default value is "no-services".
 * `alternatives` – List of string – Indicates an exclusive relationship
 between parameters. If this attribute is defined, the other parameters
 listed in this descriptor's value should be undefined, even if their
@@ -326,8 +327,8 @@ alternatives to each other; "c" and "d" are optional. But "b" requires
 Default is undefined; i.e. this does not apply to most parameters.
 * arbitrary key/value pairs that further describe the attribute value,
 e.g. "max" =>2. See "
-link:#DescriptionoftheManagementModel-arbitrary-descriptors[Arbitrary
-Descriptors]" below.
+<<arbitrary-descriptors,Arbitrary
+Descriptors>>" below.
 
 [[arbitrary-descriptors]]
 === Arbitrary Descriptors

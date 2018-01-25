@@ -1,3 +1,4 @@
+[[Using_WildFly_Elytron_with_WildFly]]
 = Using Elytron within WildFly
 
 [[using-the-out-of-the-box-elytron-components]]

@@ -1,3 +1,4 @@
+[[Apache_CXF_integration]]
 = Apache CXF integration
 
 [[jbossws-integration-layer-with-apache-cxf]]
@@ -67,7 +68,7 @@ with a JAX-WS compliant implementation, which is basically Apache CXF
 plus the JBossWS-CXF integration layer. So users just need to write
 their JAX-WS application; _no need for embedding any Apache CXF or any
 ws related dependency library in user deployments_. Please refer to the
-link:#src-557252[JAX-WS User Guide] section of the documentation for
+<<JAX-WS_User_Guide,JAX-WS User Guide>> section of the documentation for
 getting started.
 
 WS-* usage (including WS-Security, WS-Addressing, WS-ReliableMessaging,
@@ -337,7 +338,7 @@ customizations.
 === Deployment descriptor properties
 
 The `jboss-webservices.xml` descriptor can be used to
-link:#src-557252[provide property values].
+<<JAX_WS_Advanced_User_Guide,provide property values>>.
 
 [source,xml]
 ----
@@ -424,7 +425,7 @@ desired in some cases. Here is an example:
 
 Schema validation of exchanged messages can also be enabled in
 `jboss-webservices.xml`. Further details available
-link:#src-557252[here].
+<<JAX-WS_User_Guide,here>>.
 
 [[interceptors]]
 ==== Interceptors
@@ -482,7 +483,7 @@ xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee">
 ==== WS-Discovery enablement
 
 WS-Discovery support can be turned on in `jboss-webservices` for the
-current deployment. Further details available link:#src-557252[here].
+current deployment. Further details available <<JAX-WS_User_Guide,here>>.
 
 [[apache-cxf-interceptors]]
 == Apache CXF interceptors
@@ -500,8 +501,8 @@ approaches:
 As the Spring descriptor usage is not supported, the JBossWS integration
 adds an additional descriptor based approach to avoid requiring
 modifications to the actual client/endpoint code. Users can declare
-interceptors within link:#src-557252[predefined client and endpoint
-configurations] by specifying a list of interceptor class names for the
+interceptors within <<Predefined_client_and_endpoint_configurations,predefined client and endpoint
+configurations>> by specifying a list of interceptor class names for the
 `cxf.interceptors.in` and `cxf.interceptors.out` properties.
 
 [source,xml]
@@ -542,8 +543,8 @@ approaches:
 As the Spring descriptor usage is not supported, the JBossWS integration
 adds an additional descriptor based approach to avoid requiring
 modifications to the actual client/endpoint code. Users can declare
-features within link:#src-557252[predefined client and endpoint
-configurations] by specifying a list of feature class names for the
+features within <<Predefined_client_and_endpoint_configurations,predefined client and endpoint
+configurations>> by specifying a list of feature class names for the
 `cxf.features` property.
 
 [source,xml]

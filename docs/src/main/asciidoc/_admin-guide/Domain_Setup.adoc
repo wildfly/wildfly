@@ -1,10 +1,11 @@
+[[Domain_Setup]]
 = Domain Setup
 
 To run a group of servers as a managed domain you need to configure both
 the domain controller and each host that joins the domain. This sections
 focuses on the network configuration for the domain and host controller
 components. For background information users are encouraged to review
-the link:Operating_modes.adoc[Operating modes] and
+the <<Operating_modes,Operating modes>> and
 link:Management_Clients.html#src-557081_ManagementClients-ConfigurationFiles[Configuration
 Files] sections.
 

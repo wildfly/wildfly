@@ -1,3 +1,4 @@
+[[Global_operations]]
 = Global operations
 
 The WildFly management API includes a number of operations that apply to
@@ -183,8 +184,8 @@ are themselves inherited from the root resource, so the primary effect
 of setting `inherited` to `false` is to exclude the descriptions of the
 global operations from the output.
 
-See link:Description_of_the_Management_Model.html[Description of the
-Management Model] for details on the result of this operation.
+See <<Description_of_the_Management_Model,Description of the
+Management Model>> for details on the result of this operation.
 
 [[the-read-operation-names-operation]]
 == The read-operation-names operation
@@ -201,8 +202,8 @@ parameter:
 
 * `name` – (string) – the name of the operation
 
-See link:Description_of_the_Management_Model.html[Description of the
-Management Model] for details on the result of this operation.
+See <<Description_of_the_Management_Model,Description of the
+Management Model>> for details on the result of this operation.
 
 [[the-read-children-types-operation]]
 == The read-children-types operation

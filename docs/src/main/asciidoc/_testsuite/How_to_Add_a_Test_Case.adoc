@@ -1,3 +1,4 @@
+[[How_to_Add_a_Test_Case]]
 = How to Add a Test Case
 
 _(Please don't (re)move - this is a landing page from a Jira link.)_
@@ -18,8 +19,8 @@ Check WildFly {wildflyVersion}
 https://github.com/wildfly/wildfly/tree/master/testsuite/integration/basic/src/test/java/org/jboss/as/test/integration[test
 suite test cases] for examples.
 
-For more information, see link:#src-557178[WildFly Testsuite Test
-Developer Guide]. Check the requirements for a test to be included in
+For more information, see <<WildFly_Testsuite_Test_Developer_Guide,WildFly Testsuite Test
+Developer Guide>>. Check the requirements for a test to be included in
 the testsuite.
 
 Ask for help at WildFly {wildflyVersion} forum or at IRC - #wildfly @ FreeNode.

@@ -1,3 +1,4 @@
+[[DataSource]]
 = DataSource configuration
 
 Datasources are configured through the _datasource_ subsystem. Declaring

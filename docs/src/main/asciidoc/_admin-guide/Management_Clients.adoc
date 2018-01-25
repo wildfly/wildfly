@@ -1,3 +1,4 @@
+[[Management_Clients]]
 = Management Clients
 
 WildFly offers three different approaches to configure and manage
@@ -60,6 +61,7 @@ Default URL
 By default the web interface can be accessed here:
 http://localhost:9990/console.
 
+include::Command_Line_Interface.adoc[leveloffset=+1]
 
 include::Default_HTTP_Interface_Security.adoc[leveloffset=+1]
 
@@ -76,7 +78,7 @@ controller or a standalone server and execute management operations
 available through the de-typed management model.
 
 Details on how to use the CLI can be found in the
-link:Command_Line_Interface.adoc[Command Line Interface page].
+<<Command_Line_Interface,Command Line Interface page>>.
 
 [[configuration-files]]
 == Configuration Files
@@ -124,8 +126,8 @@ In a managed domain, the XML files are found in the
 `domain/configuration` directory. There are two types of configuration
 files – one per host, and then a single domain-wide file managed by the
 master host, aka the Domain Controller. (For more on the types of
-processes in a managed domain, see link:Operating_modes.adoc[Operating
-Modes].)
+processes in a managed domain, see <<Operating_modes,Operating
+Modes>>.)
 
 [[host-specific-configuration-host.xml]]
 ==== Host Specific Configuration – host.xml
@@ -202,4 +204,4 @@ kept on the filesystem of hosts that will only run as slaves.
 A slave can be configured to keep a locally persisted copy of the domain
 wide configuration and then use it on boot (in case the master is not
 available.) See _--backup and --cached-dc_ under
-link:Command_line_parameters.adoc[Command line parameters].
+<<Command_line_parameters,Command line parameters>>.

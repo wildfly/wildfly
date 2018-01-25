@@ -1,3 +1,4 @@
+[[Security_Property_Migration]]
 = Security Properties
 
 Lets suppose security properties "a" and "c" defined in legacy security:

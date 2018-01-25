@@ -1,13 +1,14 @@
+[[WildFly_Testsuite_Test_Developer_Guide]]
 = WildFly Testsuite Test Developer Guide
 
-*See also:* link:WildFly_Integration_Testsuite_User_Guide.html[WildFly
-Integration Testsuite User Guide]
+*See also:* <<WildFly_Integration_Testsuite_User_Guide,WildFly
+Integration Testsuite User Guide>>
 
 [[pre-requisites]]
 == Pre-requisites
 
-Please be sure to read link:#src-557173[Pre-requisites - test quality
-standards] and follow those guidelines.
+Please be sure to read <<Pre-requisites_-_test_quality_standards,Pre-requisites - test quality
+standards>> and follow those guidelines.
 
 [[arquillian-container-configuration]]
 == Arquillian container configuration

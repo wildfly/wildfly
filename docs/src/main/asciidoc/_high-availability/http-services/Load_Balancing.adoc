@@ -1,3 +1,4 @@
+[[Load_Balancing]]
 = Load Balancing
 
 This section describes load balancing via Apache + mod_jk and Apache +
@@ -16,7 +17,7 @@ Describe load balancing with Apache using mod_cluster.
 [[mod_cluster-subsystem]]
 === mod_cluster Subsystem
 
-For mod_cluster configuration see link:#mod_cluster-subsystem[mod_cluster subsystem configuration]
+For mod_cluster configuration see <<mod_cluster-subsystem,mod_cluster subsystem configuration>>
 
 :leveloffset: +1
 include::Apache_httpd.adoc[]

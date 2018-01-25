@@ -1,3 +1,4 @@
+[[Securing_EJBs]]
 = Securing EJBs
 
 The Java EE spec specifies certain annotations (like @RolesAllowed,

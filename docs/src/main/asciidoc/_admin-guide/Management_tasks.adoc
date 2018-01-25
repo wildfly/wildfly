@@ -1,3 +1,4 @@
+[[Management_tasks]]
 = Management tasks
 :icons: font
 :source-highlighter: coderay
@@ -5,7 +6,7 @@
 :leveloffset: +1
 include::management-tasks/Command_line_parameters.adoc[]
 
-include::management-tasks/Suspend,_resume_and_graceful_shutdown.adoc[]
+include::management-tasks/Suspend,_Resume_and_Graceful_shutdown.adoc[]
 
 include::management-tasks/Starting_&_stopping_Servers_in_a_Managed_Domain.adoc[]
 

@@ -1,7 +1,8 @@
+[[WildFly_Integration_Testsuite_User_Guide]]
 = WildFly Integration Testsuite User Guide
 
-*See also:* link:WildFly_Testsuite_Test_Developer_Guide.html[WildFly
-Testsuite Test Developer Guide]
+*See also:* <<WildFly_Testsuite_Test_Developer_Guide,WildFly
+Testsuite Test Developer Guide>>
 
 *Target Audience:* Those interested in running the testsuite or a subset
 thereof, with various configuration options.

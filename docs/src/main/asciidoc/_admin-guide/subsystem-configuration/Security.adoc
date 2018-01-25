@@ -1,3 +1,4 @@
+[[Security]]
 = Security subsystem configuration
 
 The security subsystem is the subsystem that brings the security
@@ -6,7 +7,7 @@ WildFly {wildflyVersion} server instances.
 
 If you are looking to secure the management interfaces for the
 management of the domain then you should read the
-link:#src-557233[Securing the Management Interfaces] chapter as the
+<<Security_Realms,Securing the Management Interfaces>> chapter as the
 management interfaces themselves are not run within a WildFly process so
 use a custom configuration.
 
@@ -20,7 +21,7 @@ identity, this chapter aims to provide additional detail regarding the
 architecture and capability of the security subsystem however if you are
 just looking to define a security domain and leave the rest to the
 container please jump to the
-link:#src-557233_Securitysubsystemconfiguration-security-domains[security-domains]
+<<security-domains,security-domains>>
 section.
 
 The security subsystem operates by using a security context associated
@@ -243,9 +244,6 @@ The module-option element can be repeated zero or more times to specify
 the module options as required for the login module being configured. It
 requires the name and value attributes.
 
-See link:Authentication_Modules.html[Authentication Modules] for further
-details on the various modules listed above.
-
 [[authentication-jaspi]]
 ==== authentication-jaspi
 
@@ -271,7 +269,7 @@ module. Here is the structure of the authentication-jaspi element:
 The login-module-stack-ref attribute value must be the name of the
 login-module-stack element to be used. The sub-element login-module is
 configured just like in the
-link:#src-557233_Securitysubsystemconfiguration-authentication[authentication]
+<<authentication,authentication>>
 part
 
 [[authorization]]

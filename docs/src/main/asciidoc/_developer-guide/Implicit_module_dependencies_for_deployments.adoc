@@ -1,6 +1,7 @@
+[[Implicit_module_dependencies_for_deployments]]
 = Implicit module dependencies for deployments
 
-As explained in the link:#src-557203[Class Loading in WildFly] article,
+As explained in the <<Class_Loading_in_WildFly,Class Loading in WildFly>> article,
 WildFly {wildflyVersion} is based on module classloading. A class within a module B
 isn't visible to a class within a module A, unless module B adds a
 dependency on module A. Module dependencies can be explicitly (as

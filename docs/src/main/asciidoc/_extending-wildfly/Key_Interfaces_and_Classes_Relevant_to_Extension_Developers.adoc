@@ -1,3 +1,4 @@
+[[Key_Interfaces_and_Classes_Relevant_to_Extension_Developers]]
 = Key Interfaces and Classes Relevant to Extension Developers
 
 In the first major section of this guide, we provided an example of how
@@ -66,7 +67,7 @@ interface) relate to the notion of managed resources in the AS.
 
 Each subsystem is responsible for managing one or more management
 resources. The conceptual characteristics of a management resource are
-covered in some detail in the link:Management_resources.html[Admin
+covered in some detail in the link:Admin_Guide{outfilesuffix}#Management_resources[Admin
 Guide]; here we'll just summarize the main points. A management resource
 has
 
@@ -123,9 +124,9 @@ instances form a tree.
 * Definition of management notifications emitted by resources of this
 type.
 * Definition of
-link:Working_with_WildFly_Capabilities.html[capabilities] provided by
+<<Working_with_WildFly_Capabilities,capabilities>> provided by
 resources of this type.
-* Definition of link:RBAC.html[RBAC] access constraints that should be
+* Definition of link:Admin_Guide{outfilesuffix}#RBAC[RBAC] access constraints that should be
 applied by the management kernel when authorizing operations against
 resources of this type.
 * Whether the resource type is an alias to another resource type, and if
@@ -272,7 +273,7 @@ The definition includes all the static information about the
 attribute/operation parameter/result field, e.g. the DMR `ModelType` of
 its value, whether its presence is required, whether it supports
 expressions, etc. See
-link:Description_of_the_Management_Model.html[Description of the
+link:Admin_Guide{outfilesuffix}#Description_of_the_Management_Model[Description of the
 Management Model] for a description of the metadata available. Almost
 all of this comes from the `AttributeDefinition`.
 

@@ -1,3 +1,4 @@
+[[jboss-ejb3]]
 = jboss-ejb3.xml Reference
 
 `jboss-ejb3.xml` is a custom deployment descriptor that can be placed in
@@ -98,7 +99,7 @@ This allows you to set the resource adaptor for an MDB.
 
 The IIOP namespace is where IIOP settings are configured. As there are
 quite a large number of options these are covered in the
-link:#src-557220[IIOP guide].
+<<EJB_IIOP_Guide,IIOP guide>>.
 
 [[the-pool-namespace-urnejb-pool1.0]]
 ==== The pool namespace urn:ejb-pool:1.0

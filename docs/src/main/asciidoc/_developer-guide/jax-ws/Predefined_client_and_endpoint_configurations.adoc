@@ -1,3 +1,4 @@
+[[Predefined_client_and_endpoint_configurations]]
 = Predefined client and endpoint configurations
 
 [[overview]]

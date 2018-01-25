@@ -1,3 +1,4 @@
+[[Developing_JSF_Project_Using,_Maven_and_IntelliJ]]
 = Developing JSF Project Using JBoss AS7, Maven and IntelliJ
 ifdef::env-github[:imagesdir: ../]
 

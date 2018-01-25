@@ -1,3 +1,4 @@
+[[Shared_Test_Classes_and_Resources]]
 = Shared Test Classes and Resources
 
 [[among-testsuite-modules]]

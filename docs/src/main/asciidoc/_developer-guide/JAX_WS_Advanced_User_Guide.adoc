@@ -1,3 +1,4 @@
+[[JAX_WS_Advanced_User_Guide]]
 = Advanced User Guide
 
 [[logging]]
@@ -14,7 +15,7 @@ dumping the messages that are passed in it; the handler can be added to
 the desired client/endpoints (programmatically / using `@HandlerChain`
 JAX-WS annotation).
 
-The link:#src-557254[predefined client and endpoint configuration]
+The <<Predefined_client_and_endpoint_configurations,predefined client and endpoint configuration>>
 mechanism allows user to add the logging handler to any client/endpoint
 or to some of them only (in which case the `@EndpointConfig` annotation
 / JBossWS API is required though).
@@ -196,7 +197,7 @@ webservices deployment.
 
 Elements `<config-name>` and `<config-file>` can be used to associate
 any endpoint provided in the deployment with a given
-link:#src-557254[endpoint configuration]. Endpoint configuration are
+<<Predefined_client_and_endpoint_configurations,endpoint configuration>>. Endpoint configuration are
 either specified in the referenced config file or in the WildFly domain
 model (webservices subsystem). For further details on the endpoint
 configurations and their management in the domain model, please see the
@@ -294,7 +295,7 @@ public class ValidatingHelloImpl implements Hello {
 ----
 
 Alternatively, any endpoint and client running in-container can be
-associated to a JBossWS link:#src-557254[predefined configuration]
+associated to a JBossWS <<Predefined_client_and_endpoint_configurations,predefined configuration>>
 having the `schema-validation-enabled` property set to `true` in the
 referenced config file.
 
@@ -343,7 +344,7 @@ Introductions page] on the wiki and at the examples in the sources.
 [[wsdl-system-properties-expansion]]
 == WSDL system properties expansion
 
-See link:#src-557254[Published WSDL customization]
+See <<Published_WSDL_customization,Published WSDL customization>>
 
 :leveloffset: +1
 

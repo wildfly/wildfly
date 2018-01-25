@@ -1,3 +1,4 @@
+[[Glossary]]
 = Glossary
 
 [[module]]
@@ -12,4 +13,3 @@ directory of the application server.
 _Dynamic Modules_ are created by the application server for each
 deployment (or sub-deployment in an EAR).
 
-Reference: link:admin-guide.adoc[Class Loading in WildFly]

@@ -1,3 +1,4 @@
+[[General_configuration_concepts]]
 = General configuration concepts
 
 For both a managed domain or a standalone server, a number of common
@@ -142,8 +143,8 @@ by their logical name, rather than having to include the full details of
 the interface (which may vary on different machines). An interface
 configuration includes the logical name of the interface as well as
 information specifying the criteria to use for resolving the actual
-physical address to use. See link:Interfaces_and_ports.html[Interfaces
-and ports] for further details.
+physical address to use. See <<Interfaces_and_ports,Interfaces
+and ports>> for further details.
 
 An `<interface/>` element in a `domain.xml` need not include anything
 more than the `name` attribute; i.e. it need not include any information
@@ -182,7 +183,7 @@ section where named socket configurations can be declared. Other
 sections of the configuration can then reference those sockets by their
 logical name, rather than having to include the full details of the
 socket configuration (which may vary on different machines). See
-link:Interfaces_and_ports.html[Interfaces and ports] for full details.
+<<Interfaces_and_ports,Interfaces and ports>> for full details.
 
 [[system-properties]]
 == System Properties

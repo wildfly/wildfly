@@ -1,3 +1,4 @@
+[[Kerberos_Based_Authentication_Migration]]
 = Kerberos Authentication Migration
 
 When working with Kerberos configuration it is possible for the

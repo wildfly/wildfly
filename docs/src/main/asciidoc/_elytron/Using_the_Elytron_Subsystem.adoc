@@ -1,3 +1,4 @@
+[[Using_the_Elytron_Subsystem]]
 = Using the Elytron Subsystem
 
 [[set-up-and-configure-authentication-for-applications]]
@@ -80,8 +81,8 @@ as _FORM_.
 Your application's _web.xml_ and _jboss-web.xml_ must be updated to use
 the _application-security-domain_ you configured in WildFly. An example
 of this is available in the
-link:#src-557140_UsingtheElytronSubsystem-config-app-auth[Configure
-Applications to Use Elytron or Legacy Security for Authentication]
+<<configure-applications-to-use-elytron-or-legacy-security-for-authentication,Configure
+Applications to Use Elytron or Legacy Security for Authentication>>
 section.
 
 [[configure-authentication-with-a-filesystem-based-identity-store]]
@@ -164,8 +165,8 @@ as _FORM_.
 Your application's _web.xml_ and _jboss-web.xml_ must be updated to use
 the _application-security-domain_ you configured in WildFly. An example
 of this is available in the
-link:#src-557140_UsingtheElytronSubsystem-config-app-auth[Configure
-Applications to Use Elytron or Legacy Security for Authentication]
+<<configure-applications-to-use-elytron-or-legacy-security-for-authentication,Configure
+Applications to Use Elytron or Legacy Security for Authentication>>
 section.
 
 Your application is now using a filesystem-based identity store for
@@ -252,8 +253,8 @@ as _FORM_.
 Your application's _web.xml_ and _jboss-web.xml_ must be updated to use
 the _application-security-domain_ you configured in WildFly. An example
 of this is available in the
-link:#src-557140_UsingtheElytronSubsystem-config-app-auth[Configure
-Applications to Use Elytron or Legacy Security for Authentication]
+<<configure-applications-to-use-elytron-or-legacy-security-for-authentication,Configure
+Applications to Use Elytron or Legacy Security for Authentication>>
 section.
 
 [[configure-authentication-with-an-ldap-based-identity-store]]
@@ -361,8 +362,8 @@ as _FORM_.
 Your application's _web.xml_ and _jboss-web.xml_ must be updated to use
 the _application-security-domain_ you configured in WildFly. An example
 of this is available in the
-link:#src-557140_UsingtheElytronSubsystem-config-app-auth[Configure
-Applications to Use Elytron or Legacy Security for Authentication]
+<<configure-applications-to-use-elytron-or-legacy-security-for-authentication,Configure
+Applications to Use Elytron or Legacy Security for Authentication>>
 section.
 
 *IMPORTANT:* In cases where you configure an LDAP server in the
@@ -462,8 +463,8 @@ principal from _ksRealm_ but other approaches may also be used.
 Your application's _web.xml_ and _jboss-web.xml_ must be updated to use
 the _application-security-domain_ you configured in WildFly. An example
 of this is available in the
-link:#src-557140_UsingtheElytronSubsystem-config-app-auth[Configure
-Applications to Use Elytron or Legacy Security for Authentication]
+<<configure-applications-to-use-elytron-or-legacy-security-for-authentication,Configure
+Applications to Use Elytron or Legacy Security for Authentication>>
 section.
 
 In addition, you need to update your _web.xml_ to use _CLIENT-CERT_ as
@@ -573,8 +574,8 @@ jboss-deployment-structure.xml.
 Your application's _web.xml_ and _jboss-web.xml_ must be updated to use
 the _application-security-domain_ you configured in WildFly. An example
 of this is available in the
-link:#src-557140_UsingtheElytronSubsystem-config-app-auth[Configure
-Applications to Use Elytron or Legacy Security for Authentication]
+<<configure-applications-to-use-elytron-or-legacy-security-for-authentication,Configure
+Applications to Use Elytron or Legacy Security for Authentication>>
 section.
 
 In addition, you need to update your _web.xml_ to use _SPNEGO_ as its
@@ -848,8 +849,8 @@ decoders, or mappers for your identity store.
 This process is covered in a previous section. For example, if you
 wanted to secure the management interfaces using a filesystem-based
 identity store, you would follow the steps in
-link:#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithaFilesystem-BasedIdentityStore[Configure
-Authentication with a Filesystem-Based Identity Store].
+<<configure-authentication-with-a-filesystem-based-identity-store,Configure
+Authentication with a Filesystem-Based Identity Store>>.
 
 [[create-an-http-authentication-factory-or-sasl-authentication-factory.]]
 ==== Create an http-authentication-factory or

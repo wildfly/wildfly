@@ -1,3 +1,4 @@
+[[Operating_modes]]
 = Operating mode
 ifdef::env-github[:imagesdir: ../]
 
@@ -47,7 +48,7 @@ When you launch a WildFly managed domain on a host (via the `domain.sh`
 or `domain.bat` launch scripts) your intent is to launch a Host
 Controller and usually at least one WildFly instance. On one of the
 hosts the Host Controller should be configured to act as the Domain
-Controller. See link:Domain_Setup.html[Domain Setup] for details.
+Controller. See <<Domain_Setup,Domain Setup>> for details.
 
 The following is an example managed domain topology:
 
@@ -172,7 +173,7 @@ servers in the group
 * jvm -- default jvm settings for all servers in the group. The Host
 Controller will merge these settings with any provided in `host.xml` to
 derive the settings to use to launch the server's JVM. See
-link:JVM_settings.html[JVM settings] for further details.
+<<JVM_settings,JVM settings>> for further details.
 
 [[server]]
 === Server

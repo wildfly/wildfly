@@ -1,3 +1,4 @@
+[[Elytron_Subsystem]]
 = Elytron Subsystem
 
 WildFly Elytron is a security framework used to unify security across
@@ -37,7 +38,7 @@ well as providing security for applications.
 To get started using Elytron, refer to these topics:
 
 * Use the default Elytron components for
-link:#src-557147_ElytronSubsystem-use-default-elytron-app-auth[application]
+<<default-application-authentication-configuration,application>>
 and
 link:#src-557147_ElytronSubsystem-use-default-elytron-mgmt-auth[management]
 authentication
@@ -373,8 +374,8 @@ WildFly provides a set of components configured by default. While these
 components are ready to use, the legacy _security_ subsystem and legacy
 core management authentication is still used by default. To configure
 WildFly to use the these configured components as well as create new
-ones, see the link:Using_the_Elytron_Subsystem.html[Using the Elytron
-Subsystem] section.
+ones, see the <<Using_the_Elytron_Subsystem,Using the Elytron
+Subsystem>> section.
 
 [cols=",",options="header"]
 |=======================================================================

@@ -1,3 +1,4 @@
+[[Client_Authentication_with_Elytron_Client]]
 = Client Authentication with Elytron Client
 
 WildFly Elytron uses the Elytron Client project to enable remote clients
@@ -105,8 +106,8 @@ $ java -Dwildfly.config.url=/path/to/the.xml .....
 ----
 
 *IMPORTANT*: If you use the
-link:#src-557099_ClientAuthenticationwithElytronClient-TheProgrammaticApproach[The
-Programmatic Approach], it will override any provided configuration
+<<the-programmatic-approach,The
+Programmatic Approach>>, it will override any provided configuration
 files even if the _wildfly.config.url_ system property is set.
 
 When creating rules, you can look for matches on various parameters such
@@ -272,10 +273,10 @@ authentication context is established once its been activated by calling
 _run()_. If _captureCurrent()_ is called and no context is currently
 active, it will try and use the default authentication if available. You
 can find more details about this in
-link:#src-557099_ClientAuthenticationwithElytronClient-TheConfigurationFileApproach[The
-Configuration File Approach],
-link:#src-557099_ClientAuthenticationwithElytronClient-TheDefaultConfigurationApproach[The
-Default Configuration Approach], and
+<<the-configuration-file-approach,The
+Configuration File Approach>>,
+<<the-default-configuration-approach,The
+Default Configuration Approach>>, and
 link:#src-557099_ClientAuthenticationwithElytronClient-UsingElytronClientwithClientsDeployedtoWildFly[Using
 Elytron Client with Clients Deployed to WildFly] sections.
 
@@ -367,8 +368,8 @@ To load a configuration file outside of the deployment, you can use the
 _parseAuthenticationClientConfiguration(URI)_ method. This method will
 return an _AuthentcationContext_ which you can then use in your client's
 code using the
-link:#src-557099_ClientAuthenticationwithElytronClient-TheProgrammaticApproach[The
-Programmatic Approach].
+<<the-programmatic-approach,The
+Programmatic Approach>>.
 
 Additionally, clients will also automatically parse and create an
 AuthenticationContext from the client configuration provided by the

@@ -1,10 +1,11 @@
+[[Java_API_for_XML_Web_Services_(JAX-WS)]]
 = Java API for XML Web Services (JAX-WS)
 
 JBossWS uses the JBoss Application Server as its target container. The
 following examples focus on web service deployments that leverage EJB3
 service implementations and the JAX-WS programming models. For further
 information on POJO service implementations and advanced topics you need
-consult the link:#src-557104[user guide].
+consult the link:Developer_Guide{outfilesuffix}#JAX-WS_User_Guide[user guide].
 
 [[developing-web-service-implementations]]
 == Developing web service implementations

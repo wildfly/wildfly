@@ -1,3 +1,4 @@
+[[Command_line_parameters]]
 = Command line parameters
 
 To start up a WildFly managed domain, execute the
@@ -328,8 +329,8 @@ Those configurations use the values of system properties
 set. If they are not set, 127.0.0.1 is used for each value.
 
 As noted in
-link:#src-557062_Commandlineparameters-common-parameters[Common
-Parameters], the AS supports the `-b` and `-b<name>` command line
+<<common-parameters,Common
+Parameters>>, the AS supports the `-b` and `-b<name>` command line
 switches. The only function of these switches is to set system
 properties `jboss.bind.address` and `jboss.bind.address.<name>`
 respectively. However, because of the way the standard WildFly
@@ -429,7 +430,7 @@ use to communicate on a separate address/port with Apache httpd
 servers.)
 
 As noted in
-link:#common-parameters[Common Parameters], the AS supports the `-u` command line switch. The only
+<<common-parameters,Common Parameters>>, the AS supports the `-u` command line switch. The only
 function of this switch is to set system property `jboss.default.multicast.address`. However, because of the way the
 standard AS configuration files are set up, using the `-u` switches can indirectly control how the AS uses multicast.
 

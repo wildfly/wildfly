@@ -1,3 +1,4 @@
+[[Singleton_subsystem]]
 = Singleton subsystem
 
 WildFly 10 introduces a "singleton" subsystem, which defines a set of

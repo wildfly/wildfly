@@ -1,3 +1,4 @@
+[[EE_Default_Bindings_Configuration]]
 = Default EE Bindings
 
 The Java EE Specification mandates the existence of a default instance

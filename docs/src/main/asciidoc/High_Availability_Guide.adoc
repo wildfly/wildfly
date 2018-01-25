@@ -1,3 +1,4 @@
+[[High_Availability_Guide]]
 = High Availability Guide
 WildFly clustering team;
 :revnumber: {version}

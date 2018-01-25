@@ -1,3 +1,4 @@
+[[Configuration_file_history]]
 = Configuration file history
 
 The management operations may modify the model. When this occurs the xml
@@ -5,11 +6,11 @@ backing the model is written out again reflecting the latest changes. In
 addition a full history of the file is maintained. The history of the
 file goes in a separate directory under the configuration directory.
 
-As mentioned in link:#src-557061[Command line parameters] the default
+As mentioned in <<Command_line_parameters,Command line parameters>> the default
 configuration file can be selected using a command-line parameter. For a
 standalone server instance the history of the active `standalone.xml` is
 kept in `jboss.server.config.dir`/standalone_xml_history (See
-link:#src-557061[Command line parameters#standalone_system_properties]
+<<Command_line_parameters,Command line parameters#standalone_system_properties>>
 for more details). For a domain the active `domain.xml` and `host.xml`
 histories are kept in `jboss.domain.config.dir`/domain_xml_history and
 `jboss.domain.config.dir`/host_xml_history.

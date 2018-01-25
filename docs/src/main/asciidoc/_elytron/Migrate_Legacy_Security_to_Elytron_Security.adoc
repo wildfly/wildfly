@@ -1,3 +1,4 @@
+[[Migrate_Legacy_Security_to_Elytron_Security]]
 = Migrate Legacy Security to Elytron Security
 
 == Authentication Configuration

@@ -1,3 +1,4 @@
+[[Detyped_management_and_the_jboss-dmr_library]]
 = Detyped management and the jboss-dmr library
 
 The management model exposed by WildFly is very large and complex. There

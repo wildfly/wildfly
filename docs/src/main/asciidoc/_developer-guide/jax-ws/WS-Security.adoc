@@ -1,3 +1,4 @@
+[[WS-Security]]
 = WS-Security
 ifdef::env-github[:imagesdir: ../../]
 
@@ -52,7 +53,7 @@ covered by WS-
 http://docs.oasis-open.org/ws-sx/ws-securitypolicy/v1.3/ws-securitypolicy.html[SecurityPolicy]
 specification.
 
-link:#src-557274[As well as for other WS-* features], the core of
+<<Apache_CXF_integration,As well as for other WS-* features>>, the core of
 WS-Security functionalities is provided through the Apache CXF engine.
 On top of that the JBossWS integration adds few configuration
 enhancements to simplify the setup of WS-Security enabled endpoints.
@@ -163,8 +164,8 @@ documentation] for additional configuration details.
 In order for removing the need of Spring on server side for setting up
 WS-Security configuration properties not covered by policies, the
 JBossWS integration allows for getting those pieces of information from
-a defined _endpoint configuration_. link:#src-557274[Endpoint
-configurations]can include property declarations and endpoint
+a defined _endpoint configuration_. <<Predefined_client_and_endpoint_configurations,Endpoint
+configurations>>can include property declarations and endpoint
 implementations can be associated with a given endpoint configuration
 using the `@EndpointConfig` annotation.
 

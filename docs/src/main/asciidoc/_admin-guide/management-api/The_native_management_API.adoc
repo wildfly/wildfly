@@ -1,3 +1,4 @@
+[[The_native_management_API]]
 = The native management API
 
 A standalone WildFly process, or a managed domain Domain Controller or
@@ -136,8 +137,8 @@ Management requests are formulated using the `org.jboss.dmr.ModelNode`
 class from the `jboss-dmr` library. The `jboss-dmr` library allows the
 complete WildFly management model to be expressed using a very small
 number of Java types. See
-link:Detyped_management_and_the_jboss-dmr_library.html[Detyped
-management and the jboss-dmr library] for full details on using this
+<<Detyped_management_and_the_jboss-dmr_library,Detyped
+management and the jboss-dmr library>> for full details on using this
 library.
 
 Let's show an example of creating an operation request object that can
@@ -180,8 +181,8 @@ exposed by the resource to be included. Default is false.
 Different operations take different parameters, and some take no
 parameters at all.
 
-See link:#src-557212_ThenativemanagementAPI-request-format[Format of a
-Detyped Operation Request] for full details on the structure of a
+See <<format-of-a-detyped-operation-request,Format of a
+Detyped Operation Request>> for full details on the structure of a
 ModelNode that will represent an operation request.
 
 The example above produces an operation request ModelNode equivalent to
@@ -206,8 +207,8 @@ ModelNode returnVal = client.execute(op);
 System.out.println(returnVal.get("result").toString());
 ----
 
-See link:#src-557212_ThenativemanagementAPI-response-format[Format of a
-Detyped Operation Response] for general details on the structure of the
+See <<format-of-a-detyped-operation-response,Format of a
+Detyped Operation Response>> for general details on the structure of the
 "returnVal" ModelNode.
 
 The `execute` operation shown above will block the calling thread until
@@ -254,8 +255,8 @@ invoked.
 
 The purpose of this section is to document the structure of `operation`.
 
-See link:#src-557212_ThenativemanagementAPI-response-format[Format of a
-Detyped Operation Response] for a discussion of the format of the
+See <<format-of-a-detyped-operation-response,Format of a
+Detyped Operation Response>> for a discussion of the format of the
 response.
 
 [[simple-operations]]
@@ -371,8 +372,8 @@ to the running state of a server (e.g. actually increasing the size of a
 runtime thread pool.)
 * `rollout-plan` – only relevant to requests made to a Domain Controller
 or Host Controller. See "
-link:#src-557212_ThenativemanagementAPI-rollout-plan[Operations with a
-Rollout Plan]" for details.
+<<operations-with-a-rollout-plan,Operations with a
+Rollout Plan>>" for details.
 * `allow-resource-service-restart` – boolean, optional, defaults to
 false. Whether an operation that requires restarting some runtime
 services in order to take effect should do so. See discussion of
@@ -401,7 +402,7 @@ The root resource for a Domain or Host Controller or an individual
 server will expose an operation named " `composite`". This operation
 executes a list of other operations as an atomic unit (although the
 atomicity requirement can be
-link:#src-557212_ThenativemanagementAPI-rollback-on-runtime-failure[relaxed].
+<<composite-operations,relaxed>>.
 The structure of the request for the " `composite`" operation has the
 same fundamental structure as a simple operation (i.e. operation name,
 address, params as key value pairs).
@@ -678,8 +679,8 @@ The purpose of this section is to document the structure of the return
 value.
 
 For the format of the request, see
-link:#src-557212_ThenativemanagementAPI-request-format[Format of a
-Detyped Operation Request].
+<<format-of-a-detyped-operation-request,Format of a
+Detyped Operation Request>>.
 
 [[simple-responses]]
 === Simple Responses
@@ -814,8 +815,8 @@ configuration change to take effect in the runtime.
 
 A composite operation is one that incorporates more than one simple
 operation in a list and executes them atomically. See the
-link:#src-557212_ThenativemanagementAPI-composite-operations["Composite
-Operations" section] for more information.
+<<composite-operations,"Composite
+Operations" section>> for more information.
 
 Basic composite responses are provided by the following types of
 operations:

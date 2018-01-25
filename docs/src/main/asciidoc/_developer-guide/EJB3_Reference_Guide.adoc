@@ -1,3 +1,4 @@
+[[EJB3_Reference_Guide]]
 = EJB 3 Reference Guide
 
 This chapter details the extensions that are available when developing
@@ -255,8 +256,6 @@ fired only once like a recurring timer!
 include::ejb3/Container_interceptors.adoc[]
 
 include::ejb3/EJB3_Clustered_Database_Timers.adoc[]
-
-include::../_admin-guide/subsystem-configuration/EJB3.adoc[]
 
 include::ejb3/EJB_IIOP_Guide.adoc[]
 

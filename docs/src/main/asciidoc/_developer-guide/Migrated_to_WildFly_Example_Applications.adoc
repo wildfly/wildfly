@@ -1,3 +1,4 @@
+[[Migrated_to_WildFly_Example_Applications]]
 = Example Applications - Migrated to WildFly
 
 [[example-applications-migrated-from-previous-releases]]
@@ -29,7 +30,7 @@ http://community.jboss.org/blogs/marek-novotny/2011/07/29/seam-2-booking-example
 
 This document takes a somewhat different "brute force" approach. The
 idea is to deploy the binaries to WildFly, then see what issues you hit
-and learn how debug and resolve them. See link:Migrate_Seam_2_Booking_EAR_Binaries_-_Step_by_Step.adoc[Seam 2 Booking EAR Migration of Binaries - Step by Step].
+and learn how debug and resolve them. See <<Migrate_Seam_2_Booking_EAR_Binaries_-_Step_by_Step,Seam 2 Booking EAR Migration of Binaries - Step by Step>>.
 
 
 [[jbpm-console-application]]
@@ -42,7 +43,7 @@ details about this migration, see http://kverlaen.blogspot.com/2011/07/jbpm5-on-
 === Order application used for performance testing
 
 Andy Miller migrated this application from AS 5 to WildFly. For details
-about this migration, see link:Migrate_Order_Application_from_EAP5.1_to_WildFly.adoc[Order Application Migration from EAP5.1 to WildFly].
+about this migration, see <<Migrate_Order_Application_from_EAP5.1_to_WildFly,Order Application Migration from EAP5.1 to WildFly>>.
 
 [[migrate-example-application]]
 === Migrate example application

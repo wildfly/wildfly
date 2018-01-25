@@ -1,3 +1,4 @@
+[[Undertow_using_as_a_Load_Balancer]]
 = Using Wildfly as a Load Balancer
 :wildflyVersion: 10.1
 

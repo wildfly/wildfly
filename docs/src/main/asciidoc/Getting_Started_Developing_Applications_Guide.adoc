@@ -1,3 +1,4 @@
+[[Getting_Started_Developing_Applications_Guide]]
 = Getting Started Developing Applications Guide
 WildFly team;
 :revnumber: {version}
@@ -47,7 +48,7 @@ include::https://raw.githubusercontent.com/wildfly/quickstart/11.x/guide/Archety
 
 [cols=","]
 |=======================================================================
-| link:Getting_Started_Guide.adoc[Getting Started Guide] |The Getting Started Guide covers topics such as
+| link:Getting_Started_Guide{outfilesuffix}[Getting Started Guide] |The Getting Started Guide covers topics such as
 server layout (what you can configure where), data source definition,
 and using the web management interface.
 

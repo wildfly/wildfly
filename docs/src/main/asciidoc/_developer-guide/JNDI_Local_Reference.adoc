@@ -1,3 +1,4 @@
+[[JNDI_Local_Reference]]
 = Local JNDI
 
 The Java EE platform specification defines the following JNDI contexts:
@@ -34,7 +35,7 @@ WildFly.
 === Using a deployment descriptor
 
 For Java EE applications the recommended way is to use a
-link:#src-557268[deployment descriptor] to create the binding. For
+<<Deployment_Descriptors_used_In_WildFly,deployment descriptor>> to create the binding. For
 example the following `web.xml` binds the string `"Hello World"` to
 `java:global/mystring` and the string `"Hello Module"` to
 `java:comp/env/hello` (any non absolute JNDI name is relative to

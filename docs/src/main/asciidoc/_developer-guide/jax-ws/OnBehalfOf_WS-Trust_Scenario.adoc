@@ -1,3 +1,4 @@
+[[OnBehalfOf_WS-Trust_Scenario]]
 = OnBehalfOf WS-Trust Scenario
 
 The OnBehalfOf feature is used in scenarios that use the proxy pattern.
@@ -16,8 +17,8 @@ form of a token with identity claims such as name, role, and
 authorization code, for the client to access the service.
 
 The OnBehalfOf scenario is an extension of
-link:#src-557281_OnBehalfOfWS-TrustScenario-ABasicWS-TrustScenario[the
-basic WS-Trust scenario]. In this example the OnBehalfOf service calls
+<<OnBehalfOf_WS-Trust_Scenario,the
+basic WS-Trust scenario>>. In this example the OnBehalfOf service calls
 the ws-service on behalf of a user. There are only a couple of additions
 to the basic scenario's code. An OnBehalfOf web service provider and
 callback handler have been added. The OnBehalfOf web services' WSDL

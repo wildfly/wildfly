@@ -1,3 +1,4 @@
+[[RBAC]]
 = Authorizing management actions with Role Based Access Control
 ifdef::env-github[:imagesdir: ../]
 
@@ -120,7 +121,7 @@ as opposed to being part of a general container configuration
 
 The first three of these factors are non-configurable; the latter three
 allow some customization. See "
-link:#configuring-constraints[Configuring constraints]"
+<<configuring-constraints,Configuring constraints>>"
 for details.
 
 [[addressing-a-resource]]
@@ -173,8 +174,8 @@ the CLI on the same system as the WildFly process to have full
 administrative permissions. Remote CLI users and web-based admin console
 users will have no permissions.
 
-We recommend link:#src-557208_RBAC-role-mapping[mapping at least one
-user] besides "$local" before switching the provider to "rbac". You can
+We recommend <<mapping-users-and-groups-to-roles,mapping at least one
+user>> besides "$local" before switching the provider to "rbac". You can
 do all of the configuration associated with the "rbac" provider even
 when the provider is set to "simple"
 
@@ -515,7 +516,7 @@ will have non-sensitive read privileges (equivalent to the Monitor role)
 for resources other than those listed above.
 
 The easiest way to create a server-group scoped role is to
-link:#src-557208_RBAC-admin-console-scoped-roles[use the admin console].
+<<using-the-admin-console-to-create-scoped-roles,use the admin console>>.
 But you can also use the CLI to create a server-group scoped role.
 
 [source, java]
@@ -561,7 +562,7 @@ a host-scoped role that grants access to "a" will not be able to address
 user.
 
 The easiest way to create a host-scoped role is to
-link:#src-557208_RBAC-admin-console-scoped-roles[use the admin console].
+<<using-the-admin-console-to-create-scoped-roles,use the admin console>>.
 But you can also use the CLI to create a host scoped role.
 
 [source, ruby]
@@ -877,8 +878,8 @@ expressions to be security sensitive, you can change that setting:
 [NOTE]
 
 This vault-expression constraint overlaps somewhat with the
-link:#src-557208_RBAC-common-sensitivity-classifications[core
-"credential" sensitivity classification] in that the most typical uses
+<<classifications-with-broad-use,core
+"credential" sensitivity classification>> in that the most typical uses
 of a vault expression are in attributes that contain a user name or
 password, and those will typically be annotated with the "credential"
 sensitivity classification. So, if you change the settings for the
@@ -1025,7 +1026,7 @@ in the Monitor role cannot read passwords:
 ----
 
 If the user isn't even allowed to
-link:#address-action[address the resource] then the
+<<addressing-a-resource,address the resource>> then the
 response would be as if the resource doesn't exist, even though it
 actually does:
 

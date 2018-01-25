@@ -1,3 +1,4 @@
+[[Application_deployment]]
 = Application deployment
 
 :toc:
@@ -9,7 +10,7 @@ toc::[]
 == Managed Domain
 
 In a managed domain, deployments are associated with a `server-group`
-(see ﻿ link:Core_management_concepts.html[Core management concepts]).
+(see ﻿ <<Core_management_concepts,Core management concepts>>).
 Any server within the server group will then be provided with that
 deployment.
 

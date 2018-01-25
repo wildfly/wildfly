@@ -1,3 +1,4 @@
+[[WS-Addressing]]
 = WS-Addressing
 
 JBoss Web Services inherits full WS-Addressing capabilities from the

@@ -1,3 +1,4 @@
+[[EE_Concurrency_Utilities]]
 = EE Concurrency Utilities
 
 [[overview]]
@@ -22,7 +23,7 @@ type in all configurations within the distribution, as mandated by the
 specification, but additional instances, perhaps customised to better
 serve a specific usage, may be created through WildFly's EE Subsystem
 Configuration. To learn how to configure EE Concurrency Utilities please
-refer to link:EE_Concurrency_Utilities_Configuration.html[EE Concurrency
+refer to link:Admin_Guide{outfilesuffix}#EE_Concurrency_Utilities_Configuration[EE Concurrency
 Utilities Configuration]. Additionally, the EE subsystem configuration
 also includes the configuration of which instance should be considered
 the default instance mandated by the Java EE specification, and such

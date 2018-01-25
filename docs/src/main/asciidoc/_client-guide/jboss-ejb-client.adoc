@@ -1,3 +1,4 @@
+[[jboss-ejb-client]]
 = jboss-ejb-client
 <jboss-ejb-client /> - EJB Client
 

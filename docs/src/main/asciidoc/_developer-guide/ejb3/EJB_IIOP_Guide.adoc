@@ -1,3 +1,4 @@
+[[EJB_IIOP_Guide]]
 = EJB IIOP Guide
 
 [[enabling-iiop]]
@@ -9,7 +10,7 @@ To enable IIOP you must have the JacORB subsystem installed, and the
 both of these enabled.
 
 The `<iiop/>` element takes two attributes that control the default
-behaviour of the server, for full details see link:#src-557221[EJB3
+behaviour of the server, for full details see link:Admin_Guide{outfilesuffix}#EJB3[EJB3
 subsystem configuration guide].
 
 [[enabling-jts]]

@@ -1,3 +1,4 @@
+[[Resource_adapters]]
 = Resource adapters
 
 Resource adapters are configured through the _resource-adapters_

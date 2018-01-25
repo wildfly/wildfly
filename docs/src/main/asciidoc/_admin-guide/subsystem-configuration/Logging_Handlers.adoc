@@ -1,3 +1,4 @@
+[[Logging_Handlers]]
 = Handlers
 
 WIP
@@ -17,13 +18,13 @@ message is loggable.
 
 There are 6 main handlers provided with WildFly and 1 generic handler;
 
-* link:#Handlers-async-handler[async-handler]
-* link:#Handlers-console-handler[console-handler]
-* link:#Handlers-file-handler[file-handler]
-* link:#Handlers-periodic-rotating-file-handler[periodic-rotating-file-handler]
-* link:#Handlers-size-rotating-file-handler[size-rotating-file-handler]
-* link:#Handlers-syslog-handler[syslog-handler]
-* link:#Handlers-custom-handler[custom-handler]
+* <<async-handler,async-handler>>
+* <<console-handler,console-handler>>
+* <<file-handler,file-handler>>
+* <<periodic-rotating-file-handler,periodic-rotating-file-handler>>
+* <<size-rotating-file-handler,size-rotating-file-handler>>
+* <<syslog-handler,syslog-handler>>
+* <<enabled,custom-handler>>
 
 [[async-handler]]
 === async-handler
@@ -35,12 +36,12 @@ handlers that take a substantial time to write logged messages.
 [[attributes]]
 ==== Attributes
 
-* link:#src-557084_Handlers-enabled[#enabled]
-* link:#src-557084_Handlers-filter-spec[#filter-spec]
-* link:#src-557084_Handlers-level[#level]
-* link:#src-557084_Handlers-overflow-action[#overflow-action]
-* link:#src-557084_Handlers-queue-length[#queue-length]
-* link:#src-557084_Handlers-subhandlers[#subhandlers]
+* <<enabled,#enabled>>
+* <<filter-spec,#filter-spec>>
+* <<level,#level>>
+* <<overflow-action,#overflow-action>>
+* <<queue-length,#queue-length>>
+* <<subhandlers,#subhandlers>>
 
 [[console-handler]]
 === console-handler
@@ -52,14 +53,14 @@ console. Generally this writes to `stdout`, but can be set to write to
 [[attributes-1]]
 ==== Attributes
 
-* link:#src-557084_Handlers-autoflush[#autoflush]
-* link:#src-557084_Handlers-enabled[#enabled]
-* link:#src-557084_Handlers-encoding[#encoding]
-* link:#src-557084_Handlers-filter-spec[#filter-spec]
-* link:#src-557084_Handlers-formatter[#formatter]
-* link:#src-557084_Handlers-level[#level]
-* link:#src-557084_Handlers-named-formatter[#named-formatter]
-* link:#src-557084_Handlers-target[#target]
+* <<autoflush,#autoflush>>
+* <<enabled,#enabled>>
+* <<encoding,#encoding>>
+* <<filter-spec,#filter-spec>>
+* <<formatter,#formatter>>
+* <<level,#level>>
+* <<named-formatter,#named-formatter>>
+* <<target,#target>>
 
 [[file-handler]]
 === file-handler
@@ -70,21 +71,21 @@ file.
 [[attributes-2]]
 ==== Attributes
 
-* link:#src-557084_Handlers-autoflush[#autoflush]
-* link:#src-557084_Handlers-enabled[#enabled]
-* link:#src-557084_Handlers-encoding[#encoding]
-* link:#src-557084_Handlers-filter-spec[#filter-spec]
-* link:#src-557084_Handlers-formatter[#formatter]
-* link:#src-557084_Handlers-level[#level]
-* link:#src-557084_Handlers-named-formatter[#named-formatter]
-* link:#src-557084_Handlers-file[#file]
+* <<autoflush,#autoflush>>
+* <<enabled,#enabled>>
+* <<encoding,#encoding>>
+* <<filter-spec,#filter-spec>>
+* <<formatter,#formatter>>
+* <<level,#level>>
+* <<named-formatter,#named-formatter>>
+* <<file,#file>>
 
 [[periodic-rotating-file-handler]]
 === periodic-rotating-file-handler
 
 A `periodic-rotating-file-handler` is a handler that writes log messages
 to the specified file. The file rotates on the date pattern specified in
-the link:#src-557084_Handlers-suffix[#suffix] attribute. The suffix must
+the <<suffix,#suffix>> attribute. The suffix must
 be a valid pattern recognized by the
 http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html[`java.text.SimpleDateFormat`]
 and must not rotate on seconds or milliseconds.
@@ -96,27 +97,27 @@ The rotate happens before the next message is written by the handler.
 [[attributes-3]]
 ==== Attributes
 
-* link:#src-557084_Handlers-autoflush[#autoflush]
-* link:#src-557084_Handlers-enabled[#enabled]
-* link:#src-557084_Handlers-encoding[#encoding]
-* link:#src-557084_Handlers-filter-spec[#filter-spec]
-* link:#src-557084_Handlers-formatter[#formatter]
-* link:#src-557084_Handlers-level[#level]
-* link:#src-557084_Handlers-named-formatter[#named-formatter]
-* link:#src-557084_Handlers-file[#file]
-* link:#src-557084_Handlers-suffix[#suffix]
+* <<autoflush,#autoflush>>
+* <<enabled,#enabled>>
+* <<encoding,#encoding>>
+* <<filter-spec,#filter-spec>>
+* <<formatter,#formatter>>
+* <<level,#level>>
+* <<named-formatter,#named-formatter>>
+* <<file,#file>>
+* <<suffix,#suffix>>
 
 [[size-rotating-file-handler]]
 === size-rotating-file-handler
 
 A `size-rotating-file-handler` is a handler that writes log messages to
 the specified file. The file rotates when the file size is greater than
-the link:#src-557084_Handlers-rotate-size[#rotate-size] attribute. The
+the <<rotate-size,#rotate-size>> attribute. The
 rotated file will be kept and the index appended to the name moving
 previously rotated file indexes up by 1 until the
-link:#src-557084_Handlers-max-backup-index[#max-backup-index] is
+<<max-backup-index,#max-backup-index>> is
 reached. Once the
-link:#src-557084_Handlers-max-backup-index[#max-backup-index] is
+<<max-backup-index,#max-backup-index>> is
 reached, the indexed files will be overwritten.
 
 [NOTE]
@@ -126,17 +127,17 @@ The rotate happens before the next message is written by the handler.
 [[attributes-4]]
 ==== Attributes
 
-* link:#src-557084_Handlers-autoflush[#autoflush]
-* link:#src-557084_Handlers-enabled[#enabled]
-* link:#src-557084_Handlers-encoding[#encoding]
-* link:#src-557084_Handlers-filter-spec[#filter-spec]
-* link:#src-557084_Handlers-formatter[#formatter]
-* link:#src-557084_Handlers-level[#level]
-* link:#src-557084_Handlers-named-formatter[#named-formatter]
-* link:#src-557084_Handlers-file[#file]
-* link:#src-557084_Handlers-max-backup-index[#max-backup-index]
-* link:#src-557084_Handlers-rotate-size[#rotate-size]
-* link:#src-557084_Handlers-rotate-on-boot[#rotate-on-boot]
+* <<autoflush,#autoflush>>
+* <<enabled,#enabled>>
+* <<encoding,#encoding>>
+* <<filter-spec,#filter-spec>>
+* <<formatter,#formatter>>
+* <<level,#level>>
+* <<named-formatter,#named-formatter>>
+* <<file,#file>>
+* <<max-backup-index,#max-backup-index>>
+* <<rotate-size,#rotate-size>>
+* <<rotate-on-boot,#rotate-on-boot>>
 
 [[syslog-handler]]
 === syslog-handler
@@ -150,8 +151,8 @@ http://www.ietf.org/rfc/rfc5424.txt[RFC5424] formats.
 
 * link:#src-557084_Handlers-port[#port]
 * link:#src-557084_Handlers-app-name[#app-name]
-* link:#src-557084_Handlers-enabled[#enabled]
-* link:#src-557084_Handlers-level[#level]
+* <<enabled,#enabled>>
+* <<level,#level>>
 * link:#src-557084_Handlers-facility[#facility]
 * link:#src-557084_Handlers-server-address[#server-address]
 * link:#src-557084_Handlers-hostname[#hostname]
@@ -163,7 +164,7 @@ The syslog-handler is missing some configuration properties that may be
 useful in some scenarios like setting a formatter. Use the
 `org.jboss.logmanager.handlers.SyslogHandler` in module
 `org.jboss.logmanager` as a
-link:#src-557084_Handlers-custom-handler[#custom-handler] to exploit
+<<custom-handler,#custom-handler>> to exploit
 these benefits. Additional attributes will be added at some point so
 this will no longer be necessary.
 

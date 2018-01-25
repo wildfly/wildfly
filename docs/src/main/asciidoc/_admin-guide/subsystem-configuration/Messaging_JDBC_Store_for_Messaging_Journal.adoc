@@ -1,3 +1,4 @@
+[[Messaging_JDBC_Store_for_Messaging_Journal]]
 = JDBC Store for Messaging Journal
 
 The Artemis server that are integrated to WildFly can be configured to

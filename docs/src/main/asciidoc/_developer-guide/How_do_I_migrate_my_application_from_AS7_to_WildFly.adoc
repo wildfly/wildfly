@@ -1,3 +1,4 @@
+[[How_do_I_migrate_my_application_from_AS7_to_WildFly]]
 = How do I migrate my application from AS7 to WildFly
 
 [[about-this-document]]
@@ -868,8 +869,8 @@ remote.connection.default.protocol=remote
 
 External applications using JNDI, to remotely lookup up EJBs in a
 WildFly 10 server, may also need to be migrated, please refer to
-link:#src-557205_HowdoImigratemyapplicationfromAS7toWildFly-RemoteJNDIClients[#Remote
-JNDI Clients] section for further information.
+<<remote-jndi-clients,#Remote
+JNDI Clients>> section for further information.
 
 [[jms]]
 === JMS
@@ -892,8 +893,8 @@ Their namespace has been changed to
 JMS Resources are remotely looked up using JNDI, and looking up
 resources in a WildFly 10 server may require changes in the application
 code, please refer to
-link:#src-557205_HowdoImigratemyapplicationfromAS7toWildFly-RemoteJNDIClients[#Remote
-JNDI Clients] section for further information.
+<<remote-jndi-clients,#Remote
+JNDI Clients>> section for further information.
 
 [[jpa-and-hibernate]]
 === JPA (and Hibernate)

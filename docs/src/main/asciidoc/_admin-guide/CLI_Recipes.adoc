@@ -1,3 +1,4 @@
+[[CLI_Recipes]]
 = CLI Recipes
 
 [[properties]]

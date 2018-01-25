@@ -1,9 +1,10 @@
+[[Class_Loading_in_WildFly]]
 = Class Loading in WildFly
 
 
 Since JBoss AS 7, Class loading is considerably different to previous
 versions of JBoss AS. Class loading is based on the
-link:#src-557206[MODULES] project. Instead of the more familiar
+<<Class_Loading_in_WildFly,MODULES>> project. Instead of the more familiar
 hierarchical class loading environment, WildFly's class loading is based
 on modules that have to define explicit dependencies on other modules.
 Deployments in WildFly are also modules, and do not have access to
@@ -34,7 +35,7 @@ http://seamframework.org/Weld[Weld]will be added automatically, along
 with any supporting modules that weld needs to operate.
 
 For a complete list of the automatic dependencies that are added, please
-see link:#src-557206[Implicit module dependencies for deployments].
+see <<Implicit_module_dependencies_for_deployments,Implicit module dependencies for deployments>>.
 
 Automatic dependencies can be excluded through the use of
 `jboss-deployment-structure.xml`.

@@ -1,3 +1,4 @@
+[[JMX]]
 = JMX subsystem configuration
 
 The JMX subsystem registers a service with the Remoting endpoint so that
@@ -93,7 +94,7 @@ Audit logging for the JMX MBean server managed by the JMX subsystem. The
 resource is at `/subsystem=jmx/configuration=audit-log` and its
 attributes are similar to the ones mentioned for
 `/core-service=management/access=audit/logger=audit-log` in
-link:Audit_logging.html[Audit logging].
+<<Audit_logging,Audit logging>>.
 
 [cols=",",options="header"]
 |=======================================================================
@@ -112,13 +113,13 @@ Then which handlers are used to log the management operations are
 configured as `handler=*` children of the logger. These handlers and
 their formatters are defined in the global
 `/core-service=management/access=audit` section mentioned in
-link:Audit_logging.html[Audit logging].
+<<Audit_logging,Audit logging>>.
 
 [[json-formatter]]
 === JSON Formatter
 
 The same JSON Formatter is used as described in
-link:Audit_logging.html[Audit logging]. However the records for MBean
+<<Audit_logging,Audit logging>>. However the records for MBean
 Server invocations have slightly different fields from those logged for
 the core management layer.
 

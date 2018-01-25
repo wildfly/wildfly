@@ -1,3 +1,4 @@
+[[Remote_EJB_invocations_via_JNDI_-_EJB_client_API_or_remote-naming_project]]
 = Remote EJB invocations via JNDI - EJB client API or remote-naming project
 
 [[purpose]]
@@ -293,8 +294,8 @@ So literally, each lookup backed by the remote-naming project entails a
 server side communication/interaction and then marshalling/unmarshalling
 of the object graph. This is very important to remember. We'll come back
 to this later, to see why this is important when it comes to using EJB
-client API project for doing EJB lookups ( link:#src-557285[EJB
-invocations from a remote client using JNDI]) as against using
+client API project for doing EJB lookups ( <<EJB_invocations_from_a_remote_client_using_JNDI,EJB
+invocations from a remote client using JNDI>>) as against using
 remote-naming project for doing the same thing.
 
 [[summary]]
@@ -441,8 +442,8 @@ the server, such a `EJBReceiver` would have to know the server address,
 port, security credentials and other similar parameters. If you were
 using the core EJB client API, then you would have configured all these
 properties via the jboss-ejb-client.properties or via programatic API
-usage as explained here link:#src-557285[EJB invocations from a remote
-client using JNDI]. But in the example above, we are using remote-naming
+usage as explained here <<EJB_invocations_from_a_remote_client_using_JNDI,EJB invocations from a remote
+client using JNDI>>. But in the example above, we are using remote-naming
 project and are _not_ directly interacting with the EJB client API
 project.
 
@@ -497,7 +498,7 @@ invocations against WildFly is possible!_
 
 I can guess that some of you might already question why/when would one
 use the EJB client API style lookups as explained in the
-link:#src-557285[EJB invocations from a remote client using JNDI]
+<<EJB_invocations_from_a_remote_client_using_JNDI,EJB invocations from a remote client using JNDI>>
 article instead of just using (what appears to be a simpler)
 remote-naming style lookups.
 
@@ -546,8 +547,8 @@ Foo beanProxy = context.lookup("ejb:myapp/myejbmodule//FooBean!org.myapp.ejb.Foo
 String bar = beanProxy.sayBar();
 ----
 
-More details about such code can be found here link:#src-557285[EJB
-invocations from a remote client using JNDI]
+More details about such code can be found here <<EJB_invocations_from_a_remote_client_using_JNDI,EJB
+invocations from a remote client using JNDI>>
 
 When a client application looks up anything under the " `ejb:`"
 namespace, it is a clear indication (for the EJB client API project) to
@@ -587,7 +588,7 @@ context.lookup("ejb:myapp/myejbmodule//StatefulBean!org.myapp.ejb.Counter?statef
 ----
 
 Notice the use of `"?stateful`" in that JNDI name. See
-link:#src-557285[EJB invocations from a remote client using JNDI] for
+<<EJB_invocations_from_a_remote_client_using_JNDI,EJB invocations from a remote client using JNDI>> for
 more details about such lookup.
 
 The presence of " `?stateful`" in the JNDI name lookup string is a

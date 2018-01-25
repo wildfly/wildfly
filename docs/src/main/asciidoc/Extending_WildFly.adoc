@@ -1,3 +1,4 @@
+[[Extending_WildFly]]
 = Extending WildFly
 WildFly code development team;
 :revnumber: {version}
@@ -23,11 +24,11 @@ subsystem; the transaction manager integration is via a subsystem, the
 EJB container integration is via a subsystem, etc.
 
 This document is divided into two main sections. The
-link:Example_subsystem.html[first] is focused on learning by doing. This
+link:Extending_WildFly{outfilesuffix}#Example_subsystem[first] is focused on learning by doing. This
 section will walk you through the steps needed to create your own
 subsystem, and will touch on most of the concepts discussed elsewhere in
 this guide. The
-link:Key_Interfaces_and_Classes_Relevant_to_Extension_Developers.html[second]
+link:Extending_WildFly{outfilesuffix}#Key_Interfaces_and_Classes_Relevant_to_Extension_Developers[second]
 focuses on a conceptual overview of the key interfaces and classes
 described in the example. Readers should feel free to start with the
 second section if that better fits their learning style. Jumping back
@@ -48,8 +49,8 @@ ifdef::basebackend-html[toc::[]]
 You should know how to download, install and run WildFly. If not please
 consult the link:Getting_Started_Guide.html[Getting Started Guide]. You
 should also be familiar with the management concepts from the
-link:Admin_Guide.adoc[Admin Guide], particularly the
-link:Core_management_concepts.adoc[Core management concepts] section and
+link:Admin_Guide{outfilesuffix}[Admin Guide], particularly the
+link:Admin_Guide{outfilesuffix}#Core_management_concepts[Core management concepts] section and
 you need Java development experience to follow the example in this
 guide.
 

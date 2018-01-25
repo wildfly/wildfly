@@ -1,3 +1,4 @@
+[[Enterprise_JavaBeans_Technology_(EJB)]]
 = Enterprise JavaBeans Technology (EJB)
 
 In this section we'll look at the two main types of beans (Session Beans

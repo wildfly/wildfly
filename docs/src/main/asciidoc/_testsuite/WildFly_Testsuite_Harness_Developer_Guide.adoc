@@ -1,3 +1,4 @@
+[[WildFly_Testsuite_Harness_Developer_Guide]]
 = WildFly Testsuite Harness Developer Guide
 
 *Audience:* Whoever wants to change the testsuite harness
@@ -19,13 +20,13 @@ https://github.com/jboss/jboss-parent-pom/blob/master/pom.xml#L65 .
 [[shortened-maven-run-overview]]
 == Shortened Maven run overview
 
-See link:#src-557176[Shortened Maven Run Overview].
+See <<Shortened_Maven_Run_Overview,Shortened Maven Run Overview>>.
 
 [[how-the-as-instance-is-built]]
 == How the AS instance is built
 
-See link:#src-557176[How the JBoss AS instance is built and configured
-for testsuite modules.]
+See <<How_the_server_is_built_and_configured_for_testsuite_modules,How the JBoss AS instance is built and configured
+for testsuite modules.>>
 
 [[properties-and-their-propagation]]
 == Properties and their propagation

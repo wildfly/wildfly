@@ -1,3 +1,4 @@
+[[LDAP_Based_Authentication_Migration]]
 = LDAP Authentication Migration
 
 The section describing how to migrate from properties based

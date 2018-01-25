@@ -1,3 +1,4 @@
+[[Example_subsystem]]
 = Example subsystem
 
 Our example subsystem will keep track of all deployments of certain
@@ -82,9 +83,7 @@ wish to accept the default (which is copied from groupId ).
 will generate the project for you.
 |=======================================================================
 
-You can also do this in Eclipse, see
-link:Creating_your_own_application.html[Creating your own application]
-for more details. We now have a skeleton project that you can use to
+We now have a skeleton project that you can use to
 implement a subsystem. Import the ﻿ `acme-subsystem` project into your
 favourite IDE. A nice side-effect of running this in the IDE is that you
 can see the javadoc of WildFly classes and interfaces imported by the
@@ -121,8 +120,8 @@ Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
 ----
 
 We will talk about these later in the
-link:#src-557103_Examplesubsystem-Testingtheparsers[#Testing the
-parsers] section.
+<<testing-the-parsers,#Testing the
+parsers>> section.
 
 [[create-the-schema]]
 == Create the schema

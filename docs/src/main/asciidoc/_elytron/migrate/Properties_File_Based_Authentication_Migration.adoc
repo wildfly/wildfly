@@ -1,3 +1,4 @@
+[[Properties_File_Based_Authentication_Migration]]
 = Properties Based Authentication / Authorization
 
 [[picketbox-based-configuration]]
