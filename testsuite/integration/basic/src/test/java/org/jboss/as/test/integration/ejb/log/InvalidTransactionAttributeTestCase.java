@@ -82,7 +82,6 @@ public class InvalidTransactionAttributeTestCase {
         } finally {
             Assert.assertFalse(output, output.contains("WFLYEJB0463"));
             Assert.assertFalse(output, output.contains("ERROR"));
-            Assert.assertFalse(output, output.contains("WARN"));
             deployer.undeploy("invalidtransactionattribute");
         }
     }
