@@ -34,6 +34,8 @@ public final class ServiceNames {
 
     public static final ServiceName WELD_TRANSACTION_SERVICES_SERVICE_NAME = ServiceName.of("WeldTransactionServices");
 
+    public static final ServiceName WELD_START_COMPLETION_SERVICE_NAME = ServiceName.of("WeldEndInitService");
+
     public static ServiceName beanManagerServiceName(final DeploymentUnit deploymentUnit) {
         return deploymentUnit.getServiceName().append(BEAN_MANAGER_SERVICE_NAME);
     }

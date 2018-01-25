@@ -36,6 +36,8 @@ import java.util.concurrent.ExecutorService;
 
 import javax.enterprise.inject.spi.Extension;
 
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.naming.JavaNamespaceSetup;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -54,6 +56,7 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld.ServiceNames;
 import org.jboss.as.weld.WeldBootstrapService;
+import org.jboss.as.weld.WeldStartCompletionService;
 import org.jboss.as.weld.WeldStartService;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentModule;
@@ -120,6 +123,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         //add a dependency on the weld service to web deployments
         final ServiceName weldBootstrapServiceName = parent.getServiceName().append(WeldBootstrapService.SERVICE_NAME);
         ServiceName weldStartServiceName = parent.getServiceName().append(WeldStartService.SERVICE_NAME);
+        ServiceName weldStartCompletionServiceName = parent.getServiceName().append(WeldStartCompletionService.SERVICE_NAME);
         deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, weldStartServiceName);
 
         final Set<ServiceName> dependencies = new HashSet<ServiceName>();
@@ -283,6 +287,26 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         startService.install();
 
+        // Defer invocation of WeldBootstrap.endInitialization() until all EE components are started
+        WeldStartCompletionService weldStartCompletionService = new WeldStartCompletionService(module.getClassLoader());
+
+        ServiceBuilder<WeldStartCompletionService> weldStartCompletionServiceBuilder = serviceTarget
+                .addService(weldStartCompletionServiceName, weldStartCompletionService)
+                .addDependency(weldBootstrapServiceName, WeldBootstrapService.class, weldStartCompletionService.getBootstrap())
+                .addDependency(weldStartServiceName).addDependencies(getComponentStartServiceNames(deploymentUnit));
+        for (DeploymentUnit sub : subDeployments) {
+            weldStartCompletionServiceBuilder.addDependencies(getComponentStartServiceNames(sub));
+        }
+        weldStartCompletionServiceBuilder.install();
+    }
+
+    private List<ServiceName> getComponentStartServiceNames(DeploymentUnit deploymentUnit) {
+        List<ServiceName> dependencies = new ArrayList<>();
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        for (ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
+            dependencies.add(component.getStartServiceName());
+        }
+        return dependencies;
     }
 
     private List<ServiceName> getJNDISubsytemDependencies() {
