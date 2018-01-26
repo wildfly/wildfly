@@ -485,3 +485,26 @@ name=mytopic_)
 * _remove-batch-line_ (e.g. _remove-batch-line 3_)
 * _move-batch-line_ (e.g. _move-batch-line 3 1_)
 * _discard-batch_
+
+[[operation-formatting]]
+== Operators
+
+CLI has some operators that are similar to shell operators:
+
+* _>_ To redirect the output of a command/operation to a file:
+[source,java]
+----
+:read-resource > my-file.txt
+----
+
+* _>>_ To redirect the output of a command/operation and append it at the end of a file:
+[source,java]
+----
+:read-resource >> my-file.txt
+----
+
+* _|_ To redirect the output of a command/operation to the _grep_ command:
+[source,java]
+----
+:read-resource | grep undefined
+----
