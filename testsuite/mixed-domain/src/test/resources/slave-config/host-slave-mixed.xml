@@ -16,7 +16,7 @@
                 </authentication>
                 <authorization map-groups-to-roles="false">
                     <properties path="mgmt-groups.properties" relative-to="jboss.domain.config.dir"/>
-                </authorization>                
+                </authorization>
             </security-realm>
             <security-realm name="ApplicationRealm">
                 <authentication>
@@ -55,36 +55,36 @@
     </management>
 
     <domain-controller>
-      <remote host="${jboss.domain.master.address:127.0.0.1}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm" username="admin"/>
+        <remote host="${jboss.test.host.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm" username="admin"/>
     </domain-controller>
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
+            <inet-address value="${jboss.test.host.slave.address}"/>
         </interface>
         <interface name="public">
-           <inet-address value="${jboss.bind.address:127.0.0.1}"/>
+            <inet-address value="${jboss.test.host.slave.address}"/>
         </interface>
         <interface name="unsecure">
             <!-- Used for IIOP sockets in the standard configuration.
                  To secure JacORB you need to setup SSL -->
-            <inet-address value="${jboss.bind.address.unsecure:127.0.0.1}"/>
+            <inet-address value="${jboss.test.host.slave.address}"/>
         </interface>
     </interfaces>
 
     <jvms>
-   	   <jvm name="default">
+        <jvm name="default">
             <heap max-size="256m" size="64m"/>
             <permgen max-size="256m" size="256m"/>
                <jvm-options>
                   <option value="-server"/>
               </jvm-options>
          </jvm>
-   	</jvms>
+    </jvms>
 
     <servers>
         <server auto-start="true" group="main-server-group" name="server-one">
-	  <socket-bindings port-offset="100"/>
-	</server>
+            <socket-bindings port-offset="100"/>
+        </server>
     </servers>
 </host>
