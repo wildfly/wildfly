@@ -525,3 +525,57 @@ Tips
 * If the operation doesn't return a list, the _for_ command will print an error.
 * _for_ block can be discarded and not execute by adding the option _--discard_ to _done_.
 
+[[cli-security-commands]]
+== Security Commands
+
+CLi offers a _security_ command to group all security related management actions
+under a single command.
+
+* _security enable-ssl-management_: To enable SSL (elytron SSLContext) for the
+management interfaces. Type _help security enable-ssl-management_ for a
+complete description of the command.
+
+Among other ways to configure SSL, this command offers an interactive wizard to
+help you configure SSL by generating a self-signed certificate.
+Example of wizard usage:
+
+[source,java]
+----
+security enable-ssl-management --interactive
+Please provide required pieces of information to enable SSL:
+Key-store file name (default management.keystore):
+Password (blank generated):
+What is your first and last name? [Unknown]:
+What is the name of your organizational unit? [Unknown]:
+What is the name of your organization? [Unknown]:
+What is the name of your City or Locality? [Unknown]:
+What is the name of your State or Province? [Unknown]:
+What is the two-letter country code for this unit? [Unknown]:
+Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct y/n [y]?
+Validity (in days, blank default):
+Alias (blank generated):
+Enable SSL Mutual Authentication y/n (blank n):n
+
+SSL options:
+key store file: management.keystore
+distinguished name: CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown
+password: KRzne5s1
+validity: default
+alias: alias-265e6c6d-ff4e-4b8c-8f10-f015d678eb29
+Server keystore file management.keystore, certificate signing request management.csr and
+certificate file management.keystore.pem will be generated in server configuration directory.
+Do you confirm y/n :y
+----
+NB: Once the command is executed, the CLI will reload the server and reconnect to it.
+
+* _security disable-ssl-management_: To disable SSL (elytron SSLContext) for the
+management interfaces. Type _help security disable-ssl-management_ for
+a complete description of the command.
+
+* _security enable-ssl-http-server_: To enable SSL (elytron SSLContext) for the
+_undertow_ server. The same wizard as the _enable-ssl-management_ action is available.
+Type _help security enable-ssl-http-server_ for a complete description of the command.
+
+* _security disable-ssl-http-server_: To disable SSL (elytron SSLContext) for the
+_undertow_ server. Type _help security disable-ssl-http-server_ for a complete
+description of the command.
