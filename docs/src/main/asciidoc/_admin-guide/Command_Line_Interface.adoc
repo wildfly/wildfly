@@ -61,6 +61,11 @@ the server: ./jboss-cli.sh --connect --controller=192.168.0.1:9990
 
 Help is also available:
 
+In order to list the set of commands that are currently available in the current context
+use the option _--commands_ (NB: the following examples are not displaying an
+exhaustive set of CLI commands, more and/or different commands could be available
+in your running CLI instance):
+
 [source, java]
 ----
 [domain@localhost:9990 /] help --commands
@@ -70,7 +75,45 @@ cd                  connection-info     echo       �
 clear               data-source         echo-dmr            jms-queue           quit                run-batch           unset
 command             deploy              help                jms-topic           read-attribute      set                 version
 connect             deployment-info     history             ls                  read-operation      shutdown            xa-data-source
-To read a description of a specific command execute 'command_name --help'.
+To read a description of a specific command execute 'help <command name>'.
+----
+
+The _help_ command can print help for any command or operation. For operations,
+the operation description is formatted as a command help (synopsis, description and
+options). Some commands (eg: _patch_) expose two levels of documentation. A high
+level description for the command itself and a dedicated help content for each action (eg: _apply_).
+The help documentation of each command makes it clear if this two levels are available or not.
+
+Use Tab-completion to discover the set of commands and operations:
+
+[source, java]
+----
+help <TAB>
+----
+The list of all commands (enabled or not) is displayed.
+
+Examples
+
+* Display the help of the _patch_ command:
+
+[source, java]
+----
+help patch
+----
+
+* Display the help of the _apply_ action of the _patch_ command:
+
+[source, java]
+----
+help patch apply
+----
+
+* Display the description of the _elytron_ _key-store_ resource _add_ operation
+formatted as a command help content:
+
+[source, java]
+----
+help /subsystem=elytron/key-store=?:add
 ----
 
 [[non-interactive-mode]]
