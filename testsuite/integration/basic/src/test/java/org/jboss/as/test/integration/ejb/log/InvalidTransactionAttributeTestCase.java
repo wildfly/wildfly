@@ -35,8 +35,6 @@ import org.junit.runner.RunWith;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import static org.junit.Assert.fail;
-
 
 /**
  * Tests if the WARN message was logged when default transaction attribute was used on SFSB lifecyle method
@@ -62,27 +60,21 @@ public class InvalidTransactionAttributeTestCase {
 
     @Test
     public void testInvalidTransactionAttributeWarnLogged() {
-        PrintStream oldOut = null;
-        String output = null;
+        PrintStream oldOut = System.out;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            oldOut = System.out;
             System.setOut(new PrintStream(baos));
-        } catch (Throwable t) {
-            fail(t.getMessage());
-        } finally {
             deployer.deploy("invalidtransactionattribute");
-            System.setOut(oldOut);
-        }
-
-        try {
-            output = new String(baos.toByteArray());
-        } catch (Throwable t) {
-            fail(t.getMessage());
+            try {
+                System.setOut(oldOut);
+                String output = new String(baos.toByteArray());
+                Assert.assertFalse(output, output.contains("WFLYEJB0463"));
+                Assert.assertFalse(output, output.contains("ERROR"));
+            } finally {
+                deployer.undeploy("invalidtransactionattribute");
+            }
         } finally {
-            Assert.assertFalse(output, output.contains("WFLYEJB0463"));
-            Assert.assertFalse(output, output.contains("ERROR"));
-            deployer.undeploy("invalidtransactionattribute");
+            System.setOut(oldOut);
         }
     }
 }
