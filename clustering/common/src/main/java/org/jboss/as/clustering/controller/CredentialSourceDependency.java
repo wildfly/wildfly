@@ -34,6 +34,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -200,6 +201,11 @@ public class CredentialSourceDependency implements ValueDependency<CredentialSou
         @Deprecated
         @Override
         public ServiceBuilder<Object> addListener(Collection<? extends org.jboss.msc.service.ServiceListener<? super Object>> listeners) {
+            throw new IllegalStateException();
+        }
+
+        @Override
+        public ServiceBuilder<Object> addListener(final LifecycleListener lifecycleListener) {
             throw new IllegalStateException();
         }
 
