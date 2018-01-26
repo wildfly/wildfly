@@ -217,6 +217,9 @@
         <version.org.wildfly.arquillian>2.1.0.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.build-tools>1.2.6.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
+        <!-- vvv NOTE: Remove this line when upgrading the core version! Also remove dependency below! vvv -->
+        <version.org.jboss.msc.jboss-msc>1.3.0.Final</version.org.jboss.msc.jboss-msc>
+        <!-- ^^^ NOTE: Remove this line when upgrading the core version! Also remove dependency below! ^^^ -->
         <version.org.wildfly.core>4.0.0.Alpha6</version.org.wildfly.core>
         <version.org.wildfly.plugin>1.2.1.Final</version.org.wildfly.plugin>
         <version.org.wildfly.http-client>1.0.8.Final</version.org.wildfly.http-client>
@@ -878,6 +881,12 @@
                 <type>pom</type>
                 <version>${version.org.wildfly.core}</version>
                 <scope>import</scope>
+            </dependency>
+            <!-- NOTE: Delete this dependency when upgrading wildfly-core -->
+            <dependency>
+                <groupId>org.jboss.msc</groupId>
+                <artifactId>jboss-msc</artifactId>
+                <version>${version.org.jboss.msc.jboss-msc}</version>
             </dependency>
 
             <!-- Modules in this project -->
