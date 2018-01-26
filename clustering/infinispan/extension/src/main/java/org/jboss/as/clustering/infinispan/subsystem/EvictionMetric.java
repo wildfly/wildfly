@@ -19,7 +19,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
-import org.infinispan.interceptors.CacheMgmtInterceptor;
+import org.infinispan.interceptors.impl.CacheMgmtInterceptor;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -30,7 +30,6 @@ import org.jboss.dmr.ModelType;
  * Enumeration of management metrics for cache eviction
  * @author Paul Ferraro
  */
-@SuppressWarnings("deprecation")
 public enum EvictionMetric implements Metric<Cache<?, ?>> {
 
     EVICTIONS(MetricKeys.EVICTIONS, ModelType.LONG) {

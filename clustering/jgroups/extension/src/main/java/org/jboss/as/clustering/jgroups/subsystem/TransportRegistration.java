@@ -22,11 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.EnumSet;
 
 import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
@@ -39,30 +35,16 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
  */
 public class TransportRegistration implements Registration<ManagementResourceRegistration> {
 
-    enum TransportType implements Iterable<String> {
-        MULTICAST("UDP"),
-        ;
-        private Set<String> transports;
+    enum MulticastTransport {
+        UDP;
 
-        TransportType(String transport) {
-            this.transports = Collections.singleton(transport);
-        }
-
-        TransportType(String... transports) {
-            this.transports = Collections.unmodifiableSet(Stream.of(transports).collect(Collectors.toSet()));
-        }
-
-        @Override
-        public Iterator<String> iterator() {
-            return this.transports.iterator();
-        }
-
-        Stream<String> stream() {
-            return this.transports.stream();
-        }
-
-        boolean contains(String transport) {
-            return this.transports.contains(transport);
+        static boolean contains(String name) {
+            for (MulticastTransport protocol : EnumSet.allOf(MulticastTransport.class)) {
+                if (name.equals(protocol.name())) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -74,6 +56,6 @@ public class TransportRegistration implements Registration<ManagementResourceReg
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        new TransportResourceDefinition<>(address -> TransportType.MULTICAST.contains(address.getLastElement().getValue()) ? new MulticastTransportConfigurationBuilder<>(address) : new TransportConfigurationBuilder<>(address), this.parentBuilderFactory).register(registration);
+        new TransportResourceDefinition<>(address -> MulticastTransport.contains(address.getLastElement().getValue()) ? new MulticastTransportConfigurationBuilder(address) : new TransportConfigurationBuilder<>(address), this.parentBuilderFactory).register(registration);
     }
 }

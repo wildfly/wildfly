@@ -22,14 +22,15 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.net.InetSocketAddress;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.jgroups.protocol.SocketDiscoveryProtocol;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.StringListAttributeDefinition;
@@ -37,13 +38,13 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
-import org.jgroups.stack.Protocol;
+import org.jgroups.protocols.Discovery;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
  * @author Paul Ferraro
  */
-public class SocketDiscoveryProtocolResourceDefinition<P extends Protocol & SocketDiscoveryProtocol> extends ProtocolResourceDefinition<P> {
+public class SocketDiscoveryProtocolResourceDefinition<A, P extends Discovery> extends ProtocolResourceDefinition<P> {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         OUTBOUND_SOCKET_BINDINGS("socket-bindings", ModelType.LIST, builder -> builder
@@ -71,11 +72,11 @@ public class SocketDiscoveryProtocolResourceDefinition<P extends Protocol & Sock
         ProtocolResourceDefinition.addTransformations(version, builder);
     }
 
-    SocketDiscoveryProtocolResourceDefinition(String name, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+    SocketDiscoveryProtocolResourceDefinition(String name, Function<InetSocketAddress, A> hostTransformer, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
                 .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
                 .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
-            ), address -> new SocketDiscoveryProtocolConfigurationBuilder<>(address), parentBuilderFactory);
+            ), address -> new SocketDiscoveryProtocolConfigurationBuilder<>(address, hostTransformer), parentBuilderFactory);
     }
 }

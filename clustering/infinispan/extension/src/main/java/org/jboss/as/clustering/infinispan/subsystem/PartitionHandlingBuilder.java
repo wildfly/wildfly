@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.PartitionHandlingReso
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PartitionHandlingConfiguration;
+import org.infinispan.partitionhandling.PartitionHandling;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -40,14 +41,14 @@ public class PartitionHandlingBuilder extends ComponentBuilder<PartitionHandling
 
     private volatile boolean enabled;
 
-    PartitionHandlingBuilder(PathAddress cacheAddress) {
-        super(CacheComponent.PARTITION_HANDLING, cacheAddress);
+    PartitionHandlingBuilder(PathAddress address) {
+        super(CacheComponent.PARTITION_HANDLING, address);
     }
 
     @Override
     public PartitionHandlingConfiguration getValue() {
         return new ConfigurationBuilder().clustering().partitionHandling()
-                .enabled(this.enabled)
+                .whenSplit(this.enabled ? PartitionHandling.DENY_READ_WRITES : PartitionHandling.ALLOW_READ_WRITES)
                 .create();
     }
 

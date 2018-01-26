@@ -170,11 +170,23 @@
                     <xs:documentation>The cache transaction configuration.</xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="eviction" type="tns:eviction" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>The cache eviction configuration.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
+            <xs:choice minOccurs="0">
+                <xs:element name="binary-memory" type="tns:binary-memory">
+                    <xs:annotation>
+                        <xs:documentation>The cache memory configuration.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="object-memory" type="tns:memory">
+                    <xs:annotation>
+                        <xs:documentation>The cache memory configuration.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="off-heap-memory" type="tns:off-heap-memory">
+                    <xs:annotation>
+                        <xs:documentation>The cache memory configuration.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
             <xs:element name="expiration" type="tns:expiration" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>The cache expiration configuration.</xs:documentation>
@@ -192,19 +204,19 @@
                     </xs:annotation>
                 </xs:element>
                 <xs:choice minOccurs="0">
-                    <xs:element name="string-keyed-jdbc-store" type="tns:string-keyed-jdbc-store">
+                    <xs:element name="jdbc-store" type="tns:jdbc-store">
                         <xs:annotation>
                             <xs:documentation>Defines a database cache store accessed via JDBC using string-based keys.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
                     <xs:element name="binary-keyed-jdbc-store" type="tns:binary-keyed-jdbc-store">
                         <xs:annotation>
-                            <xs:documentation>Defines a database cache store accessed via JDBC using binary-based keys. Warning: This option has been deprecated, please use string-keyed-jdbc-store instead</xs:documentation>
+                            <xs:documentation>Defines a database cache store accessed via JDBC using binary-based keys. Warning: This option has been deprecated, please use jdbc-store instead</xs:documentation>
                         </xs:annotation>
                     </xs:element>
                     <xs:element name="mixed-keyed-jdbc-store" type="tns:mixed-keyed-jdbc-store">
                         <xs:annotation>
-                            <xs:documentation>Defines a database cache store accessed via JDBC using mixed string and binary-based keys. Warning: This option has been deprecated, please use string-keyed-jdbc-store instead.</xs:documentation>
+                            <xs:documentation>Defines a database cache store accessed via JDBC using mixed string and binary-based keys. Warning: This option has been deprecated, please use jdbc-store instead.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
                 </xs:choice>
@@ -284,17 +296,36 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="eviction">
-        <xs:attribute name="strategy" type="tns:eviction-strategy" default="NONE">
+    <xs:complexType name="memory">
+        <xs:attribute name="size" type="xs:long" default="-1">
             <xs:annotation>
-                <xs:documentation>Sets the cache eviction strategy. Available options are 'UNORDERED', 'FIFO', 'LRU', 'LIRS' and 'NONE' (to disable eviction).</xs:documentation>
+                <xs:documentation>Maximum size of this cache.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="max-entries" type="xs:int" default="10000">
-            <xs:annotation>
-                <xs:documentation>Maximum number of entries in a cache instance. If selected value is not a power of two the actual value will default to the least power of two larger than selected value. -1 means no limit.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="binary-memory">
+        <xs:complexContent>
+            <xs:extension base="tns:memory">
+                <xs:attribute name="eviction-type" type="tns:eviction-type" default="COUNT">
+                    <xs:annotation>
+                        <xs:documentation>Sets the cache eviction type.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="off-heap-memory">
+        <xs:complexContent>
+            <xs:extension base="tns:binary-memory">
+                <xs:attribute name="capacity" type="xs:int" default="1048576">
+                    <xs:annotation>
+                        <xs:documentation>Capability of the off-heap storage.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="expiration">
@@ -318,21 +349,6 @@
     <xs:complexType name="clustered-cache" abstract="true">
         <xs:complexContent>
             <xs:extension base="tns:cache">
-                <xs:attribute name="mode" type="tns:mode" default="SYNC">
-                    <xs:annotation>
-                        <xs:documentation>Sets the clustered cache mode, ASYNC for asynchronous operation, or SYNC for synchronous operation.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-                <xs:attribute name="queue-size" type="xs:int" default="0">
-                    <xs:annotation>
-                        <xs:documentation>Deprecated. In ASYNC mode, this attribute can be used to trigger flushing of the queue when it reaches a specific threshold.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-                <xs:attribute name="queue-flush-interval" type="xs:long" default="10">
-                    <xs:annotation>
-                        <xs:documentation>Deprecated. In ASYNC mode, this attribute controls how often the asynchronous thread used to flush the replication queue runs. This should be a positive integer which represents thread wakeup time in milliseconds.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
                 <xs:attribute name="remote-timeout" type="xs:long" default="10000">
                     <xs:annotation>
                         <xs:documentation>In SYNC mode, the timeout (in ms) used to wait for an acknowledgment when making a remote call, after which the call is aborted and an exception is thrown.</xs:documentation>
@@ -428,6 +444,14 @@
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
+        <xs:attribute name="max-batch-size" type="xs:int" default="100">
+            <xs:annotation>
+                <xs:documentation>
+                    The maximum size of a batch to be inserted/deleted from the store.
+                    If the value is less than one, then no upper limit is placed on the number of operations in a batch.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="shared" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>This setting should be set to true when multiple cache instances share the same cache store (e.g., multiple nodes in a cluster using a JDBC-based CacheStore pointing to the same, shared database.) Setting this to true avoids multiple cache instances writing the same modification multiple times. If enabled, only the node where the modification originated will write to the cache store. If disabled, each individual cache reacts to a potential remote update by storing the data to the cache store.</xs:documentation>
@@ -542,7 +566,7 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="jdbc-store">
+    <xs:complexType name="abstract-jdbc-store">
         <xs:complexContent>
             <xs:extension base="tns:store">
                 <xs:attribute name="data-source" type="xs:string" use="required">
@@ -559,11 +583,11 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="string-keyed-jdbc-store">
+    <xs:complexType name="jdbc-store">
         <xs:complexContent>
-            <xs:extension base="tns:jdbc-store">
+            <xs:extension base="tns:abstract-jdbc-store">
                 <xs:sequence>
-                    <xs:element name="string-keyed-table" type="tns:string-keyed-table" minOccurs="0">
+                    <xs:element name="table" type="tns:string-keyed-table" minOccurs="0">
                         <xs:annotation>
                             <xs:documentation>
                                 Defines the table used to store cache entries.
@@ -577,7 +601,7 @@
 
     <xs:complexType name="binary-keyed-jdbc-store">
         <xs:complexContent>
-            <xs:extension base="tns:jdbc-store">
+            <xs:extension base="tns:abstract-jdbc-store">
                 <xs:sequence>
                     <xs:element name="binary-keyed-table" type="tns:binary-keyed-table" minOccurs="0">
                         <xs:annotation>
@@ -593,7 +617,7 @@
 
     <xs:complexType name="mixed-keyed-jdbc-store">
         <xs:complexContent>
-            <xs:extension base="tns:jdbc-store">
+            <xs:extension base="tns:abstract-jdbc-store">
                 <xs:sequence>
                     <xs:element name="binary-keyed-table" type="tns:binary-keyed-table" minOccurs="0">
                         <xs:annotation>
@@ -659,11 +683,6 @@
         <xs:attribute name="fetch-size" type="xs:int" default="100">
             <xs:annotation>
                 <xs:documentation>The fetch size used when querying from this table.  Used to avoid heap memory exhaustion when query is large.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="batch-size" type="xs:int" default="100">
-            <xs:annotation>
-                <xs:documentation>The statement batch size used when modifying this table.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -881,40 +900,19 @@
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:simpleType name="eviction-strategy">
+    <xs:simpleType name="eviction-type">
         <xs:restriction base="xs:token">
-            <xs:enumeration value="NONE">
+            <xs:enumeration value="COUNT">
                 <xs:annotation>
                     <xs:documentation>
-                        Never evict entries. This is the default.
+                        Evicts the oldest entries when the number of cache entries exceeds the specified size.
                     </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
-            <xs:enumeration value="UNORDERED">
+            <xs:enumeration value="MEMORY">
                 <xs:annotation>
                     <xs:documentation>
-                        Actually activates LRU.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="FIFO">
-                <xs:annotation>
-                    <xs:documentation>
-                        Deprecated. Actually activates LRU.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="LRU">
-                <xs:annotation>
-                    <xs:documentation>
-                        Least-Recently Used policy.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="LIRS">
-                <xs:annotation>
-                    <xs:documentation>
-                        Low Inter-reference Recency Set. An improved version of LRU which uses cache-locality access information to better decide which data to evict.
+                        Evicts the oldest entries when the total memory size of cache entries exceeds the specified size.
                     </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>

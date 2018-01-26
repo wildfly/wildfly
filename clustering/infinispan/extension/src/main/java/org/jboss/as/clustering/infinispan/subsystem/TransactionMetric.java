@@ -21,7 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.interceptors.TxInterceptor;
+import org.infinispan.interceptors.impl.TxInterceptor;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -33,7 +33,6 @@ import org.jboss.dmr.ModelType;
  *
  * @author Paul Ferraro
  */
-@SuppressWarnings("deprecation")
 public enum TransactionMetric implements Metric<TxInterceptor<?, ?>> {
 
     COMMITS(MetricKeys.COMMITS, ModelType.LONG) {

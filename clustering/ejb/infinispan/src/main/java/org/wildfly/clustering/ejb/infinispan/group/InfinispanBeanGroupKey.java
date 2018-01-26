@@ -23,38 +23,19 @@
 package org.wildfly.clustering.ejb.infinispan.group;
 
 import org.wildfly.clustering.ejb.infinispan.BeanGroupKey;
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanBeanGroupKey<I> implements BeanGroupKey<I> {
-
-    private final I id;
+public class InfinispanBeanGroupKey<I> extends Key<I> implements BeanGroupKey<I> {
 
     public InfinispanBeanGroupKey(I id) {
-        this.id = id;
+        super(id);
     }
 
     @Override
     public I getId() {
-        return this.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return this.id.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof BeanGroupKey)) return false;
-        @SuppressWarnings("unchecked")
-        BeanGroupKey<I> key = (BeanGroupKey<I>) object;
-        return this.id.equals(key.getId());
-    }
-
-    @Override
-    public String toString() {
-        return this.id.toString();
+        return this.getValue();
     }
 }

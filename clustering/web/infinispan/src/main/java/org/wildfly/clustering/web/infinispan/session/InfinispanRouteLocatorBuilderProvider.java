@@ -66,6 +66,10 @@ public class InfinispanRouteLocatorBuilderProvider implements RouteLocatorBuilde
             // don't use DefaultConsistentHashFactory for REPL caches (WFLY-9276)
             builder.clustering().hash().consistentHashFactory(null);
             builder.clustering().l1().disable();
+            // Disable expiration
+            builder.expiration().lifespan(-1).maxIdle(-1);
+            // Disable eviction
+            builder.memory().size(-1);
             builder.persistence().clearStores();
         }));
         builders.add(new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, serverName)), containerName, serverName));

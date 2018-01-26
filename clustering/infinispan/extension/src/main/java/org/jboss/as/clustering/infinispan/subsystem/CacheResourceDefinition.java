@@ -185,8 +185,15 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
             builder.setCustomResourceTransformer(batchingTransformer);
         }
 
+
+        ObjectMemoryResourceDefinition.buildTransformation(version, builder);
+
+        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
+            builder.rejectChildResource(BinaryMemoryResourceDefinition.PATH);
+            builder.rejectChildResource(OffHeapMemoryResourceDefinition.PATH);
+        }
+
         LockingResourceDefinition.buildTransformation(version, builder);
-        EvictionResourceDefinition.buildTransformation(version, builder);
         ExpirationResourceDefinition.buildTransformation(version, builder);
         TransactionResourceDefinition.buildTransformation(version, builder);
 
@@ -209,8 +216,8 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
             .addAttributes(DeprecatedAttribute.class)
             .addCapabilities(Capability.class)
             .addCapabilities(CLUSTERING_CAPABILITIES.values())
-            .addRequiredChildren(EvictionResourceDefinition.PATH, ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
-            .addRequiredSingletonChildren(NoStoreResourceDefinition.PATH)
+            .addRequiredChildren(ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
+            .addRequiredSingletonChildren(ObjectMemoryResourceDefinition.PATH, NoStoreResourceDefinition.PATH)
         );
         this.handler = handler;
         this.registrationConfigurator = registrationConfigurator.andThen(registration -> {
@@ -218,7 +225,10 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
                 new MetricHandler<>(new CacheMetricExecutor(), CacheMetric.class).register(registration);
             }
 
-            new EvictionResourceDefinition().register(registration);
+            new ObjectMemoryResourceDefinition().register(registration);
+            new BinaryMemoryResourceDefinition().register(registration);
+            new OffHeapMemoryResourceDefinition().register(registration);
+
             new ExpirationResourceDefinition().register(registration);
             new LockingResourceDefinition().register(registration);
             new TransactionResourceDefinition().register(registration);

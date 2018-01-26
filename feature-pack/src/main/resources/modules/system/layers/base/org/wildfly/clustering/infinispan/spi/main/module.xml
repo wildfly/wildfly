@@ -33,6 +33,7 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="com.github.ben-manes.caffeine"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan"/>
         <module name="org.jboss.as.clustering.common"/>

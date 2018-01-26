@@ -24,6 +24,9 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted;
+import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
@@ -33,6 +36,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 /**
  * @author Paul Ferraro
  */
+@Listener(sync = false)
 public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFactory<InfinispanSessionMetaData<L>, L> {
 
     private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache;
@@ -121,14 +125,16 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
         return false;
     }
 
-    @Override
-    public boolean evict(String id) {
-        SessionCreationMetaDataKey key = new SessionCreationMetaDataKey(id);
-        if (this.findCreationMetaDataCache.getAdvancedCache().withFlags(EVICTION_FLAGS).get(key) != null) {
-            this.creationMetaDataCache.evict(key);
-            this.accessMetaDataCache.evict(new SessionAccessMetaDataKey(id));
-            return true;
+    @CacheEntriesEvicted
+    public void evicted(CacheEntriesEvictedEvent<Key<String>, ?> event) {
+        if (!event.isPre()) {
+            Cache<SessionAccessMetaDataKey, SessionAccessMetaData> cache = this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.SKIP_LISTENER_NOTIFICATION);
+            for (Key<String> key : event.getEntries().keySet()) {
+                // Workaround for ISPN-8324
+                if (key instanceof SessionCreationMetaDataKey) {
+                    cache.evict(new SessionAccessMetaDataKey(key.getValue()));
+                }
+            }
         }
-        return false;
     }
 }

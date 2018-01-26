@@ -19,7 +19,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
-import org.infinispan.interceptors.TxInterceptor;
+import org.infinispan.interceptors.impl.TxInterceptor;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
@@ -34,7 +34,6 @@ import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
  *
  * @author Paul Ferraro
  */
-@SuppressWarnings("deprecation")
 public class TransactionMetricExecutor implements MetricExecutor<TxInterceptor<?, ?>> {
 
     @Override

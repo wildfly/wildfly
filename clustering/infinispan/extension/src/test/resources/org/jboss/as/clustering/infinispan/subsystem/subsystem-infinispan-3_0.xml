@@ -35,7 +35,7 @@
             </file-store>
             <indexing index="NONE"/>
         </local-cache>
-        <invalidation-cache name="invalid" mode="ASYNC" queue-flush-interval="10" queue-size="1000" async-marshalling="true" statistics-enabled="true">
+        <invalidation-cache name="invalid" mode="ASYNC" queue-flush-interval="10" queue-size="0" async-marshalling="true" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
             <transaction mode="NON_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="LRU"/>
@@ -48,7 +48,7 @@
             </remote-store>
             <indexing index="NONE"/>
         </invalidation-cache>
-        <replicated-cache name="repl" mode="ASYNC" queue-flush-interval="10" queue-size="1000" async-marshalling="false" statistics-enabled="true">
+        <replicated-cache name="repl" mode="ASYNC" queue-flush-interval="10" queue-size="0" async-marshalling="false" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="FIFO"/>
