@@ -225,11 +225,41 @@ For example:
 
 Tab Completion
 
+Tab-completion is supported for all commands and options, i.e.
+node-types and node-names, operation names and parameter names.
+
+In operation Tab-completion, required parameters have a name terminated by the
+'*' character. This helps identify which are the parameters that must be set in order to
+construct a valid operation. Furthermore, Tab-completion does not propose
+parameters that are alternatives of parameters already present in the operation.
+
+For example:
+[source,java]
+----
+/deployment=myapp:add(<TAB>
+!  content*  enabled  runtime-name
+----
+The parameter _content_ is required and completion advertises it with a '*' character.
+
+[source,java]
+----
+/deployment=myapp:add-content(content=[{<TAB>
+bytes*  hash*  input-stream-index*  target-path*  url*
+----
+_bytes_, _hash_, _input-stream-index_ and _url_ are required but also alternatives
+(only one of them can be set). As soon as one of these parameter has been set, the
+others are no longer proposed by completion.
+
+[source,java]
+----
+/deployment=myapp:add-content(content=[{url=myurl,<TAB>
+/deployment=myapp:add-content(content=[{url=myurl,target-path
+----
+_target-path_ argument is automatically inlined in the command.
+
 [TIP]
 
-Tab-completion is supported for all commands and options, i.e.
-node-types and node-names, operation names and parameter names. We are
-also considering adding aliases that are less verbose for the user, and
+We are also considering adding aliases that are less verbose for the user, and
 will translate into the corresponding operation requests in the
 background.
 
@@ -384,6 +414,15 @@ previously recorded history);
 * _enabled_ - will re-enable history expansion (starting from the last
 recorded command before the history expansion was disabled);
 * _clear_ - will clear the in-memory history (but not the file one).
+
+[[operation-formatting]]
+== JSON and DMR output
+
+By default the CLI prints operation results using the DMR textual syntax. There are
+two ways to make the CLI to display JSON:
+
+* _--output-json_ option when launching the CLI.
+* _<output-json>_ XML element added to _jboss-cli.xml_ configuration file.
 
 [[batch-processing]]
 == Batch Processing
