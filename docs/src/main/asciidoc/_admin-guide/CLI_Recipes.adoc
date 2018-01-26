@@ -332,14 +332,52 @@ or
 [[deployment]]
 == Deployment
 
-[[undeploying-and-redeploying-multiple-deployments]]
-=== Undeploying and redeploying multiple deployments
+[[cli-deployment-command]]
+=== CLI _deployment_ command
 
-CLI offers a way to efficiently undeploy or redeploy deployments in one
-simple command.
+In addition to the legacy _deploy_, _undeploy_ and _deployment-info_ commands, 
+that stay un-changed, the CLI offers a _deployment_ command that properly
+separates the various use cases encountered when managing deployments. This command
+offers a simpler interface and should be the way to go when managing deployments.
+New features will be added thanks to the _deployment_ command, legacy commands will not evolve.
+This document contains a summary of the capabilities of this command, type _help deployment_
+to display the list of all available actions and _help deployment <action>_ for the detailed
+description of an action.
 
-* To disable all enabled deployments: _undeploy --keep-content *_
-* To redeploy all disabled deployments: _deploy --name=*_
+Actions to deploy some content:
+
+* _deployment deploy-file_: To deploy a file located on the file system.
+
+* _deployment deploy-url_: To deploy content referenced by an URL.
+
+* _deployment deploy-cli-achive_: To deploy some content thanks to a CLI archive
+(.cli file) located on the file system.
+
+Actions to enable some deployments:
+
+* _deployment enable_: To enable a given disabled deployment.
+
+* _deployment enable-all_: To enable all disabled deployments.
+
+Actions to disable some deployments:
+
+* _deployment disable_: To disable a given enabled deployment.
+
+* _deployment disable-all_: To disable all enabled deployments.
+
+Actions to undeploy some deployments:
+
+* _deployment undeploy_: To undeploy a given deployment and remove its content
+from the repository.
+
+* _deployment undeploy-cli-archive_: To undeploy some content using a CLI archive
+(.cli file) located on the file system.
+
+Actions to get information on some deployments:
+
+* _deployment info_: To display information about single or multiple deployments.
+
+* _deployment list_: To display all the existing deployments.
 
 [[incremental-deployment-with-the-cli]]
 === Incremental deployment with the CLI
