@@ -461,3 +461,29 @@ attachment display --operation=/deployment=myapp:read-content(path=index.xhtml)
 * By default existing files will be preserved. Use the option
 _--overwrite_ to overwrite existing file.
 * _attachment_ can be used in batch mode.
+
+[[iteration-of-collections]]
+== Iteration of Collections
+
+The command _for_ allows to iterate the content of an operation result. As an
+example, this command can be used to display the content of the Manifest files
+present in all deployed applications. For example:
+
+[source, java]
+----
+for deployed in :read-children-names(child-type=deployment)
+ echo $deployed Manifest content
+ attachment display --operation=/deployment=$deployed:read-content(path=META-INF/MANIFEST.MF)
+done
+----
+When this _for_ block is executed, the content of all Manifest files is displayed in the CLI console.
+
+Tips
+
+[TIP]
+
+* The scope of the defined variable is limited to the _for_ block.
+* If a variable with the same name already exists, the _for_ command will print an error.
+* If the operation doesn't return a list, the _for_ command will print an error.
+* _for_ block can be discarded and not execute by adding the option _--discard_ to _done_.
+
