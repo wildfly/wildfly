@@ -225,11 +225,41 @@ For example:
 
 Tab Completion
 
+Tab-completion is supported for all commands and options, i.e.
+node-types and node-names, operation names and parameter names.
+
+In operation Tab-completion, required parameters have a name terminated by the
+'*' character. This helps identify which are the parameters that must be set in order to
+construct a valid operation. Furthermore, Tab-completion does not propose
+parameters that are alternatives of parameters already present in the operation.
+
+For example:
+[source,java]
+----
+/deployment=myapp:add(<TAB>
+!  content*  enabled  runtime-name
+----
+The parameter _content_ is required and completion advertises it with a '*' character.
+
+[source,java]
+----
+/deployment=myapp:add-content(content=[{<TAB>
+bytes*  hash*  input-stream-index*  target-path*  url*
+----
+_bytes_, _hash_, _input-stream-index_ and _url_ are required but also alternatives
+(only one of them can be set). As soon as one of these parameter has been set, the
+others are no longer proposed by completion.
+
+[source,java]
+----
+/deployment=myapp:add-content(content=[{url=myurl,<TAB>
+/deployment=myapp:add-content(content=[{url=myurl,target-path
+----
+_target-path_ argument is automatically inlined in the command.
+
 [TIP]
 
-Tab-completion is supported for all commands and options, i.e.
-node-types and node-names, operation names and parameter names. We are
-also considering adding aliases that are less verbose for the user, and
+We are also considering adding aliases that are less verbose for the user, and
 will translate into the corresponding operation requests in the
 background.
 
