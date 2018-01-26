@@ -33,7 +33,7 @@ import org.junit.AfterClass;
  */
 public class MixedDomainTestSuite {
     public static enum Profile {
-        FULL("full"), FULL_HA("full-ha"), DEFAULT("default");
+        FULL("full"), FULL_HA("full-ha"), DEFAULT("default"), HAEAP6("haeap6");
         private final String profileName;
         private Profile(String profileName) {
             this.profileName = profileName;
@@ -68,7 +68,7 @@ public class MixedDomainTestSuite {
             return getSupport(testClass, Profile.FULL_HA, false);
     }
 
-protected static MixedDomainTestSupport getSupport(Class<?> testClass,  boolean withMasterServers) {
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass,  boolean withMasterServers) {
             return getSupport(testClass, Profile.FULL_HA, withMasterServers);
     }
 
@@ -131,7 +131,7 @@ protected static MixedDomainTestSupport getSupport(Class<?> testClass,  boolean 
         return getSupport(testClass, domainConfig, null, null, profile, adjustDomain, legacyConfig, withMasterServers);
     }
 
-    static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, String masterConfig, String slaveConfig, Profile profile, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) {
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass, String domainConfig, String masterConfig, String slaveConfig, Profile profile, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) {
 
         if (support == null) {
             final Version.AsVersion version = getVersion(testClass);
