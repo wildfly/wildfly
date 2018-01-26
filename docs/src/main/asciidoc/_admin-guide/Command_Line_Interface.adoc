@@ -385,6 +385,15 @@ previously recorded history);
 recorded command before the history expansion was disabled);
 * _clear_ - will clear the in-memory history (but not the file one).
 
+[[operation-formatting]]
+== JSON and DMR output
+
+By default the CLI prints operation results using the DMR textual syntax. There are
+two ways to make the CLI to display JSON:
+
+* _--output-json_ option when launching the CLI.
+* _<output-json>_ XML element added to _jboss-cli.xml_ configuration file.
+
 [[batch-processing]]
 == Batch Processing
 
