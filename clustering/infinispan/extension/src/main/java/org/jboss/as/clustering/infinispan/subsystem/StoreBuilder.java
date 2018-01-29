@@ -23,14 +23,9 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.CacheComponent.PERSISTENCE;
-import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.FETCH_STATE;
-import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.PASSIVATION;
-import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.PRELOAD;
-import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.PROPERTIES;
-import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.PURGE;
-import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.SHARED;
-import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.SINGLETON;
+import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition.Attribute.*;
 
+import java.util.Collections;
 import java.util.Properties;
 import java.util.function.Consumer;
 
@@ -44,6 +39,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -66,12 +62,12 @@ public abstract class StoreBuilder<C extends StoreConfiguration, B extends Abstr
     private volatile boolean preload;
     private volatile boolean purge;
     private volatile boolean shared;
-    private volatile boolean singleton;
+    private volatile int maxBatchSize;
 
-    StoreBuilder(PathAddress cacheAddress, Class<B> builderClass) {
-        super(PERSISTENCE, cacheAddress);
+    StoreBuilder(PathAddress address, Class<B> builderClass) {
+        super(PERSISTENCE, address);
         this.builderClass = builderClass;
-        this.async = new InjectedValueDependency<>(CacheComponent.STORE_WRITE.getServiceName(cacheAddress), AsyncStoreConfiguration.class);
+        this.async = new InjectedValueDependency<>(CacheComponent.STORE_WRITE.getServiceName(address.getParent()), AsyncStoreConfiguration.class);
     }
 
     @Override
@@ -86,8 +82,11 @@ public abstract class StoreBuilder<C extends StoreConfiguration, B extends Abstr
         this.preload = PRELOAD.resolveModelAttribute(context, model).asBoolean();
         this.purge = PURGE.resolveModelAttribute(context, model).asBoolean();
         this.shared = SHARED.resolveModelAttribute(context, model).asBoolean();
-        this.singleton = SINGLETON.resolveModelAttribute(context, model).asBoolean();
-        ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).ifPresent(list -> list.forEach(property -> this.properties.setProperty(property.getName(), property.getValue().asString())));
+        this.maxBatchSize = MAX_BATCH_SIZE.resolveModelAttribute(context, model).asInt();
+        this.properties.clear();
+        for (Property property : ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).orElse(Collections.emptyList())) {
+            this.properties.setProperty(property.getName(), property.getValue().asString());
+        }
         return this;
     }
 
@@ -97,10 +96,10 @@ public abstract class StoreBuilder<C extends StoreConfiguration, B extends Abstr
                 .passivation(this.passivation)
                 .addStore(this.builderClass)
                     .fetchPersistentState(this.fetchState)
+                    .maxBatchSize(this.maxBatchSize)
                     .preload(this.preload)
                     .purgeOnStartup(this.purge)
                     .shared(this.shared)
-                    .singleton().enabled(this.singleton)
                     .withProperties(this.properties)
                     ;
         this.accept(builder);

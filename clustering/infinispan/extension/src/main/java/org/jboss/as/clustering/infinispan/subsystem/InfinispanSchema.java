@@ -31,16 +31,16 @@ import java.util.Locale;
  */
 public enum InfinispanSchema implements Schema<InfinispanSchema> {
 
-    VERSION_1_0(1, 0),
-    VERSION_1_1(1, 1),
-    VERSION_1_2(1, 2),
-    VERSION_1_3(1, 3),
-    VERSION_1_4(1, 4),
-    VERSION_1_5(1, 5),
-    VERSION_2_0(2, 0),
-    VERSION_3_0(3, 0),
-    VERSION_4_0(4, 0),
-    VERSION_5_0(5, 0),
+    VERSION_1_0(1, 0), // AS 7.0
+    VERSION_1_1(1, 1), // AS 7.1.0
+    VERSION_1_2(1, 2), // AS 7.1.1
+    VERSION_1_3(1, 3), // AS 7.1.2
+    VERSION_1_4(1, 4), // AS 7.2.0
+    VERSION_1_5(1, 5), // EAP 6.3
+    VERSION_2_0(2, 0), // WildFly 8
+    VERSION_3_0(3, 0), // WildFly 9
+    VERSION_4_0(4, 0), // WildFly 10/11
+    VERSION_5_0(5, 0), // WildFly 12
     ;
     static final InfinispanSchema CURRENT = VERSION_5_0;
 

@@ -22,23 +22,4 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.hibernate.infinispan">
-
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
-
-    <resources>
-        <artifact name="${org.hibernate:hibernate-infinispan}"/>
-    </resources>
-
-    <dependencies>
-        <module name="org.hibernate"/>
-        <module name="javax.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="org.infinispan" services="import"/>
-        <module name="org.infinispan.commons"/>
-        <module name="org.jboss.logging"/>
-    </dependencies>
-</module>
+<module-alias xmlns="urn:jboss:module:1.5" name="org.hibernate.infinispan" target-name="org.infinispan.hibernate-cache"/>

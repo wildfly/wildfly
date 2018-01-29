@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
     <extension-module>org.jboss.as.clustering.jgroups</extension-module>
-    <subsystem xmlns="urn:jboss:domain:jgroups:5.0">
+    <subsystem xmlns="urn:jboss:domain:jgroups:6.0">
         <channels default="ee">
             <channel name="ee" stack="udp" cluster="ejb"/>
         </channels>
@@ -20,7 +20,7 @@
                 <protocol type="pbcast.GMS"/>
                 <protocol type="UFC"/>
                 <?UDP-MULTICAST-FLOW-CONTROL?>
-                <protocol type="FRAG2"/>
+                <protocol type="FRAG3"/>
             </stack>
             <stack name="tcp">
                 <transport type="TCP" socket-binding="jgroups-tcp"/>
@@ -34,7 +34,7 @@
                 <protocol type="pbcast.STABLE"/>
                 <protocol type="pbcast.GMS"/>
                 <?TCP-MULTICAST-FLOW-CONTROL?>
-                <protocol type="FRAG2"/>
+                <protocol type="FRAG3"/>
             </stack>
         </stacks>
     </subsystem>

@@ -47,7 +47,7 @@ public class AuthProtocolResourceDefinition extends ProtocolResourceDefinition<A
                 .setAddOperationTransformation(new LegacyAddOperationTransformation("auth_class"))
                 .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
                 .addResourceCapabilityReference(new CapabilityReference(Capability.PROTOCOL, AuthTokenResourceDefinition.Capability.AUTH_TOKEN), address -> address.getParent().getLastElement().getValue()))
-            , address -> new AuthProtocolConfigurationBuilder(address), parentBuilderFactory, (parent, registration) -> {
+            , AuthProtocolConfigurationBuilder::new, parentBuilderFactory, (parent, registration) -> {
                 new PlainAuthTokenResourceDefinition().register(registration);
                 new DigestAuthTokenResourceDefinition().register(registration);
                 new CipherAuthTokenResourceDefinition().register(registration);

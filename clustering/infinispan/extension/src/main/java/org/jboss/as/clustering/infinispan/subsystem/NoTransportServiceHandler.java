@@ -54,8 +54,8 @@ public class NoTransportServiceHandler implements ResourceServiceHandler {
 
         ServiceTarget target = context.getServiceTarget();
 
-        new NoTransportBuilder(containerAddress).build(target).install();
-        new SiteBuilder(containerAddress).build(target).install();
+        new NoTransportBuilder(address).build(target).install();
+        new SiteBuilder(address).build(target).install();
 
         ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry(address);
 
@@ -80,6 +80,6 @@ public class NoTransportServiceHandler implements ResourceServiceHandler {
             }
         }
 
-        EnumSet.allOf(CacheContainerComponent.class).stream().map(component -> component.getServiceName(containerAddress)).forEach(serviceName -> context.removeService(serviceName));
+        EnumSet.allOf(CacheContainerComponent.class).stream().map(component -> component.getServiceName(address)).forEach(serviceName -> context.removeService(serviceName));
     }
 }

@@ -32,7 +32,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.transaction.LockingMode;
-import org.infinispan.transaction.tm.DummyTransactionManager;
+import org.infinispan.transaction.tm.EmbeddedTransactionManager;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProvider;
@@ -58,8 +58,8 @@ public class TransactionBuilder extends ComponentBuilder<TransactionConfiguratio
     private volatile long timeout;
     private volatile TransactionMode mode;
 
-    public TransactionBuilder(PathAddress cacheAddress) {
-        super(CacheComponent.TRANSACTION, cacheAddress);
+    public TransactionBuilder(PathAddress address) {
+        super(CacheComponent.TRANSACTION, address);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class TransactionBuilder extends ComponentBuilder<TransactionConfiguratio
                 break;
             }
             case BATCH: {
-                this.tm.inject(DummyTransactionManager.getInstance());
+                this.tm.inject(EmbeddedTransactionManager.getInstance());
                 break;
             }
             case NON_XA: {

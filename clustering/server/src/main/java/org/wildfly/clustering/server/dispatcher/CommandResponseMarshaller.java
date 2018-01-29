@@ -23,18 +23,19 @@ package org.wildfly.clustering.server.dispatcher;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
 import java.io.DataInputStream;
+import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
 
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.Unmarshaller;
-import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.util.Buffer;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
+import org.wildfly.clustering.marshalling.spi.IntSerializer;
 
 /**
  * Marshalling strategy for the command response.
@@ -42,35 +43,42 @@ import org.wildfly.clustering.marshalling.spi.IndexSerializer;
  *
  * @param <C> command execution context
  */
-public class CommandResponseMarshaller implements RpcDispatcher.Marshaller {
+public class CommandResponseMarshaller implements org.jgroups.blocks.Marshaller {
     private final MarshallingContext context;
     private final ChannelFactory factory;
+    private final IntSerializer versionSerializer;
 
     CommandResponseMarshaller(ChannelCommandDispatcherFactoryConfiguration config) {
         this.context = config.getMarshallingContext();
         this.factory = config.getChannelFactory();
+        this.versionSerializer = IndexSerializer.select(this.context.getCurrentVersion());
     }
 
     @Override
-    public Buffer objectToBuffer(Object object) throws Exception {
+    public void objectToStream(Object object, DataOutput stream) throws Exception {
         int version = this.context.getCurrentVersion();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (DataOutputStream output = new DataOutputStream(bytes)) {
-            IndexSerializer.VARIABLE.writeInt(output, version);
+            this.versionSerializer.writeInt(output, version);
             try (Marshaller marshaller = this.context.createMarshaller(version)) {
                 marshaller.start(Marshalling.createByteOutput(output));
                 marshaller.writeObject(object);
                 marshaller.flush();
             }
         }
-        return new Buffer(bytes.toByteArray());
+        byte[] buffer = bytes.toByteArray();
+        IndexSerializer.VARIABLE.writeInt(stream, buffer.length);
+        stream.write(buffer);
     }
 
     @Override
-    public Object objectFromBuffer(byte[] buffer, int offset, int length) throws Exception {
-        if (this.factory.isUnknownForkResponse(ByteBuffer.wrap(buffer, offset, length))) return NoSuchService.INSTANCE;
-        try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(buffer, offset, length))) {
-            int version = IndexSerializer.VARIABLE.readInt(input);
+    public Object objectFromStream(DataInput stream) throws Exception {
+        int size = IndexSerializer.VARIABLE.readInt(stream);
+        byte[] buffer = new byte[size];
+        stream.readFully(buffer);
+        if (this.factory.isUnknownForkResponse(ByteBuffer.wrap(buffer))) return NoSuchService.INSTANCE;
+        try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(buffer))) {
+            int version = this.versionSerializer.readInt(input);
             try (Unmarshaller unmarshaller = this.context.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 return unmarshaller.readObject();

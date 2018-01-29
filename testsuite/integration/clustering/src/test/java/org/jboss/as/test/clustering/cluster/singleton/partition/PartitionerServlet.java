@@ -39,8 +39,8 @@ import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jgroups.Address;
-import org.jgroups.Channel;
 import org.jgroups.Event;
+import org.jgroups.JChannel;
 import org.jgroups.View;
 import org.jgroups.protocols.DISCARD;
 import org.jgroups.protocols.TP;
@@ -61,6 +61,7 @@ import org.jgroups.stack.ProtocolStack;
  */
 @WebServlet(urlPatterns = {PartitionerServlet.SERVLET_PATH})
 public class PartitionerServlet extends HttpServlet {
+    private static final long serialVersionUID = 3034138469210308974L;
 
     private static final long VIEWS_TIMEOUT = 3_000;
     public static final String SERVLET_PATH = "partitioner";
@@ -78,10 +79,9 @@ public class PartitionerServlet extends HttpServlet {
 
         this.log("Simulating network partitions? " + partition);
 
-        @SuppressWarnings("unchecked")
-        ServiceController<Channel> service = (ServiceController<Channel>) CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse("org.wildfly.clustering.jgroups.default-channel"));
+        ServiceController<?> service = CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse("org.wildfly.clustering.jgroups.default-channel"));
         try {
-            Channel channel = service.awaitValue();
+            JChannel channel = (JChannel) service.awaitValue();
 
             if (partition) {
                 // Store views for future merge event
@@ -96,7 +96,7 @@ public class PartitionerServlet extends HttpServlet {
                 // Simulate partitions by injecting DISCARD protocol
                 DISCARD discard = new DISCARD();
                 discard.setDiscardAll(true);
-                channel.getProtocolStack().insertProtocol(discard, ProtocolStack.ABOVE, TP.class);
+                channel.getProtocolStack().insertProtocol(discard, ProtocolStack.Position.ABOVE, TP.class);
 
                 // Speed up partitioning
                 View view = View.create(channel.getAddress(), gms.getViewId().getId() + 1, channel.getAddress());

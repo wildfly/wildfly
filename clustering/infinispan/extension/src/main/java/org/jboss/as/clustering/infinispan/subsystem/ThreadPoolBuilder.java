@@ -47,8 +47,8 @@ public class ThreadPoolBuilder extends GlobalComponentBuilder<ThreadPoolConfigur
     private final ThreadPoolConfigurationBuilder builder = new ThreadPoolConfigurationBuilder(null);
     private final ThreadPoolDefinition definition;
 
-    ThreadPoolBuilder(ThreadPoolDefinition definition, PathAddress containerAddress) {
-        super(definition, containerAddress);
+    ThreadPoolBuilder(ThreadPoolDefinition definition, PathAddress address) {
+        super(definition, address);
         this.definition = definition;
     }
 
