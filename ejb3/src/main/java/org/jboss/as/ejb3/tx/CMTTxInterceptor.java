@@ -119,36 +119,6 @@ public class CMTTxInterceptor implements Interceptor {
         }
     }
 
-    protected void handleInCallerTx(InterceptorContext invocation, Throwable t, Transaction tx, final EJBComponent component) throws Exception {
-        ApplicationExceptionDetails ae = component.getApplicationException(t.getClass(), invocation.getMethod());
-
-        if (ae != null) {
-            if (ae.isRollback()) setRollbackOnly(tx);
-            // an app exception can never be an Error
-            throw (Exception) t;
-        }
-
-        Exception toThrow;
-        if (!(t instanceof EJBTransactionRolledbackException)) {
-            if (t instanceof Error) {
-                toThrow = new EJBTransactionRolledbackException(EjbLogger.ROOT_LOGGER.convertUnexpectedError());
-                toThrow.initCause(t);
-            } else if (t instanceof NoSuchEJBException || t instanceof NoSuchEntityException) {
-                // If this is an NoSuchEJBException, pass through to the caller
-                toThrow = (Exception) t;
-            } else if (t instanceof RuntimeException) {
-                toThrow = new EJBTransactionRolledbackException(t.getMessage(), (Exception) t);
-            } else {// application exception
-                throw (Exception) t;
-            }
-        } else {
-            toThrow= (Exception) t;
-        }
-
-        setRollbackOnly(tx);
-        throw toThrow;
-    }
-
     public void handleExceptionInOurTx(InterceptorContext invocation, Throwable t, Transaction tx, final EJBComponent component) throws Exception {
         ApplicationExceptionDetails ae = component.getApplicationException(t.getClass(), invocation.getMethod());
         if (ae != null) {
@@ -161,9 +131,7 @@ public class CMTTxInterceptor implements Interceptor {
             // errors and unchecked are wrapped into EJBException
             if (t instanceof Error) {
                 //t = new EJBException(formatException("Unexpected Error", t));
-                Throwable cause = t;
-                t = EjbLogger.ROOT_LOGGER.unexpectedError();
-                t.initCause(cause);
+                t = EjbLogger.ROOT_LOGGER.unexpectedError(t);
             } else if (t instanceof RuntimeException) {
                 t = new EJBException((Exception) t);
             } else {
@@ -209,10 +177,28 @@ public class CMTTxInterceptor implements Interceptor {
     protected Object invokeInCallerTx(InterceptorContext invocation, Transaction tx, final EJBComponent component) throws Exception {
         try {
             return invocation.proceed();
+        } catch (Error e) {
+            setRollbackOnly(tx);
+            throw EjbLogger.ROOT_LOGGER.unexpectedErrorRolledBack(e);
+        } catch (Exception e) {
+            ApplicationExceptionDetails ae = component.getApplicationException(e.getClass(), invocation.getMethod());
+
+            if (ae != null) {
+                if (ae.isRollback()) setRollbackOnly(tx);
+                throw e;
+            }
+            try {
+                throw e;
+            } catch (EJBTransactionRolledbackException | NoSuchEJBException | NoSuchEntityException e2) {
+                setRollbackOnly(tx);
+                throw e2;
+            } catch (RuntimeException e2) {
+                setRollbackOnly(tx);
+                throw new EJBTransactionRolledbackException(e2.getMessage(), e2);
+            }
         } catch (Throwable t) {
-            handleInCallerTx(invocation, t, tx, component);
+            throw new EJBException(new UndeclaredThrowableException(t));
         }
-        throw new RuntimeException("UNREACHABLE");
     }
 
     protected Object invokeInNoTx(InterceptorContext invocation, final EJBComponent component) throws Exception {

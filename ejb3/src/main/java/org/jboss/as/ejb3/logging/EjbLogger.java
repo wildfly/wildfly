@@ -43,6 +43,7 @@ import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.EJBAccessException;
 import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRequiredException;
+import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.IllegalLoopbackException;
 import javax.ejb.LockType;
 import javax.ejb.NoMoreTimeoutsException;
@@ -2986,7 +2987,8 @@ public interface EjbLogger extends BasicLogger {
     void failedToRefreshTimers(String timedObjectId);
 
     @Message(id = 457, value = "Unexpected Error")
-    String convertUnexpectedError();
+    @Signature(String.class)
+    EJBTransactionRolledbackException unexpectedErrorRolledBack(@Cause Error error);
 
     //@LogMessage(level = ERROR)
     //@Message(id = 458, value = "Failure in caller transaction.")
