@@ -63,8 +63,6 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  */
 public class CMTTxInterceptor implements Interceptor {
 
-    private static final int MAX_RETRIES = 5;
-
     public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new CMTTxInterceptor());
 
 
@@ -119,29 +117,29 @@ public class CMTTxInterceptor implements Interceptor {
         }
     }
 
-    public void handleExceptionInOurTx(InterceptorContext invocation, Throwable t, Transaction tx, final EJBComponent component) throws Exception {
+    public Exception handleExceptionInOurTx(InterceptorContext invocation, Throwable t, Transaction tx, final EJBComponent component) {
         ApplicationExceptionDetails ae = component.getApplicationException(t.getClass(), invocation.getMethod());
         if (ae != null) {
             if (ae.isRollback()) setRollbackOnly(tx);
-            throw (Exception) t;
+            return (Exception) t;
         }
-
-        // if it's neither EJBException nor RemoteException
-        if (!(t instanceof EJBException || t instanceof RemoteException)) {
-            // errors and unchecked are wrapped into EJBException
-            if (t instanceof Error) {
-                //t = new EJBException(formatException("Unexpected Error", t));
-                t = EjbLogger.ROOT_LOGGER.unexpectedError(t);
-            } else if (t instanceof RuntimeException) {
-                t = new EJBException((Exception) t);
-            } else {
-                // an application exception
-                throw (Exception) t;
-            }
+        try {
+            throw t;
+        } catch (EJBException | RemoteException e) {
+            setRollbackOnly(tx);
+            return e;
+        } catch (RuntimeException e) {
+            setRollbackOnly(tx);
+            return new EJBException(e);
+        } catch (Error e) {
+            setRollbackOnly(tx);
+            return EjbLogger.ROOT_LOGGER.unexpectedError(e);
+        } catch (Exception e) {
+            // an application exception
+            return e;
+        } catch (Throwable e) {
+            throw new EJBException(new UndeclaredThrowableException(e));
         }
-
-        setRollbackOnly(tx);
-        throw (Exception) t;
     }
 
     public Object processInvocation(InterceptorContext invocation) throws Exception {
@@ -219,17 +217,14 @@ public class CMTTxInterceptor implements Interceptor {
     }
 
     protected Object invokeInOurTx(InterceptorContext invocation, final EJBComponent component) throws Exception {
-        for (int i = 0; i < MAX_RETRIES; i++) {
-            Transaction tx = beginTransaction();
-            try {
-                return invocation.proceed();
-            } catch (Throwable t) {
-                handleExceptionInOurTx(invocation, t, tx, component);
-            } finally {
-                endTransaction(tx);
-            }
+        Transaction tx = beginTransaction();
+        try {
+            return invocation.proceed();
+        } catch (Throwable t) {
+            throw handleExceptionInOurTx(invocation, t, tx, component);
+        } finally {
+            endTransaction(tx);
         }
-        throw new RuntimeException("UNREACHABLE");
     }
 
     protected Transaction beginTransaction() throws NotSupportedException, SystemException {
