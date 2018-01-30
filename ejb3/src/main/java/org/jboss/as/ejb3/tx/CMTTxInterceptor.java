@@ -112,20 +112,10 @@ public class CMTTxInterceptor implements Interceptor {
                 throw EjbLogger.ROOT_LOGGER.transactionInUnexpectedState(tx, statusAsString(txStatus));
             }
         } catch (RollbackException e) {
-            handleEndTransactionException(e);
-        } catch (HeuristicMixedException e) {
-            handleEndTransactionException(e);
-        } catch (HeuristicRollbackException e) {
-            handleEndTransactionException(e);
-        } catch (SystemException e) {
-            handleEndTransactionException(e);
-        }
-    }
-
-    protected void handleEndTransactionException(Exception e) {
-        if (e instanceof RollbackException)
             throw new EJBTransactionRolledbackException("Transaction rolled back", e);
-        throw new EJBException(e);
+        } catch (HeuristicMixedException | SystemException | HeuristicRollbackException e) {
+            throw new EJBException(e);
+        }
     }
 
     protected void handleInCallerTx(InterceptorContext invocation, Throwable t, Transaction tx, final EJBComponent component) throws Exception {
