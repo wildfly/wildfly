@@ -100,6 +100,7 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
+import org.jboss.logging.annotations.Signature;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -2931,7 +2932,8 @@ public interface EjbLogger extends BasicLogger {
     DeploymentUnitProcessingException ejbBusinessMethodMustBePublic(final Method method);
 
     @Message(id = 442, value = "Unexpected Error")
-    EJBException unexpectedError();
+    @Signature(String.class)
+    EJBException unexpectedError(@Cause Throwable cause);
 
     @Message(id = 443, value = "EJB 3.1 FR 13.3.3: BMT bean %s should complete transaction before returning.")
     String transactionNotComplete(String componentName);
