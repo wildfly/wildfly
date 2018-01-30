@@ -105,9 +105,12 @@ class OldVersionCopier {
         String entryName = path.toString();
         if (entryName.endsWith("/docs/") || entryName.endsWith("/bundles/")) {
             return true;
-        } else if (entryName.endsWith("/bin/") || entryName.endsWith("/welcome-content/")) {
+        } else if (entryName.endsWith("/bin/")) {
             return true;
         } else if (entryName.endsWith("/eap/dir/")) { //console files
+            return true;
+        } else if (entryName.contains("/welcome-content/") && !entryName.endsWith("/welcome-content/")) {
+            //Create the directory but don't include any files
             return true;
         }
         return false;
