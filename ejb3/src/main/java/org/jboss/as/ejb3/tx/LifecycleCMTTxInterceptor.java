@@ -79,21 +79,17 @@ public class LifecycleCMTTxInterceptor extends CMTTxInterceptor {
         }
     }
 
-    protected Transaction beginTransaction(final TransactionManager tm) throws NotSupportedException, SystemException {
-        if (tm instanceof ContextTransactionManager) {
-            final ContextTransactionManager contextTransactionManager = (ContextTransactionManager) tm;
-            int timeout = contextTransactionManager.getTransactionTimeout();
-            final LocalTransaction transaction = LocalTransactionContext.getCurrent().beginTransaction(timeout, false);
-            try {
-                contextTransactionManager.resume(transaction);
-            } catch (InvalidTransactionException e) {
-                // should not be possible
-                throw new IllegalStateException(e);
-            }
-            return transaction;
-        } else {
-            return super.beginTransaction(tm);
+    protected Transaction beginTransaction() throws NotSupportedException, SystemException {
+        final ContextTransactionManager contextTransactionManager = ContextTransactionManager.getInstance();
+        int timeout = contextTransactionManager.getTransactionTimeout();
+        final LocalTransaction transaction = LocalTransactionContext.getCurrent().beginTransaction(timeout, false);
+        try {
+            contextTransactionManager.resume(transaction);
+        } catch (InvalidTransactionException e) {
+            // should not be possible
+            throw new IllegalStateException(e);
         }
+        return transaction;
     }
 
     @Override
