@@ -45,6 +45,6 @@ public class QueryNameDisplayableTestCase {
         long end = System.currentTimeMillis();
         long duration = (end - start);
 
-        Assert.assertTrue("Duration of QueryName.displayable called in a 500000 loop must be lower than 3000 milliseconds.", duration < 3000);
+        Assert.assertTrue("Duration of QueryName.displayable called in a 500000 loop must be lower than 3000 milliseconds, but was " + duration, duration < 3000);
     }
 }
