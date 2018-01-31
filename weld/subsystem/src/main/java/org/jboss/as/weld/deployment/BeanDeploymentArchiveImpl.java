@@ -63,6 +63,8 @@ public class BeanDeploymentArchiveImpl implements WildFlyBeanDeploymentArchive {
 
     private final Set<String> beanClasses;
 
+    private final Set<String> allKnownClasses;
+
     private final Set<BeanDeploymentArchive> beanDeploymentArchives;
 
     private final BeansXml beansXml;
@@ -81,12 +83,13 @@ public class BeanDeploymentArchiveImpl implements WildFlyBeanDeploymentArchive {
 
     private final BeanArchiveType beanArchiveType;
 
-    public BeanDeploymentArchiveImpl(Set<String> beanClasses, BeansXml beansXml, Module module, String id, BeanArchiveType beanArchiveType) {
-        this(beanClasses, beansXml, module, id, beanArchiveType, false);
+    public BeanDeploymentArchiveImpl(Set<String> beanClasses, Set<String> allClasses, BeansXml beansXml, Module module, String id, BeanArchiveType beanArchiveType) {
+        this(beanClasses, allClasses, beansXml, module, id, beanArchiveType, false);
     }
 
-    public BeanDeploymentArchiveImpl(Set<String> beanClasses, BeansXml beansXml, Module module, String id, BeanArchiveType beanArchiveType, boolean root) {
+    public BeanDeploymentArchiveImpl(Set<String> beanClasses, Set<String> allClasses, BeansXml beansXml, Module module, String id, BeanArchiveType beanArchiveType, boolean root) {
         this.beanClasses = new ConcurrentSkipListSet<String>(beanClasses);
+        this.allKnownClasses = new ConcurrentSkipListSet<String>(allClasses);
         this.beanDeploymentArchives = new CopyOnWriteArraySet<BeanDeploymentArchive>();
         this.beansXml = beansXml;
         this.id = id;
@@ -128,6 +131,7 @@ public class BeanDeploymentArchiveImpl implements WildFlyBeanDeploymentArchive {
 
     public void addBeanClass(String clazz) {
         this.beanClasses.add(clazz);
+        this.allKnownClasses.add(clazz);
     }
 
     public void addBeanClass(Class<?> clazz) {
@@ -270,5 +274,10 @@ public class BeanDeploymentArchiveImpl implements WildFlyBeanDeploymentArchive {
         builder.append(this.id);
         builder.append(")");
         return builder.toString();
+    }
+
+    @Override
+    public Collection<String> getKnownClasses(){
+        return allKnownClasses;
     }
 }

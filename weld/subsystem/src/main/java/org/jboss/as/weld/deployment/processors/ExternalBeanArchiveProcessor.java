@@ -94,6 +94,9 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
 
     private static final String META_INF_JANDEX_IDX = "META-INF/jandex.idx";
 
+    private final String ALL_KNOWN_CLASSES = "ALL_KNOWN_CLASSES";
+    private final String BEAN_CLASSES = "BEAN_CLASSES";
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -193,15 +196,17 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                             continue;
                         }
 
-                        Collection<String> discoveredClasses = discover(beansXml.getBeanDiscoveryMode(), beansXmlUrl, entry.getValue(),
+                        Map<String, List<String>> allAndBeanClasses = discover(beansXml.getBeanDiscoveryMode(), beansXmlUrl, entry.getValue(),
                                 beanDefiningAnnotations);
-                        if (discoveredClasses == null) {
+                        Collection<String> discoveredBeanClasses = allAndBeanClasses.get(BEAN_CLASSES);
+                        Collection<String> allKnownClasses = allAndBeanClasses.get(ALL_KNOWN_CLASSES);
+                        if (discoveredBeanClasses == null) {
                             // URL scanner probably does not understand the protocol
                             continue;
                         }
-                        discoveredClasses.removeAll(componentClassNames);
+                        discoveredBeanClasses.removeAll(componentClassNames);
 
-                        final BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(new HashSet<String>(discoveredClasses), beansXml, dependency, beanArchiveIdPrefix + beansXmlUrl.toExternalForm(), BeanArchiveType.EXTERNAL);
+                        final BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(new HashSet<String>(discoveredBeanClasses), new HashSet<String>(allKnownClasses), beansXml, dependency, beanArchiveIdPrefix + beansXmlUrl.toExternalForm(), BeanArchiveType.EXTERNAL);
                         WeldLogger.DEPLOYMENT_LOGGER.beanArchiveDiscovered(bda);
 
                         // Add module services to external bean deployment archive
@@ -237,8 +242,9 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
      * @param beanDefiningAnnotations
      * @return the set of discovered bean classes or null if unable to handle the provided beans.xml url
      */
-    private Collection<String> discover(BeanDiscoveryMode beanDiscoveryMode, URL beansXmlUrl, URL indexUrl, Set<AnnotationType> beanDefiningAnnotations) {
-        List<String> discoveredClasses = new ArrayList<String>();
+    private Map<String, List<String>> discover(BeanDiscoveryMode beanDiscoveryMode, URL beansXmlUrl, URL indexUrl, Set<AnnotationType> beanDefiningAnnotations) {
+        List<String> discoveredBeanClasses = new ArrayList<String>();
+        List<String> allKnownClasses = new ArrayList<String>();
         BiConsumer<String, ClassFile> consumer;
 
         if (BeanDiscoveryMode.ANNOTATED.equals(beanDiscoveryMode)) {
@@ -248,8 +254,9 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                 // Use the provided index to find ClassInfo
                 consumer = (name, classFile) -> {
                     ClassInfo classInfo = index.getClassByName(DotName.createSimple(name));
+                    allKnownClasses.add(name);
                     if (classInfo != null && hasBeanDefiningAnnotation(classInfo, beanDefiningAnnotations)) {
-                        discoveredClasses.add(name);
+                        discoveredBeanClasses.add(name);
                     }
                 };
             } else {
@@ -258,8 +265,9 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                 consumer = (name, classFile) -> {
                     try (InputStream in = classFile.openStream()) {
                         ClassInfo classInfo = indexer.index(in);
+                        allKnownClasses.add(name);
                         if (classInfo != null && hasBeanDefiningAnnotation(classInfo, beanDefiningAnnotations)) {
-                            discoveredClasses.add(name);
+                            discoveredBeanClasses.add(name);
                         }
                     } catch (IOException e) {
                         WeldLogger.DEPLOYMENT_LOGGER.cannotIndexClassName(name, beansXmlUrl);
@@ -268,10 +276,16 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
             }
         } else {
             // Bean discovery mode ALL
-            consumer = (name, classFile) -> discoveredClasses.add(name);
+            consumer = (name, classFile) -> {
+                allKnownClasses.add(name);
+                discoveredBeanClasses.add(name);
+            };
         }
+        Map<String, List<String>> result = new HashMap<>();
+        result.put(ALL_KNOWN_CLASSES, allKnownClasses);
+        result.put(BEAN_CLASSES, discoveredBeanClasses);
         UrlScanner scanner = new UrlScanner(beansXmlUrl, consumer);
-        return scanner.scan() ? discoveredClasses : null;
+        return scanner.scan() ? result : null;
     }
 
     private Index tryLoadIndex(URL indexUrl) {
