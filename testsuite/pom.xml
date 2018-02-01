@@ -1008,7 +1008,7 @@
         <profile>
             <id>jdk9</id>
             <activation>
-                <jdk>9</jdk>
+                <jdk>[9,)</jdk>
             </activation>
             <properties>
                 <modular.jdk.testsuite.args>${modular.jdk.args}
