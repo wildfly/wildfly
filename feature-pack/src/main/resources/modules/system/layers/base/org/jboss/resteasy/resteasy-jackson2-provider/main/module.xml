@@ -34,6 +34,7 @@
         <module name="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider" export="true"/>
         <module name="com.fasterxml.jackson.datatype.jackson-datatype-jdk8"/>
         <module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310"/>
+        <module name="com.github.fge.json-patch"/>
         <module name="javax.xml.bind.api"/>
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
