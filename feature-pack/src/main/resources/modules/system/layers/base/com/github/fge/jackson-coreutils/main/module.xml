@@ -22,25 +22,20 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.resteasy.resteasy-cdi">
+<module xmlns="urn:jboss:module:1.7" name="com.github.fge.jackson-coreutils">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <artifact name="${org.jboss.resteasy:resteasy-cdi}"/>
+        <artifact name="${com.github.fge:jackson-coreutils}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.servlet.api"/>
-        <module name="javax.ws.rs.api"/>
-        <module name="javax.validation.api"/>
-        <module name="org.jboss.resteasy.resteasy-jaxrs"/>
-        <module name="org.jboss.weld.core"/>
-        <module name="org.jboss.weld.spi"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.eclipse.microprofile.restclient"/>
+        <module name="com.fasterxml.jackson.core.jackson-annotations"/>
+        <module name="com.fasterxml.jackson.core.jackson-core"/>
+        <module name="com.fasterxml.jackson.core.jackson-databind"/>
+        <module name="com.google.guava"/>
     </dependencies>
 </module>
