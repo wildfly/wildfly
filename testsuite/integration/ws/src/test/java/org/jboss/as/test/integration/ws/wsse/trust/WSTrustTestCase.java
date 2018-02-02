@@ -30,6 +30,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.ws.WrapThreadContextClassLoader;
 import org.jboss.as.test.integration.ws.wsse.trust.actas.ActAsServiceIface;
@@ -37,11 +39,13 @@ import org.jboss.as.test.integration.ws.wsse.trust.bearer.BearerIface;
 import org.jboss.as.test.integration.ws.wsse.trust.holderofkey.HolderOfKeyIface;
 import org.jboss.as.test.integration.ws.wsse.trust.onbehalfof.OnBehalfOfServiceIface;
 import org.jboss.as.test.integration.ws.wsse.trust.service.ServiceIface;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -267,6 +271,21 @@ public class WSTrustTestCase {
         File jarFile = new File("jaxws-samples-wsse-policy-trust-client.jar");
         jar.as(ZipExporter.class).exportTo(jarFile, true);
         return jarFile.getAbsolutePath();
+    }
+
+    @Test
+    @OperateOnDeployment(HOLDER_OF_KEY_STS_DEP)
+    @RunAsClient
+    public void testReadDeploymentResource(@ArquillianResource ManagementClient client) throws Exception {
+        final ModelNode address = Operations.createAddress("deployment", HOLDER_OF_KEY_STS_DEP + ".war");
+        final ModelNode op = Operations.createReadResourceOperation(address);
+        op.get("include-runtime").set(true);
+        op.get("recursive").set(true);
+        final ModelNode result = client.getControllerClient().execute(op);
+        if (!Operations.isSuccessfulOutcome(result)) {
+            Assert.fail("Expected to be able to read the resource at deployment=" + HOLDER_OF_KEY_STS_DEP + ".war: "
+                    + Operations.getFailureDescription(result).asString());
+        }
     }
 
     /**
