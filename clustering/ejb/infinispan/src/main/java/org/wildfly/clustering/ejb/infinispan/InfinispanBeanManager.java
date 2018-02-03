@@ -225,7 +225,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
 
     Node locatePrimaryOwner(I id) {
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        Address address = (dist != null) ? dist.getCacheTopology().getDistribution(id).primary() : null;
+        Address address = (dist != null) && !this.cache.getCacheConfiguration().clustering().cacheMode().isScattered() ? dist.getCacheTopology().getDistribution(id).primary() : null;
         Node member = (address != null) ? this.nodeFactory.createNode(address) : null;
         return (member != null) ? member : this.registry.getGroup().getLocalMember();
     }
