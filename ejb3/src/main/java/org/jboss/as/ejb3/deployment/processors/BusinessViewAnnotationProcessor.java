@@ -133,11 +133,12 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         // fetch the local business interfaces of the bean
         Collection<Class<?>> localBusinessInterfaces = this.getLocalBusinessInterfaces(deploymentUnit, sessionBeanClass);
         if (localBusinessInterfaces != null && !localBusinessInterfaces.isEmpty()) {
-            verifyViewMethodsNotDeclaredFinal(sessionBeanClass, remoteBusinessInterfaces);
+            verifyViewMethodsNotDeclaredFinal(sessionBeanClass, localBusinessInterfaces);
             sessionBeanComponentDescription.addLocalBusinessInterfaceViews(this.toString(localBusinessInterfaces));
         }
 
         if (hasNoInterfaceView(sessionBeanClass)) {
+            verifyNoInterfaceViewMethodsNotDeclaredFinal(sessionBeanClass);
             sessionBeanComponentDescription.addNoInterfaceView();
         }
 
@@ -145,6 +146,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         if (hasNoViews(sessionBeanComponentDescription)) {
             final Set<Class<?>> potentialBusinessInterfaces = getPotentialBusinessInterfaces(sessionBeanClass);
             if (potentialBusinessInterfaces.isEmpty()) {
+                verifyNoInterfaceViewMethodsNotDeclaredFinal(sessionBeanClass);
                 sessionBeanComponentDescription.addNoInterfaceView();
             } else if (potentialBusinessInterfaces.size() == 1) {
                 sessionBeanComponentDescription.addLocalBusinessInterfaceViews(potentialBusinessInterfaces.iterator().next().getName());
@@ -208,12 +210,22 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
             for (Method ifceMethod : ifce.getMethods()) {
                 try {
                     final Method beanMethod = sessionBeanClass.getMethod(ifceMethod.getName(), ifceMethod.getParameterTypes());
-                    if ((beanMethod.getModifiers() & Modifier.FINAL) == Modifier.FINAL) {
+                    if (Modifier.isFinal(beanMethod.getModifiers())) {
                         throw EjbLogger.ROOT_LOGGER.businessViewMethodDeclaredFinal(beanMethod.getName(), sessionBeanClass.getName());
                     }
                 } catch (NoSuchMethodException e) {
                     Assert.unreachableCode();
                 }
+            }
+        }
+    }
+
+    // EJB3.2 FR 4.9.6
+    private void verifyNoInterfaceViewMethodsNotDeclaredFinal(final Class<?> sessionBeanClass) throws DeploymentUnitProcessingException {
+        for (Method beanMethod : sessionBeanClass.getMethods()) {
+            // EJB3.2 FR 4.9.8
+            if (!beanMethod.getDeclaringClass().equals(Object.class) && Modifier.isPublic(beanMethod.getModifiers()) && Modifier.isFinal(beanMethod.getModifiers())) {
+                throw EjbLogger.ROOT_LOGGER.businessViewMethodDeclaredFinal(beanMethod.getName(), sessionBeanClass.getName());
             }
         }
     }
