@@ -1,0 +1,440 @@
+= User Story
+
+Use WildFly thread pools in Artemis so that any threads used by Artemis can be managed by WildFly.
+
+Currently, Artemis uses its own thread pools to perform its various tasks. The `messaging-activemq` subsystem provides some attributes to configure these pools in a broad fashion.
+However these pools are not integrated to WildFly managed resources and thus can not be administrate and fine-tune for performance depending on the messaging use cases.
+
+The goal of this task is to create and manage thread pools inside WildFly and inject them in Artemis for any of this thread tasks (including server runtime and client runtime running inside the server).
+
+Thread pools managed by WildFly provides metrics that will help users fine tune their usage and ensure their configuration matches the application use of messaging resources.
+
+= Issue Metadata
+
+* WildFly issue: https://issues.jboss.org/browse/WFLY-5838
+* Related issues: N/A
+* Dev Contacts: Jeff Mesnil
+* Affected projects or components: https://github.com/wildfly/wildfly/tree/master/messaging-activemq[messaging-activemq subsystem], https://github.com/apache/activemq-artemis[Apache ActiveMQ Artemis]
+
+= Requirements
+
+* Create and configure thread pools required by Artemis inside the `messaging-activemq` subsystem and inject them in Artemis components.
+* Leverage https://github.com/wildfly/wildfly-core/tree/master/threads[WildFly Core threads module] to create and manage thread pools
+* No performance regressions compared to the use of vanilla Artemis thread pools
+* Provide equivalent thread pool configurations compared to vanilla Artemis thread pools
+* Backwards compatibility with WildFly 11
+* Subsystem transformation
+* Deprecate use of management attributes that relates to the Artemis thread pools (but they must remain functional).
+
+NOTE: Deprecating the  management attributes that relates to the Artemis thread pools is not mandatory as they will continue to function fine. But moving forward, we should provide a single consistent way to configure and fine tune thread consumption in WildFly. In particular any guide or documentation related to thread configuration should be done using WildFly-managed thread pools and not Artemis thread pools.
+
+= Non-Requirements
+
+* It is not expected to handle legacy `messaging` subystem migration. If a legacy `messaging` subsystem with configured attributes that relates to thread pools is migrated to the current `messaging-activemq`, the migrate operation will use the corresponding attributes in the `messaging-activemq` subsystem and will *not* create thread pools.
+
+= Design Details
+
+*This design analysis is based on the 2.3.0 release of Apache ActiveMQ Artemis.*
+
+Artemis uses several thread pools:
+
+* server scheduled thread pool - used on the server side for scheduled tasks (e.g. message expiry)
+* server "regular" thread pool - used on the server side for any thread tasks (other than journal I/O)
+* server I/O thread pool - used on the server side for any journal-related task (both file-based and JDBC journals)
+* client scheduled thread pool - used on the client side for scheduled tasks (e.g. network health checks)
+* client "regular" thread pool - used on the client side for any thread tasks
+
+Note that it is common usage to have Artemis clients running inside WildFly (e.g. deployments using JMS, Message-driven Beans).
+
+By default, Artemis uses different types of thread pools for all these cases. We will list them as well as the configuration provided by WildFly's `messaging-activemq` subsystem to modify the default configuration.
+For the first initial release of WildFly using injected thread pools, we propose to inject thread pools configured by WildFly that are *equivalent* to Artemis defaults. Based on that, we may then provide further improvements or recommendations depending on the use cases.
+
+== Artemis Server Thread Pool
+
+By default Artemis configures its server thread pool at https://github.com/apache/activemq-artemis/blob/master/artemis-server/src/main/java/org/apache/activemq/artemis/core/server/impl/ActiveMQServerImpl.java#L2182[ActiveMQServerImpl#initializeExecutorServices]
+
+It uses an https://github.com/apache/activemq-artemis/blob/master/artemis-commons/src/main/java/org/apache/activemq/artemis/utils/ActiveMQThreadPoolExecutor.java[ActiveMQThreadPoolExecutor] which is a specialized `ThreadPoolExecutor` that queues tasks if the maximum size is reached instead of rejecting them.
+
+Default parameters are:
+
+----
+* coreSize = 0
+* maximumPoolSize = 30
+* keepAlive = 60 seconds
+* threadFactory (groupName = "ActiveMQ-server-" + server.toString(), dameon = false)
+----
+
+WARNING: We need feedback from Artemis dev team to understand if the use of their ActiveMQThreadPoolExecutor (and its specialized `LinkedBlockingQueue`) is essential to the behaviour of Artemis or if we can circumvent it in WildFly by using a properly configured `LinkedBlockingQueue`. It might be also possible to update WildFly-managed thread pools to offer similar specialization.
+
+In WildFly's `messaging-activemq` subsystem, the `server` resource provides the `thread-pool-max-size` management attribute to configure the maximum size of this pool  (which defaults to `30` like Artemis default).
+There is a special case if thread-pool-max-size is configured to `-1` (meaning no upper limit). In that case, Artemis uses a regular `ThreadPoolExecutor` with:
+
+----
+* coreSize = 0
+* maximumPoolSize = Integer.MAX_VALUE
+* keepAlive = 60 seconds
+* workQueue = new SynchronousQueue<Runnable>()
+* threadFactory (groupName = "ActiveMQ-server-" + server.toString, daemon = false)
+----
+
+== Artemis Server Scheduled Thread Pool
+
+By default Artemis configures its server scheduled thread pool at https://github.com/apache/activemq-artemis/blob/master/artemis-server/src/main/java/org/apache/activemq/artemis/core/server/impl/ActiveMQServerImpl.java#L2182[ActiveMQServerImpl#initializeExecutorServices]
+
+It uses a plain `ScheduledThreadPoolExecutor` with the parameters:
+
+----
+* corePoolSize = 5
+* threadFactory (groupName = "ActiveMQ-scheduled-threads", daemon = false)
+----
+
+In WildFly's `messaging-activemq` subsystem, the `server` resource provides the `scheduled-thread-pool-max-size` management attribute to configure the maximum size of this pool  (which defaults to `5` like Artemis default) .
+
+== Artemis Server I/O Thread Pool
+
+By default Artemis configures its server scheduled thread pool at https://github.com/apache/activemq-artemis/blob/master/artemis-server/src/main/java/org/apache/activemq/artemis/core/server/impl/ActiveMQServerImpl.java#L2182[ActiveMQServerImpl#initializeExecutorServices].
+It uses a plain ThreadPoolExecutor with parameters:
+
+----
+* corePoolSize = 0
+* maximumPoolSize = Integer.MAX_VALUE
+* keepAlive = 60 seconds
+* threadFactory (groupName = "ActiveMQ-IO-server-" + this.toString(), daemon = false)
+----
+
+This thread pool is not configurable in any fashion through the `messaging-activemq` subsystem.
+
+== Artemis Global Client Thread Pool
+
+By default Artemis configures its client thread pool at https://github.com/apache/activemq-artemis/blob/master/artemis-core-client/src/main/java/org/apache/activemq/artemis/api/core/client/ActiveMQClient.java#L210[ActiveMQClient#getGlobalThreadPool].
+
+Its configuration is similar to the server thread pool. By default, it uses a ActiveMQThreadPoolExecutor with the parameters:
+
+----
+* corePoolSize = 0
+* maximumPoolSize = 8 * Runtime.getRuntime().availableProcessors()
+* keepAlive = 60 seconds
+* threadFactory (groupName = "ActiveMQ-client-global-threads", daemon = true)
+----
+
+In WildFly's `messaging-activemq` subsystem, the `subsystem` resource provides the `global-client-thread-pool-max-size` management attribute to configure the maximum size of this pool. It has no default value so the default behaviour is to use the valued computed by Artemis that corresponds to `8 * Runtime.getRuntime().availableProcessors()`.
+There is a special case if `global-client-thread-pool-max-size` is configured to `-1` (meaning no upper limit). In that case, Artemis uses a regular `ThreadPoolExecutor` with:
+
+----
+* coreSize = 0
+* maximumPoolSize = Integer.MAX_VALUE
+* keepAlive = 60 seconds
+* workQueue = new SynchronousQueue<Runnable>()
+* threadFactory (groupName = "ActiveMQ-client-global-threads", daemon = true)
+----
+
+== Artemis Global Client Scheduled Thread Pool
+
+By default Artemis configures its client scheduled thread pool at https://github.com/apache/activemq-artemis/blob/master/artemis-core-client/src/main/java/org/apache/activemq/artemis/api/core/client/ActiveMQClient.java#L228[ActiveMQClient#getGlobalScheduledThreadPool].
+
+It uses a plain `ScheduledThreadPoolExecutor` with the parameters:
+
+----
+* corePoolSize = 5
+* threadFactory (groupName = "ActiveMQ-client-global-scheduled-threads", daemon = true)
+----
+
+In WildFly's `messaging-activemq` subsystem, the `subsystem` resource provides the `global-client-scheduled-thread-pool-max-size` management attribute to configure the maximum size of this pool. It has no default value   so the default behaviour is to use the valued from Artemis (i.e. `5`)
+
+= Artemis Requirements
+
+Artemis allows the use of external thread pools through its https://github.com/apache/activemq-artemis/blob/master/artemis-server/src/main/java/org/apache/activemq/artemis/core/server/ServiceRegistry.java[ServiceRegistry] interface.
+The WildFly `messaging-activemq` subsystem can then create instance of `ActiveMQServer` and use its `ServiceRegistry` to set the various server thread pools before calling `ActiveMQServer#start` method.
+
+Relevant methods are:
+
+----
+* ServiceRegistry#setExecutorService(ExecutorService)
+* ServiceRegistry#setIOExecutorService(ExecutorService)
+* ServiceRegistry#setScheduledExecutorService(ScheduledExecutorService)
+----
+
+For global thread pools, the  WildFly `messaging-activemq` subsystem must call https://github.com/apache/activemq-artemis/blob/master/artemis-core-client/src/main/java/org/apache/activemq/artemis/api/core/client/ActiveMQClient.java#L197[ActiveMQClient#injectPools] __before any Artemis client or server is started__:
+
+----
+ActiveMQClient#injectPools(ExecutorService, ScheduledExecutorService)
+----
+
+WARNING: Artemis requires that *both the regular and scheduled thread pools are injected* (it is not possible to inject only one and not the other). This must be enforced by WildFly `messaging-activemq` subsystem model.
+
+== Uninjectable Thread Pools in Artemis
+
+There are still a few places where Artemis creates thread pools and do not allow to inject them from WildFly.
+
+* https://github.com/apache/activemq-artemis/blob/master/artemis-server/src/main/java/org/apache/activemq/artemis/core/remoting/impl/invm/InVMConnector.java#L109[InVMConnector#getInVMExecutor]
+** At first glance this ExecutorService should be replaced by the actual global client thread pool returned by `ActiveMQClient#getGlobalThreadPool()` (which is injectable). If the Artemis development team objects that each InVMConnector should have its own unique thread pool, they will have to provide a way to inject it.
+
+CAUTION: We need feedback from the Artemis team on this item.
+
+* https://github.com/apache/activemq-artemis/blob/master/artemis-journal/src/main/java/org/apache/activemq/artemis/core/journal/impl/JournalImpl.java#L2316[JournalImpl#start]
+** When the Journal is started, it creates a thread pool if the `providedIOThreadPool` parameter is `null`. This code should never be reached as the `providedIOThreadPool` corresponds to the ActiveMQServerImpl's `ioExecutorFactory` that is *always* set in `ActiveMQServerImpl#initializeExecutorServices`.
+
+NOTE: We need feedback from Artemis team but it seems to be some dead code from previous version that has no impact on the actual code path.
+
+* https://github.com/apache/activemq-artemis/blob/master/artemis-core-client/src/main/java/org/apache/activemq/artemis/core/client/impl/ServerLocatorImpl.java#L222[ServerLocatorImpl.java#setThreadPools]
+** In WildFly, this corresponds to any lookup of a JMS ConnectionFactory or use of a Message-Driven Bean. By default, Artemis is configured to use the global client pools. This is configuration using the `connection-factory` and `pooled-connection-factory`'s `use-global-pools` (which is `true` by default).
+If it is set to `false`, Artemis will create separate thread pools for each JMS connection factory or resource adapter.
+
+= WildFly Requirements
+
+Thread pools are used globally by Artemis clients and can be configured on a server basis.
+This implies that the configuration of thread pools will be done inside the `messaging-activemq` subsystem with the related resources right under the `subsystem` resource (as siblings to the `server` resource).
+
+The `messaging-activemq` subsystem will define new resources and attributes representing the thread pools to inject in Artemis. Note that the `threads` module from WildFly core already defines such resources (including different types of thread pools implementation, thread factories, etc.). The `messaging-activemq` subsystem  will just registers these resource definition in its own resource registration tree.
+
+Before defining these resources, we will first define how they integrate in the existing messaging-activemq's `subystem` and `server` resource.
+
+== Existing `subsystem` Resource
+
+* A new management attribute named `global-client-thread-pool` is added to the `subsystem` resource.
+** Its type is `STRING`
+** It has _no default value_ and is optional.
+** It is valid if it corresponds to the name of a thread pool resource (defined below).
+** It is an alternative to the existing `global-client-thread-pool-max-size` attribute.
+** If it is set, the `global-client-scheduled-thread-pool` (defined below) must also be set and valid.
+** It does not allow expressions (as it references the name of another resource)
+
+* A new management attribute named `global-client-scheduled-thread-pool` is added to the `subsystem` resource.
+** Its type is `STRING`
+** It has _no default value_ and is optional.
+** It is valid if it corresponds to the name of a scheduled thread pool resource (defined below).
+** It is an alternative to the existing `global-client-scheduled-thread-pool-max-size` attribute.
+** If it is set, the `global-client-thread-pool` (defined above) must also be set and valid.
+** It does not allow expressions (as it references the name of another resource)
+
+* The existing management attribute `global-client-thread-pool-max-size` is updated
+** It is deprecated
+** It is flagged as an alternative to the new `global-client-thread-pool` attribute
+
+* The existing management attribute `global-client-scheduled-thread-pool-max-size` is updated
+** It is deprecated
+** It is flagged as an alternative to the new `global-client-scheduled-thread-pool` attribute
+
+NOTE: These 2 new attributes of the `subsystem` corresponds to the name of children resources. It implies that a subsystem resource with these attributes set can only be added in a batch with the corresponding children resources also added. If that is considered forbidden, these 2 attributes will have to move to a new children resource (e.g. named `global-client`) that can be added after the thread pool resources.
+
+When the `subsystem` resource is added, in its runtime step, we find the thread pool and scheduled thread pools based on the names of the attributes and inject them in Artemis by calling `ActiveMQClient.injectPools`.
+This step will occur before any Artemis client or server is started.
+
+== Existing `server` Resource
+
+* A new management attribute named `thread-pool` is added to the `server` resource.
+** Its type is `STRING`
+** It has _no default value_ and is optional.
+** It is valid if it corresponds to the name of a thread pool resource (defined below).
+** It is an alternative to the existing `thread-pool-max-size` attribute.
+** It does not allow expressions (as it references the name of another resource)
+
+* A new management attribute named `scheduled-thread-pool` is added to the `server` resource.
+** Its type is `STRING`
+** It has _no default value_ and is optional.
+** It is valid if it corresponds to the name of a thread pool resource (defined below).
+** It is an alternative to the existing `scheduled-thread-pool-max-size` attribute.
+** It does not allow expressions (as it references the name of another resource)
+
+* A new management attribute named `journal-thread-pool` is added to the `server` resource.
+** Its type is `STRING`
+** It has _no default value_ and is optional.
+** It is valid if it corresponds to the name of a thread pool resource (defined below).
+** It is an alternative to the existing `scheduled-thread-pool-max-size` attribute.
+** It does not allow expressions (as it references the name of another resource)
+
+* The existing management attribute `thread-pool-max-size` is updated
+** It is deprecated
+** It is flagged as an alternative to the new `thread-pool` attribute
+
+* The existing management attribute `scheduled-thread-pool-max-size` is updated
+** It is deprecated
+** It is flagged as an alternative to the new `scheduled-thread-pool` attribute
+
+== New `thread-factory` Resource
+
+This resource can be used to create and configure a `java.util.concurrentThreadFactory`.
+
+* It is a child of the `subsystem` resource
+* Its resource definition is provided by WildFly Core https://github.com/wildfly/wildfly-core/blob/master/threads/src/main/java/org/jboss/as/threads/ThreadFactoryResourceDefinition.java[ThreadFactoryResourceDefinition].
+* It defines 3 attributes:
+** `group-name`
+** `thread-name-pattern`
+** `priority`
+
+NOTE: Using this `thread-factory`, it is not be possible to generate dynamic group name corresponding to the Artemis server threads (that uses the groupName `"ActiveMQ-server-" + server.toString`). In practice, this is not an issue. If the user needs to distinguish between the threads of different ActiveMQ servers inside the same WildFly instance, he just has to use 2 different `thread-factory` resources (with different `group-name` attributes)
+
+WARNING: The `thread-factory` resource can not be configured to create daemon threads as does the ActiveMQ global clients thread pools. I don't think it is an issue as these _client thread pools_ are executed inside the WildFly application server, not on another JVM.
+
+Artemis has a specialized implementation of ThreadFactory named https://github.com/apache/activemq-artemis/blob/master/artemis-commons/src/main/java/org/apache/activemq/artemis/utils/ActiveMQThreadFactory.java[ActiveMQThreadFactory] that prepends a `threadCount` counter to the name of the thread. Using the `thread-factory` resource, we will lose this special naming behaviour.
+
+== New `scheduled-thread-pool` Resource
+
+This resource can be used to create and configure a `java.util.concurrent.ScheduledExecutorService`.
+
+* It is a child of the `subsystem` resource.
+* Its resource definition is provided by WildFly Core https://github.com/wildfly/wildfly-core/blob/master/threads/src/main/java/org/jboss/as/threads/ScheduledThreadPoolResourceDefinition.java[ScheduledThreadPoolResourceDefinition].
+* It defines 3 attributes:
+** `max-threads`
+** `keepalive-time`
+** `thread-factory`
+
+== New `thread-pool` Resource
+
+This resource can be used to create and configure a `java.util.concurrent.ExecutorService`.
+
+* It is a child of the `subsystem` resource.
+* Its resource definition is provided by WildFly Core https://github.com/wildfly/wildfly-core/blob/master/threads/src/main/java/org/jboss/as/threads/UnboundedQueueThreadPoolResourceDefinition.java[UnboundedQueueThreadPoolResourceDefinition]
+* It can only create *unbounded queue* thread pool.
+* It defines 3 attributes:
+** `max-threads`
+** `keepalive-time`
+** `thread-factory`
+
+== Configuration Examples
+
+* Define a thread factory for the server thread pool:
+
+[source,xml]
+----
+<thread-factory name="server-thread-factory"
+                group-name="ActiveMQ-server"  />
+----
+
+* Define a thread factory for the server scheduled thread pool:
+
+[source,xml]
+----
+<thread-factory name="server-scheduled-thread-factory"
+                group-name="ActiveMQ-scheduled-threads"  />
+----
+
+* Define a thread factory for the server I/O thread pool:
+
+[source,xml]
+----
+<thread-factory name="server-io-thread-factory"
+                group-name="ActiveMQ-IO-server"  />
+----
+
+* Define a thread factory for the global client thread pool:
+
+[source,xml]
+----
+<thread-factory name="global-client-thread-factory"
+                group-name="ActiveMQ-client-global-threads" />
+----
+
+* Define a thread factory for the global client scheduled thread pool:
+
+[source,xml]
+----
+<thread-factory name="global-client-scheduled-thread-factory"
+                group-name="ActiveMQ-client-global-scheduled-threads" />
+----
+
+* Define a scheduled-thread-pool for the server scheduled thread pool:
+
+[source,xml]
+----
+ <scheduled-thread-pool name="default-scheduled-thread-pool"
+                        max-threads="5"
+                        thread-factory="server-scheduled-thread-factory"/>
+----
+
+* Define a scheduled-thread-pool for the global client scheduled thread pool:
+
+[source,xml]
+----
+ <scheduled-thread-pool name="global-client-scheduled-thread-pool"
+                        max-threads="5"
+                        thread-factory="global-client-scheduled-thread-factory"/>
+----
+
+* Define a thread-pool for the server thread pool:
+
+[source,xml]
+----
+<thread-pool name="default-thread-pool"
+             max-threads="30"
+             thread-factory="server-thread-factory">
+   <keepalive-time time="60" unit="seconds" />
+</thread-pool>
+----
+
+* Define a thread-pool for the server I/O thread pool:
+
+[source,xml]
+----
+<thread-pool name="default-journal-thread-pool"
+             max-threads="2147483647"
+             thread-factory="server-io-thread-factory">
+   <keepalive-time time="60" unit="seconds" />
+</thread-pool>
+----
+
+WARNING: Artemis uses `Integer#MAX_VALUE` for the maximum number of threads for its I/O operation. What would be the implication to limit it?
+
+* Define a thread-pool for the global client thread pool:
+
+[source,xml]
+----
+<thread-pool name="global-client-thread-pool"
+             max-threads="30"
+             thread-factory="global-client-thread-factory">
+   <keepalive-time time="60" unit="seconds" />
+</thread-pool>
+----
+
+* Use new thread-pool and scheduled-thread-pool for ActiveMQ global client pools:
+
+[source,xml]
+----
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:3.0">
+    <global-client
+            thread-pool="global-client-thread-pool"
+            scheduled-thread-pool="global-client-scheduled-thread-pool" />
+----
+
+NOTE: the `global-client` XML element corresponds to an existing attributeGroup. The XML attributes on it correspond to management attributes are registered for the `subsystem` resource.
+
+* Use new thread-pool and scheduled-thread-pool for ActiveMQ `server=default` resource:
+
+[source,xml]
+----
+<server name="default"
+        thread-pool="default-thread-pool"
+        scheduled-thread-pool="default-scheduled-thread-pool">
+   <journal thread-pool="default-journal-thread-pool" />
+   ...
+</server>
+----
+
+NOTE: the `journal` XML element corresponds to an existing attributeGroup. The XML attributes on it corresponds to management attributes on the `subsystem` resource.
+
+= Work Decomposition
+
+== Artemis Work
+
+* Artemis may have to fix the `InVMConnector#getInVMExecutor` pool (this does not block work on WildFly though)
+* Depending on the feedback of Artemis dev team as asked in this document, there may be no additional work required in Artemis. Otherwise, the modifications would have to be done in Artemis upstream and a release made available for consumption in WildFly
+
+== WildFly Work
+
+Most of the implementation will have to be done in a single step to add new resources (and their runtime steps) to inject the thread pools in Artemis.
+
+The deprecation of existing management attributes related to Artemis thread pools can be done in a separate step.
+
+The modification of the standalone full and full-ha profiles can be done in a later step but I'd advise to make it as
+soon as possible to catch any significant issue (including performance regression) as early as possible.
+If significant issues are found, it will be possible to revert the profiles configuration to use Artemis thread pools while fixing the use of WildFly-managed thread pools.
+
+It is expected that running performance benchmarks may result in subsequent configuration changes in the full and full-ha configuration
+to provide optimal performance. The changes can be done incrementally as they should only impact the subsystem templates.
+
+
+= QE
+
+* Test that there is no functional regression using WildFly-managed thread pools by running the full test suite
+* Test that there is no performance regression using performance benchmark
+* Test that there is no load regression (e.g. thread pools consumption increasing significantly due to incorrect configuration)
