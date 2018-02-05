@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.jpa.hibernate.management;
 
 import org.jboss.as.jpa.hibernate5.management.QueryName;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,6 +34,8 @@ import org.junit.Test;
  * @author Daniel Cihak
  */
 public class QueryNameDisplayableTestCase {
+
+    private static final int TIMEOUT = TimeoutUtil.adjust(3000);
 
     @Test
     public void testQueryNameDisplayable() {
@@ -45,6 +48,6 @@ public class QueryNameDisplayableTestCase {
         long end = System.currentTimeMillis();
         long duration = (end - start);
 
-        Assert.assertTrue("Duration of QueryName.displayable called in a 500000 loop must be lower than 3000 milliseconds, but was " + duration, duration < 3000);
+        Assert.assertTrue("Duration of QueryName.displayable called in a 500000 loop must be lower than 3000 milliseconds, but was " + duration, duration < TIMEOUT);
     }
 }
