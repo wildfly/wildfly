@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
@@ -370,7 +371,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         return knownApplicationSecurityDomains::contains;
     }
 
-    private static class ApplicationSecurityDomainService implements Service<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> {
+    private static class ApplicationSecurityDomainService implements Service<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>>, BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration> {
 
         private final boolean overrideDeploymentConfig;
         private final InjectedValue<HttpAuthenticationFactory> httpAuthenticationFactoryInjector = new InjectedValue<>();
@@ -399,7 +400,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         @Override
         public BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration> getValue() throws IllegalStateException, IllegalArgumentException {
-            return this::applyElytronSecurity;
+            return this;
         }
 
         private Injector<HttpAuthenticationFactory> getHttpAuthenticationFactoryInjector() {
@@ -410,7 +411,8 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             return this.singleSignOnTransformer;
         }
 
-        private Registration applyElytronSecurity(final DeploymentInfo deploymentInfo, final Function<String, RunAsIdentityMetaData> runAsMapper) {
+        @Override
+        public Registration apply(DeploymentInfo deploymentInfo, Function<String, RunAsIdentityMetaData> runAsMapper) {
             final ScopeSessionListener scopeSessionListener = ScopeSessionListener.builder()
                     .addScopeResolver(Scope.APPLICATION, ApplicationSecurityDomainService::applicationScope)
                     .build();
@@ -444,19 +446,19 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         private List<HttpServerAuthenticationMechanism> getAuthenticationMechanisms(Map<String, Map<String, String>> selectedMechanisms) {
             List<HttpServerAuthenticationMechanism> mechanisms = new ArrayList<>(selectedMechanisms.size());
-            selectedMechanisms.forEach((n, c) -> {
+            UnaryOperator<HttpServerAuthenticationMechanismFactory> singleSignOnTransformer = this.singleSignOnTransformer.getOptionalValue();
+            for (Entry<String, Map<String, String>> entry : selectedMechanisms.entrySet()) {
                 try {
-                    UnaryOperator<HttpServerAuthenticationMechanismFactory> singleSignOnTransformer = this.singleSignOnTransformer.getOptionalValue();
                     UnaryOperator<HttpServerAuthenticationMechanismFactory> factoryTransformation = f -> {
-                        HttpServerAuthenticationMechanismFactory factory = new PropertiesServerMechanismFactory(f, c);
+                        HttpServerAuthenticationMechanismFactory factory = new PropertiesServerMechanismFactory(f, entry.getValue());
                         return (singleSignOnTransformer != null) ? singleSignOnTransformer.apply(factory) : factory;
                     };
-                    HttpServerAuthenticationMechanism mechanism =  httpAuthenticationFactory.createMechanism(n, factoryTransformation);
-                    if (mechanism!= null) mechanisms.add(mechanism);
+                    HttpServerAuthenticationMechanism mechanism =  httpAuthenticationFactory.createMechanism(entry.getKey(), factoryTransformation);
+                    if (mechanism != null) mechanisms.add(mechanism);
                 } catch (HttpAuthenticationException e) {
                     throw new IllegalStateException(e);
                 }
-            });
+            }
 
             return mechanisms;
         }
