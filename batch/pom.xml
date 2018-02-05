@@ -40,7 +40,6 @@
     <name>WildFly: Batch Integration</name>
 
     <modules>
-        <module>extension</module>
         <module>extension-jberet</module>
     </modules>
 
