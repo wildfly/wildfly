@@ -37,6 +37,8 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.path.BasicPath;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFilePermission;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -101,15 +103,31 @@ public class ServletResourceOverlaysTestCase {
         final String aTxtPath = "a.txt";
         final String aTxtAccess = performCall(url, "/check-path-access?path=a.txt&expected-accessible=true");
         assertEquals("Unexpected result from call to " + aTxtPath, PathAccessCheckServlet.ACCESS_CHECKS_CORRECTLY_VALIDATED, aTxtAccess);
-        File fileUnderTest = Paths.get(System.getProperty("java.io.tmpdir"), "noaccess.txt").toFile();
+
+        //Deployment root virtual file is different on each Operating System, we have to find out how to navigate to the root folder from the deployed file
+        VirtualFile deploymentRoot = VFS.getChild("content/single.war");
+        final StringBuilder accessRootPath = new StringBuilder("");
+        while (!deploymentRoot.isRoot()) {
+            accessRootPath.append("/..");
+            deploymentRoot = deploymentRoot.getParent();
+        }
+
+        final File fileUnderTest = Paths.get(System.getProperty("java.io.tmpdir"), "noaccess.txt").toFile();
         fileUnderTest.createNewFile();
 
-        if ( fileUnderTest.exists() ){
-            final String pathOutsideOfDeployment = "/../../../../../../../../"+ fileUnderTest.getAbsolutePath();
+        if (fileUnderTest.exists()) {
+            String canonicalPath = fileUnderTest.getCanonicalPath();
+            if (File.separator.equals("\\")) {
+                //Remove the drive letter
+                canonicalPath = canonicalPath.substring(fileUnderTest.toPath().getRoot().toString().length());
+            }
+            final String pathOutsideOfDeployment = accessRootPath.toString() + "/../../../../../../../" + canonicalPath;
             final String outsidePathAccessCheck = performCall(url, "/check-path-access?path=" + pathOutsideOfDeployment + "&expected-accessible=false");
             assertEquals("Unexpected result from call to " + pathOutsideOfDeployment, PathAccessCheckServlet.ACCESS_CHECKS_CORRECTLY_VALIDATED, outsidePathAccessCheck);
+
+            fileUnderTest.delete();
         } else {
-            fail("Cannot create the file under test: " + fileUnderTest.getAbsolutePath() );
+            fail("Cannot create the file under test: " + fileUnderTest.getCanonicalPath());
         }
     }
 }
