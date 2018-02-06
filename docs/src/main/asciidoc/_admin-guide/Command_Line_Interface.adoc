@@ -132,7 +132,7 @@ deployments
 ----
 $ ./bin/jboss-cli.sh --connect --commands=ls\ deployment
 sample.war
-osgi-bundle.jar
+business.jar
 ----
 
 The output can be combined with other shell commands for further

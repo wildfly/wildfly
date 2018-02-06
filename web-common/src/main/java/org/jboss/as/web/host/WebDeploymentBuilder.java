@@ -3,9 +3,7 @@ package org.jboss.as.web.host;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import io.undertow.predicate.Predicate;
 
@@ -17,9 +15,7 @@ public class WebDeploymentBuilder {
     private ClassLoader classLoader;
     private String contextRoot;
     private File documentRoot;
-    private ApplicationContextWrapper applicationContextWrapper;
     private final List<ServletBuilder> servlets = new ArrayList<>();
-    private final Map<String,String> mimeTypes = new HashMap<>();
     public final List<Predicate> allowRequestPredicates = new ArrayList<>();
 
     public ClassLoader getClassLoader() {
@@ -64,20 +60,5 @@ public class WebDeploymentBuilder {
 
     public List<Predicate> getAllowRequestPredicates() {
         return Collections.unmodifiableList(allowRequestPredicates);
-    }
-
-    public Map<String, String> getMimeTypes() {
-        return mimeTypes;
-    }
-    public void addMimeMapping(String type,String mapping){
-        mimeTypes.put(type,mapping);
-    }
-
-    public ApplicationContextWrapper getApplicationContextWrapper() {
-        return applicationContextWrapper;
-    }
-
-    public void setApplicationContextWrapper(final ApplicationContextWrapper applicationContextWrapper) {
-        this.applicationContextWrapper = applicationContextWrapper;
     }
 }
