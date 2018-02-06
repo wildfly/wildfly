@@ -85,7 +85,7 @@ fi
 
 # remove -secmgr from JAVA_OPTS. This flag must reside in a different location
 NEW_SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "-secmgr"`
-if [ "xNEW_SECURITY_MANAGER_SET" != "x" ]; then
+if [ "x$NEW_SECURITY_MANAGER_SET" != "x" ]; then
     SECMGR="true"
     JAVA_OPTS=${JAVA_OPTS/-secmgr/}
 fi
