@@ -138,3 +138,27 @@ server), the following context parameter would need to be added:
 
 If a JSF app does not specify this context parameter, the default JSF
 implementation will be used for that app.
+
+[[disallowing-doctype-declarations]]
+== Disallowing DOCTYPE declarations
+
+The following CLI commands can be used to disallow DOCTYPE declarations
+in JSF deployments:
+
+[source, xml]
+----
+/subsystem=jsf:write-attribute(name=disallow-doctype-decl, value=true)
+reload
+----
+
+This setting can be overridden for a particular JSF deployment by
+adding the `com.sun.faces.disallowDoctypeDecl` context parameter
+to the deployment's `web.xml` file:
+
+[source, xml]
+----
+<context-param>
+  <param-name>com.sun.faces.disallowDoctypeDecl</param-name>
+  <param-value>false</param-value>
+</context-param>
+----
