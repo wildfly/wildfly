@@ -21,30 +21,25 @@
  */
 package org.jboss.as.test.clustering.cluster.cdi;
 
-import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
+import java.io.IOException;
 
 import javax.inject.Inject;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+
+import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
+import org.jboss.as.test.clustering.single.web.SimpleServlet;
 
 /**
+ * Note that the servlet is mapped to /simple using web.xml servlet-mapping overriding @WebServlet of the SimpleServlet.
+ *
  * @author Tomas Remes
+ * @author Radoslav Husar
  */
-@WebServlet(urlPatterns = CdiServlet.SERVLET_PATH)
-public class CdiServlet extends HttpServlet {
-    private static final long serialVersionUID = 5167789049451718160L;
+public class CdiServlet extends SimpleServlet {
 
-    public static final String SERVLET_NAME = "cdi";
-    public static final String SERVLET_PATH = "/" + SERVLET_NAME;
-    public static final String SESSION_ID_HEADER = "sessionId";
-    public static final String COUNT = "count";
+    private static final long serialVersionUID = 5167789049451718160L;
 
     @Inject
     private Incrementor incrementor;
@@ -53,11 +48,13 @@ public class CdiServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession(true);
         resp.addHeader(SESSION_ID_HEADER, session.getId());
-        resp.setIntHeader(COUNT, this.incrementor.increment());
-        resp.getWriter().write("Success");
-    }
 
-    public static URI createURI(URL baseURL) throws URISyntaxException {
-        return baseURL.toURI().resolve(SERVLET_NAME);
+        int value = this.incrementor.increment();
+
+        resp.setIntHeader(VALUE_HEADER, value);
+
+        this.getServletContext().log(req.getRequestURI() + ", value = " + value);
+
+        resp.getWriter().write("Success");
     }
 }
