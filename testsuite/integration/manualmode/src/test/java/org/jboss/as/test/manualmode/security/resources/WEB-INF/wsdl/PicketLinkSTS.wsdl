@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<wsdl:definitions name="PicketLinkSTS" targetNamespace="urn:picketlink:identity-federation:sts"
+	xmlns:tns="urn:picketlink:identity-federation:sts" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+	xmlns:wsap10="http://www.w3.org/2006/05/addressing/wsdl"
+	xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:picketlink:identity-federation:sts" 
+      xmlns:tns="urn:picketlink:identity-federation:sts" 
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      version="1.0" elementFormDefault="qualified">
+      <xs:element name="MessageBody">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="RequestSecurityToken">
+    <wsdl:part name="rstMessage" element="tns:MessageBody"/>
+  </wsdl:message>
+  <wsdl:message name="RequestSecurityTokenResponse">
+    <wsdl:part name="rstrMessage" element="tns:MessageBody"/>
+  </wsdl:message>
+  <wsdl:portType name="SecureTokenService">
+    <wsdl:operation name="IssueToken">
+      <wsdl:input wsap10:Action="http://schemas.xmlsoap.org/ws/2005/02/trust/RST/Issue" message="tns:RequestSecurityToken"/>
+      <wsdl:output wsap10:Action="http://schemas.xmlsoap.org/ws/2005/02/trust/RSTR/Issue" message="tns:RequestSecurityTokenResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="STSBinding" type="tns:SecureTokenService">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="IssueToken">
+      <soap12:operation soapAction="http://schemas.xmlsoap.org/ws/2005/02/trust/RST/Issue" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="PicketLinkSTS">
+    <wsdl:port name="PicketLinkSTSPort" binding="tns:STSBinding">
+      <soap12:address location="http://ws.picketlink.sts.jboss.org/"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
