@@ -44,6 +44,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * {@link WeldBootstrapService}
  *
  * @author Stuart Douglas
+ * @see WeldStartCompletionService
  */
 public class WeldStartService implements Service<WeldStartService> {
 
@@ -94,7 +95,6 @@ public class WeldStartService implements Service<WeldStartService> {
             bootstrap.getValue().getBootstrap().startInitialization();
             bootstrap.getValue().getBootstrap().deployBeans();
             bootstrap.getValue().getBootstrap().validateBeans();
-            bootstrap.getValue().getBootstrap().endInitialization();
         } finally {
 
             for (SetupAction action : setupActions) {
