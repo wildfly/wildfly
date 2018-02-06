@@ -37,6 +37,15 @@ import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.runtimeReadOnlyOperation;
 import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.management.openmbean.CompositeData;
+
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -97,6 +106,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
     public static final String LIST_SCHEDULED_MESSAGES_AS_JSON = LIST_SCHEDULED_MESSAGES + "-as-json";
     public static final String LIST_DELIVERING_MESSAGES = "list-delivering-messages";
     public static final String LIST_DELIVERING_MESSAGES_AS_JSON = LIST_DELIVERING_MESSAGES + "-as-json";
+    public static final String BROWSE = "browse";
 
     public static final ParameterValidator PRIORITY_VALIDATOR = new IntRangeValidator(0, 9, false, false);
 
@@ -237,6 +247,10 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
                 .setReplyType(STRING)
                 .build(),
                 this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(BROWSE, resolver)
+                .setReplyType(STRING)
+                .build(),
+                this);
     }
 
     @Override
@@ -347,6 +361,9 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
                 context.getResult(); // undefined
             } else if (LIST_CONSUMERS_AS_JSON.equals(operationName)) {
                 context.getResult().set(control.listConsumersAsJSON());
+            } else if (BROWSE.equals(operationName)) {
+                String filter = resolveFilter(context, operation);
+                context.getResult().set(transformList(Arrays.asList(control.browse(filter))).toString());
             } else {
                 // TODO dmr-based LIST_MESSAGE_COUNTER, LIST_MESSAGE_COUNTER_HISTORY, LIST_CONSUMERS
                 handback = handleAdditionalOperation(operationName, operation, context, control.getDelegate());
@@ -393,6 +410,36 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
                         new ObjectTypeAttributeDefinition.Builder("element", getReplyMessageParameterDefinitions()).build())
                         .build()
         };
+    }
+
+    protected List<Object> transformList(List<CompositeData> result) throws Exception {
+        List<Object> props = new ArrayList<Object>();
+
+        for (Iterator<CompositeData> i = result.iterator(); i.hasNext();) {
+            props.add(transformToMap(i.next()));
+        }
+
+        return props;
+    }
+
+    protected Map<String, String> transformToMap(CompositeData msg){
+        Map<String, String> props = new HashMap<String, String>();
+
+        if(msg.get("Text")!=null){
+            props.put("JMSText", String.valueOf(msg.get("Text")));
+        }
+            props.put("JMSCorrelationID", String.valueOf(msg.get("JMSCorrelationID")));
+            props.put("JMSDestination", String.valueOf(msg.get("JMSDestination")));
+            props.put("JMSReplyTo", String.valueOf(msg.get("JMSReplyTo")));
+            props.put("JMSTimestamp", String.valueOf(msg.get("JMSTimestamp")));
+            props.put("JMSDeliveryMode", String.valueOf(msg.get("JMSDeliveryMode")));
+            props.put("JMSExpiration",String.valueOf(msg.get("JMSExpiration")));
+            props.put("JMSMessageID", String.valueOf(msg.get("JMSMessageID")));
+            props.put("JMSPriority", String.valueOf(msg.get("JMSPriority")));
+            props.put("JMSRedelivered",String.valueOf(msg.get("JMSRedelivered")));
+            props.put("JMSType", String.valueOf(msg.get("JMSType")));
+
+        return props;
     }
 
     protected abstract DelegatingQueueControl<T> getQueueControl(ActiveMQServer server, String queueName);
@@ -463,5 +510,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         String listScheduledMessagesAsJSON() throws  Exception;
 
         String listDeliveringMessagesAsJSON() throws Exception;
+
+        CompositeData[] browse(String filter) throws Exception;
     }
 }

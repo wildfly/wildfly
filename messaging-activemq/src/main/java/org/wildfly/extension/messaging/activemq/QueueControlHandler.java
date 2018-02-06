@@ -32,6 +32,8 @@ import static org.jboss.dmr.ModelType.LONG;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.management.openmbean.CompositeData;
+
 import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
@@ -262,6 +264,11 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
             @Override
             public String listDeliveringMessagesAsJSON() throws Exception {
                 return control.listDeliveringMessagesAsJSON();
+            }
+
+            @Override
+            public CompositeData[] browse(String filter) throws Exception {
+                return control.browse(filter);
             }
         };
     }
