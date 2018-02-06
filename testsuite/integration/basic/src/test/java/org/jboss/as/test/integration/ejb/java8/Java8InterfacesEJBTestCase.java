@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.test.integration.ejb.java8.staticMethodInView;
+package org.jboss.as.test.integration.ejb.java8;
 
 import javax.inject.Inject;
 
@@ -38,17 +38,17 @@ import org.junit.runner.RunWith;
  * See WFLY-4316 for details.
  *
  * @author Jozef Hartinger
- *
+ * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-public class StaticMethodOnEjbViewTestCase {
+public class Java8InterfacesEJBTestCase {
 
     @Inject
     private Airplane airplane;
 
     @Deployment
     public static Archive<?> getDeployment() {
-        return ShrinkWrap.create(WebArchive.class).addPackage(StaticMethodOnEjbViewTestCase.class.getPackage());
+        return ShrinkWrap.create(WebArchive.class).addPackage(Java8InterfacesEJBTestCase.class.getPackage());
     }
 
     @Test
@@ -57,4 +57,10 @@ public class StaticMethodOnEjbViewTestCase {
         Assert.assertTrue(airplane.takeOff());
     }
 
+
+    // See https://issues.jboss.org/browse/WFCORE-3512
+    @Test
+    public void testDefaultMethodWorks() {
+        Assert.assertEquals("Cargo", airplane.getPlaneType());
+    }
 }
