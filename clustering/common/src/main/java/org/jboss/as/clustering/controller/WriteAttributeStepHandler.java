@@ -63,7 +63,9 @@ public class WriteAttributeStepHandler extends ReloadRequiredWriteAttributeHandl
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        this.descriptor.getAttributes().forEach(attribute -> registration.registerReadWriteAttribute(attribute, null, this));
+        for (AttributeDefinition attribute : this.descriptor.getAttributes()) {
+            registration.registerReadWriteAttribute(attribute, null, this);
+        }
     }
 
     @Override

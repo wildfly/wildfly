@@ -80,7 +80,9 @@ public class DynamicClassTable extends SimpleClassTable {
         classes.add(Collections.unmodifiableSortedMap(Collections.emptySortedMap()).getClass());
         classes.add(Collections.unmodifiableSortedSet(Collections.emptySortedSet()).getClass());
 
-        ServiceLoader.load(ClassTableContributor.class, loader).forEach(contributor -> classes.addAll(contributor.getKnownClasses()));
+        for (ClassTableContributor contributor : ServiceLoader.load(ClassTableContributor.class, loader)) {
+            classes.addAll(contributor.getKnownClasses());
+        }
         return classes.toArray(new Class<?>[classes.size()]);
     }
 }

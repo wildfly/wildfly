@@ -147,7 +147,9 @@ public class ChannelRuntimeResourceRegistration implements RuntimeResourceRegist
 
     @Override
     public void unregister(OperationContext context) {
-        context.readResource(PathAddress.EMPTY_ADDRESS).getChildrenNames(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).forEach(name -> context.removeResource(PathAddress.pathAddress(ProtocolResourceDefinition.pathElement(name))));
+        for (String name : context.readResource(PathAddress.EMPTY_ADDRESS).getChildrenNames(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
+            context.removeResource(PathAddress.pathAddress(ProtocolResourceDefinition.pathElement(name)));
+        }
         context.getResourceRegistrationForUpdate().unregisterOverrideModel(context.getCurrentAddressValue());
     }
 

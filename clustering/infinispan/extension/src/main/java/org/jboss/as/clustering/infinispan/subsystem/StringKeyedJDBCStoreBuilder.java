@@ -22,8 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.Arrays;
 import java.util.ServiceLoader;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.infinispan.configuration.cache.PersistenceConfiguration;
@@ -56,7 +56,9 @@ public class StringKeyedJDBCStoreBuilder extends JDBCStoreBuilder<JdbcStringBase
     @Override
     public ServiceBuilder<PersistenceConfiguration> build(ServiceTarget target) {
         ServiceBuilder<PersistenceConfiguration> builder = super.build(target);
-        Stream.of(this.table, this.module).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.table, this.module)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 

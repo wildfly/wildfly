@@ -81,13 +81,17 @@ public class DistributableSingleSignOnManagerBuilder implements CapabilityServic
 
     @Override
     public Builder<SingleSignOnManager> configure(CapabilityServiceSupport support) {
-        this.builders.forEach(builder -> builder.configure(support));
+        for (CapabilityServiceBuilder<?> builder : this.builders) {
+            builder.configure(support);
+        }
         return this;
     }
 
     @Override
     public ServiceBuilder<SingleSignOnManager> build(ServiceTarget target) {
-        this.builders.forEach(builder -> builder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install());
+        for (CapabilityServiceBuilder<?> builder : this.builders) {
+            builder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        }
         @SuppressWarnings("unchecked")
         Service<SingleSignOnManager> service = new MappedValueService<>(manager -> new DistributableSingleSignOnManager(manager), this.manager);
         return this.manager.register(target.addService(this.name, service)).setInitialMode(ServiceController.Mode.ON_DEMAND);

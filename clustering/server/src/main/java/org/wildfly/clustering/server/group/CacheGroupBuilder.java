@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.server.group;
 
+import java.util.Arrays;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
@@ -81,7 +81,9 @@ public class CacheGroupBuilder implements CapabilityServiceBuilder<Group>, Cache
         Supplier<CacheGroup> supplier = () -> new CacheGroup(this);
         Service<Group> service = new SuppliedValueService<>(Functions.identity(), supplier, Consumers.close());
         ServiceBuilder<Group> builder = target.addService(this.name, service).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.cache, this.factory).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.cache, this.factory)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 

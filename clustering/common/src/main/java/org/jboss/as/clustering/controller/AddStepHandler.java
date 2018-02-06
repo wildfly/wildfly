@@ -24,10 +24,10 @@ package org.jboss.as.clustering.controller;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -95,18 +95,19 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
                     return;
                 }
             }
-            Optional<PathElement> singletonPathResult = parentDescriptor.getRequiredSingletonChildren().stream().filter(requiredPath -> requiredPath.getKey().equals(path.getKey())).findFirst();
-            if (singletonPathResult.isPresent()) {
-                PathElement singletonPath = singletonPathResult.get();
-                Set<String> childrenNames = context.readResourceFromRoot(parentAddress, false).getChildrenNames(singletonPath.getKey());
-                if (!childrenNames.isEmpty()) {
-                    // If there is a required singleton sibling resource, we need to remove it first
-                    childrenNames.forEach(childName -> {
-                        PathAddress singletonAddress = parentAddress.append(singletonPath.getKey(), childName);
-                        context.addStep(Util.createRemoveOperation(singletonAddress), context.getRootResourceRegistration().getOperationHandler(singletonAddress, ModelDescriptionConstants.REMOVE), OperationContext.Stage.MODEL);
-                    });
-                    context.addStep(operation, this, OperationContext.Stage.MODEL);
-                    return;
+            for (PathElement requiredPath : parentDescriptor.getRequiredSingletonChildren()) {
+                final String pathKey = requiredPath.getKey();
+                if (pathKey.equals(path.getKey())) {
+                    Set<String> childrenNames = context.readResourceFromRoot(parentAddress, false).getChildrenNames(pathKey);
+                    if (! childrenNames.isEmpty()) {
+                        // If there is a required singleton sibling resource, we need to remove it first
+                        for (String childName : childrenNames) {
+                            PathAddress singletonAddress = parentAddress.append(pathKey, childName);
+                            context.addStep(Util.createRemoveOperation(singletonAddress), context.getRootResourceRegistration().getOperationHandler(singletonAddress, ModelDescriptionConstants.REMOVE), OperationContext.Stage.MODEL);
+                        }
+                        context.addStep(operation, this, OperationContext.Stage.MODEL);
+                        return;
+                    }
                 }
             }
         }
@@ -114,7 +115,9 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         super.execute(context, operation);
 
         if (this.requiresRuntime(context)) {
-            this.descriptor.getRuntimeResourceRegistrations().forEach(r -> context.addStep((c, op) -> r.register(c), OperationContext.Stage.MODEL));
+            for (RuntimeResourceRegistration r : this.descriptor.getRuntimeResourceRegistrations()) {
+                context.addStep((c, op) -> r.register(c), OperationContext.Stage.MODEL);
+            }
         }
     }
 
@@ -155,7 +158,9 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
     }
 
     private static void addRequiredChildren(OperationContext context, Collection<PathElement> paths, BiPredicate<Resource, PathElement> present) {
-        paths.forEach(path -> context.addStep(Util.createAddOperation(context.getCurrentAddress().append(path)), new AddIfAbsentStepHandler(present), OperationContext.Stage.MODEL));
+        for (PathElement path : paths) {
+            context.addStep(Util.createAddOperation(context.getCurrentAddress().append(path)), new AddIfAbsentStepHandler(present), OperationContext.Stage.MODEL);
+        }
     }
 
     @Override
@@ -178,15 +183,25 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         ModelNode model = resource.getModel();
         // The super implementation assumes that the capability name is a simple extension of the base name - we do not.
         // Only register capabilities when allowed by the associated predicate
-        this.descriptor.getCapabilities().entrySet().stream().filter(entry -> entry.getValue().test(model)).map(Map.Entry::getKey).forEach(capability -> context.registerCapability(capability.resolve(address)));
+        for (Map.Entry<Capability, Predicate<ModelNode>> entry : this.descriptor.getCapabilities().entrySet()) {
+            if (entry.getValue().test(model)) {
+                Capability capability = entry.getKey();
+                context.registerCapability(capability.resolve(address));
+            }
+        }
 
         ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
-        registration.getAttributeNames(PathAddress.EMPTY_ADDRESS).stream().map(name -> registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name))
-                .filter(Objects::nonNull)
-                .map(AttributeAccess::getAttributeDefinition)
-                    .filter(Objects::nonNull)
-                    .filter(AttributeDefinition::hasCapabilityRequirements)
-                    .forEach(attribute -> attribute.addCapabilityRequirements(context, resource, model.get(attribute.getName())));
+        for (String name : registration.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
+            AttributeAccess attributeAccess = registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name);
+            if (attributeAccess != null) {
+                AttributeDefinition attribute = attributeAccess.getAttributeDefinition();
+                if (attribute != null) {
+                    if (attribute.hasCapabilityRequirements()) {
+                        attribute.addCapabilityRequirements(context, resource, model.get(attribute.getName()));
+                    }
+                }
+            }
+        }
 
         this.descriptor.getResourceCapabilityReferences().forEach((reference, resolver) -> reference.addCapabilityRequirements(context, resource, null, resolver.apply(address)));
     }

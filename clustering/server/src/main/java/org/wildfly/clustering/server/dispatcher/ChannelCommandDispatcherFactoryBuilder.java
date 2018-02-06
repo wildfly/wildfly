@@ -21,10 +21,10 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.function.Consumers;
@@ -121,7 +121,9 @@ public class ChannelCommandDispatcherFactoryBuilder implements CapabilityService
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 .setInitialMode(ServiceController.Mode.PASSIVE)
                 ;
-        Stream.of(this.channel, this.channelFactory, this.module).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.channel, this.channelFactory, this.module)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 

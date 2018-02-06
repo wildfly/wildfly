@@ -34,6 +34,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.ClusteringRequirement;
@@ -82,6 +83,9 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
             }
         }
 
-        EnumSet.allOf(CacheContainerComponent.class).stream().map(component -> component.getServiceName(containerAddress)).forEach(serviceName -> context.removeService(serviceName));
+        for (CacheContainerComponent component : EnumSet.allOf(CacheContainerComponent.class)) {
+            ServiceName serviceName = component.getServiceName(containerAddress);
+            context.removeService(serviceName);
+        }
     }
 }

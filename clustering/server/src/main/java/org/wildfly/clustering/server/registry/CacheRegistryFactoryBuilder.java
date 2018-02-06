@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.server.registry;
 
+import java.util.Arrays;
 import java.util.Map.Entry;
-import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
@@ -83,7 +83,9 @@ public class CacheRegistryFactoryBuilder<K, V> implements CapabilityServiceBuild
     public ServiceBuilder<RegistryFactory<K, V>> build(ServiceTarget target) {
         Value<RegistryFactory<K, V>> value = () -> new FunctionalRegistryFactory<>((entry, closeTask) -> new CacheRegistry<>(this, entry, closeTask));
         ServiceBuilder<RegistryFactory<K, V>> builder = target.addService(this.name, new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.cache, this.group).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.cache, this.group)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 

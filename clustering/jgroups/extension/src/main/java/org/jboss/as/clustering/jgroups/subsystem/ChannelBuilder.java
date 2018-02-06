@@ -21,8 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.Objects;
-import java.util.stream.Stream;
+import java.util.Arrays;
 
 import javax.management.MBeanServer;
 
@@ -79,7 +78,11 @@ public class ChannelBuilder extends CapabilityServiceNameProvider implements Res
     @Override
     public ServiceBuilder<Channel> build(ServiceTarget target) {
         ServiceBuilder<Channel> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.factory, this.cluster, this.server).filter(Objects::nonNull).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.factory, this.cluster, this.server)) {
+            if (dependency != null) {
+                dependency.register(builder);
+            }
+        }
         return builder;
     }
 

@@ -27,10 +27,12 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.*;
 
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
+import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.ModuleBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -46,6 +48,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
@@ -95,7 +98,9 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
         String defaultCache = containerBuilder.getDefaultCache();
         if (defaultCache != null) {
-            DEFAULT_CAPABILITIES.entrySet().forEach(entry -> new AliasServiceBuilder<>(entry.getValue().getServiceName(address), entry.getKey().getServiceName(context, name, defaultCache), entry.getKey().getType()).build(target).install());
+            for (Map.Entry<InfinispanCacheRequirement, Capability> entry : DEFAULT_CAPABILITIES.entrySet()) {
+                new AliasServiceBuilder<>(entry.getValue().getServiceName(address), entry.getKey().getServiceName(context, name, defaultCache), entry.getKey().getType()).build(target).install();
+            }
 
             if (!defaultCache.equals(JndiNameFactory.DEFAULT_LOCAL_NAME)) {
                 new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(name, JndiNameFactory.DEFAULT_LOCAL_NAME), DEFAULT_CAPABILITIES.get(InfinispanCacheRequirement.CACHE).getServiceName(address), Cache.class).build(target).install();
@@ -127,14 +132,19 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
                 context.removeService(InfinispanBindingFactory.createCacheConfigurationBinding(name, JndiNameFactory.DEFAULT_LOCAL_NAME).getBinderServiceName());
             }
 
-            DEFAULT_CAPABILITIES.values().forEach(capability -> context.removeService(capability.getServiceName(address)));
+            for (Capability capability : DEFAULT_CAPABILITIES.values()) {
+                context.removeService(capability.getServiceName(address));
+            }
         });
 
         context.removeService(InfinispanBindingFactory.createCacheContainerBinding(name).getBinderServiceName());
 
         context.removeService(CacheContainerComponent.MODULE.getServiceName(address));
 
-        EnumSet.allOf(CacheContainerResourceDefinition.Capability.class).stream().map(component -> component.getServiceName(address)).forEach(serviceName -> context.removeService(serviceName));
+        for (CacheContainerResourceDefinition.Capability component : EnumSet.allOf(CacheContainerResourceDefinition.Capability.class)) {
+            ServiceName serviceName = component.getServiceName(address);
+            context.removeService(serviceName);
+        }
     }
 
     private static Resource safeGetResource(OperationContext context, PathElement path) {

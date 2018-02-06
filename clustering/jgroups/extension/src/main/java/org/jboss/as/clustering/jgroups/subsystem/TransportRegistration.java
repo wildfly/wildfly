@@ -23,9 +23,9 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.Registration;
@@ -49,7 +49,11 @@ public class TransportRegistration implements Registration<ManagementResourceReg
         }
 
         TransportType(String... transports) {
-            this.transports = Collections.unmodifiableSet(Stream.of(transports).collect(Collectors.toSet()));
+            Set<String> set = new HashSet<>();
+            for (String transport : transports) {
+                set.add(transport);
+            }
+            this.transports = Collections.unmodifiableSet(set);
         }
 
         @Override

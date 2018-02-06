@@ -71,7 +71,10 @@ public class PrimaryProxyService<T> implements Service<T> {
                 // This would mean there are multiple primary nodes!
                 throw ClusteringServerLogger.ROOT_LOGGER.multiplePrimaryProvidersDetected(this.context.getServiceName().getCanonicalName(), result.stream().map(Map.Entry::getKey).collect(Collectors.toList()));
             }
-            return result.stream().findFirst().orElseThrow(() -> ClusteringServerLogger.ROOT_LOGGER.noResponseFromMaster(this.context.getServiceName().getCanonicalName())).getValue().orElse(null);
+            if (result.isEmpty()) {
+                throw ClusteringServerLogger.ROOT_LOGGER.noResponseFromMaster(this.context.getServiceName().getCanonicalName());
+            }
+            return result.get(0).getValue().orElse(null);
         } catch (CommandDispatcherException e) {
             throw new IllegalArgumentException(e);
         }

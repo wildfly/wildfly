@@ -23,9 +23,10 @@
 package org.jboss.as.clustering.jgroups.protocol;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import org.jgroups.PhysicalAddress;
 import org.jgroups.stack.IpAddress;
 import org.kohsuke.MetaInfServices;
 
@@ -40,6 +41,11 @@ public class TCPPING extends org.jgroups.protocols.TCPPING implements SocketDisc
 
     @Override
     public void setSocketAddresses(List<InetSocketAddress> addresses) {
-        this.setInitialHosts(addresses.stream().map(address -> new IpAddress(address.getAddress(), address.getPort())).collect(Collectors.toList()));
+        List<PhysicalAddress> list = new ArrayList<>(addresses.size());
+        for (InetSocketAddress address : addresses) {
+            IpAddress ipAddress = new IpAddress(address.getAddress(), address.getPort());
+            list.add(ipAddress);
+        }
+        this.setInitialHosts(list);
     }
 }

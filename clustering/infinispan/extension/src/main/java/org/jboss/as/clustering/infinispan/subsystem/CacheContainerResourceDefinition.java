@@ -96,12 +96,16 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
 
     static final Map<InfinispanCacheRequirement, org.jboss.as.clustering.controller.Capability> DEFAULT_CAPABILITIES = new EnumMap<>(InfinispanCacheRequirement.class);
     static {
-        EnumSet.allOf(InfinispanCacheRequirement.class).forEach(requirement -> DEFAULT_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement.getDefaultRequirement())));
+        for (InfinispanCacheRequirement requirement : EnumSet.allOf(InfinispanCacheRequirement.class)) {
+            DEFAULT_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement.getDefaultRequirement()));
+        }
     }
 
     static final Map<ClusteringCacheRequirement, org.jboss.as.clustering.controller.Capability> DEFAULT_CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringCacheRequirement.class);
     static {
-        EnumSet.allOf(ClusteringCacheRequirement.class).forEach(requirement -> DEFAULT_CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement.getDefaultRequirement())));
+        for (ClusteringCacheRequirement requirement : EnumSet.allOf(ClusteringCacheRequirement.class)) {
+            DEFAULT_CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement.getDefaultRequirement()));
+        }
     }
 
     @Deprecated
@@ -195,13 +199,21 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.discardChildResource(NoTransportResourceDefinition.PATH);
 
-            EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy()));
-            EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).forEach(pool -> builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy()));
+            for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
+                builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy());
+            }
+            for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
+                builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy());
+            }
         } else {
             NoTransportResourceDefinition.buildTransformation(version, builder);
 
-            EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> pool.buildTransformation(version, parent));
-            EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).forEach(pool -> pool.buildTransformation(version, parent));
+            for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
+                pool.buildTransformation(version, parent);
+            }
+            for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
+                pool.buildTransformation(version, parent);
+            }
         }
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
@@ -297,8 +309,12 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         new JGroupsTransportResourceDefinition().register(registration);
         new NoTransportResourceDefinition().register(registration);
 
-        EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(p -> p.register(registration));
-        EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).forEach(p -> p.register(registration));
+        for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
+            pool.register(registration);
+        }
+        for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
+            pool.register(registration);
+        }
 
         new LocalCacheResourceDefinition().register(registration);
         new InvalidationCacheResourceDefinition().register(registration);

@@ -25,8 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.RemoteStoreResourceDefinition.Attribute.*;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.remote.configuration.RemoteStoreConfiguration;
@@ -41,7 +41,6 @@ import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
@@ -75,7 +74,12 @@ public class RemoteStoreBuilder extends StoreBuilder<RemoteStoreConfiguration, R
         this.remoteCacheName = CACHE.resolveModelAttribute(context, model).asString();
         this.socketTimeout = SOCKET_TIMEOUT.resolveModelAttribute(context, model).asLong();
         this.tcpNoDelay = TCP_NO_DELAY.resolveModelAttribute(context, model).asBoolean();
-        this.bindings = StringListAttributeDefinition.unwrapValue(context, SOCKET_BINDINGS.resolveModelAttribute(context, model)).stream().map(binding -> new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class)).collect(Collectors.toList());
+        final List<String> unwrappedList = StringListAttributeDefinition.unwrapValue(context, SOCKET_BINDINGS.resolveModelAttribute(context, model));
+        final List<ValueDependency<OutboundSocketBinding>> list = new ArrayList<>(unwrappedList.size());
+        for (String binding : unwrappedList) {
+            list.add(new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class));
+        }
+        this.bindings = list;
         return super.configure(context, model);
     }
 
@@ -85,12 +89,13 @@ public class RemoteStoreBuilder extends StoreBuilder<RemoteStoreConfiguration, R
                 .socketTimeout(this.socketTimeout)
                 .tcpNoDelay(this.tcpNoDelay)
                 ;
-        this.bindings.stream().map(Value::getValue).forEach(binding -> {
+        for (ValueDependency<OutboundSocketBinding> binding : this.bindings) {
+            OutboundSocketBinding value = binding.getValue();
             try {
-                builder.addServer().host(binding.getResolvedDestinationAddress().getHostAddress()).port(binding.getDestinationPort());
+                builder.addServer().host(value.getResolvedDestinationAddress().getHostAddress()).port(value.getDestinationPort());
             } catch (UnknownHostException e) {
-                throw InfinispanLogger.ROOT_LOGGER.failedToInjectSocketBinding(e, binding);
+                throw InfinispanLogger.ROOT_LOGGER.failedToInjectSocketBinding(e, value);
             }
-        });
+        }
     }
 }

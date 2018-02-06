@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -64,7 +63,9 @@ public class CredentialSourceDependency implements ValueDependency<CredentialSou
 
     @Override
     public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        this.dependencies.forEach(dependency -> dependency.register(builder));
+        for (Dependency dependency : this.dependencies) {
+            dependency.register(builder);
+        }
         return builder;
     }
 
@@ -97,7 +98,9 @@ public class CredentialSourceDependency implements ValueDependency<CredentialSou
 
         @Override
         public ServiceBuilder<Object> addDependencies(ServiceName... serviceNames) {
-            Stream.of(serviceNames).forEach(serviceName -> this.dependencies.add(new SimpleDependency(serviceName)));
+            for (ServiceName serviceName : serviceNames) {
+                this.dependencies.add(new SimpleDependency(serviceName));
+            }
             return this;
         }
 
@@ -111,7 +114,9 @@ public class CredentialSourceDependency implements ValueDependency<CredentialSou
 
         @Override
         public ServiceBuilder<Object> addDependencies(Iterable<ServiceName> serviceNames) {
-            serviceNames.forEach(serviceName -> this.dependencies.add(new SimpleDependency(serviceName)));
+            for (ServiceName serviceName : serviceNames) {
+                this.dependencies.add(new SimpleDependency(serviceName));
+            }
             return this;
         }
 

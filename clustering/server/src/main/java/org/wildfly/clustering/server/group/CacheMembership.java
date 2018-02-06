@@ -22,8 +22,8 @@
 
 package org.wildfly.clustering.server.group;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.remoting.transport.Address;
@@ -71,8 +71,11 @@ public class CacheMembership implements Membership {
 
     @Override
     public List<Node> getMembers() {
-        return this.addresses.stream()
-                .map(address -> this.factory.createNode(address))
-                .collect(Collectors.toList());
+        List<Node> list = new ArrayList<>(this.addresses.size());
+        for (Address address : this.addresses) {
+            Node node = this.factory.createNode(address);
+            list.add(node);
+        }
+        return list;
     }
 }

@@ -23,11 +23,9 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Set;
 
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
@@ -86,7 +84,11 @@ public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implem
         ServiceBuilder<ChannelFactory> builder = target.addService(this.getServiceName(), new ValueService<>(value))
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.concat(Stream.of(this.transport, this.relay).filter(Objects::nonNull), this.protocols.stream()).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<ProtocolConfiguration> protocol : protocols) {
+            protocol.register(builder);
+        }
+        transport.register(builder);
+        if (relay != null) relay.register(builder);
         return builder;
     }
 
@@ -95,13 +97,20 @@ public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implem
         this.statisticsEnabled = StackResourceDefinition.Attribute.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         Resource resource = context.readResourceFromRoot(this.address, false);
-        Optional<PathElement> transport = resource.getChildren(TransportResourceDefinition.WILDCARD_PATH.getKey()).stream().map(Resource.ResourceEntry::getPathElement).findFirst();
-        if (!transport.isPresent()) {
+        Iterator<Resource.ResourceEntry> iterator = resource.getChildren(TransportResourceDefinition.WILDCARD_PATH.getKey()).iterator();
+        if (! iterator.hasNext()) {
             throw JGroupsLogger.ROOT_LOGGER.transportNotDefined(this.getName());
         }
+        PathElement transport = iterator.next().getPathElement();
 
-        this.transport = new InjectedValueDependency<>(new SingletonProtocolServiceNameProvider(this.address, transport.get()), TransportConfiguration.class);
-        this.protocols = resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).stream().map(entry -> new InjectedValueDependency<>(new ProtocolServiceNameProvider(this.address, entry.getPathElement()), ProtocolConfiguration.class)).collect(Collectors.toList());
+        this.transport = new InjectedValueDependency<>(new SingletonProtocolServiceNameProvider(this.address, transport), TransportConfiguration.class);
+        final Set<Resource.ResourceEntry> entries = resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey());
+        final List<ValueDependency<ProtocolConfiguration>> list = new ArrayList<>(entries.size());
+        for (Resource.ResourceEntry entry : entries) {
+            InjectedValueDependency<ProtocolConfiguration> protocolConfigurationInjectedValueDependency = new InjectedValueDependency<>(new ProtocolServiceNameProvider(this.address, entry.getPathElement()), ProtocolConfiguration.class);
+            list.add(protocolConfigurationInjectedValueDependency);
+        }
+        this.protocols = list;
         this.relay = resource.hasChild(RelayResourceDefinition.PATH) ? new InjectedValueDependency<>(new SingletonProtocolServiceNameProvider(this.address, RelayResourceDefinition.PATH), RelayConfiguration.class) : null;
 
         return this;

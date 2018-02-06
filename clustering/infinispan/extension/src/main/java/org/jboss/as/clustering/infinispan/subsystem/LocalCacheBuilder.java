@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.stream.Stream;
+import java.util.Arrays;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
@@ -52,7 +52,9 @@ public class LocalCacheBuilder extends CacheConfigurationBuilder {
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
         ServiceBuilder<Configuration> builder = super.build(target);
-        Stream.of(this.persistence, this.transaction).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.persistence, this.transaction)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 

@@ -24,7 +24,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.RemoteSiteResourceDefinition.Attribute.CHANNEL;
 
-import java.util.stream.Stream;
+import java.util.Arrays;
 
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
@@ -71,7 +71,9 @@ public class RemoteSiteConfigurationBuilder implements ResourceServiceBuilder<Re
     public ServiceBuilder<RemoteSiteConfiguration> build(ServiceTarget target) {
         Value<RemoteSiteConfiguration> value = new ImmediateValue<>(this);
         ServiceBuilder<RemoteSiteConfiguration> builder = target.addService(this.getServiceName(), new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.cluster, this.factory).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.cluster, this.factory)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 

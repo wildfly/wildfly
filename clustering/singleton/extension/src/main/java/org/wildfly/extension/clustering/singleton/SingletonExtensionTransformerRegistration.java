@@ -26,6 +26,7 @@ import static org.jboss.as.controller.transform.description.TransformationDescri
 
 import java.util.EnumSet;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.kohsuke.MetaInfServices;
@@ -44,6 +45,9 @@ public class SingletonExtensionTransformerRegistration implements ExtensionTrans
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         // Register transformers for all but the current model
-        EnumSet.complementOf(EnumSet.of(SingletonModel.CURRENT)).stream().map(model -> model.getVersion()).forEach(version -> register(SingletonResourceDefinition.buildTransformers(version), registration, version));
+        for (SingletonModel model : EnumSet.complementOf(EnumSet.of(SingletonModel.CURRENT))) {
+            ModelVersion version = model.getVersion();
+            register(SingletonResourceDefinition.buildTransformers(version), registration, version);
+        }
     }
 }

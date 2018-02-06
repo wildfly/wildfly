@@ -67,6 +67,7 @@ import org.wildfly.clustering.service.ValueDependency;
 @Listener
 public class CacheContainerBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<CacheContainer> {
 
+    static final ServiceName[] NO_SERVICE_NAMES = new ServiceName[0];
     private final List<ServiceName> aliases = new LinkedList<>();
     private final String name;
     private final ValueDependency<GlobalConfiguration> configuration;
@@ -83,9 +84,13 @@ public class CacheContainerBuilder extends CapabilityServiceNameProvider impleme
     @Override
     public CacheContainerBuilder configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.aliases.clear();
-        ModelNodes.optionalList(ALIASES.resolveModelAttribute(context, model)).ifPresent(aliases -> {
-            aliases.stream().map(ModelNode::asString).forEach(alias -> this.aliases.add(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), alias)));
-        });
+        final ModelNode modelNode = ALIASES.resolveModelAttribute(context, model);
+        if (modelNode.isDefined()) {
+            for (ModelNode alias : modelNode.asList()) {
+                String asString = alias.asString();
+                this.aliases.add(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), asString));
+            }
+        }
         this.defaultCache = ModelNodes.optionalString(DEFAULT_CACHE.resolveModelAttribute(context, model)).orElse(BasicCacheContainer.DEFAULT_CACHE_NAME);
         return this;
     }
@@ -109,8 +114,7 @@ public class CacheContainerBuilder extends CapabilityServiceNameProvider impleme
         };
         Service<CacheContainer> service = new SuppliedValueService<>(mapper, supplier, destroyer);
         ServiceBuilder<CacheContainer> builder = target.addService(this.getServiceName(), service)
-                .addAliases(this.aliases.stream().toArray(ServiceName[]::new))
-                ;
+                .addAliases(aliases.toArray(NO_SERVICE_NAMES));
         return this.configuration.register(builder);
     }
 

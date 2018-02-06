@@ -53,12 +53,14 @@ public abstract class TransportResourceDefinition extends ChildResourceDefinitio
 
     static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
     static {
-        EnumSet.allOf(ClusteringRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement) {
-            @Override
-            public RuntimeCapability<?> resolve(PathAddress address) {
-                return super.resolve(address.getParent());
-            }
-        }));
+        for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
+            CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement) {
+                @Override
+                public RuntimeCapability<?> resolve(PathAddress address) {
+                    return super.resolve(address.getParent());
+                }
+            });
+        }
     }
 
     static class CapabilityServiceNameRegistry implements ServiceNameRegistry<ClusteringRequirement> {

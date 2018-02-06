@@ -54,7 +54,9 @@ public class InfinispanExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        EnumSet.allOf(InfinispanSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), () -> new InfinispanSubsystemXMLReader(schema)));
+        for (InfinispanSchema schema : EnumSet.allOf(InfinispanSchema.class)) {
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), () -> new InfinispanSubsystemXMLReader(schema));
+        }
         context.setProfileParsingCompletionHandler(new InfinispanProfileParsingCompletionHandler());
     }
 }
