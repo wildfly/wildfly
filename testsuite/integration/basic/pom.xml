@@ -140,6 +140,7 @@
                                         <exclude>org/jboss/as/test/integration/ejb/**/jts/**/*TestCase*.java</exclude>
                                         <include>org/jboss/as/test/integration/*/security/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/**/mdb/**/*TestCase*.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/log/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/singleton/dependson/mdb/*TestCase.java</include>
