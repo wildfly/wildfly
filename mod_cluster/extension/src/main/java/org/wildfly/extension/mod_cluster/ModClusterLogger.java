@@ -148,8 +148,8 @@ interface ModClusterLogger extends BasicLogger {
      *
      * @return the message
      */
-    @Message(id = 14, value = "Need valid host and port")
-    String needHostAndPort();
+    @Message(id = 14, value = "Need valid host and port in the form host:port, %s is not valid")
+    String needHostAndPort(String value);
 
     @Message(id = 15, value = "session-draining-strategy must either be undefined or have the value \"DEFAULT\"")
     String sessionDrainingStrategyMustBeUndefinedOrDefault();
