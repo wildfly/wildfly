@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+	        http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd" version="2.1">
+    <persistence-unit name="jboss-eap-hibernate" transaction-type="JTA">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+
+        <!-- Use the default EAP (in-memory) datasource -->
+        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+
+        <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode> <!-- Specify ENABLE_SELECTIVE to enable L2C for @Cacheable entities -->
+
+        <properties>
+            <!-- create, create-drop, update, validate -->
+            <property name="hibernate.hbm2ddl.auto" value="create-drop" />
+
+            <!-- provides minimal SQL logging, see also TRACE logging -->
+            <property name="hibernate.show_sql" value="false" />
+
+            <property name="hibernate.generate_statistics" value="false"/> <!-- Hibernate/JPA Statistics -->
+
+            <!-- Infinispan Configuration -->
+            <property name="hibernate.cache.use_second_level_cache" value="true"/>
+            <property name="EntityInvalidationCacheRefTestCase.jar#jboss-eap-hibernate.invalidation.cfg" value="entity-invalidation"/>
+        </properties>
+    </persistence-unit>
+</persistence>
