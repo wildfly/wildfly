@@ -3139,4 +3139,8 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 499, value = "Cannot read derived size - service %s unreachable")
     OperationFailedException cannotReadStrictMaxPoolDerivedSize(ServiceName serviceName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 500, value = "Transaction '%s', which was already rolled back, finished with an exception")
+    void rolledbackTransactionUnderlyingException(Transaction tx, @Cause Exception e);
 }
