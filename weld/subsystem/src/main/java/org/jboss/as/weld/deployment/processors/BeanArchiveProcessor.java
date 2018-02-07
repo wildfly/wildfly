@@ -118,7 +118,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         }
         if (!bdaMap.containsKey(handler.deploymentResourceRoot)) {
             // there is not root bda, let's create one
-            BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(Collections.<String>emptySet(), BeansXml.EMPTY_BEANS_XML, handler.module, getDeploymentUnitId(deploymentUnit), BeanArchiveType.SYNTHETIC, true);
+            BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(Collections.<String>emptySet(), Collections.<String>emptySet(), BeansXml.EMPTY_BEANS_XML, handler.module, getDeploymentUnitId(deploymentUnit), BeanArchiveType.SYNTHETIC, true);
             WeldLogger.DEPLOYMENT_LOGGER.beanArchiveDiscovered(bda);
             bdaMap.put(handler.deploymentResourceRoot, bda);
         }
@@ -283,6 +283,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                 }
 
                 Set<String> beans = getImplicitBeanClasses(index, resourceRoot);
+                Set<String> allKnownClasses = getAllKnownClasses(index);
 
                 if (beans.isEmpty() && !components.hasBeanComponents(resourceRoot)) {
                     return null;
@@ -293,7 +294,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                     beansXml = metadata.getBeansXml();
                 }
 
-                bda = new BeanDeploymentArchiveImpl(beans, beansXml, module, createBeanArchiveId(resourceRoot), BeanArchiveType.IMPLICIT, isRootBda);
+                bda = new BeanDeploymentArchiveImpl(beans, allKnownClasses, beansXml, module, createBeanArchiveId(resourceRoot), BeanArchiveType.IMPLICIT, isRootBda);
                 WeldLogger.DEPLOYMENT_LOGGER.beanArchiveDiscovered(bda);
             } else if (metadata.getBeansXml().getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
                 // scanning suppressed per spec in this archive
@@ -310,6 +311,17 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             }
 
             return bda;
+        }
+
+        private Set<String> getAllKnownClasses(Index index) {
+            Set<String> allKnownClasses = new HashSet<String>();
+            // index may be null if a war has a beans.xml but no WEB-INF/classes
+            if (index != null) {
+                for (ClassInfo classInfo : index.getKnownClasses()) {
+                    allKnownClasses.add(Indices.CLASS_INFO_TO_FQCN.apply(classInfo));
+                }
+            }
+            return allKnownClasses;
         }
 
         private Set<String> getImplicitBeanClasses(Index index, ResourceRoot resourceRoot) {
@@ -331,14 +343,8 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
 
         private BeanDeploymentArchiveImpl createExplicitBeanDeploymentArchive(final Index index, ExplicitBeanArchiveMetadata beanArchiveMetadata, boolean root) throws DeploymentUnitProcessingException {
 
-            Set<String> classNames = new HashSet<String>();
-            // index may be null if a war has a beans.xml but no WEB-INF/classes
-            if (index != null) {
-                for (ClassInfo classInfo : index.getKnownClasses()) {
-                    classNames.add(Indices.CLASS_INFO_TO_FQCN.apply(classInfo));
-                }
-            }
-            return new BeanDeploymentArchiveImpl(classNames, beanArchiveMetadata.getBeansXml(), module, createBeanArchiveId(beanArchiveMetadata.getResourceRoot()), BeanArchiveType.EXPLICIT, root);
+            Set<String> classNames = getAllKnownClasses(index);
+            return new BeanDeploymentArchiveImpl(classNames, classNames, beanArchiveMetadata.getBeansXml(), module, createBeanArchiveId(beanArchiveMetadata.getResourceRoot()), BeanArchiveType.EXPLICIT, root);
         }
 
         private String createBeanArchiveId(ResourceRoot resourceRoot) {
