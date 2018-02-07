@@ -12,8 +12,8 @@ DIRNAME=`dirname "$0"`
 
 # OS specific support (must be 'true' or 'false').
 cygwin=false;
-if  [ `uname|grep -i CYGWIN` ]; then
-    cygwin = true;
+if uname | grep --ignore-case --quiet "CYGWIN"; then
+    cygwin=true;
 fi
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched
