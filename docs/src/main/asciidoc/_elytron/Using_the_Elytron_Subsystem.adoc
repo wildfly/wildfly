@@ -987,22 +987,53 @@ _elytron_ subsystem, for example using a role mapper or a role decoder.
 [[enable-one-way-ssltls-for-applications]]
 === Enable One-way SSL/TLS for Applications
 
-In WildFly, you can use the Elytron subsystem, along with the Undertow
-subsystem, to enable HTTPS for deployed applications.
+There are a couple ways to enable one-way SSL/TLS for deployed applications.
 
-[[obtain-or-generate-your-key-store]]
-==== Obtain or generate your key store:
+[[one-way-ssl-applications-using-security-command]]
+==== Using a security command:
 
-Before enabling HTTPS in WildFly, you must obtain or generate the
-keystore you plan on using. To generate an example keystore:
+The _security enable-ssl-http-server_ command can be used to enable one-way
+SSL/TLS for deployed applications. Example of wizard usage:
 
-[source, bash]
+[source,java]
 ----
-$ keytool -genkeypair -alias localhost -keyalg RSA -keysize 1024 -validity 365 -keystore /path/to/keystore.jks -dname "CN=localhost" -keypass secret -storepass secret
+security enable-ssl-http-server --interactive
+Please provide required pieces of information to enable SSL:
+Key-store file name (default default-server.keystore): keystore.jks
+Password (blank generated): secret
+What is your first and last name? [Unknown]: localhost
+What is the name of your organizational unit? [Unknown]:
+What is the name of your organization? [Unknown]:
+What is the name of your City or Locality? [Unknown]:
+What is the name of your State or Province? [Unknown]:
+What is the two-letter country code for this unit? [Unknown]:
+Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct y/n [y]?
+Validity (in days, blank default): 365
+Alias (blank generated): localhost
+Enable SSL Mutual Authentication y/n (blank n): n
+
+SSL options:
+key store file: keystore.jks
+distinguished name: CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown
+password: secret
+validity: 365
+alias: localhost
+Server keystore file keystore.jks, certificate file keystore.pem and keystore.csr file
+will be generated in server configuration directory.
+Do you confirm y/n: y
 ----
+NB: Once the command is executed, the CLI will reload the server.
+
+HTTPS is now enabled for applications.
+
+[[one-way-ssl-applications-using-elytron-subsystem-commands]]
+==== Using Elytron subsystem commands:
+
+You can also use the Elytron subsystem, along with the Undertow subsystem, to
+enable HTTPS for deployed applications.
 
 [[configure-a-key-store-in-wildfly]]
-==== Configure a key-store in WildFly:
+===== Configure a key-store in WildFly:
 
 [source, ruby]
 ----
@@ -1018,8 +1049,17 @@ base directory variable and _path_ specify a relative path.
 /subsystem=elytron/key-store=httpsKS:add(path=keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
 ----
 
+If the keystore file does not exist yet, the following commands can be used to
+generate an example key pair:
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=httpsKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=1024,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
+/subsystem=elytron/key-store=httpsKS:store()
+----
+
 [[configure-a-key-manager-in-that-references-your-key-store]]
-==== Configure a key-manager in that references your key-store:
+===== Configure a key-manager that references your key-store:
 
 [source, ruby]
 ----
@@ -1027,7 +1067,7 @@ base directory variable and _path_ specify a relative path.
 ----
 
 [[configure-a-server-ssl-context-in-that-references-your-key-manager]]
-==== Configure a server-ssl-context in that references your key-manager:
+===== Configure a server-ssl-context that references your key-manager:
 
 [source, ruby]
 ----
@@ -1038,8 +1078,7 @@ base directory variable and _path_ specify a relative path.
 support. The example commands above uses _TLSv1.2_.
 
 [[check-and-see-if-the-https-listener-is-configured-to-use-a-legacy-security-realm-for-its-ssl-configuration]]
-==== Check and see if the https-listener is configured to use a legacy
-security realm for its SSL configuration:
+===== Check and see if the https-listener is configured to use a legacy security realm for its SSL configuration:
 
 [source, ruby]
 ----
@@ -1070,7 +1109,7 @@ run-batch
 ----
 
 [[reload-the-server]]
-==== Reload the server:
+===== Reload the server:
 
 [source, ruby]
 ----
@@ -1082,64 +1121,121 @@ HTTPS is now enabled for applications.
 [[enable-two-way-ssltls-in-wildfly-for-applications]]
 === Enable Two-way SSL/TLS in WildFly for Applications
 
-In WildFly, you can use the Elytron subsystem, along with the Undertow
-subsystem, to enable two-way SSL/TLS for deployed applications.
-
-[[obtain-or-generate-your-keystore]]
-==== Obtain or generate your keystore:
-
-Before enabling HTTPS in WildFly, you must obtain or generate the
-keystores, truststores and certificates you plan on using.
-
-Create server and client keystores:
+First, obtain or generate your client keystore.
 
 [source, bash]
 ----
-$ keytool -genkeypair -alias localhost -keyalg RSA -keysize 1024 -validity 365 -keystore server.keystore.jks -dname "CN=localhost" -keypass secret -storepass secret
- 
 $ keytool -genkeypair -alias client -keyalg RSA -keysize 1024 -validity 365 -keystore client.keystore.jks -dname "CN=client" -keypass secret -storepass secret
 ----
 
-Export the server and client certificates:
+Export the client certificate:
 
 [source, bash]
 ----
-$ keytool -exportcert  -keystore server.keystore.jks -alias localhost -keypass secret -storepass secret -file server.cer
- 
-$ keytool -exportcert  -keystore client.keystore.jks -alias client -keypass secret -storepass secret -file client.cer
+$ keytool -exportcert  -keystore client.keystore.jks -alias client -keypass secret -storepass secret -file /path/to/client.cer
 ----
 
-Import the sever and client certificates into the opposing truststores:
+There are a couple ways to enable two-way SSL/TLS for deployed applications.
 
-[source, bash]
-----
-$ keytool -importcert -keystore server.truststore.jks -storepass secret -alias client -trustcacerts -file client.cer
- 
-$ keytool -importcert -keystore client.truststore.jks -storepass secret -alias localhost -trustcacerts -file server.cer
-----
+[[two-way-ssl-applications-using-security-command]]
+==== Using a security command:
 
-[[configure-a-key-store-for-server-keystore-and-truststore-in-wildfly]]
-==== Configure a key-store for server keystore and truststore in WildFly:
+The _security enable-ssl-http-server_ command can be used to enable two-way
+SSL/TLS for the deployed applications. Example of wizard usage:
+
+[source,java]
+----
+security enable-ssl-http-server --interactive
+Please provide required pieces of information to enable SSL:
+Key-store file name (default default-server.keystore): server.keystore.jks
+Password (blank generated): secret
+What is your first and last name? [Unknown]: localhost
+What is the name of your organizational unit? [Unknown]:
+What is the name of your organization? [Unknown]:
+What is the name of your City or Locality? [Unknown]:
+What is the name of your State or Province? [Unknown]:
+What is the two-letter country code for this unit? [Unknown]:
+Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct y/n [y]?
+Validity (in days, blank default): 365
+Alias (blank generated): localhost
+Enable SSL Mutual Authentication y/n (blank n): y
+Client certificate (path to pem file): /path/to/client.cer
+Validate certificate y/n (blank y):
+Trust-store file name (management.truststore): server.truststore.jks
+Password (blank generated): secret
+
+SSL options:
+key store file: server.keystore.jks
+distinguished name: CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown
+password: secret
+validity: 365
+alias: localhost
+client certificate: /path/to/client.cer
+trust store file: server.trustore.jks
+trust store password: secret
+Server keystore file server.keystore.jks, certificate file server.pem and server.csr file will be generated in server configuration directory.
+Server truststore file server.trustore.jks will be generated in server configuration directory.
+Do you confirm y/n: y
+----
+NB: Once the command is executed, the CLI will reload the server. To complete
+the two-way SSL/TLS authentication, you need to
+<<import-server-certificate-into-client-truststore-applications,import the server certificate>>
+into the client truststore and
+<<configure-your-client-to-use-the-client-certificate-applications,configure your client>>
+to present the client certificate.
+
+[[two-way-ssl-applications-using-elytron-subsystem-commands]]
+==== Using Elytron subsystem commands:
+
+You can also use the Elytron subsystem, along with the Undertow subsystem,
+to enable two-way SSL/TLS for deployed applications.
+
+[[obtain-or-generate-your-keystores-applications]]
+===== Obtain or generate your key stores:
+
+Before enabling HTTPS in WildFly, you must obtain or generate the server key
+store and trust store you plan on using. To generate an example key store and
+trust store, use the following commands.
+
+Create a server key-store:
 
 [source, ruby]
 ----
 /subsystem=elytron/key-store=twoWayKS:add(path=/path/to/server.keystore.jks,credential-reference={clear-text=secret},type=JKS)
- 
-/subsystem=elytron/key-store=twoWayTS:add(path=/path/to/server.truststore.jks,credential-reference={clear-text=secret},type=JKS)
+/subsystem=elytron/key-store=twoWayKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=1024,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
+/subsystem=elytron/key-store=twoWayKS:store()
 ----
 
 *NOTE* +
-The previous command uses an absolute path to the keystore.
+The first command above uses an absolute path to the keystore.
 Alternatively you can use the _relative-to_ attribute to specify the
 base directory variable and _path_ specify a relative path.
 
 [source, ruby]
 ----
-/subsystem=elytron/key-store=myKS:add(path=keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
+/subsystem=elytron/key-store=twoWayKS:add(path=server.keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
+----
+
+Export the server certificate:
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=twoWayKS:export-certificate(alias=localhost,path=/path/to/server.cer,pem=true)
+----
+
+[[import-client-certificate]]
+Create a key-store for the server truststore and import the client certificate
+into the server truststore:
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=twoWayTS:add(path=/path/to/server.truststore.jks,credential-reference={clear-text=secret},type=JKS)
+/subsystem=elytron/key-store=twoWayTS:import-certificate(alias=client,path=/path/to/client.cer,credential-reference={clear-text=secret},trust-cacerts=true)
+/subsystem=elytron/key-store=twoWayTS:store()
 ----
 
 [[configure-a-key-manager-in-that-references-your-key-store-key-store]]
-==== Configure a key-manager in that references your key store key-store:
+===== Configure a key-manager that references your key store key-store:
 
 [source, ruby]
 ----
@@ -1147,8 +1243,7 @@ base directory variable and _path_ specify a relative path.
 ----
 
 [[configure-a-trust-manager-in-that-references-your-truststore-key-store]]
-==== Configure a trust-manager in that references your truststore
-key-store:
+===== Configure a trust-manager that references your truststore key-store:
 
 [source, ruby]
 ----
@@ -1156,8 +1251,7 @@ key-store:
 ----
 
 [[configure-a-server-ssl-context-in-that-references-your-key-manager-trust-manager-and-enables-client-authentication]]
-==== Configure a server-ssl-context in that references your key-manager,
-trust-manager, and enables client authentication:
+===== Configure a server-ssl-context that references your key-manager, trust-manager, and enables client authentication:
 
 [source, ruby]
 ----
@@ -1169,8 +1263,7 @@ You need to determine what SSL/TLS protocols you want to support. The
 example commands above uses _TLSv1.2_.
 
 [[check-and-see-if-the-https-listener-is-configured-to-use-a-legacy-security-realm-for-its-ssl-configuration-1]]
-==== Check and see if the https-listener is configured to use a legacy
-security realm for its SSL configuration:
+===== Check and see if the https-listener is configured to use a legacy security realm for its SSL configuration:
 
 [source, ruby]
 ----
@@ -1190,7 +1283,7 @@ configured either _ssl-context_ or _security-realm_. Thus when changing
 between those, you have to use batch operation:
 
 [[remove-the-reference-to-the-legacy-security-realm-and-update-the-https-listener-to-use-the-ssl-context-from-elytron]]
-==== Remove the reference to the legacy security realm and update the
+===== Remove the reference to the legacy security realm and update the
 https-listener to use the ssl-context from Elytron:
 
 [source, ruby]
@@ -1202,14 +1295,28 @@ run-batch
 ----
 
 [[reload-the-server-1]]
-==== Reload the server
+===== Reload the server
 
 [source, ruby]
 ----
 reload
 ----
 
-[[configure-your-client-to-use-the-client-certificate]]
+To complete the two-way SSL/TLS authentication, you need to
+<<import-server-certificate-into-client-truststore-applications,import the server certificate>>
+into the client truststore and
+<<configure-your-client-to-use-the-client-certificate-applications,configure your client>>
+to present the client certificate.
+
+[[import-server-certificate-into-client-truststore-applications]]
+==== Import the server certificate into the client truststore
+
+[source, bash]
+----
+$ keytool -importcert -keystore client.truststore.jks -storepass secret -alias localhost -trustcacerts -file /path/to/server.cer
+----
+
+[[configure-your-client-to-use-the-client-certificate-applications]]
 ==== Configure your client to use the client certificate
 
 You need to configure your client to present the trusted client
@@ -1219,29 +1326,80 @@ trusted certificate into the browser's truststore.
 
 Two-Way HTTPS is now enabled for applications.
 
-[[enable-one-way-ssltls-for-the-management-interfaces-using-the-elytron-subsystem]]
-=== Enable One-way SSL/TLS for the Management Interfaces Using the
-Elytron Subsystem
+[[enable-one-way-ssltls-for-the-management-interfaces]]
+=== Enable One-way SSL/TLS for the Management Interfaces
 
-[[obtain-or-generate-your-key-store-1]]
-==== Obtain or generate your key store:
+There are a couple ways to enable one-way SSL/TLS for the management interfaces.
 
-Before enabling HTTPS in WildFly, you must obtain or generate the key
-store you plan on using. To generate an example key store, use the
-following command.
+[[one-way-ssl-management-interfaces-using-security-command]]
+==== Using a security command:
 
-[source, bash]
+The _security enable-ssl-management_ command can be used to enable one-way
+SSL/TLS for the management interfaces. Example of wizard usage:
+
+[source,java]
 ----
-$ keytool -genkeypair -alias localhost -keyalg RSA -keysize 1024 -validity 365 -keystore keystore.jks -dname "CN=localhost" -keypass secret -storepass secret
-----
+security enable-ssl-management --interactive
+Please provide required pieces of information to enable SSL:
+Key-store file name (default management.keystore): keystore.jks
+Password (blank generated): secret
+What is your first and last name? [Unknown]: localhost
+What is the name of your organizational unit? [Unknown]:
+What is the name of your organization? [Unknown]:
+What is the name of your City or Locality? [Unknown]:
+What is the name of your State or Province? [Unknown]:
+What is the two-letter country code for this unit? [Unknown]:
+Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct y/n [y]?
+Validity (in days, blank default): 365
+Alias (blank generated): localhost
+Enable SSL Mutual Authentication y/n (blank n): n
 
-[[create-a-key-store-key-manager-and-server-ssl-context.]]
-==== Create a key-store, key-manager, and server-ssl-context.
+SSL options:
+key store file: keystore.jks
+distinguished name: CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown
+password: secret
+validity: 365
+alias: localhost
+Server keystore file keystore.jks, certificate file keystore.pem and keystore.csr file
+will be generated in server configuration directory.
+Do you confirm y/n :y
+----
+NB: Once the command is executed, the CLI will reload the server and reconnect to it.
+
+HTTPS is now enabled for the management interfaces.
+
+[[one-way-ssl-management-interfaces-using-elytron-subsystem-commands]]
+==== Using Elytron subsystem commands:
+
+Elytron subsystem commands can also be used to enable one-way SSL/TLS for the
+management interfaces.
+
+[[configure-key-store]]
+===== Configure a key-store:
 
 [source, ruby]
 ----
 /subsystem=elytron/key-store=httpsKS:add(path=keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
- 
+----
+
+*NOTE:* The above command uses _relative-to_ to reference the location
+of the keystore file. Alternatively, you can specify the full path to
+the keystore in _path_ and omit _relative-to_.
+
+If the keystore file does not exist yet, the following commands can be used to
+generate an example key pair:
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=httpsKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=1024,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
+/subsystem=elytron/key-store=httpsKS:store()
+----
+
+[[create-a-key-manager-and-server-ssl-context]]
+===== Create a key-manager and server-ssl-context.
+
+[source, ruby]
+----
 /subsystem=elytron/key-manager=httpsKM:add(key-store=httpsKS,credential-reference={clear-text=secret})
  
 /subsystem=elytron/server-ssl-context=httpsSSC:add(key-manager=httpsKM,protocols=["TLSv1.2"])
@@ -1250,12 +1408,8 @@ $ keytool -genkeypair -alias localhost -keyalg RSA -keysize 1024 -validity 365 -
 *IMPORTANT:* You need to determine what SSL/TLS protocols you want to
 support. The example commands above uses _TLSv1.2_.
 
-*NOTE:* The above command uses _relative-to_ to reference the location
-of the keystore file. Alternatively, you can specify the full path to
-the keystore in _path_ and omit _relative-to_.
-
 [[enable-https-on-the-management-interface.]]
-==== Enable HTTPS on the management interface.
+===== Enable HTTPS on the management interface.
 
 [source, ruby]
 ----
@@ -1265,7 +1419,7 @@ the keystore in _path_ and omit _relative-to_.
 ----
 
 [[reload-the-wildfly-instance.]]
-==== Reload the WildFly instance.
+===== Reload the WildFly instance.
 
 [source, ruby]
 ----
@@ -1274,55 +1428,125 @@ reload
 
 HTTPS is now enabled for the management interfaces.
 
-[[enable-two-way-ssltls-for-the-management-interfaces-using-the-elytron-subsystem]]
-=== Enable Two-way SSL/TLS for the Management Interfaces using the
-Elytron Subsystem
+[[enable-two-way-ssltls-for-the-management-interfaces]]
+=== Enable Two-way SSL/TLS for the Management Interfaces
 
-[[obtain-or-generate-your-key-store.]]
-==== Obtain or generate your key store.
-
-Before enabling HTTPS in WildFly, you must obtain or generate the key
-stores, trust stores and certificates you plan on using. To generate an
-example set of key stores, trust stores, and certificates use the
-following commands.
-
-Generate your server and client key stores.
+First, obtain or generate your client keystore.
 
 [source, bash]
 ----
-$ keytool -genkeypair -alias localhost -keyalg RSA -keysize 1024 -validity 365 -keystore server.keystore.jks -dname "CN=localhost" -keypass secret -storepass secret
- 
 $ keytool -genkeypair -alias client -keyalg RSA -keysize 1024 -validity 365 -keystore client.keystore.jks -dname "CN=client" -keypass secret -storepass secret
 ----
 
-Export your server and client certificates.
+Export your client certificate.
 
 [source, bash]
 ----
-$ keytool -exportcert  -keystore server.keystore.jks -alias localhost -keypass secret -storepass secret -file server.cer
- 
-$ keytool -exportcert  -keystore client.keystore.jks -alias client -keypass secret -storepass secret -file client.cer
+$ keytool -exportcert  -keystore client.keystore.jks -alias client -keypass secret -storepass secret -file /path/to/client.cer
 ----
 
-Import the sever and client certificates into the opposing trust stores.
+There are a couple ways to enable two-way SSL/TLS for the management interfaces.
 
-[source, bash]
-----
-$ keytool -importcert -keystore server.truststore.jks -storepass secret -alias client -trustcacerts -file client.cer
- 
-$ keytool -importcert -keystore client.truststore.jks -storepass secret -alias localhost -trustcacerts -file server.cer
-----
+[[two-way-ssl-management-interfaces-using-security-command]]
+==== Using a security command:
 
-[[configure-key-store-a-key-manager-trust-manager-and-server-ssl-context-for-the-server-key-store-and-trust-store.]]
-==== Configure key-store, a key-manager, trust-manager, and
-server-ssl-context for the server key store and trust store.
+The _security enable-ssl-management_ command can be used to enable two-way
+SSL/TLS for the management interfaces. Example of wizard usage:
+
+[source,java]
+----
+security enable-ssl-management --interactive
+Please provide required pieces of information to enable SSL:
+Key-store file name (default management.keystore): server.keystore.jks
+Password (blank generated): secret
+What is your first and last name? [Unknown]: localhost
+What is the name of your organizational unit? [Unknown]:
+What is the name of your organization? [Unknown]:
+What is the name of your City or Locality? [Unknown]:
+What is the name of your State or Province? [Unknown]:
+What is the two-letter country code for this unit? [Unknown]:
+Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct y/n [y]?
+Validity (in days, blank default): 365
+Alias (blank generated): localhost
+Enable SSL Mutual Authentication y/n (blank n): y
+Client certificate (path to pem file): /path/to/client.cer
+Validate certificate y/n (blank y):
+Trust-store file name (management.truststore): server.truststore.jks
+Password (blank generated): secret
+
+SSL options:
+key store file: server.keystore.jks
+distinguished name: CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown
+password: secret
+validity: 365
+alias: localhost
+client certificate: /path/to/client.cer
+trust store file: server.trustore.jks
+trust store password: secret
+Server keystore file server.keystore.jks, certificate file server.pem and server.csr file will be generated in server configuration directory.
+Server truststore file server.trustore.jks will be generated in server configuration directory.
+Do you confirm y/n: y
+----
+NB: Once the command is executed, the CLI will reload the server and
+attempt to reconnect to it. To complete the two-way SSL/TLS authentication,
+you need to <<import-server-certificate-into-client-truststore-management,import the server certificate>>
+into the client truststore and
+<<configure-your-client-to-use-the-client-certificate-management,configure your client>>
+to present the client certificate.
+
+[[two-way-ssl-management-interfaces-using-elytron-subsystem-commands]]
+==== Using Elytron subsystem commands:
+
+Elytron subsystem commands can also be used to enable two-way SSL/TLS for the
+management interfaces.
+
+[[obtain-or-generate-your-key-stores-management]]
+===== Obtain or generate your key stores.
+
+Before enabling HTTPS in WildFly, you must obtain or generate the server
+key store and trust store you plan on using. To generate an example key
+store and trust store, use the following commands.
+
+Configure a key-store.
 
 [source, ruby]
 ----
 /subsystem=elytron/key-store=twoWayKS:add(path=server.keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
- 
+
+/subsystem=elytron/key-store=twoWayKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=1024,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
+
+/subsystem=elytron/key-store=twoWayKS:store()
+----
+
+*NOTE:* The above command uses _relative-to_ to reference the location
+of the keystore file. Alternatively, you can specify the full path to
+the keystore in _path_ and omit _relative-to_.
+
+Export your server certificate.
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=twoWayKS:export-certificate(alias=localhost,path=/path/to/server.cer,pem=true)
+----
+
+[[import-client-certificate-into-server-truststore]]
+Create a key-store for the server trust store and import the client certificate
+into the server trust store.
+
+[source, ruby]
+----
 /subsystem=elytron/key-store=twoWayTS:add(path=server.truststore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
- 
+
+/subsystem=elytron/key-store=twoWayTS:import-certificate(alias=client,path=/path/to/client.cer,credential-reference={clear-text=secret},trust-cacerts=true)
+
+/subsystem=elytron/key-store=twoWayTS:store()
+----
+
+[[configure-a-key-manager-trust-manager-and-server-ssl-context-for-the-server-key-store-and-trust-store]]
+===== Configure a key-manager, trust-manager, and server-ssl-context for the server key store and trust store.
+
+[source, ruby]
+----
 /subsystem=elytron/key-manager=twoWayKM:add(key-store=twoWayKS,credential-reference={clear-text=secret})
  
 /subsystem=elytron/trust-manager=twoWayTM:add(key-store=twoWayTS)
@@ -1333,12 +1557,8 @@ server-ssl-context for the server key store and trust store.
 *IMPORTANT:* You need to determine what SSL/TLS protocols you want to
 support. The example commands above uses _TLSv1.2_.
 
-*NOTE:* The above command uses _relative-to_ to reference the location
-of the keystore file. Alternatively, you can specify the full path to
-the keystore in _path_ and omit _relative-to_.
-
 [[enable-https-on-the-management-interface.-1]]
-==== Enable HTTPS on the management interface.
+===== Enable HTTPS on the management interface.
 
 [source, ruby]
 ----
@@ -1348,14 +1568,28 @@ the keystore in _path_ and omit _relative-to_.
 ----
 
 [[reload-the-wildfly-instance.-1]]
-==== Reload the WildFly instance.
+===== Reload the WildFly instance.
 
 [source, ruby]
 ----
 reload
 ----
 
-[[configure-your-client-to-use-the-client-certificate.]]
+To complete the two-way SSL/TLS authentication, you need to
+<<import-server-certificate-into-client-truststore-management,import the server certificate>>
+into the client truststore and
+<<configure-your-client-to-use-the-client-certificate-management,configure your client>>
+to present the client certificate.
+
+[[import-server-certificate-into-client-truststore-management]]
+==== Import the server certificate into the client truststore.
+
+[source, bash]
+----
+$ keytool -importcert -keystore client.truststore.jks -storepass secret -alias localhost -trustcacerts -file /path/to/server.cer
+----
+
+[[configure-your-client-to-use-the-client-certificate-management]]
 ==== Configure your client to use the client certificate.
 
 You need to configure your client to present the trusted client
@@ -1364,6 +1598,74 @@ authentication. For example, if using a browser, you need to import the
 trusted certificate into the browser's trust store.
 
 Two-way SSL/TLS is now enabled for the management interfaces.
+
+
+[[keystore-manipulation-operations]]
+=== KeyStore manipulation operations
+
+It is possible to perform various KeyStore manipulation operations on an
+Elytron key-store resource using the management CLI.
+
+[[generate-key-pair]]
+==== Generate a key pair
+The _generate-key-pair_ command generates a key pair and wraps the resulting
+public key in a self-signed X.509 certificate. The generated private key and
+self-signed certificate will be added to the KeyStore.
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=httpsKS:generate-key-pair(alias=example,algorithm=RSA,key-size=1024,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=www.example.com")
+----
+
+[[generate-certificate-signing-request]]
+==== Generate a certificate signing request
+The _generate-certificate-signing-request_ command generates a PKCS #10
+certificate signing request using a PrivateKeyEntry from the KeyStore. The
+generated certificate signing request will be output to a file.
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=httpsKS:generate-certificate-signing-request(alias=example,path=server.csr,relative-to=jboss.server.config.dir,distinguished-name="CN=www.example.com",extensions=[{critical=false,name=KeyUsage,value=digitalSignature}],credential-reference={clear-text=secret})
+----
+
+[[import-certificate]]
+==== Import a certificate or certificate chain
+The _import-certificate_ command imports a certificate or certificate chain
+from a file into an entry in the KeyStore.
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=httpsKS:import-certificate(alias=example,path=/path/to/certificate_or_chain/file,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},trust-cacerts=true)
+----
+
+[[export-certificate]]
+==== Export a certificate
+The _export-certificate_ command exports a certificate from an entry in the
+KeyStore to a file.
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=httpsKS:export-certificate(alias=example,path=serverCert.cer,relative-to=jboss.server.config.dir,pem=true)
+----
+
+[[change-alias]]
+==== Change an alias
+The _change-alias_ command moves an existing KeyStore entry to a new alias.
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=httpsKS:change-alias(alias=example,new-alias=newExample,credential-reference={clear-text=secret})
+----
+
+[[store-changes]]
+==== Store changes made to key-stores
+The _store_ command persists any changes that have been made to the file that
+backs the KeyStore.
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=httpsKS:store()
+----
 
 [[using-an-ldap-key-store]]
 === Using an ldap-key-store
