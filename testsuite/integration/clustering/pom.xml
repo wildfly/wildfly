@@ -39,7 +39,7 @@
                         <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
-                                <phase>process-test-resources</phase>
+                                <phase>generate-test-resources</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
