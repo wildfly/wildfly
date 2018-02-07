@@ -186,7 +186,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition JGROUPS_CHANNEL = create("jgroups-channel", ModelType.STRING)
-            .setRequired(false)
+            .setRequired(true)
             // do not allow expression as this may reference another resource
             .setAllowExpression(false)
             .setAlternatives("socket-binding")
@@ -273,7 +273,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition SOCKET_BINDING = create("socket-binding", ModelType.STRING)
-            .setRequired(false)
+            .setRequired(true)
             .setAlternatives(JGROUPS_CHANNEL.getName())
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
