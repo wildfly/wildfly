@@ -22,64 +22,17 @@
 
 package org.wildfly.extension.picketlink.federation.model.idp;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.wildfly.extension.picketlink.federation.model.idp.TrustDomainResourceDefinition.validateModelInOperation;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
-import org.wildfly.extension.picketlink.federation.service.TrustDomainService;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
-public class TrustDomainAddHandler extends AbstractAddStepHandler {
+class TrustDomainAddHandler extends AbstractAddStepHandler {
 
     static final TrustDomainAddHandler INSTANCE = new TrustDomainAddHandler();
 
-    static void launchServices(OperationContext context, PathAddress pathAddress, ModelNode model) throws OperationFailedException {
-        String identityProviderName = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
-        String domainName = pathAddress.getLastElement().getValue();
-        launchServices(context, identityProviderName, domainName);
+    private TrustDomainAddHandler() {
+        super(TrustDomainResourceDefinition.CERT_ALIAS);
     }
 
-    private static void launchServices(OperationContext context, String identityProviderName, String domainName) {
-        TrustDomainService service = new TrustDomainService(domainName);
-        ServiceName serviceName = TrustDomainService.createServiceName(identityProviderName, domainName);
-        context.getServiceTarget().addService(serviceName, service)
-                .addDependency(IdentityProviderService.createServiceName(identityProviderName), IdentityProviderService.class, service.getIdentityProviderService())
-                .setInitialMode(ServiceController.Mode.PASSIVE)
-                .install();
-    }
-
-    static void restartServices(OperationContext context, String identityProviderName, String domainName) {
-        ServiceName serviceName = TrustDomainService.createServiceName(identityProviderName, domainName);
-
-        context.removeService(serviceName);
-
-        launchServices(context, identityProviderName, domainName);
-    }
-
-    @Override
-    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        ModelNode model = resource.getModel();
-
-        for (SimpleAttributeDefinition attribute : TrustDomainResourceDefinition.INSTANCE.getAttributes()) {
-            attribute.validateAndSet(operation, model);
-        }
-
-        validateModelInOperation(context, model);
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model);
-    }
 }

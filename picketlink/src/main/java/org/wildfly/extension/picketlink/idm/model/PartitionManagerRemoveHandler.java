@@ -23,19 +23,7 @@
 package org.wildfly.extension.picketlink.idm.model;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_CONFIGURATION;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -47,40 +35,6 @@ public class PartitionManagerRemoveHandler extends AbstractRemoveStepHandler {
     private PartitionManagerRemoveHandler() {
     }
 
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode partitionManagerNode)
-        throws OperationFailedException {
-        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String federationName = address.getLastElement().getValue();
-
-        removeIdentityStoreServices(context, partitionManagerNode, federationName);
-
-        context.removeService(PartitionManagerService.createServiceName(federationName));
-        context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
-    }
-
-    void removeIdentityStoreServices(OperationContext context, ModelNode model, String partitionManagerName, String... configurationNames) throws OperationFailedException {
-        ModelNode identityConfigurationNode = model.get(IDENTITY_CONFIGURATION.getName());
-        List<String> expectedConfigNames = Arrays.asList(configurationNames);
-
-        if (identityConfigurationNode.isDefined()) {
-            for (Property identityConfiguration : identityConfigurationNode.asPropertyList()) {
-                String configurationName = identityConfiguration.getName();
-
-                if (!expectedConfigNames.isEmpty() && !expectedConfigNames.contains(configurationName)) {
-                    continue;
-                }
-
-                ModelNode value = identityConfiguration.getValue();
-
-                if (value.isDefined()) {
-                    for (Property store : value.asPropertyList()) {
-                        context.removeService(PartitionManagerService.createIdentityStoreServiceName(partitionManagerName, configurationName, store.getName()));
-                    }
-                }
-            }
-        }
-    }
 
     @Override
     protected boolean removeChildRecursively(PathElement child) {

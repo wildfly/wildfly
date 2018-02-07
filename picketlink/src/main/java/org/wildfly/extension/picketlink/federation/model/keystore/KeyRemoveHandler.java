@@ -22,14 +22,6 @@
 package org.wildfly.extension.picketlink.federation.model.keystore;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.picketlink.federation.service.KeyService;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -41,18 +33,4 @@ public class KeyRemoveHandler extends AbstractRemoveStepHandler {
     private KeyRemoveHandler() {
     }
 
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
-        throws OperationFailedException {
-        PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
-        String federationAlias = pathAddress.subAddress(0, pathAddress.size() - 2).getLastElement().getValue();
-        String keyName = pathAddress.getLastElement().getValue();
-
-        context.removeService(KeyService.createServiceName(federationAlias, keyName));
-    }
-
-    @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        KeyAddHandler.launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model);
-    }
 }

@@ -23,14 +23,6 @@
 package org.wildfly.extension.picketlink.federation.model.sp;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.picketlink.federation.service.ServiceProviderService;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -40,17 +32,5 @@ public class ServiceProviderRemoveHandler extends AbstractRemoveStepHandler {
     public static final ServiceProviderRemoveHandler INSTANCE = new ServiceProviderRemoveHandler();
 
     private ServiceProviderRemoveHandler() {
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
-            throws OperationFailedException {
-        String spAlias = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        context.removeService(ServiceProviderService.createServiceName(spAlias));
-    }
-
-    @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        ServiceProviderAddHandler.launchService(context, PathAddress.pathAddress(operation.get(ADDRESS)), model);
     }
 }

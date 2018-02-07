@@ -22,17 +22,10 @@
 
 package org.wildfly.extension.picketlink.federation.model.handlers;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.picketlink.config.federation.KeyValueType;
-import org.wildfly.extension.picketlink.federation.service.EntityProviderService;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -48,34 +41,4 @@ public class HandlerParameterAddHandler extends AbstractAddStepHandler {
         }
     }
 
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        PathAddress pathAddress = PathAddress.pathAddress(operation.get(ADDRESS));
-        String providerAlias = pathAddress.subAddress(0, pathAddress.size() - 2).getLastElement().getValue();
-        String handlerType = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
-        EntityProviderService providerService = EntityProviderService.getService(context, providerAlias);
-        String handlerParameterName = pathAddress.getLastElement().getValue();
-        KeyValueType keyValueType = toHandlerParameterConfig(context, handlerParameterName, model);
-
-        providerService.addHandlerParameter(handlerType, keyValueType);
-    }
-
-    public static KeyValueType toHandlerParameterConfig(OperationContext context, String paramName, ModelNode parameterNode) throws OperationFailedException {
-        String paramValue = HandlerParameterResourceDefinition.VALUE
-            .resolveModelAttribute(context, parameterNode).asString();
-
-        KeyValueType kv = new KeyValueType();
-
-        kv.setKey(paramName);
-        kv.setValue(paramValue);
-        return kv;
-    }
-
-    @Override protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
-        try {
-            HandlerParameterRemoveHandler.INSTANCE.performRuntime(context, operation, resource.getModel());
-        } catch (OperationFailedException ignore) {
-
-        }
-    }
 }

@@ -22,23 +22,22 @@
 
 package org.wildfly.extension.picketlink.federation.model.idp;
 
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
+
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.Namespace;
 import org.wildfly.extension.picketlink.federation.model.AbstractFederationResourceDefinition;
-
-import java.util.List;
-
-import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -47,9 +46,17 @@ import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOG
 public class TrustDomainResourceDefinition extends AbstractFederationResourceDefinition {
 
     public static final SimpleAttributeDefinition CERT_ALIAS = new SimpleAttributeDefinitionBuilder(ModelElement.IDENTITY_PROVIDER_TRUST_DOMAIN_CERT_ALIAS.getName(), ModelType.STRING, true)
-        .setAllowExpression(true)
-        .setDeprecated(Namespace.PICKETLINK_FEDERATION_1_1.getModelVersion())
-        .build();
+            .setAllowExpression(true)
+            .setDeprecated(Namespace.PICKETLINK_FEDERATION_1_1.getModelVersion())
+            .setValidator(new AbstractParameterValidator() {
+                @Override
+                public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+                    if (value.isDefined()) {
+                        throw ROOT_LOGGER.attributeNoLongerSupported(parameterName);
+                    }
+                }
+            })
+            .build();
 
     public static final TrustDomainResourceDefinition INSTANCE = new TrustDomainResourceDefinition();
 
@@ -60,22 +67,6 @@ public class TrustDomainResourceDefinition extends AbstractFederationResourceDef
     @Override
     protected OperationStepHandler createAttributeWriterHandler() {
         List<SimpleAttributeDefinition> attributes = getAttributes();
-        return new ReloadRequiredWriteAttributeHandler(attributes.toArray(new AttributeDefinition[attributes.size()])) {
-            @Override
-            protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
-                validateModelInOperation(context, model.getModel());
-                super.validateUpdatedModel(context, model);
-            }
-        };
-    }
-
-
-
-    public static void validateModelInOperation(OperationContext context, ModelNode model) throws OperationFailedException {
-        String certAliasAttribName = ModelElement.IDENTITY_PROVIDER_TRUST_DOMAIN_CERT_ALIAS.getName();
-
-        if (context.getProcessType().isServer() && model.hasDefined(certAliasAttribName)) {
-            throw ROOT_LOGGER.attributeNoLongerSupported(certAliasAttribName);
-        }
+        return new ReloadRequiredWriteAttributeHandler(attributes.toArray(new AttributeDefinition[attributes.size()]));
     }
 }

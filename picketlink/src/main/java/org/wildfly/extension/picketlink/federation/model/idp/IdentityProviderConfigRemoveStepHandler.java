@@ -22,34 +22,16 @@
 
 package org.wildfly.extension.picketlink.federation.model.idp;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RestartParentResourceRemoveHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 
 /**
  * @author Pedro Silva
  */
-public class IdentityProviderConfigRemoveStepHandler extends RestartParentResourceRemoveHandler {
+public class IdentityProviderConfigRemoveStepHandler extends AbstractRemoveStepHandler {
 
     static final IdentityProviderConfigRemoveStepHandler INSTANCE = new IdentityProviderConfigRemoveStepHandler();
 
     private IdentityProviderConfigRemoveStepHandler() {
-        super(ModelElement.IDENTITY_PROVIDER.getName());
-    }
-
-    @Override
-    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        IdentityProviderAddHandler.launchServices(context, parentModel, parentAddress, true);
-    }
-
-    @Override
-    protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return IdentityProviderService.createServiceName(parentAddress.getLastElement().getValue());
     }
 
 }

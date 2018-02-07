@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.picketlink.subsystem;
 
+import java.util.List;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -41,8 +43,6 @@ import org.wildfly.extension.picketlink.federation.FederationExtension;
 import org.wildfly.extension.picketlink.federation.model.keystore.KeyResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.keystore.KeyStoreProviderResourceDefinition;
 
-import java.util.List;
-
 /**
  * @author Pedro Igor
  */
@@ -60,13 +60,15 @@ public class FederationSubsystem_1_0_TransformerUnitTestCase extends AbstractSub
 
     private void testRejectionExpressions(ModelTestControllerVersion controllerVersion, String picketLinkJBossAs7Version) throws Exception {
         ModelVersion oldVersion = ModelVersion.create(1, 0, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC);
 
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, oldVersion)
-            .setExtensionClassName(FederationExtension.class.getName())
-            .addMavenResourceURL("org.wildfly:wildfly-picketlink:" + controllerVersion.getMavenGavVersion())
-            .addMavenResourceURL("org.picketlink.distribution:picketlink-jbas7:" + picketLinkJBossAs7Version)
-            .dontPersistXml();
+        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC, controllerVersion, oldVersion)
+                .setExtensionClassName(FederationExtension.class.getName())
+                .configureReverseControllerCheck(AdditionalInitialization.ADMIN_ONLY_HC, null)
+                .addMavenResourceURL("org.wildfly:wildfly-picketlink:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.picketlink.distribution:picketlink-jbas7:" + picketLinkJBossAs7Version)
+                .addMavenResourceURL("org.picketlink:picketlink-federation:" + picketLinkJBossAs7Version)
+                .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
@@ -77,12 +79,14 @@ public class FederationSubsystem_1_0_TransformerUnitTestCase extends AbstractSub
         List<ModelNode> ops = builder.parseXmlResource("federation-subsystem-2.0.xml");
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, oldVersion, ops,
-            new FailedOperationTransformationConfig()
-                .addFailedAttribute(PathAddress.pathAddress(
-                        PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, FederationExtension.SUBSYSTEM_NAME),
-                        PathElement.pathElement(ModelElement.FEDERATION.getName()),
-                        KeyStoreProviderResourceDefinition.INSTANCE.getPathElement(),
-                        KeyResourceDefinition.INSTANCE.getPathElement()),
-                    FailedOperationTransformationConfig.REJECTED_RESOURCE));
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(PathAddress.pathAddress(
+                                PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, FederationExtension.SUBSYSTEM_NAME),
+                                PathElement.pathElement(ModelElement.FEDERATION.getName()),
+                                KeyStoreProviderResourceDefinition.INSTANCE.getPathElement(),
+                                KeyResourceDefinition.INSTANCE.getPathElement()),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE));
     }
+
+
 }

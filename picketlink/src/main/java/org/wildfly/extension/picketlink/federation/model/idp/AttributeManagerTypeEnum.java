@@ -22,9 +22,6 @@
 
 package org.wildfly.extension.picketlink.federation.model.idp;
 
-import org.picketlink.identity.federation.bindings.wildfly.idp.UndertowAttributeManager;
-import org.picketlink.identity.federation.core.impl.EmptyAttributeManager;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,8 +33,8 @@ import java.util.Map;
  */
 public enum AttributeManagerTypeEnum {
 
-    UNDERTOW_ATTRIBUTE_MANAGER("UndertowAttributeManager", UndertowAttributeManager.class.getName()),
-    EMPTY_ATTRIBUTE_MANAGER("EmptyAttributeManager", EmptyAttributeManager.class.getName());
+    UNDERTOW_ATTRIBUTE_MANAGER("UndertowAttributeManager", "org.picketlink.identity.federation.bindings.wildfly.idp.UndertowAttributeManager"),
+    EMPTY_ATTRIBUTE_MANAGER("EmptyAttributeManager", "org.picketlink.identity.federation.core.impl.EmptyAttributeManager");
 
     private static final Map<String, AttributeManagerTypeEnum> types = new HashMap<String, AttributeManagerTypeEnum>();
 

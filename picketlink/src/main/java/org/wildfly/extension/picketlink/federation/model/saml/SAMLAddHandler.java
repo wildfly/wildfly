@@ -24,16 +24,8 @@ package org.wildfly.extension.picketlink.federation.model.saml;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.picketlink.config.federation.STSType;
-import org.wildfly.extension.picketlink.federation.service.FederationService;
-import org.wildfly.extension.picketlink.federation.service.SAMLService;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -53,38 +45,4 @@ public class SAMLAddHandler extends AbstractAddStepHandler {
         }
     }
 
-    @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        launchServices(context, operation, model);
-    }
-
-    static void launchServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
-        String federationAlias = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
-        SAMLService service = new SAMLService(toSAMLConfig(context, model));
-        context.getServiceTarget().addService(SAMLService.createServiceName(federationAlias), service)
-                .addDependency(FederationService.createServiceName(federationAlias), FederationService.class, service.getFederationService())
-                .setInitialMode(ServiceController.Mode.PASSIVE)
-                .install();
-    }
-
-    static STSType toSAMLConfig(OperationContext context, ModelNode fromModel) throws OperationFailedException {
-        int tokenTimeout = SAMLResourceDefinition.TOKEN_TIMEOUT.resolveModelAttribute(context, fromModel).asInt();
-        int clockSkew = SAMLResourceDefinition.CLOCK_SKEW.resolveModelAttribute(context, fromModel).asInt();
-
-        STSType stsType = new STSType();
-
-        stsType.setTokenTimeout(tokenTimeout);
-        stsType.setClockSkew(clockSkew);
-
-        return stsType;
-    }
-
-    @Override
-    protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
-        try {
-            SAMLRemoveHandler.INSTANCE.performRuntime(context, operation, resource.getModel());
-        } catch (OperationFailedException ignore) {
-        }
-    }
 }

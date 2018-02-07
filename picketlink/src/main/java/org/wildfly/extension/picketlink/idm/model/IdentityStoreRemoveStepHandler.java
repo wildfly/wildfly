@@ -24,57 +24,28 @@ package org.wildfly.extension.picketlink.idm.model;
 
 import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 
 /**
  * @author Pedro Silva
  */
-public class IdentityStoreRemoveStepHandler extends RestartParentResourceRemoveHandler {
+class IdentityStoreRemoveStepHandler extends AbstractRemoveStepHandler {
 
     static final IdentityStoreRemoveStepHandler INSTANCE = new IdentityStoreRemoveStepHandler();
 
     private IdentityStoreRemoveStepHandler() {
-        super(ModelElement.PARTITION_MANAGER.getName());
     }
 
     @Override
-    protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        super.performRemove(context, operation, model);
         checkIfLastIdentityStore(context);
-
-        super.updateModel(context, operation);
-
-        context.addStep(new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                PathAddress address = context.getCurrentAddress();
-                String configurationName = address.getElement(address.size() - 2).getValue();
-                String partitionManagerName = address.getElement(address.size() - 3).getValue();
-                String identityStoreName = address.getLastElement().getValue();
-
-                context.removeService(PartitionManagerService.createIdentityStoreServiceName(partitionManagerName, configurationName, identityStoreName));
-                context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
-            }
-        }, OperationContext.Stage.RUNTIME);
-    }
-
-    @Override
-    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        PartitionManagerAddHandler.INSTANCE.createPartitionManagerService(context, parentAddress.getLastElement()
-            .getValue(), parentModel, false);
-    }
-
-    @Override
-    protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return PartitionManagerService.createServiceName(parentAddress.getLastElement().getValue());
     }
 
     private void checkIfLastIdentityStore(OperationContext context) throws OperationFailedException {

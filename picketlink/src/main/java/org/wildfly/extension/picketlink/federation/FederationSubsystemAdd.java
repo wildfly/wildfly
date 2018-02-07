@@ -23,14 +23,6 @@
 package org.wildfly.extension.picketlink.federation;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.server.AbstractDeploymentChainStep;
-import org.jboss.as.server.DeploymentProcessorTarget;
-import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.picketlink.federation.deployment.FederationDependencyProcessor;
-import org.wildfly.extension.picketlink.federation.deployment.FederationDeploymentProcessor;
-import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -39,20 +31,5 @@ public class FederationSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     public static final FederationSubsystemAdd INSTANCE = new FederationSubsystemAdd();
 
-    @Override
-    public void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        PicketLinkLogger.ROOT_LOGGER.activatingSubsystem("Federation");
 
-        context.addStep(new AbstractDeploymentChainStep() {
-            @Override
-            public void execute(DeploymentProcessorTarget processorTarget) {
-                PicketLinkLogger.ROOT_LOGGER.trace("Installing the PicketLink Defederation Dependency Processor.");
-                processorTarget.addDeploymentProcessor(FederationExtension.SUBSYSTEM_NAME, FederationDependencyProcessor.PHASE,
-                    FederationDependencyProcessor.PRIORITY, new FederationDependencyProcessor());
-                PicketLinkLogger.ROOT_LOGGER.trace("Installing the PicketLink Federation Deployment Processor.");
-                processorTarget.addDeploymentProcessor(FederationExtension.SUBSYSTEM_NAME, FederationDeploymentProcessor.PHASE,
-                    FederationDeploymentProcessor.PRIORITY, new FederationDeploymentProcessor());
-            }
-        }, OperationContext.Stage.RUNTIME);
-    }
 }

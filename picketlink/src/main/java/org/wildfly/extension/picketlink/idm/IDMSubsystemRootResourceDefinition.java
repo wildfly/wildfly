@@ -26,7 +26,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.extension.picketlink.idm.model.PartitionManagerResourceDefinition;
 
@@ -49,9 +48,4 @@ public class IDMSubsystemRootResourceDefinition extends SimpleResourceDefinition
         resourceRegistration.registerSubModel(PartitionManagerResourceDefinition.INSTANCE);
     }
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-    }
 }

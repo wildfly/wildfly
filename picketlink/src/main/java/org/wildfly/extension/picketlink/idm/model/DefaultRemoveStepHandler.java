@@ -22,17 +22,14 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RestartParentResourceRemoveHandler;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * <p>This remove handler is used during the removal of all partition-manager child resources. Its purpose is restart the
@@ -40,34 +37,30 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  *
  * @author Pedro Silva
  */
-public class DefaultRemoveStepHandler extends RestartParentResourceRemoveHandler {
+public class DefaultRemoveStepHandler extends AbstractRemoveStepHandler {
 
     static final DefaultRemoveStepHandler INSTANCE = new DefaultRemoveStepHandler();
 
     private DefaultRemoveStepHandler() {
-        super(ModelElement.PARTITION_MANAGER.getName());
     }
 
     @Override
-    protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
-        super.updateModel(context, operation);
-
-        PathAddress partitionManagerAddress = getParentAddress(PathAddress.pathAddress(operation.require(OP_ADDR)));
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        super.performRemove(context, operation, model);
+        PathAddress partitionManagerAddress = getParentAddressByKey(context.getCurrentAddress(), ModelElement.PARTITION_MANAGER.getName());
         Resource partitionManagerResource = context.readResourceFromRoot(partitionManagerAddress);
         ModelNode parentModel = Resource.Tools.readModel(partitionManagerResource);
-
-        PartitionManagerAddHandler.INSTANCE.validateModel(context, partitionManagerAddress.getLastElement().getValue(), parentModel);
+        PartitionManagerAddHandler.INSTANCE.validatePartitionManager(context, parentModel);
     }
 
-    @Override
-    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        PartitionManagerAddHandler.INSTANCE.createPartitionManagerService(context, parentAddress.getLastElement()
-            .getValue(), parentModel, false);
-    }
+    static PathAddress getParentAddressByKey(PathAddress address, String parentKey) {
+        for (int i = address.size() - 1; i >= 0; i--) {
+            PathElement pe = address.getElement(i);
+            if (parentKey.equals(pe.getKey())) {
+                return address.subAddress(0, i + 1);
+            }
+        }
 
-    @Override
-    protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return PartitionManagerService.createServiceName(parentAddress.getLastElement().getValue());
+        return null;
     }
-
 }

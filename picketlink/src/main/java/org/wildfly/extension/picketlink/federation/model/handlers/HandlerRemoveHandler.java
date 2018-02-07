@@ -22,35 +22,15 @@
 package org.wildfly.extension.picketlink.federation.model.handlers;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.picketlink.federation.service.EntityProviderService;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
-public class HandlerRemoveHandler extends AbstractRemoveStepHandler {
+class HandlerRemoveHandler extends AbstractRemoveStepHandler {
 
     static final HandlerRemoveHandler INSTANCE = new HandlerRemoveHandler();
 
     private HandlerRemoveHandler() {
     }
 
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        PathAddress pathAddress = PathAddress.pathAddress(operation.get(ADDRESS));
-        String providerAlias = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
-        EntityProviderService providerService = EntityProviderService.getService(context, providerAlias);
-        String handlerType = HandlerResourceDefinition.getHandlerType(context, model);
-
-        providerService.removeHandler(handlerType);
-    }
-
-    @Override protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        HandlerAddHandler.INSTANCE.performRuntime(context, operation, model);
-    }
 }

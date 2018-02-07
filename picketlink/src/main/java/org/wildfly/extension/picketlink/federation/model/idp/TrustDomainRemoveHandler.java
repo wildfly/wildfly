@@ -22,13 +22,6 @@
 package org.wildfly.extension.picketlink.federation.model.idp;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.picketlink.federation.service.TrustDomainService;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -40,18 +33,4 @@ public class TrustDomainRemoveHandler extends AbstractRemoveStepHandler {
     private TrustDomainRemoveHandler() {
     }
 
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
-            throws OperationFailedException {
-        PathAddress pathAddress = PathAddress.pathAddress(operation.get(ADDRESS));
-        String identityProviderAlias = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
-        String domainName = pathAddress.getLastElement().getValue();
-
-        context.removeService(TrustDomainService.createServiceName(identityProviderAlias, domainName));
-    }
-
-    @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        TrustDomainAddHandler.launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model);
-    }
 }

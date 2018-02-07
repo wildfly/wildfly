@@ -22,19 +22,11 @@
 
 package org.wildfly.extension.picketlink.logging;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-import org.picketlink.common.exceptions.ProcessingException;
-import org.picketlink.identity.federation.core.audit.PicketLinkAuditEventType;
-import org.picketlink.idm.config.SecurityConfigurationException;
 
 /**
  * @author Pedro Igor
@@ -45,7 +37,7 @@ public interface PicketLinkLogger extends BasicLogger {
     PicketLinkLogger ROOT_LOGGER = Logger.getMessageLogger(PicketLinkLogger.class, "org.wildfly.extension.picketlink");
 
     // General Messages 1-49
-    @LogMessage(level = INFO)
+    /*@LogMessage(level = INFO)
     @Message(id = 1, value = "Activating PicketLink %s Subsystem")
     void activatingSubsystem(String name);
 
@@ -76,12 +68,14 @@ public interface PicketLinkLogger extends BasicLogger {
 
     @Message(id = 9, value = "Could not load class [%s].")
     RuntimeException couldNotLoadClass(String mappingClass, @Cause Throwable e);
+    */
 
     @Message(id = 10, value = "No type provided for %s. You must specify a class-name or code.")
     OperationFailedException typeNotProvided(String elementName);
 
-    @Message(id = 11, value = "Failed to get metrics %s.")
+   /* @Message(id = 11, value = "Failed to get metrics %s.")
     OperationFailedException failedToGetMetrics(String reason);
+    */
 
     @Message(id = 12, value = "Attribute [%s] is not longer supported.")
     OperationFailedException attributeNoLongerSupported(String attributeName);
@@ -108,6 +102,7 @@ public interface PicketLinkLogger extends BasicLogger {
     OperationFailedException requiredChild(String parentPathElement, String childPathElement);
 
     // IDM Messages 50-99
+    /*
     @Message(id = 50, value = "Entities module not found [%s].")
     SecurityConfigurationException idmJpaEntityModuleNotFound(String entityModuleName);
 
@@ -118,7 +113,7 @@ public interface PicketLinkLogger extends BasicLogger {
     SecurityConfigurationException idmJpaEMFLookupFailed(String entityManagerFactoryJndiName);
 
     @Message(id = 53, value = "Could not create transactional EntityManager.")
-    SecurityConfigurationException idmJpaFailedCreateTransactionEntityManager(@Cause Exception e);
+    SecurityConfigurationException idmJpaFailedCreateTransactionEntityManager(@Cause Exception e);*/
 
     @Message(id = 54, value = "You must provide at least one identity configuration.")
     OperationFailedException idmNoIdentityConfigurationProvided();
@@ -133,15 +128,16 @@ public interface PicketLinkLogger extends BasicLogger {
     OperationFailedException idmLdapNoMappingDefined();
 
     // Federation Messages - 100-150
-    @Message(id = 100, value = "No Identity Provider configuration found for federation [%s]. ")
-    IllegalStateException federationIdentityProviderNotConfigured(String federationAlias);
+  /*  @Message(id = 100, value = "No Identity Provider configuration found for federation [%s]. ")
+    IllegalStateException federationIdentityProviderNotConfigured(String federationAlias);*/
 
     @Message(id = 101, value = "No type provided for the handler. You must specify a class-name or code.")
     OperationFailedException federationHandlerTypeNotProvided();
 
+    /*
     @Message(id = 102, value = "Could not parse default STS configuration.")
     RuntimeException federationCouldNotParseSTSConfig(@Cause Throwable t);
 
     @Message(id = 104, value = "Could not configure SAML Metadata to deployment [%s].")
-    IllegalStateException federationSAMLMetadataConfigError(String deploymentName, @Cause ProcessingException e);
+    IllegalStateException federationSAMLMetadataConfigError(String deploymentName, @Cause ProcessingException e);*/
 }
