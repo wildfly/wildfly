@@ -70,7 +70,7 @@ public class IIOPTransformers implements ExtensionTransformerRegistration {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(IIOPRootDefinition.CLIENT_REQUIRES_SSL.getDefaultValue()), IIOPRootDefinition.CLIENT_REQUIRES_SSL)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(IIOPRootDefinition.SERVER_REQUIRES_SSL.getDefaultValue()), IIOPRootDefinition.SERVER_REQUIRES_SSL)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(IIOPRootDefinition.INTEROP_IONA.getDefaultValue()), IIOPRootDefinition.INTEROP_IONA)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, IIOPRootDefinition.AUTHENTICATION_CONTEXT, IIOPRootDefinition.SERVER_SSL_CONTEXT, IIOPRootDefinition.CLIENT_SSL_CONTEXT)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, IIOPRootDefinition.IOR_FILEPATH, IIOPRootDefinition.AUTHENTICATION_CONTEXT, IIOPRootDefinition.SERVER_SSL_CONTEXT, IIOPRootDefinition.CLIENT_SSL_CONTEXT)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
                     @Override
                     protected boolean rejectAttribute(PathAddress pathAddress, String s, ModelNode attributeValue, TransformationContext transformationContext) {

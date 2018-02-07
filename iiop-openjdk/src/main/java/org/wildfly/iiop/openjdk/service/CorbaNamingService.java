@@ -22,6 +22,11 @@
 
 package org.wildfly.iiop.openjdk.service;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FilePermission;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Properties;
 
 import org.jboss.msc.inject.Injector;
@@ -102,6 +107,12 @@ public class CorbaNamingService implements Service<NamingContextExt> {
                         namingPOA.servant_to_reference(ns));
             }
 
+            //print nameservice IOR to specified filename so that they can be used by external applications
+            final String iorFilepath = properties.getProperty(Constants.NAMING_IOR_FILEPATH);
+            if (!(iorFilepath == null || iorFilepath.trim().length() == 0)) {
+                writeIORToFile(orb.object_to_string(namingService), iorFilepath);
+            }
+
         } catch (Exception e) {
             throw IIOPLogger.ROOT_LOGGER.failedToStartJBossCOSNaming(e);
         }
@@ -112,6 +123,31 @@ public class CorbaNamingService implements Service<NamingContextExt> {
         if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
             IIOPLogger.ROOT_LOGGER.corbaNamingServiceStarted();
             IIOPLogger.ROOT_LOGGER.debugf("Naming: [%s]", orb.object_to_string(namingService));
+        }
+
+    }
+
+    private void writeIORToFile(final String ior, final String iorFilepath) {
+        BufferedWriter out = null;
+        try {
+            File parentDir = new File(iorFilepath).getParentFile();
+            if (!parentDir.exists()) {
+                if (!parentDir.mkdirs()) {
+                    throw IIOPLogger.ROOT_LOGGER.failedToCreateIORFileDirectory(iorFilepath);
+                }
+            }
+            out = new BufferedWriter(new FileWriter(iorFilepath, false));
+            out.write(ior);
+        } catch (Exception e) {
+            throw IIOPLogger.ROOT_LOGGER.failedWritingIORToFile(e, iorFilepath);
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    IIOPLogger.ROOT_LOGGER.failedClosingIORFile(e, iorFilepath);
+                }
+            }
         }
     }
 

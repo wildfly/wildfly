@@ -411,4 +411,14 @@ public interface IIOPLogger extends BasicLogger {
 
     @Message(id = 114, value = "Elytron security initializer not supported in previous iiop-openjdk versions and can't be converted")
     String elytronInitializerNotSupportedInPreviousVersions();
+
+    @Message(id = 115, value = "Failed to create directory to for IIOP nameservice IOR file: %s")
+    RuntimeException failedToCreateIORFileDirectory(final String iorFile);
+
+    @Message(id = 116, value = "Failed writing IOR to file: %s")
+    RuntimeException failedWritingIORToFile(@Cause Throwable cause, final String iorFile);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 117, value = "Failed writing IOR to file: %s")
+    void failedClosingIORFile(@Cause Throwable cause, final String iorFile);
 }
