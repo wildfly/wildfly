@@ -102,7 +102,8 @@ public interface ModulesMap {
             put("SPNEGO", SPNEGOLoginModule.class.getName());
             put("SPNEGOUsers", SPNEGOLoginModule.class.getName()); // duplicated here to maintain name pattern
             put("AdvancedLdap", AdvancedLdapLoginModule.class.getName());
-            put("AdvancedAdLdap", AdvancedADLoginModule.class.getName());
+            put("AdvancedAdLdap", AdvancedADLoginModule.class.getName()); // This is the original mapping.
+            put("AdvancedADLdap", AdvancedADLoginModule.class.getName()); // This is how it has been documented.
             // Datasource related modules
             put("SecureIdentity", SecureIdentityLoginModule.class.getName());
             put("ConfiguredIdentity", ConfiguredIdentityLoginModule.class.getName());
