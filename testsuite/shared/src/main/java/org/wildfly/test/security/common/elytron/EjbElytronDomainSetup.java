@@ -124,7 +124,7 @@ public class EjbElytronDomainSetup implements ServerSetupTask {
         steps.add(addEjbDomain);
 
         applyUpdate(managementClient.getControllerClient(), compositeOp, false);
-        // TODO: add {"allow-resource-service-restart" => true} to ejbRemoteAddress write-attribute operation once WFLY-8793 / JBEAP-10955 is fixed
+        // TODO: add {"allow-resource-service-restart" => true} to ejbDomainAddress write-attribute operation once WFLY-8793 / JBEAP-10955 is fixed
         //       and remove this reload
         ServerReload.reloadIfRequired(managementClient.getControllerClient());
     }
@@ -136,7 +136,9 @@ public class EjbElytronDomainSetup implements ServerSetupTask {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        // TODO: add {"allow-resource-service-restart" => true} to ejbRemoteAddress write-attribute operation once WFLY-8793 / JBEAP-10955 is fixed
+
+        applyRemoveAllowReload(managementClient.getControllerClient(), ejbDomainAddress, false);
+        // TODO: add {"allow-resource-service-restart" => true} to ejbDomainAddress write-attribute operation once WFLY-8793 / JBEAP-10955 is fixed
         //       and remove this reload
         try {
             ServerReload.reloadIfRequired(managementClient.getControllerClient());
@@ -144,13 +146,6 @@ public class EjbElytronDomainSetup implements ServerSetupTask {
             throw new RuntimeException(e);
         }
 
-        applyRemoveAllowReload(managementClient.getControllerClient(), ejbDomainAddress, false);
-        // TODO: remove this reload once WFLY-8821 / JBEAP-11074 is fixed
-        try {
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
         applyRemoveAllowReload(managementClient.getControllerClient(), saslAuthenticationAddress, false);
     }
 

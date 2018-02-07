@@ -26,7 +26,6 @@ import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.junit.Assert.assertEquals;
 
-import java.io.FilePermission;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -276,9 +275,9 @@ public class ConstantPermissionMapperTestCase {
     private static WebArchive createWar(final String sd) {
         return ShrinkWrap.create(WebArchive.class, sd + ".war").addClasses(CheckIdentityPermissionServlet.class)
                 .addAsWebInfResource(Utils.getJBossWebXmlAsset(sd), "jboss-web.xml")
-                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new ElytronPermission("*"),
-                        // FIXME remove this FilePermission once the ELY-1055 is fixed
-                        new FilePermission(System.getProperty("jboss.inst") + "/-", "read") // ELY-1055 workaround
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                        new ElytronPermission("authenticate"),
+                        new ElytronPermission("getSecurityDomain")
                 ), "permissions.xml")
                 .addAsManifestResource(
                         Utils.getJBossDeploymentStructure("org.wildfly.extension.batch.jberet",
