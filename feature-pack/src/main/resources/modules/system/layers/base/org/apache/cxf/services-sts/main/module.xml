@@ -59,7 +59,7 @@
         <module name="javax.xml.soap.api" />
         <module name="javax.xml.stream.api" />
         <module name="javax.xml.ws.api" />
-        <module name="org.apache.commons.lang" />
+        <module name="org.apache.commons.lang3" />
         <module name="org.apache.httpcomponents"/>
         <module name="org.apache.neethi" />
         <module name="org.apache.velocity" />
