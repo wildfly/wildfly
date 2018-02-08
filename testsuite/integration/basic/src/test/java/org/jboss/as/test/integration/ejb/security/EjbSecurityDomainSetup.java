@@ -126,9 +126,24 @@ public class EjbSecurityDomainSetup extends AbstractSecurityDomainSetup {
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) {
         if (elytronDomainSetup != null) {
-            servletElytronDomainSetup.tearDown(managementClient, containerId);
-            ejbElytronDomainSetup.tearDown(managementClient, containerId);
-            elytronDomainSetup.tearDown(managementClient, containerId);
+            // if one of tearDown will fail, rest of them should be called through
+            Exception ex = null;
+            try {
+                servletElytronDomainSetup.tearDown(managementClient, containerId);
+            } catch (Exception e) {
+                ex = e;
+            }
+            try {
+                ejbElytronDomainSetup.tearDown(managementClient, containerId);
+            } catch (Exception e) {
+                if (ex == null) ex = e;
+            }
+            try {
+                elytronDomainSetup.tearDown(managementClient, containerId);
+            } catch (Exception e) {
+                if (ex == null) ex = e;
+            }
+            if (ex != null) throw new RuntimeException(ex);
         } else {
             super.tearDown(managementClient, containerId);
         }
