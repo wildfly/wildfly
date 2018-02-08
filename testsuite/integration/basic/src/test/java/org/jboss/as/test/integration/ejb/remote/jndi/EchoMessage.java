@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -18,16 +18,26 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *
  */
 
 package org.jboss.as.test.integration.ejb.remote.jndi;
 
+import java.io.Serializable;
+
 /**
- * @author Jaikiran Pai
+ *
  */
-public interface RemoteEcho {
+public class EchoMessage implements Serializable {
 
-    String echo(String msg);
+    private String message;
 
-    EchoMessage echo(EchoMessage message);
+    public void setMessage(final String msg) {
+        this.message = msg;
+    }
+
+    public String getMessage() {
+        return this.message;
+    }
+
 }
