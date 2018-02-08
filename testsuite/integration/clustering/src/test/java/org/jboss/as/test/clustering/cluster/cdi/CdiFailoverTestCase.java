@@ -21,155 +21,56 @@
  */
 package org.jboss.as.test.clustering.cluster.cdi;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
-import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
+import org.jboss.as.test.clustering.single.web.Mutable;
+import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-
-import static org.junit.Assert.assertEquals;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.runner.RunWith;
 
 /**
  * Test failover with CDI session bean.
+ *
  * @author Tomas Remes
+ * @author Radoslav Husar
  */
-
 @RunWith(Arquillian.class)
 @RunAsClient
-public class CdiFailoverTestCase extends AbstractClusteringTestCase {
+public class CdiFailoverTestCase extends AbstractWebFailoverTestCase {
 
-    private static final String MODULE_NAME = "cdi-failover";
+    private static final String MODULE_NAME = CdiFailoverTestCase.class.getSimpleName();
+    private static final String DEPLOYMENT_NAME = MODULE_NAME + ".war";
+
+    public CdiFailoverTestCase() {
+        super(DEPLOYMENT_NAME, TransactionMode.TRANSACTIONAL);
+    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
-    public static Archive<?> deployment0() {
+    public static Archive<?> deployment1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(NODE_2)
-    public static Archive<?> deployment1() {
+    public static Archive<?> deployment2() {
         return createDeployment();
     }
 
     private static Archive<?> createDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
-        war.addClasses(Incrementor.class, CdiIncrementorBean.class, CdiServlet.class, IncrementorDecorator.class);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
+        war.addClasses(Incrementor.class, CdiIncrementorBean.class, CdiServlet.class, SimpleServlet.class, Mutable.class, IncrementorDecorator.class);
+        ClusterTestUtil.addTopologyListenerDependencies(war);
         war.setWebXML(CdiFailoverTestCase.class.getPackage(), "web.xml");
         return war;
     }
 
-    /**
-     * Test simple graceful shutdown failover:
-     * <p/>
-     * 1/ Start 2 containers and deploy <distributable/> webapp.
-     * 2/ Query first container creating a web session.
-     * 3/ Shutdown first container.
-     * 4/ Query second container verifying sessions got replicated.
-     * 5/ Bring up the first container.
-     * 6/ Query first container verifying that updated sessions replicated back.
-     *
-     * @throws java.io.IOException
-     * @throws InterruptedException
-     * @throws java.net.URISyntaxException
-     */
-    @Test
-    public void testGracefulSimpleFailover(
-            @ArquillianResource(CdiServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-            @ArquillianResource(CdiServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
-        testFailover(new RestartLifecycle(), baseURL1, baseURL2);
-    }
-
-    /**
-     * Test simple undeploy failover:
-     * <p/>
-     * 1/ Start 2 containers and deploy <distributable/> webapp.
-     * 2/ Query first container creating a web session.
-     * 3/ Undeploy application from the first container.
-     * 4/ Query second container verifying sessions got replicated.
-     * 5/ Redeploy application to the first container.
-     * 6/ Query first container verifying that updated sessions replicated back.
-     *
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws URISyntaxException
-     */
-    @Test
-    public void testGracefulUndeployFailover(
-            @ArquillianResource(CdiServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-            @ArquillianResource(CdiServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
-        testFailover(new RedeployLifecycle(), baseURL1, baseURL2);
-    }
-
-    private static void testFailover(Lifecycle lifecycle, URL baseURL1, URL baseURL2) throws IOException, URISyntaxException {
-
-        URI uri1 = CdiServlet.createURI(baseURL1);
-        URI uri2 = CdiServlet.createURI(baseURL2);
-
-        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()){
-            assertEquals(1, queryCount(client, uri1));
-            assertEquals(2, queryCount(client, uri1));
-
-            assertEquals(3, queryCount(client, uri2));
-            assertEquals(4, queryCount(client, uri2));
-
-            lifecycle.stop(NODE_2);
-
-            assertEquals(5, queryCount(client, uri1));
-            assertEquals(6, queryCount(client, uri1));
-
-            lifecycle.start(NODE_2);
-
-            assertEquals(7, queryCount(client, uri1));
-            assertEquals(8, queryCount(client, uri1));
-
-            assertEquals(9, queryCount(client, uri2));
-            assertEquals(10, queryCount(client, uri2));
-
-            lifecycle.stop(NODE_1);
-
-            assertEquals(11, queryCount(client, uri2));
-            assertEquals(12, queryCount(client, uri2));
-
-            lifecycle.start(NODE_1);
-
-            assertEquals(13, queryCount(client, uri1));
-            assertEquals(14, queryCount(client, uri1));
-
-            assertEquals(15, queryCount(client, uri2));
-            assertEquals(16, queryCount(client, uri2));
-        }
-    }
-
-    private static int queryCount(HttpClient client, URI uri) throws IOException {
-        HttpResponse response = client.execute(new HttpGet(uri));
-        try {
-            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            return Integer.parseInt(response.getFirstHeader("count").getValue());
-        } finally {
-            HttpClientUtils.closeQuietly(response);
-        }
-    }
 }

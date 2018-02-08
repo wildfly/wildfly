@@ -25,4 +25,15 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          version="3.0">
     <distributable/>
+
+    <!-- Use mapping in the web.xml to override /simple servlet URL mapping defined in the @WebServlet annotation -->
+    <servlet>
+        <servlet-name>org.jboss.as.test.clustering.cluster.cdi.CdiServlet</servlet-name>
+        <servlet-class>org.jboss.as.test.clustering.cluster.cdi.CdiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>org.jboss.as.test.clustering.cluster.cdi.CdiServlet</servlet-name>
+        <url-pattern>/simple</url-pattern>
+    </servlet-mapping>
+
 </web-app>

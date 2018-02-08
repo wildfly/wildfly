@@ -21,16 +21,16 @@
  */
 package org.jboss.as.test.clustering.cluster.cdi;
 
-import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.ejb.Stateful;
 import javax.enterprise.context.SessionScoped;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
 
 /**
  * @author Tomas Remes
  */
-
 @Stateful
 @SessionScoped
 public class CdiIncrementorBean implements Incrementor {

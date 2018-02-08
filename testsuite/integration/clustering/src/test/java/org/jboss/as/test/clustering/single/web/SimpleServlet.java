@@ -45,7 +45,7 @@ public class SimpleServlet extends HttpServlet {
     public static final String HEADER_SERIALIZED = "serialized";
     public static final String VALUE_HEADER = "value";
     public static final String SESSION_ID_HEADER = "sessionId";
-    private static final String ATTRIBUTE = "test";
+    public static final String ATTRIBUTE = "test";
 
     public static URI createURI(URL baseURL) throws URISyntaxException {
         return createURI(baseURL.toURI());
