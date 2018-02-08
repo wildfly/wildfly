@@ -28,7 +28,6 @@ import javax.ejb.NoSuchEJBException;
 import javax.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -52,7 +51,6 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 public class TransactionalRemoteStatefulEJBFailoverTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = "transactional-remote-stateful-ejb-failover-test";
 

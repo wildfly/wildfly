@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.clustering.single.web;
 
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -34,7 +36,6 @@ import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
@@ -51,10 +52,9 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 public class SimpleWebTestCase {
 
-    @Deployment(name = "deployment-single")
+    @Deployment(name = DEPLOYMENT_1, testable = false)
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClasses(SimpleServlet.class, Mutable.class);
@@ -63,7 +63,7 @@ public class SimpleWebTestCase {
     }
 
     @Test
-    @OperateOnDeployment("deployment-single")
+    @OperateOnDeployment(DEPLOYMENT_1)
     public void test(@ArquillianResource(SimpleServlet.class) URL baseURL) throws IOException, URISyntaxException {
 
         URI uri = SimpleServlet.createURI(baseURL);

@@ -25,7 +25,6 @@ import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NO
 import static org.junit.Assert.*;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopology;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetriever;
@@ -43,11 +42,10 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 public class CommandDispatcherTestCase {
     private static final String MODULE_NAME = "command-dispatcher";
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(ClusterTopologyRetriever.class.getPackage());

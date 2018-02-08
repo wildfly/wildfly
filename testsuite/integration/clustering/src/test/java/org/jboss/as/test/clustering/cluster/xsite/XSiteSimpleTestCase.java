@@ -35,7 +35,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -76,7 +75,6 @@ import org.junit.runner.RunWith;
  * @author Richard Achmatowicz
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 @ServerSetup({XSiteSimpleTestCase.ServerSetupTask.class})
 public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
 
@@ -84,25 +82,25 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
         super(FOUR_NODES, FOUR_DEPLOYMENTS);
     }
 
-    @Deployment(name = DEPLOYMENT_1, managed = false)
+    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
     public static Archive<?> deployment1() {
         return getDeployment();
     }
 
-    @Deployment(name = DEPLOYMENT_2, managed = false)
+    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(NODE_2)
     public static Archive<?> deployment2() {
         return getDeployment();
     }
 
-    @Deployment(name = DEPLOYMENT_3, managed = false)
+    @Deployment(name = DEPLOYMENT_3, managed = false, testable = false)
     @TargetsContainer(NODE_3)
     public static Archive<?> deployment3() {
         return getDeployment();
     }
 
-    @Deployment(name = DEPLOYMENT_4, managed = false)
+    @Deployment(name = DEPLOYMENT_4, managed = false, testable = false)
     @TargetsContainer(NODE_4)
     public static Archive<?> deployment4() {
         return getDeployment();

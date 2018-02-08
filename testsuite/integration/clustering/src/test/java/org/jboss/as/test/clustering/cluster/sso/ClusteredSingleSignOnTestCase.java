@@ -25,7 +25,6 @@ import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -43,7 +42,6 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:dpospisi@redhat.com">Dominik Pospisil</a>
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 public class ClusteredSingleSignOnTestCase extends AbstractClusteringTestCase {
 
     private static Logger log = Logger.getLogger(ClusteredSingleSignOnTestCase.class);

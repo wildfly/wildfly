@@ -23,7 +23,6 @@ package org.jboss.as.test.clustering.cluster.cdi;
 
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.ClusterTestUtil;
@@ -43,7 +42,6 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 public class CdiFailoverTestCase extends AbstractWebFailoverTestCase {
 
     private static final String MODULE_NAME = CdiFailoverTestCase.class.getSimpleName();
