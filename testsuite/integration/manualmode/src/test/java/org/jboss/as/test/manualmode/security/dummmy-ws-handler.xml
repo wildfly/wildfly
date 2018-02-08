@@ -7,10 +7,6 @@
 
     <handler-chain>
         <handler>
-            <handler-name>WSAuthenticationHandler</handler-name>
-            <handler-class>org.picketlink.trust.jbossws.handler.WSAuthenticationHandler</handler-class>
-        </handler>
-        <handler>
             <handler-name>SAML2Handler</handler-name>
             <handler-class>org.picketlink.trust.jbossws.handler.SAML2Handler</handler-class>
         </handler>
