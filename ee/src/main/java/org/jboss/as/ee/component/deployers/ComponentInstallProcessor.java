@@ -67,6 +67,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StabilityMonitor;
 
 import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 import static org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY;
@@ -262,7 +263,10 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                     ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(bindInfo.getBinderServiceName(), service);
                     bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
                     serviceBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());
-                    serviceBuilder.install();
+                    ServiceController<ManagedReferenceFactory> controller = serviceBuilder.install();
+                    for(StabilityMonitor monitor : phaseContext.getServiceTarget().getMonitors()) {
+                        monitor.addController(controller);
+                    }
                 } catch (DuplicateServiceException e) {
                     ServiceController<ManagedReferenceFactory> registered = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(bindInfo.getBinderServiceName());
                     if (registered == null)
