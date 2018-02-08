@@ -1279,6 +1279,10 @@
                         <artifactId>jaxb-api</artifactId>
                         <groupId>javax.xml.bind</groupId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.xml.bind</groupId>
+                        <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
