@@ -60,7 +60,6 @@ import org.picketlink.identity.federation.core.wstrust.plugins.saml.SAMLUtil;
 import org.picketlink.trust.jbossws.SAML2Constants;
 import org.w3c.dom.Element;
 
-import javax.ejb.EJBAccessException;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
@@ -284,9 +283,9 @@ public class AuthenticationPolicyContextTestCase {
 
         try {
             port.echo("Test");
-        } catch (EJBAccessException eae) {
-            LOGGER.error(eae.getMessage(), eae);
-            fail("EJBAccessException:" + eae.getMessage());
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            fail(e.getMessage());
         }
     }
 }
