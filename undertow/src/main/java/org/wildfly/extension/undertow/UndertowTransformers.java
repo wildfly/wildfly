@@ -26,9 +26,11 @@ import static org.wildfly.extension.undertow.HttpsListenerResourceDefinition.SSL
 import static org.wildfly.extension.undertow.ListenerResourceDefinition.RFC6265_COOKIE_VALIDATION;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.AttributeTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -45,8 +47,8 @@ import org.wildfly.extension.undertow.handlers.ReverseProxyHandler;
  * @author Tomaz Cerar (c) 2016 Red Hat Inc.
  */
 public class UndertowTransformers implements ExtensionTransformerRegistration {
-    private static final ModelVersion MODEL_VERSION_EAP7_0_0 = ModelVersion.create(3, 1, 0);
-    private static final ModelVersion MODEL_VERSION_EAP7_1_0 = ModelVersion.create(4, 0, 0);
+    private static ModelVersion MODEL_VERSION_EAP7_0_0 = ModelVersion.create(3, 1, 0);
+    private static ModelVersion MODEL_VERSION_EAP7_1_0 = ModelVersion.create(4, 0, 0);
 
     @Override
     public String getSubsystemName() {
@@ -72,6 +74,14 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
                 .end();
+
+        final ResourceTransformationDescriptionBuilder serverBuilder = subsystemBuilder.addChildResource(UndertowExtension.SERVER_PATH);
+        final AttributeTransformationDescriptionBuilder http = serverBuilder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH).getAttributeBuilder();
+        convertCommonListenerAttributes(http).end();
+        final AttributeTransformationDescriptionBuilder https = serverBuilder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH).getAttributeBuilder();
+        convertCommonListenerAttributes(https).end();
+        final AttributeTransformationDescriptionBuilder ajp = serverBuilder.addChildResource(UndertowExtension.AJP_LISTENER_PATH).getAttributeBuilder();
+        convertCommonListenerAttributes(ajp).end();
 
         TransformationDescription.Tools.register(subsystemBuilder.build(), subsystemRegistration, MODEL_VERSION_EAP7_1_0);
     }
@@ -176,5 +186,16 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE), HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE)
 
                 ;
+    }
+
+    private static AttributeTransformationDescriptionBuilder convertCommonListenerAttributes(AttributeTransformationDescriptionBuilder builder) {
+        return builder.setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
+            @Override
+            protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                if (attributeValue.isDefined() && attributeValue.asLong() == 0L) {
+                    attributeValue.set(Long.MAX_VALUE);
+                }
+            }
+        }, ListenerResourceDefinition.MAX_ENTITY_SIZE);
     }
 }
