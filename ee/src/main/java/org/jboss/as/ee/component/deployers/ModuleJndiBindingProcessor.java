@@ -54,6 +54,7 @@ import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StabilityMonitor;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -227,7 +228,10 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     ServiceBuilder<ManagedReferenceFactory> serviceBuilder = CurrentServiceContainer.getServiceContainer().addService(bindInfo.getBinderServiceName(), service);
                     bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
                     serviceBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());
-                    serviceBuilder.install();
+                    ServiceController<ManagedReferenceFactory> controller = serviceBuilder.install();
+                    for(StabilityMonitor monitor : phaseContext.getServiceTarget().getMonitors()) {
+                        monitor.addController(controller);
+                    }
                 } catch (DuplicateServiceException e) {
                     final ServiceController<ManagedReferenceFactory> controller = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(bindInfo.getBinderServiceName());
                     if (controller == null)
