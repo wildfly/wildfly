@@ -24,7 +24,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.wildfly.extension.undertow.DeploymentDefinition.CONTEXT_ROOT;
 import static org.wildfly.extension.undertow.DeploymentDefinition.SERVER;
 import static org.wildfly.extension.undertow.DeploymentDefinition.VIRTUAL_HOST;
-import io.undertow.servlet.api.ThreadSetupAction.Handle;
 import io.undertow.servlet.handlers.ServletHandler;
 
 import java.lang.annotation.Annotation;
@@ -38,7 +37,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.Servlet;
-import javax.servlet.ServletException;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
@@ -179,59 +177,62 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
             final ServiceController<?> controller = context.getServiceRegistry(false).getService(
                     UndertowService.deploymentServiceName(server, host, contextPath));
             final UndertowDeploymentService deploymentService = (UndertowDeploymentService) controller.getService();
-            Servlet resteasyServlet = null;
-            Handle handle = deploymentService.getDeployment().getThreadSetupAction().setup(null);
             try {
-                for (Map.Entry<String, ServletHandler> servletHandler : deploymentService.getDeployment().getServlets()
-                        .getServletHandlers().entrySet()) {
-                    if (HttpServletDispatcher.class.isAssignableFrom(servletHandler.getValue().getManagedServlet()
-                            .getServletInfo().getServletClass())) {
-                        resteasyServlet = (Servlet) servletHandler.getValue().getManagedServlet().getServlet().getInstance();
-                        break;
+
+                deploymentService.getDeployment().createThreadSetupAction((exchange, ctxObject) -> {
+                    Servlet resteasyServlet = null;
+                    for (Map.Entry<String, ServletHandler> servletHandler : deploymentService.getDeployment().getServlets()
+                            .getServletHandlers().entrySet()) {
+                        if (HttpServletDispatcher.class.isAssignableFrom(servletHandler.getValue().getManagedServlet()
+                                .getServletInfo().getServletClass())) {
+                            resteasyServlet = servletHandler.getValue().getManagedServlet().getServlet().getInstance();
+                            break;
+                        }
                     }
-                }
-                if (resteasyServlet != null) {
-                    final Collection<String> servletMappings = resteasyServlet.getServletConfig().getServletContext()
-                            .getServletRegistration(resteasyServlet.getServletConfig().getServletName()).getMappings();
-                    final ResourceMethodRegistry registry = (ResourceMethodRegistry) ((HttpServletDispatcher) resteasyServlet)
-                            .getDispatcher().getRegistry();
-                    context.addStep(new OperationStepHandler() {
-                        @Override
-                        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                            final ModelNode response = new ModelNode();
-                            List<JaxrsResourceMethodDescription> resMethodInvokers = new ArrayList<>();
-                            List<JaxrsResourceLocatorDescription> resLocatorInvokers = new ArrayList<>();
-                            for (Map.Entry<String, List<ResourceInvoker>> resource : registry.getBounded().entrySet()) {
-                                String mapping = resource.getKey();
-                                List<ResourceInvoker> resouceInvokers = resource.getValue();
-                                for (ResourceInvoker resourceInvoker : resouceInvokers) {
-                                    if (ResourceMethodInvoker.class.isAssignableFrom(resourceInvoker.getClass())) {
-                                        ResourceMethodInvoker methodInvoker = (ResourceMethodInvoker) resourceInvoker;
-                                        if (methodInvoker.getResourceClass().getCanonicalName().equals(clsName)) {
-                                            JaxrsResourceMethodDescription resMethodDesc = resMethodDescription(methodInvoker, contextPath, mapping, servletMappings);
-                                            resMethodInvokers.add(resMethodDesc);
-                                        }
-                                    } else if (ResourceLocatorInvoker.class.isAssignableFrom(resourceInvoker.getClass())) {
-                                        ResourceLocatorInvoker locatorInvoker = (ResourceLocatorInvoker) resourceInvoker;
-                                        if (clsName.equals(locatorInvoker.getMethod().getDeclaringClass().getCanonicalName())) {
-                                            ResourceClass resClass =  ResourceBuilder.locatorFromAnnotations(locatorInvoker.getMethod().getReturnType());
-                                            JaxrsResourceLocatorDescription resLocatorDesc = resLocatorDescription(resClass, contextPath, mapping, servletMappings, new ArrayList<Class<?>>());
-                                            resLocatorInvokers.add(resLocatorDesc);
+                    if (resteasyServlet != null) {
+                        final Collection<String> servletMappings = resteasyServlet.getServletConfig().getServletContext()
+                                .getServletRegistration(resteasyServlet.getServletConfig().getServletName()).getMappings();
+                        final ResourceMethodRegistry registry = (ResourceMethodRegistry) ((HttpServletDispatcher) resteasyServlet)
+                                .getDispatcher().getRegistry();
+                        context.addStep(new OperationStepHandler() {
+                            @Override
+                            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                                final ModelNode response = new ModelNode();
+                                List<JaxrsResourceMethodDescription> resMethodInvokers = new ArrayList<>();
+                                List<JaxrsResourceLocatorDescription> resLocatorInvokers = new ArrayList<>();
+                                for (Map.Entry<String, List<ResourceInvoker>> resource : registry.getBounded().entrySet()) {
+                                    String mapping = resource.getKey();
+                                    List<ResourceInvoker> resouceInvokers = resource.getValue();
+                                    for (ResourceInvoker resourceInvoker : resouceInvokers) {
+                                        if (ResourceMethodInvoker.class.isAssignableFrom(resourceInvoker.getClass())) {
+                                            ResourceMethodInvoker methodInvoker = (ResourceMethodInvoker) resourceInvoker;
+                                            if (methodInvoker.getResourceClass().getCanonicalName().equals(clsName)) {
+                                                JaxrsResourceMethodDescription resMethodDesc = resMethodDescription(methodInvoker, contextPath, mapping, servletMappings);
+                                                resMethodInvokers.add(resMethodDesc);
+                                            }
+                                        } else if (ResourceLocatorInvoker.class.isAssignableFrom(resourceInvoker.getClass())) {
+                                            ResourceLocatorInvoker locatorInvoker = (ResourceLocatorInvoker) resourceInvoker;
+                                            if (clsName.equals(locatorInvoker.getMethod().getDeclaringClass().getCanonicalName())) {
+                                                ResourceClass resClass =  ResourceBuilder.locatorFromAnnotations(locatorInvoker.getMethod().getReturnType());
+                                                JaxrsResourceLocatorDescription resLocatorDesc = resLocatorDescription(resClass, contextPath, mapping, servletMappings, new ArrayList<Class<?>>());
+                                                resLocatorInvokers.add(resLocatorDesc);
+                                            }
                                         }
                                     }
                                 }
+                                Collections.sort(resMethodInvokers);
+                                Collections.sort(resLocatorInvokers);
+                                handleAttribute(clsName, resMethodInvokers, resLocatorInvokers, servletMappings, response);
+                                context.getResult().set(response);
                             }
-                            Collections.sort(resMethodInvokers);
-                            Collections.sort(resLocatorInvokers);
-                            handleAttribute(clsName, resMethodInvokers, resLocatorInvokers, servletMappings, response);
-                            context.getResult().set(response);
-                        }
-                    }, OperationContext.Stage.RUNTIME);
-                }
-            } catch (ServletException ex) {
+                        }, OperationContext.Stage.RUNTIME);
+                    }
+
+                    return null;
+                }).call(null, null);
+
+            } catch (Exception ex) {
                 throw new RuntimeException(ex);
-            } finally {
-                handle.tearDown();
             }
         }
 

@@ -25,13 +25,11 @@ import static org.wildfly.extension.undertow.DeploymentDefinition.CONTEXT_ROOT;
 import static org.wildfly.extension.undertow.DeploymentDefinition.SERVER;
 import static org.wildfly.extension.undertow.DeploymentDefinition.VIRTUAL_HOST;
 
-import io.undertow.servlet.api.ThreadSetupAction.Handle;
 import io.undertow.servlet.handlers.ServletHandler;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.Servlet;
-import javax.servlet.ServletException;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -142,35 +140,34 @@ public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
 
             final ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(server, host, contextPath));
             final UndertowDeploymentService deploymentService = (UndertowDeploymentService) controller.getService();
-            Servlet resteasyServlet = null;
-            Handle handle = deploymentService.getDeployment().getThreadSetupAction().setup(null);
             try {
-                for (Map.Entry<String, ServletHandler> servletHandler : deploymentService.getDeployment().getServlets().getServletHandlers().entrySet()) {
-                    if (HttpServletDispatcher.class.isAssignableFrom(servletHandler.getValue().getManagedServlet().getServletInfo().getServletClass())) {
-                        resteasyServlet = (Servlet) servletHandler.getValue().getManagedServlet().getServlet().getInstance();
-                        break;
+
+                deploymentService.getDeployment().createThreadSetupAction((exchange, ctxObject) -> {
+                    Servlet resteasyServlet = null;
+                    for (Map.Entry<String, ServletHandler> servletHandler : deploymentService.getDeployment().getServlets().getServletHandlers().entrySet()) {
+                        if (HttpServletDispatcher.class.isAssignableFrom(servletHandler.getValue().getManagedServlet().getServletInfo().getServletClass())) {
+                            resteasyServlet = servletHandler.getValue().getManagedServlet().getServlet().getInstance();
+                            break;
+                        }
                     }
-                }
-                if (resteasyServlet != null) {
-                    final Collection<String> servletMappings = resteasyServlet.getServletConfig().getServletContext().getServletRegistration(resteasyServlet.getServletConfig().getServletName()).getMappings();
-                    final ResourceMethodRegistry registry = (ResourceMethodRegistry) ((HttpServletDispatcher) resteasyServlet).getDispatcher().getRegistry();
-                    context.addStep(new OperationStepHandler() {
-                        @Override
-                        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                    if (resteasyServlet != null) {
+                        final Collection<String> servletMappings = resteasyServlet.getServletConfig().getServletContext().getServletRegistration(resteasyServlet.getServletConfig().getServletName()).getMappings();
+                        final ResourceMethodRegistry registry = (ResourceMethodRegistry) ((HttpServletDispatcher) resteasyServlet).getDispatcher().getRegistry();
+                        context.addStep((context1, operation1) -> {
                             if (registry != null) {
                                 final ModelNode response = new ModelNode();
                                 for (Map.Entry<String, List<ResourceInvoker>> resource : registry.getBounded().entrySet()) {
                                     handle(response, contextPath, servletMappings, resource.getKey(), resource.getValue());
                                 }
-                                context.getResult().set(response);
+                                context1.getResult().set(response);
                             }
-                        }
-                    }, OperationContext.Stage.RUNTIME);
-                }
-            } catch (ServletException ex) {
+                        }, OperationContext.Stage.RUNTIME);
+                    }
+                    return null;
+                }).call(null, null);
+
+            } catch (Exception ex) {
                 throw new RuntimeException(ex);
-            } finally {
-                handle.tearDown();
             }
         }
     }
