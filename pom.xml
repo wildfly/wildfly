@@ -177,7 +177,7 @@
         <version.org.jboss.mod_cluster>1.3.7.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.openjdk-orb>8.1.0.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.2.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
-        <version.org.jboss.resteasy>3.5.0.CR1</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.5.0.CR2</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>3.0.4.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
