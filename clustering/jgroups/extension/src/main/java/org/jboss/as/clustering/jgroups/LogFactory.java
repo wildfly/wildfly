@@ -33,7 +33,7 @@ import org.jgroups.logging.Log;
 public class LogFactory implements CustomLogFactory {
 
     @Override
-    public Log getLog(Class clazz) {
+    public Log getLog(Class<?> clazz) {
         return new LogAdapter(Logger.getLogger(clazz));
     }
 

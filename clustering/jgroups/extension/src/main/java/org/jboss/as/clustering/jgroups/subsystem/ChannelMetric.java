@@ -21,6 +21,8 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -52,16 +54,16 @@ public enum ChannelMetric implements Metric<JChannel> {
             return new ModelNode(channel.getDiscardOwnMessages());
         }
     },
-    NUM_TASKS_IN_TIMER("num-tasks-in-timer", ModelType.INT) {
+    NUM_TASKS_IN_TIMER("num-tasks-in-timer", ModelType.INT, JGroupsModel.VERSION_5_0_0) {
         @Override
         public ModelNode execute(JChannel channel) {
-            return new ModelNode(channel.getNumberOfTasksInTimer());
+            return new ModelNode(0);
         }
     },
-    NUM_TIMER_THREADS("num-timer-threads", ModelType.INT) {
+    NUM_TIMER_THREADS("num-timer-threads", ModelType.INT, JGroupsModel.VERSION_5_0_0) {
         @Override
         public ModelNode execute(JChannel channel) {
-            return new ModelNode(channel.getTimerThreads());
+            return new ModelNode(0);
         }
     },
     RECEIVED_BYTES("received-bytes", ModelType.LONG) {
@@ -110,7 +112,15 @@ public enum ChannelMetric implements Metric<JChannel> {
     private final AttributeDefinition definition;
 
     ChannelMetric(String name, ModelType type) {
-        this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
+        this(name, type, UnaryOperator.identity());
+    }
+
+    ChannelMetric(String name, ModelType type, JGroupsModel deprecation) {
+        this(name, type, builder -> builder.setDeprecated(deprecation.getVersion()));
+    }
+
+    ChannelMetric(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
+        this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type, true)).setStorageRuntime().build();
     }
 
     @Override

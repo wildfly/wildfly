@@ -416,18 +416,27 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     }
                 }
                 case INTERNAL_THREAD_POOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_6_0)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
                         this.parseThreadPool(ThreadPoolResourceDefinition.INTERNAL, reader, address, operations);
                         break;
                     }
                 }
                 case OOB_THREAD_POOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_6_0)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
                         this.parseThreadPool(ThreadPoolResourceDefinition.OOB, reader, address, operations);
                         break;
                     }
                 }
                 case TIMER_THREAD_POOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_6_0)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
                         this.parseThreadPool(ThreadPoolResourceDefinition.TIMER, reader, address, operations);
                         break;
@@ -600,8 +609,15 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 break;
             }
             case SOCKET_BINDING: {
-                boolean socketProtocol = ProtocolRegistration.ProtocolType.MULTICAST_SOCKET.contains(Operations.getPathAddress(operation).getLastElement().getValue());
-                readAttribute(reader, index, operation, socketProtocol ? SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING : GenericProtocolResourceDefinition.DeprecatedAttribute.SOCKET_BINDING);
+                String protocol = Operations.getPathAddress(operation).getLastElement().getValue();
+                Attribute socketBindingAttribute = GenericProtocolResourceDefinition.DeprecatedAttribute.SOCKET_BINDING;
+                for (ProtocolRegistration.MulticastProtocol multicastProtocol : EnumSet.allOf(ProtocolRegistration.MulticastProtocol.class)) {
+                    if (protocol.equals(multicastProtocol.name())) {
+                        socketBindingAttribute = SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING;
+                        break;
+                    }
+                }
+                readAttribute(reader, index, operation, socketBindingAttribute);
                 break;
             }
             case DATA_SOURCE: {
@@ -787,6 +803,9 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     readAttribute(reader, i, operation, pool.getMaxThreads());
                     break;
                 case QUEUE_LENGTH:
+                    if (this.schema.since(JGroupsSchema.VERSION_6_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
                     readAttribute(reader, i, operation, pool.getQueueLength());
                     break;
                 case KEEPALIVE_TIME:

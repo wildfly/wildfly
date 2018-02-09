@@ -27,19 +27,20 @@ import static org.jboss.as.clustering.jgroups.subsystem.EncryptProtocolResourceD
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
 import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.CredentialSourceDependency;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
-import org.jboss.as.clustering.jgroups.protocol.EncryptProtocol;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jgroups.protocols.EncryptBase;
+import org.jgroups.protocols.Encrypt;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
@@ -51,14 +52,17 @@ import org.wildfly.security.password.interfaces.ClearPassword;
 /**
  * @author Paul Ferraro
  */
-public class EncryptProtocolConfigurationBuilder<P extends EncryptBase & EncryptProtocol> extends ProtocolConfigurationBuilder<P> {
+public class EncryptProtocolConfigurationBuilder<E extends KeyStore.Entry, P extends Encrypt<E>> extends ProtocolConfigurationBuilder<P> {
+
+    private final Class<E> entryClass;
 
     private volatile ValueDependency<KeyStore> keyStore;
     private volatile ValueDependency<CredentialSource> credentialSource;
     private volatile String keyAlias;
 
-    public EncryptProtocolConfigurationBuilder(PathAddress address) {
+    public EncryptProtocolConfigurationBuilder(PathAddress address, Class<E> entryClass) {
         super(address);
+        this.entryClass = entryClass;
     }
 
     @Override
@@ -93,10 +97,12 @@ public class EncryptProtocolConfigurationBuilder<P extends EncryptBase & Encrypt
             if (password == null) {
                 throw JGroupsLogger.ROOT_LOGGER.unexpectedCredentialSource();
             }
-            protocol.setKeyStore(store);
-            protocol.setKeyAlias(alias);
-            protocol.setKeyPassword(new KeyStore.PasswordProtection(password.getPassword()));
-        } catch (KeyStoreException | IOException e) {
+            if (!store.entryInstanceOf(alias, this.entryClass)) {
+                throw JGroupsLogger.ROOT_LOGGER.unexpectedKeyStoreEntryType(alias, this.entryClass.getSimpleName());
+            }
+            KeyStore.Entry entry = store.getEntry(alias, new KeyStore.PasswordProtection(password.getPassword()));
+            protocol.setKeyStoreEntry(this.entryClass.cast(entry));
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | UnrecoverableEntryException e) {
             throw new IllegalArgumentException(e);
         }
     }

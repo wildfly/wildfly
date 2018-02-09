@@ -25,14 +25,14 @@ import org.jboss.as.clustering.controller.RequirementServiceNameFactory;
 import org.jboss.as.clustering.controller.ServiceNameFactory;
 import org.jboss.as.clustering.controller.ServiceNameFactoryProvider;
 import org.jboss.modules.Module;
-import org.jgroups.Channel;
+import org.jgroups.JChannel;
 import org.wildfly.clustering.service.Requirement;
 
 /**
  * @author Paul Ferraro
  */
 public enum JGroupsDefaultRequirement implements Requirement, ServiceNameFactoryProvider {
-    CHANNEL("org.wildfly.clustering.jgroups.default-channel", Channel.class),
+    CHANNEL("org.wildfly.clustering.jgroups.default-channel", JChannel.class),
     CHANNEL_CLUSTER("org.wildfly.clustering.jgroups.default-channel-cluster", String.class),
     CHANNEL_FACTORY("org.wildfly.clustering.jgroups.default-channel-factory", ChannelFactory.class),
     CHANNEL_MODULE("org.wildfly.clustering.jgroups.default-channel-module", Module.class),

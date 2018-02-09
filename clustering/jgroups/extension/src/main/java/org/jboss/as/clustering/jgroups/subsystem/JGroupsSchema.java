@@ -31,14 +31,15 @@ import org.jboss.as.clustering.controller.Schema;
  */
 public enum JGroupsSchema implements Schema<JGroupsSchema> {
 
-    VERSION_1_0(1, 0),
-    VERSION_1_1(1, 1),
-    VERSION_2_0(2, 0),
-    VERSION_3_0(3, 0),
-    VERSION_4_0(4, 0),
-    VERSION_5_0(5, 0),
+    VERSION_1_0(1, 0), // AS 7.0
+    VERSION_1_1(1, 1), // AS 7.1
+    VERSION_2_0(2, 0), // WildFly 8
+    VERSION_3_0(3, 0), // WildFly 9
+    VERSION_4_0(4, 0), // WildFly 10
+    VERSION_5_0(5, 0), // WildFly 11
+    VERSION_6_0(6, 0), // WildFly 12
     ;
-    public static final JGroupsSchema CURRENT = VERSION_5_0;
+    public static final JGroupsSchema CURRENT = VERSION_6_0;
 
     private final int major;
     private final int minor;

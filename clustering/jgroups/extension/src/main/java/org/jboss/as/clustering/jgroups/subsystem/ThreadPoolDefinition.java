@@ -28,9 +28,7 @@ import org.jboss.as.clustering.controller.Attribute;
  * @author Paul Ferraro
  */
 public interface ThreadPoolDefinition {
-    String getThreadGroupPrefix();
     Attribute getMinThreads();
     Attribute getMaxThreads();
-    Attribute getQueueLength();
     Attribute getKeepAliveTime();
 }

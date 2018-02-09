@@ -91,6 +91,10 @@ public class InfinispanResourceRefTestCase {
                 + "            <injection-target-name>container</injection-target-name>"
                 + "        </injection-target>\n"
                 + "    </resource-ref>\n"
+                + "    <resource-ref>\n"
+                + "        <res-ref-name>default-cache-config</res-ref-name>\n"
+                + "        <lookup-name>java:jboss/infinispan/configuration/server/default</lookup-name>\n"
+                + "    </resource-ref>\n"
                 + "</web-app>");
     }
 }

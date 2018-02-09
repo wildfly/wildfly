@@ -67,14 +67,6 @@
             <artifactId>wildfly-clustering-jgroups-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-connector</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-jmx</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-network</artifactId>
         </dependency>

@@ -26,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -43,10 +44,8 @@ import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession
 import io.undertow.security.idm.Account;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.Session;
-import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionManager;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.ee.Batcher;
@@ -147,7 +146,7 @@ public class DistributableSingleSignOnTestCase {
         Session mutableSession = mock(Session.class);
 
         when(session.getSessionManager()).thenReturn(manager);
-        when(manager.getSession(same(exchange), Matchers.<SessionConfig>any())).thenReturn(mutableSession);
+        when(manager.getSession(same(exchange), any())).thenReturn(mutableSession);
 
         result.invalidate(exchange);
 

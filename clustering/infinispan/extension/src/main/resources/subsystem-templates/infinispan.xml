@@ -26,14 +26,14 @@
                     <file-store passivation="true" purge="false"/>
                 </local-cache>
             </cache-container>
-            <cache-container name="hibernate" module="org.hibernate.infinispan">
+            <cache-container name="hibernate" module="org.infinispan.hibernate-cache">
                 <local-cache name="entity">
                     <transaction mode="NON_XA"/>
-                    <eviction strategy="LRU" max-entries="10000"/>
+                    <object-memory size="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
                 <local-cache name="local-query">
-                    <eviction strategy="LRU" max-entries="10000"/>
+                    <object-memory size="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
                 <local-cache name="timestamps"/>
@@ -64,18 +64,18 @@
                     <file-store/>
                 </distributed-cache>
             </cache-container>
-            <cache-container name="hibernate" default-cache="local-query" module="org.hibernate.infinispan">
+            <cache-container name="hibernate" default-cache="local-query" module="org.infinispan.hibernate-cache">
                 <transport lock-timeout="60000"/>
                 <local-cache name="local-query">
-                    <eviction strategy="LRU" max-entries="10000"/>
+                    <object-memory size="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
                 <invalidation-cache name="entity">
                     <transaction mode="NON_XA"/>
-                    <eviction strategy="LRU" max-entries="10000"/>
+                    <object-memory size="10000"/>
                     <expiration max-idle="100000"/>
                 </invalidation-cache>
-                <replicated-cache name="timestamps" mode="ASYNC"/>
+                <replicated-cache name="timestamps"/>
             </cache-container>
         </replacement>
     </supplement>

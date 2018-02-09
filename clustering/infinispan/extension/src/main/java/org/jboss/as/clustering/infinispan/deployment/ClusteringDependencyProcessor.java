@@ -35,7 +35,8 @@ import org.jboss.modules.ModuleLoader;
  * {@link DeploymentUnitProcessor} that adds the clustering api to the deployment classpath.
  * @author Paul Ferraro
  */
-public class ClusteringDependencyProcessor  implements DeploymentUnitProcessor {
+@SuppressWarnings("deprecation")
+public class ClusteringDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final ModuleIdentifier API = ModuleIdentifier.create("org.wildfly.clustering.api");
     private static final ModuleIdentifier MARSHALLING_API = ModuleIdentifier.create("org.wildfly.clustering.marshalling.api");

@@ -77,7 +77,7 @@ public class RelayResourceDefinition extends AbstractProtocolResourceDefinition<
     }
 
     RelayResourceDefinition(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        this(address -> new RelayConfigurationBuilder(address), parentBuilderFactory);
+        this(RelayConfigurationBuilder::new, parentBuilderFactory);
     }
 
     private RelayResourceDefinition(ResourceServiceBuilderFactory<RelayConfiguration> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {

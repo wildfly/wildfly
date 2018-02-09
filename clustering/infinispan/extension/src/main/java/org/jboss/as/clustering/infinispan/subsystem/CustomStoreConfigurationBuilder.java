@@ -35,6 +35,7 @@ public class CustomStoreConfigurationBuilder extends AbstractStoreConfigurationB
         super(builder, AbstractStoreConfiguration.attributeDefinitionSet());
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public CustomStoreConfiguration create() {
         return new CustomStoreConfiguration(this.attributes.protect(), this.async.create(), this.singletonStore.create());

@@ -27,9 +27,8 @@ import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.EvictionConfiguration;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
-import org.infinispan.eviction.EvictionStrategy;
+import org.infinispan.configuration.cache.MemoryConfiguration;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.function.Consumers;
@@ -97,9 +96,9 @@ public class InfinispanSessionManagerFactoryBuilder<C extends Marshallability, L
                 InfinispanWebLogger.ROOT_LOGGER.expirationDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(this.containerName, templateCacheName));
             }
             // Ensure eviction is not enabled on cache
-            EvictionConfiguration eviction = builder.eviction().create();
-            if (eviction.strategy().isEnabled()) {
-                builder.eviction().size(-1L).strategy(EvictionStrategy.MANUAL);
+            MemoryConfiguration memory = builder.memory().create();
+            if (memory.size() >= 0) {
+                builder.memory().size(-1);
                 InfinispanWebLogger.ROOT_LOGGER.evictionDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(this.containerName, templateCacheName));
             }
         };
