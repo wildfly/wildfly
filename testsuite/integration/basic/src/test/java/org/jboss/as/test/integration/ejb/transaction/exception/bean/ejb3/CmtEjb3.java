@@ -30,10 +30,9 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.test.integration.ejb.transaction.exception.TestConfig.TxManagerException;
-import org.jboss.as.test.integration.ejb.transaction.exception.TestXAResource;
-import org.jboss.as.test.integration.ejb.transaction.exception.TestXAResource.CommitOperation;
-import org.jboss.as.test.integration.ejb.transaction.exception.TestXAResource.PrepareOperation;
+import org.jboss.as.test.integration.ejb.transaction.exception.TimeoutTestXAResource;
 import org.jboss.as.test.integration.ejb.transaction.exception.bean.TestBean;
+import org.jboss.as.test.integration.transactions.TestXAResource.TestAction;
 
 @LocalBean
 @Remote
@@ -53,20 +52,20 @@ public class CmtEjb3 implements TestBean {
         Transaction txn = tm.getTransaction();
         switch (txManagerException) {
         case HEURISTIC_CAUSED_BY_XA_EXCEPTION:
-            txn.enlistResource(new TestXAResource(CommitOperation.NONE));
-            txn.enlistResource(new TestXAResource(CommitOperation.THROW_KNOWN_XA_EXCEPTION));
+            txn.enlistResource(new TimeoutTestXAResource(TestAction.NONE));
+            txn.enlistResource(new TimeoutTestXAResource(TestAction.COMMIT_THROW_XAER_RMERR));
             break;
         case HEURISTIC_CAUSED_BY_RM_SPECIFIC_XA_EXCEPTION:
-            txn.enlistResource(new TestXAResource(CommitOperation.NONE));
-            txn.enlistResource(new TestXAResource(CommitOperation.THROW_UNKNOWN_XA_EXCEPTION));
+            txn.enlistResource(new TimeoutTestXAResource(TestAction.NONE));
+            txn.enlistResource(new TimeoutTestXAResource(TestAction.COMMIT_THROW_UNKNOWN_XA_EXCEPTION));
             break;
         case ROLLBACK_CAUSED_BY_XA_EXCEPTION:
-            txn.enlistResource(new TestXAResource(PrepareOperation.NONE));
-            txn.enlistResource(new TestXAResource(PrepareOperation.THROW_KNOWN_XA_EXCEPTION));
+            txn.enlistResource(new TimeoutTestXAResource(TestAction.NONE));
+            txn.enlistResource(new TimeoutTestXAResource(TestAction.PREPARE_THROW_XAER_RMERR));
             break;
         case ROLLBACK_CAUSED_BY_RM_SPECIFIC_XA_EXCEPTION:
-            txn.enlistResource(new TestXAResource(PrepareOperation.NONE));
-            txn.enlistResource(new TestXAResource(PrepareOperation.THROW_UNKNOWN_XA_EXCEPTION));
+            txn.enlistResource(new TimeoutTestXAResource(TestAction.NONE));
+            txn.enlistResource(new TimeoutTestXAResource(TestAction.PREPARE_THROW_UNKNOWN_XA_EXCEPTION));
             break;
         default:
             throw new IllegalArgumentException("Unknown type " + txManagerException);

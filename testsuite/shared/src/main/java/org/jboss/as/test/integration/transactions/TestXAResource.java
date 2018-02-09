@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.transactions;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+
 import org.jboss.logging.Logger;
 
 /**
@@ -35,18 +36,65 @@ import org.jboss.logging.Logger;
 public class TestXAResource implements XAResource {
     private static Logger log = Logger.getLogger(TestXAResource.class);
 
+    public enum TestAction {
+        NONE,
+        PREPARE_THROW_XAER_RMERR, PREPARE_THROW_XAER_RMFAIL, PREPARE_THROW_UNKNOWN_XA_EXCEPTION,
+        COMMIT_THROW_XAER_RMERR, COMMIT_THROW_XAER_RMFAIL, COMMIT_THROW_UNKNOWN_XA_EXCEPTION
+    }
+
+    protected TestAction testAction = TestAction.NONE;
     private TransactionCheckerSingleton checker;
     private int transactionTimeout;
-    private int prepareReturnValue = XAResource.XA_OK;
 
     public TestXAResource(TransactionCheckerSingleton checker) {
         this.checker = checker;
+    }
+
+    public TestXAResource(TestAction testAction, TransactionCheckerSingleton checker) {
+        this.checker = checker;
+        this.testAction = testAction;
+    }
+
+    public TestXAResource(TestAction testAction) {
+        this.checker = new TransactionCheckerSingleton();
+        this.testAction = testAction;
+    }
+
+
+    @Override
+    public int prepare(Xid xid) throws XAException {
+        log.tracef("prepare xid: [%s]", xid);
+        checker.addPrepare();
+
+        switch (testAction) {
+            case PREPARE_THROW_XAER_RMERR:
+                throw new XAException(XAException.XAER_RMERR);
+            case PREPARE_THROW_XAER_RMFAIL:
+                throw new XAException(XAException.XAER_RMFAIL);
+            case PREPARE_THROW_UNKNOWN_XA_EXCEPTION:
+                throw new XAException(null);
+            case NONE:
+            default:
+                return XAResource.XA_OK;
+        }
     }
 
     @Override
     public void commit(Xid xid, boolean onePhase) throws XAException {
         log.tracef("commit xid:[%s], %s one phase", xid, onePhase ? "with" : "without");
         checker.addCommit();
+
+        switch (testAction) {
+            case COMMIT_THROW_XAER_RMERR:
+                throw new XAException(XAException.XAER_RMERR);
+            case COMMIT_THROW_XAER_RMFAIL:
+                throw new XAException(XAException.XAER_RMFAIL);
+            case COMMIT_THROW_UNKNOWN_XA_EXCEPTION:
+                throw new XAException(null);
+            case NONE:
+            default:
+                // do nothing
+        }
     }
 
     @Override
@@ -72,13 +120,6 @@ public class TestXAResource implements XAResource {
     }
 
     @Override
-    public int prepare(Xid xid) throws XAException {
-        log.tracef("prepare xid: [%s]", xid);
-        checker.addPrepare();
-        return prepareReturnValue;
-    }
-
-    @Override
     public Xid[] recover(int flag) throws XAException {
         log.tracef("recover with flags: %s", flag);
         return new Xid[]{};
@@ -101,5 +142,4 @@ public class TestXAResource implements XAResource {
     public void start(Xid xid, int flags) throws XAException {
         log.tracef("start xid: [%s], flags: %s", xid, flags);
     }
-
 }

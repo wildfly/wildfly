@@ -42,6 +42,7 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.test.integration.ejb.transaction.exception.TestConfig.TxManagerException;
+import org.jboss.as.test.integration.transactions.TestXAResource;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -68,6 +69,7 @@ public abstract class TxExceptionBaseTestCase {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackages(true, TxExceptionBaseTestCase.class.getPackage());
+        jar.addPackage(TestXAResource.class.getPackage());
         jar.addPackages(true, "javassist");
         // this test needs to create a new public class thru javassist so AllPermission is needed here
         ear.addAsManifestResource(createPermissionsXmlAsset(new AllPermission()), "permissions.xml");
