@@ -89,6 +89,11 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
+            <!-- This is an unusual case where we override the version only for this client. The parent pom version is
+                 using the 1.1 version for the Java EE 8 tech preview though the client still currently expects 1.0.
+                 Once we fully move to Java EE 8 this can be removed.
+            -->
+            <version>${version.org.glassfish.javax.json-1.0}</version>
         </dependency>
 
         <dependency>

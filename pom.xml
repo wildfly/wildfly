@@ -108,6 +108,7 @@
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>2.0</version.javax.enterprise>
+        <version.javax.json.api>1.1.2</version.javax.json.api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.6.0</version.javax.mail>
         <version.javax.validation>1.1.0.Final</version.javax.validation>
@@ -143,7 +144,8 @@
         <version.org.eclipse.jdt.core.compiler>4.6.1</version.org.eclipse.jdt.core.compiler>
         <version.org.glassfish.javax.el>3.0.1-b08-jbossorg-1</version.org.glassfish.javax.el>
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
-        <version.org.glassfish.javax.json>1.0.4</version.org.glassfish.javax.json>
+        <version.org.glassfish.javax.json>1.1.2</version.org.glassfish.javax.json>
+        <version.org.glassfish.javax.json-1.0>1.0.4</version.org.glassfish.javax.json-1.0>
         <version.org.hibernate>5.1.10.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.1.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.validator>5.3.5.Final</version.org.hibernate.validator>
@@ -1857,6 +1859,12 @@
                         <artifactId>jaxb-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.json</groupId>
+                <artifactId>javax.json-api</artifactId>
+                <version>${version.javax.json.api}</version>
             </dependency>
 
             <dependency>
@@ -3973,11 +3981,17 @@
                 </exclusions>
             </dependency>
 
-            <!-- JSR-353 JSONP RI implementation -->
+            <!-- JSR-374 JSON-P 1.1 RI implementation -->
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.json</artifactId>
                 <version>${version.org.glassfish.javax.json}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- EL3 RI implementation -->
