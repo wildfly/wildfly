@@ -42,9 +42,10 @@
     <!-- Export out the EE Specs and demos -->
 
     <dependency>
-      <groupId>org.glassfish</groupId>
-      <artifactId>javax.json</artifactId>
+      <groupId>javax.json</groupId>
+      <artifactId>javax.json-api</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.jboss.spec.javax.ws.rs</groupId>
       <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
