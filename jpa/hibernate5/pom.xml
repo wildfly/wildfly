@@ -28,7 +28,6 @@
         <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>jipijapa-hibernate5</artifactId>
     
     <name>jipijapa Hibernate 5.x (JPA 2.1) integration</name>

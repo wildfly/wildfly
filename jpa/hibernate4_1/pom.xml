@@ -17,7 +17,6 @@
         <version.org.hibernate4_2.commons.annotations>4.0.1.Final</version.org.hibernate4_2.commons.annotations>
     </properties>    
 
-    <groupId>org.wildfly</groupId>
     <artifactId>jipijapa-hibernate4-1</artifactId>
     <name>jipijapa Hibernate 4.1.x + 4.2.x (JPA 2.0) integration</name>
 

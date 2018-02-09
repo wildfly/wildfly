@@ -15,7 +15,6 @@
         <version.org.hibernate4_3>4.3.10.Final</version.org.hibernate4_3>
     </properties>    
 
-    <groupId>org.wildfly</groupId>
     <artifactId>jipijapa-hibernate4-3</artifactId>
     <name>jipijapa Hibernate 4.3.x (JPA 2.1) integration</name>
 
