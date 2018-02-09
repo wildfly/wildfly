@@ -46,9 +46,6 @@ import org.junit.Test;
 public class ParseAndMarshalModelsTestCase {
 
     private enum Version {
-        AS_7_1_3(false, "7-1-3"),
-        AS_7_2_0(false, "7-2-0"),
-
         EAP_6_0_0(true, "6-0-0"),
         EAP_6_1_0(true, "6-1-0"),
         EAP_6_2_0(true, "6-2-0"),
@@ -90,9 +87,7 @@ public class ParseAndMarshalModelsTestCase {
             Version.EAP_6_0_0, Version.EAP_6_1_0, Version.EAP_6_2_0,
             Version.EAP_6_3_0, Version.EAP_6_4_0, Version.EAP_7_0_0, Version.EAP_7_1_0};
 
-    private static final Version[] AS_VERSIONS = {Version.AS_7_1_3, Version.AS_7_2_0};
-
-    private static final File JBOSS_HOME = Paths.get("target" ,"jbossas-parse-marshal").toFile();
+    private static final File JBOSS_HOME = Paths.get("target" ,"wildfly").toFile();
 
     @Test
     public void testStandaloneXml() throws Exception {
@@ -142,58 +137,6 @@ public class ParseAndMarshalModelsTestCase {
     @Test
     public void testStandaloneActiveMQColocatedXml() throws Exception {
         standaloneXmlTest(getDocsExampleConfigFile("standalone-activemq-colocated.xml"));
-    }
-
-    @Test
-    public void testJBossASStandaloneXml() throws Exception {
-        for (Version version : AS_VERSIONS) {
-            ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", version, null));
-            validateJsfSubsystem(model, version);
-        }
-    }
-
-    @Test
-    public void testJBossASStandaloneFullHaXml() throws Exception {
-        for (Version version : AS_VERSIONS) {
-            ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", version, "full-ha"));
-            validateJsfSubsystem(model, version);
-        }
-    }
-
-    @Test
-    public void testJBossASStandaloneFullXml() throws Exception {
-        for (Version version : AS_VERSIONS) {
-            ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", version, "full"));
-            validateJsfSubsystem(model, version);
-        }
-    }
-
-    @Test
-    public void testJBossASStandaloneHornetQCollocatedXml() throws Exception {
-        for (Version version : AS_VERSIONS) {
-            standaloneXmlTest(getLegacyConfigFile("standalone", version, "hornetq-colocated"));
-        }
-    }
-
-    @Test
-    public void testJBossASStandaloneJtsXml() throws Exception {
-        for (Version version : AS_VERSIONS) {
-            standaloneXmlTest(getLegacyConfigFile("standalone", version, "jts"));
-        }
-    }
-
-    @Test
-    public void testJBossASStandaloneMinimalisticXml() throws Exception {
-        for (Version version : AS_VERSIONS) {
-            standaloneXmlTest(getLegacyConfigFile("standalone", version, "minimalistic"));
-        }
-    }
-
-    @Test
-    public void testJBossASStandaloneXtsXml() throws Exception {
-        for (Version version : AS_VERSIONS) {
-            standaloneXmlTest(getLegacyConfigFile("standalone", version, "xts"));
-        }
     }
 
     @Test
@@ -393,13 +336,6 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    public void testJBossASHostXml() throws Exception {
-        for (Version version : AS_VERSIONS) {
-            hostXmlTest(getLegacyConfigFile("host", version, null));
-        }
-    }
-
-    @Test
     public void testEAPHostXml() throws Exception {
         for (Version version : EAP_VERSIONS) {
             hostXmlTest(getLegacyConfigFile("host", version, null));
@@ -415,13 +351,6 @@ public class ParseAndMarshalModelsTestCase {
         domainXmlTest(getOriginalDomainXml("domain.xml"));
     }
 
-    @Test
-    public void testJBossASDomainXml() throws Exception {
-        for (Version version : AS_VERSIONS) {
-            ModelNode model = domainXmlTest(getLegacyConfigFile("domain", version, null));
-            validateProfiles(model, version);
-        }
-    }
 
     @Test
     public void testEAPDomainXml() throws Exception {

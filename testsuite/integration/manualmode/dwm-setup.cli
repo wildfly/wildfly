@@ -1,0 +1,15 @@
+embed-server --server-config=standalone-ha.xml --admin-only
+
+/subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)
+/subsystem=jgroups/stack=udp/transport=UDP:map-put(name=properties,key=ip_ttl,value=0)
+/subsystem=jgroups/stack=tcp/protocol=MPING:map-put(name=properties,key=ip_ttl,value=0)
+
+#todo it could probably be setup during tests init
+
+/core-service=management/security-realm=PasswordRealm:add
+/core-service=management/security-realm=PasswordRealm/server-identity=secret:add(value="cGFzc3dvcmQx")
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-ejb-remote:add(port=8080, host="${node0}")
+/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:add(protocol=remote+http, security-realm="PasswordRealm", username=user1, outbound-socket-binding-ref=binding-ejb-remote)
+
+
+stop-embedded-server
