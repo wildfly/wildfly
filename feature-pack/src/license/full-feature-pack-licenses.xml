@@ -1949,7 +1949,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>jipijapa-eclipselink</artifactId>
       <licenses>
         <license>
@@ -1960,7 +1960,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>jipijapa-hibernate4-1</artifactId>
       <licenses>
         <license>
@@ -1971,7 +1971,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>jipijapa-hibernate4-3</artifactId>
       <licenses>
         <license>
@@ -1982,7 +1982,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>jipijapa-hibernate5</artifactId>
       <licenses>
         <license>
@@ -1993,7 +1993,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>jipijapa-openjpa</artifactId>
       <licenses>
         <license>
@@ -2004,7 +2004,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>jipijapa-spi</artifactId>
       <licenses>
         <license>
@@ -2015,7 +2015,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-appclient</artifactId>
       <licenses>
         <license>
@@ -2026,7 +2026,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-batch</artifactId>
       <licenses>
         <license>
@@ -2037,7 +2037,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-batch-jberet</artifactId>
       <licenses>
         <license>
@@ -2048,7 +2048,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-bean-validation</artifactId>
       <licenses>
         <license>
@@ -2059,7 +2059,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-client-all</artifactId>
       <licenses>
         <license>
@@ -2070,7 +2070,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-api</artifactId>
       <licenses>
         <license>
@@ -2081,7 +2081,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-common</artifactId>
       <licenses>
         <license>
@@ -2092,7 +2092,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-ee-infinispan</artifactId>
       <licenses>
         <license>
@@ -2103,7 +2103,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-ee-spi</artifactId>
       <licenses>
         <license>
@@ -2114,7 +2114,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
       <licenses>
         <license>
@@ -2125,7 +2125,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-ejb-spi</artifactId>
       <licenses>
         <license>
@@ -2136,7 +2136,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-infinispan-extension</artifactId>
       <licenses>
         <license>
@@ -2147,7 +2147,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-infinispan-spi</artifactId>
       <licenses>
         <license>
@@ -2158,7 +2158,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-jgroups-api</artifactId>
       <licenses>
         <license>
@@ -2169,7 +2169,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-jgroups-extension</artifactId>
       <licenses>
         <license>
@@ -2180,7 +2180,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-jgroups-spi</artifactId>
       <licenses>
         <license>
@@ -2191,7 +2191,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-marshalling-api</artifactId>
       <licenses>
         <license>
@@ -2202,7 +2202,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-marshalling-infinispan</artifactId>
       <licenses>
         <license>
@@ -2213,7 +2213,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
       <licenses>
         <license>
@@ -2224,7 +2224,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-marshalling-spi</artifactId>
       <licenses>
         <license>
@@ -2235,7 +2235,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-server</artifactId>
       <licenses>
         <license>
@@ -2246,7 +2246,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-service</artifactId>
       <licenses>
         <license>
@@ -2257,7 +2257,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-singleton-api</artifactId>
       <licenses>
         <license>
@@ -2268,7 +2268,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-singleton-extension</artifactId>
       <licenses>
         <license>
@@ -2279,7 +2279,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-spi</artifactId>
       <licenses>
         <license>
@@ -2290,7 +2290,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-web-api</artifactId>
       <licenses>
         <license>
@@ -2301,7 +2301,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-web-infinispan</artifactId>
       <licenses>
         <license>
@@ -2312,7 +2312,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-web-spi</artifactId>
       <licenses>
         <license>
@@ -2323,7 +2323,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-web-undertow</artifactId>
       <licenses>
         <license>
@@ -2334,7 +2334,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-cmp</artifactId>
       <licenses>
         <license>
@@ -2345,7 +2345,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-configadmin</artifactId>
       <licenses>
         <license>
@@ -2356,7 +2356,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-connector</artifactId>
       <licenses>
         <license>
@@ -2367,7 +2367,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-ejb3</artifactId>
       <licenses>
         <license>
@@ -2378,7 +2378,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-iiop-openjdk</artifactId>
       <licenses>
         <license>
@@ -2389,7 +2389,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-jacorb</artifactId>
       <licenses>
         <license>
@@ -2400,7 +2400,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-jaxr</artifactId>
       <licenses>
         <license>
@@ -2411,7 +2411,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-jaxrs</artifactId>
       <licenses>
         <license>
@@ -2422,7 +2422,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-jdr</artifactId>
       <licenses>
         <license>
@@ -2433,7 +2433,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-jpa</artifactId>
       <licenses>
         <license>
@@ -2444,7 +2444,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-jsf</artifactId>
       <licenses>
         <license>
@@ -2455,7 +2455,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-jsf-injection</artifactId>
       <licenses>
         <license>
@@ -2466,7 +2466,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-jsr77</artifactId>
       <licenses>
         <license>
@@ -2477,7 +2477,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-mail</artifactId>
       <licenses>
         <license>
@@ -2488,7 +2488,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-messaging</artifactId>
       <licenses>
         <license>
@@ -2499,7 +2499,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-messaging-activemq</artifactId>
       <licenses>
         <license>
@@ -2510,7 +2510,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-mod_cluster-extension</artifactId>
       <licenses>
         <license>
@@ -2521,7 +2521,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-mod_cluster-undertow</artifactId>
       <licenses>
         <license>
@@ -2532,7 +2532,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-picketlink</artifactId>
       <licenses>
         <license>
@@ -2543,7 +2543,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-pojo</artifactId>
       <licenses>
         <license>
@@ -2554,7 +2554,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-rts</artifactId>
       <licenses>
         <license>
@@ -2565,7 +2565,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-sar</artifactId>
       <licenses>
         <license>
@@ -2576,7 +2576,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-security-api</artifactId>
       <licenses>
         <license>
@@ -2587,7 +2587,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-servlet-feature-pack</artifactId>
       <licenses>
         <license>
@@ -2598,7 +2598,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-system-jmx</artifactId>
       <licenses>
         <license>
@@ -2609,7 +2609,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-transactions</artifactId>
       <licenses>
         <license>
@@ -2620,7 +2620,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-web</artifactId>
       <licenses>
         <license>
@@ -2631,7 +2631,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-webservices-server-integration</artifactId>
       <licenses>
         <license>
@@ -2642,7 +2642,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-weld</artifactId>
       <licenses>
         <license>
@@ -2653,7 +2653,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-weld-bean-validation</artifactId>
       <licenses>
         <license>
@@ -2664,7 +2664,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-weld-common</artifactId>
       <licenses>
         <license>
@@ -2675,7 +2675,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-weld-ejb</artifactId>
       <licenses>
         <license>
@@ -2686,7 +2686,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-weld-jpa</artifactId>
       <licenses>
         <license>
@@ -2697,7 +2697,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-weld-spi</artifactId>
       <licenses>
         <license>
@@ -2708,7 +2708,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-weld-transactions</artifactId>
       <licenses>
         <license>
@@ -2719,7 +2719,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-weld-webservices</artifactId>
       <licenses>
         <license>
@@ -2730,7 +2730,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-xts</artifactId>
       <licenses>
         <license>

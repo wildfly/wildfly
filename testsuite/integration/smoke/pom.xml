@@ -34,7 +34,7 @@
     </properties>
         <dependencies>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-feature-pack</artifactId>
                 <type>pom</type>
             </dependency>

@@ -43,12 +43,12 @@
    <dependencies>
 
       <dependency>
-         <groupId>org.wildfly</groupId>
+         <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-ee</artifactId>
       </dependency>
 
       <dependency>
-         <groupId>org.wildfly</groupId>
+         <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-naming</artifactId>
       </dependency>
 
@@ -63,12 +63,12 @@
       </dependency>
 
       <dependency>
-         <groupId>org.wildfly</groupId>
+         <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-web-common</artifactId>
       </dependency>
 
       <dependency>
-         <groupId>org.wildfly</groupId>
+         <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-security</artifactId>
       </dependency>
 
@@ -162,12 +162,12 @@
       </dependency>
 
       <dependency>
-         <groupId>org.wildfly</groupId>
+         <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-weld-spi</artifactId>
       </dependency>
 
       <dependency>
-         <groupId>org.wildfly</groupId>
+         <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-weld-common</artifactId>
       </dependency>
 

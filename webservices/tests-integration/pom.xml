@@ -51,7 +51,7 @@
             <artifactId>wildfly-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-security</artifactId>
             <exclusions>
                 <exclusion>

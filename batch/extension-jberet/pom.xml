@@ -45,7 +45,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld-spi</artifactId>
         </dependency>
         <dependency>
@@ -65,7 +65,7 @@
             <artifactId>wildfly-threads</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-transactions</artifactId>
         </dependency>
 

@@ -384,7 +384,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-webservices-tests-integration</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -406,7 +406,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-testsuite-shared</artifactId>
         </dependency>
 

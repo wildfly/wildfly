@@ -41,7 +41,7 @@
     <dependencies>
         <!-- Used to inherit some stuff from the new subsystem -->
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-batch-jberet</artifactId>
         </dependency>
         <dependency>
@@ -57,7 +57,7 @@
             <artifactId>wildfly-threads</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-transactions</artifactId>
         </dependency>
 

@@ -171,7 +171,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-common</artifactId>
       <licenses>
         <license>
@@ -182,7 +182,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-service</artifactId>
       <licenses>
         <license>
@@ -193,7 +193,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-ee</artifactId>
       <licenses>
         <license>
@@ -204,7 +204,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-naming</artifactId>
       <licenses>
         <license>
@@ -215,7 +215,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-security</artifactId>
       <licenses>
         <license>
@@ -226,7 +226,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-undertow</artifactId>
       <licenses>
         <license>
@@ -237,7 +237,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-web-common</artifactId>
       <licenses>
         <license>

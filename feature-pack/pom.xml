@@ -98,7 +98,7 @@
         <!-- feature pack dependencies -->
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-servlet-feature-pack</artifactId>
             <type>zip</type>
             <exclusions>
@@ -112,7 +112,7 @@
         <!-- module and copy artifact dependencies -->
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-picketlink</artifactId>
             <exclusions>
                 <exclusion>
@@ -123,7 +123,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-security-api</artifactId>
             <exclusions>
                 <exclusion>
@@ -134,7 +134,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-system-jmx</artifactId>
             <exclusions>
                 <exclusion>
@@ -797,7 +797,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-rts</artifactId>
             <exclusions>
                 <exclusion>
@@ -866,7 +866,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-jpa</artifactId>
             <exclusions>
                 <exclusion>
@@ -877,7 +877,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-hibernate5</artifactId>
             <exclusions>
                 <exclusion>
@@ -888,7 +888,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-hibernate4-3</artifactId>
             <exclusions>
                 <exclusion>
@@ -899,7 +899,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-hibernate4-1</artifactId>
             <exclusions>
                 <exclusion>
@@ -910,7 +910,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-eclipselink</artifactId>
             <exclusions>
                 <exclusion>
@@ -921,12 +921,12 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-openjpa</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-spi</artifactId>
             <exclusions>
                 <exclusion>
@@ -2214,7 +2214,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-appclient</artifactId>
             <exclusions>
                 <exclusion>
@@ -2248,7 +2248,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-client-all</artifactId>
             <exclusions>
                 <exclusion>
@@ -2259,7 +2259,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-api</artifactId>
             <exclusions>
                 <exclusion>
@@ -2270,7 +2270,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
             <exclusions>
                 <exclusion>
@@ -2280,7 +2280,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-ee-infinispan</artifactId>
             <exclusions>
                 <exclusion>
@@ -2290,7 +2290,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-ee-spi</artifactId>
             <exclusions>
                 <exclusion>
@@ -2301,7 +2301,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
             <exclusions>
                 <exclusion>
@@ -2311,7 +2311,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-ejb-spi</artifactId>
             <exclusions>
                 <exclusion>
@@ -2322,7 +2322,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-infinispan-extension</artifactId>
             <exclusions>
                 <exclusion>
@@ -2332,7 +2332,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-infinispan-spi</artifactId>
             <exclusions>
                 <exclusion>
@@ -2343,7 +2343,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-jgroups-api</artifactId>
             <exclusions>
                 <exclusion>
@@ -2353,7 +2353,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-jgroups-extension</artifactId>
             <exclusions>
                 <exclusion>
@@ -2363,7 +2363,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-jgroups-spi</artifactId>
             <exclusions>
                 <exclusion>
@@ -2374,7 +2374,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-api</artifactId>
             <exclusions>
                 <exclusion>
@@ -2384,7 +2384,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-infinispan</artifactId>
             <exclusions>
                 <exclusion>
@@ -2394,7 +2394,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
             <exclusions>
                 <exclusion>
@@ -2404,7 +2404,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-spi</artifactId>
             <exclusions>
                 <exclusion>
@@ -2415,7 +2415,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-service</artifactId>
             <exclusions>
                 <exclusion>
@@ -2426,7 +2426,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-server</artifactId>
             <exclusions>
                 <exclusion>
@@ -2437,7 +2437,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-singleton-api</artifactId>
             <exclusions>
                 <exclusion>
@@ -2447,7 +2447,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-singleton-extension</artifactId>
             <exclusions>
                 <exclusion>
@@ -2458,7 +2458,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-spi</artifactId>
             <exclusions>
                 <exclusion>
@@ -2469,7 +2469,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-web-api</artifactId>
             <exclusions>
                 <exclusion>
@@ -2479,7 +2479,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-web-infinispan</artifactId>
             <exclusions>
                 <exclusion>
@@ -2489,7 +2489,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-web-spi</artifactId>
             <exclusions>
                 <exclusion>
@@ -2499,7 +2499,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-web-undertow</artifactId>
             <exclusions>
                 <exclusion>
@@ -2510,7 +2510,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-cmp</artifactId>
             <exclusions>
                 <exclusion>
@@ -2521,7 +2521,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-configadmin</artifactId>
             <exclusions>
                 <exclusion>
@@ -2537,7 +2537,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-batch</artifactId>
             <exclusions>
                 <exclusion>
@@ -2548,7 +2548,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-batch-jberet</artifactId>
             <exclusions>
                 <exclusion>
@@ -2559,7 +2559,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-bean-validation</artifactId>
             <exclusions>
                 <exclusion>
@@ -2570,7 +2570,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-connector</artifactId>
             <exclusions>
                 <exclusion>
@@ -2594,7 +2594,7 @@
 
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-ejb3</artifactId>
             <exclusions>
                 <exclusion>
@@ -2605,7 +2605,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-jaxr</artifactId>
             <exclusions>
                 <exclusion>
@@ -2616,7 +2616,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-jaxrs</artifactId>
             <exclusions>
                 <exclusion>
@@ -2627,7 +2627,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-jdr</artifactId>
             <exclusions>
                 <exclusion>
@@ -2638,7 +2638,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-jsf</artifactId>
             <exclusions>
                 <exclusion>
@@ -2649,12 +2649,12 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-jsf-injection</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-jsr77</artifactId>
             <exclusions>
                 <exclusion>
@@ -2665,7 +2665,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-iiop-openjdk</artifactId>
             <exclusions>
                 <exclusion>
@@ -2676,7 +2676,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-jacorb</artifactId>
             <exclusions>
                 <exclusion>
@@ -2687,7 +2687,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-mail</artifactId>
             <exclusions>
                 <exclusion>
@@ -2698,7 +2698,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-messaging</artifactId>
             <exclusions>
                 <exclusion>
@@ -2709,7 +2709,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-messaging-activemq</artifactId>
             <exclusions>
                 <exclusion>
@@ -2720,7 +2720,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-mod_cluster-extension</artifactId>
             <exclusions>
                 <exclusion>
@@ -2731,7 +2731,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-mod_cluster-undertow</artifactId>
             <exclusions>
                 <exclusion>
@@ -2753,7 +2753,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-pojo</artifactId>
             <exclusions>
                 <exclusion>
@@ -2764,7 +2764,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-sar</artifactId>
             <exclusions>
                 <exclusion>
@@ -2775,7 +2775,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-transactions</artifactId>
             <exclusions>
                 <exclusion>
@@ -2797,7 +2797,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-web</artifactId>
             <exclusions>
                 <exclusion>
@@ -2808,7 +2808,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld</artifactId>
             <exclusions>
                 <exclusion>
@@ -2819,7 +2819,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld-spi</artifactId>
             <exclusions>
                 <exclusion>
@@ -2830,7 +2830,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld-common</artifactId>
             <exclusions>
                 <exclusion>
@@ -2841,7 +2841,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld-ejb</artifactId>
             <exclusions>
                 <exclusion>
@@ -2852,7 +2852,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld-jpa</artifactId>
             <exclusions>
                 <exclusion>
@@ -2863,7 +2863,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld-bean-validation</artifactId>
             <exclusions>
                 <exclusion>
@@ -2874,7 +2874,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld-webservices</artifactId>
             <exclusions>
                 <exclusion>
@@ -2885,7 +2885,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld-transactions</artifactId>
             <exclusions>
                 <exclusion>
@@ -2896,7 +2896,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-webservices-server-integration</artifactId>
             <exclusions>
                 <exclusion>
@@ -2907,7 +2907,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-xts</artifactId>
             <exclusions>
                 <exclusion>

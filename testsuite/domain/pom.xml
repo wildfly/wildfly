@@ -68,7 +68,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-testsuite-shared</artifactId>
             <scope>compile</scope>
             <exclusions>
@@ -105,7 +105,7 @@
             <artifactId>wildfly-cli</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-messaging-activemq</artifactId>
             <exclusions>
                 <exclusion>
@@ -151,7 +151,7 @@
             <artifactId>wildfly-network</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-security</artifactId>
             <exclusions>
                 <exclusion>

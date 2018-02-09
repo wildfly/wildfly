@@ -24,7 +24,7 @@
         <!-- Internal -->
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-spi</artifactId>
             <scope>provided</scope>
         </dependency>
