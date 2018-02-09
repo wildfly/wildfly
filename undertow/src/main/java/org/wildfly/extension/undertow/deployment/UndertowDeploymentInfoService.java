@@ -159,6 +159,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -871,8 +872,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
 
             if (mergedMetaData.getListeners() != null) {
+                Set<String> tldListeners = new HashSet<>();
+                for(Map.Entry<String, TagLibraryInfo> e : tldInfo.entrySet()) {
+                    tldListeners.addAll(Arrays.asList(e.getValue().getListeners()));
+                }
                 for (ListenerMetaData listener : mergedMetaData.getListeners()) {
-                    addListener(module.getClassLoader(), componentRegistry, d, listener);
+                    addListener(module.getClassLoader(), componentRegistry, d, listener, tldListeners.contains(listener.getListenerClass()));
                 }
 
             }
@@ -1203,15 +1208,17 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return ret;
     }
 
-    private static void addListener(final ClassLoader classLoader, final ComponentRegistry components, final DeploymentInfo d, final ListenerMetaData listener) throws ClassNotFoundException {
+    private static void addListener(final ClassLoader classLoader, final ComponentRegistry components, final DeploymentInfo d, final ListenerMetaData listener, boolean programatic) throws ClassNotFoundException {
 
         ListenerInfo l;
         final Class<? extends EventListener> listenerClass = (Class<? extends EventListener>) classLoader.loadClass(listener.getListenerClass());
         ManagedReferenceFactory creator = components.createInstanceFactory(listenerClass);
         if (creator != null) {
             InstanceFactory<EventListener> factory = createInstanceFactory(creator);
+            //l = new ListenerInfo((Class)listenerClass, (InstanceFactory<? extends EventListener>) factory, programatic); TODO: servlet 4.0
             l = new ListenerInfo(listenerClass, factory);
         } else {
+            //l = new ListenerInfo(listenerClass, programatic);TODO: servlet 4.0
             l = new ListenerInfo(listenerClass);
         }
         d.addListener(l);

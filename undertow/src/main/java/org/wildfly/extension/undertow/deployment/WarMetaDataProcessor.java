@@ -54,9 +54,6 @@ import org.jboss.metadata.merge.web.spec.WebCommonMetaDataMerger;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.AbsoluteOrderingMetaData;
 import org.jboss.metadata.web.spec.OrderingElementMetaData;
-import org.jboss.metadata.web.spec.Web25MetaData;
-import org.jboss.metadata.web.spec.Web30MetaData;
-import org.jboss.metadata.web.spec.Web31MetaData;
 import org.jboss.metadata.web.spec.WebCommonMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
@@ -71,6 +68,8 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  */
 public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
+    static final String VERSION = Boolean.getBoolean("ee8.preview.mode") ? "4.0" : "3.1";
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -83,15 +82,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         boolean isComplete = false;
         WebMetaData specMetaData = warMetaData.getWebMetaData();
         if (specMetaData != null) {
-            if (specMetaData instanceof Web25MetaData) {
-                isComplete |= ((Web25MetaData) specMetaData).isMetadataComplete();
-            } else if (specMetaData instanceof Web30MetaData) {
-                isComplete |= ((Web30MetaData) specMetaData).isMetadataComplete();
-            } else {
-                // As per Servlet 3.0 spec, metadata is not completed unless it's set to true in web.xml.
-                // Hence, any web.xml 2.4 or earlier deployment is not metadata completed.
-                isComplete = false;
-            }
+            isComplete = specMetaData.isMetadataComplete();
         }
 
         // Find all fragments that have been processed by deployers, and place
@@ -177,8 +168,8 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
         // Generate web fragments parsing order
         AbsoluteOrderingMetaData absoluteOrderingMetaData = null;
-        if (!isComplete && specMetaData instanceof Web30MetaData) {
-            absoluteOrderingMetaData = ((Web30MetaData) specMetaData).getAbsoluteOrdering();
+        if (!isComplete && specMetaData != null) {
+            absoluteOrderingMetaData = specMetaData.getAbsoluteOrdering();
         }
         if (absoluteOrderingMetaData != null) {
             // Absolute ordering from web.xml, any relative fragment ordering is ignored
@@ -249,8 +240,8 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         WebCommonMetaData mergedFragmentMetaData = new WebCommonMetaData();
         if (specMetaData == null) {
             // If there is no web.xml, it has to be considered to be the latest version
-            specMetaData = new Web31MetaData();
-            specMetaData.setVersion("3.1");
+            specMetaData = new WebMetaData();
+            specMetaData.setVersion(VERSION);
         }
         // Augment with meta data from annotations in /WEB-INF/classes
         WebMetaData annotatedMetaData = annotationsMetaData.get("classes");
