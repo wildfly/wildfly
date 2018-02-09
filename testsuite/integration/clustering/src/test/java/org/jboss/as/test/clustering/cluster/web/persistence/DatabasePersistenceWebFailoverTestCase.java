@@ -26,7 +26,6 @@ import java.net.URL;
 
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -45,7 +44,6 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 @ServerSetup(DatabasePersistenceWebFailoverTestCase.ServerSetupTask.class)
 public class DatabasePersistenceWebFailoverTestCase extends AbstractWebFailoverTestCase {
     private static final String DEPLOYMENT_NAME = DatabasePersistenceWebFailoverTestCase.class.getSimpleName() + ".war";

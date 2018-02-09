@@ -35,7 +35,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
@@ -53,7 +52,6 @@ import org.junit.runner.RunWith;
  * @version Oct 2012
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTestCase {
 
     private final String deploymentName;

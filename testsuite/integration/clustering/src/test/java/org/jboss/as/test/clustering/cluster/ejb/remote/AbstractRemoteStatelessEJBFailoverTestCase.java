@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.remote;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +31,6 @@ import java.util.PropertyPermission;
 import java.util.concurrent.Callable;
 import java.util.function.UnaryOperator;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
@@ -55,7 +54,6 @@ import org.wildfly.common.function.ExceptionSupplier;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 public abstract class AbstractRemoteStatelessEJBFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final int COUNT = 20;

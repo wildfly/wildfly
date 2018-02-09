@@ -27,7 +27,6 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 import java.util.PropertyPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.NodeNameGetter;
@@ -44,7 +43,6 @@ import org.junit.runner.RunWith;
  * @author Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 public class RemoteEJB2ClientStatefulBeanFailoverDDTestCase extends RemoteEJBClientStatefulFailoverTestBase {
 
     @Deployment(name = DEPLOYMENT_HELPER_1, managed = false, testable = false)

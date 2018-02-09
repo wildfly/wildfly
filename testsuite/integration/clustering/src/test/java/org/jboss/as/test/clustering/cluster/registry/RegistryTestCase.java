@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.PropertyPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -22,7 +21,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-@RunAsClient
 public class RegistryTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = "registry";
 

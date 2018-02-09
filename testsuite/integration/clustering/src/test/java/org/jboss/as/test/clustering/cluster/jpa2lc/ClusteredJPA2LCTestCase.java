@@ -39,7 +39,6 @@ import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -61,7 +60,6 @@ import org.wildfly.test.api.Authentication;
  * @author Jan Martiska
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 public class ClusteredJPA2LCTestCase {
 
     private static final String MODULE_NAME = "clustered2lc";

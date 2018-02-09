@@ -36,7 +36,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.server.security.ServerPermission;
@@ -57,10 +56,9 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 public class SingletonServiceTestCase {
 
-    @Deployment
+    @Deployment(testable = false)
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "singleton.war");
         war.addPackage(NodeService.class.getPackage());

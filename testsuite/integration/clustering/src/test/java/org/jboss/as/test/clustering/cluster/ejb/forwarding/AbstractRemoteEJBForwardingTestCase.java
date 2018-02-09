@@ -32,15 +32,14 @@ import java.util.concurrent.TimeUnit;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.CLIServerSetupTask;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
-import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful.RemoteStatefulSB;
 import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.common.CommonStatefulSB;
 import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.forwarding.AbstractForwardingStatefulSBImpl;
+import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful.RemoteStatefulSB;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
@@ -69,7 +68,6 @@ import org.wildfly.common.function.ExceptionSupplier;
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 @ServerSetup(AbstractRemoteEJBForwardingTestCase.ServerSetupTask.class)
 public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractClusteringTestCase {
 

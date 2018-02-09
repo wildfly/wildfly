@@ -59,13 +59,13 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class NonDistributableTestCase extends AbstractClusteringTestCase {
 
-    @Deployment(name = DEPLOYMENT_1, managed = false)
+    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
         return getDeployment();
     }
 
-    @Deployment(name = DEPLOYMENT_2, managed = false)
+    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(NODE_2)
     public static Archive<?> deployment1() {
         return getDeployment();

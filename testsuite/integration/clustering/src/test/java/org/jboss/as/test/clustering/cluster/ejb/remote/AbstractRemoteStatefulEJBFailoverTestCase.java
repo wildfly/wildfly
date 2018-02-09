@@ -24,7 +24,6 @@ package org.jboss.as.test.clustering.cluster.ejb.remote;
 
 import java.util.PropertyPermission;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
@@ -47,7 +46,6 @@ import org.wildfly.common.function.ExceptionSupplier;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 public abstract class AbstractRemoteStatefulEJBFailoverTestCase extends AbstractClusteringTestCase {
     private static final int COUNT = 20;
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
