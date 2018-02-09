@@ -1,0 +1,5 @@
+embed-server --admin-only=true --server-config=standalone-full.xml
+
+/system-property=ee8.preview.mode:add(value=true)
+
+stop-embedded-server
