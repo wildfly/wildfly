@@ -24,6 +24,7 @@ package org.wildfly.test.integration.elytron.http;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
 import static org.junit.Assert.assertEquals;
 import static org.wildfly.security.auth.util.GSSCredentialSecurityFactory.KERBEROS_V5;
 import static org.wildfly.security.auth.util.GSSCredentialSecurityFactory.SPNEGO;
@@ -31,7 +32,6 @@ import static org.wildfly.security.auth.util.GSSCredentialSecurityFactory.SPNEGO
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -116,7 +116,7 @@ public class SpnegoMechTestCase extends AbstractMechTestBase {
     private static final String HEADER_WWW_AUTHENTICATE = "WWW-Authenticate";
     private static final String HEADER_AUTHORIZATION = "Authorization";
     private static final String CHALLENGE_PREFIX = "Negotiate ";
-    private static final URL KRB5_CONF = SpnegoMechTestCase.class.getResource(NAME + "-krb5.conf");
+    private static final File KRB5_CONF = new File(SpnegoMechTestCase.class.getResource(NAME + "-krb5.conf").getFile());
     private static final boolean DEBUG = false;
 
     @Deployment(testable = false)
@@ -132,7 +132,7 @@ public class SpnegoMechTestCase extends AbstractMechTestBase {
      */
     @BeforeClass
     public static void initProperties() {
-        System.setProperty("java.security.krb5.conf", KRB5_CONF.getFile());
+        System.setProperty("java.security.krb5.conf", KRB5_CONF.getAbsolutePath());
         System.setProperty("sun.security.krb5.debug", Boolean.toString(DEBUG));
     }
 
@@ -271,7 +271,7 @@ public class SpnegoMechTestCase extends AbstractMechTestBase {
                 public void create(CLIWrapper cli) throws Exception {
                     cli.sendLine("/subsystem=elytron/kerberos-security-factory=" + NAME + ":add(" +
                             "principal=\"" + SERVER_PRINCIPAL + "\", " +
-                            "path=\"" + SERVER_KEY_TAB_FILE.getAbsolutePath() + "\", " +
+                            "path=\"" + asAbsolutePath(SERVER_KEY_TAB_FILE) + "\", " +
                             "mechanism-names=[KRB5, SPNEGO], required=true, " +
                             "debug=" + Boolean.toString(DEBUG) + ")");
                     if (DEBUG) cli.sendLine("/subsystem=logging/logger=org.wildfly.security:add(level=TRACE)");
@@ -341,7 +341,7 @@ public class SpnegoMechTestCase extends AbstractMechTestBase {
         @Override
         protected SystemProperty[] getSystemProperties() {
             final Map<String, String> map = new HashMap<>();
-            map.put("java.security.krb5.conf", KRB5_CONF.getFile());
+            map.put("java.security.krb5.conf", KRB5_CONF.getAbsolutePath());
             map.put("sun.security.krb5.debug", Boolean.toString(DEBUG));
             return mapToSystemProperties(map);
         }
