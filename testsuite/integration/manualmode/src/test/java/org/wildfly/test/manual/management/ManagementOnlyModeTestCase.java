@@ -50,7 +50,7 @@ import org.wildfly.core.testrunner.WildflyTestRunner;
 @RunWith(WildflyTestRunner.class)
 public class ManagementOnlyModeTestCase {
 
-    private static final int TEST_PORT = 9091;
+    private static final int TEST_PORT = 20491;
 
     @Inject
     private ServerController container;
