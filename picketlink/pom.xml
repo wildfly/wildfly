@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>wildfly-parent</artifactId>
         <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 

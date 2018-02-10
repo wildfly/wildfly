@@ -27,8 +27,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>wildfly-testsuite</artifactId>
         <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-testsuite</artifactId>
         <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
