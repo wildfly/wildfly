@@ -21,6 +21,7 @@
  */
 package org.wildfly.test.integration.elytron.ejb;
 
+import static org.wildfly.test.integration.elytron.util.HttpUtil.get;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
@@ -29,22 +30,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.SocketPermission;
-import java.net.URL;
 import java.security.Principal;
 import java.util.PropertyPermission;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.ejb.EJB;
 import javax.security.auth.AuthPermission;
@@ -54,7 +45,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
-import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.Archive;
@@ -67,7 +57,10 @@ import org.junit.runner.RunWith;
 import org.wildfly.security.permission.ElytronPermission;
 import org.wildfly.test.integration.elytron.ejb.authentication.EntryBean;
 import org.wildfly.test.integration.elytron.ejb.base.WhoAmIBean;
+import org.wildfly.test.integration.elytron.util.HttpUtil;
 import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
+import org.wildfly.test.security.common.elytron.ElytronDomainSetup;
+import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
 /**
  * Test case to hold the authentication scenarios, these range from calling a servlet which calls a bean to calling a bean which
@@ -77,7 +70,7 @@ import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ AuthenticationTestCase.EjbSecurityDomainSetup.class })
+@ServerSetup({ AuthenticationTestCase.ElytronDomainSetupOverride.class, EjbElytronDomainSetup.class, ServletElytronDomainSetup.class })
 @Category(CommonCriteria.class)
 public class AuthenticationTestCase {
 
@@ -102,9 +95,9 @@ public class AuthenticationTestCase {
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
                 .addPackage(WhoAmIBean.class.getPackage()).addPackage(EntryBean.class.getPackage())
-                .addClass(WhoAmI.class).addClass(Util.class).addClass(Entry.class)
+                .addClass(WhoAmI.class).addClass(Util.class).addClass(Entry.class).addClass(HttpUtil.class)
                 .addClasses(WhoAmIServlet.class, AuthenticationTestCase.class)
-                .addClasses(AbstractSecurityDomainSetup.class, EjbElytronDomainSetup.class)
+                .addClasses(ElytronDomainSetup.class, EjbElytronDomainSetup.class, ServletElytronDomainSetup.class)
                 .addClass(TestSuiteEnvironment.class)
                 .addAsResource(currentPackage, "users.properties", "users.properties")
                 .addAsResource(currentPackage, "roles.properties", "roles.properties")
@@ -313,83 +306,9 @@ public class AuthenticationTestCase {
         Util.switchIdentity("user1", "password1", callable);
     }
 
-    private static String read(final InputStream in) throws IOException {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int b;
-        while ((b = in.read()) != -1) {
-            out.write(b);
-        }
-        return out.toString();
-    }
-
-    private static String processResponse(HttpURLConnection conn) throws IOException {
-        int responseCode = conn.getResponseCode();
-        if (responseCode != HttpURLConnection.HTTP_OK) {
-            final InputStream err = conn.getErrorStream();
-            try {
-                String response = err != null ? read(err) : null;
-                throw new IOException(String.format("HTTP Status %d Response: %s", responseCode, response));
-            } finally {
-                if (err != null) {
-                    err.close();
-                }
-            }
-        }
-        final InputStream in = conn.getInputStream();
-        try {
-            return read(in);
-        } finally {
-            in.close();
-        }
-    }
-
-
     private String getWhoAmI(String queryString) throws Exception {
         return get(WAR_URL + "whoAmI" + queryString, "user1", "password1", 10, SECONDS);
     }
-
-    public static String get(final String spec, final String username, final String password, final long timeout, final TimeUnit unit) throws IOException, TimeoutException {
-        final URL url = new URL(spec);
-        Callable<String> task = new Callable<String>() {
-            @Override
-            public String call() throws IOException {
-                final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                if (username != null) {
-                    final String userpassword = username + ":" + password;
-                    final String basicAuthorization = java.util.Base64.getEncoder().encodeToString(userpassword.getBytes());
-                    conn.setRequestProperty("Authorization", "Basic " + basicAuthorization);
-                }
-                conn.setDoInput(true);
-                return processResponse(conn);
-            }
-        };
-        return execute(task, timeout, unit);
-    }
-
-    private static String execute(final Callable<String> task, final long timeout, final TimeUnit unit) throws TimeoutException, IOException {
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
-        final Future<String> result = executor.submit(task);
-        try {
-            return result.get(timeout, unit);
-        } catch (TimeoutException e) {
-            result.cancel(true);
-            throw e;
-        } catch (InterruptedException e) {
-            // should not happen
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            // by virtue of the Callable redefinition above I can cast
-            throw new IOException(e);
-        } finally {
-            executor.shutdownNow();
-            try {
-                executor.awaitTermination(timeout, unit);
-            } catch (InterruptedException e) {
-                // ignore
-            }
-        }
-    }
-
 
     @Test
     public void testICIR_ViaServlet() throws Exception {
@@ -465,8 +384,8 @@ public class AuthenticationTestCase {
     // 17.6.9 - Runtime Security Enforcement
     // 17.6.10 - Audit Trail
 
-    static class EjbSecurityDomainSetup extends EjbElytronDomainSetup {
-        public EjbSecurityDomainSetup() {
+    static class ElytronDomainSetupOverride extends ElytronDomainSetup {
+        public ElytronDomainSetupOverride() {
             super(new File(AuthenticationTestCase.class.getResource("users.properties").getFile()).getAbsolutePath(),
                     new File(AuthenticationTestCase.class.getResource("roles.properties").getFile()).getAbsolutePath());
         }

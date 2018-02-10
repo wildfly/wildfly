@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.test.integration.elytron.ejb.authentication;
 
-import javax.ejb.Stateless;
-
-import org.wildfly.test.integration.elytron.ejb.Entry;
-import org.jboss.ejb3.annotation.SecurityDomain;
+package org.wildfly.test.security.common.elytron;
 
 /**
- * Concrete implementation to allow deployment of bean.
+ * Interface representing Elytron http-authentication-factory capability.
  *
- * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author Jan Kalina
  */
-@Stateless
-@SecurityDomain("elytron-tests")
-public class EntryBean extends org.wildfly.test.integration.elytron.ejb.base.EntryBean implements Entry {
+public interface HttpAuthenticationFactory extends ConfigurableElement {
+
 }

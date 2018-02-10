@@ -22,24 +22,18 @@
 
 package org.wildfly.test.security.common.elytron;
 
-//import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.wildfly.test.security.common.elytron.Utils.applyRemoveAllowReload;
+import static org.wildfly.test.security.common.elytron.Utils.applyUpdate;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.elytron.ElytronExtension;
@@ -49,13 +43,9 @@ import org.wildfly.extension.elytron.ElytronExtension;
  *
  * @author <a href="mailto:jkalina@redhat.com">Jan Kalina</a>
  */
-public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
+public class EjbElytronDomainSetup implements ServerSetupTask {
 
-    private static final String DEFAULT_SECURITY_DOMAIN_NAME = "ejb3-tests";
-
-    private PathAddress realmAddress;
-
-    private PathAddress domainAddress;
+    private static final String DEFAULT_SECURITY_DOMAIN_NAME = "elytron-tests";
 
     private PathAddress saslAuthenticationAddress;
 
@@ -63,25 +53,13 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
 
     private PathAddress ejbDomainAddress;
 
-    private PathAddress ejbRemoteAddress = PathAddress.pathAddress()
-            .append(SUBSYSTEM, "ejb3")
-            .append("service", "remote");
-
-    private PathAddress httpAuthenticationAddress;
-
-    private PathAddress undertowDomainAddress;
-
-    private final String usersFile;
-    private final String groupsFile;
     private final String securityDomainName;
 
-    public EjbElytronDomainSetup(final String usersFile, final String groupsFile) {
-        this(usersFile, groupsFile, DEFAULT_SECURITY_DOMAIN_NAME);
+    public EjbElytronDomainSetup() {
+        this(DEFAULT_SECURITY_DOMAIN_NAME);
     }
 
-    public EjbElytronDomainSetup(final String usersFile, final String groupsFile, final String securityDomainName) {
-        this.usersFile = usersFile;
-        this.groupsFile = groupsFile;
+    public EjbElytronDomainSetup(final String securityDomainName) {
         this.securityDomainName = securityDomainName;
     }
 
@@ -93,9 +71,6 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         return getSecurityDomainName() + "-ejb3-UsersRoles";
     }
 
-    protected String getUndertowDomainName() {
-        return getSecurityDomainName();
-    }
 
     protected String getEjbDomainName() {
         return getSecurityDomainName();
@@ -109,32 +84,8 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         return "http-remoting-connector";
     }
 
-    protected String getHttpAuthenticationName() {
-        return getSecurityDomainName();
-    }
-
-    protected String getUsersFile() {
-        return usersFile;
-    }
-
-    protected String getGroupsFile() {
-        return groupsFile;
-    }
-
-    protected boolean isUsersFilePlain() {
-        return true;
-    }
-
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-        realmAddress = PathAddress.pathAddress()
-                .append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)
-                .append("properties-realm", getSecurityRealmName());
-
-        domainAddress = PathAddress.pathAddress()
-                .append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)
-                .append("security-domain", getSecurityDomainName());
-
         saslAuthenticationAddress = PathAddress.pathAddress()
                 .append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)
                 .append("sasl-authentication-factory", getSaslAuthenticationName());
@@ -147,35 +98,11 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
                 .append(SUBSYSTEM, "ejb3")
                 .append("application-security-domain", getEjbDomainName());
 
-        httpAuthenticationAddress = PathAddress.pathAddress()
-                .append(SUBSYSTEM, ElytronExtension.SUBSYSTEM_NAME)
-                .append("http-authentication-factory", getHttpAuthenticationName());
-
-        undertowDomainAddress = PathAddress.pathAddress()
-                .append(SUBSYSTEM, "undertow")
-                .append("application-security-domain", getUndertowDomainName());
-
         final ModelNode compositeOp = new ModelNode();
         compositeOp.get(OP).set(ModelDescriptionConstants.COMPOSITE);
         compositeOp.get(OP_ADDR).setEmptyList();
 
         ModelNode steps = compositeOp.get(STEPS);
-
-        // /subsystem=elytron/properties-realm=UsersRoles:add(users-properties={path=users.properties},groups-properties={path=roles.properties})
-        ModelNode addRealm = Util.createAddOperation(realmAddress);
-        addRealm.get("users-properties").get("path").set(getUsersFile());
-        addRealm.get("users-properties").get("plain-text").set(isUsersFilePlain()); // not hashed
-        addRealm.get("groups-properties").get("path").set(getGroupsFile());
-        steps.add(addRealm);
-
-        // /subsystem=elytron/security-domain=EjbDomain:add(default-realm=UsersRoles, realms=[{realm=UsersRoles}])
-        ModelNode addDomain = Util.createAddOperation(domainAddress);
-        addDomain.get("permission-mapper").set("default-permission-mapper"); // LoginPermission for everyone (defined in standalone-elytron.xml)
-        addDomain.get("default-realm").set(getSecurityRealmName());
-        addDomain.get("realms").get(0).get("realm").set(getSecurityRealmName());
-        addDomain.get("realms").get(0).get("role-decoder").set("groups-to-roles"); // use attribute "groups" as roles (defined in standalone-elytron.xml)
-        addDomain.get("realms").get(1).get("realm").set("local");
-        steps.add(addDomain);
 
         // /subsystem=elytron/sasl-authentication-factory=ejb3-tests-auth-fac:add(sasl-server-factory=configured,security-domain=EjbDomain,mechanism-configurations=[{mechanism-name=BASIC}])
         ModelNode addSaslAuthentication = Util.createAddOperation(saslAuthenticationAddress);
@@ -196,19 +123,8 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         addEjbDomain.get("security-domain").set(getSecurityDomainName());
         steps.add(addEjbDomain);
 
-        ModelNode addHttpAuthentication = Util.createAddOperation(httpAuthenticationAddress);
-        addHttpAuthentication.get("security-domain").set(getSecurityDomainName());
-        addHttpAuthentication.get("http-server-mechanism-factory").set("global");
-        addHttpAuthentication.get("mechanism-configurations").get(0).get("mechanism-name").set("BASIC");
-        addHttpAuthentication.get("mechanism-configurations").get(0).get("mechanism-realm-configurations").get(0).get("realm-name").set("TestingRealm");
-        steps.add(addHttpAuthentication);
-
-        ModelNode addUndertowDomain = Util.createAddOperation(undertowDomainAddress);
-        addUndertowDomain.get("http-authentication-factory").set(getHttpAuthenticationName());
-        steps.add(addUndertowDomain);
-
         applyUpdate(managementClient.getControllerClient(), compositeOp, false);
-        // TODO: add {"allow-resource-service-restart" => true} to ejbRemoteAddress write-attribute operation once WFLY-8793 / JBEAP-10955 is fixed
+        // TODO: add {"allow-resource-service-restart" => true} to ejbDomainAddress write-attribute operation once WFLY-8793 / JBEAP-10955 is fixed
         //       and remove this reload
         ServerReload.reloadIfRequired(managementClient.getControllerClient());
     }
@@ -220,7 +136,9 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        // TODO: add {"allow-resource-service-restart" => true} to ejbRemoteAddress write-attribute operation once WFLY-8793 / JBEAP-10955 is fixed
+
+        applyRemoveAllowReload(managementClient.getControllerClient(), ejbDomainAddress, false);
+        // TODO: add {"allow-resource-service-restart" => true} to ejbDomainAddress write-attribute operation once WFLY-8793 / JBEAP-10955 is fixed
         //       and remove this reload
         try {
             ServerReload.reloadIfRequired(managementClient.getControllerClient());
@@ -228,29 +146,7 @@ public class EjbElytronDomainSetup extends AbstractSecurityDomainSetup {
             throw new RuntimeException(e);
         }
 
-        List<ModelNode> updates = new LinkedList<>();
-
-        applyRemoveAllowReload(managementClient.getControllerClient(), undertowDomainAddress, false);
-        applyRemoveAllowReload(managementClient.getControllerClient(), httpAuthenticationAddress, false);
-        applyRemoveAllowReload(managementClient.getControllerClient(), ejbDomainAddress, false);
-        // TODO: remove this reload once WFLY-8821 / JBEAP-11074 is fixed
-        try {
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
         applyRemoveAllowReload(managementClient.getControllerClient(), saslAuthenticationAddress, false);
-        applyRemoveAllowReload(managementClient.getControllerClient(), domainAddress, false);
-        applyRemoveAllowReload(managementClient.getControllerClient(), realmAddress, false);
     }
 
-    private static void applyRemoveAllowReload(final ModelControllerClient client, PathAddress address, boolean allowFailure) {
-        ModelNode op = Util.createRemoveOperation(address);
-        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        try {
-            applyUpdate(client, op, allowFailure);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

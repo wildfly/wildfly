@@ -44,6 +44,8 @@ import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
+import org.wildfly.test.security.common.elytron.ElytronDomainSetup;
+import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
 /**
  * Utility methods to create/remove simple security domains
@@ -53,7 +55,9 @@ import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
 public class EjbSecurityDomainSetup extends AbstractSecurityDomainSetup {
 
     protected static final String DEFAULT_SECURITY_DOMAIN_NAME = "ejb3-tests";
+    private ElytronDomainSetup elytronDomainSetup;
     private EjbElytronDomainSetup ejbElytronDomainSetup;
+    private ServletElytronDomainSetup servletElytronDomainSetup;
 
     @Override
     protected String getSecurityDomainName() {
@@ -109,15 +113,37 @@ public class EjbSecurityDomainSetup extends AbstractSecurityDomainSetup {
             applyUpdates(managementClient.getControllerClient(), Arrays.asList(compositeOp));
         } else {
             // elytron profile is enabled
-            ejbElytronDomainSetup = new EjbElytronDomainSetup(getUsersFile(), getGroupsFile(), getSecurityDomainName());
+            elytronDomainSetup = new ElytronDomainSetup(getUsersFile(), getGroupsFile(), getSecurityDomainName());
+            ejbElytronDomainSetup = new EjbElytronDomainSetup(getSecurityDomainName());
+            servletElytronDomainSetup = new ServletElytronDomainSetup(getSecurityDomainName());
+
+            elytronDomainSetup.setup(managementClient, containerId);
             ejbElytronDomainSetup.setup(managementClient, containerId);
+            servletElytronDomainSetup.setup(managementClient, containerId);
         }
     }
 
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) {
-        if (ejbElytronDomainSetup != null) {
-            ejbElytronDomainSetup.tearDown(managementClient, containerId);
+        if (elytronDomainSetup != null) {
+            // if one of tearDown will fail, rest of them should be called through
+            Exception ex = null;
+            try {
+                servletElytronDomainSetup.tearDown(managementClient, containerId);
+            } catch (Exception e) {
+                ex = e;
+            }
+            try {
+                ejbElytronDomainSetup.tearDown(managementClient, containerId);
+            } catch (Exception e) {
+                if (ex == null) ex = e;
+            }
+            try {
+                elytronDomainSetup.tearDown(managementClient, containerId);
+            } catch (Exception e) {
+                if (ex == null) ex = e;
+            }
+            if (ex != null) throw new RuntimeException(ex);
         } else {
             super.tearDown(managementClient, containerId);
         }

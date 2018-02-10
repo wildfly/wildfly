@@ -14,7 +14,6 @@ import org.jboss.as.test.integration.ejb.security.authorization.RolesAllowedOver
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -26,6 +25,8 @@ import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
 import org.wildfly.security.permission.ElytronPermission;
 import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
+import org.wildfly.test.security.common.elytron.ElytronDomainSetup;
+import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBAccessException;
@@ -58,10 +59,10 @@ import static org.junit.Assert.fail;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({MixedSecurityAnnotationAuthorizationTestCase.OverridenEjbSecurityDomainSetup.class,
-        MixedSecurityAnnotationAuthorizationTestCase.OverridingEjbElytronDomainSetup.class})
+        MixedSecurityAnnotationAuthorizationTestCase.OverridingElytronDomainSetup.class,
+        MixedSecurityAnnotationAuthorizationTestCase.OverridingEjbElytronDomainSetup.class,
+        MixedSecurityAnnotationAuthorizationTestCase.OverridingServletElytronDomainSetup.class})
 public class MixedSecurityAnnotationAuthorizationTestCase {
-
-    private static final Logger log = Logger.getLogger(MixedSecurityAnnotationAuthorizationTestCase.class.getName());
 
     @Deployment
     public static Archive<?> runAsDeployment() {
@@ -69,7 +70,7 @@ public class MixedSecurityAnnotationAuthorizationTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
                 .addClasses(RolesAllowedOverrideBean.class, RolesAllowedOverrideBeanBase.class, PermitAllOverrideBean.class, DenyAllOverrideBean.class).addClass(Util.class)
                 .addClasses(MixedSecurityAnnotationAuthorizationTestCase.class)
-                .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class, EjbElytronDomainSetup.class)
+                .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class, ElytronDomainSetup.class, EjbElytronDomainSetup.class, ServletElytronDomainSetup.class)
                 .addAsWebInfResource(currentPackage, "jboss-web.xml", "jboss-web.xml");
         war.addAsManifestResource(createPermissionsXmlAsset(
                 new ElytronPermission("getSecurityDomain"),
@@ -315,11 +316,29 @@ public class MixedSecurityAnnotationAuthorizationTestCase {
         return callable.call();
     }
 
-    public static class OverridingEjbElytronDomainSetup extends EjbElytronDomainSetup {
+    public static class OverridingElytronDomainSetup extends ElytronDomainSetup {
 
-        public OverridingEjbElytronDomainSetup() {
+        public OverridingElytronDomainSetup() {
             super(new File(MixedSecurityAnnotationAuthorizationTestCase.class.getResource("elytronusers.properties").getFile()).getAbsolutePath(),
                   new File(MixedSecurityAnnotationAuthorizationTestCase.class.getResource("roles.properties").getFile()).getAbsolutePath());
+        }
+
+    }
+
+    public static class OverridingEjbElytronDomainSetup extends EjbElytronDomainSetup {
+
+        @Override
+        protected String getEjbDomainName() {
+            return "ejb3-tests";
+        }
+
+    }
+
+    public static class OverridingServletElytronDomainSetup extends ServletElytronDomainSetup {
+
+        @Override
+        protected String getUndertowDomainName() {
+            return "ejb3-tests";
         }
 
     }
