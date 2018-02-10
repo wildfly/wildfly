@@ -40,7 +40,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-security</artifactId>
         </dependency>
     </dependencies>

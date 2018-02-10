@@ -39,7 +39,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-api</artifactId>
         </dependency>
         <dependency>

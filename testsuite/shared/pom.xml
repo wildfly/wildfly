@@ -44,12 +44,12 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-feature-pack</artifactId>
             <type>pom</type>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-servlet-feature-pack</artifactId>
             <type>pom</type>
         </dependency>

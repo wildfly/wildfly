@@ -11,7 +11,6 @@
         <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>jipijapa-eclipselink</artifactId>
     <name>jipijapa EclipseLink integration</name>
 
@@ -19,7 +18,7 @@
         <!-- Internal -->
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-spi</artifactId>
         </dependency>
 

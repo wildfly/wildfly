@@ -51,7 +51,7 @@
             <artifactId>wildfly-request-controller</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-ee</artifactId>
         </dependency>
         <dependency>
@@ -63,11 +63,11 @@
             <artifactId>wildfly-server</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-security</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-web-common</artifactId>
         </dependency>
         <dependency>

@@ -887,45 +887,45 @@
             <!-- Modules in this project -->
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-appclient</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-batch</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-batch-jberet</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-build</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-bean-validation</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-feature-pack</artifactId>
                 <type>pom</type>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-feature-pack</artifactId>
                 <type>zip</type>
                 <version>${project.version}</version>
@@ -938,164 +938,164 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-ee-infinispan</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-ee-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-ejb-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-infinispan-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-infinispan-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-jgroups-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-jgroups-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-jgroups-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-marshalling-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-marshalling-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-marshalling-infinispan</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-singleton-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-singleton-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-web-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-web-infinispan</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-web-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-web-undertow</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-cmp</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-configadmin</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-connector</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-dist</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-client-all</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -1107,13 +1107,13 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-ee</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-ejb3</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -1124,94 +1124,94 @@
                         <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.wildfly</groupId>
+                        <groupId>${project.groupId}</groupId>
                         <artifactId>wildfly-clustering-spi</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-ejb-client-bom</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-iiop-openjdk</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-jacorb</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-jaxr</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-jaxrs</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-jdr</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-jms-client-bom</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-jsr77</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-mail</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-messaging</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-messaging-activemq</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-mod_cluster-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-mod_cluster-undertow</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-naming</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1229,7 +1229,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-picketlink</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -1245,49 +1245,49 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-pojo</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-security-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-security</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-sar</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-system-jmx</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-transactions</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-undertow</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-web</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -1299,94 +1299,94 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-web-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-servlet-dist</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-servlet-feature-pack</artifactId>
                 <type>pom</type>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-servlet-feature-pack</artifactId>
                 <type>zip</type>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-webservices-server-integration</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-weld</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-weld-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-weld-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-weld-ejb</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-weld-jpa</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-weld-bean-validation</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-weld-webservices</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-weld-transactions</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-xts</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-rts</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1404,7 +1404,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-testsuite-shared</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
@@ -4648,13 +4648,13 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-jpa</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>jipijapa-spi</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -4668,7 +4668,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>jipijapa-hibernate5</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -4692,7 +4692,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>jipijapa-hibernate4-3</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -4712,7 +4712,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>jipijapa-hibernate4-1</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -4732,25 +4732,25 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>jipijapa-eclipselink</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>jipijapa-openjpa</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-jsf</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-jsf-injection</artifactId>
                 <version>${project.version}</version>
                 <exclusions>

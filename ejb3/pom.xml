@@ -46,7 +46,7 @@ vi:ts=4:sw=4:expandtab
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-connector</artifactId>
         </dependency>
         <dependency>
@@ -55,38 +55,38 @@ vi:ts=4:sw=4:expandtab
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-ejb-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-spi</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-singleton-api</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-ee</artifactId>
         </dependency>
  
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-iiop-openjdk</artifactId>
         </dependency>
 
@@ -106,7 +106,7 @@ vi:ts=4:sw=4:expandtab
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-transactions</artifactId>
         </dependency>
 

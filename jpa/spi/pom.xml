@@ -12,7 +12,6 @@
     </parent>
 
 
-    <groupId>org.wildfly</groupId>
     <artifactId>jipijapa-spi</artifactId>
 
     <name>jipijapa SPI</name>

@@ -65,7 +65,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-bean-validation</artifactId>
         </dependency>
 
@@ -80,12 +80,12 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-ejb3</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-spi</artifactId>
         </dependency>
 
@@ -112,7 +112,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld-common</artifactId>
         </dependency>
 

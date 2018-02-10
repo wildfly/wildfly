@@ -102,7 +102,7 @@
             <artifactId>jboss-invocation</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-naming</artifactId>
         </dependency>
         <dependency>

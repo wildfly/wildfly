@@ -27,8 +27,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>wildfly-testsuite</artifactId>
         <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-testsuite</artifactId>
         <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
@@ -107,7 +107,7 @@
             <artifactId>hibernate-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-hibernate5</artifactId>
         </dependency>
         <dependency>
@@ -115,11 +115,11 @@
             <artifactId>hibernate-entitymanager</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-eclipselink</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-openjpa</artifactId>
         </dependency>
         <dependency>
@@ -131,7 +131,7 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>jipijapa-eclipselink</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>

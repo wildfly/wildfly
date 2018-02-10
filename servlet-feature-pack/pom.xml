@@ -348,7 +348,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
             <exclusions>
                 <exclusion>
@@ -359,7 +359,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-service</artifactId>
             <exclusions>
                 <exclusion>
@@ -370,7 +370,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-ee</artifactId>
             <exclusions>
                 <exclusion>
@@ -381,7 +381,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-naming</artifactId>
             <exclusions>
                 <exclusion>
@@ -403,7 +403,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-security</artifactId>
             <exclusions>
                 <exclusion>
@@ -414,7 +414,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-undertow</artifactId>
             <exclusions>
                 <exclusion>
@@ -425,7 +425,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-web-common</artifactId>
             <exclusions>
                 <exclusion>

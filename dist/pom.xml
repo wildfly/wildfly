@@ -38,13 +38,13 @@
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-feature-pack</artifactId>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-feature-pack</artifactId>
             <type>zip</type>
             <exclusions>

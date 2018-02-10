@@ -48,13 +48,13 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-ejb-client-bom</artifactId>
             <type>pom</type>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-jms-client-bom</artifactId>
             <type>pom</type>
         </dependency>
