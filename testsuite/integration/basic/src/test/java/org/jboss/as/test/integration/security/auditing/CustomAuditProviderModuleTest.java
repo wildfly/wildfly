@@ -67,7 +67,7 @@ import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.integration.security.loginmodules.common.CustomLoginModule1;
 import org.jboss.as.test.integration.security.loginmodules.common.CustomLoginModule2;
-import org.jboss.as.test.integration.web.security.SecuredServlet;
+import org.jboss.as.test.integration.security.servlet.SecuredServlet;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;

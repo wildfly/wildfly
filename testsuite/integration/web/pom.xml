@@ -59,6 +59,7 @@
                     </environmentVariables>
                     <!-- Parameters to test cases. -->
                     <systemPropertyVariables combine.children="append">
+                        <jboss.inst>${basedir}/target/wildfly</jboss.inst>
                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                     </systemPropertyVariables>
                     <additionalClasspathElements>
