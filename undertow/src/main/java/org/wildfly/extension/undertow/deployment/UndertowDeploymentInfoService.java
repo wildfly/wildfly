@@ -493,7 +493,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if (authzInfo != null) {
                 for (AuthorizationModuleEntry entry : authzInfo.getModuleEntries()) {
                     if (JACCAuthorizationModule.class.getName().equals(entry.getPolicyModuleName())) {
-                        deploymentInfo.setAuthorizationManager(new JACCAuthorizationManager());
+                        deploymentInfo.setAuthorizationManager(JACCAuthorizationManager.INSTANCE);
                         break;
                     }
                 }
