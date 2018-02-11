@@ -7,7 +7,7 @@ http://wildfly.org
 * Modular Design
 * Unified Configuration and Management
 
-And of course Java EE7!
+And of course Java EE!
 
 Building
 -------------------
