@@ -29,7 +29,6 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -354,14 +353,14 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 83, value = "%s is not allowed to be null")
     String nullNotAllowed(String name);
 
-    @Message(id = 84, value = "There are no mechanisms available from the HttpAuthenticationFactory.")
-    IllegalStateException noMechanismsAvailable();
+    //@Message(id = 84, value = "There are no mechanisms available from the HttpAuthenticationFactory.")
+    //IllegalStateException noMechanismsAvailable();
 
-    @Message(id = 85, value = "The required mechanism '%s' is not available in mechanisms %s from the HttpAuthenticationFactory.")
-    IllegalStateException requiredMechanismNotAvailable(String mechanismName, Collection<String> availableMechanisms);
+    //@Message(id = 85, value = "The required mechanism '%s' is not available in mechanisms %s from the HttpAuthenticationFactory.")
+    //IllegalStateException requiredMechanismNotAvailable(String mechanismName, Collection<String> availableMechanisms);
 
-    @Message(id = 86, value = "No authentication mechanisms have been selected.")
-    IllegalStateException noMechanismsSelected();
+    //@Message(id = 86, value = "No authentication mechanisms have been selected.")
+    //IllegalStateException noMechanismsSelected();
 
     @Message(id = 87, value = "Duplicate default web module '%s' configured on server '%s', host '%s'")
     IllegalArgumentException duplicateDefaultWebModuleMapping(String defaultDeploymentName, String serverName, String hostName);
@@ -392,8 +391,8 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 95, value = "the path ['%s'] doesn't exist on file system")
     String unableAddHandlerForPath(String path);
 
-    @Message(id = 96, value = "Unable to obtain identity for name %s")
-    IllegalStateException unableToObtainIdentity(String name, @Cause Throwable cause);
+    //@Message(id = 96, value = "Unable to obtain identity for name %s")
+    //IllegalStateException unableToObtainIdentity(String name, @Cause Throwable cause);
 
     @Message(id = 97, value = "If http-upgrade is enabled, remoting worker and http(s) worker must be the same. Please adjust values if need be.")
     String workerValueInHTTPListenerMustMatchRemoting();
