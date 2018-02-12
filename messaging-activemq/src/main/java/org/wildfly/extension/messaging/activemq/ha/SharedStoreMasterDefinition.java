@@ -50,7 +50,7 @@ import org.wildfly.extension.messaging.activemq.MessagingExtension;
  */
 public class SharedStoreMasterDefinition extends PersistentResourceDefinition {
 
-    public static Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(
+    public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(
             FAILOVER_ON_SERVER_SHUTDOWN
     ));
 

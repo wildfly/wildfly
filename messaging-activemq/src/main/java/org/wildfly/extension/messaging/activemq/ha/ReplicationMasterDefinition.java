@@ -53,7 +53,7 @@ import org.wildfly.extension.messaging.activemq.MessagingExtension;
  */
 public class ReplicationMasterDefinition extends PersistentResourceDefinition {
 
-    public static Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(
+    public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(
             (AttributeDefinition) CLUSTER_NAME,
             GROUP_NAME,
             CHECK_FOR_LIVE_SERVER,

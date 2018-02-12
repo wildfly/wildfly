@@ -55,7 +55,7 @@ import org.wildfly.extension.messaging.activemq.MessagingExtension;
  */
 public class ReplicationSlaveDefinition extends PersistentResourceDefinition {
 
-    public static Collection<AttributeDefinition> ATTRIBUTES;
+    public static final Collection<AttributeDefinition> ATTRIBUTES;
 
     static {
         Collection<AttributeDefinition> attributes = new ArrayList<>();
@@ -71,8 +71,8 @@ public class ReplicationSlaveDefinition extends PersistentResourceDefinition {
         ATTRIBUTES = Collections.unmodifiableCollection(attributes);
     }
 
-    public static ReplicationSlaveDefinition INSTANCE = new ReplicationSlaveDefinition(MessagingExtension.REPLICATION_SLAVE_PATH, false);
-    public static ReplicationSlaveDefinition CONFIGURATION_INSTANCE = new ReplicationSlaveDefinition(MessagingExtension.CONFIGURATION_SLAVE_PATH, true);
+    public static final ReplicationSlaveDefinition INSTANCE = new ReplicationSlaveDefinition(MessagingExtension.REPLICATION_SLAVE_PATH, false);
+    public static final ReplicationSlaveDefinition CONFIGURATION_INSTANCE = new ReplicationSlaveDefinition(MessagingExtension.CONFIGURATION_SLAVE_PATH, true);
 
     private ReplicationSlaveDefinition(PathElement path, boolean allowSibling) {
         super(path,

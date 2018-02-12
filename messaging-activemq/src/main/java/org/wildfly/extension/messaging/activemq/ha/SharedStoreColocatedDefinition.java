@@ -60,7 +60,7 @@ public class SharedStoreColocatedDefinition extends PersistentResourceDefinition
 
     public static final PathElement PATH = PathElement.pathElement(HA_POLICY, SHARED_STORE_COLOCATED);
 
-    public static Collection<AttributeDefinition> ATTRIBUTES =  Collections.unmodifiableList(Arrays.asList(
+    public static final Collection<AttributeDefinition> ATTRIBUTES =  Collections.unmodifiableList(Arrays.asList(
             (AttributeDefinition) REQUEST_BACKUP,
             BACKUP_REQUEST_RETRIES,
             BACKUP_REQUEST_RETRY_INTERVAL,
