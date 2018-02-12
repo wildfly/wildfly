@@ -23,7 +23,6 @@
   -->
 
 <module xmlns="urn:jboss:module:1.5" name="org.picketlink.core.api">
-    <!-- This module is deprecated and subject to being removed in a subsequent release. -->
     <properties>
         <property name="jboss.api" value="deprecated"/>
     </properties>
