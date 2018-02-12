@@ -21,6 +21,7 @@
         <package name="misc.standalone"/>
         <package name="org.jboss.as.standalone"/>
         <package name="org.jboss.as.domain-management"/>
+        <package name="version.txt"/>
         <!-- cleanup runtime dirs -->
         <package name="cleanup.standalone.config.history.dir" optional="true"/>
         <package name="cleanup.standalone.log.dir" optional="true"/>

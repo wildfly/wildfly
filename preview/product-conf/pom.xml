@@ -26,6 +26,13 @@
     <description>Provides an artifact whose MANIFEST.MF includes entries that provide installation name and version information.</description>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -52,6 +59,9 @@
                                     <JBoss-Product-Minimum-Stability>${preview.dist.product.min.stability.level}</JBoss-Product-Minimum-Stability>
                                 </manifestEntries>
                             </archive>
+                            <excludes>
+                                <exclude>version.txt</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
                     <execution>
@@ -79,6 +89,39 @@
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>parse-versions</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>release</propertyPrefix>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>attach-version-artifact</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>${project.build.directory}/classes/version.txt</file>
+                                    <type>txt</type>
+                                    <classifier>version</classifier>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

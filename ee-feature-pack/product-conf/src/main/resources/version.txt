@@ -1,0 +1,1 @@
+WildFly - Version ${release.majorVersion}.${release.minorVersion}.${release.incrementalVersion}.${release.qualifier}

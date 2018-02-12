@@ -140,6 +140,13 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
+            <classifier>version</classifier>
+            <type>txt</type>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>persistence-cdi-extension</artifactId>
             <version>${project.version}</version>
         </dependency>
