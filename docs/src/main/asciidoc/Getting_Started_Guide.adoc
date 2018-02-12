@@ -115,6 +115,25 @@ This document provides a quick overview on how to download and get
 started using WildFly 10 for your application development. For in-depth
 content on administrative features, refer to the WildFly 10 Admin Guide.
 
+[[ee8-preview]]
+=== EE8 Preview ===
+By default, WildFly supports Java EE7. We aim to support Java EE8 in the
+future. As we implement Java EE8, and the technologies become available, we offer a preview of these.
+To turn on the Java EE8 preview for these technologies, start the server with
+`-Dee8.preview.mode=true` (Note that at this time setting this property via the CLI,
+web console, xml configuration or a property included in a file specified via the -P
+command line switch will not work). This will switch the technologies
+as shown in the table below. Note that Java EE8 technologies not listed in the table below
+will remain at Java EE7 level.
+
+[cols=",,,,",options="header"]
+|=======================================================================
+| Name | From Version | From JSR | To Version | To JSR
+
+|Java Servlet | 3.1 | JSR-340 | 4.0 | JSR-369
+
+|=======================================================================
+
 [[download]]
 === Download
 
