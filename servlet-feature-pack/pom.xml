@@ -448,7 +448,7 @@
     </dependencies>
 
     <build>
-        <finalName>${server.output.dir.prefix}-servlet-${project.version}</finalName>
+        <finalName>${server.output.dir.prefix}-servlet-${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -487,7 +487,7 @@
                                 <descriptor>assembly.xml</descriptor>
                             </descriptors>
                             <recompressZippedFiles>true</recompressZippedFiles>
-                            <finalName>${server.output.dir.prefix}-servlet-feature-pack-${project.version}</finalName>
+                            <finalName>${server.output.dir.prefix}-servlet-feature-pack-${server.output.dir.version}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                             <workDirectory>${project.build.directory}/assembly/work</workDirectory>

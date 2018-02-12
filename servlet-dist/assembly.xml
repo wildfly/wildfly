@@ -34,7 +34,7 @@
             <directory>target</directory>
             <outputDirectory/>
             <includes>
-                <include>${server.output.dir.prefix}-servlet-${jboss.as.release.version}/**</include>
+                <include>${server.output.dir.prefix}-servlet-${server.output.dir.version}/**</include>
             </includes>
         </fileSet>
     </fileSets>

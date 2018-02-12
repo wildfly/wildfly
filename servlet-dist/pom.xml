@@ -63,7 +63,7 @@
         <verifier.product.release.version>12.0</verifier.product.release.version>
     </properties>
     <build>
-        <finalName>${server.output.dir.prefix}-servlet-${jboss.as.release.version}</finalName>
+        <finalName>${server.output.dir.prefix}-servlet-${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.wildfly.build</groupId>
