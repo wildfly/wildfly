@@ -109,7 +109,7 @@
         <version.groovy-all>2.4.7</version.groovy-all>
         <version.httpunit>1.7.2</version.httpunit>
         <version.io.netty>4.1.9.Final</version.io.netty>
-        <version.io.undertow.jastow>2.0.2.Final</version.io.undertow.jastow>
+        <version.io.undertow.jastow>2.1.0.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>2.0</version.javax.enterprise>
