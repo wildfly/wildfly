@@ -6556,6 +6556,16 @@
             </build>
         </profile>
         <profile>
+            <id>jdk9-surefire</id>
+            <activation>
+                <jdk>9</jdk>
+            </activation>
+            <properties>
+                <!-- 2.20.1 works fine on JDK9 but breaks on JDK10, so we set it only for 9-->
+                <version.surefire.plugin>2.20.1</version.surefire.plugin>
+            </properties>
+        </profile>
+        <profile>
             <id>docs</id>
             <activation>
                 <property>
