@@ -28,11 +28,9 @@
     <name>WildFly Test Suite: Integration - EE8 Temp</name>
 
     <properties>
-        <wildfly.instance.name>wildfly</wildfly.instance.name>
-        <jboss.dist>${basedir}/target/${wildfly.instance.name}</jboss.dist>
-        <wildfly.dir>${jboss.dist}</wildfly.dir>
-
-        <enforcer.skip>true</enforcer.skip>
+        <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
     </properties>
 
     <dependencies>
@@ -41,11 +39,7 @@
             <artifactId>jboss-logmanager</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-testsuite-shared</artifactId>
-            <scope>test</scope>
-        </dependency>
+   
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>
@@ -53,82 +47,6 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-            </testResource>
-        </testResources>
-        <plugins>
-            <!-- Build the target/wildfly server configuration. -->
-            <plugin>
-                <groupId>org.wildfly.build</groupId>
-                <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>server-provisioning</id>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                        <phase>generate-test-resources</phase>
-                        <configuration>
-                            <config-file>server-provisioning.xml</config-file>
-                            <server-name>${wildfly.instance.name}</server-name>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>${version.resources.plugin}</version>
-                <executions combine.self="override">
-                    <execution>
-                        <id>ts.config-as.copy-mgmt-users</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <id>ts.copy-wildfly</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <id>ts.copy-elytron.config</id>
-                        <phase>process-test-resources</phase>
-                        <inherited>false</inherited>
-                        <configuration combine.self="override">
-                            <outputDirectory>${wildfly.dir}/standalone/configuration</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>src/test/config</directory>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <environmentVariables>
-                        <JBOSS_HOME>${wildfly.dir}</JBOSS_HOME>
-                    </environmentVariables>
-                    <!-- Parameters to test cases. -->
-                    <systemPropertyVariables>
-                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
-                        <jboss.inst>${wildfly.dir}</jboss.inst>
-                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} ${extra.server.jvm.args}</server.jvm.args>
-                        <node0>${node0}</node0>
-
-                        <!-- let's override the module.path parent configuration with dummy value, to avoid the "IllegalStateException: Duplicate layer 'base'" -->
-                        <module.path>foo</module.path>
-                    </systemPropertyVariables>
-                    <argLine>${surefire.system.args} ${jvm.args.ip.client}</argLine>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
     <profiles>
         <profile>
             <id>adjust-server-config</id>
@@ -163,6 +81,7 @@
                                 <public.ip>${node0}</public.ip>
                                 <management.ip>${node0}</management.ip>
                                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${jboss.dist}/modules</module.path>
                             </system-properties>
                         </configuration>
                     </plugin>
