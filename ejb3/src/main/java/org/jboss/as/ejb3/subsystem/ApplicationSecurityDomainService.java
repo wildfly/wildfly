@@ -120,7 +120,7 @@ public class ApplicationSecurityDomainService implements Service<ApplicationSecu
         void cancel();
     }
 
-    public final class ApplicationSecurityDomain {
+    public final class ApplicationSecurityDomain implements BiFunction<String, ClassLoader, Registration> {
 
         private final SecurityDomain securityDomain;
         private final boolean enableJacc;
@@ -138,11 +138,7 @@ public class ApplicationSecurityDomainService implements Service<ApplicationSecu
             return enableJacc;
         }
 
-        public BiFunction<String, ClassLoader, Registration> getSecurityFunction() {
-            return this::registerElytronDeployment;
-        }
-
-        private Registration registerElytronDeployment(final String deploymentName, final ClassLoader classLoader) {
+        public Registration apply(final String deploymentName, final ClassLoader classLoader) {
             if (WildFlySecurityManager.isChecking()) {
                 doPrivileged((PrivilegedAction<Void>) () -> {
                     securityDomain.registerWithClassLoader(classLoader);
@@ -158,5 +154,6 @@ public class ApplicationSecurityDomainService implements Service<ApplicationSecu
             }
             return registration;
         }
+
     }
 }

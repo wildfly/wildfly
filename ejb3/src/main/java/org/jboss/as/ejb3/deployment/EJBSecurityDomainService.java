@@ -55,8 +55,7 @@ public class EJBSecurityDomainService implements Service<Void> {
 
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        ApplicationSecurityDomain applicationSecurityDomain = getApplicationSecurityDomain();
-        BiFunction<String, ClassLoader, Registration> securityFunction = applicationSecurityDomain != null ? applicationSecurityDomain.getSecurityFunction() : null;
+        BiFunction<String, ClassLoader, Registration> securityFunction = getApplicationSecurityDomain();
         if (securityFunction != null) {
             final String deploymentName = deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
             final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
