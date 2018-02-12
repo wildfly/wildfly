@@ -109,6 +109,7 @@
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>2.0</version.javax.enterprise>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
+        <version.javax.mail.ee7-api>1.5.4</version.javax.mail.ee7-api>
         <version.javax.mail>1.6.0</version.javax.mail>
         <version.javax.validation>1.1.0.Final</version.javax.validation>
         <version.jaxen>1.1.6</version.jaxen>
@@ -1833,6 +1834,18 @@
                 <groupId>com.sun.mail</groupId>
                 <artifactId>javax.mail</artifactId>
                 <version>${version.javax.mail}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.mail</groupId>
+                <artifactId>javax.mail-api</artifactId>
+                <version>${version.javax.mail.ee7-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.activation</groupId>
+                        <artifactId>activation</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
