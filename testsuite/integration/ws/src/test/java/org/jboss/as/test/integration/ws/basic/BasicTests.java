@@ -32,7 +32,7 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>
  */
-public class BasicTests {
+public abstract class BasicTests {
 
     protected EndpointIface proxy;
 
