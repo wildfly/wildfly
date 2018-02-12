@@ -124,7 +124,7 @@ To turn on the Java EE8 preview for these technologies, start the server with
 web console, xml configuration or a property included in a file specified via the -P
 command line switch will not work). This will switch the technologies
 as shown in the table below. Note that Java EE8 technologies not listed in the table below
-will remain at Java EE7 level.
+will remain at Java EE7 level.  WildFly is not EE compliant when run with `-Dee8.preview.mode=true`.
 
 [cols=",,,,",options="header"]
 |=======================================================================
