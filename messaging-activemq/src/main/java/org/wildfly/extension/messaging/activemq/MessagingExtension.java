@@ -167,6 +167,7 @@ public class MessagingExtension implements Extension {
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
 
+    @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystemRegistration.registerXMLElementWriter(new MessagingSubsystemParser_2_0());
@@ -199,12 +200,9 @@ public class MessagingExtension implements Extension {
             deployedServer.registerSubModel(new JMSTopicDefinition(true, registerRuntimeOnly));
             deployedServer.registerSubModel(PooledConnectionFactoryDefinition.DEPLOYMENT_INSTANCE);
         }
-
-        if (context.isRegisterTransformers()) {
-            MessagingSubsystemRootResourceDefinition.registerTransformers(subsystemRegistration);
-        }
     }
 
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_0.NAMESPACE, MessagingSubsystemParser_1_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_2_0.NAMESPACE, MessagingSubsystemParser_2_0::new);
