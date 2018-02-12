@@ -25,7 +25,7 @@
 <!-- Represents the OpenJPA module  -->
 <module xmlns="urn:jboss:module:1.5" name="org.apache.openjpa">
     <properties>
-        <property name="jboss.api" value="private"/>
+        <property name="jboss.api" value="public"/>
     </properties>
 
     <resources>
