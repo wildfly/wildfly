@@ -38,6 +38,10 @@
     <name>WildFly: Web Services Tests Integration Subsystem</name>
 
     <dependencies>
+        <dependency> <!-- Required by activemq... -->
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.jboss.ws</groupId>
             <artifactId>jbossws-spi</artifactId>
@@ -120,10 +124,6 @@
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-commons</artifactId>
-        </dependency>
-        <dependency> <!-- Required by activemq... -->
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
         </dependency>
         <dependency> <!-- Required for activemq compatibility -->
             <groupId>io.netty</groupId>
