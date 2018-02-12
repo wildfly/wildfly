@@ -65,8 +65,8 @@ import org.junit.runner.RunWith;
 public class LayeredDistributionTestCase {
 
     private static final Logger log = Logger.getLogger(LayeredDistributionTestCase.class);
-    private static final String CONTAINER = "jbossas-layered";
-    private static final Path AS_PATH = Paths.get("target", CONTAINER);
+    private static final String CONTAINER = "default-jbossas";
+    private static final Path AS_PATH = Paths.get("target", "wildfly");
     private final Path layersDir = Paths.get(AS_PATH.toString(), "modules", "system", "layers");
     private static final String TEST_LAYER = "test";
     private static final String PRODUCT_NAME = "Test-Product";

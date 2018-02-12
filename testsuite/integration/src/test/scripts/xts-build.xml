@@ -12,9 +12,6 @@
         <copy todir="target/alternative-server">
             <fileset dir="target/wildfly"/>
         </copy>
-
-        <echo message="Setting port offset of 100 to alternative-server"/>
-        <ts.config-as.add-port-offset name="alternative-server" offset="100"/>
     </target>
 
 </project>

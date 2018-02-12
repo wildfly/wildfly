@@ -1008,7 +1008,7 @@
         <profile>
             <id>jdk9</id>
             <activation>
-                <jdk>9</jdk>
+                <jdk>[9,)</jdk>
             </activation>
             <properties>
                 <modular.jdk.testsuite.args>${modular.jdk.args}
@@ -1098,12 +1098,6 @@
                                             </excludes>
                                         </fileset>
                                         <fileset>
-                                            <directory>target/jbossas-admin-only</directory>
-                                            <excludes>
-                                                <exclude>**/*.log</exclude>
-                                            </excludes>
-                                        </fileset>
-                                        <fileset>
                                             <directory>target/jbossas-messaging-ha-server1</directory>
                                             <excludes>
                                                 <exclude>**/*.log</exclude>
@@ -1111,12 +1105,6 @@
                                         </fileset>
                                         <fileset>
                                             <directory>target/jbossas-messaging-ha-server2</directory>
-                                            <excludes>
-                                                <exclude>**/*.log</exclude>
-                                            </excludes>
-                                        </fileset>
-                                        <fileset>
-                                            <directory>target/jbossas-parse-marshal</directory>
                                             <excludes>
                                                 <exclude>**/*.log</exclude>
                                             </excludes>

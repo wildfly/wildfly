@@ -24,19 +24,8 @@
 
 <project>
 
-    <!-- import shared ant targets -->
-    <import file="common-targets.xml" as="common"/>
+   <target name="build-manual-mode" description="Builds server configurations for manual mode tests">
 
-    <target name="build-manual-mode" description="Builds server configurations for manual mode tests">
-
-        <!-- Configure all standalone-ha.xml profiles not to be chatty by setting ip_ttl=0 -->
-        <ts.config-as.configure-multicast-ttl name="wildfly" mcast.ttl="${mcast.ttl}"/>
-
-        <ts.config-as.add-interface name="wildfly"
-                                    interface="multicast"
-                                    inet-address="${node0}"/>
-        <ts.config-as.change-jgroups-multicast-interface name="wildfly"
-                                                         interface="multicast"/>
 
         <echo message="Copying and configuring instance jbossas-with-remote-outbound-connection"/>
         <copy todir="target/jbossas-with-remote-outbound-connection">
@@ -72,52 +61,23 @@
         <copy todir="target/seccontext-server3">
             <fileset dir="target/wildfly"/>
         </copy>
+    <!--    <echo message="Copying and configuring instance seccontext-server"/>
+        <copy todir="target/seccontext">
+            <fileset dir="target/wildfly"/>
+        </copy>-->
 
-        <echo message="Copying and configuring instance jbossas-layered"/>
+       <!-- <echo message="Copying and configuring instance jbossas-layered"/>
         <copy todir="target/jbossas-layered">
             <fileset dir="target/wildfly"/>
         </copy>
-        <copy todir="target/jbossas-layered/modules">
-            <fileset dir="${jboss.dist}/modules"/>
-        </copy>
-
-        <echo message="Copying and configuring instance jbossas-admin-only"/>
-        <copy todir="target/jbossas-admin-only">
-            <fileset dir="target/wildfly"/>
-        </copy>
-
-        <echo message="Copying and configuring instance jbossas-parse-marshal"/>
-        <copy todir="target/jbossas-parse-marshal">
-            <fileset dir="target/wildfly"/>
-        </copy>
-        <copy todir="target/jbossas-parse-marshal/modules">
-            <fileset dir="${jboss.dist}/modules"/>
-        </copy>
-
-        <echo message="Copying and configuring instances jbossas-dwm-0 and jbossas-dwm-1  =========  "/>
-        <copy todir="target/jbossas-dwm-0" overwrite="true">
-            <fileset dir="target/wildfly"/>
-        </copy>
-        <copy todir="target/jbossas-dwm-1" overwrite="true">
-            <fileset dir="target/wildfly"/>
-        </copy>
-        <ts.config-as.change-transport-stack name="jbossas-dwm-0"
-                                             stack="tcp"/>
-        <ts.config-as.change-transport-stack name="jbossas-dwm-1"
-                                             stack="tcp"/>
-
+   -->
         <!-- Connects back to original host (node0) -->
-        <ts.config-as.add-remote-outbound-connection name="jbossas-with-remote-outbound-connection" node="${node0}"
+      <!--  <ts.config-as.add-remote-outbound-connection name="jbossas-with-remote-outbound-connection" node="${node0}"
                                                      remotePort="8080" protocol="http-remoting" securityRealm="PasswordRealm" userName="user1"/>
         <ts.config-as.add-identity-realm name="jbossas-with-remote-outbound-connection" realmName="PasswordRealm"
                                          secret="cGFzc3dvcmQx"/>
-
-        <ts.config-as.ip-with-multicast name="jbossas-with-remote-outbound-connection"
-            node="${node1}"
-            mcast="${mcast}"
-        />
-        <ts.config-as.add-port-offset name="jbossas-with-remote-outbound-connection" offset="100" nativePort="9999" httpPort="9990"/>
-
+-->
+       
         <delete dir="target/jbossas-messaging-ha-server1"/>
         <echo message="Copying and configuring instance jbossas-messaging-ha-server1"/>
         <copy todir="target/jbossas-messaging-ha-server1">
@@ -128,6 +88,12 @@
         <copy todir="target/jbossas-messaging-ha-server2">
             <fileset dir="target/wildfly"/>
         </copy>
+
+        <!-- TODO can be removed once https://issues.jboss.org/browse/WFCORE-3409 is fixed-->
+        <copy todir="target/wildfly/modules">
+                   <fileset dir="${jboss.dist}/modules"/>
+               </copy>
+
     </target>
 
 </project>

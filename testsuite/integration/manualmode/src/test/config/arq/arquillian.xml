@@ -8,7 +8,7 @@
         <container qualifier="default-jbossas" default="true" mode="manual">
             <configuration>
                 <property name="jbossHome">${basedir}/target/wildfly</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=default-jbossas</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=default-jbossas -Djboss.inst=${basedir}/target/wildfly</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
@@ -40,7 +40,7 @@
         <container qualifier="jbossas-with-remote-outbound-connection" default="false" mode="manual">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-with-remote-outbound-connection</property>
-                <property name="javaVmArguments">${server.jvm2.args} -Djboss.inst=${basedir}/target/jbossas-with-remote-outbound-connection -Djboss.node.name=jbossas-with-remote-outbound-connection</property>
+                <property name="javaVmArguments">${server.jvm2.args} -Djboss.inst=${basedir}/target/jbossas-with-remote-outbound-connection -Djboss.node.name=jbossas-with-remote-outbound-connection -Djboss.socket.binding.port-offset=100 -Djboss.bind.address.private=${node1} -Djboss.default.multicast.address=${mcast} </property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
@@ -151,29 +151,12 @@
         <container qualifier="jbossas-with-remote-outbound-connection-non-clustered" default="false" mode="manual">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-with-remote-outbound-connection</property>
-                <property name="javaVmArguments">${server.jvm2.args} -Djboss.inst=${basedir}/target/jbossas-with-remote-outbound-connection -Djboss.node.name=jbossas-with-remote-outbound-connection</property>
-                <property name="serverConfig">standalone.xml</property>
+                <property name="javaVmArguments">${server.jvm2.args} -Djboss.socket.binding.port-offset=100 -Djboss.inst=${basedir}/target/jbossas-with-remote-outbound-connection -Djboss.node.name=jbossas-with-remote-outbound-connection</property>
+                <property name="serverConfig">standalone-ha.xml</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10090</property>
-
-                <!-- AS7-4070 -->
-                <property name="waitForPorts">${as.debug.port.node1} 10090</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
-            </configuration>
-        </container>
-
-        <container qualifier="jbossas-layered" default="false" mode="manual">
-            <configuration>
-                <property name="jbossHome">${basedir}/target/jbossas-layered</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-layered -Djboss.node.name=jbossas-layered</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
-                <property name="jbossArguments">${jboss.args}</property>
-                <property name="allowConnectingToRunningServer">true</property>
-                <property name="managementAddress">${node0:127.0.0.1}</property>
-                <property name="managementPort">${as.managementPort:9990}</property>
-                <property name="modulePath">${basedir}/target/jbossas-layered/modules</property>
 
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port.node1} 10090</property>
@@ -213,26 +196,9 @@
             </configuration>
         </container>
 
-        <container qualifier="jbossas-admin-only" default="false" mode="manual">
-            <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas -Djboss.node.name=default-jbossas</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
-                <property name="jbossArguments">${jboss.args}</property>
-                <property name="allowConnectingToRunningServer">true</property>
-                <property name="managementAddress">${node0:127.0.0.1}</property>
-                <property name="managementPort">${as.managementPort:9990}</property>
-                <property name="adminOnly">true</property>
-
-                <!-- AS7-4070 -->
-                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
-            </configuration>
-        </container>
-
         <container qualifier="dwm-container-0">
             <configuration>
-                <property name="jbossHome">${basedir}/target/jbossas-dwm-0</property>
+                <property name="jbossHome">${basedir}/target/wildfly</property>
                 <!-- AS7-2493 different jboss.node.name must be specified -->
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-dwm-0 -Djboss.node.name=node-0 -Djboss.socket.binding.port-offset=200</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
@@ -249,8 +215,8 @@
 
         <container qualifier="dwm-container-1">
             <configuration>
-                <property name="jbossHome">${basedir}/target/jbossas-dwm-1</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-dwm-1 -Djboss.node.name=node-1 -Djboss.socket.binding.port-offset=300</property>
+                <property name="jbossHome">${basedir}/target/wildfly</property>
+                <property name="javaVmArguments">${server.jvm2.args} -Djboss.inst=${basedir}/target/jbossas-dwm-1 -Djboss.node.name=node-1 -Djboss.socket.binding.port-offset=300 -Djboss.default.multicast.address=${mcast}</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
                 <property name="jbossArguments">-b=${node1} -bmanagement=${node1} -bprivate=${node1} -bunsecure=${node1} ${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>

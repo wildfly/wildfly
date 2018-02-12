@@ -109,55 +109,6 @@
 
 
     <!--
-        Configure port offset.
-        This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}.
-    -->
-    <macrodef name="ts.config-as.add-port-offset" description="Add a port offset a node configuration">
-
-        <attribute name="name" default="jbossas"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
-
-        <attribute name="offset" default="0"/>
-        <attribute name="nativePort" default="9999"/>
-        <attribute name="httpPort" default="9990"/>
-
-        <sequential>
-            <echo message="Adding port offset for config @{name}"/>
-
-            <!-- Process *.xml to *.xml.mod. -->
-            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
-                  style="${jbossas.ts.integ.dir}/src/test/xslt/addPortOffset.xsl"
-                  extension=".xml.mod"
-                  useImplicitFileset="false">
-                <!-- can't get this to work -->
-                <!-- classpath path="${net.sf.saxon:saxon:jar}"/ -->
-                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone*-ha.xml"/>
-                    <include name="**/standalone.xml"/>
-                    <include name="**/standalone-full.xml"/>
-                    <include name="**/standalone-xts.xml"/>
-                </fileset>
-                <param name="portOffset" expression="@{offset}"/>
-                <param name="nativeInterfaceManagementPort" expression="@{nativePort}"/>
-                <param name="httpInterfaceManagementPort" expression="@{httpPort}"/>
-            </xslt>
-
-            <!-- Move processed files back. -->
-            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
-               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                   <include name="**/standalone*-ha.xml.mod"/>
-                   <include name="**/standalone.xml.mod"/>
-                   <include name="**/standalone-full.xml.mod"/>
-                   <include name="**/standalone-xts.xml.mod"/>
-               </fileset>
-               <mapper type="glob" from="*.mod" to="*"/>
-             </move>
-        </sequential>
-    </macrodef>
-
-
-    <!--
         Enable JTS.
         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}.
     -->
@@ -282,76 +233,6 @@
         </sequential>
     </macrodef>
 
-    <macrodef name="ts.config-as.add-interface" description="Adds an interface at the end of the list of interfaces.">
-
-        <attribute name="name" default="jbossas"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
-
-        <attribute name="interface" default="multicast"/>
-        <attribute name="inet-address" default="127.0.0.1"/>
-
-        <sequential>
-            <echo message="Adding interface for @{name}"/>
-
-            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
-                  style="${jbossas.ts.integ.dir}/src/test/xslt/addInterface.xsl"
-                  extension=".xml.mod"
-                  useImplicitFileset="false">
-                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone-ha.xml"/>
-                    <include name="**/standalone.xml"/>
-                    <include name="**/standalone-full.xml"/>
-                </fileset>
-                <param name="interface" expression="@{interface}"/>
-                <param name="inet-address" expression="@{inet-address}"/>
-            </xslt>
-
-            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
-                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone-ha.xml.mod"/>
-                    <include name="**/standalone.xml.mod"/>
-                    <include name="**/standalone-full.xml.mod"/>
-                </fileset>
-                <mapper type="glob" from="*.mod" to="*"/>
-            </move>
-        </sequential>
-    </macrodef>
-
-    <macrodef name="ts.config-as.change-jgroups-multicast-interface" description="Changes the default interface for the 'jgroups-mping' and 'jgroups-udp' clustering multicast socket bindings.">
-
-        <attribute name="name" default="jbossas"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
-
-        <attribute name="interface" default="multicast"/>
-
-        <sequential>
-            <echo message="Changing multicast interfaces for @{name}"/>
-
-            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
-                  style="${jbossas.ts.integ.dir}/src/test/xslt/changeJGroupsMulticastInterface.xsl"
-                  extension=".xml.mod"
-                  useImplicitFileset="false">
-                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone-ha.xml"/>
-                    <include name="**/standalone.xml"/>
-                    <include name="**/standalone-full.xml"/>
-                </fileset>
-                <param name="interface" expression="@{interface}"/>
-            </xslt>
-
-            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
-                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone-ha.xml.mod"/>
-                    <include name="**/standalone.xml.mod"/>
-                    <include name="**/standalone-full.xml.mod"/>
-                </fileset>
-                <mapper type="glob" from="*.mod" to="*"/>
-            </move>
-        </sequential>
-    </macrodef>
-
     <macrodef name="ts.config-as.setup-ssl-support-for-iiop" description="Creates jsse security domain with a keystore and changes jacorb security settings to support SSL.">
 
         <attribute name="name" default="jbossas"/>
@@ -473,55 +354,6 @@
                 </fileset>
                 <mapper type="glob" from="*.mod" to="*"/>
             </move>
-        </sequential>
-    </macrodef>
-
-    <!-- Change default transport stack in clustering server profiles. -->
-    <macrodef name="ts.config-as.change-transport-stack" description="Change default transport stack in clustering server profiles.">
-
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
-
-        <attribute name="channel" default="ee"/>
-        <attribute name="stack" default="tcp"/>
-
-        <sequential>
-            <echo message="Changing JGroups stack for config @{name}"/>
-
-            <execute-xslt-transform transform="changeTransportStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="channel" expression="@{channel}"/>
-                    <param name="stack" expression="@{stack}"/>
-                </transform-params>
-            </execute-xslt-transform>
-
-            <!-- Change stack in messaging subsystem too -->
-            <execute-xslt-transform transform="changeMessagingJGroupsStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="stack" expression="@{stack}"/>
-                </transform-params>
-            </execute-xslt-transform>
-
-        </sequential>
-    </macrodef>
-
-    <!-- Configure multicast TTL -->
-    <macrodef name="ts.config-as.configure-multicast-ttl" description="Configures TTL for all multicast messages in JGroups subsystem">
-
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
-
-        <attribute name="mcast.ttl" default="0"/>
-
-        <sequential>
-            <echo message="Configuring TTL for all multicast messages to @{mcast.ttl} in JGroups subsystem"/>
-            <execute-xslt-transform transform="changeMulticastTTL.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="mcast.ttl" expression="@{mcast.ttl}"/>
-                </transform-params>
-            </execute-xslt-transform>
         </sequential>
     </macrodef>
 
