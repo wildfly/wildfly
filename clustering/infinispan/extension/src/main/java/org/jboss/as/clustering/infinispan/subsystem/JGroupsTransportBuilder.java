@@ -52,8 +52,8 @@ public class JGroupsTransportBuilder extends GlobalComponentBuilder<TransportCon
     private volatile String channel;
     private volatile long lockTimeout;
 
-    public JGroupsTransportBuilder(PathAddress address) {
-        super(CacheContainerComponent.TRANSPORT, address);
+    public JGroupsTransportBuilder(PathAddress containerAddress) {
+        super(CacheContainerComponent.TRANSPORT, containerAddress);
     }
 
     @Override

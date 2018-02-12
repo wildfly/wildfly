@@ -22,11 +22,12 @@
 package org.jboss.as.clustering.jgroups;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.jgroups.Channel;
+import org.jgroups.Event;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.blocks.RequestCorrelator;
@@ -35,9 +36,11 @@ import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.fork.UnknownForkHandler;
 import org.jgroups.protocols.FORK;
 import org.jgroups.stack.Protocol;
+import org.jgroups.stack.ProtocolStack;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
+import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 
 /**
@@ -60,7 +63,7 @@ public class JChannelFactory implements ChannelFactory {
     }
 
     @Override
-    public JChannel createChannel(String id) throws Exception {
+    public Channel createChannel(String id) throws Exception {
         FORK fork = new FORK();
         fork.enableStats(this.configuration.isStatisticsEnabled());
         fork.setUnknownForkHandler(new UnknownForkHandler() {
@@ -80,32 +83,29 @@ public class JChannelFactory implements ChannelFactory {
                 Header header = (Header) message.getHeader(this.id);
                 // If this is a request expecting a response, don't leave the requester hanging - send an identifiable response on which it can filter
                 if ((header != null) && (header.type == Header.REQ) && header.rspExpected()) {
-                    Message response = message.makeReply().setFlag(message.getFlags()).clearFlag(Message.Flag.RSVP, Message.Flag.INTERNAL);
+                    Message response = message.makeReply().setFlag(message.getFlags()).clearFlag(Message.Flag.RSVP, Message.Flag.SCOPED);
 
                     response.putHeader(FORK.ID, message.getHeader(FORK.ID));
                     response.putHeader(this.id, new Header(Header.RSP, header.req_id, header.corrId));
                     response.setBuffer(UNKNOWN_FORK_RESPONSE.array());
 
-                    fork.getProtocolStack().getChannel().down(response);
+                    fork.getProtocolStack().getChannel().down(new Event(Event.MSG, response));
                 }
                 return null;
             }
         });
 
         // Transport always resides at the bottom of the stack
-        List<ProtocolConfiguration<? extends Protocol>> transports = Collections.singletonList(this.configuration.getTransport());
+        Stream<ProtocolConfiguration<?>> protocolConfigs = Stream.concat(Stream.of(this.configuration.getTransport()), this.configuration.getProtocols().stream());
+        Stream<RelayConfiguration> relayConfig = Optional.ofNullable(this.configuration.getRelay()).map(Stream::of).orElse(Stream.empty());
         // Add RELAY2 to the top of the stack, if defined
-        List<ProtocolConfiguration<? extends Protocol>> relays = this.configuration.getRelay().isPresent() ? Collections.singletonList(this.configuration.getRelay().get()) : Collections.emptyList();
-        List<Protocol> protocols = new ArrayList<>(transports.size() + this.configuration.getProtocols().size() + relays.size() + 1);
-        for (List<ProtocolConfiguration<? extends Protocol>> protocolConfigs : Arrays.asList(transports, this.configuration.getProtocols(), relays)) {
-            for (ProtocolConfiguration<? extends Protocol> protocolConfig : protocolConfigs) {
-                protocols.add(protocolConfig.createProtocol(this.configuration));
-            }
-        }
-        // Add implicit FORK to the top of the stack
-        protocols.add(fork);
+        Stream<Protocol> protocols = Stream.concat(protocolConfigs, relayConfig).map(config -> config.createProtocol(this.configuration));
 
-        JChannel channel = new JChannel(protocols);
+        // Add implicit FORK to the top of the stack
+        ProtocolStack stack = new ProtocolStack().addProtocols(Stream.concat(protocols, Stream.of(fork)).collect(Collectors.toList()));
+        JChannel channel = new JChannel(false);
+        channel.setProtocolStack(stack);
+        stack.init();
 
         channel.setName(this.configuration.getNodeName());
 

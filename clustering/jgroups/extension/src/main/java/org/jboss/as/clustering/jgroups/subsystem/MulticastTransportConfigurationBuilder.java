@@ -22,27 +22,29 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.jgroups.protocol.MulticastProtocol;
+import org.jboss.as.clustering.jgroups.protocol.MulticastSocketProtocol;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.SocketBinding;
-import org.jgroups.protocols.UDP;
+import org.jgroups.protocols.TP;
 
 /**
  * Custom builder for transports that need to configure a multicast socket.
  * @author Paul Ferraro
  */
-public class MulticastTransportConfigurationBuilder extends TransportConfigurationBuilder<UDP> {
+public class MulticastTransportConfigurationBuilder<T extends TP & MulticastSocketProtocol & MulticastProtocol> extends TransportConfigurationBuilder<T> {
 
     public MulticastTransportConfigurationBuilder(PathAddress address) {
         super(address);
     }
 
     @Override
-    public void accept(UDP protocol) {
+    public void accept(T protocol) {
         SocketBinding binding = this.getSocketBinding();
-        protocol.setMulticasting(binding.getMulticastAddress() != null);
-        if (protocol.supportsMulticasting()) {
-            protocol.setMulticastAddress(binding.getMulticastAddress());
-            protocol.setMulticastPort(binding.getMulticastPort());
+        boolean multicast = binding.getMulticastAddress() != null;
+        protocol.setMulticast(multicast);
+        if (multicast) {
+            protocol.setMulticastSocketAddress(binding.getMulticastSocketAddress());
         }
         super.accept(protocol);
     }

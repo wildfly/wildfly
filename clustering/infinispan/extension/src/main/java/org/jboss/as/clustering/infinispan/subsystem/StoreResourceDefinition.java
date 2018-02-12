@@ -51,7 +51,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -94,7 +93,6 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         FETCH_STATE("fetch-state", true, UnaryOperator.identity()),
-        MAX_BATCH_SIZE("max-batch-size", ModelType.INT, new ModelNode(100), UnaryOperator.identity()),
         PASSIVATION("passivation", true, UnaryOperator.identity()),
         PRELOAD("preload", false, UnaryOperator.identity()),
         PURGE("purge", true, UnaryOperator.identity()),
@@ -105,14 +103,10 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         private final AttributeDefinition definition;
 
         Attribute(String name, boolean defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this(name, ModelType.BOOLEAN, new ModelNode(defaultValue), configurator);
-        }
-
-        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, ModelType.BOOLEAN)
                     .setAllowExpression(true)
                     .setRequired(false)
-                    .setDefaultValue(defaultValue)
+                    .setDefaultValue(new ModelNode(defaultValue))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     ).build();
         }
@@ -131,10 +125,6 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder, PathElement path) {
-        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.MAX_BATCH_SIZE.getDefinition());
-        }
-
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.discardChildResource(StoreWriteThroughResourceDefinition.PATH);
         } else {

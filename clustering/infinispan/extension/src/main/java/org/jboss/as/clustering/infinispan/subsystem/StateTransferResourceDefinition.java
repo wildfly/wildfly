@@ -120,7 +120,7 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
                 .addAttributes(Attribute.class)
                 .addAttributes(DeprecatedAttribute.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(StateTransferBuilder::new);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new StateTransferBuilder(address.getParent()));
         new SimpleResourceRegistration(descriptor, handler).register(registration);
     }
 }

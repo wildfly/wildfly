@@ -49,11 +49,12 @@ public class TableBuilder extends ComponentBuilder<TableManipulationConfiguratio
     private final Attribute prefixAttribute;
     private final Map<ColumnAttribute, Map.Entry<String, String>> columns = new EnumMap<>(ColumnAttribute.class);
 
+    private volatile int batchSize;
     private volatile int fetchSize;
     private volatile String prefix;
 
-    public TableBuilder(Attribute prefixAttribute, PathAddress address) {
-        super(CacheComponent.STRING_TABLE, address.getParent());
+    public TableBuilder(Attribute prefixAttribute, CacheComponent component, PathAddress cacheAddress) {
+        super(component, cacheAddress);
         this.prefixAttribute = prefixAttribute;
     }
 
@@ -66,6 +67,7 @@ public class TableBuilder extends ComponentBuilder<TableManipulationConfiguratio
             this.columns.put(column, new AbstractMap.SimpleImmutableEntry<>(name, type));
         }
 
+        this.batchSize = BATCH_SIZE.resolveModelAttribute(context, model).asInt();
         this.fetchSize = FETCH_SIZE.resolveModelAttribute(context, model).asInt();
         this.prefix = this.prefixAttribute.resolveModelAttribute(context, model).asString();
         return this;
@@ -80,6 +82,7 @@ public class TableBuilder extends ComponentBuilder<TableManipulationConfiguratio
                 .dataColumnType(this.columns.get(DATA).getValue())
                 .timestampColumnName(this.columns.get(TIMESTAMP).getKey())
                 .timestampColumnType(this.columns.get(TIMESTAMP).getValue())
+                .batchSize(this.batchSize)
                 .fetchSize(this.fetchSize)
                 .tableNamePrefix(this.prefix)
                 .create();

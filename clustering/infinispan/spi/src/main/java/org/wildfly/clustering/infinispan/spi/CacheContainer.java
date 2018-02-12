@@ -33,15 +33,11 @@ public interface CacheContainer extends EmbeddedCacheManager {
      * Returns the name of this cache container.
      * @return the cache container name
      */
-    default String getName() {
-        return this.getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName();
-    }
+    String getName();
 
     /**
      * Returns the name of the default cache.
      * @return a cache name
      */
-    default String getDefaultCacheName() {
-        return this.getCacheManagerConfiguration().defaultCacheName().orElse(null);
-    }
+    String getDefaultCacheName();
 }

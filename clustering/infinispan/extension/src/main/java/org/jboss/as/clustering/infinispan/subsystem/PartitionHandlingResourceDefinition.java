@@ -79,7 +79,7 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(PartitionHandlingBuilder::new);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new PartitionHandlingBuilder(address.getParent()));
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {

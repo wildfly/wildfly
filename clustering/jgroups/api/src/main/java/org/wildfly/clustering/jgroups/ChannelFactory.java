@@ -21,7 +21,7 @@
  */
 package org.wildfly.clustering.jgroups;
 
-import org.jgroups.JChannel;
+import org.jgroups.Channel;
 
 /**
  * Factory for creating JGroups channels.
@@ -34,5 +34,5 @@ public interface ChannelFactory {
      * @return a JGroups channel
      * @throws Exception if there was a failure setting up the protocol stack
      */
-    JChannel createChannel(String id) throws Exception;
+    Channel createChannel(String id) throws Exception;
 }

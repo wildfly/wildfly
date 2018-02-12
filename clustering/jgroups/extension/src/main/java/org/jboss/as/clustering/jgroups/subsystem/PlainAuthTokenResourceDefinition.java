@@ -34,6 +34,6 @@ public class PlainAuthTokenResourceDefinition extends AuthTokenResourceDefinitio
     static final PathElement PATH = pathElement("plain");
 
     PlainAuthTokenResourceDefinition() {
-        super(PATH, Consumers.empty(), PlainAuthTokenBuilder::new);
+        super(PATH, Consumers.empty(), address -> new PlainAuthTokenBuilder(address));
     }
 }

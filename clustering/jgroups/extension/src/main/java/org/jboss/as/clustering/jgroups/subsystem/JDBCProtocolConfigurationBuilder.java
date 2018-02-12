@@ -27,13 +27,14 @@ import static org.jboss.as.clustering.jgroups.subsystem.JDBCProtocolResourceDefi
 import javax.sql.DataSource;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.jgroups.protocol.JDBCProtocol;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jgroups.protocols.JDBC_PING;
+import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
@@ -42,7 +43,7 @@ import org.wildfly.clustering.service.ValueDependency;
 /**
  * @author Paul Ferraro
  */
-public class JDBCProtocolConfigurationBuilder extends ProtocolConfigurationBuilder<JDBC_PING> {
+public class JDBCProtocolConfigurationBuilder<P extends Protocol & JDBCProtocol> extends ProtocolConfigurationBuilder<P> {
 
     private volatile ValueDependency<DataSource> dataSource;
 
@@ -51,18 +52,18 @@ public class JDBCProtocolConfigurationBuilder extends ProtocolConfigurationBuild
     }
 
     @Override
-    public ServiceBuilder<ProtocolConfiguration<JDBC_PING>> build(ServiceTarget target) {
+    public ServiceBuilder<ProtocolConfiguration<P>> build(ServiceTarget target) {
         return this.dataSource.register(super.build(target));
     }
 
     @Override
-    public Builder<ProtocolConfiguration<JDBC_PING>> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public Builder<ProtocolConfiguration<P>> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.dataSource = new InjectedValueDependency<>(CommonUnaryRequirement.DATA_SOURCE.getServiceName(context, DATA_SOURCE.resolveModelAttribute(context, model).asString()), DataSource.class);
         return super.configure(context, model);
     }
 
     @Override
-    public void accept(JDBC_PING protocol) {
+    public void accept(P protocol) {
         protocol.setDataSource(this.dataSource.getValue());
     }
 }

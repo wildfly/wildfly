@@ -29,6 +29,7 @@ import org.infinispan.configuration.cache.ClusteringConfiguration;
 import org.infinispan.configuration.cache.ClusteringConfigurationBuilder;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -47,15 +48,19 @@ public class ClusteredCacheBuilder extends CacheConfigurationBuilder {
 
     ClusteredCacheBuilder(PathAddress address, CacheMode mode) {
         super(address);
-        this.mode = mode.toSync();
+        this.mode = mode;
     }
 
     @Override
     public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        ClusteringConfigurationBuilder builder = new ConfigurationBuilder().clustering().cacheMode(this.mode);
+        Mode mode = ModelNodes.asEnum(MODE.resolveModelAttribute(context, model), Mode.class);
+        ClusteringConfigurationBuilder builder = new ConfigurationBuilder().clustering().cacheMode(mode.apply(this.mode));
 
-        builder.remoteTimeout(REMOTE_TIMEOUT.resolveModelAttribute(context, model).asLong());
-
+        if (mode.isSynchronous()) {
+            builder.sync().replTimeout(REMOTE_TIMEOUT.resolveModelAttribute(context, model).asLong());
+        } else {
+            builder.async();
+        }
         this.clustering = builder.create();
 
         return super.configure(context, model);

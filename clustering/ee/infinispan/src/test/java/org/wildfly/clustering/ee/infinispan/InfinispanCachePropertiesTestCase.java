@@ -70,7 +70,7 @@ public class InfinispanCachePropertiesTestCase {
         for (CacheMode mode : EnumSet.allOf(CacheMode.class)) {
             Configuration config = new ConfigurationBuilder().clustering().cacheMode(mode).build();
             CacheProperties configuration = new InfinispanCacheProperties(config);
-            if (mode.isDistributed() || mode.isReplicated() || mode.isScattered()) {
+            if (mode.isDistributed() || mode.isReplicated()) {
                 Assert.assertTrue(mode.name(), configuration.isMarshalling());
             } else {
                 Assert.assertFalse(mode.name(), configuration.isMarshalling());
@@ -92,7 +92,7 @@ public class InfinispanCachePropertiesTestCase {
         for (CacheMode mode : EnumSet.allOf(CacheMode.class)) {
             Configuration config = new ConfigurationBuilder().clustering().cacheMode(mode).build();
             CacheProperties configuration = new InfinispanCacheProperties(config);
-            if (mode.isDistributed() || mode.isReplicated() || mode.isScattered()) {
+            if (mode.isDistributed() || mode.isReplicated()) {
                 Assert.assertTrue(mode.name(), configuration.isPersistent());
             } else {
                 Assert.assertFalse(mode.name(), configuration.isPersistent());

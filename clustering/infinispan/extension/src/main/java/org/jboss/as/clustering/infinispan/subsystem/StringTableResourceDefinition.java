@@ -100,6 +100,6 @@ public class StringTableResourceDefinition extends TableResourceDefinition {
     }
 
     StringTableResourceDefinition() {
-        super(PATH, Attribute.PREFIX);
+        super(PATH, descriptor -> descriptor.addAttributes(Attribute.class), address -> new StringTableBuilder(address.getParent().getParent()));
     }
 }

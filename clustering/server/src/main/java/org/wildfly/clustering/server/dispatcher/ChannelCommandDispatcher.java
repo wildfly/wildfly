@@ -22,13 +22,18 @@
 package org.wildfly.clustering.server.dispatcher;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jgroups.Address;
 import org.jgroups.Message;
@@ -36,15 +41,16 @@ import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.ResponseMode;
 import org.jgroups.blocks.RspFilter;
-import org.jgroups.util.Buffer;
+import org.jgroups.util.FutureListener;
 import org.jgroups.util.Rsp;
+import org.jgroups.util.RspList;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.server.Addressable;
-import org.wildfly.clustering.server.group.Group;
+import org.wildfly.clustering.spi.NodeFactory;
 
 /**
  * MessageDispatcher-based command dispatcher.
@@ -68,15 +74,15 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
 
     private final MessageDispatcher dispatcher;
     private final CommandMarshaller<C> marshaller;
-    private final Group<Address> group;
+    private final NodeFactory<Address> factory;
     private final long timeout;
     private final CommandDispatcher<C> localDispatcher;
     private final Runnable closeTask;
 
-    public ChannelCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, Group<Address> group, long timeout, CommandDispatcher<C> localDispatcher, Runnable closeTask) {
+    public ChannelCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, NodeFactory<Address> factory, long timeout, CommandDispatcher<C> localDispatcher, Runnable closeTask) {
         this.dispatcher = dispatcher;
         this.marshaller = marshaller;
-        this.group = group;
+        this.factory = factory;
         this.timeout = timeout;
         this.localDispatcher = localDispatcher;
         this.closeTask = closeTask;
@@ -94,17 +100,17 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
 
     @Override
     public <R> Map<Node, CommandResponse<R>> executeOnCluster(Command<R, ? super C> command, Node... excludedNodes) throws CommandDispatcherException {
-        Buffer buffer = this.createBuffer(command);
+        Message message = this.createMessage(command);
         RequestOptions options = this.createRequestOptions(excludedNodes);
         try {
-            Map<Address, Rsp<R>> responses = this.dispatcher.castMessage(null, buffer, options);
+            Map<Address, Rsp<R>> responses = this.dispatcher.castMessage(null, message, options);
 
             Map<Node, CommandResponse<R>> results = new HashMap<>();
             for (Map.Entry<Address, Rsp<R>> entry: responses.entrySet()) {
                 Address address = entry.getKey();
                 Rsp<R> response = entry.getValue();
                 if (response.wasReceived() && !response.wasSuspected()) {
-                    results.put(this.group.createNode(address), createCommandResponse(response));
+                    results.put(this.factory.createNode(address), createCommandResponse(response));
                 }
             }
 
@@ -116,20 +122,69 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
 
     @Override
     public <R> Map<Node, Future<R>> submitOnCluster(Command<R, ? super C> command, Node... excludedNodes) throws CommandDispatcherException {
-        Set<Node> excluded = Stream.of(excludedNodes).collect(Collectors.toSet());
-        Map<Node, Future<R>> results = new HashMap<>();
-        Buffer buffer = this.createBuffer(command);
-        RequestOptions options = this.createRequestOptions();
-        for (Node node : this.group.getMembership().getMembers()) {
-            if (!excluded.contains(node)) {
-                try {
-                    results.put(node, this.dispatcher.sendMessageWithFuture(getAddress(node), buffer, options));
-                } catch (Exception e) {
-                    throw new CommandDispatcherException(e);
+        Map<Node, Future<R>> results = new ConcurrentHashMap<>();
+        FutureListener<RspList<R>> listener = future -> {
+            try {
+                future.get().keySet().stream().map(address -> this.factory.createNode(address)).forEach(node -> results.remove(node));
+            } catch (CancellationException e) {
+                // Ignore
+            } catch (ExecutionException e) {
+                // Ignore
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        };
+        Message message = this.createMessage(command);
+        RequestOptions options = this.createRequestOptions(excludedNodes);
+        try {
+            Future<? extends Map<Address, Rsp<R>>> futureResponses = this.dispatcher.castMessageWithFuture(null, message, options, listener);
+            Set<Node> excluded = (excludedNodes != null) ? new HashSet<>(Arrays.asList(excludedNodes)) : Collections.<Node>emptySet();
+            for (Address address: this.dispatcher.getChannel().getView().getMembers()) {
+                Node node = this.factory.createNode(address);
+                if (!excluded.contains(node)) {
+                    Future<R> future = new Future<R>() {
+                        @Override
+                        public boolean cancel(boolean mayInterruptIfRunning) {
+                            return futureResponses.cancel(mayInterruptIfRunning);
+                        }
+
+                        @Override
+                        public R get() throws InterruptedException, ExecutionException {
+                            Map<Address, Rsp<R>> responses = futureResponses.get();
+                            Rsp<R> response = responses.get(address);
+                            if (response == null) {
+                                throw new CancellationException();
+                            }
+                            return createCommandResponse(response).get();
+                        }
+
+                        @Override
+                        public R get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                            Map<Address, Rsp<R>> responses = futureResponses.get(timeout, unit);
+                            Rsp<R> response = responses.get(address);
+                            if (response == null) {
+                                throw new CancellationException();
+                            }
+                            return createCommandResponse(response).get();
+                        }
+
+                        @Override
+                        public boolean isCancelled() {
+                            return futureResponses.isCancelled();
+                        }
+
+                        @Override
+                        public boolean isDone() {
+                            return futureResponses.isDone();
+                        }
+                    };
+                    results.put(node, future);
                 }
             }
+            return results;
+        } catch (Exception e) {
+            throw new CommandDispatcherException(e);
         }
-        return results;
     }
 
     @Override
@@ -138,11 +193,11 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
         if (this.isLocal(node)) {
             return this.localDispatcher.executeOnNode(command, node);
         }
-        Buffer buffer = this.createBuffer(command);
+        Message message = this.createMessage(command, node);
         RequestOptions options = this.createRequestOptions();
         try {
             // Use sendMessageWithFuture(...) instead of sendMessage(...) since we want to differentiate between sender exceptions and receiver exceptions
-            Future<R> future = this.dispatcher.sendMessageWithFuture(getAddress(node), buffer, options);
+            Future<R> future = this.dispatcher.sendMessageWithFuture(message, options);
             return new SimpleCommandResponse<>(future.get());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -160,26 +215,22 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
         if (this.isLocal(node)) {
             return this.localDispatcher.submitOnNode(command, node);
         }
-        Buffer buffer = this.createBuffer(command);
+        Message message = this.createMessage(command, node);
         RequestOptions options = this.createRequestOptions();
         try {
-            return this.dispatcher.sendMessageWithFuture(getAddress(node), buffer, options);
+            return this.dispatcher.sendMessageWithFuture(message, options);
         } catch (Exception e) {
             throw new CommandDispatcherException(e);
         }
     }
 
-    public <R> Future<R> submit(Node node, Buffer buffer, RequestOptions options) throws CommandDispatcherException {
-        try {
-            return this.dispatcher.sendMessageWithFuture(getAddress(node), buffer, options);
-        } catch (Exception e) {
-            throw new CommandDispatcherException(e);
-        }
+    private <R> Message createMessage(Command<R, ? super C> command) {
+        return this.createMessage(command, null);
     }
 
-    private <R> Buffer createBuffer(Command<R, ? super C> command) {
+    private <R> Message createMessage(Command<R, ? super C> command, Node node) {
         try {
-            return new Buffer(this.marshaller.marshal(command));
+            return new Message(getAddress(node), this.getLocalAddress(), this.marshaller.marshal(command));
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -194,11 +245,15 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
     }
 
     private RequestOptions createRequestOptions(Node... excludedNodes) {
-        Address[] excludedAddresses = new Address[excludedNodes.length];
-        for (int i = 0; i < excludedNodes.length; ++i) {
-            excludedAddresses[i] = getAddress(excludedNodes[i]);
+        RequestOptions options = this.createRequestOptions();
+        if ((excludedNodes != null) && (excludedNodes.length > 0)) {
+            Address[] addresses = new Address[excludedNodes.length];
+            for (int i = 0; i < excludedNodes.length; ++i) {
+                addresses[i] = getAddress(excludedNodes[i]);
+            }
+            options.setExclusionList(addresses);
         }
-        return this.createRequestOptions().exclusionList(excludedAddresses);
+        return options;
     }
 
     private RequestOptions createRequestOptions() {

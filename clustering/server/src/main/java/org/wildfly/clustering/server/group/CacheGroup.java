@@ -48,12 +48,12 @@ import org.infinispan.remoting.transport.Transport;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
-import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -111,7 +111,7 @@ public class CacheGroup implements Group<Address>, AutoCloseable {
         }
         Transport transport = this.cache.getCacheManager().getTransport();
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        return (dist != null) ? new CacheMembership(transport.getAddress(), dist.getCacheTopology(), this) : new CacheMembership(transport, this);
+        return (dist != null) ? new CacheMembership(transport.getAddress(), dist.getConsistentHash(), this) : new CacheMembership(transport, this);
     }
 
     @Override
@@ -167,8 +167,8 @@ public class CacheGroup implements Group<Address>, AutoCloseable {
         int viewId = event.getCache().getCacheManager().getTransport().getViewId();
         if (!this.listeners.isEmpty()) {
             Address localAddress = event.getCache().getCacheManager().getAddress();
-            Membership previousMembership = new CacheMembership(localAddress, event.getWriteConsistentHashAtStart(), this);
-            Membership membership = new CacheMembership(localAddress, event.getWriteConsistentHashAtEnd(), this);
+            Membership previousMembership = new CacheMembership(localAddress, event.getConsistentHashAtStart(), this);
+            Membership membership = new CacheMembership(localAddress, event.getConsistentHashAtEnd(), this);
             Boolean status = this.views.get(viewId);
             boolean merged = (status != null) ? status.booleanValue() : false;
             for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {

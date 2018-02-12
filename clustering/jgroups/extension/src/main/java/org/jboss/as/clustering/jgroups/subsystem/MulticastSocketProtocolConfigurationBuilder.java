@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.jgroups.protocol.MulticastSocketProtocol;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -30,7 +31,7 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jgroups.protocols.MPING;
+import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
@@ -40,7 +41,7 @@ import org.wildfly.clustering.service.ValueDependency;
  * Custom builder for protocols that need to configure a multicast socket.
  * @author Paul Ferraro
  */
-public class MulticastSocketProtocolConfigurationBuilder extends ProtocolConfigurationBuilder<MPING> {
+public class MulticastSocketProtocolConfigurationBuilder<P extends Protocol & MulticastSocketProtocol> extends ProtocolConfigurationBuilder<P> {
 
     private volatile ValueDependency<SocketBinding> binding;
 
@@ -49,21 +50,19 @@ public class MulticastSocketProtocolConfigurationBuilder extends ProtocolConfigu
     }
 
     @Override
-    public ServiceBuilder<ProtocolConfiguration<MPING>> build(ServiceTarget target) {
+    public ServiceBuilder<ProtocolConfiguration<P>> build(ServiceTarget target) {
         return this.binding.register(super.build(target));
     }
 
     @Override
-    public Builder<ProtocolConfiguration<MPING>> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public Builder<ProtocolConfiguration<P>> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String bindingName = SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING.resolveModelAttribute(context, model).asString();
         this.binding = new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, bindingName), SocketBinding.class);
         return super.configure(context, model);
     }
 
     @Override
-    public void accept(MPING protocol) {
-        SocketBinding binding = this.binding.getValue();
-        protocol.setMcastAddr(binding.getMulticastAddress());
-        protocol.setMcastPort(binding.getMulticastPort());
+    public void accept(P protocol) {
+        protocol.setMulticastSocketAddress(this.binding.getValue().getMulticastSocketAddress());
     }
 }

@@ -26,12 +26,14 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
+import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.jdbc.DatabaseType;
 import org.jboss.as.clustering.controller.AttributeValueTranslator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter.Converter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
@@ -104,11 +106,11 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
                     // WFLY-8985 value MARIA_DB and any expression which could potentially resolve to that value on a slave node must be rejected
                     .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.DIALECT.getDefinition())
                     .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(DatabaseType.MARIA_DB.name())), Attribute.DIALECT.getDefinition());
+        }
 
-            if (!InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-                // DATASOURCE attribute was only supported as an add operation parameter
-                builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, DeprecatedAttribute.DATASOURCE.getDefinition());
-            }
+        if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version) && !InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            // DATASOURCE attribute was only supported as an add operation parameter
+            builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, DeprecatedAttribute.DATASOURCE.getDefinition());
         }
 
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
@@ -220,11 +222,11 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         }
     };
 
-    JDBCStoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, Consumer<ResourceDescriptor> configurator, Consumer<ManagementResourceRegistration> registrationConfigurator) {
+    JDBCStoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, Consumer<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory, Consumer<ManagementResourceRegistration> registrationConfigurator) {
         super(path, legacyPath, resolver, configurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
                 // Translate deprecated DATASOURCE attribute to DATA_SOURCE attribute
                 .addAttributeTranslation(DeprecatedAttribute.DATASOURCE, Attribute.DATA_SOURCE, POOL_NAME_TO_JNDI_NAME_TRANSLATOR, JNDI_NAME_TO_POOL_NAME_TRANSLATOR)
-            ), JDBCStoreBuilder::new, registrationConfigurator);
+            ), builderFactory, registrationConfigurator);
     }
 }

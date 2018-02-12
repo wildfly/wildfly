@@ -23,12 +23,11 @@ package org.jboss.as.clustering.jgroups;
 
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
-import org.jgroups.JChannel;
+import org.jgroups.Channel;
 import org.jgroups.fork.ForkChannel;
 import org.jgroups.protocols.TP;
 import org.jgroups.stack.Protocol;
@@ -46,16 +45,16 @@ public class ForkChannelFactory implements ChannelFactory {
 
     private final ChannelFactory parentFactory;
     private final List<ProtocolConfiguration<? extends Protocol>> protocols;
-    private final JChannel channel;
+    private final Channel channel;
 
-    public ForkChannelFactory(JChannel channel, ChannelFactory parentFactory, List<ProtocolConfiguration<? extends Protocol>> protocols) {
+    public ForkChannelFactory(Channel channel, ChannelFactory parentFactory, List<ProtocolConfiguration<? extends Protocol>> protocols) {
         this.channel = channel;
         this.parentFactory = parentFactory;
         this.protocols = protocols;
     }
 
     @Override
-    public JChannel createChannel(String id) throws Exception {
+    public Channel createChannel(String id) throws Exception {
         JGroupsLogger.ROOT_LOGGER.debugf("Creating fork channel %s from channel %s", id, this.channel.getClusterName());
 
         String stackName = this.protocols.isEmpty() ? this.channel.getClusterName() : id;
@@ -111,7 +110,7 @@ public class ForkChannelFactory implements ChannelFactory {
         }
 
         @Override
-        public Optional<RelayConfiguration> getRelay() {
+        public RelayConfiguration getRelay() {
             return this.parentStack.getRelay();
         }
     }

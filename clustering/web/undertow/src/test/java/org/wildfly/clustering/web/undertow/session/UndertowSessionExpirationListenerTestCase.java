@@ -32,6 +32,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 
+import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
@@ -82,7 +83,7 @@ public class UndertowSessionExpirationListenerTestCase {
         expirationListener.sessionExpired(session);
 
         verify(batcher).suspendBatch();
-        verify(listener).sessionDestroyed(capturedSession.capture(), isNull(), same(SessionListener.SessionDestroyedReason.TIMEOUT));
+        verify(listener).sessionDestroyed(capturedSession.capture(), isNull(HttpServerExchange.class), same(SessionListener.SessionDestroyedReason.TIMEOUT));
         verify(batcher).resumeBatch(batch);
 
         assertSame(expectedSessionId, capturedSession.getValue().getId());

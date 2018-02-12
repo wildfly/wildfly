@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.List;
 
+import org.infinispan.commons.api.BasicCacheContainer;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.function.Consumers;
@@ -55,7 +56,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     static final PathElement PATH = pathElement("remote");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CACHE("cache", ModelType.STRING, null),
+        CACHE("cache", ModelType.STRING, new ModelNode(BasicCacheContainer.DEFAULT_CACHE_NAME)),
         SOCKET_TIMEOUT("socket-timeout", ModelType.LONG, new ModelNode(60000L)),
         TCP_NO_DELAY("tcp-no-delay", ModelType.BOOLEAN, new ModelNode(true)),
         SOCKET_BINDINGS("remote-servers")
@@ -65,7 +66,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
         Attribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setRequired(defaultValue == null)
+                    .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
@@ -114,6 +115,6 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     RemoteStoreResourceDefinition() {
         super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH),
                 descriptor -> descriptor.addAttributes(Attribute.class),
-                RemoteStoreBuilder::new, Consumers.empty());
+                address -> new RemoteStoreBuilder(address.getParent()), Consumers.empty());
     }
 }

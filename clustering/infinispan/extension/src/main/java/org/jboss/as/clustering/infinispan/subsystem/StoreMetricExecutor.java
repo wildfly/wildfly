@@ -19,7 +19,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
-import org.infinispan.interceptors.impl.CacheLoaderInterceptor;
+import org.infinispan.interceptors.ActivationInterceptor;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
@@ -34,17 +34,18 @@ import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
  *
  * @author Paul Ferraro
  */
-public class StoreMetricExecutor implements MetricExecutor<CacheLoaderInterceptor<?, ?>> {
+@SuppressWarnings("deprecation")
+public class StoreMetricExecutor implements MetricExecutor<ActivationInterceptor> {
 
     @Override
-    public ModelNode execute(OperationContext context, Metric<CacheLoaderInterceptor<?, ?>> metric) throws OperationFailedException {
+    public ModelNode execute(OperationContext context, Metric<ActivationInterceptor> metric) throws OperationFailedException {
         PathAddress cacheAddress = context.getCurrentAddress().getParent();
         String containerName = cacheAddress.getParent().getLastElement().getValue();
         String cacheName = cacheAddress.getLastElement().getValue();
 
         Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName));
         if (cache != null) {
-            CacheLoaderInterceptor<?, ?> interceptor = CacheMetric.findInterceptor(cache, CacheLoaderInterceptor.class);
+            ActivationInterceptor interceptor = CacheMetric.findInterceptor(cache, ActivationInterceptor.class);
             if (interceptor != null) {
                 return metric.execute(interceptor);
             }
