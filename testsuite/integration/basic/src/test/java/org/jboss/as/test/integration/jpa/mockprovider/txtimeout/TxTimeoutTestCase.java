@@ -124,30 +124,4 @@ public class TxTimeoutTestCase {
         assertFalse("entity manager should be closed by application thread but was closed by TX Reaper thread",
                 TestEntityManager.getClosedByReaperThread());
     }
-
-    /**
-     * Ensures that the entity manager is not closed by the reaper thread.
-     * The transaction times out for this test, but the EntityManager.close should be ignored from the reaper thread.
-     * <p>
-     * Ignoring this test, since it will be faster to only run test_negativeTxTimeoutVerifyReaperThreadCanceledTxTest,
-     * which has the same test actions (with the addition of the tx reaper thread test)
-     *
-     * @throws Exception
-     */
-    @Test
-    @InSequence(2)
-    public void test_negativeTxTimeoutTest() throws Exception {
-        TestEntityManager.clearState();
-        assertFalse("entity manager state is not reset", TestEntityManager.getClosedByReaperThread());
-        SFSB1 sfsb1 = lookup("ejbjar/SFSB1", SFSB1.class);
-
-        try {
-            sfsb1.createEmployeeWaitForTxTimeout("Wily", "1 Appletree Lane", 10);
-        } catch (EJBTransactionRolledbackException e) { // ignore the tx rolled back exception
-
-        }
-        assertFalse("entity manager should not of been closed by the reaper thread", TestEntityManager.getClosedByReaperThread());
-    }
-
-
 }
