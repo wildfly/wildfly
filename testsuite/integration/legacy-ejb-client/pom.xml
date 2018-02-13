@@ -7,6 +7,10 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
         <version>12.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
@@ -42,7 +46,7 @@
             <scope>test</scope>
         </dependency>
         <!-- HACK!!! We must override anything that brings in the standard jboss-ejb-client, and forcefully exclude it.
-             Otherwise there will be classpath conflicts, since they define the same package.  --> 
+             Otherwise there will be classpath conflicts, since they define the same package.  -->
         <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
             <artifactId>wildfly-http-ejb-client</artifactId>
