@@ -304,7 +304,6 @@
         <module>jsf</module>
         <module>jsr77</module>
         <module>legacy/cmp</module>
-        <module>legacy/configadmin</module>
         <module>legacy/jacorb</module>
         <module>legacy/jaxr</module>
         <module>legacy/messaging</module>
@@ -1084,12 +1083,6 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-cmp</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-configadmin</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -6639,7 +6632,6 @@
                                                     <fileset dir="jsf/subsystem/src/main/java"><include name="**/*.java"></include></fileset>
                                                     <fileset dir="jsr77/src/main/java"><include name="**/*.java"></include></fileset>
                                                     <fileset dir="legacy/cmp/src/main/java"><include name="**/*.java"></include></fileset>
-                                                    <fileset dir="legacy/configadmin/src/main/java"><include name="**/*.java"></include></fileset>
                                                     <fileset dir="legacy/jacorb/src/main/java"><include name="**/*.java"></include></fileset>
                                                     <fileset dir="legacy/jaxr/src/main/java"><include name="**/*.java"></include></fileset>
                                                     <fileset dir="legacy/messaging/src/main/java"><include name="**/*.java"></include></fileset>
