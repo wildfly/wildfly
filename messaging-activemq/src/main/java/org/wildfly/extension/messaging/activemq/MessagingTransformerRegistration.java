@@ -27,20 +27,25 @@ import static org.jboss.as.controller.transform.description.RejectAttributeCheck
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.kohsuke.MetaInfServices;
-import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 
 /**
- * {@link org.jboss.as.controller.ExtensionTransformerRegistration} for the messaging subsystem.
+ * {@link org.jboss.as.controller.ExtensionTransformerRegistration} for the messaging-activemq subsystem.
  * @author Paul Ferraro
  */
 @MetaInfServices
@@ -54,9 +59,51 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
-        registerTransformers_EAP_7_0_0(builder.createBuilder(registration.getCurrentSubsystemVersion(), MessagingExtension.VERSION_1_0_0));
 
-        builder.buildAndRegister(registration, new ModelVersion[] { MessagingExtension.VERSION_1_0_0 });
+        registerTransformers_EAP_7_1_0(builder.createBuilder(MessagingExtension.VERSION_3_0_0, MessagingExtension.VERSION_2_0_0));
+        registerTransformers_EAP_7_0_0(builder.createBuilder(MessagingExtension.VERSION_2_0_0, MessagingExtension.VERSION_1_0_0));
+
+        builder.buildAndRegister(registration, new ModelVersion[] { MessagingExtension.VERSION_1_0_0, MessagingExtension.VERSION_2_0_0 });
+    }
+
+    private static void registerTransformers_EAP_7_1_0(ResourceTransformationDescriptionBuilder subsystem) {
+        ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
+
+        server.addChildResource(MessagingExtension.BROADCAST_GROUP_PATH).getAttributeBuilder()
+                .setDiscard(new JGroupsChannelDiscardAttributeChecker(), BroadcastGroupDefinition.JGROUPS_CHANNEL)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, BroadcastGroupDefinition.JGROUPS_CHANNEL)
+                .end();
+        server.addChildResource(DiscoveryGroupDefinition.PATH).getAttributeBuilder()
+                .setDiscard(new JGroupsChannelDiscardAttributeChecker(), DiscoveryGroupDefinition.JGROUPS_CHANNEL)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, DiscoveryGroupDefinition.JGROUPS_CHANNEL)
+                .end();
+    }
+
+    static class JGroupsChannelDiscardAttributeChecker implements DiscardAttributeChecker {
+        @Override
+        public boolean isDiscardExpressions() {
+            return false;
+        }
+
+        @Override
+        public boolean isDiscardUndefined() {
+            return true;
+        }
+
+        @Override
+        public boolean isOperationParameterDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+            return operation.get(ModelDescriptionConstants.OP).asString().equals(ModelDescriptionConstants.ADD) && discard(attributeValue, operation);
+        }
+
+        @Override
+        public boolean isResourceAttributeDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            return discard(attributeValue, context.readResource(PathAddress.EMPTY_ADDRESS).getModel());
+        }
+
+        private static boolean discard(ModelNode attributeValue, ModelNode model) {
+            // Discard if this was a fabricated channel
+            return !model.hasDefined(CommonAttributes.JGROUPS_CLUSTER.getName()) || !attributeValue.isDefined() || (model.hasDefined(CommonAttributes.JGROUPS_CHANNEL_FACTORY.getName()) && model.get(CommonAttributes.JGROUPS_CLUSTER.getName()).equals(attributeValue));
+        }
     }
 
     private static void registerTransformers_EAP_7_0_0(ResourceTransformationDescriptionBuilder subsystem) {

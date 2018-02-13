@@ -108,7 +108,7 @@ public class ChannelCommandDispatcherFactoryBuilder implements CapabilityService
     @Override
     public Builder<CommandDispatcherFactory> configure(CapabilityServiceSupport support) {
         this.channel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(support, this.group), JChannel.class);
-        this.channelFactory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_FACTORY.getServiceName(support, this.group), ChannelFactory.class);
+        this.channelFactory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(support, this.group), ChannelFactory.class);
         this.module = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_MODULE.getServiceName(support, this.group), Module.class);
         return this;
     }

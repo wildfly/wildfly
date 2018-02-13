@@ -25,6 +25,7 @@ package org.wildfly.extension.messaging.activemq;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_0_0;
+import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_1_0;
 import static org.junit.Assert.assertTrue;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getActiveMQDependencies;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getJGroupsDependencies;
@@ -42,13 +43,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -58,27 +57,29 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
-import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
+import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
  */
-public class MessagingActiveMQSubsystem_2_0_TestCase extends AbstractSubsystemBaseTest {
+public class MessagingActiveMQSubsystem_3_0_TestCase extends AbstractSubsystemBaseTest {
 
-    public MessagingActiveMQSubsystem_2_0_TestCase() {
+    public MessagingActiveMQSubsystem_3_0_TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_2_0.xml");
+        return readResource("subsystem_3_0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-messaging-activemq_2_0.xsd";
+        return "schema/wildfly-messaging-activemq_3_0.xsd";
     }
 
     @Override
@@ -97,9 +98,10 @@ public class MessagingActiveMQSubsystem_2_0_TestCase extends AbstractSubsystemBa
         return properties;
     }
 
+    @Test
     @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
     }
 
     /////////////////////////////////////////
@@ -108,7 +110,7 @@ public class MessagingActiveMQSubsystem_2_0_TestCase extends AbstractSubsystemBa
 
     @Test
     public void testHAPolicyConfiguration() throws Exception {
-        standardSubsystemTest("subsystem_2_0_ha-policy.xml", false);
+        standardSubsystemTest("subsystem_3_0_ha-policy.xml");
     }
 
     ///////////////////////
@@ -116,8 +118,18 @@ public class MessagingActiveMQSubsystem_2_0_TestCase extends AbstractSubsystemBa
     ///////////////////////
 
     @Test
+    public void testTransformersEAP_7_1_0() throws Exception {
+        testTransformers(EAP_7_1_0, MessagingExtension.VERSION_2_0_0);
+    }
+
+    @Test
     public void testTransformersEAP_7_0_0() throws Exception {
         testTransformers(EAP_7_0_0, MessagingExtension.VERSION_1_0_0);
+    }
+
+    @Test
+    public void testRejectingTransformersEAP_7_1_0() throws Exception {
+        testRejectingTransformers(EAP_7_1_0, MessagingExtension.VERSION_2_0_0);
     }
 
     @Test
@@ -128,10 +140,8 @@ public class MessagingActiveMQSubsystem_2_0_TestCase extends AbstractSubsystemBa
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource("subsystem_2_0_transform.xml");
+                .setSubsystemXmlResource("subsystem_3_0_transform.xml");
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
-                .addSingleChildFirstClass(JGroupsSubsystemInitialization.class)
-                .addSingleChildFirstClass(org.jboss.as.clustering.subsystem.AdditionalInitialization.class)
                 .addMavenResourceURL(getMessagingActiveMQGAV(controllerVersion))
                 .addMavenResourceURL(getActiveMQDependencies(controllerVersion))
                 .addMavenResourceURL(getJGroupsDependencies(controllerVersion))
@@ -149,8 +159,6 @@ public class MessagingActiveMQSubsystem_2_0_TestCase extends AbstractSubsystemBa
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
-                .addSingleChildFirstClass(JGroupsSubsystemInitialization.class)
-                .addSingleChildFirstClass(org.jboss.as.clustering.subsystem.AdditionalInitialization.class)
                 .addMavenResourceURL(getMessagingActiveMQGAV(controllerVersion))
                 .addMavenResourceURL(getActiveMQDependencies(controllerVersion))
                 .addMavenResourceURL(getJGroupsDependencies(controllerVersion))
@@ -161,11 +169,13 @@ public class MessagingActiveMQSubsystem_2_0_TestCase extends AbstractSubsystemBa
         assertTrue(mainServices.isSuccessfulBoot());
         assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource("subsystem_2_0_reject_transform.xml");
+        List<ModelNode> ops = builder.parseXmlResource("subsystem_3_0_reject_transform.xml");
         System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, new FailedOperationTransformationConfig()
-                .addFailedAttribute(subsystemAddress,
+
+        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
+        if (messagingVersion.equals(MessagingExtension.VERSION_1_0_0)) {
+            config.addFailedAttribute(subsystemAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
                                 MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE))
@@ -205,24 +215,23 @@ public class MessagingActiveMQSubsystem_2_0_TestCase extends AbstractSubsystemBa
                                 ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE,
                                 ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                                 ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST))
-        );
+                ;
+        }
+
+        config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, MessagingExtension.BROADCAST_GROUP_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(BroadcastGroupDefinition.JGROUPS_CHANNEL));
+        config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, DiscoveryGroupDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(DiscoveryGroupDefinition.JGROUPS_CHANNEL));
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);
     }
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new JGroupsSubsystemInitialization()
-                .require(JGroupsRequirement.CHANNEL_FACTORY, "tcp")
-                .require(Capabilities.ELYTRON_DOMAIN_CAPABILITY)
-                .require(Capabilities.ELYTRON_DOMAIN_CAPABILITY + ".elytronDomain")
-                .require(CommonUnaryRequirement.CREDENTIAL_STORE, "cs1")
-                ;
-    }
-
-    @Override
-    protected void compare(ModelNode model1, ModelNode model2) {
-        model1.get(ModelDescriptionConstants.SUBSYSTEM).remove("jgroups");
-        model2.get(ModelDescriptionConstants.SUBSYSTEM).remove("jgroups");
-        super.compare(model1, model2);
+        return AdditionalInitialization.withCapabilities(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.resolve("ee"),
+                ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName(),
+                JGroupsDefaultRequirement.CHANNEL_FACTORY.getName(),
+                Capabilities.ELYTRON_DOMAIN_CAPABILITY,
+                Capabilities.ELYTRON_DOMAIN_CAPABILITY + ".elytronDomain",
+                CredentialReference.CREDENTIAL_STORE_CAPABILITY + ".cs1");
     }
 
     private static class ChangeToTrueConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<ChangeToTrueConfig> {

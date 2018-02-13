@@ -28,7 +28,7 @@ import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNT
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTORS;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CHANNEL;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SOCKET_BINDING;
 
 import java.util.Arrays;
@@ -66,7 +66,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  */
 public class BroadcastGroupDefinition extends PersistentResourceDefinition {
 
-    public static final RuntimeCapability<Void> COMMAND_DISPATCHER_FACTORY_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.broadcast-group.command-dispatcher-factory", true)
+    public static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.broadcast-group", true)
             .setDynamicNameMapper(address -> new String[] { address.getParent().getLastElement().getValue(), address.getLastElement().getValue() })
             .build();
 
@@ -87,11 +87,15 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    public static final SimpleAttributeDefinition JGROUPS_STACK = create(CommonAttributes.JGROUPS_STACK)
-            .setCapabilityReference(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getName(), COMMAND_DISPATCHER_FACTORY_CAPABILITY)
+    @Deprecated public static final SimpleAttributeDefinition JGROUPS_CHANNEL_FACTORY = create(CommonAttributes.JGROUPS_CHANNEL_FACTORY)
+            .setCapabilityReference("org.wildfly.clustering.jgroups.channel-factory", CAPABILITY)
             .build();
 
-    public static final AttributeDefinition[] ATTRIBUTES = { JGROUPS_STACK, JGROUPS_CHANNEL, SOCKET_BINDING,
+    public static final SimpleAttributeDefinition JGROUPS_CHANNEL = create(CommonAttributes.JGROUPS_CHANNEL)
+            .setCapabilityReference(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getName(), CAPABILITY)
+            .build();
+
+    public static final AttributeDefinition[] ATTRIBUTES = { JGROUPS_CHANNEL_FACTORY, JGROUPS_CHANNEL, JGROUPS_CLUSTER, SOCKET_BINDING,
             BROADCAST_PERIOD, CONNECTOR_REFS };
 
     public static final String GET_CONNECTOR_PAIRS_AS_JSON = "get-connector-pairs-as-json";
@@ -164,6 +168,6 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerCapabilities(ManagementResourceRegistration registration) {
-        registration.registerCapability(COMMAND_DISPATCHER_FACTORY_CAPABILITY);
+        registration.registerCapability(CAPABILITY);
     }
 }

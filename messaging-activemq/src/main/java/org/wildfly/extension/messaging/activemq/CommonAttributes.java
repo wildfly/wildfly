@@ -177,19 +177,29 @@ public interface CommonAttributes {
             .setXmlName("param")
             .build();
 
-    SimpleAttributeDefinition JGROUPS_STACK = create("jgroups-stack", ModelType.STRING)
+    @Deprecated SimpleAttributeDefinition JGROUPS_CHANNEL_FACTORY = create("jgroups-stack", ModelType.STRING)
             .setRequired(false)
             // do not allow expression as this may reference another resource
             .setAllowExpression(false)
             .setRequires("jgroups-channel")
+            .setDeprecated(MessagingExtension.VERSION_3_0_0)
             .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition JGROUPS_CHANNEL = create("jgroups-channel", ModelType.STRING)
+    // TODO Rename this attribute to jgroups-cluster
+    SimpleAttributeDefinition JGROUPS_CLUSTER = create("jgroups-channel", ModelType.STRING)
             .setRequired(false)
             // do not allow expression as this may reference another resource
             .setAllowExpression(false)
             .setAlternatives("socket-binding")
+            .setRestartAllServices()
+            .build();
+
+    SimpleAttributeDefinition JGROUPS_CHANNEL = create("jgroups-channel-ref", ModelType.STRING)
+            .setRequired(false)
+            // do not allow expression as this may reference another resource
+            .setAllowExpression(false)
+            .setRequires("jgroups-channel")
             .setRestartAllServices()
             .build();
 
@@ -274,7 +284,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition SOCKET_BINDING = create("socket-binding", ModelType.STRING)
             .setRequired(false)
-            .setAlternatives(JGROUPS_CHANNEL.getName())
+            .setAlternatives(JGROUPS_CLUSTER.getName())
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();

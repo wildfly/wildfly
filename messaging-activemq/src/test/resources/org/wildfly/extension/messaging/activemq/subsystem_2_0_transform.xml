@@ -155,12 +155,12 @@
         </acceptor>
 
         <broadcast-group name="groupT"
-                         jgroups-stack="udp"
+                         jgroups-stack="tcp"
                          jgroups-channel="activemq-cluster"
                          broadcast-period="${broadcast.group.period:1234}"
                          connectors="http netty"/>
         <discovery-group name="groupU"
-                         jgroups-stack="udp"
+                         jgroups-stack="tcp"
                          jgroups-channel="activemq-cluster"
                          refresh-timeout="${discovery.group.refresh.timeout:2345}"
                          initial-wait-timeout="${discovery.group.initial.wait.timeout:2345}"/>

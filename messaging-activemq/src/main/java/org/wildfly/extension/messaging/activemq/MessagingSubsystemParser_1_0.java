@@ -329,16 +329,16 @@ public class MessagingSubsystemParser_1_0 extends PersistentResourceXMLParser {
                                                 builder(MessagingExtension.BROADCAST_GROUP_PATH)
                                                         .addAttributes(
                                                                 CommonAttributes.SOCKET_BINDING,
-                                                                BroadcastGroupDefinition.JGROUPS_STACK,
-                                                                CommonAttributes.JGROUPS_CHANNEL,
+                                                                BroadcastGroupDefinition.JGROUPS_CHANNEL_FACTORY,
+                                                                CommonAttributes.JGROUPS_CLUSTER,
                                                                 BroadcastGroupDefinition.BROADCAST_PERIOD,
                                                                 BroadcastGroupDefinition.CONNECTOR_REFS))
                                         .addChild(
                                                 builder(DiscoveryGroupDefinition.INSTANCE.getPathElement())
                                                         .addAttributes(
                                                                 CommonAttributes.SOCKET_BINDING,
-                                                                DiscoveryGroupDefinition.JGROUPS_STACK,
-                                                                CommonAttributes.JGROUPS_CHANNEL,
+                                                                DiscoveryGroupDefinition.JGROUPS_CHANNEL_FACTORY,
+                                                                CommonAttributes.JGROUPS_CLUSTER,
                                                                 DiscoveryGroupDefinition.REFRESH_TIMEOUT,
                                                                 DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT))
                                         .addChild(

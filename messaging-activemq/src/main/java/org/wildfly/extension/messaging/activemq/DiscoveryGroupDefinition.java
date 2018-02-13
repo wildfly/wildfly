@@ -24,7 +24,7 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CHANNEL;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SOCKET_BINDING;
 
 import java.util.Arrays;
@@ -54,7 +54,7 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
 
-    public static final RuntimeCapability<Void> COMMAND_DISPATCHER_FACTORY_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.discovery-group.command-dispatcher-factory", true)
+    public static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.discovery-group", true)
             .setDynamicNameMapper(address -> new String[] { address.getParent().getLastElement().getValue(), address.getLastElement().getValue() })
             .build();
 
@@ -74,11 +74,15 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    public static final SimpleAttributeDefinition JGROUPS_STACK = create(CommonAttributes.JGROUPS_STACK)
-            .setCapabilityReference(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getName(), COMMAND_DISPATCHER_FACTORY_CAPABILITY)
+    @Deprecated public static final SimpleAttributeDefinition JGROUPS_CHANNEL_FACTORY = create(CommonAttributes.JGROUPS_CHANNEL_FACTORY)
+            .setCapabilityReference("org.wildfly.clustering.jgroups.channel-factory", CAPABILITY)
             .build();
 
-    public static final AttributeDefinition[] ATTRIBUTES = { JGROUPS_STACK, JGROUPS_CHANNEL, SOCKET_BINDING,
+    public static final SimpleAttributeDefinition JGROUPS_CHANNEL = create(CommonAttributes.JGROUPS_CHANNEL)
+            .setCapabilityReference(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getName(), CAPABILITY)
+            .build();
+
+    public static final AttributeDefinition[] ATTRIBUTES = { JGROUPS_CHANNEL_FACTORY, JGROUPS_CHANNEL, JGROUPS_CLUSTER, SOCKET_BINDING,
             REFRESH_TIMEOUT, INITIAL_WAIT_TIMEOUT
     };
 
@@ -111,6 +115,6 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerCapabilities(ManagementResourceRegistration registration) {
-        registration.registerCapability(COMMAND_DISPATCHER_FACTORY_CAPABILITY);
+        registration.registerCapability(CAPABILITY);
     }
 }

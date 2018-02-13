@@ -175,7 +175,7 @@
         <discovery-group name="groupT"
                          socket-binding="group-t-binding"/>
         <discovery-group name="groupU"
-                         jgroups-stack="udp"
+                         jgroups-stack="tcp"
                          jgroups-channel="activemq-cluster"
                          refresh-timeout="${discovery.group.refresh.timeout:2345}"
                          initial-wait-timeout="${discovery.group.initial.wait.timeout:2345}"/>

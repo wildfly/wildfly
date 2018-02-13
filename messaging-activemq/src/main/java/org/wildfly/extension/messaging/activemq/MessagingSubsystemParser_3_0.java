@@ -54,11 +54,11 @@ import org.wildfly.extension.messaging.activemq.jms.legacy.LegacyConnectionFacto
  * This ensures that if the resource definitions change in later version (e.g. a new attribute is added),
  * this will have no impact on parsing this specific version of the subsystem.
  *
- * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
+ * @author Paul Ferraro
  */
-public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
+public class MessagingSubsystemParser_3_0 extends PersistentResourceXMLParser {
 
-    static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:2.0";
+    static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:3.0";
 
     @Override
     public PersistentResourceXMLDescription getParserDescription(){
@@ -344,6 +344,7 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                 .addAttributes(
                                                         CommonAttributes.SOCKET_BINDING,
                                                         BroadcastGroupDefinition.JGROUPS_CHANNEL_FACTORY,
+                                                        BroadcastGroupDefinition.JGROUPS_CHANNEL,
                                                         CommonAttributes.JGROUPS_CLUSTER,
                                                         BroadcastGroupDefinition.BROADCAST_PERIOD,
                                                         BroadcastGroupDefinition.CONNECTOR_REFS))
@@ -352,6 +353,7 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                 .addAttributes(
                                                         CommonAttributes.SOCKET_BINDING,
                                                         DiscoveryGroupDefinition.JGROUPS_CHANNEL_FACTORY,
+                                                        DiscoveryGroupDefinition.JGROUPS_CHANNEL,
                                                         CommonAttributes.JGROUPS_CLUSTER,
                                                         DiscoveryGroupDefinition.REFRESH_TIMEOUT,
                                                         DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT))

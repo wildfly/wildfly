@@ -32,7 +32,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.BROADCAS
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACCEPTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.INCOMING_INTERCEPTORS;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CHANNEL;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JOURNAL_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.MODULE;
@@ -350,10 +350,11 @@ class ServerAdd extends AbstractAddStepHandler {
                         final String key = "broadcast" + name;
                         ModelNode broadcastGroupModel = model.get(BROADCAST_GROUP, name);
 
-                        if (broadcastGroupModel.hasDefined(JGROUPS_CHANNEL.getName())) {
-                            ModelNode channel = BroadcastGroupDefinition.JGROUPS_STACK.resolveModelAttribute(context, broadcastGroupModel);
+                        if (broadcastGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
+                            ModelNode channel = BroadcastGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel);
                             ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
-                            String clusterName = JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel).asString();
+                            String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
+                            System.out.println("Command dispatcher dependency = " + commandDispatcherFactoryServiceName);
                             serviceBuilder.addDependency(commandDispatcherFactoryServiceName, CommandDispatcherFactory.class, serverService.getCommandDispatcherFactoryInjector(key));
                             serverService.getClusterNames().put(key, clusterName);
                         } else {
@@ -367,10 +368,11 @@ class ServerAdd extends AbstractAddStepHandler {
                         final String name = config.getName();
                         final String key = "discovery" + name;
                         ModelNode discoveryGroupModel = model.get(DISCOVERY_GROUP, name);
-                        if (discoveryGroupModel.hasDefined(JGROUPS_CHANNEL.getName())) {
-                            ModelNode channel = DiscoveryGroupDefinition.JGROUPS_STACK.resolveModelAttribute(context, discoveryGroupModel);
+                        if (discoveryGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
+                            ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
                             ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
-                            String clusterName = JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel).asString();
+                            String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
+                            System.out.println("Command dispatcher dependency = " + commandDispatcherFactoryServiceName);
                             serviceBuilder.addDependency(commandDispatcherFactoryServiceName, CommandDispatcherFactory.class, serverService.getCommandDispatcherFactoryInjector(key));
                             serverService.getClusterNames().put(key, clusterName);
                         } else {
