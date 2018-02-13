@@ -108,7 +108,7 @@ public class ConnectionPoolResourceDefinition extends ComponentResourceDefinitio
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class);
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new ConnectionPoolBuilder(address.getParent()));
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(ConnectionPoolBuilder::new);
         new SimpleResourceRegistration(descriptor, handler).register(subModel);
     }
 }

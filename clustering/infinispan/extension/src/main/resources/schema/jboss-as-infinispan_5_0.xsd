@@ -1137,7 +1137,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="protocol-version" type="tns:protocol-version" default="2.5">
+        <xs:attribute name="protocol-version" type="tns:protocol-version" default="2.6">
             <xs:annotation>
                 <xs:documentation>
                     Defines the protocol version that this client should use.
@@ -1381,6 +1381,7 @@
             <xs:enumeration value="2.3"/>
             <xs:enumeration value="2.4"/>
             <xs:enumeration value="2.5"/>
+            <xs:enumeration value="2.6"/>
         </xs:restriction>
     </xs:simpleType>
 

@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.function.UnaryOperator;
 
+import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;

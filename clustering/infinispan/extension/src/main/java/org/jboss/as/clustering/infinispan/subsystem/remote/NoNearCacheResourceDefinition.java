@@ -53,7 +53,7 @@ public class NoNearCacheResourceDefinition extends NearCacheResourceDefinition {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new NoNearCacheBuilder(address.getParent()));
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(NoNearCacheBuilder::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
     }
 }

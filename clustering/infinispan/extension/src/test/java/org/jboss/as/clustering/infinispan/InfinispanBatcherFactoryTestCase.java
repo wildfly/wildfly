@@ -43,6 +43,7 @@ public class InfinispanBatcherFactoryTestCase {
 
     @Test
     public void transactional() {
+        @SuppressWarnings("unchecked")
         AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
         Configuration configuration = new ConfigurationBuilder().transaction().transactionMode(TransactionMode.TRANSACTIONAL).build();
 
@@ -56,6 +57,7 @@ public class InfinispanBatcherFactoryTestCase {
 
     @Test
     public void nonTransactional() {
+        @SuppressWarnings("unchecked")
         AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
         Configuration configuration = new ConfigurationBuilder().transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL).build();
 

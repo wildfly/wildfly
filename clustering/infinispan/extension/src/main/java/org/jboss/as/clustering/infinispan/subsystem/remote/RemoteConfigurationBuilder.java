@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.configuration.ClusterConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
@@ -143,7 +144,7 @@ public class RemoteConfigurationBuilder implements ResourceServiceBuilder<Config
                 .connectionTimeout(this.connectionTimeout)
                 .keySizeEstimate(this.keySizeEstimate)
                 .maxRetries(this.maxRetries)
-                .protocolVersion(this.protocolVersion)
+                .version(ProtocolVersion.parseVersion(this.protocolVersion))
                 .socketTimeout(this.socketTimeout)
                 .tcpNoDelay(this.tcpNoDelay)
                 .tcpKeepAlive(this.tcpKeepAlive)

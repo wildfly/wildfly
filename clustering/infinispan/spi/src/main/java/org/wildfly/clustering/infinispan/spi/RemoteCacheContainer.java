@@ -22,18 +22,13 @@
 
 package org.wildfly.clustering.infinispan.spi;
 
-import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.client.hotrod.configuration.Configuration;
-import org.infinispan.commons.api.BasicCacheContainer;
-import org.infinispan.commons.marshall.Marshaller;
-
 /**
- * Exposes subset of Infinispan's {@link org.infinispan.client.hotrod.RemoteCacheManager} additionally exposing the name
- * of the remote cache container.
+ * Exposes Infinispan's {@link org.infinispan.client.hotrod.RemoteCacheContainer} additionally exposing the name of the
+ * remote cache container.
  *
  * @author Radoslav Husar
  */
-public interface RemoteCacheContainer extends BasicCacheContainer {
+public interface RemoteCacheContainer extends org.infinispan.client.hotrod.RemoteCacheContainer {
 
     /**
      * Returns the name of this remote cache container.
@@ -41,61 +36,4 @@ public interface RemoteCacheContainer extends BasicCacheContainer {
      * @return the remote cache container name
      */
     String getName();
-
-    /**
-     * Retrieves the configuration currently in use. The configuration object is immutable.
-     *
-     * @return configuration of the {@link org.infinispan.client.hotrod.RemoteCacheManager}
-     */
-    Configuration getConfiguration();
-
-    /**
-     * Retrieves a named cache from the system.
-     *
-     * @param forceReturnValue whether or not to implicitly FORCE_RETURN_VALUE for all calls
-     * @return the default cache
-     */
-    <K, V> RemoteCache<K, V> getCache(boolean forceReturnValue);
-
-    /**
-     * Retrieves a named cache from the system.
-     *
-     * @param cacheName        name of cache to retrieve
-     * @param forceReturnValue whether or not to implicitly FORCE_RETURN_VALUE for all calls
-     * @return a named cache
-     */
-    <K, V> RemoteCache<K, V> getCache(String cacheName, boolean forceReturnValue);
-
-    /**
-     * Returns whether this cache container is started
-     *
-     * @return whether this cache container is started
-     */
-    boolean isStarted();
-
-    /**
-     * Switch remote cache manager to a different cluster, previously
-     * declared via configuration. If the switch was completed successfully,
-     * this method returns {@code true}, otherwise it returns {@code false}.
-     *
-     * @param clusterName name of the cluster to which to switch to
-     * @return {@code true} if the cluster was switched, {@code false} otherwise
-     */
-    boolean switchToCluster(String clusterName);
-
-    /**
-     * Switch remote cache manager to a the default cluster, previously
-     * declared via configuration. If the switch was completed successfully,
-     * this method returns {@code true}, otherwise it returns {@code false}.
-     *
-     * @return {@code true} if the cluster was switched, {@code false} otherwise
-     */
-    boolean switchToDefaultCluster();
-
-    /**
-     * Returns the marshaller in use by this cache container.
-     *
-     * @return marshaller in use
-     */
-    Marshaller getMarshaller();
 }
