@@ -163,6 +163,7 @@ public class UndertowSubsystemParser_6_0 extends PersistentResourceXMLParser {
                                 .addAttribute(ServletContainerDefinition.FILE_CACHE_METADATA_SIZE)
                                 .addAttribute(ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE)
                                 .addAttribute(ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
+                                .addAttribute(ServletContainerDefinition.DEFAULT_COOKIE_VERSION)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE.getPathElement())
                                                 .setXmlElementName(Constants.JSP_CONFIG)

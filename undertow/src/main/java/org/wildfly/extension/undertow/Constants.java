@@ -253,4 +253,5 @@ public interface Constants {
     String GET_SESSION_LAST_ACCESSED_TIME_MILLIS = "get-session-last-accessed-time-millis";
     String GET_SESSION_CREATION_TIME = "get-session-creation-time";
     String GET_SESSION_CREATION_TIME_MILLIS = "get-session-creation-time-millis";
+    String DEFAULT_COOKIE_VERSION = "default-cookie-version";
 }

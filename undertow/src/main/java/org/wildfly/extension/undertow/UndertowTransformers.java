@@ -73,6 +73,8 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_METADATA_SIZE)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(0)), ServletContainerDefinition.DEFAULT_COOKIE_VERSION)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DEFAULT_COOKIE_VERSION)
                 .end();
 
         final ResourceTransformationDescriptionBuilder serverBuilder = subsystemBuilder.addChildResource(UndertowExtension.SERVER_PATH);
@@ -135,6 +137,8 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                     .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_METADATA_SIZE)
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
                     .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(0)), ServletContainerDefinition.DEFAULT_COOKIE_VERSION)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DEFAULT_COOKIE_VERSION)
                 .end()
                 .addChildResource(UndertowExtension.PATH_WEBSOCKETS)
                 .getAttributeBuilder()
