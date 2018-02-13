@@ -31,6 +31,10 @@
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-parent</artifactId>
+    <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+    -->
     <version>12.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly: Parent Aggregator</name>
@@ -53,10 +57,10 @@
     </scm>
 
     <properties>
-        <!-- Release Info. 
+        <!-- Release Info.
              Drives properties that end up in MANIFEST.mf files produced by this build
              and some are also used in the pom 'scm' element.
-             Do not use these properties for other purposes, e.g. jboss.as.release.version is not 
+             Do not use these properties for other purposes, e.g. jboss.as.release.version is not
              a general purpose release version shorthand.
         -->
         <jboss.as.release.version>${project.version}</jboss.as.release.version>
@@ -5354,7 +5358,7 @@
                 <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
                 <scope>test</scope>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.shrinkwrap.descriptors</groupId>
                 <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
