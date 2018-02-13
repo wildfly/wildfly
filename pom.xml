@@ -125,8 +125,6 @@
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.6.0</version.javax.mail>
         <version.javax.validation>2.0.1.Final</version.javax.validation>
-        <!-- Be careful, this version is hardcoded in the javax.validation.api module.xml -->
-        <version.javax.validation.ee7>1.1.0.Final</version.javax.validation.ee7>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
         <version.joda-time>2.9.7</version.joda-time>
