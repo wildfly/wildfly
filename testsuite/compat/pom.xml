@@ -186,6 +186,8 @@
                 <configuration>
                     <workingDirectory>${basedir}/target/workdir</workingDirectory> <!-- Work in submodule's own dir. -->
 
+                    <!-- Forked process timeout -->
+                    <forkedProcessTimeoutInSeconds>${surefire.forked.process.timeout}</forkedProcessTimeoutInSeconds>
                     <!-- System properties to forked surefire JVM which runs clients. -->
                     <argLine>${jvm.args.ip.client} ${jvm.args.timeouts} ${surefire.system.args}</argLine>
                     <!-- System properties passed to test cases -->

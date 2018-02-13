@@ -157,6 +157,8 @@
         <modular.jdk.testsuite.args />
         <surefire.system.args>${modular.jdk.testsuite.args} -Dorg.jboss.ejb.client.wildfly-testsuite-hack=true ${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist} ${surefire.jacoco.args} -Dmaven.repo.local=${settings.localRepository}</surefire.system.args>
         <extra.server.jvm.args />
+        <!-- Hook to control forked process timeout via -D. Default value of 0 means no timeout -->
+        <surefire.forked.process.timeout>0</surefire.forked.process.timeout>
 
         <!-- If servers should be killed before the test suite is run-->
         <org.wildfly.test.kill-servers-before-test>false</org.wildfly.test.kill-servers-before-test>

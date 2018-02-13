@@ -328,6 +328,9 @@
                     <!-- Prevent test and server output appearing in console. -->
                     <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                     <enableAssertions>true</enableAssertions>
+                 
+                    <!-- Forked process timeout -->
+                    <forkedProcessTimeoutInSeconds>${surefire.forked.process.timeout}</forkedProcessTimeoutInSeconds>
 
                     <!-- System properties to forked surefire JVM which runs clients. -->
                     <argLine>${surefire.system.args} ${surefire.memory.args} ${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
