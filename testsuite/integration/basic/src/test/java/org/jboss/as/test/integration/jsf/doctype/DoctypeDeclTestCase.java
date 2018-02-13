@@ -89,8 +89,8 @@ public class DoctypeDeclTestCase {
     @Test
     public void testDoctypeDeclDisallowed() throws Exception {
         writeDisallowDoctypeDeclAttributeAndReload(true);
-        String responseString = register("Bob", 500);
-        assertTrue(responseString.contains("disallow-doctype-decl"));
+        // ensure an internal server error occurs
+        register("Bob", 500);
         undefineDisallowDoctypeDeclAttributeAndReload();
     }
 
