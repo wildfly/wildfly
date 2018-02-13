@@ -359,7 +359,8 @@ public class SimpleSecurityManager implements ServerSecurityManager {
 
         // skip reauthentication if the current context already has an authenticated subject (copied from the previous context
         // upon creation - see push method) and both contexts use the same security domain or there is an incoming RunAs of RunAsIdentity type
-        boolean skipReauthentication = current.getSubjectInfo() != null && current.getSubjectInfo().getAuthenticatedSubject() != null && (
+        boolean skipReauthentication = current.getSubjectInfo() != null && current.getSubjectInfo().getAuthenticatedSubject() != null &&
+                !current.getSubjectInfo().getAuthenticatedSubject().getPrincipals().isEmpty() && (
                         (previous != null && current.getSecurityDomain().equals(previous.getSecurityDomain())) ||
                         current.getIncomingRunAs() instanceof RunAsIdentity
                 );
