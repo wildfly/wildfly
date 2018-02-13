@@ -132,6 +132,7 @@ will remain at Java EE7 level.
 
 |Java Servlet | 3.1 | JSR-340 | 4.0 | JSR-369
 | CDI | 1.2 | JSR-346 | 2.0 | JSR-365
+|Bean Validation | 1.1 | JSR-349 | 2.0 | JSR-380
 
 |=======================================================================
 

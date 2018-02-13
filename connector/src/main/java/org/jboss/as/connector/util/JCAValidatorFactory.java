@@ -23,6 +23,7 @@ package org.jboss.as.connector.util;
 
 import org.wildfly.security.manager.WildFlySecurityManager;
 
+import javax.validation.ClockProvider;
 import javax.validation.Configuration;
 import javax.validation.ConstraintValidatorFactory;
 import javax.validation.MessageInterpolator;
@@ -118,6 +119,11 @@ public class JCAValidatorFactory implements ValidatorFactory {
     @Override
     public ParameterNameProvider getParameterNameProvider() {
         return getDelegate().getParameterNameProvider();
+    }
+
+    @Override
+    public ClockProvider getClockProvider() {
+        return getDelegate().getClockProvider();
     }
 
     @Override

@@ -21,8 +21,7 @@
  */
 package org.jboss.as.ee.beanvalidation;
 
-import org.wildfly.security.manager.WildFlySecurityManager;
-
+import javax.validation.ClockProvider;
 import javax.validation.ConstraintValidatorFactory;
 import javax.validation.MessageInterpolator;
 import javax.validation.ParameterNameProvider;
@@ -31,6 +30,8 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorContext;
 import javax.validation.ValidatorFactory;
+
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * This class lazily initialize the ValidatorFactory on the first usage One benefit is that no domain class is loaded until the
@@ -114,6 +115,11 @@ public class LazyValidatorFactory implements ValidatorFactory {
     @Override
     public ParameterNameProvider getParameterNameProvider() {
         return getDelegate().getParameterNameProvider();
+    }
+
+    @Override
+    public ClockProvider getClockProvider() {
+        return getDelegate().getClockProvider();
     }
 
     @Override

@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.jpa.mockprovider.txtimeout;
 
 import static org.junit.Assert.assertFalse;
 
-import javax.ejb.EJBTransactionRolledbackException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
