@@ -60,7 +60,7 @@ public class SanityEE8TestCase {
 
     @Deployment
     public static WebArchive deployment() {
-        return ShrinkWrap.create(WebArchive.class, "sanity-ee8-tesst-case.war")
+        return ShrinkWrap.create(WebArchive.class, "sanity-ee8-test-case.war")
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 

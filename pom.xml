@@ -31,6 +31,10 @@
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-parent</artifactId>
+    <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+    -->
     <version>12.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly: Parent Aggregator</name>
@@ -53,7 +57,12 @@
     </scm>
 
     <properties>
-        <!-- Release Info -->
+        <!-- Release Info.
+             Drives properties that end up in MANIFEST.mf files produced by this build
+             and some are also used in the pom 'scm' element.
+             Do not use these properties for other purposes, e.g. jboss.as.release.version is not
+             a general purpose release version shorthand.
+        -->
         <jboss.as.release.version>${project.version}</jboss.as.release.version>
         <jboss.as.release.codename>N/A</jboss.as.release.codename>
         <jboss.as.scm.url>https://github.com/wildfly/wildfly</jboss.as.scm.url>
@@ -167,7 +176,7 @@
         <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.narayana>5.5.31.Final</version.org.jboss.narayana>
         <version.org.jboss.metadata>11.0.0.Beta1</version.org.jboss.metadata>
-        <version.org.jboss.mod_cluster>1.3.7.Final</version.org.jboss.mod_cluster>
+        <version.org.jboss.mod_cluster>1.3.8.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.openjdk-orb>8.1.0.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.2.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jboss.resteasy>3.0.24.Final</version.org.jboss.resteasy>
@@ -254,9 +263,12 @@
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
 
+        <!-- Properties that drive the names of various directories produced by and used in the build -->
         <server.output.dir.prefix>wildfly</server.output.dir.prefix>
-        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${jboss.as.release.version}</wildfly.build.output.dir>
-        <wildfly.web.build.output.dir>servlet-dist/target/${server.output.dir.prefix}-servlet-${jboss.as.release.version}</wildfly.web.build.output.dir>
+        <!-- Version suffix that is appended to directories. Default is the maven GAV version but this can be edited to use a short form version -->
+        <server.output.dir.version>${project.version}</server.output.dir.version>
+        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+        <wildfly.web.build.output.dir>servlet-dist/target/${server.output.dir.prefix}-servlet-${server.output.dir.version}</wildfly.web.build.output.dir>
 
         <!--
             See ChildFirstClassLoaderBuilder in model-test for the explanation of the org.jboss.model.test.cache.root and org.jboss.model.test.classpath.cache properties.
@@ -5346,7 +5358,7 @@
                 <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
                 <scope>test</scope>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.shrinkwrap.descriptors</groupId>
                 <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
