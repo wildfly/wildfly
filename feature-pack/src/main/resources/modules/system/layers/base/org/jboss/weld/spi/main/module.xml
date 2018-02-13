@@ -36,6 +36,7 @@
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
+        <module name="org.wildfly.cdi-api-bridge"/>
         <module name="javax.inject.api"/>
         <module name="javax.persistence.api"/>
         <module name="javax.servlet.api"/>

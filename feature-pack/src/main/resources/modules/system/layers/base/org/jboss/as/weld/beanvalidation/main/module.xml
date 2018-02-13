@@ -46,6 +46,7 @@
         <module name="org.wildfly.extension.bean-validation"/>
         <module name="org.hibernate.validator.cdi" />
         <module name="javax.enterprise.api"/>
+        <module name="org.wildfly.cdi-api-bridge"/>
         <module name="javax.validation.api"/>
     </dependencies>
 

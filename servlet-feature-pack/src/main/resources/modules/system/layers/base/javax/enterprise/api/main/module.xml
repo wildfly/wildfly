@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="javax.enterprise.api">
+<module xmlns="urn:jboss:module:1.7" name="javax.enterprise.api">
     <dependencies>
         <module name="org.glassfish.javax.el" export="true"/>
         <module name="javax.inject.api" export="true"/>
@@ -34,6 +34,16 @@
     </dependencies>
 
     <resources>
-        <artifact name="${javax.enterprise:cdi-api}"/>
+        <artifact name="javax.enterprise:cdi-api:1.2">
+            <conditions>
+                <property-not-equal name="ee8.preview.mode" value="true" />
+            </conditions>
+        </artifact>
+        <artifact name="${javax.enterprise:cdi-api}">
+            <conditions>
+                <property-equal name="ee8.preview.mode" value="true" />
+            </conditions>
+        </artifact>
     </resources>
+
 </module>

@@ -2245,6 +2245,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.wildfly.bridge</groupId>
+            <artifactId>cdi-api-bridge</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-appclient</artifactId>
             <exclusions>
