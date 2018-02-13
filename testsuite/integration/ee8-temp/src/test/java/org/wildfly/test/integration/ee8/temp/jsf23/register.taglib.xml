@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<facelet-taglib version="2.2"
+                xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facelettaglibrary_2_2.xsd">
+
+    <namespace>http://www.custom.tags/jsf/register</namespace>
+    <tag>
+        <tag-name>confirmRegistration</tag-name>
+        <behavior>
+            <behavior-id>confirm</behavior-id>
+        </behavior>
+    </tag>
+</facelet-taglib>

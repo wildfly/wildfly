@@ -8,7 +8,7 @@
     <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
         <fileSet>
-            <directory>target/${server.output.dir.prefix}-${version}</directory>
+            <directory>target/${server.output.dir.prefix}-${server.output.dir.version}</directory>
             <outputDirectory/>
         </fileSet>
     </fileSets>

@@ -31,6 +31,10 @@
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-parent</artifactId>
+    <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+    -->
     <version>12.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly: Parent Aggregator</name>
@@ -53,7 +57,12 @@
     </scm>
 
     <properties>
-        <!-- Release Info -->
+        <!-- Release Info.
+             Drives properties that end up in MANIFEST.mf files produced by this build
+             and some are also used in the pom 'scm' element.
+             Do not use these properties for other purposes, e.g. jboss.as.release.version is not
+             a general purpose release version shorthand.
+        -->
         <jboss.as.release.version>${project.version}</jboss.as.release.version>
         <jboss.as.release.codename>N/A</jboss.as.release.codename>
         <jboss.as.scm.url>https://github.com/wildfly/wildfly</jboss.as.scm.url>
@@ -89,7 +98,13 @@
         <version.com.google.guava>20.0</version.com.google.guava>
         <version.com.h2database>1.4.193</version.com.h2database>
         <version.com.microsoft.azure>5.0.0</version.com.microsoft.azure>
-        <version.com.sun.faces>2.2.13.SP5</version.com.sun.faces>
+        <!--
+            Be careful, the EE 7 jsf-impl 2.2.x version is temporarily being hardcoded in
+            the com.sun.jsf-impl module.xml file until EE 8 support is complete. For JSF
+            2.2.x component upgrades, please update the hardcoded version in the module.xml
+            file. For JSF 2.3.x component upgrades, please update the property here.
+        -->
+        <version.com.sun.faces>2.3.3.SP1</version.com.sun.faces>
         <version.com.sun.istack>3.0.5</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
         <version.commons-beanutils>1.9.3</version.commons-beanutils>
@@ -170,7 +185,7 @@
         <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.narayana>5.5.31.Final</version.org.jboss.narayana>
         <version.org.jboss.metadata>11.0.0.Beta1</version.org.jboss.metadata>
-        <version.org.jboss.mod_cluster>1.3.7.Final</version.org.jboss.mod_cluster>
+        <version.org.jboss.mod_cluster>1.3.8.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.openjdk-orb>8.1.0.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.2.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jboss.resteasy>3.0.24.Final</version.org.jboss.resteasy>
@@ -187,6 +202,7 @@
         <version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>1.0.11.Final</version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>
         <version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>1.0.1.Final</version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>
         <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>2.2.14</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>
+        <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.3_spec>2.3.3.SP1</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.3_spec>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>1.0.2.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>1.0.2.Final</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>1.0.1.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>
@@ -197,6 +213,7 @@
         <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>1.0.3.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>1.1.1.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>
         <version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec>1.0.1.Final</version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec>
+        <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>1.0.5.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec>
         <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec>1.0.1.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec>
         <version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>1.0.2.Final</version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>1.0.6.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.3_spec>
@@ -257,9 +274,12 @@
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
 
+        <!-- Properties that drive the names of various directories produced by and used in the build -->
         <server.output.dir.prefix>wildfly</server.output.dir.prefix>
-        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${jboss.as.release.version}</wildfly.build.output.dir>
-        <wildfly.web.build.output.dir>servlet-dist/target/${server.output.dir.prefix}-servlet-${jboss.as.release.version}</wildfly.web.build.output.dir>
+        <!-- Version suffix that is appended to directories. Default is the maven GAV version but this can be edited to use a short form version -->
+        <server.output.dir.version>${project.version}</server.output.dir.version>
+        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+        <wildfly.web.build.output.dir>servlet-dist/target/${server.output.dir.prefix}-servlet-${server.output.dir.version}</wildfly.web.build.output.dir>
 
         <!--
             See ChildFirstClassLoaderBuilder in model-test for the explanation of the org.jboss.model.test.cache.root and org.jboss.model.test.classpath.cache properties.
@@ -5374,7 +5394,7 @@
                 <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
                 <scope>test</scope>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.shrinkwrap.descriptors</groupId>
                 <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
@@ -5424,6 +5444,12 @@
                 <groupId>org.jboss.spec.javax.faces</groupId>
                 <artifactId>jboss-jsf-api_2.2_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.faces</groupId>
+                <artifactId>jboss-jsf-api_2.3_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.faces.jboss-jsf-api_2.3_spec}</version>
             </dependency>
 
             <dependency>
@@ -5490,6 +5516,12 @@
                 <groupId>org.jboss.spec.javax.ws.rs</groupId>
                 <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.0_spec}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.xml.bind</groupId>
+                <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.2_spec}</version>
             </dependency>
 
             <dependency>

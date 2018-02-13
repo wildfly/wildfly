@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
@@ -398,6 +399,12 @@ public interface UndertowLogger extends BasicLogger {
     String workerValueInHTTPListenerMustMatchRemoting();
 
     @LogMessage(level = ERROR)
-    @Message(id = 98, value = "Unexcepted Authentification Errorr: %s")
+    @Message(id = 98, value = "Unexpected Authentication Error: %s")
     void unexceptedAuthentificationError(String errorMessage, @Cause Throwable t);
+
+    @Message(id = 99, value = "Session manager not available")
+    OperationFailedException sessionManagerNotAvailable();
+
+    @Message(id = 100, value = "Session %s not found")
+    OperationFailedException sessionNotFound(String sessionId);
 }

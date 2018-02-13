@@ -242,4 +242,15 @@ public interface Constants {
     String FILE_CACHE_MAX_FILE_SIZE = "file-cache-max-file-size";
     String FILE_CACHE_METADATA_SIZE = "file-cache-metadata-size";
     String FILE_CACHE_TIME_TO_LIVE =  "file-cache-time-to-live";
+    String SESSION_ID = "session-id";
+    String ATTRIBUTE = "attribute";
+    String INVALIDATE_SESSION = "invalidate-session";
+    String LIST_SESSIONS = "list-sessions";
+    String LIST_SESSION_ATTRIBUTE_NAMES = "list-session-attribute-names";
+    String LIST_SESSION_ATTRIBUTES = "list-session-attributes";
+    String GET_SESSION_ATTRIBUTE = "get-session-attribute";
+    String GET_SESSION_LAST_ACCESSED_TIME = "get-session-last-accessed-time";
+    String GET_SESSION_LAST_ACCESSED_TIME_MILLIS = "get-session-last-accessed-time-millis";
+    String GET_SESSION_CREATION_TIME = "get-session-creation-time";
+    String GET_SESSION_CREATION_TIME_MILLIS = "get-session-creation-time-millis";
 }
