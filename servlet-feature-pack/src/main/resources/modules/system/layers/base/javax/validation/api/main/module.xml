@@ -22,10 +22,24 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="javax.validation.api">
-    <resources>
-        <artifact name="${javax.validation:validation-api}"/>
-    </resources>
+<module xmlns="urn:jboss:module:1.7" name="javax.validation.api">
+  <resources>
+    <artifact name="${javax.validation:validation-api}">
+      <conditions>
+        <property-equal name="ee8.preview.mode" value="true" />
+      </conditions>
+    </artifact>
+    <!--
+      The version is hardcoded as property resolution is not supported
+      when building feature packs. It is not a big issue as this will
+      be removed once we fully support EE 8.
+    -->
+    <resource-root path="validation-api-1.1.0.Final.jar">
+      <conditions>
+        <property-not-equal name="ee8.preview.mode" value="true" />
+      </conditions>
+    </resource-root>
+  </resources>
 
   <dependencies>
     <module name="org.jboss.logging"/>

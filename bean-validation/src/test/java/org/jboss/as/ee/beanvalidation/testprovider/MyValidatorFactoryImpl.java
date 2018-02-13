@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ee.beanvalidation.testprovider;
 
+import javax.validation.ClockProvider;
 import javax.validation.ConstraintValidatorFactory;
 import javax.validation.MessageInterpolator;
 import javax.validation.ParameterNameProvider;
@@ -63,6 +64,11 @@ public class MyValidatorFactoryImpl implements ValidatorFactory {
 
     @Override
     public ParameterNameProvider getParameterNameProvider() {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public ClockProvider getClockProvider() {
         throw new UnsupportedOperationException("Not implemented");
     }
 

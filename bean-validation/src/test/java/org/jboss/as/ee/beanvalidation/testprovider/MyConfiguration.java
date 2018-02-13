@@ -24,12 +24,14 @@ package org.jboss.as.ee.beanvalidation.testprovider;
 import java.io.InputStream;
 
 import javax.validation.BootstrapConfiguration;
+import javax.validation.ClockProvider;
 import javax.validation.Configuration;
 import javax.validation.ConstraintValidatorFactory;
 import javax.validation.MessageInterpolator;
 import javax.validation.ParameterNameProvider;
 import javax.validation.TraversableResolver;
 import javax.validation.ValidatorFactory;
+import javax.validation.valueextraction.ValueExtractor;
 
 /**
  * A {@link Configuration} implementation for testing purposes.
@@ -95,6 +97,21 @@ public class MyConfiguration implements Configuration<MyConfiguration> {
 
     @Override
     public BootstrapConfiguration getBootstrapConfiguration() {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public MyConfiguration clockProvider(ClockProvider clockProvider) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public MyConfiguration addValueExtractor(ValueExtractor<?> extractor) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public ClockProvider getDefaultClockProvider() {
         throw new UnsupportedOperationException("Not implemented");
     }
 
