@@ -130,10 +130,11 @@ will remain at Java EE7 level.
 |=======================================================================
 | Name | From Version | From JSR | To Version | To JSR
 
-|Java Servlet | 3.1 | JSR-340 | 4.0 | JSR-369
+| Java Servlet | 3.1 | JSR-340 | 4.0 | JSR-369
 | CDI | 1.2 | JSR-346 | 2.0 | JSR-365
-|Bean Validation | 1.1 | JSR-349 | 2.0 | JSR-380
-
+| Bean Validation | 1.1 | JSR-349 | 2.0 | JSR-380
+| JavaServer Faces | 2.2 | JSR-344 | 2.3 | JSR-372
+| JavaMail | 1.5 | JSR-919 | 1.6 | JSR-919
 |=======================================================================
 
 [[download]]
