@@ -362,6 +362,7 @@
                  <includes>**/*.i18n.properties,**/LocalDescriptions.properties</includes>
                  <!-- In previous versions, 3.8.0 and lower, this defaulted to true -->
                  <copyTrans>true</copyTrans>
+                 <deleteObsoleteModules>true</deleteObsoleteModules>
               </configuration>
             </plugin>
             <plugin>
