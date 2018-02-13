@@ -627,7 +627,6 @@ public class ServerDefinition extends PersistentResourceDefinition {
                 // Acceptors
                 HTTPAcceptorDefinition.INSTANCE,
 
-                DiscoveryGroupDefinition.INSTANCE,
                 DivertDefinition.INSTANCE,
                 ConnectorServiceDefinition.INSTANCE,
                 GroupingHandlerDefinition.INSTANCE,
@@ -649,6 +648,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
 
         children.add(new BridgeDefinition(registerRuntimeOnly));
         children.add(new BroadcastGroupDefinition(registerRuntimeOnly));
+        children.add(new DiscoveryGroupDefinition(registerRuntimeOnly));
         children.add(new ClusterConnectionDefinition(registerRuntimeOnly));
         children.add(new QueueDefinition(registerRuntimeOnly, MessagingExtension.QUEUE_PATH));
         children.add(new JMSQueueDefinition(false, registerRuntimeOnly));

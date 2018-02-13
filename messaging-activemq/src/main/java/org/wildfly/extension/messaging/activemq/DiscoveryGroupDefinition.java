@@ -88,8 +88,6 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
 
     private final boolean registerRuntimeOnly;
 
-    static final DiscoveryGroupDefinition INSTANCE = new DiscoveryGroupDefinition(false);
-
     public DiscoveryGroupDefinition(final boolean registerRuntimeOnly) {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DISCOVERY_GROUP),

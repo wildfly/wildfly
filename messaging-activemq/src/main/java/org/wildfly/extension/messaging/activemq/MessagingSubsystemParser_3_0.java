@@ -349,7 +349,7 @@ public class MessagingSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                         BroadcastGroupDefinition.BROADCAST_PERIOD,
                                                         BroadcastGroupDefinition.CONNECTOR_REFS))
                                 .addChild(
-                                        builder(DiscoveryGroupDefinition.INSTANCE.getPathElement())
+                                        builder(DiscoveryGroupDefinition.PATH)
                                                 .addAttributes(
                                                         CommonAttributes.SOCKET_BINDING,
                                                         DiscoveryGroupDefinition.JGROUPS_CHANNEL_FACTORY,

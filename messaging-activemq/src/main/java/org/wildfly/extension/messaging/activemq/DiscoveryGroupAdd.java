@@ -69,6 +69,11 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        // Handle jgroups-channel -> jgroups-cluster rename
+        if (!operation.hasDefined(CommonAttributes.JGROUPS_CLUSTER.getName()) && operation.hasDefined(CommonAttributes.LEGACY_JGROUPS_CLUSTER.getName())) {
+            operation.get(CommonAttributes.JGROUPS_CLUSTER.getName()).set(operation.get(CommonAttributes.LEGACY_JGROUPS_CLUSTER.getName()));
+            operation.remove(CommonAttributes.LEGACY_JGROUPS_CLUSTER.getName());
+        }
         if (operation.hasDefined(JGROUPS_CLUSTER.getName())) {
             if (operation.hasDefined(JGROUPS_CHANNEL_FACTORY.getName()) && !operation.hasDefined(JGROUPS_CHANNEL.getName())) {
                 // Handle legacy behavior

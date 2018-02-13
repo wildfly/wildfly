@@ -79,12 +79,12 @@
         </pooled-connection-factory>
 
         <broadcast-group name="groupT"
-                         jgroups-channel-ref="ee"
-                         jgroups-channel="activemq-cluster"/>
+                         jgroups-channel="ee"
+                         jgroups-cluster="activemq-cluster"/>
 
         <discovery-group name="groupU"
-                         jgroups-channel-ref="ee"
-                         jgroups-channel="activemq-cluster"/>
+                         jgroups-channel="ee"
+                         jgroups-cluster="activemq-cluster"/>
     </server>
     <server name="other">
         <replication-master />

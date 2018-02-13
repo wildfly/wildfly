@@ -181,25 +181,33 @@ public interface CommonAttributes {
             .setRequired(false)
             // do not allow expression as this may reference another resource
             .setAllowExpression(false)
-            .setRequires("jgroups-channel")
+            .setRequires("jgroups-cluster")
             .setDeprecated(MessagingExtension.VERSION_3_0_0)
             .setRestartAllServices()
             .build();
 
-    // TODO Rename this attribute to jgroups-cluster
-    SimpleAttributeDefinition JGROUPS_CLUSTER = create("jgroups-channel", ModelType.STRING)
+    @Deprecated SimpleAttributeDefinition LEGACY_JGROUPS_CLUSTER = create("jgroups-channel", ModelType.STRING)
             .setRequired(false)
             // do not allow expression as this may reference another resource
             .setAllowExpression(false)
             .setAlternatives("socket-binding")
+            .setDeprecated(MessagingExtension.VERSION_3_0_0)
             .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition JGROUPS_CHANNEL = create("jgroups-channel-ref", ModelType.STRING)
+    SimpleAttributeDefinition JGROUPS_CHANNEL = create("jgroups-channel", ModelType.STRING)
             .setRequired(false)
             // do not allow expression as this may reference another resource
             .setAllowExpression(false)
-            .setRequires("jgroups-channel")
+            .setRequires("jgroups-cluster")
+            .setRestartAllServices()
+            .build();
+
+    SimpleAttributeDefinition JGROUPS_CLUSTER = create("jgroups-cluster", ModelType.STRING)
+            .setRequired(false)
+            // do not allow expression as this may reference another resource
+            .setAllowExpression(false)
+            .setAlternatives("socket-binding")
             .setRestartAllServices()
             .build();
 
