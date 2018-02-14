@@ -175,4 +175,23 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <profiles>
+        <!-- this is a "hack" to be able to build with release=8 on JDK9 where you cannot access sun.misc package anymore
+        FastConcurrentDirectDeque relies heavily on Unsafe class.
+        Classes in this dependancy are there just for compiling noting else.
+        -->
+        <profile>
+            <id>jdk9</id>
+            <activation>
+                <jdk>[9,)</jdk>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss</groupId>
+                    <artifactId>jdk-misc</artifactId>
+                    <version>2.Final</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
