@@ -22,9 +22,9 @@
 
 package org.jboss.as.test.manualmode.security.resources;
 
+import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
-import org.jboss.security.annotation.SecurityDomain;
 
 import javax.annotation.Resource;
 import javax.annotation.security.RolesAllowed;
