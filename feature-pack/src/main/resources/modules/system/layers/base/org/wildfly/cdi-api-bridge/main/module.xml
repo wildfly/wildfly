@@ -32,12 +32,7 @@
         <module name="org.glassfish.javax.el"/>
         <module name="javax.inject.api" />
         <module name="javax.interceptor.api"/>
-
-        <!-- CDIProvider -->
-        <module name="org.jboss.as.weld" services="import" optional="true"/>
-        <module name="org.jboss.weld.core" optional="true"/>
-        <module name="javax.enterprise.api" />
-        <module name="javax.inject.api" />
+	<module name="javax.enterprise.api" />
     </dependencies>
 
     <resources>
