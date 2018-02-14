@@ -52,10 +52,10 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
         String name = containerAddress.getLastElement().getValue();
         ServiceTarget target = context.getServiceTarget();
 
-        JGroupsTransportBuilder transportBuilder = new JGroupsTransportBuilder(address).configure(context, model);
+        JGroupsTransportBuilder transportBuilder = new JGroupsTransportBuilder(containerAddress).configure(context, model);
         transportBuilder.build(target).install();
 
-        new SiteBuilder(address).configure(context, model).build(target).install();
+        new SiteBuilder(containerAddress).configure(context, model).build(target).install();
 
         String channel = transportBuilder.getChannel();
 
@@ -82,6 +82,6 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
             }
         }
 
-        EnumSet.allOf(CacheContainerComponent.class).stream().map(component -> component.getServiceName(address)).forEach(serviceName -> context.removeService(serviceName));
+        EnumSet.allOf(CacheContainerComponent.class).stream().map(component -> component.getServiceName(containerAddress)).forEach(serviceName -> context.removeService(serviceName));
     }
 }

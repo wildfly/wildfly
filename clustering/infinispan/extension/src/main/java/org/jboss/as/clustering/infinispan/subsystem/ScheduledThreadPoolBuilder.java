@@ -46,8 +46,8 @@ public class ScheduledThreadPoolBuilder extends GlobalComponentBuilder<ThreadPoo
     private final ThreadPoolConfigurationBuilder builder = new ThreadPoolConfigurationBuilder(null);
     private final ScheduledThreadPoolDefinition definition;
 
-    ScheduledThreadPoolBuilder(ScheduledThreadPoolDefinition definition, PathAddress address) {
-        super(definition, address);
+    ScheduledThreadPoolBuilder(ScheduledThreadPoolDefinition definition, PathAddress containerAddress) {
+        super(definition, containerAddress);
         this.definition = definition;
     }
 

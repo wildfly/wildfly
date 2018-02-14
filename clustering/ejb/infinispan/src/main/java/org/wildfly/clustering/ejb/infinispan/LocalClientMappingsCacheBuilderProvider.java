@@ -22,13 +22,11 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(LocalCacheBuilderProvider.class)
 public class LocalClientMappingsCacheBuilderProvider extends ClientMappingsCacheBuilderProvider implements LocalCacheBuilderProvider {
 
     public LocalClientMappingsCacheBuilderProvider() {

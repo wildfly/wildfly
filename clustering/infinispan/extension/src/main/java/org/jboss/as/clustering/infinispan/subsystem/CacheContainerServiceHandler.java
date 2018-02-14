@@ -84,9 +84,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         ServiceTarget target = context.getServiceTarget();
 
         new ModuleBuilder(CacheContainerComponent.MODULE.getServiceName(address), MODULE).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
-
-        GlobalConfigurationBuilder configBuilder = new GlobalConfigurationBuilder(address);
-        configBuilder.configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        new GlobalConfigurationBuilder(address).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         CacheContainerBuilder containerBuilder = new CacheContainerBuilder(address).configure(context, model);
         containerBuilder.build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
@@ -95,7 +93,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
         new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheContainerBinding(name), containerBuilder.getServiceName(), CacheContainer.class).build(target).install();
 
-        String defaultCache = configBuilder.getDefaultCache().orElse(null);
+        String defaultCache = containerBuilder.getDefaultCache();
         if (defaultCache != null) {
             DEFAULT_CAPABILITIES.entrySet().forEach(entry -> new AliasServiceBuilder<>(entry.getValue().getServiceName(address), entry.getKey().getServiceName(context, name, defaultCache), entry.getKey().getType()).build(target).install());
 
@@ -117,8 +115,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         PathAddress address = context.getCurrentAddress();
         String name = context.getCurrentAddressValue();
 
-        String defaultCache = ModelNodes.optionalString(DEFAULT_CACHE.resolveModelAttribute(context, model)).orElse(null);
-        if (defaultCache != null) {
+        ModelNodes.optionalString(DEFAULT_CACHE.resolveModelAttribute(context, model)).ifPresent(defaultCache -> {
             for (CacheAliasBuilderProvider provider : ServiceLoader.load(CacheAliasBuilderProvider.class, CacheAliasBuilderProvider.class.getClassLoader())) {
                 for (ServiceNameProvider builder : provider.getBuilders(requirement -> DEFAULT_CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name, null, defaultCache)) {
                     context.removeService(builder.getServiceName());
@@ -131,7 +128,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
             }
 
             DEFAULT_CAPABILITIES.values().forEach(capability -> context.removeService(capability.getServiceName(address)));
-        }
+        });
 
         context.removeService(InfinispanBindingFactory.createCacheContainerBinding(name).getBinderServiceName());
 

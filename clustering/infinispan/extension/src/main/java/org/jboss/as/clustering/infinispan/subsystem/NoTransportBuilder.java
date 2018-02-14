@@ -34,8 +34,8 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class NoTransportBuilder extends GlobalComponentBuilder<TransportConfiguration> {
 
-    NoTransportBuilder(PathAddress address) {
-        super(CacheContainerComponent.TRANSPORT, address);
+    NoTransportBuilder(PathAddress containerAddress) {
+        super(CacheContainerComponent.TRANSPORT, containerAddress);
     }
 
     @Override

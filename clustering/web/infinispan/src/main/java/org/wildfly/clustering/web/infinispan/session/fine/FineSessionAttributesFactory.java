@@ -22,9 +22,13 @@
 
 package org.wildfly.clustering.web.infinispan.session.fine;
 
+import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
@@ -69,18 +73,29 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
     public SessionAttributeNamesEntry findValue(String id) {
         SessionAttributeNamesEntry entry = this.namesCache.get(new SessionAttributeNamesKey(id));
         if (entry != null) {
-            for (Map.Entry<String, Integer> nameEntry : entry.getNames().entrySet()) {
-                V value = this.attributeCache.get(new SessionAttributeKey(id, nameEntry.getValue()));
-                if (value != null) {
-                    try {
-                        this.marshaller.read(value);
-                        continue;
-                    } catch (InvalidSerializedFormException e) {
-                        InfinispanWebLogger.ROOT_LOGGER.failedToActivateSessionAttribute(e, id, nameEntry.getKey());
-                    }
-                } else {
-                    InfinispanWebLogger.ROOT_LOGGER.missingSessionAttributeCacheEntry(id, nameEntry.getKey());
+            ConcurrentMap<String, Integer> names = entry.getNames();
+            // ISPN-8459 Replace with org.infinispan.AdvancedCache#getAll once reliable (misses entries in dist caches on topology change)
+            Map<SessionAttributeKey, V> attributes = new HashMap<>();
+            for (Integer attributeId : names.values()) {
+                SessionAttributeKey sessionAttributeKey = new SessionAttributeKey(id, attributeId);
+                attributes.put(sessionAttributeKey, this.attributeCache.getAdvancedCache().get(sessionAttributeKey));
+            }
+            Predicate<Map.Entry<String, V>> invalidAttribute = attribute -> {
+                V value = attribute.getValue();
+                if (value == null) {
+                    InfinispanWebLogger.ROOT_LOGGER.missingSessionAttributeCacheEntry(id, attribute.getKey());
+                    return true;
                 }
+                try {
+                    this.marshaller.read(attribute.getValue());
+                    return false;
+                } catch (InvalidSerializedFormException e) {
+                    InfinispanWebLogger.ROOT_LOGGER.failedToActivateSessionAttribute(e, id, attribute.getKey());
+                    return true;
+                }
+            };
+            if (names.entrySet().stream().map(name -> new AbstractMap.SimpleImmutableEntry<>(name.getKey(), attributes.get(new SessionAttributeKey(id, name.getValue())))).anyMatch(invalidAttribute)) {
+                // If any attributes are invalid - remove them all
                 this.remove(id);
                 return null;
             }

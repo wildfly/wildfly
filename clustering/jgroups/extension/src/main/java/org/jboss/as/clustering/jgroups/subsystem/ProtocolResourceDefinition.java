@@ -106,7 +106,7 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress address = Operations.getPathAddress(operation);
-                    PathAddress stackAddress = address.getParent();
+                    PathAddress stackAddress = address.subAddress(0, address.size() - 1);
                     ModelNode addProtocolOp = operation.clone();
                     addProtocolOp.get(ModelDescriptionConstants.OP_ADDR).set(stackAddress.toModelNode());
                     addProtocolOp.get(ModelDescriptionConstants.OP).set("add-protocol");
@@ -125,7 +125,7 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress address = Operations.getPathAddress(operation);
                     String protocol = address.getLastElement().getValue();
-                    PathAddress stackAddress = address.getParent();
+                    PathAddress stackAddress = address.subAddress(0, address.size() - 1);
                     ModelNode legacyOperation = Util.createOperation("remove-protocol", stackAddress);
                     legacyOperation.get(AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.getName()).set(protocol);
                     return legacyOperation;

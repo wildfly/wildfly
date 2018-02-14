@@ -31,8 +31,8 @@ import org.jboss.as.controller.PathAddress;
  */
 public class StoreWriteThroughBuilder extends ComponentBuilder<AsyncStoreConfiguration> {
 
-    StoreWriteThroughBuilder(PathAddress address) {
-        super(CacheComponent.STORE_WRITE, address.getParent());
+    StoreWriteThroughBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.STORE_WRITE, cacheAddress);
     }
 
     @Override

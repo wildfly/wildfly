@@ -25,8 +25,11 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.*;
 
 import java.net.InetSocketAddress;
-import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.dmr.ModelNodes;
@@ -40,11 +43,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.Value;
 import org.jgroups.protocols.TP;
 import org.jgroups.util.DefaultThreadFactory;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
@@ -54,8 +57,9 @@ import org.wildfly.clustering.service.ValueDependency;
 public class TransportConfigurationBuilder<T extends TP> extends AbstractProtocolConfigurationBuilder<T, TransportConfiguration<T>> implements TransportConfiguration<T> {
 
     private final PathAddress address;
-    private final ValueDependency<ThreadPoolFactory> threadPoolFactory;
+    private final EnumMap<ThreadPoolResourceDefinition, ValueDependency<ThreadPoolFactory>> threadPoolFactories = new EnumMap<>(ThreadPoolResourceDefinition.class);
 
+    private volatile ValueDependency<TimerFactory> timerFactory;
     private volatile ValueDependency<SocketBinding> socketBinding;
     private volatile ValueDependency<SocketBinding> diagnosticsSocketBinding;
     private volatile Topology topology = null;
@@ -63,7 +67,6 @@ public class TransportConfigurationBuilder<T extends TP> extends AbstractProtoco
     public TransportConfigurationBuilder(PathAddress address) {
         super(address.getLastElement().getValue());
         this.address = address;
-        this.threadPoolFactory = new InjectedValueDependency<>(new ThreadPoolServiceNameProvider(address, ThreadPoolResourceDefinition.DEFAULT.getPathElement()), ThreadPoolFactory.class);
     }
 
     @Override
@@ -74,19 +77,14 @@ public class TransportConfigurationBuilder<T extends TP> extends AbstractProtoco
     @Override
     public ServiceBuilder<TransportConfiguration<T>> build(ServiceTarget target) {
         ServiceBuilder<TransportConfiguration<T>> builder = super.build(target);
-        for (Dependency dependency : Arrays.asList(this.threadPoolFactory, this.socketBinding, this.diagnosticsSocketBinding)) {
-            if (dependency != null) {
-                dependency.register(builder);
-            }
-        }
+        Stream.concat(this.threadPoolFactories.values().stream(), Stream.of(this.timerFactory, this.socketBinding, this.diagnosticsSocketBinding)).filter(Objects::nonNull).forEach(dependency -> dependency.register(builder));
         return builder;
     }
 
     @Override
     public Builder<TransportConfiguration<T>> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.socketBinding = new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, SOCKET_BINDING.resolveModelAttribute(context, model).asString()), SocketBinding.class);
-        String diagnosticsSocketBinding = ModelNodes.optionalString(DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, model)).orElse(null);
-        this.diagnosticsSocketBinding = (diagnosticsSocketBinding != null) ? new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, diagnosticsSocketBinding), SocketBinding.class) : null;
+        this.diagnosticsSocketBinding = ModelNodes.optionalString(DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, model)).map(diagnosticsBinding -> new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, diagnosticsBinding), SocketBinding.class)).orElse(null);
 
         Optional<String> machine = ModelNodes.optionalString(MACHINE.resolveModelAttribute(context, model));
         Optional<String> rack = ModelNodes.optionalString(RACK.resolveModelAttribute(context, model));
@@ -110,6 +108,10 @@ public class TransportConfigurationBuilder<T extends TP> extends AbstractProtoco
             };
         }
 
+        PathAddress address = context.getCurrentAddress();
+        EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.TIMER)).forEach(pool -> this.threadPoolFactories.put(pool, new InjectedValueDependency<>(new ThreadPoolServiceNameProvider(address, pool.getPathElement()), ThreadPoolFactory.class)));
+        this.timerFactory = new InjectedValueDependency<>(new ThreadPoolServiceNameProvider(address, ThreadPoolResourceDefinition.TIMER.getPathElement()), TimerFactory.class);
+
         return super.configure(context, model);
     }
 
@@ -119,24 +121,19 @@ public class TransportConfigurationBuilder<T extends TP> extends AbstractProtoco
         protocol.setBindAddress(socketAddress.getAddress());
         protocol.setBindPort(socketAddress.getPort());
 
-        protocol.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups", false, true), JChannelFactory.class.getClassLoader()));
-        protocol.setThreadPool(this.threadPoolFactory.getValue().apply(protocol.getThreadFactory()));
+        protocol.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("", false), JChannelFactory.class.getClassLoader()));
 
-        protocol.setInternalThreadPoolThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups-int", false, false), JChannelFactory.class.getClassLoader()));
-        // Because we provide the transport with a thread pool, TP.init() won't auto-create the internal thread pool
-        // So create one explicitly matching the logic in TP.init() but with our thread factory
-        QueuelessThreadPoolFactory factory = new QueuelessThreadPoolFactory()
-                .setMaxThreads(Math.max(4, Runtime.getRuntime().availableProcessors()))
-                .setKeepAliveTime(30000)
-                ;
-        protocol.setInternalThreadPool(factory.apply(protocol.getInternalThreadPoolThreadFactory()));
+        protocol.setDefaultThreadPool(this.threadPoolFactories.get(ThreadPoolResourceDefinition.DEFAULT).getValue().get());
+        protocol.setInternalThreadPool(this.threadPoolFactories.get(ThreadPoolResourceDefinition.INTERNAL).getValue().get());
+        protocol.setOOBThreadPool(this.threadPoolFactories.get(ThreadPoolResourceDefinition.OOB).getValue().get());
+        protocol.setTimer(this.timerFactory.getValue().get());
 
-        protocol.setValue("enable_diagnostics", this.diagnosticsSocketBinding != null);
-        if (this.diagnosticsSocketBinding != null) {
-            InetSocketAddress address = this.diagnosticsSocketBinding.getValue().getSocketAddress();
+        Optional<InetSocketAddress> diagnosticsSocketAddress = Optional.ofNullable(this.diagnosticsSocketBinding).map(Value::getValue).map(SocketBinding::getSocketAddress);
+        protocol.setValue("enable_diagnostics", diagnosticsSocketAddress.isPresent());
+        diagnosticsSocketAddress.ifPresent(address -> {
             protocol.setValue("diagnostics_addr", address.getAddress());
             protocol.setValue("diagnostics_port", address.getPort());
-        }
+        });
     }
 
     @Override

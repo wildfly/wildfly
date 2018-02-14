@@ -22,8 +22,8 @@
 
 package org.wildfly.clustering.server.dispatcher;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.jgroups.Address;
 import org.jgroups.View;
@@ -59,11 +59,9 @@ public class ViewMembership implements Membership {
 
     @Override
     public List<Node> getMembers() {
-        List<Node> members = new ArrayList<>(this.view.size());
-        for (Address address : this.view.getMembersRaw()) {
-            members.add(this.factory.createNode(address));
-        }
-        return members;
+        return this.view.stream()
+                .map(address -> this.factory.createNode(address))
+                .collect(Collectors.toList());
     }
 
     @Override

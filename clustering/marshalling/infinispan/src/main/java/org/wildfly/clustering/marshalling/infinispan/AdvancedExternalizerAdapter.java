@@ -38,11 +38,9 @@ import org.wildfly.clustering.marshalling.Externalizer;
 public class AdvancedExternalizerAdapter<T> implements AdvancedExternalizer<T> {
     private static final long serialVersionUID = 6805126239518013697L;
 
-    private final int id;
     private final Externalizer<T> externalizer;
 
-    public AdvancedExternalizerAdapter(int id, Externalizer<T> externalizer) {
-        this.id = id;
+    public AdvancedExternalizerAdapter(Externalizer<T> externalizer) {
         this.externalizer = externalizer;
     }
 
@@ -63,6 +61,6 @@ public class AdvancedExternalizerAdapter<T> implements AdvancedExternalizer<T> {
 
     @Override
     public Integer getId() {
-        return this.id;
+        return null;
     }
 }

@@ -41,7 +41,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-import org.jgroups.JChannel;
+import org.jgroups.Channel;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
@@ -91,7 +91,7 @@ public class ChannelCommandDispatcherFactoryBuilder implements CapabilityService
     private final String group;
 
     private volatile ValueDependency<ChannelFactory> channelFactory;
-    private volatile ValueDependency<JChannel> channel;
+    private volatile ValueDependency<Channel> channel;
     private volatile ValueDependency<Module> module;
     private volatile long timeout = TimeUnit.MINUTES.toMillis(1);
 
@@ -107,7 +107,7 @@ public class ChannelCommandDispatcherFactoryBuilder implements CapabilityService
 
     @Override
     public Builder<CommandDispatcherFactory> configure(CapabilityServiceSupport support) {
-        this.channel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(support, this.group), JChannel.class);
+        this.channel = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL.getServiceName(support, this.group), Channel.class);
         this.channelFactory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_FACTORY.getServiceName(support, this.group), ChannelFactory.class);
         this.module = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_MODULE.getServiceName(support, this.group), Module.class);
         return this;
@@ -141,7 +141,7 @@ public class ChannelCommandDispatcherFactoryBuilder implements CapabilityService
     }
 
     @Override
-    public JChannel getChannel() {
+    public Channel getChannel() {
         return this.channel.getValue();
     }
 

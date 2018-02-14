@@ -40,8 +40,8 @@ public class StoreWriteBehindBuilder extends ComponentBuilder<AsyncStoreConfigur
     private volatile int queueSize;
     private volatile int poolSize;
 
-    StoreWriteBehindBuilder(PathAddress address) {
-        super(CacheComponent.STORE_WRITE, address.getParent());
+    StoreWriteBehindBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.STORE_WRITE, cacheAddress);
     }
 
     @Override

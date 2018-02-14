@@ -24,12 +24,14 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.BiFunction;
+import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.clustering.controller.Definable;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -43,7 +45,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition.Parameters;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -57,23 +58,12 @@ import org.jboss.dmr.ModelType;
  * @author Paul Ferraro
  * @version Aug 2014
  */
-public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition, ResourceServiceBuilderFactory<ThreadPoolFactory> {
+public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition {
 
-    DEFAULT("default", 0, 200, 0, 60000L) {
-        @Override
-        void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-            ResourceTransformationDescriptionBuilder builder = parent.addChildResource(this.getDefinition());
-
-            if (JGroupsModel.VERSION_6_0_0.requiresTransformation(version)) {
-                for (Attribute attribute : Arrays.asList(this.getMinThreads(), this.getMaxThreads(), this.getQueueLength())) {
-                    builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(attribute.getDefinition()), attribute.getName());
-                }
-            }
-        }
-    },
-    @Deprecated OOB("oob", 20, 200, 0, 60000L, JGroupsModel.VERSION_6_0_0),
-    @Deprecated INTERNAL("internal", 5, 20, 0, 60000L, JGroupsModel.VERSION_6_0_0),
-    @Deprecated TIMER("timer", 2, 4, 0, 5000L, JGroupsModel.VERSION_6_0_0),
+    DEFAULT("default", "Incoming", 2, 30, 0, 60000L),
+    OOB("oob", "OOB", 20, 200, 0, 60000L),
+    INTERNAL("internal", "INT", 5, 20, 500, 60000L),
+    TIMER("timer", "Timer", 2, 4, 500, 5000L, (definition, address) -> new TimerFactoryBuilder(definition, address)),
     ;
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
@@ -83,30 +73,28 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     }
 
     private final SimpleResourceDefinition definition;
+    private final String prefix;
     private final Attribute minThreads;
     private final Attribute maxThreads;
     private final Attribute queueLength;
     private final Attribute keepAliveTime;
-    private final boolean deprecated;
+    private final BiFunction<ThreadPoolDefinition, PathAddress, ResourceServiceBuilder<? extends Object>> factory;
 
-    ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime) {
-        this(name, defaultMinThreads, defaultMaxThreads, defaultQueueLength, defaultKeepAliveTime, null);
+    ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime) {
+        this(name, prefix, defaultMinThreads, defaultMaxThreads, defaultQueueLength, defaultKeepAliveTime, (definition, address) -> new ThreadPoolFactoryBuilder(definition, address));
     }
 
-    ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime, JGroupsModel deprecation) {
-        Parameters parameters = new Parameters(pathElement(name), JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(pathElement(name), pathElement(PathElement.WILDCARD_VALUE)));
-        this.deprecated = (deprecation != null);
-        if (this.deprecated) {
-            parameters.setDeprecatedSince(deprecation.getVersion());
-        }
-        this.definition = new SimpleResourceDefinition(parameters);
-        this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0), deprecation).build());
-        this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0), deprecation).build());
-        this.queueLength = new SimpleAttribute(createBuilder("queue-length", ModelType.INT, new ModelNode(defaultQueueLength), new IntRangeValidatorBuilder().min(0), deprecation).setDeprecated(JGroupsModel.VERSION_6_0_0.getVersion()).build());
-        this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepAliveTime), new LongRangeValidatorBuilder().min(0), deprecation).build());
+    ThreadPoolResourceDefinition(String name, String prefix, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime, BiFunction<ThreadPoolDefinition, PathAddress, ResourceServiceBuilder<? extends Object>> factory) {
+        this.definition = new SimpleResourceDefinition(pathElement(name), JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(pathElement(PathElement.WILDCARD_VALUE)));
+        this.prefix = prefix;
+        this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0)).build());
+        this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0)).build());
+        this.queueLength = new SimpleAttribute(createBuilder("queue-length", ModelType.INT, new ModelNode(defaultQueueLength), new IntRangeValidatorBuilder().min(0)).build());
+        this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepAliveTime), new LongRangeValidatorBuilder().min(0)).build());
+        this.factory = factory;
     }
 
-    private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder, JGroupsModel deprecation) {
+    private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder) {
         SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, type)
                 .setAllowExpression(true)
                 .setRequired(false)
@@ -114,9 +102,6 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
                 .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                 .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
                 ;
-        if (deprecation != null) {
-            builder.setDeprecated(deprecation.getVersion());
-        }
         return builder.setValidator(validatorBuilder.configure(builder).build());
     }
 
@@ -129,18 +114,18 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     public void register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this.definition);
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.definition.getResourceDescriptionResolver()).addAttributes(this.getAttributes()).addAttributes(this.getQueueLength());
-        ResourceServiceHandler handler = !this.deprecated ? new SimpleResourceServiceHandler<>(this) : null;
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.definition.getResourceDescriptionResolver()).addAttributes(this.getAttributes());
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> this.factory.apply(this, address));
         new SimpleResourceRegistration(descriptor, handler).register(registration);
     }
 
-    @Override
-    public ResourceServiceBuilder<ThreadPoolFactory> createBuilder(PathAddress address) {
-        return new ThreadPoolFactoryBuilder(this, address);
+    Collection<Attribute> getAttributes() {
+        return Arrays.asList(this.minThreads, this.maxThreads, this.queueLength, this.keepAliveTime);
     }
 
-    Collection<Attribute> getAttributes() {
-        return Arrays.asList(this.minThreads, this.maxThreads, this.keepAliveTime);
+    @Override
+    public String getThreadGroupPrefix() {
+        return this.prefix;
     }
 
     @Override
@@ -154,25 +139,22 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     }
 
     @Override
-    public Attribute getKeepAliveTime() {
-        return this.keepAliveTime;
+    public Attribute getQueueLength() {
+        return this.queueLength;
     }
 
-    Attribute getQueueLength() {
-        return this.queueLength;
+    @Override
+    public Attribute getKeepAliveTime() {
+        return this.keepAliveTime;
     }
 
     void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(this.definition);
 
-        if (JGroupsModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(this.queueLength.getDefinition()), this.queueLength.getName());
-        }
-
         if (JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
-            for (Attribute attribute : Arrays.asList(this.minThreads, this.maxThreads)) {
-                builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(attribute.getDefinition()), attribute.getName());
-            }
+            Stream.of(this.minThreads, this.maxThreads, this.queueLength)
+                    .map(Definable::getDefinition)
+                    .forEach(attribute -> builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(attribute), attribute));
         }
     }
 }

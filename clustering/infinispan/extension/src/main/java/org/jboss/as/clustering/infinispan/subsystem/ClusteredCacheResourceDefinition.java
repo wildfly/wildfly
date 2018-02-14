@@ -39,7 +39,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
-import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -72,6 +71,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        MODE("mode", ModelType.STRING, new ModelNode(Mode.SYNC.name()), builder -> builder.setValidator(new EnumValidator<>(Mode.class))),
         REMOTE_TIMEOUT("remote-timeout", ModelType.LONG, new ModelNode(10000L), UnaryOperator.identity()),
         ;
         private final AttributeDefinition definition;
@@ -89,17 +89,12 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
         ASYNC_MARSHALLING("async-marshalling", ModelType.BOOLEAN, new ModelNode(false), InfinispanModel.VERSION_4_0_0),
-        MODE("mode", ModelType.STRING, new ModelNode(Mode.SYNC.name()), InfinispanModel.VERSION_6_0_0, builder -> builder.setValidator(new EnumValidator<>(Mode.class))),
         QUEUE_FLUSH_INTERVAL("queue-flush-interval", ModelType.LONG, new ModelNode(10L), InfinispanModel.VERSION_4_1_0),
         QUEUE_SIZE("queue-size", ModelType.INT, new ModelNode(0), InfinispanModel.VERSION_4_1_0),
         ;
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
-            this(name, type, defaultValue, deprecation, UnaryOperator.identity());
-        }
-
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
             this.definition = createBuilder(name, type, defaultValue).setDeprecated(deprecation.getVersion()).build();
         }
 
@@ -121,15 +116,10 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
-        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(Mode.SYNC.name())), DeprecatedAttribute.MODE.getDefinition())
-                    .end();
-        }
-
         if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setValueConverter(new DefaultValueAttributeConverter(Attribute.REMOTE_TIMEOUT.getDefinition()), Attribute.REMOTE_TIMEOUT.getDefinition())
+                    .setValueConverter(new DefaultValueAttributeConverter(Attribute.MODE.getDefinition()), Attribute.MODE.getDefinition())
                     .end();
         }
 

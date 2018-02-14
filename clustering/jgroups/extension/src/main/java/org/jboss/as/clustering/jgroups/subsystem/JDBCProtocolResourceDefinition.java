@@ -29,20 +29,21 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.jgroups.protocol.JDBCProtocol;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
-import org.jgroups.protocols.JDBC_PING;
+import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
  * Resource definition override for protocols that require a JDBC DataSource.
  * @author Paul Ferraro
  */
-public class JDBCProtocolResourceDefinition extends ProtocolResourceDefinition<JDBC_PING> {
+public class JDBCProtocolResourceDefinition<P extends Protocol & JDBCProtocol> extends ProtocolResourceDefinition<P> {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         DATA_SOURCE("data-source", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.DATA_SOURCE))),
@@ -73,6 +74,6 @@ public class JDBCProtocolResourceDefinition extends ProtocolResourceDefinition<J
                 .addAttributes(Attribute.class)
                 .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
                 .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
-                ), JDBCProtocolConfigurationBuilder::new, parentBuilderFactory);
+                ), address -> new JDBCProtocolConfigurationBuilder<>(address), parentBuilderFactory);
     }
 }

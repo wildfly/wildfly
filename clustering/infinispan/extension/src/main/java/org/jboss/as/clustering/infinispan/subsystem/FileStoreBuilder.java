@@ -54,9 +54,9 @@ public class FileStoreBuilder extends StoreBuilder<SingleFileStoreConfiguration,
     private volatile String relativePath;
     private volatile String relativeTo;
 
-    FileStoreBuilder(PathAddress address) {
-        super(address, SingleFileStoreConfigurationBuilder.class);
-        this.containerName = address.getParent().getParent().getLastElement().getValue();
+    FileStoreBuilder(PathAddress cacheAddress) {
+        super(cacheAddress, SingleFileStoreConfigurationBuilder.class);
+        this.containerName = cacheAddress.getParent().getLastElement().getValue();
     }
 
     @Override

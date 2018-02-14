@@ -22,7 +22,6 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
@@ -31,7 +30,6 @@ import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactoryProvider;
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(BeanManagerFactoryBuilderFactoryProvider.class)
 public class InfinispanBeanManagerFactoryBuilderFactoryProvider implements BeanManagerFactoryBuilderFactoryProvider<TransactionBatch> {
 
     @Override

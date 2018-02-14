@@ -34,6 +34,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelType;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 
 /**
  * @author Paul Ferraro
@@ -64,19 +65,19 @@ public class GenericProtocolResourceDefinition<P extends Protocol> extends Proto
         }
     }
 
-    GenericProtocolResourceDefinition(Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        this(WILDCARD_PATH, descriptorConfigurator, parentBuilderFactory);
+    GenericProtocolResourceDefinition(Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ProtocolConfiguration<P>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        this(WILDCARD_PATH, descriptorConfigurator, builderFactory, parentBuilderFactory);
     }
 
-    GenericProtocolResourceDefinition(String name, JGroupsModel deprecation, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        this(pathElement(name), descriptorConfigurator, parentBuilderFactory);
+    GenericProtocolResourceDefinition(String name, JGroupsModel deprecation, ResourceServiceBuilderFactory<ProtocolConfiguration<P>> builderFactory, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        this(pathElement(name), descriptorConfigurator, builderFactory, parentBuilderFactory);
         this.setDeprecated(deprecation.getVersion());
     }
 
-    private GenericProtocolResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+    private GenericProtocolResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ProtocolConfiguration<P>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(path, descriptorConfigurator.andThen(descriptor -> descriptor
                 .addExtraParameters(DeprecatedAttribute.class)
-                ), ProtocolConfigurationBuilder::new, parentBuilderFactory, (parent, registration) -> {
+                ), builderFactory, parentBuilderFactory, (parent, registration) -> {
                     EnumSet.allOf(DeprecatedAttribute.class).forEach(attribute -> registration.registerReadOnlyAttribute(attribute.getDefinition(), null));
                 });
     }

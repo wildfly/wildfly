@@ -50,8 +50,8 @@ public class BackupsBuilder extends ComponentBuilder<SitesConfiguration> {
 
     private final Map<String, BackupConfiguration> backups = new HashMap<>();
 
-    BackupsBuilder(PathAddress address) {
-        super(CacheComponent.BACKUPS, address);
+    BackupsBuilder(PathAddress cacheAddress) {
+        super(CacheComponent.BACKUPS, cacheAddress);
     }
 
     @Override

@@ -26,7 +26,11 @@ package org.jboss.as.clustering.jgroups.subsystem;
  * @author Paul Ferraro
  */
 public interface ThreadPoolConfiguration {
+
+    String getThreadGroupPrefix();
+
     int getMinThreads();
     int getMaxThreads();
+    int getQueueLength();
     long getKeepAliveTime();
 }

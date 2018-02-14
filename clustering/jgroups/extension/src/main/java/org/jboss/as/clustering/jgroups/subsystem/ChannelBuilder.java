@@ -42,6 +42,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jgroups.Channel;
 import org.jgroups.JChannel;
 import org.jgroups.jmx.JmxConfigurator;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
@@ -55,7 +56,7 @@ import org.wildfly.clustering.service.ValueDependency;
  * Provides a connected channel for use by dependent services.
  * @author Paul Ferraro
  */
-public class ChannelBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<JChannel>, Service<JChannel> {
+public class ChannelBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<Channel>, Service<Channel> {
 
     private final String name;
 
@@ -63,7 +64,7 @@ public class ChannelBuilder extends CapabilityServiceNameProvider implements Res
     private volatile ValueDependency<MBeanServer> server;
     private volatile ValueDependency<String> cluster;
     private volatile boolean statisticsEnabled = false;
-    private volatile JChannel channel;
+    private volatile Channel channel;
 
     public ChannelBuilder(Capability capability, PathAddress address) {
         super(capability, address);
@@ -76,14 +77,14 @@ public class ChannelBuilder extends CapabilityServiceNameProvider implements Res
     }
 
     @Override
-    public ServiceBuilder<JChannel> build(ServiceTarget target) {
-        ServiceBuilder<JChannel> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
+    public ServiceBuilder<Channel> build(ServiceTarget target) {
+        ServiceBuilder<Channel> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
         Stream.of(this.factory, this.cluster, this.server).filter(Objects::nonNull).forEach(dependency -> dependency.register(builder));
         return builder;
     }
 
     @Override
-    public Builder<JChannel> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public Builder<Channel> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.cluster = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, this.name), String.class);
         this.factory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, this.name), ChannelFactory.class);
         this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), null, null) ? new InjectedValueDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context), MBeanServer.class) : null;
@@ -91,7 +92,7 @@ public class ChannelBuilder extends CapabilityServiceNameProvider implements Res
     }
 
     @Override
-    public JChannel getValue() {
+    public Channel getValue() {
         return this.channel;
     }
 
@@ -108,13 +109,15 @@ public class ChannelBuilder extends CapabilityServiceNameProvider implements Res
             JGroupsLogger.ROOT_LOGGER.tracef("JGroups channel %s created with configuration:%n %s", this.name, output);
         }
 
-        this.channel.stats(this.statisticsEnabled);
-
-        if (this.server != null) {
-            try {
-                JmxConfigurator.registerChannel(this.channel, this.server.getValue(), this.name);
-            } catch (Exception e) {
-                JGroupsLogger.ROOT_LOGGER.debug(e.getLocalizedMessage(), e);
+        if (this.channel instanceof JChannel) {
+            JChannel channel = (JChannel) this.channel;
+            channel.enableStats(this.statisticsEnabled);
+            if (this.server != null) {
+                try {
+                    JmxConfigurator.registerChannel((JChannel) this.channel, this.server.getValue(), this.name);
+                } catch (Exception e) {
+                    JGroupsLogger.ROOT_LOGGER.debug(e.getLocalizedMessage(), e);
+                }
             }
         }
 
@@ -129,9 +132,9 @@ public class ChannelBuilder extends CapabilityServiceNameProvider implements Res
     public void stop(StopContext context) {
         this.channel.disconnect();
 
-        if (this.server != null) {
+        if ((this.channel instanceof JChannel) && (this.server != null)) {
             try {
-                JmxConfigurator.unregisterChannel(this.channel, this.server.getValue(), this.name);
+                JmxConfigurator.unregisterChannel((JChannel) this.channel, this.server.getValue(), this.name);
             } catch (Exception e) {
                 JGroupsLogger.ROOT_LOGGER.debug(e.getLocalizedMessage(), e);
             }

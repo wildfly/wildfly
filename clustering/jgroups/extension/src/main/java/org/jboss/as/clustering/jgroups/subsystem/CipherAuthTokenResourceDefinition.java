@@ -68,6 +68,6 @@ public class CipherAuthTokenResourceDefinition extends AuthTokenResourceDefiniti
     }
 
     CipherAuthTokenResourceDefinition() {
-        super(PATH, descriptor -> descriptor.addAttributes(Attribute.class), CipherAuthTokenBuilder::new);
+        super(PATH, descriptor -> descriptor.addAttributes(Attribute.class), address -> new CipherAuthTokenBuilder(address));
     }
 }

@@ -58,8 +58,6 @@ import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality;
-import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryListener;
 import org.wildfly.clustering.server.group.Group;
@@ -156,15 +154,9 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     @Override
     public Map<K, V> getEntries() {
         Set<Node> nodes = new HashSet<>(this.group.getMembership().getMembers());
-        Map<K, V> result = new HashMap<>();
         try (Batch batch = this.batcher.createBatch()) {
-            for (Map.Entry<K, V> entry : this.cache.getAdvancedCache().getAll(nodes).values()) {
-                if (entry != null) {
-                    result.put(entry.getKey(), entry.getValue());
-                }
-            }
+            return this.cache.getAdvancedCache().getAll(nodes).values().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
         }
-        return result;
     }
 
     @Override
@@ -178,9 +170,9 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     public void topologyChanged(TopologyChangedEvent<Node, Map.Entry<K, V>> event) {
         if (event.isPre()) return;
 
-        ConsistentHash previousHash = event.getWriteConsistentHashAtStart();
+        ConsistentHash previousHash = event.getConsistentHashAtStart();
         List<Address> previousMembers = previousHash.getMembers();
-        ConsistentHash hash = event.getWriteConsistentHashAtEnd();
+        ConsistentHash hash = event.getConsistentHashAtEnd();
         List<Address> members = hash.getMembers();
         Address localAddress = event.getCache().getCacheManager().getAddress();
 
@@ -191,10 +183,9 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
         try {
             this.topologyChangeExecutor.submit(() -> {
                 if (!addresses.isEmpty()) {
-                    Locality locality = new ConsistentHashLocality(event.getCache(), hash);
                     // We're only interested in the entries for which we are the primary owner
                     List<Node> nodes = addresses.stream()
-                            .filter(address -> locality.isLocal(address))
+                            .filter(address -> hash.locatePrimaryOwner(address).equals(localAddress))
                             .map(address -> this.group.createNode(address))
                             .collect(Collectors.toList());
 
