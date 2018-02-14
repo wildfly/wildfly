@@ -24,6 +24,10 @@
 
 <module xmlns="urn:jboss:module:1.5" name="org.reactivestreams">
 
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
     <resources>
         <artifact name="${org.reactivestreams:reactive-streams}"/>
     </resources>
