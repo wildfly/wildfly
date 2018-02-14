@@ -50,7 +50,9 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.ws.api.configuration.ClientConfigUtil;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.picketlink.common.exceptions.fed.WSTrustException;
@@ -97,7 +99,8 @@ public class AuthenticationPolicyContextTestCase {
     private static final String PASSWORD = "PassA";
     private static final String CONTAINER = "default-jbossas";
 
-    private volatile ModelControllerClient client;
+    private volatile ModelControllerClient modelControllerClient;
+    protected static WSTrustClient wsClient;
     private volatile CommandContext commandCtx;
     private volatile ByteArrayOutputStream consoleOut = new ByteArrayOutputStream();
 
@@ -179,8 +182,21 @@ public class AuthenticationPolicyContextTestCase {
         container.stop(CONTAINER);
     }
 
+    @BeforeClass
+    public static void initClient() throws Exception {
+        wsClient = new WSTrustClient("PicketLinkSTS", "PicketLinkSTSPort",
+                TestSuiteEnvironment.getHttpUrl() + "/picketlink-sts/PicketLinkSTS", new WSTrustClient.SecurityInfo(USERNAME, PASSWORD));
+    }
+
+    @AfterClass
+    public static void closeClient() throws Exception {
+        if (wsClient != null) {
+            wsClient.close();
+        }
+    }
+
     private void initServerConfiguration(String deployment1, String deployment2) throws Exception {
-        client = ModelControllerClient.Factory.create(HOST, getManagementPort());
+        modelControllerClient = ModelControllerClient.Factory.create(HOST, getManagementPort());
         commandCtx = CLITestUtil.getCommandContext(HOST, getManagementPort(), null, consoleOut, -1);
         commandCtx.connectController();
 
@@ -238,7 +254,7 @@ public class AuthenticationPolicyContextTestCase {
 
     private void reload() {
         ModelNode operation = Util.createOperation("reload", null);
-        ServerReload.executeReloadAndWaitForCompletion(client, operation, (int) SECONDS.toMillis(90), HOST,
+        ServerReload.executeReloadAndWaitForCompletion(modelControllerClient, operation, (int) SECONDS.toMillis(90), HOST,
                 getManagementPort());
     }
 
@@ -256,12 +272,10 @@ public class AuthenticationPolicyContextTestCase {
     @Test
     @RunAsClient
     public void test() throws Exception {
-        WSTrustClient client = new WSTrustClient("PicketLinkSTS", "PicketLinkSTSPort",
-                "http://127.0.0.1:8080/picketlink-sts/PicketLinkSTS", new WSTrustClient.SecurityInfo(USERNAME, PASSWORD));
         Element assertion = null;
         try {
             LOGGER.info("Invoking token service to get SAML assertion for " + USERNAME);
-            assertion = client.issueToken(SAMLUtil.SAML2_TOKEN_TYPE);
+            assertion = wsClient.issueToken(SAMLUtil.SAML2_TOKEN_TYPE);
             String domElementAsString = DocumentUtil.getDOMElementAsString(assertion);
             System.out.println("assertion: " + domElementAsString);
             LOGGER.info("SAML assertion for " + USERNAME + " successfully obtained!");
@@ -286,6 +300,9 @@ public class AuthenticationPolicyContextTestCase {
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             fail(e.getMessage());
+        }
+        if (wsClient != null) {
+            wsClient.close();
         }
     }
 }
