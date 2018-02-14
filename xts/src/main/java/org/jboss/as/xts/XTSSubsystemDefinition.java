@@ -43,8 +43,6 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class XTSSubsystemDefinition extends SimpleResourceDefinition {
-    protected static final XTSSubsystemDefinition INSTANCE = new XTSSubsystemDefinition();
-
     protected static final SimpleAttributeDefinition HOST_NAME =
             new SimpleAttributeDefinitionBuilder(CommonAttributes.HOST, ModelType.STRING)
                     .setRequired(false)
@@ -76,7 +74,7 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
             .build();
 
 
-    private XTSSubsystemDefinition() {
+    protected XTSSubsystemDefinition() {
         super(XTSExtension.SUBSYSTEM_PATH,
                 XTSExtension.getResourceDescriptionResolver(null),
                 XTSSubsystemAdd.INSTANCE,

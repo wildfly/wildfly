@@ -25,20 +25,12 @@ package org.jboss.as.xts;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.xts.logging.XtsAsLogger;
-import org.jboss.dmr.ModelNode;
 
 /**
  * The web services transactions extension.
@@ -65,35 +57,12 @@ public class XTSExtension implements Extension {
     public void initialize(ExtensionContext context) {
         XtsAsLogger.ROOT_LOGGER.debug("Initializing XTS Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        subsystem.registerSubsystemModel(XTSSubsystemDefinition.INSTANCE);
+        subsystem.registerSubsystemModel(new XTSSubsystemDefinition());
         subsystem.registerXMLElementWriter(new XTSSubsystemParser());
-
-        if (context.isRegisterTransformers()) {
-            registerTransformers1x(subsystem);
-        }
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.XTS_1_0.getUriString(), XTSSubsystemParser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.XTS_2_0.getUriString(), XTSSubsystemParser::new);
     }
-
-    private void registerTransformers1x(SubsystemRegistration subsystem) {
-        ResourceTransformationDescriptionBuilder builder =
-                TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
-            @Override
-            protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                return attributeValue.isDefined() && attributeValue.equals(XTSSubsystemDefinition.HOST_NAME.getDefaultValue());
-            }
-        }, XTSSubsystemDefinition.HOST_NAME)
-        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION)
-        .addRejectCheck(RejectAttributeChecker.DEFINED, XTSSubsystemDefinition.HOST_NAME, XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION)
-        .end();
-
-        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 1, 0));
-
-    }
-
-
 }

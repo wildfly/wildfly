@@ -6461,7 +6461,7 @@
                     --add-exports=jdk.unsupported/sun.reflect=ALL-UNNAMED
                     --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED
                     --illegal-access=permit
-                    --add-modules=java.xml.bind
+                    --add-modules=java.xml.bind,java.sql
                 </modular.jdk.args>
                 <!-- [WFCORE-1494] remove JUL workaround -->
                 <modular.jdk.props>-Dsun.util.logging.disableCallerCheck=true -Djdk.attach.allowAttachSelf=true</modular.jdk.props>
@@ -6481,6 +6481,16 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>jdk9-surefire</id>
+            <activation>
+                <jdk>9</jdk>
+            </activation>
+            <properties>
+                <!-- 2.20.1 works fine on JDK9 but breaks on JDK10, so we set it only for 9-->
+                <version.surefire.plugin>2.20.1</version.surefire.plugin>
+            </properties>
         </profile>
         <profile>
             <id>docs</id>
