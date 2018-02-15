@@ -69,27 +69,6 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <environmentVariables>
-                        <JBOSS_HOME>${wildfly.dir}</JBOSS_HOME>
-                    </environmentVariables>
-                    <!-- Parameters to test cases. -->
-                    <systemPropertyVariables>
-                        <jboss.inst>${wildfly.dir}</jboss.inst>
-                        <!-- TODO explicit definition of ee8.preview.mode=true is needed by JSON-P 1.1 atm, remove in future -->
-                        <server.jvm.args>-Dee8.preview.mode=true -Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} ${extra.server.jvm.args}</server.jvm.args>
-                        <node0>${node0}</node0>
-                    </systemPropertyVariables>
-                    <argLine>${surefire.system.args} ${jvm.args.ip.client}</argLine>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
     <profiles>
         <profile>
             <id>adjust-server-config</id>
