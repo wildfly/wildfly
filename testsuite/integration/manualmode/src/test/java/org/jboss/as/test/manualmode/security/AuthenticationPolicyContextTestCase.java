@@ -99,7 +99,7 @@ public class AuthenticationPolicyContextTestCase {
     private static final int PORT_OFFSET = 0;
     private static final String USERNAME = "UserA";
     private static final String PASSWORD = "PassA";
-    private static final String CONTAINER = "default-jbossas";
+    private static final String CONTAINER = "jbossas-sts";
     public static final String DEFAULT_HOST = getHostname();
     public static final int DEFAULT_PORT = 8080;
 
@@ -189,7 +189,7 @@ public class AuthenticationPolicyContextTestCase {
     @BeforeClass
     public static void initClient() throws Exception {
         wsClient = new WSTrustClient("PicketLinkSTS", "PicketLinkSTSPort",
-                getHttpUrl(DEFAULT_HOST, DEFAULT_PORT) + "/picketlink-sts/PicketLinkSTS", new WSTrustClient.SecurityInfo(USERNAME, PASSWORD));
+                getHttpUrl(DEFAULT_HOST, DEFAULT_PORT) + "picketlink-sts/PicketLinkSTS", new WSTrustClient.SecurityInfo(USERNAME, PASSWORD));
     }
 
     @AfterClass

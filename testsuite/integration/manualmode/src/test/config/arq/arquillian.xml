@@ -262,6 +262,22 @@
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
+
+        <container qualifier="jbossas-sts" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-sts</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=jbossas-sts</property>
+                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
     </group>
 
 </arquillian>
