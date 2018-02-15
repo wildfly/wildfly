@@ -72,7 +72,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.fail;
@@ -98,6 +100,8 @@ public class AuthenticationPolicyContextTestCase {
     private static final String USERNAME = "UserA";
     private static final String PASSWORD = "PassA";
     private static final String CONTAINER = "default-jbossas";
+    public static final String DEFAULT_HOST = getHostname();
+    public static final int DEFAULT_PORT = 8080;
 
     private volatile ModelControllerClient modelControllerClient;
     protected static WSTrustClient wsClient;
@@ -185,7 +189,7 @@ public class AuthenticationPolicyContextTestCase {
     @BeforeClass
     public static void initClient() throws Exception {
         wsClient = new WSTrustClient("PicketLinkSTS", "PicketLinkSTSPort",
-                TestSuiteEnvironment.getHttpUrl() + "/picketlink-sts/PicketLinkSTS", new WSTrustClient.SecurityInfo(USERNAME, PASSWORD));
+                getHttpUrl(DEFAULT_HOST, DEFAULT_PORT) + "/picketlink-sts/PicketLinkSTS", new WSTrustClient.SecurityInfo(USERNAME, PASSWORD));
     }
 
     @AfterClass
@@ -193,6 +197,27 @@ public class AuthenticationPolicyContextTestCase {
         if (wsClient != null) {
             wsClient.close();
         }
+    }
+
+    private static String getHttpUrl(String host, int port) {
+        return "http://" + host + ":" + port + "/";
+    }
+
+    private static String getHostname() {
+        String hostname = System.getProperty("node0");
+
+        try {
+            hostname = NetworkUtils.formatPossibleIpv6Address(InetAddress.getByName(hostname).getHostAddress());
+        } catch (UnknownHostException ex) {
+            String message = "Cannot resolve host address: " + hostname;
+            throw new RuntimeException(message, ex);
+        }
+
+        if ("127.0.0.1".equals(hostname)) {
+            return "localhost";
+        }
+
+        return hostname;
     }
 
     private void initServerConfiguration(String deployment1, String deployment2) throws Exception {
