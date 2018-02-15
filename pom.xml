@@ -303,7 +303,7 @@
 
     <modules>
         <module>appclient</module>
-        <module>batch</module>
+        <module>batch-jberet</module>
         <module>bean-validation</module>
         <module>build</module>
         <module>client/ejb</module>
@@ -853,12 +853,6 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-appclient</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-batch</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -6772,8 +6766,7 @@
                                                          done
                                                     -->
                                                     <fileset dir="appclient/src/main/java"><include name="**/*.java"></include></fileset>
-                                                    <fileset dir="batch/extension-jberet/src/main/java"><include name="**/*.java"></include></fileset>
-                                                    <fileset dir="batch/extension/src/main/java"><include name="**/*.java"></include></fileset>
+                                                    <fileset dir="batch-jberet/src/main/java"><include name="**/*.java"></include></fileset>
                                                     <fileset dir="bean-validation/src/main/java"><include name="**/*.java"></include></fileset>
                                                     <fileset dir="clustering/api/src/main/java"><include name="**/*.java"></include></fileset>
                                                     <fileset dir="clustering/common/src/main/java"><include name="**/*.java"></include></fileset>

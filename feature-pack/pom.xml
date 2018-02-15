@@ -2622,7 +2622,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-batch</artifactId>
+            <artifactId>wildfly-batch-jberet</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
