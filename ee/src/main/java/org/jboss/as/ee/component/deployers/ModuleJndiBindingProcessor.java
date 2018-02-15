@@ -224,7 +224,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                 BinderService service;
                 try {
                     service = new BinderService(bindInfo.getBindName(), bindingConfiguration.getSource(), true);
-                    ServiceBuilder<ManagedReferenceFactory> serviceBuilder = CurrentServiceContainer.getServiceContainer().addService(bindInfo.getBinderServiceName(), service);
+                    ServiceBuilder<ManagedReferenceFactory> serviceBuilder = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.EXTERNAL_SERVICE_TARGET).addService(bindInfo.getBinderServiceName(), service);
                     bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
                     serviceBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());
                     serviceBuilder.install();
