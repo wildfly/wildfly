@@ -28,7 +28,7 @@
     </properties>
 
     <exports>
-        <exclude path="org/wildfly/extension/batch/_private"/>
+        <exclude path="org/wildfly/extension/batch/jberet/_private"/>
     </exports>
 
     <resources>
