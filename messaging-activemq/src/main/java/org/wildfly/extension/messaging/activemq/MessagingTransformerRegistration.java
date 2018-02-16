@@ -72,12 +72,12 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         server.addChildResource(MessagingExtension.BROADCAST_GROUP_PATH).getAttributeBuilder()
                 .setDiscard(new JGroupsChannelDiscardAttributeChecker(), BroadcastGroupDefinition.JGROUPS_CHANNEL)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, BroadcastGroupDefinition.JGROUPS_CHANNEL)
-                .addRename(CommonAttributes.JGROUPS_CLUSTER, CommonAttributes.LEGACY_JGROUPS_CLUSTER.getName())
+                .addRename(CommonAttributes.JGROUPS_CLUSTER, CommonAttributes.JGROUPS_CHANNEL.getName())
                 .end();
         server.addChildResource(DiscoveryGroupDefinition.PATH).getAttributeBuilder()
                 .setDiscard(new JGroupsChannelDiscardAttributeChecker(), DiscoveryGroupDefinition.JGROUPS_CHANNEL)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, DiscoveryGroupDefinition.JGROUPS_CHANNEL)
-                .addRename(CommonAttributes.JGROUPS_CLUSTER, CommonAttributes.LEGACY_JGROUPS_CLUSTER.getName())
+                .addRename(CommonAttributes.JGROUPS_CLUSTER, CommonAttributes.JGROUPS_CHANNEL.getName())
                 .end();
     }
 

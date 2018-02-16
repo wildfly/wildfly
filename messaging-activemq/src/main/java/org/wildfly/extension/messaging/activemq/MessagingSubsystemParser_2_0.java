@@ -344,7 +344,7 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                 .addAttributes(
                                                         CommonAttributes.SOCKET_BINDING,
                                                         BroadcastGroupDefinition.JGROUPS_CHANNEL_FACTORY,
-                                                        CommonAttributes.LEGACY_JGROUPS_CLUSTER,
+                                                        CommonAttributes.JGROUPS_CHANNEL,
                                                         BroadcastGroupDefinition.BROADCAST_PERIOD,
                                                         BroadcastGroupDefinition.CONNECTOR_REFS))
                                 .addChild(
@@ -352,7 +352,7 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                 .addAttributes(
                                                         CommonAttributes.SOCKET_BINDING,
                                                         DiscoveryGroupDefinition.JGROUPS_CHANNEL_FACTORY,
-                                                        CommonAttributes.LEGACY_JGROUPS_CLUSTER,
+                                                        CommonAttributes.JGROUPS_CHANNEL,
                                                         DiscoveryGroupDefinition.REFRESH_TIMEOUT,
                                                         DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT))
                                 .addChild(

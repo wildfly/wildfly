@@ -186,15 +186,6 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
-    @Deprecated SimpleAttributeDefinition LEGACY_JGROUPS_CLUSTER = create("jgroups-channel", ModelType.STRING)
-            .setRequired(false)
-            // do not allow expression as this may reference another resource
-            .setAllowExpression(false)
-            .setAlternatives("socket-binding")
-            .setDeprecated(MessagingExtension.VERSION_3_0_0)
-            .setRestartAllServices()
-            .build();
-
     SimpleAttributeDefinition JGROUPS_CHANNEL = create("jgroups-channel", ModelType.STRING)
             .setRequired(false)
             // do not allow expression as this may reference another resource
@@ -440,4 +431,12 @@ public interface CommonAttributes {
     String VERSION = "version";
     String XA = "xa";
     String XA_TX = "XATransaction";
+
+    static void renameChannelToCluster(ModelNode operation) {
+        // Handle jgroups-channel -> jgroups-cluster rename
+        if (!operation.hasDefined(CommonAttributes.JGROUPS_CLUSTER.getName()) && operation.hasDefined(CommonAttributes.JGROUPS_CHANNEL.getName())) {
+            operation.get(CommonAttributes.JGROUPS_CLUSTER.getName()).set(operation.get(CommonAttributes.JGROUPS_CHANNEL.getName()));
+            operation.remove(CommonAttributes.JGROUPS_CHANNEL.getName());
+        }
+    }
 }
