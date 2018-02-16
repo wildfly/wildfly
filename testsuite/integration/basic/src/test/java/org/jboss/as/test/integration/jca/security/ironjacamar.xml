@@ -2,7 +2,7 @@
 <ironjacamar>
     <connection-definitions>
         <connection-definition
-                class-name="org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactory1"
+                class-name="org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactoryWithSubjectVerification"
                 jndi-name="java:jboss/name1" pool-name="ij_Pool1">
             <security>
                 <security-domain>RaRealm</security-domain>

@@ -111,7 +111,7 @@ public class WildFlyActivationRaWithSecurityDomainTestCase {
         private void addConnectionDefinition(ModelControllerClient client) throws IOException {
             PathAddress connectionDefinitionAddress = RA_ADDRESS.append("connection-definitions", "Pool1");
             ModelNode addConnectionDefinitionOperation = Operations.createAddOperation(connectionDefinitionAddress.toModelNode());
-            addConnectionDefinitionOperation.get("class-name").set("org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactory1");
+            addConnectionDefinitionOperation.get("class-name").set("org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactoryWithSubjectVerification");
             addConnectionDefinitionOperation.get("jndi-name").set(CONN_DEF_JNDI_NAME);
             addConnectionDefinitionOperation.get("security-domain").set("RaRealm");
 

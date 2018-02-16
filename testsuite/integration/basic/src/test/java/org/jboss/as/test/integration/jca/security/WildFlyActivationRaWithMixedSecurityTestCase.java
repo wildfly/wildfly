@@ -150,7 +150,7 @@ public class WildFlyActivationRaWithMixedSecurityTestCase {
         private void addConnectionDefinition(String name, String jndiName, Consumer<ModelNode> attrProvider, ModelControllerClient client) throws IOException {
             PathAddress connectionDefinitionAddress = RA_ADDRESS.append("connection-definitions", name);
             ModelNode addConnectionDefinitionOperation = Operations.createAddOperation(connectionDefinitionAddress.toModelNode());
-            addConnectionDefinitionOperation.get("class-name").set("org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactory1");
+            addConnectionDefinitionOperation.get("class-name").set("org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactoryWithSubjectVerification");
             addConnectionDefinitionOperation.get("jndi-name").set(jndiName);
 
             attrProvider.accept(addConnectionDefinitionOperation);

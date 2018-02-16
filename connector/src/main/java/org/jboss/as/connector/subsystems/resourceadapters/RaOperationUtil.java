@@ -261,7 +261,7 @@ public class RaOperationUtil {
 
         boolean application = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, APPLICATION);
         Security security = null;
-        if (securityDomain != null || securityDomainAndApplication != null || application) {
+        if (securityDomain != null || authenticationContext != null || securityDomainAndApplication != null || authenticationContextAndApplication != null || application) {
             security = new SecurityImpl(elytronEnabled? authenticationContext: securityDomain,
                     elytronEnabled? authenticationContextAndApplication: securityDomainAndApplication, application,
                     elytronEnabled);
@@ -282,10 +282,10 @@ public class RaOperationUtil {
 
 
         Recovery recovery = null;
-        if ((recoveryUsername != null && (recoveryPassword != null || recoveryCredentialSourceSupplier != null)) || recoverySecurityDomain != null || noRecovery != null) {
+        if ((recoveryUsername != null && (recoveryPassword != null || recoveryCredentialSourceSupplier != null)) || recoverySecurityDomain != null || recoveryAuthenticationContext != null || noRecovery != null) {
             Credential credential = null;
 
-            if ((recoveryUsername != null && (recoveryPassword != null || recoveryCredentialSourceSupplier != null)) || recoverySecurityDomain != null)
+            if ((recoveryUsername != null && (recoveryPassword != null || recoveryCredentialSourceSupplier != null)) || recoverySecurityDomain != null || recoveryAuthenticationContext != null)
                 credential = new CredentialImpl(recoveryUsername, recoveryPassword,
                         recoveryElytronEnabled ? recoveryAuthenticationContext : recoverySecurityDomain, recoveryElytronEnabled, recoveryCredentialSourceSupplier);
 
