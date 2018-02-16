@@ -193,7 +193,7 @@
                     <!-- System properties passed to test cases -->
                     <systemPropertyVariables combine.children="append">
                         <node0>${node0}</node0>
-                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.timeouts} -Declipselink.archive.factory=org.jipijapa.eclipselink.JBossArchiveFactoryImpl ${extra.server.jvm.args}</server.jvm.args>
+                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.timeouts} ${extra.server.jvm.args}</server.jvm.args>
                     </systemPropertyVariables>
 
                 </configuration>
