@@ -46,10 +46,10 @@ class JMSCDIExtension implements Extension {
 
     private void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
         AnnotatedType<RequestedJMSContext> requestedContextBean = bm.createAnnotatedType(RequestedJMSContext.class);
-        bbd.addAnnotatedType(requestedContextBean);
+        bbd.addAnnotatedType(requestedContextBean, JMSCDIExtension.class.getName() + "-" + RequestedJMSContext.class.getName());
         AnnotatedType<TransactedJMSContext> transactedContextBean = bm.createAnnotatedType(TransactedJMSContext.class);
-        bbd.addAnnotatedType(transactedContextBean);
+        bbd.addAnnotatedType(transactedContextBean, JMSCDIExtension.class.getName() + "-" + TransactedJMSContext.class.getName());
         AnnotatedType<InjectedJMSContext> contextBean = bm.createAnnotatedType(InjectedJMSContext.class);
-        bbd.addAnnotatedType(contextBean);
+        bbd.addAnnotatedType(contextBean, JMSCDIExtension.class.getName() + "-" + InjectedJMSContext.class.getName());
     }
 }
