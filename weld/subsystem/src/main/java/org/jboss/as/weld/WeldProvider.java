@@ -28,6 +28,7 @@ import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.CDIProvider;
 
 import org.jboss.as.weld.deployment.WeldDeployment;
+import org.jboss.as.weld.services.ModuleGroupSingletonProvider;
 import org.jboss.as.weld.util.Reflections;
 import org.jboss.weld.AbstractCDI;
 import org.jboss.weld.Container;
@@ -58,6 +59,9 @@ public class WeldProvider implements CDIProvider {
 
     @Override
     public CDI<Object> getCDI() {
+        if (ModuleGroupSingletonProvider.deploymentClassLoaders.isEmpty()) {
+            throw new IllegalStateException();
+        }
         final Container container = Container.instance();
         checkContainerState(container);
         return containers.get(container);
