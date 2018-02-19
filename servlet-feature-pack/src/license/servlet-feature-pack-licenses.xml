@@ -73,6 +73,38 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>javax.json</groupId>
+      <artifactId>javax.json-api</artifactId>
+      <licenses>
+        <license>
+          <name>Common Development and Distribution License 1.0</name>
+          <url>https://opensource.org/licenses/cddl1.txt</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>javax.json.bind</groupId>
+      <artifactId>javax.json.bind-api</artifactId>
+      <licenses>
+        <license>
+          <name>Common Development and Distribution License 1.0</name>
+          <url>https://opensource.org/licenses/cddl1.txt</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
       <licenses>
@@ -128,6 +160,17 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>yasson</artifactId>
+      <licenses>
+        <license>
+          <name>Eclipse Public License 1.0</name>
+          <url>http://repository.jboss.org/licenses/epl-1.0.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish</groupId>
       <artifactId>javax.el-impl</artifactId>
       <licenses>
@@ -155,6 +198,22 @@
         <license>
           <name>GNU General Public License v2.0 only, with Classpath exception</name>
           <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>javax.json</artifactId>
+      <licenses>
+        <license>
+          <name>Common Development and Distribution License 1.0</name>
+          <url>https://opensource.org/licenses/cddl1.txt</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
