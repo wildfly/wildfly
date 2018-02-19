@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CHANNEL;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LOCAL;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LOCAL_TX;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.NONE;
@@ -109,7 +109,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         if (discoveryGroupName != null) {
             Resource dgResource = context.readResourceFromRoot(MessagingServices.getActiveMQServerPathAddress(address).append(CommonAttributes.DISCOVERY_GROUP, discoveryGroupName), false);
             ModelNode dgModel = dgResource.getModel();
-            jgroupsChannelName = JGROUPS_CHANNEL.resolveModelAttribute(context, dgModel).asString();
+            jgroupsChannelName = JGROUPS_CLUSTER.resolveModelAttribute(context, dgModel).asString();
         }
 
         List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(resolvedModel, context);

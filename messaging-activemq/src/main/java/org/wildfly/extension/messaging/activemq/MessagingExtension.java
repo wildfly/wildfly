@@ -148,9 +148,11 @@ public class MessagingExtension implements Extension {
 
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
+    protected static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
     protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_2_0_0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_3_0_0;
+    private static final MessagingSubsystemParser_3_0 CURRENT_PARSER = new MessagingSubsystemParser_3_0();
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         return getResourceDescriptionResolver(true, keyPrefix);
@@ -167,9 +169,10 @@ public class MessagingExtension implements Extension {
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
 
+    @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        subsystemRegistration.registerXMLElementWriter(new MessagingSubsystemParser_2_0());
+        subsystemRegistration.registerXMLElementWriter(CURRENT_PARSER);
 
         boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
@@ -199,14 +202,12 @@ public class MessagingExtension implements Extension {
             deployedServer.registerSubModel(new JMSTopicDefinition(true, registerRuntimeOnly));
             deployedServer.registerSubModel(PooledConnectionFactoryDefinition.DEPLOYMENT_INSTANCE);
         }
-
-        if (context.isRegisterTransformers()) {
-            MessagingSubsystemRootResourceDefinition.registerTransformers(subsystemRegistration);
-        }
     }
 
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_0.NAMESPACE, MessagingSubsystemParser_1_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_2_0.NAMESPACE, MessagingSubsystemParser_2_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_3_0.NAMESPACE, CURRENT_PARSER);
     }
 }

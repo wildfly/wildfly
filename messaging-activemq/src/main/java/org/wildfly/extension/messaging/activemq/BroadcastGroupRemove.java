@@ -22,6 +22,10 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.wildfly.extension.messaging.activemq.BroadcastGroupDefinition.CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.BroadcastGroupDefinition.JGROUPS_CHANNEL;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -47,12 +51,12 @@ public class BroadcastGroupRemove extends AbstractRemoveStepHandler {
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
 
-        context.deregisterCapability(BroadcastGroupDefinition.COMMAND_DISPATCHER_FACTORY_CAPABILITY.getDynamicName(address));
-
         ModelNode model = resource.getModel();
-        if (CommonAttributes.JGROUPS_CHANNEL.resolveModelAttribute(context, model).isDefined() && !BroadcastGroupDefinition.JGROUPS_STACK.resolveModelAttribute(context, model).isDefined()) {
-            context.deregisterCapabilityRequirement(ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName(), BroadcastGroupDefinition.COMMAND_DISPATCHER_FACTORY_CAPABILITY.getDynamicName(address));
+        if (JGROUPS_CLUSTER.resolveModelAttribute(context, model).isDefined() && !JGROUPS_CHANNEL.resolveModelAttribute(context, model).isDefined()) {
+            context.deregisterCapabilityRequirement(ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName(), CAPABILITY.getDynamicName(address));
         }
+
+        context.deregisterCapability(CAPABILITY.getDynamicName(address));
     }
 
     @Override

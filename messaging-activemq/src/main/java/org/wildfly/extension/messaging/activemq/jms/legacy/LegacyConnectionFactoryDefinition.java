@@ -67,42 +67,42 @@ import org.wildfly.extension.messaging.activemq.jms.Validators;
  */
 public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinition {
 
-    public static AttributeDefinition AUTO_GROUP = SimpleAttributeDefinitionBuilder.create("auto-group", BOOLEAN)
+    public static final AttributeDefinition AUTO_GROUP = SimpleAttributeDefinitionBuilder.create("auto-group", BOOLEAN)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_AUTO_GROUP))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition BLOCK_ON_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("block-on-acknowledge", BOOLEAN)
+    public static final AttributeDefinition BLOCK_ON_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("block-on-acknowledge", BOOLEAN)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition BLOCK_ON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-durable-send", BOOLEAN)
+    public static final AttributeDefinition BLOCK_ON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-durable-send", BOOLEAN)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition BLOCK_ON_NON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-non-durable-send", BOOLEAN)
+    public static final AttributeDefinition BLOCK_ON_NON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-non-durable-send", BOOLEAN)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition CACHE_LARGE_MESSAGE_CLIENT = SimpleAttributeDefinitionBuilder.create("cache-large-message-client", BOOLEAN)
+    public static final AttributeDefinition CACHE_LARGE_MESSAGE_CLIENT = SimpleAttributeDefinitionBuilder.create("cache-large-message-client", BOOLEAN)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition CLIENT_FAILURE_CHECK_PERIOD =SimpleAttributeDefinitionBuilder.create("client-failure-check-period", LONG)
+    public static final AttributeDefinition CLIENT_FAILURE_CHECK_PERIOD =SimpleAttributeDefinitionBuilder.create("client-failure-check-period", LONG)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
@@ -111,14 +111,14 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition COMPRESS_LARGE_MESSAGES = SimpleAttributeDefinitionBuilder.create("compress-large-messages", BOOLEAN)
+    public static final AttributeDefinition COMPRESS_LARGE_MESSAGES = SimpleAttributeDefinitionBuilder.create("compress-large-messages", BOOLEAN)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition CONFIRMATION_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("confirmation-window-size", INT)
+    public static final AttributeDefinition CONFIRMATION_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("confirmation-window-size", INT)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE))
             .setMeasurementUnit(BYTES)
             .setRequired(false)
@@ -127,14 +127,14 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition CONNECTION_LOAD_BALANCING_CLASS_NAME = SimpleAttributeDefinitionBuilder.create("connection-load-balancing-policy-class-name", STRING)
+    public static final AttributeDefinition CONNECTION_LOAD_BALANCING_CLASS_NAME = SimpleAttributeDefinitionBuilder.create("connection-load-balancing-policy-class-name", STRING)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME))
             .setRequired(false)
             .setAllowExpression(false)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition CONNECTION_TTL = new SimpleAttributeDefinitionBuilder("connection-ttl", LONG)
+    public static final AttributeDefinition CONNECTION_TTL = new SimpleAttributeDefinitionBuilder("connection-ttl", LONG)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CONNECTION_TTL))
             .setRequired(false)
             .setAllowExpression(true)
@@ -143,7 +143,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition CONSUMER_MAX_RATE = SimpleAttributeDefinitionBuilder.create("consumer-max-rate", INT)
+    public static final AttributeDefinition CONSUMER_MAX_RATE = SimpleAttributeDefinitionBuilder.create("consumer-max-rate", INT)
             .setDefaultValue(new ModelNode(HornetQClient.DEFAULT_CONSUMER_MAX_RATE))
             .setMeasurementUnit(PER_SECOND)
             .setRequired(false)
@@ -152,7 +152,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition CONSUMER_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("consumer-window-size", INT)
+    public static final AttributeDefinition CONSUMER_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("consumer-window-size", INT)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE))
             .setMeasurementUnit(BYTES)
             .setRequired(false)
@@ -160,7 +160,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition DUPS_OK_BATCH_SIZE = SimpleAttributeDefinitionBuilder.create("dups-ok-batch-size", INT)
+    public static final AttributeDefinition DUPS_OK_BATCH_SIZE = SimpleAttributeDefinitionBuilder.create("dups-ok-batch-size", INT)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_ACK_BATCH_SIZE))
             .setRequired(false)
             .setAllowExpression(true)
@@ -184,14 +184,14 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition FAILOVER_ON_INITIAL_CONNECTION = SimpleAttributeDefinitionBuilder.create("failover-on-initial-connection", BOOLEAN)
+    public static final AttributeDefinition FAILOVER_ON_INITIAL_CONNECTION = SimpleAttributeDefinitionBuilder.create("failover-on-initial-connection", BOOLEAN)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition GROUP_ID = SimpleAttributeDefinitionBuilder.create("group-id", STRING)
+    public static final AttributeDefinition GROUP_ID = SimpleAttributeDefinitionBuilder.create("group-id", STRING)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -204,21 +204,21 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition INITIAL_CONNECT_ATTEMPTS = SimpleAttributeDefinitionBuilder.create("initial-connect-attempts", INT)
+    public static final AttributeDefinition INITIAL_CONNECT_ATTEMPTS = SimpleAttributeDefinitionBuilder.create("initial-connect-attempts", INT)
             .setDefaultValue(new ModelNode().set(HornetQClient.INITIAL_CONNECT_ATTEMPTS))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition INITIAL_MESSAGE_PACKET_SIZE = SimpleAttributeDefinitionBuilder.create("initial-message-packet-size", INT)
+    public static final AttributeDefinition INITIAL_MESSAGE_PACKET_SIZE = SimpleAttributeDefinitionBuilder.create("initial-message-packet-size", INT)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_INITIAL_MESSAGE_PACKET_SIZE))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition MAX_RETRY_INTERVAL = SimpleAttributeDefinitionBuilder.create("max-retry-interval", LONG)
+    public static final AttributeDefinition MAX_RETRY_INTERVAL = SimpleAttributeDefinitionBuilder.create("max-retry-interval", LONG)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_MAX_RETRY_INTERVAL))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
@@ -226,7 +226,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition MIN_LARGE_MESSAGE_SIZE = SimpleAttributeDefinitionBuilder.create("min-large-message-size", INT)
+    public static final AttributeDefinition MIN_LARGE_MESSAGE_SIZE = SimpleAttributeDefinitionBuilder.create("min-large-message-size", INT)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE))
             .setMeasurementUnit(BYTES)
             .setRequired(false)
@@ -234,14 +234,14 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition PRE_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("pre-acknowledge", BOOLEAN)
+    public static final AttributeDefinition PRE_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("pre-acknowledge", BOOLEAN)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_PRE_ACKNOWLEDGE))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition PRODUCER_MAX_RATE = SimpleAttributeDefinitionBuilder.create("producer-max-rate", INT)
+    public static final AttributeDefinition PRODUCER_MAX_RATE = SimpleAttributeDefinitionBuilder.create("producer-max-rate", INT)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_PRODUCER_MAX_RATE))
             .setMeasurementUnit(PER_SECOND)
             .setRequired(false)
@@ -250,7 +250,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition PRODUCER_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("producer-window-size", INT)
+    public static final AttributeDefinition PRODUCER_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("producer-window-size", INT)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_PRODUCER_WINDOW_SIZE))
             .setMeasurementUnit(BYTES)
             .setRequired(false)
@@ -259,14 +259,14 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .build();
 
 
-    public static AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
+    public static final AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RECONNECT_ATTEMPTS))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition RETRY_INTERVAL = SimpleAttributeDefinitionBuilder.create("retry-interval", LONG)
+    public static final AttributeDefinition RETRY_INTERVAL = SimpleAttributeDefinitionBuilder.create("retry-interval", LONG)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
@@ -274,14 +274,14 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", BIG_DECIMAL)
+    public static final AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", BIG_DECIMAL)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition SCHEDULED_THREAD_POOL_MAX_SIZE = SimpleAttributeDefinitionBuilder.create("scheduled-thread-pool-max-size", INT)
+    public static final AttributeDefinition SCHEDULED_THREAD_POOL_MAX_SIZE = SimpleAttributeDefinitionBuilder.create("scheduled-thread-pool-max-size", INT)
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize()))
             .setRequired(false)
             .setAllowExpression(true)
@@ -289,7 +289,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition THREAD_POOL_MAX_SIZE = SimpleAttributeDefinitionBuilder.create("thread-pool-max-size", INT)
+    public static final AttributeDefinition THREAD_POOL_MAX_SIZE = SimpleAttributeDefinitionBuilder.create("thread-pool-max-size", INT)
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultThreadPoolMaxSize()))
             .setRequired(false)
             .setAllowExpression(true)
@@ -297,27 +297,27 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition TRANSACTION_BATCH_SIZE = SimpleAttributeDefinitionBuilder.create("transaction-batch-size", INT)
+    public static final AttributeDefinition TRANSACTION_BATCH_SIZE = SimpleAttributeDefinitionBuilder.create("transaction-batch-size", INT)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_ACK_BATCH_SIZE))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition USE_GLOBAL_POOLS = SimpleAttributeDefinitionBuilder.create("use-global-pools", BOOLEAN)
+    public static final AttributeDefinition USE_GLOBAL_POOLS = SimpleAttributeDefinitionBuilder.create("use-global-pools", BOOLEAN)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_USE_GLOBAL_POOLS))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition DISCOVERY_GROUP = SimpleAttributeDefinitionBuilder.create(CommonAttributes.DISCOVERY_GROUP, STRING)
+    public static final AttributeDefinition DISCOVERY_GROUP = SimpleAttributeDefinitionBuilder.create(CommonAttributes.DISCOVERY_GROUP, STRING)
             .setAlternatives(CommonAttributes.CONNECTORS)
             .setRequired(false)
             .setRestartAllServices()
             .build();
 
-    public static StringListAttributeDefinition CONNECTORS = new StringListAttributeDefinition.Builder(CommonAttributes.CONNECTORS)
+    public static final StringListAttributeDefinition CONNECTORS = new StringListAttributeDefinition.Builder(CommonAttributes.CONNECTORS)
             .setAlternatives(CommonAttributes.DISCOVERY_GROUP)
             .setRequired(false)
             .setAttributeParser(AttributeParser.STRING_LIST)
@@ -325,7 +325,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static AttributeDefinition CALL_TIMEOUT = create("call-timeout", LONG)
+    public static final AttributeDefinition CALL_TIMEOUT = create("call-timeout", LONG)
             .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_CALL_TIMEOUT))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
@@ -333,7 +333,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static SimpleAttributeDefinition CALL_FAILOVER_TIMEOUT = create("call-failover-timeout", LONG)
+    public static final SimpleAttributeDefinition CALL_FAILOVER_TIMEOUT = create("call-failover-timeout", LONG)
             // ActiveMQClient.DEFAULT_CALL_FAILOVER_TIMEOUT was changed from -1 to 30000 in ARTEMIS-255
             .setDefaultValue(new ModelNode(-1L))
             .setRequired(false)
@@ -342,7 +342,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-    public static SimpleAttributeDefinition CLIENT_ID = create("client-id", ModelType.STRING)
+    public static final SimpleAttributeDefinition CLIENT_ID = create("client-id", ModelType.STRING)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

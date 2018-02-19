@@ -3,7 +3,7 @@
 <config>
     <!-- This is very different from the normal messaging setup, do duplicating the config is easier -->
     <extension-module>org.wildfly.extension.messaging-activemq</extension-module>
-    <subsystem xmlns="urn:jboss:domain:messaging-activemq:2.0">
+    <subsystem xmlns="urn:jboss:domain:messaging-activemq:3.0">
         <server name="default"
                 persistence-enabled="true">
             <cluster password="${jboss.messaging.cluster.password:CHANGE ME!!}" />

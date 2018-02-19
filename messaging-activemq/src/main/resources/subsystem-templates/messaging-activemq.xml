@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
     <extension-module>org.wildfly.extension.messaging-activemq</extension-module>
-    <subsystem xmlns="urn:jboss:domain:messaging-activemq:2.0">
+    <subsystem xmlns="urn:jboss:domain:messaging-activemq:3.0">
         <server name="default">
             <?CLUSTERED?>
 
@@ -93,12 +93,12 @@
         </replacement>
         <replacement placeholder="BROADCAST-GROUPS">
             <broadcast-group name="bg-group1"
-                             jgroups-channel="activemq-cluster"
+                             jgroups-cluster="activemq-cluster"
                              connectors="http-connector"/>
         </replacement>
         <replacement placeholder="DISCOVERY-GROUPS">
             <discovery-group name="dg-group1"
-                             jgroups-channel="activemq-cluster"/>
+                             jgroups-cluster="activemq-cluster"/>
         </replacement>
         <replacement placeholder="CLUSTER-CONNECTIONS">
                 <cluster-connection name="my-cluster"

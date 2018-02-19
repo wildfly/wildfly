@@ -58,7 +58,7 @@ import org.wildfly.extension.messaging.activemq.MessagingExtension;
  */
 public class ReplicationColocatedDefinition extends PersistentResourceDefinition {
 
-    public static Collection<AttributeDefinition> ATTRIBUTES =  Collections.unmodifiableList(Arrays.asList(
+    public static final Collection<AttributeDefinition> ATTRIBUTES =  Collections.unmodifiableList(Arrays.asList(
             REQUEST_BACKUP,
             BACKUP_REQUEST_RETRIES,
             BACKUP_REQUEST_RETRY_INTERVAL,

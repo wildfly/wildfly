@@ -64,6 +64,11 @@ public class AdditionalInitialization extends org.jboss.as.subsystem.test.Additi
         registerCapabilities(capabilityRegistry, this.requirements.stream().toArray(String[]::new));
     }
 
+    public AdditionalInitialization require(String requirement) {
+        this.requirements.add(requirement);
+        return this;
+    }
+
     public AdditionalInitialization require(Requirement requirement) {
         this.requirements.add(requirement.getName());
         return this;

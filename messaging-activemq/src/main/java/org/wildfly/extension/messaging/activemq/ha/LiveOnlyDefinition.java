@@ -47,7 +47,7 @@ import org.wildfly.extension.messaging.activemq.MessagingExtension;
  */
 public class LiveOnlyDefinition extends PersistentResourceDefinition {
 
-    private static Collection<AttributeDefinition> ATTRIBUTES = ScaleDownAttributes.SCALE_DOWN_ATTRIBUTES;
+    private static final Collection<AttributeDefinition> ATTRIBUTES = ScaleDownAttributes.SCALE_DOWN_ATTRIBUTES;
 
     private static final AbstractAddStepHandler ADD  = new ActiveMQReloadRequiredHandlers.AddStepHandler(ATTRIBUTES) {
         @Override
