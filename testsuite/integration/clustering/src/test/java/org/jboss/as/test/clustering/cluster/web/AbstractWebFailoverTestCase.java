@@ -80,18 +80,19 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
     }
 
     @Test
-    public void testGracefulSimpleFailover(
+    public void test(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3) throws Exception {
+        this.testGracefulUndeployFailover(baseURL1, baseURL2, baseURL3);
+        this.testGracefulSimpleFailover(baseURL1, baseURL2, baseURL3);
+    }
+
+    protected void testGracefulSimpleFailover(URL baseURL1, URL baseURL2, URL baseURL3) throws Exception {
         this.testFailover(new RestartLifecycle(), baseURL1, baseURL2, baseURL3);
     }
 
-    @Test
-    public void testGracefulUndeployFailover(
-            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
-            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3) throws Exception {
+    protected void testGracefulUndeployFailover(URL baseURL1, URL baseURL2, URL baseURL3) throws Exception {
         this.testFailover(new RedeployLifecycle(), baseURL1, baseURL2, baseURL3);
     }
 
