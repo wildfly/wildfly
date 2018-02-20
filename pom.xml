@@ -244,7 +244,7 @@
         <version.org.reactivestreams>1.0.1</version.org.reactivestreams>
         <version.org.slf4j>1.7.22</version.org.slf4j>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
-        <version.org.wildfly.arquillian>2.1.0.Final</version.org.wildfly.arquillian>
+        <version.org.wildfly.arquillian>2.1.1.Final-SNAPSHOT</version.org.wildfly.arquillian>
         <version.org.wildfly.bridge.servlet-api-bridge>1.0.0.Final</version.org.wildfly.bridge.servlet-api-bridge>
         <version.org.wildfly.build-tools>1.2.9.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.cdi-api-bridge>1.0.0.Final</version.org.wildfly.cdi-api-bridge>
