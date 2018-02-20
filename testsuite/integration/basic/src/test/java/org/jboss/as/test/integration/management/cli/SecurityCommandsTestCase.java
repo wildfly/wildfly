@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.cli.CommandLineException;
@@ -39,13 +41,12 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  *
  * @author jdenise@redhat.com
  */
-@RunWith(WildflyTestRunner.class)
+@RunWith(Arquillian.class)
 public class SecurityCommandsTestCase {
 
     private static final String DEFAULT_SERVER = "default-server";
