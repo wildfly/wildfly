@@ -22,7 +22,6 @@
 package org.jboss.as.jaxrs.deployment;
 
 import org.jboss.as.jaxrs.JaxrsAnnotations;
-import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -53,7 +52,6 @@ public class JaxrsAnnotationProcessor implements DeploymentUnitProcessor {
         for (final JaxrsAnnotations annotation : JaxrsAnnotations.values()) {
             if (!index.getAnnotations(annotation.getDotName()).isEmpty()) {
                 JaxrsDeploymentMarker.mark(deploymentUnit);
-                phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, Services.JBOSS_MODULE_INDEX_SERVICE);
                 return;
             }
         }
