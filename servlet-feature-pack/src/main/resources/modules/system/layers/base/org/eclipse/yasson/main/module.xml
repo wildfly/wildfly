@@ -23,8 +23,10 @@
     </properties>
 
     <dependencies>
+        <module name="javax.api"/>
+        <module name="javax.enterprise.api"/>
         <module name="javax.json.api"/>
-        <module name="javax.json.bind.api" />
+        <module name="javax.json.bind.api"/>
     </dependencies>
     <resources>
         <artifact name="${org.eclipse:yasson}">
