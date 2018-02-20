@@ -32,6 +32,7 @@
         <module name="javax.validation.api" export="true"/>
         <module name="org.glassfish.javax.el" export="true"/>
         <module name="javax.api"/>
+        <module name="javax.websocket.api"/>
     </dependencies>
 
     <resources>
