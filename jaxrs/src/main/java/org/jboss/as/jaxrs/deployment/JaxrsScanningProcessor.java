@@ -76,6 +76,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
     private static final DotName DECORATOR = DotName.createSimple("javax.decorator.Decorator");
 
     public static final DotName APPLICATION = DotName.createSimple(Application.class.getName());
+    private static final String ORG_APACHE_CXF = "org.apache.cxf";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -359,6 +360,11 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                     JAXRS_LOGGER.classOrMethodAnnotationNotFound("@Path", e.target());
                     continue;
                 }
+                if(info.name().toString().startsWith(ORG_APACHE_CXF)) {
+                    //do not add CXF classes
+                    //see WFLY-9752
+                    continue;
+                }
                 if(info.annotations().containsKey(DECORATOR)) {
                     //we do not add decorators as resources
                     //we can't pick up on programatically added decorators, but that is such an edge case it should not really matter
@@ -376,6 +382,11 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                 if (e.target() instanceof ClassInfo) {
                     ClassInfo info = (ClassInfo) e.target();
 
+                    if(info.name().toString().startsWith(ORG_APACHE_CXF)) {
+                        //do not add CXF classes
+                        //see WFLY-9752
+                        continue;
+                    }
                     if(info.annotations().containsKey(DECORATOR)) {
                         //we do not add decorators as providers
                         //we can't pick up on programatically added decorators, but that is such an edge case it should not really matter
@@ -394,6 +405,11 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         for (final ClassInfo iface : pathInterfaces) {
             final Set<ClassInfo> implementors = index.getAllKnownImplementors(iface.name());
             for (final ClassInfo implementor : implementors) {
+                if(implementor.name().toString().startsWith(ORG_APACHE_CXF)) {
+                    //do not add CXF classes
+                    //see WFLY-9752
+                    continue;
+                }
 
                 if(implementor.annotations().containsKey(DECORATOR)) {
                     //we do not add decorators as resources
