@@ -196,12 +196,9 @@ public class ViewDescription {
             final List<Method> methods = configuration.getProxyFactory().getCachedMethods();
             for (final Method method : methods) {
                 MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
-                Method componentMethod = ClassReflectionIndexUtil.findMethod(reflectionIndex, componentConfiguration.getComponentClass(), methodIdentifier);
+                //Find the method implemented in the bean class, a superclass or as a default method on any interface
+                Method componentMethod = ClassReflectionIndexUtil.findMethodIncludingSuperclassAndDefaultMethods(reflectionIndex, componentConfiguration.getComponentClass(), methodIdentifier);
 
-                if (componentMethod == null && method.getDeclaringClass().isInterface() && (method.getModifiers() & (ABSTRACT | PUBLIC | STATIC)) == PUBLIC) {
-                    // no component method and the interface method is defaulted, so we really do want to invoke on the interface method
-                    componentMethod = method;
-                }
                 if (componentMethod != null) {
 
                     if ((BRIDGE & componentMethod.getModifiers()) != 0) {
