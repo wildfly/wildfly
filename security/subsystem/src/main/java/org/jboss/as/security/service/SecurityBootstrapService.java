@@ -29,6 +29,10 @@ import java.util.Set;
 
 import javax.security.jacc.PolicyContext;
 
+import org.jboss.as.naming.ServiceBasedNamingStore;
+import org.jboss.as.naming.ValueManagedReferenceFactory;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.ModuleClassLoaderLocator;
@@ -36,15 +40,19 @@ import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Values;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.auth.callback.CallbackHandlerPolicyContextHandler;
 import org.jboss.security.jacc.SubjectPolicyContextHandler;
 import org.jboss.security.plugins.ClassLoaderLocatorFactory;
+import org.jboss.security.plugins.JBossPolicyRegistration;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -74,6 +82,8 @@ public class SecurityBootstrapService implements Service<Void> {
 
     private static final String JACC_POLICY_PROVIDER = "javax.security.jacc.policy.provider";
 
+    private static final String POLICY_REGISTRATION = "policyRegistration";
+
     public SecurityBootstrapService(boolean initializeJacc) {
         this.initializeJacc = initializeJacc;
     }
@@ -85,6 +95,7 @@ public class SecurityBootstrapService implements Service<Void> {
         //Print out the current version of PicketBox
         SecurityLogger.ROOT_LOGGER.currentVersion(org.picketbox.Version.VERSION);
         initializeJacc();
+        setupPolicyRegistration(context);
     }
 
     private void initializeJacc() throws StartException {
@@ -135,6 +146,18 @@ public class SecurityBootstrapService implements Service<Void> {
         } catch (Exception e) {
             throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityBootstrapService", e);
         }
+    }
+
+    private void setupPolicyRegistration(final StartContext context) {
+        ServiceTarget target = context.getChildTarget();
+        final BinderService binderService = new BinderService(POLICY_REGISTRATION);
+        target.addService(ContextNames.buildServiceName(ContextNames.JAVA_CONTEXT_SERVICE_NAME, POLICY_REGISTRATION), binderService)
+                .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
+                .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(
+                        Values.immediateValue(new JBossPolicyRegistration())))
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
+
     }
 
     private Class<?> loadClass(final String module, final String className) throws ClassNotFoundException, ModuleLoadException {
