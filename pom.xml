@@ -127,7 +127,7 @@
         <version.javax.json.api>1.1.2</version.javax.json.api>
         <version.javax.json.bind.api>1.0</version.javax.json.bind.api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
-        <version.javax.mail>1.6.0</version.javax.mail>
+        <version.javax.mail>1.6.1</version.javax.mail>
         <version.javax.validation>2.0.1.Final</version.javax.validation>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
