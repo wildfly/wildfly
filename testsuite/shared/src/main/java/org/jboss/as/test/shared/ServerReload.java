@@ -111,6 +111,12 @@ public class ServerReload {
         operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
         operation.get(NAME).set("server-state");
         while (System.currentTimeMillis() - start < timeout) {
+            //do the sleep before we check, as the attribute state may not change instantly
+            //also reload generally takes longer than 100ms anyway
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+            }
             try {
                 ModelControllerClient liveClient = ModelControllerClient.Factory.create(
                         serverAddress, serverPort);
@@ -122,10 +128,6 @@ public class ServerReload {
                 } catch (IOException e) {
                 } finally {
                     IoUtils.safeClose(liveClient);
-                }
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
                 }
             } catch (UnknownHostException e) {
                 throw new RuntimeException(e);
