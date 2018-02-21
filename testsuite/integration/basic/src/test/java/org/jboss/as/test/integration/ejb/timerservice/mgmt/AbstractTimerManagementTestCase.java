@@ -1,5 +1,6 @@
 package org.jboss.as.test.integration.ejb.timerservice.mgmt;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Set;
@@ -154,49 +155,32 @@ public abstract class AbstractTimerManagementTestCase {
     protected void suspendTimer() throws Exception {
         final PathAddress address = getTimerAddress();
         final ModelNode operation = Util.createOperation("suspend", address);
-        final ModelNode outcome = this.managementClient.getControllerClient().execute(operation);
-        if (!Operations.isSuccessfulOutcome(outcome)) {
-            throw new OperationFailedException(operation);
-        }
+        executeForResult(operation, true);
     }
 
     protected void activateTimer() throws Exception {
         final PathAddress address = getTimerAddress();
         final ModelNode operation = Util.createOperation("activate", address);
-        final ModelNode outcome = this.managementClient.getControllerClient().execute(operation);
-        if (!Operations.isSuccessfulOutcome(outcome)) {
-            throw new OperationFailedException(operation);
-        }
+        executeForResult(operation, true);
     }
 
     protected void triggerTimer() throws Exception {
         final PathAddress address = getTimerAddress();
         final ModelNode operation = Util.createOperation("trigger", address);
-        final ModelNode outcome = this.managementClient.getControllerClient().execute(operation);
-        if (!Operations.isSuccessfulOutcome(outcome)) {
-            throw new OperationFailedException(operation);
-        }
+        executeForResult(operation, true);
     }
 
     protected void cancelTimer() throws Exception {
         final PathAddress address = getTimerAddress();
         final ModelNode operation = Util.createOperation("cancel", address);
-        final ModelNode outcome = this.managementClient.getControllerClient().execute(operation);
-        if (!Operations.isSuccessfulOutcome(outcome)) {
-            throw new OperationFailedException(operation);
-        }
+        executeForResult(operation, true);
     }
 
     protected ModelNode getTimerDetails() throws Exception {
         final PathAddress address = getTimerAddress();
         final ModelNode operation = Util.createOperation("read-resource", address);
         operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(Boolean.toString(true));
-        final ModelNode result = this.managementClient.getControllerClient().execute(operation);
-        if (!Operations.isSuccessfulOutcome(result)) {
-            throw new OperationFailedException(result.asString());
-        }
-
-        return result.get(ModelDescriptionConstants.RESULT);
+        return executeForResult(operation, false);
     }
 
     protected PathAddress getTimerAddress() throws Exception {
@@ -276,5 +260,17 @@ public abstract class AbstractTimerManagementTestCase {
 
     protected String getCalendarTimerDetail(){
         return this.bean.getComparableTimerDetail();
+    }
+
+    private ModelNode executeForResult(ModelNode operation, boolean useOpForFailureMsg) throws OperationFailedException, IOException {
+        final ModelNode response = this.managementClient.getControllerClient().execute(operation);
+        if (!Operations.isSuccessfulOutcome(response)) {
+            if (useOpForFailureMsg) {
+                throw new OperationFailedException("Failed executing " + operation.toString());
+            } else {
+                throw new OperationFailedException(response.asString());
+            }
+        }
+        return response.get(ModelDescriptionConstants.RESULT);
     }
 }
