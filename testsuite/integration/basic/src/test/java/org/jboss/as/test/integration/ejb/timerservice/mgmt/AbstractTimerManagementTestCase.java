@@ -167,7 +167,6 @@ public abstract class AbstractTimerManagementTestCase {
     protected void triggerTimer() throws Exception {
         final PathAddress address = getTimerAddress();
         final ModelNode operation = Util.createOperation("trigger", address);
-        final ModelNode outcome = this.managementClient.getControllerClient().execute(operation);
         executeForResult(operation, true);
     }
 
