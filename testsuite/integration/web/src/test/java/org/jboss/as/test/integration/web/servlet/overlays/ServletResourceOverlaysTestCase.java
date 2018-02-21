@@ -21,17 +21,15 @@
  */
 package org.jboss.as.test.integration.web.servlet.overlays;
 
-import java.io.File;
-import java.io.FilePermission;
-import java.net.URL;
-import java.nio.file.Paths;
-import java.util.PropertyPermission;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -42,16 +40,31 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFilePermission;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.extension.undertow.Constants;
+
+import java.io.File;
+import java.io.FilePermission;
+import java.net.URL;
+import java.nio.file.Paths;
+import java.util.PropertyPermission;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.wildfly.extension.undertow.UndertowExtension.SUBSYSTEM_NAME;
 
 /**
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup(ServletResourceOverlaysTestCase.ServletResourceOverlaysTestCaseServerSetup.class)
 public class ServletResourceOverlaysTestCase {
 
     @ArquillianResource
@@ -75,6 +88,35 @@ public class ServletResourceOverlaysTestCase {
 
         war.addAsLibrary(jar);
         return war;
+    }
+
+    public static class ServletResourceOverlaysTestCaseServerSetup  implements ServerSetupTask {
+
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            ModelNode op = new ModelNode();
+            op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+            op.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+            op.get(OP_ADDR).add(Constants.SERVER, Constants.DEFAULT_SERVER);
+            op.get(OP_ADDR).add(Constants.HTTP_LISTENER, "default");
+            op.get(NAME).set("allow-encoded-slash");
+            op.get(VALUE).set(true);
+
+            managementClient.getControllerClient().execute(op);
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            ModelNode op = new ModelNode();
+            op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+            op.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
+            op.get(OP_ADDR).add(Constants.SERVER, Constants.DEFAULT_SERVER);
+            op.get(OP_ADDR).add(Constants.HTTP_LISTENER, "default");
+            op.get(NAME).set("allow-encoded-slash");
+            op.get(VALUE).set(false);
+
+            managementClient.getControllerClient().execute(op);
+        }
     }
 
     private String performCall(URL url, String urlPattern) throws Exception {
@@ -117,9 +159,9 @@ public class ServletResourceOverlaysTestCase {
 
         if (fileUnderTest.exists()) {
             String canonicalPath = fileUnderTest.getCanonicalPath();
+            canonicalPath = canonicalPath.substring(fileUnderTest.toPath().getRoot().toString().length());
             if (File.separator.equals("\\")) {
-                //Remove the drive letter
-                canonicalPath = canonicalPath.substring(fileUnderTest.toPath().getRoot().toString().length());
+                canonicalPath = canonicalPath.replace("\\", "%5c");
             }
             final String pathOutsideOfDeployment = accessRootPath.toString() + "/../../../../../../../" + canonicalPath;
             final String outsidePathAccessCheck = performCall(url, "/check-path-access?path=" + pathOutsideOfDeployment + "&expected-accessible=false");
