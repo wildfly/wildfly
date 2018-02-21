@@ -32,7 +32,7 @@ import java.util.stream.StreamSupport;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 
 /**
- * {@link TwoWayKey2StringMapper} implementation that based on a set of dynamically loaded {@link KeyFomat} instances.
+ * {@link TwoWayKey2StringMapper} implementation that based on a set of dynamically loaded {@link KeyFormat} instances.
  * @author Paul Ferraro
  */
 public class DynamicKeyFormatMapper extends IndexedKeyFormatMapper {
