@@ -1131,4 +1131,7 @@ public interface EeLogger extends BasicLogger {
      */
     @Message(id = 116, value = "%s is null in the %s %s")
     IllegalArgumentException nullVar(String variable, String objectType, String objectName);
+
+    @Message(id = 117, value = "Field %s cannot be set - object of %s loaded by %s is not assignable to %s loaded by %s")
+    IllegalArgumentException cannotSetField(String fieldName, Class<?> injectedClass, ClassLoader injectedClassloader, Class<?> fieldClass, ClassLoader fieldClassloader);
 }
