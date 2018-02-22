@@ -56,6 +56,9 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
     private static final ModuleIdentifier IIOP_OPENJDK = ModuleIdentifier.create("org.wildfly.iiop-openjdk");
     private static final ModuleIdentifier EJB_API = ModuleIdentifier.create("javax.ejb.api");
     private static final ModuleIdentifier JAX_RPC_API = ModuleIdentifier.create("javax.xml.rpc.api");
+    private static final ModuleIdentifier HTTP_EJB = ModuleIdentifier.create("org.wildfly.http-client.ejb");
+    private static final ModuleIdentifier HTTP_TRANSACTION = ModuleIdentifier.create("org.wildfly.http-client.transaction");
+    private static final ModuleIdentifier HTTP_NAMING = ModuleIdentifier.create("org.wildfly.http-client.naming");
 
 
     /**
@@ -86,6 +89,9 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
 
         //we always have to add this, as even non-ejb deployments may still lookup IIOP ejb's
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_SUBSYSTEM, false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HTTP_EJB, false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HTTP_NAMING, false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HTTP_TRANSACTION, false, false, true, false));
 
         if (IIOPDeploymentMarker.isIIOPDeployment(deploymentUnit)) {
             //needed for dynamic IIOP stubs

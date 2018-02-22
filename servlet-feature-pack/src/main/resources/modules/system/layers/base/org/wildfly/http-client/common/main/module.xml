@@ -29,6 +29,8 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
+        <module name="org.jboss.xnio" />
         <module name="org.wildfly.client.config"/>
         <module name="javax.transaction.api"/>
         <module name="io.undertow.core" />

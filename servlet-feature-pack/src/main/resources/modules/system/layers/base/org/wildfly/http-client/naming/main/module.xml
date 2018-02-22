@@ -37,7 +37,9 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling" />
         <module name="org.jboss.marshalling.river" />
+        <module name="org.jboss.xnio" />
         <module name="org.wildfly.security.elytron"/>
         <module name="org.wildfly.http-client.ejb" optional="true" services="import" />
+        <module name="org.wildfly.naming-client"/>
     </dependencies>
 </module>
