@@ -46,7 +46,7 @@ public abstract class AbstractAuditLogTestCase {
     @ArquillianResource
     protected URL url;
 
-    protected static final String SUCCESSFUL_AUTH_EVENT = "SecurityPermissionCheckSuccessfulEvent";
+    protected static final String SUCCESSFUL_AUTH_EVENT = "SecurityAuthenticationSuccessfulEvent";
     protected static final String UNSUCCESSFUL_AUTH_EVENT = "SecurityAuthenticationFailedEvent";
     protected static final String SUCCESSFUL_PERMISSION_CHECK_EVENT = "SecurityPermissionCheckSuccessfulEvent";
     protected static final String UNSUCCESSFUL_PERMISSION_CHECK_EVENT = "SecurityPermissionCheckFailedEvent";
