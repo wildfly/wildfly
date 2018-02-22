@@ -97,10 +97,16 @@ public class BinderService implements Service<ManagedReferenceFactory> {
         }
     }
 
-    public void release() {
+    /**
+     * Releases the service, returns <code>true</code> if the service is removed as a result, or false otherwise
+     * @return
+     */
+    public boolean release() {
         if (refcnt != null && refcnt.decrementAndGet() <= 0 && controller != null) {
             controller.setMode(ServiceController.Mode.REMOVE);
+            return true;
         }
+        return false;
     }
 
     public ServiceName getServiceName() {
