@@ -34,6 +34,8 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.deployers.StartupCountdown;
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -67,6 +69,10 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if (eeModuleDescription == null) {
+            return;
+        }
+        if(DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+            //don't create this for EAR's, as they cannot hold EJB's
             return;
         }
         // Note, we do not use the EEModuleDescription.getApplicationName() because that API returns the
