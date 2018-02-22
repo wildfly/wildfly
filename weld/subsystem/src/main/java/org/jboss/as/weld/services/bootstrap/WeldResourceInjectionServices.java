@@ -25,6 +25,10 @@ import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnot
 
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.ServiceLoader;
 
 import javax.annotation.Resource;
@@ -81,7 +85,7 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
 
     private final boolean warModule;
 
-    private final Iterable<ResourceInjectionResolver> resourceResolvers;
+    private final List<ResourceInjectionResolver> resourceResolvers;
 
     public WeldResourceInjectionServices(final ServiceRegistry serviceRegistry, final EEModuleDescription moduleDescription, Module module, boolean warModule) {
         super(serviceRegistry, moduleDescription, module);
@@ -91,8 +95,18 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
         } catch (NamingException e) {
             throw new RuntimeException(e);
         }
-        this.resourceResolvers = ServiceLoader.load(ResourceInjectionResolver.class,
-                WildFlySecurityManager.getClassLoaderPrivileged(WeldResourceInjectionServices.class));
+
+        final Iterator<ResourceInjectionResolver> resolvers = ServiceLoader.load(ResourceInjectionResolver.class,
+                WildFlySecurityManager.getClassLoaderPrivileged(WeldResourceInjectionServices.class)).iterator();
+        if (!resolvers.hasNext()) {
+            this.resourceResolvers = Collections.emptyList();
+        } else {
+            this.resourceResolvers = new ArrayList<>();
+            while (resolvers.hasNext()) {
+                this.resourceResolvers.add(resolvers.next());
+            }
+        }
+
     }
 
     protected String getEJBResourceName(InjectionPoint injectionPoint, String proposedName) {
