@@ -207,6 +207,7 @@ public class IIOPSubsystemTransformersTestCase extends AbstractSubsystemBaseTest
             capabilities.put(buildDynamicCapabilityName("org.wildfly.security.credential-store", "my-credential-store"), CredentialStore.class);
 
             capabilities.put(buildDynamicCapabilityName("org.wildfly.security.ssl-context", "foo"), SSLContext.class);
+            capabilities.put(buildDynamicCapabilityName("org.wildfly.security.authentication-context", "iiop"), SSLContext.class);
 
             capabilities.put(buildDynamicCapabilityName("org.wildfly.security.legacy-security-domain", "domain"), SecurityDomain.class);
 

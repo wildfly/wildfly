@@ -49,7 +49,7 @@ import org.jboss.dmr.ModelType;
  */
 class IIOPRootDefinition extends PersistentResourceDefinition {
 
-    static final RuntimeCapability<Void> IIOP_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_IIOP, false).build();
+    static final RuntimeCapability<Void> IIOP_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.IIOP_CAPABILITY, false).build();
 
     static final ModelNode NONE = new ModelNode("none");
 
@@ -112,6 +112,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setValidator(LENGTH_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
+            .setCapabilityReference(Capabilities.AUTH_CONTEXT_CAPABILITY, IIOP_CAPABILITY)
             .addAccessConstraint(IIOP_SECURITY_DEF).build();
 
     protected static final AttributeDefinition TRANSACTIONS = new SimpleAttributeDefinitionBuilder(
@@ -156,7 +157,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(IIOP_SECURITY_DEF)
             .setAlternatives(Constants.SERVER_SSL_CONTEXT, Constants.CLIENT_SSL_CONTEXT)
-            .setCapabilityReference(Capabilities.CAPABILITY_LEGACY_SECURITY_DOMAIN, IIOP_CAPABILITY)
+            .setCapabilityReference(Capabilities.LEGACY_SECURITY_DOMAIN_CAPABILITY, IIOP_CAPABILITY)
             .build();
 
     public static final AttributeDefinition SERVER_SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(
@@ -167,6 +168,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setValidator(LENGTH_VALIDATOR)
             .setAlternatives(Constants.SECURITY_SECURITY_DOMAIN)
             .setRequires(Constants.CLIENT_SSL_CONTEXT)
+            .setCapabilityReference(Capabilities.SSL_CONTEXT_CAPABILITY, IIOP_CAPABILITY)
             .build();
 
     public static final AttributeDefinition CLIENT_SSL_CONTEXT = new SimpleAttributeDefinitionBuilder(
@@ -177,6 +179,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setValidator(LENGTH_VALIDATOR)
             .setAlternatives(Constants.SECURITY_SECURITY_DOMAIN)
             .setRequires(Constants.SERVER_SSL_CONTEXT)
+            .setCapabilityReference(Capabilities.SSL_CONTEXT_CAPABILITY, IIOP_CAPABILITY)
             .build();
 
     @Deprecated
