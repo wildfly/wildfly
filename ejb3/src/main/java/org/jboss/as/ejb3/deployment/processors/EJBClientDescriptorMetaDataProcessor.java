@@ -132,7 +132,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
             serviceBuilder.addDependency(EJBClientContextService.APP_CLIENT_URI_SERVICE_NAME, URI.class, service.getAppClientUri());
             serviceBuilder.addDependency(EJBClientContextService.APP_CLIENT_EJB_PROPERTIES_SERVICE_NAME, String.class, service.getAppClientEjbProperties());
         }
-
+        //default transport providers: remote from config, local from service, in "else" below.
         serviceBuilder.addDependency(EJBClientConfiguratorService.SERVICE_NAME, EJBClientConfiguratorService.class, service.getConfiguratorServiceInjector());
 
         if (ejbClientDescriptorMetaData != null) {
@@ -285,6 +285,8 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                 service.setClustersAuthenticationContext(clustersAuthenticationContext);
             }
             deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME, profileServiceName);
+        } else {
+            serviceBuilder.addDependency(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME, EJBTransportProvider.class, service.getLocalProviderInjector());
         }
 
         if (interceptorsDefined) {
