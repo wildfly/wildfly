@@ -37,7 +37,7 @@ import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 public class SimpleMarshalledValueExternalizer<T> implements Externalizer<SimpleMarshalledValue<T>> {
 
     @Override
-    public SimpleMarshalledValue<T> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public SimpleMarshalledValue<T> readObject(ObjectInput input) throws IOException {
         int size = IndexSerializer.VARIABLE.readInt(input);
         byte[] bytes = (size > 0) ? new byte[size] : null;
         if (bytes != null) {
