@@ -113,8 +113,8 @@ public class SessionManagementTestCase {
             Assert.assertTrue(time1 <= c2);
 
             opRes = executeOperation(operation, GET_SESSION_CREATION_TIME);
-            long time2 = LocalDateTime.parse(opRes.get(ModelDescriptionConstants.RESULT).asString(), DateTimeFormatter.ISO_DATE_TIME).toInstant(ZoneId.systemDefault().getRules().getOffset(Instant.now())).toEpochMilli();
-            Assert.assertEquals(time1, time2);
+            long sessionCreationTime = LocalDateTime.parse(opRes.get(ModelDescriptionConstants.RESULT).asString(), DateTimeFormatter.ISO_DATE_TIME).toInstant(ZoneId.systemDefault().getRules().getOffset(Instant.now())).toEpochMilli();
+            Assert.assertEquals(time1, sessionCreationTime);
 
             opRes = executeOperation(operation, GET_SESSION_LAST_ACCESSED_TIME_MILLIS);
             Assert.assertEquals(time1, opRes.get(ModelDescriptionConstants.RESULT).asLong());
@@ -122,13 +122,12 @@ public class SessionManagementTestCase {
             opRes = executeOperation(operation, GET_SESSION_LAST_ACCESSED_TIME);
             long aTime2 = LocalDateTime.parse(opRes.get(ModelDescriptionConstants.RESULT).asString(), DateTimeFormatter.ISO_DATE_TIME).toInstant(ZoneId.systemDefault().getRules().getOffset(Instant.now())).toEpochMilli();
             Assert.assertEquals(time1, aTime2);
-            Assert.assertEquals(time2, aTime2);
+            Assert.assertEquals(sessionCreationTime, aTime2);
 
             opRes = executeOperation(operation, LIST_SESSION_ATTRIBUTE_NAMES);
             List<ModelNode> resultList = opRes.get(ModelDescriptionConstants.RESULT).asList();
             Assert.assertEquals(1, resultList.size());
             Assert.assertEquals(opRes.toString(), "val", resultList.get(0).asString());
-
 
             opRes = executeOperation(operation, LIST_SESSION_ATTRIBUTES);
             List<Property> properties = opRes.get(ModelDescriptionConstants.RESULT).asPropertyList();
@@ -137,18 +136,30 @@ public class SessionManagementTestCase {
             Assert.assertEquals(opRes.toString(), "val", property.getName());
             Assert.assertEquals(opRes.toString(), "0", property.getValue().asString());
 
+            //we want to make sure that the values will be different
+            //so we wait 10ms
+            Thread.sleep(10);
             long a1 = System.currentTimeMillis();
             client.execute(get);
             long a2 = System.currentTimeMillis();
 
-
-            opRes = executeOperation(operation, GET_SESSION_LAST_ACCESSED_TIME_MILLIS);
-            time1 = opRes.get(ModelDescriptionConstants.RESULT).asLong();
+            do {
+                //because the last access time is updated after the request returns there is a possible race here
+                //to get around this we execute this op in a loop and wait for the value to change
+                //in 99% of cases this will only iterate once
+                //because of the 10ms sleep above they should ways be different
+                //we have a max wait time of 1s if something goes wrong
+                opRes = executeOperation(operation, GET_SESSION_LAST_ACCESSED_TIME_MILLIS);
+                time1 = opRes.get(ModelDescriptionConstants.RESULT).asLong();
+                if(time1 != sessionCreationTime) {
+                    break;
+                }
+            } while (System.currentTimeMillis() < a1 + 1000);
             Assert.assertTrue(a1 <= time1);
             Assert.assertTrue(time1 <= a2);
 
             opRes = executeOperation(operation, GET_SESSION_LAST_ACCESSED_TIME);
-            time2 = LocalDateTime.parse(opRes.get(ModelDescriptionConstants.RESULT).asString(), DateTimeFormatter.ISO_DATE_TIME).toInstant(ZoneId.systemDefault().getRules().getOffset(Instant.now())).toEpochMilli();
+            long time2 = LocalDateTime.parse(opRes.get(ModelDescriptionConstants.RESULT).asString(), DateTimeFormatter.ISO_DATE_TIME).toInstant(ZoneId.systemDefault().getRules().getOffset(Instant.now())).toEpochMilli();
             Assert.assertEquals(time1, time2);
 
             operation.get(ATTRIBUTE).set("val");
