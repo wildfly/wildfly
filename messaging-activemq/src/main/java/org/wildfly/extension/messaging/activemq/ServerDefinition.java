@@ -109,6 +109,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize()))
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
@@ -138,6 +139,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultThreadPoolMaxSize()))
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
@@ -305,6 +307,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJournalPoolFiles()))
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
@@ -411,6 +414,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJournalPerfBlastPages()))
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();

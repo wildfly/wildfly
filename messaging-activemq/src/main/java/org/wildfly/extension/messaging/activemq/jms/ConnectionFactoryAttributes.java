@@ -104,6 +104,7 @@ public interface ConnectionFactoryAttributes {
                 .setMeasurementUnit(BYTES)
                 .setRequired(false)
                 .setAllowExpression(true)
+                .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
                 .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
                 .build();
 
@@ -134,6 +135,7 @@ public interface ConnectionFactoryAttributes {
                 .setMeasurementUnit(PER_SECOND)
                 .setRequired(false)
                 .setAllowExpression(true)
+                .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
                 .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
                 .build();
 
@@ -219,6 +221,7 @@ public interface ConnectionFactoryAttributes {
                 .setMeasurementUnit(PER_SECOND)
                 .setRequired(false)
                 .setAllowExpression(true)
+                .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
                 .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
                 .build();
 
@@ -256,6 +259,7 @@ public interface ConnectionFactoryAttributes {
                 .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize()))
                 .setRequired(false)
                 .setAllowExpression(true)
+                .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
                 .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
                 .build();
 
@@ -263,6 +267,7 @@ public interface ConnectionFactoryAttributes {
                 .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultThreadPoolMaxSize()))
                 .setRequired(false)
                 .setAllowExpression(true)
+                .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
                 .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
                 .build();
 
