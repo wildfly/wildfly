@@ -24,6 +24,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.DigestAuthTokenResourceDefinition.Attribute.*;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -57,7 +58,7 @@ public class DigestAuthTokenBuilder extends AuthTokenBuilder<BinaryAuthToken> {
     public BinaryAuthToken apply(String sharedSecret) {
         try {
             MessageDigest digest = MessageDigest.getInstance(this.algorithm);
-            return new BinaryAuthToken(digest.digest(sharedSecret.getBytes()));
+            return new BinaryAuthToken(digest.digest(sharedSecret.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalArgumentException(e);
         }

@@ -25,6 +25,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.clustering.jgroups.subsystem.CipherAuthTokenResourceDefinition.Attribute.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -102,7 +103,7 @@ public class CipherAuthTokenBuilder extends AuthTokenBuilder<CipherAuthToken> {
             KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) store.getEntry(alias, new KeyStore.PasswordProtection(password.getPassword()));
             KeyPair pair = new KeyPair(entry.getCertificate().getPublicKey(), entry.getPrivateKey());
             Cipher cipher = Cipher.getInstance(this.transformation);
-            return new CipherAuthToken(cipher, pair, authValue.getBytes());
+            return new CipherAuthToken(cipher, pair, authValue.getBytes(StandardCharsets.UTF_8));
         } catch (GeneralSecurityException | IOException e) {
             throw new IllegalArgumentException(e);
         }
