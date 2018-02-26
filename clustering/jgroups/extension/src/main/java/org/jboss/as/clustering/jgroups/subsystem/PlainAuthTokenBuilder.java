@@ -25,6 +25,8 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import org.jboss.as.clustering.jgroups.auth.BinaryAuthToken;
 import org.jboss.as.controller.PathAddress;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * @author Paul Ferraro
  */
@@ -36,6 +38,6 @@ public class PlainAuthTokenBuilder extends AuthTokenBuilder<BinaryAuthToken> {
 
     @Override
     public BinaryAuthToken apply(String sharedSecret) {
-        return new BinaryAuthToken(sharedSecret.getBytes());
+        return new BinaryAuthToken(sharedSecret.getBytes(StandardCharsets.UTF_8));
     }
 }
