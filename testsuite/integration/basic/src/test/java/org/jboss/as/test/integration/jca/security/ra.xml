@@ -13,7 +13,7 @@
         <resourceadapter-class>org.jboss.as.test.integration.jca.rar.MultipleResourceAdapter</resourceadapter-class>
         <outbound-resourceadapter>
             <connection-definition>
-                <managedconnectionfactory-class>org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactory1</managedconnectionfactory-class>
+                <managedconnectionfactory-class>org.jboss.as.test.integration.jca.rar.MultipleManagedConnectionFactoryWithSubjectVerification</managedconnectionfactory-class>
                 <connectionfactory-interface>org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1</connectionfactory-interface>
                 <connectionfactory-impl-class>org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1Impl</connectionfactory-impl-class>
                 <connection-interface>org.jboss.as.test.integration.jca.rar.MultipleConnection1</connection-interface>
