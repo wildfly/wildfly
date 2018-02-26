@@ -123,6 +123,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setMeasurementUnit(BYTES)
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
@@ -148,6 +149,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setMeasurementUnit(PER_SECOND)
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
@@ -246,6 +248,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setMeasurementUnit(PER_SECOND)
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
@@ -285,6 +288,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize()))
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
@@ -293,6 +297,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultThreadPoolMaxSize()))
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();

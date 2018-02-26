@@ -170,6 +170,7 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition MAX_RETRIES = create("max-retries", INT)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setAllowExpression(true)
             .build();

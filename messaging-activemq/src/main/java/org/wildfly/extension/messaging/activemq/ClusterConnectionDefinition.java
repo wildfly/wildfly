@@ -134,6 +134,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterInitialConnectAttempts()))
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
@@ -174,6 +175,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             .setMeasurementUnit(BYTES)
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
@@ -190,6 +192,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterReconnectAttempts()))
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();

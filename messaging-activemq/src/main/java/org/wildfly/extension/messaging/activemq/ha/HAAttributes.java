@@ -63,6 +63,7 @@ public class HAAttributes {
             .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultHapolicyBackupRequestRetries()))
             .setRequired(false)
             .setAllowExpression(true)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
