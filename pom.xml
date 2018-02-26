@@ -240,7 +240,7 @@
         <version.org.opensaml.opensaml>3.3.0</version.org.opensaml.opensaml>
         <version.org.ow2.asm>6.0</version.org.ow2.asm>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
-        <version.org.picketlink>2.5.5.SP8</version.org.picketlink>
+        <version.org.picketlink>2.5.5.SP9</version.org.picketlink>
         <version.org.reactivestreams>1.0.1</version.org.reactivestreams>
         <version.org.slf4j>1.7.22</version.org.slf4j>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
