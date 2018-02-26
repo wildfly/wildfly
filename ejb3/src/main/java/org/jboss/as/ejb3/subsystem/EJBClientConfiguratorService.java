@@ -34,6 +34,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
+import org.wildfly.httpclient.ejb.HttpClientProvider;
 
 /**
  * A service to configure an {@code EJBClientContext} with any information defined in the subsystem model.
@@ -46,14 +47,17 @@ public final class EJBClientConfiguratorService implements Consumer<EJBClientCon
 
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<>();
 
-    private EJBTransportProvider remoteTransportProvider;
+    private volatile EJBTransportProvider remoteTransportProvider;
+    private volatile EJBTransportProvider remoteHttpTransportProvider;
 
     public void start(final StartContext context) throws StartException {
         remoteTransportProvider = new RemoteTransportProvider();
+        remoteHttpTransportProvider = new HttpClientProvider();
     }
 
     public void stop(final StopContext context) {
         remoteTransportProvider = null;
+        remoteHttpTransportProvider = null;
     }
 
     public EJBClientConfiguratorService getValue() throws IllegalStateException, IllegalArgumentException {
@@ -69,6 +73,7 @@ public final class EJBClientConfiguratorService implements Consumer<EJBClientCon
         final EJBTransportProvider remoteTransportProvider = this.remoteTransportProvider;
         if (remoteTransportProvider != null) {
             builder.addTransportProvider(remoteTransportProvider);
+            builder.addTransportProvider(remoteHttpTransportProvider);
         }
     }
 
