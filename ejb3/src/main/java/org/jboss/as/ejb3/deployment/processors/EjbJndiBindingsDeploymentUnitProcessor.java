@@ -112,10 +112,12 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         // NOTE: Do NOT use the app name from the EEModuleDescription.getApplicationName() because the Java EE spec has a different and conflicting meaning for app name
         // (where app name == module name in the absence of a .ear). Use EEModuleDescription.getEarApplicationName() instead
         final String applicationName = sessionBean.getModuleDescription().getEarApplicationName();
+        final String distinctName = sessionBean.getModuleDescription().getDistinctName(); // default to empty string
         final String globalJNDIBaseName = "java:global/" + (applicationName != null ? applicationName + "/" : "") + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
         final String appJNDIBaseName = "java:app/" + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
         final String moduleJNDIBaseName = "java:module/" + sessionBean.getEJBName();
         final String remoteExportedJNDIBaseName = "java:jboss/exported/" + (applicationName != null ? applicationName + "/" : "") + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
+        final String ejbNamespaceBindingBaseName = "ejb:/" + (applicationName != null ? applicationName + "/" : "") + sessionBean.getModuleName() + "/" + (distinctName != "" ? distinctName + "/" : "") + sessionBean.getEJBName();
 
         // the base ServiceName which will be used to create the ServiceName(s) for each of the view bindings
         final StringBuilder jndiBindingsLogMessage = new StringBuilder();
@@ -157,6 +159,11 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
                 }
                 logBinding(jndiBindingsLogMessage, remoteJNDIName);
             }
+
+            // log EJB's ejb:/ namespace binding
+            final String ejbNamespaceBindingName = sessionBean.isStateful() ? ejbNamespaceBindingBaseName + "!" + viewClassName + "?stateful" : ejbNamespaceBindingBaseName + "!" + viewClassName;
+            logBinding(jndiBindingsLogMessage, ejbNamespaceBindingName);
+
         }
 
         // EJB3.1 spec, section 4.4.1 Global JNDI Access states:
@@ -187,7 +194,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         }
 
         // log the jndi bindings
-        EjbLogger.DEPLOYMENT_LOGGER.jndiBindings(sessionBean.getEJBName(),deploymentUnit,jndiBindingsLogMessage);
+        EjbLogger.DEPLOYMENT_LOGGER.jndiBindings(sessionBean.getEJBName(), deploymentUnit, jndiBindingsLogMessage);
     }
 
     private void registerBinding(final EJBComponentDescription componentDescription, final ViewDescription viewDescription, final String jndiName) {
