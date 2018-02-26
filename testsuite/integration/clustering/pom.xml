@@ -54,7 +54,6 @@
                     <name>!ts.noClustering</name>
                 </property>
             </activation>
-
             <build>
                 <plugins>
                     <!-- Update server profile with shared configuration changes -->
@@ -83,6 +82,31 @@
                                 <module.path>${jboss.dist}/modules</module.path>
                             </system-properties>
                         </configuration>
+                    </plugin>
+                    <!-- Unzip Infinispan Server distribution for remote tests -->
+                    <plugin>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack-infinispan-server</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.infinispan.server</groupId>
+                                            <artifactId>infinispan-server</artifactId>
+                                            <version>${version.org.infinispan}</version>
+                                            <classifier>bin</classifier>
+                                            <type>zip</type>
+                                            <outputDirectory>${project.build.directory}</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                     <!-- Copy 4 containers based on the shared configuration -->
                     <plugin>
@@ -156,6 +180,7 @@
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
+                                        <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -189,6 +214,7 @@
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
+                                        <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>

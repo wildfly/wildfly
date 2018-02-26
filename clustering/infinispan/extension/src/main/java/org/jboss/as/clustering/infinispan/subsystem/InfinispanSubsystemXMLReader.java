@@ -37,6 +37,7 @@ import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.ColumnAttribute;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
@@ -652,6 +653,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             case REMOTE_STORE: {
                 this.parseRemoteStore(reader, cacheAddress, operations);
                 break;
+            }
+            case HOTROD_STORE: {
+                if (this.schema.since(InfinispanSchema.VERSION_6_0)) {
+                    this.parseHotRodStore(reader, cacheAddress, operations);
+                    break;
+                }
             }
             case JDBC_STORE: {
                 if (this.schema.since(InfinispanSchema.VERSION_1_2) && !this.schema.since(InfinispanSchema.VERSION_5_0)) {
@@ -1288,6 +1295,33 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         if (!operation.hasDefined(RemoteStoreResourceDefinition.Attribute.SOCKET_BINDINGS.getName())) {
             throw ParseUtils.missingRequired(reader, Collections.singleton(XMLAttribute.REMOTE_SERVERS.getLocalName()));
+        }
+    }
+
+    private void parseHotRodStore(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        PathAddress address = cacheAddress.append(HotRodStoreResourceDefinition.PATH);
+        PathAddress operationKey = cacheAddress.append(HotRodStoreResourceDefinition.WILDCARD_PATH);
+        if (operations.containsKey(operationKey)) {
+            throw ParseUtils.unexpectedElement(reader);
+        }
+        ModelNode operation = Util.createAddOperation(address);
+        operations.put(operationKey, operation);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case REMOTE_CACHE_CONTAINER: {
+                    readAttribute(reader, i, operation, HotRodStoreResourceDefinition.Attribute.REMOTE_CACHE_CONTAINER);
+                    break;
+                }
+                default: {
+                    this.parseStoreAttribute(reader, i, operation);
+                }
+            }
+        }
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            this.parseStoreElement(reader, address, operations);
         }
     }
 

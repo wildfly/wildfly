@@ -64,7 +64,7 @@ public abstract class StoreBuilder<C extends StoreConfiguration, B extends Abstr
     private volatile boolean shared;
     private volatile int maxBatchSize;
 
-    StoreBuilder(PathAddress address, Class<B> builderClass) {
+    protected StoreBuilder(PathAddress address, Class<B> builderClass) {
         super(PERSISTENCE, address);
         this.builderClass = builderClass;
         this.async = new InjectedValueDependency<>(CacheComponent.STORE_WRITE.getServiceName(address.getParent()), AsyncStoreConfiguration.class);

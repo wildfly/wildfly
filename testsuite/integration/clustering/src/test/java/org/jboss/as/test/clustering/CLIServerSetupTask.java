@@ -31,6 +31,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.batch.Batch;
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
@@ -83,20 +84,28 @@ public class CLIServerSetupTask implements ServerSetupTask {
 
             ModelNode result = managementClient.getControllerClient().execute(commandModel);
 
-            // Should we throw an exception here if the op fails?
             LOG.infof("Executed batch %s with result %s", commands, result.toJSONString(true));
+            this.checkResult(result);
         } else {
             for (String command : commands) {
                 ModelNode commandModel = context.buildRequest(command);
                 ModelNode result = managementClient.getControllerClient().execute(commandModel);
 
                 LOG.infof("Executed single command %s with result %s", commands, result.toJSONString(true));
+                this.checkResult(result);
             }
         }
 
         if (reload) {
             LOG.infof("Reloading server %s if its in a 'reload-required' state.", managementClient.getMgmtAddress());
             ServerReload.reloadIfRequired(managementClient);
+        }
+    }
+
+    private void checkResult(ModelNode result) {
+        if (result.hasDefined(ClientConstants.FAILURE_DESCRIPTION)) {
+            String failureDesc = result.get(ClientConstants.FAILURE_DESCRIPTION).toString();
+            throw new RuntimeException("CLIServerSetupTask failed! Failed with: " + failureDesc);
         }
     }
 
@@ -186,7 +195,7 @@ public class CLIServerSetupTask implements ServerSetupTask {
         }
 
         /**
-         * Configure whether to reload the server after setup if its in a 'reload-required' state.
+         * Configure whether to reload the server after setup if it's in a 'reload-required' state.
          */
         public NodeBuilder reloadOnSetup(boolean reloadOnSetup) {
             this.reloadOnSetup = reloadOnSetup;
@@ -194,7 +203,7 @@ public class CLIServerSetupTask implements ServerSetupTask {
         }
 
         /**
-         * Configure whether to reload the server on teardown if its in a 'reload-required' state.
+         * Configure whether to reload the server on teardown if it's in a 'reload-required' state.
          */
         public NodeBuilder reloadOnTearDown(boolean reloadOnTearDown) {
             this.reloadOnTearDown = reloadOnTearDown;

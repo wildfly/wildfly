@@ -64,7 +64,6 @@ public interface InfinispanLogger extends BasicLogger {
     @Message(id = 2, value = "Started %s cache from %s container")
     void cacheStarted(String cacheName, String containerName);
 
-
     /**
      * Logs an informational message indicating that a cache is being stopped.
      *
@@ -97,15 +96,15 @@ public interface InfinispanLogger extends BasicLogger {
     @Message(id = 7, value = "Failed to locate data source %s")
     OperationFailedException dataSourceNotFound(String name);
 
-    /**
-     * Creates an exception indicating a failure to resolve the outbound socket binding represented by the
-     * {@code binding} parameter.
-     *
-     * @param cause the cause of the error.
-     * @param binding the outbound socket binding.
-     *
-     * @return a {@link org.jboss.as.controller.persistence.ConfigurationPersistenceException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating a failure to resolve the outbound socket binding represented by the
+//     * {@code binding} parameter.
+//     *
+//     * @param cause the cause of the error.
+//     * @param binding the outbound socket binding.
+//     *
+//     * @return a {@link org.jboss.as.controller.persistence.ConfigurationPersistenceException} for the error.
+//     */
 //    @Message(id = 8, value = "Could not resolve destination address for outbound socket binding named '%s'")
 //    InjectionException failedToInjectSocketBinding(@Cause UnknownHostException cause, OutboundSocketBinding binding);
 
@@ -126,4 +125,20 @@ public interface InfinispanLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 28, value = "Executor configuration '%s' was deprecated and will only be used to support legacy slaves in the domain.")
     void executorIgnored(String executorName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 29, value = "Started remote cache container '%s'.")
+    void remoteCacheContainerStarted(String remoteCacheContainer);
+
+    @LogMessage(level = INFO)
+    @Message(id = 30, value = "Stopped remote cache container '%s'.")
+    void remoteCacheContainerStopped(String remoteCacheContainer);
+
+    @LogMessage(level = WARN)
+    @Message(id = 31, value = "Specified HotRod protocol version %s does not support creating caches automatically. Cache named '%s' must be already created on the Infinispan Server!")
+    void remoteCacheMustBeDefined(String protocolVersion, String remoteCacheName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 32, value = "Getting remote cache named '%s'; if it does not exist a new persistent cache configuration will be created from default configuration on the Infinispan Server.")
+    void remoteCacheCreated(String remoteCacheName);
 }

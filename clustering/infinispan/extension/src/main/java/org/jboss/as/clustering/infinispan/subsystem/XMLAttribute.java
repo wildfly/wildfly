@@ -29,6 +29,7 @@ import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
 /**
@@ -129,6 +130,7 @@ public enum XMLAttribute {
     @Deprecated VIRTUAL_NODES("virtual-nodes"),
 
     // remote-cache-container
+    REMOTE_CACHE_CONTAINER(RemoteCacheContainerResourceDefinition.WILDCARD_PATH),
     CONNECTION_TIMEOUT(RemoteCacheContainerResourceDefinition.Attribute.CONNECTION_TIMEOUT),
     DEFAULT_REMOTE_CLUSTER(RemoteCacheContainerResourceDefinition.Attribute.DEFAULT_REMOTE_CLUSTER),
     KEY_SIZE_ESTIMATE(RemoteCacheContainerResourceDefinition.Attribute.KEY_SIZE_ESTIMATE),
@@ -153,6 +155,10 @@ public enum XMLAttribute {
 
     XMLAttribute(Attribute attribute) {
         this(attribute.getDefinition().getXmlName());
+    }
+
+    XMLAttribute(PathElement wildcardPath) {
+        this(wildcardPath.getKey());
     }
 
     XMLAttribute(String name) {

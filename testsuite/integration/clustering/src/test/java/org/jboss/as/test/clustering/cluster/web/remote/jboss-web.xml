@@ -25,6 +25,6 @@
            xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-web_12_0.xsd"
            version="12.0">
     <replication-config>
-        <cache-name>web.database-persistence</cache-name>
+        <cache-name>web.hotrod-persistence</cache-name>
     </replication-config>
 </jboss-web>

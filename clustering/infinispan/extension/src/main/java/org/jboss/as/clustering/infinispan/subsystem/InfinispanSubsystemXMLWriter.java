@@ -29,6 +29,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
@@ -335,6 +336,15 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writeAttributes(writer, store, RemoteStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, storeAttributes);
             writeStoreElements(writer, store);
+            writer.writeEndElement();
+        }
+
+        if (cache.hasDefined(HotRodStoreResourceDefinition.PATH.getKeyValuePair())) {
+            ModelNode hotRodStore = cache.get(HotRodStoreResourceDefinition.PATH.getKeyValuePair());
+            writer.writeStartElement(XMLElement.HOTROD_STORE.getLocalName());
+            writeAttributes(writer, hotRodStore, HotRodStoreResourceDefinition.Attribute.class);
+            writeAttributes(writer, hotRodStore, storeAttributes);
+            writeStoreElements(writer, hotRodStore);
             writer.writeEndElement();
         }
 

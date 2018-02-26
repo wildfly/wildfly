@@ -238,6 +238,13 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:element>
+                <xs:element name="hotrod-store" type="tns:hotrod-store">
+                    <xs:annotation>
+                        <xs:documentation>
+                            HotRod-based store using Infinispan Server instance to store data.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
             </xs:choice>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required">
@@ -593,6 +600,20 @@
                     <xs:annotation>
                         <xs:documentation>
                             Enable/disable TCP_NODELAY on socket connections to remote Hot Rod servers.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="hotrod-store">
+        <xs:complexContent>
+            <xs:extension base="tns:store">
+                <xs:attribute name="remote-cache-container" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Reference to a container-managed remote-cache-container.
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>

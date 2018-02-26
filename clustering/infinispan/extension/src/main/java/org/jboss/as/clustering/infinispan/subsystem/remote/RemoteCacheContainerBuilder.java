@@ -84,14 +84,14 @@ public class RemoteCacheContainerBuilder implements ResourceServiceBuilder<Remot
         Configuration configuration = RemoteCacheContainerBuilder.this.configuration.getValue();
         RemoteCacheManager remoteCacheManager = new RemoteCacheManager(configuration);
         remoteCacheManager.start();
-        InfinispanLogger.ROOT_LOGGER.debugf("%s remote cache container started", RemoteCacheContainerBuilder.this.name);
+        InfinispanLogger.ROOT_LOGGER.remoteCacheContainerStarted(this.name);
         return remoteCacheManager;
     }
 
     @Override
     public void accept(RemoteCacheManager remoteCacheManager) {
         remoteCacheManager.stop();
-        InfinispanLogger.ROOT_LOGGER.debugf("%s remote cache container stopped", RemoteCacheContainerBuilder.this.name);
+        InfinispanLogger.ROOT_LOGGER.remoteCacheContainerStopped(this.name);
     }
 
     @Override
