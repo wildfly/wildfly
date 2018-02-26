@@ -23,7 +23,6 @@
 
     <properties>
         <!-- Arquillian dependency versions -->
-        <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
         <enforcer.skip>true</enforcer.skip>
     </properties>
 
@@ -34,13 +33,6 @@
                 <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-core-testsuite-shared</artifactId>
                 <version>${version.org.wildfly.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.directory.server</groupId>
-                <artifactId>apacheds-parent</artifactId>
-                <version>${version.org.apache.ds}</version>
-                <scope>import</scope>
-                <type>pom</type>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -85,26 +77,14 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.directory.api</groupId>
-            <artifactId>api-ldap-codec-standalone</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-interceptor-kerberos</artifactId>
+            <artifactId>apacheds-all</artifactId>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-server-annotations</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
         <dependency>
             <groupId>org.syslog4j</groupId>
             <artifactId>syslog4j</artifactId>
             <scope>compile</scope>
-            <version>${version.org.syslog4j}</version>
         </dependency>
     </dependencies>
 
@@ -122,6 +102,7 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>keytool-maven-plugin</artifactId>
                 <version>1.5</version>
+                <inherited>false</inherited>
                 <dependencies>
                     <dependency>
                         <groupId>org.codehaus.mojo</groupId>

@@ -33,21 +33,18 @@
         <dependency>
             <groupId>org.apache.openjpa</groupId>
             <artifactId>openjpa-kernel</artifactId>
-            <version>${version.org.apache.openjpa}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.openjpa</groupId>
             <artifactId>openjpa-lib</artifactId>
-            <version>${version.org.apache.openjpa}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.openjpa</groupId>
             <artifactId>openjpa-persistence</artifactId>
-            <version>${version.org.apache.openjpa}</version>
             <scope>provided</scope>
         </dependency>
 
