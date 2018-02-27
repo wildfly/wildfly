@@ -469,9 +469,12 @@ final class AssociationImpl implements Association {
                 interceptorContext.putPrivateData(CancellationFlag.class, cancellationFlag);
             }
             final Object result = invokeWithIdentity(componentView, interceptorContext, securityIdentity);
+            contextDataHolder.putAll(interceptorContext.getContextData());
             return result == null ? null : ((Future<?>) result).get();
         } else {
-            return invokeWithIdentity(componentView, interceptorContext, securityIdentity);
+            final Object result = invokeWithIdentity(componentView, interceptorContext, securityIdentity);
+            contextDataHolder.putAll(interceptorContext.getContextData());
+            return result;
         }
     }
 
