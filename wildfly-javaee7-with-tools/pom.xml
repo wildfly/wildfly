@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.wildfly.bom</groupId>
         <artifactId>wildfly</artifactId>
-        <version>12.0.1.CR1-SNAPSHOT</version>
+        <version>13.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-javaee7-with-tools</artifactId>

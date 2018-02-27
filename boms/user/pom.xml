@@ -16,7 +16,8 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -28,7 +29,7 @@
 
     <groupId>org.wildfly.bom</groupId>
     <artifactId>wildfly</artifactId>
-    <version>12.0.1.CR1-SNAPSHOT</version>
+    <version>13.0.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -49,8 +50,8 @@
         <connection>scm:git:https://github.com/wildfly/boms.git</connection>
         <developerConnection>scm:git:https://github.com/wildfly/boms.git</developerConnection>
         <url>http://github.com/wildfly/boms</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <developers>
         <developer>
@@ -107,13 +108,42 @@
         <version.org.hibernate.validator.ee7>5.3.6.Final</version.org.hibernate.validator.ee7>
         <version.org.hibernate.search>5.5.8.Final</version.org.hibernate.search>
 
+        <version.org.jboss.ejb-client>4.0.9.Final</version.org.jboss.ejb-client>
+        <version.org.jboss.ejb-client-legacy>3.0.2.Final</version.org.jboss.ejb-client-legacy>
+        <version.org.wildfly.http-client>1.0.11.Final</version.org.wildfly.http-client>
+        <version.org.wildfly.naming-client>1.0.7.Final</version.org.wildfly.naming-client>
+        <version.org.wildfly.transaction.client>1.0.2.Final</version.org.wildfly.transaction.client>
+        <version.org.jboss.xnio>3.6.2.Final</version.org.jboss.xnio>
+        <version.org.jboss.marshalling.jboss-marshalling>2.0.3.Final</version.org.jboss.marshalling.jboss-marshalling>
+        <version.org.jboss.remoting>5.0.5.Final</version.org.jboss.remoting>
+        <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.1.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
+        <version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>1.0.1.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>
+        <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>1.1.1.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>
+        <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>1.0.2.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
+        <version.org.jboss.threads>2.3.1.Final</version.org.jboss.threads>
+        <version.org.apache.activemq.artemis>1.5.5.jbossorg-008</version.org.apache.activemq.artemis>
+        <version.io.netty>4.1.9.Final</version.io.netty>
+        <version.org.jgroups>4.0.10.Final</version.org.jgroups>
+        <version.com.google.guava>20.0</version.com.google.guava>
+        <version.commons-beanutils>1.9.3</version.commons-beanutils>
+        <version.commons-collections>3.2.2</version.commons-collections>
+
         <!-- Versions of projects not directly under JBoss umbrella -->
         <version.junit>4.12</version.junit>
-        <version.org.slf4j>1.7.22</version.org.slf4j>
+        <version.org.slf4j>1.7.25</version.org.slf4j>
         <version.org.testng>6.11</version.org.testng>
+
+        <!-- TODO This is an unusual case where we override the version only for this client. The parent pom version is
+                   using the 1.1 version for the Java EE 8 tech preview though the client still currently expects 1.0.
+                   Once we fully move to Java EE 8 this can be removed.
+              -->
+        <version.org.glassfish.javax.json-1.0>1.0.4</version.org.glassfish.javax.json-1.0>
     </properties>
 
     <modules>
+        <module>client/ejb-client</module>
+        <module>client/ejb-legacy-client</module>
+        <module>client/jms-client</module>
         <module>wildfly-with-tools</module>
         <module>wildfly-javaee7</module>
         <module>wildfly-javaee7-with-tools</module>
@@ -122,19 +152,254 @@
         <dependencies>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-ejb-client-bom</artifactId>
-                <version>${version.org.wildfly}</version>
-                <type>pom</type>
-                <scope>provided</scope>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${version.org.slf4j}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+                <version>${version.commons-beanutils}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>commons-logging</artifactId>
+                        <groupId>commons-logging</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>${version.commons-collections}</version>
             </dependency>
             <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-jms-client-bom</artifactId>
-                <version>${version.org.wildfly}</version>
-                <type>pom</type>
-                <scope>provided</scope>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${version.com.google.guava}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>jsr305</artifactId>
+                        <groupId>com.google.code.findbugs</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>org.jgroups</groupId>
+                <artifactId>jgroups</artifactId>
+                <version>${version.org.jgroups}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>artemis-jms-client</artifactId>
+                <version>${version.org.apache.activemq.artemis}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>geronimo-jms_2.0_spec</artifactId>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                    </exclusion>
+                    <!-- Exclude the JSR-353 implementation -->
+                    <exclusion>
+                        <artifactId>geronimo-json_1.0_spec</artifactId>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>johnzon-core</artifactId>
+                        <groupId>org.apache.johnzon</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>artemis-selector</artifactId>
+                <version>${version.org.apache.activemq.artemis}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>artemis-hqclient-protocol</artifactId>
+                <version>${version.org.apache.activemq.artemis}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${version.io.netty}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>artemis-commons</artifactId>
+                <version>${version.org.apache.activemq.artemis}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>jboss-logmanager</artifactId>
+                        <groupId>org.jboss.logmanager</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>commons-logging</artifactId>
+                        <groupId>commons-logging</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>artemis-core-client</artifactId>
+                <version>${version.org.apache.activemq.artemis}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>commons-logging</artifactId>
+                        <groupId>commons-logging</groupId>
+                    </exclusion>
+                    <!-- Exclude the JSR-353 implementation -->
+                    <exclusion>
+                        <artifactId>geronimo-json_1.0_spec</artifactId>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>johnzon-core</artifactId>
+                        <groupId>org.apache.johnzon</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.jms</groupId>
+                <artifactId>jboss-jms-api_2.0_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-ejb-client</artifactId>
+                <version>${version.org.jboss.ejb-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>jboss-remoting</artifactId>
+                        <groupId>org.jboss.remoting3</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-ejb-client-legacy</artifactId>
+                <version>${version.org.jboss.ejb-client-legacy}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>jboss-remoting</artifactId>
+                        <groupId>org.jboss.remoting3</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.wildfly-http-client</groupId>
+                <artifactId>wildfly-http-client-common</artifactId>
+                <version>${version.org.wildfly.http-client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.wildfly-http-client</groupId>
+                <artifactId>wildfly-http-ejb-client</artifactId>
+                <version>${version.org.wildfly.http-client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.wildfly-http-client</groupId>
+                <artifactId>wildfly-http-naming-client</artifactId>
+                <version>${version.org.wildfly.http-client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.wildfly-http-client</groupId>
+                <artifactId>wildfly-http-transaction-client</artifactId>
+                <version>${version.org.wildfly.http-client}</version>
+
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.transaction</groupId>
+                <artifactId>wildfly-transaction-client</artifactId>
+                <version>${version.org.wildfly.transaction.client}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>*</artifactId>
+                        <groupId>*</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.xnio</groupId>
+                <artifactId>xnio-api</artifactId>
+                <version>${version.org.jboss.xnio}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.xnio</groupId>
+                <artifactId>xnio-nio</artifactId>
+                <version>${version.org.jboss.xnio}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-naming-client</artifactId>
+                <version>${version.org.wildfly.naming-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>jboss-remoting</artifactId>
+                        <groupId>org.jboss.remoting3</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.marshalling</groupId>
+                <artifactId>jboss-marshalling</artifactId>
+                <version>${version.org.jboss.marshalling.jboss-marshalling}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.marshalling</groupId>
+                <artifactId>jboss-marshalling-river</artifactId>
+                <version>${version.org.jboss.marshalling.jboss-marshalling}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.threads</groupId>
+                <artifactId>jboss-threads</artifactId>
+                <version>${version.org.jboss.threads}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.remoting</groupId>
+                <artifactId>jboss-remoting</artifactId>
+                <version>${version.org.jboss.remoting}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.spec.javax.transaction</groupId>
+                <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.spec.javax.ejb</groupId>
+                <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.resource</groupId>
+                <artifactId>jboss-connector-api_1.7_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.wildfly</groupId>
