@@ -32,19 +32,20 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that adding mod_cluster subsystem works.
+ * Tests that adding and subsequent removing of mod_cluster subsystem works.
  *
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ModClusterSubsystemAddTestCase {
+public class ModClusterSubsystemTestCase {
 
     @ContainerResource
     private ManagementClient managementClient;
@@ -58,10 +59,11 @@ public class ModClusterSubsystemAddTestCase {
             ctx.connectController();
 
             // Add the mod_cluster extension first (not in this profile by default)
+            // n.b. extensions cannot be added in a batch
             ModelNode request = ctx.buildRequest("/extension=org.jboss.as.modcluster:add");
             ModelNode response = controllerClient.execute(request);
             String outcome = response.get("outcome").asString();
-            Assert.assertEquals("Adding mod_cluster extension failed! " + request.toJSONString(false), SUCCESS, outcome);
+            Assert.assertEquals("Adding mod_cluster extension failed! " + response.toJSONString(false), SUCCESS, outcome);
 
             // Now lets execute subsystem add operation but we need to specify a connector
             ctx.getBatchManager().activateNewBatch();
@@ -75,25 +77,33 @@ public class ModClusterSubsystemAddTestCase {
 
             response = controllerClient.execute(request);
             outcome = response.get("outcome").asString();
-            Assert.assertEquals("Adding mod_cluster subsystem failed! " + request.toJSONString(false), SUCCESS, outcome);
+            Assert.assertEquals("Adding mod_cluster subsystem failed! " + response.toJSONString(false), SUCCESS, outcome);
+
+            // We need to reload the server here since the add operation leaves the server in 'reload-required' state
+            // and HttpInvokerDefinition adds dependency on the service conditionally with OperationContext#hasOptionalCapability
+            ServerReload.executeReloadAndWaitForCompletion(controllerClient);
 
             // Test subsystem remove
             request = ctx.buildRequest("/subsystem=modcluster:remove");
             response = controllerClient.execute(request);
             outcome = response.get("outcome").asString();
-            Assert.assertEquals("Removing mod_cluster subsystem failed! " + request.toJSONString(false), SUCCESS, outcome);
+            Assert.assertEquals("Removing mod_cluster subsystem failed! " + response.toJSONString(false), SUCCESS, outcome);
 
             // Cleanup and remove the extension
             request = ctx.buildRequest("/extension=org.jboss.as.modcluster:remove");
             response = controllerClient.execute(request);
             outcome = response.get("outcome").asString();
-            Assert.assertEquals("Removing mod_cluster extension failed! " + request.toJSONString(false), SUCCESS, outcome);
+            Assert.assertEquals("Removing mod_cluster extension failed! " + response.toJSONString(false), SUCCESS, outcome);
 
             // Cleanup socket binding
             request = ctx.buildRequest("/socket-binding-group=standard-sockets/socket-binding=modcluster:remove");
             response = controllerClient.execute(request);
             outcome = response.get("outcome").asString();
-            Assert.assertEquals("Removing socket binding failed! " + request.toJSONString(false), SUCCESS, outcome);
+            Assert.assertEquals("Removing socket binding failed! " + response.toJSONString(false), SUCCESS, outcome);
+
+            // Remove leaves the server in 'reload-required' state, we need to reload the server in order not to leave running services
+            // around for subsequent tests
+            ServerReload.executeReloadAndWaitForCompletion(controllerClient);
         } finally {
             ctx.terminateSession();
         }
