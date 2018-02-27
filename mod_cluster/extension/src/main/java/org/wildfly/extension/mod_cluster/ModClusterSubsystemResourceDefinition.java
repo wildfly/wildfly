@@ -24,6 +24,7 @@ package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -89,7 +90,7 @@ public class ModClusterSubsystemResourceDefinition extends SimpleResourceDefinit
         super(PATH,
                 ModClusterExtension.getResourceDescriptionResolver(),
                 ModClusterSubsystemAdd.INSTANCE,
-                ModClusterSubsystemRemove.INSTANCE
+                new ReloadRequiredRemoveStepHandler()
         );
         this.runtimeOnly = runtimeOnly;
     }
