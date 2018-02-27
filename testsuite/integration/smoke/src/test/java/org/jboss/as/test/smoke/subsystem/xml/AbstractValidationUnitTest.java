@@ -118,7 +118,7 @@ public class AbstractValidationUnitTest {
         NAMESPACE_MAP.put("http://java.sun.com/xml/ns/javaee/javaee_6.xsd", "schema/javaee_6.xsd");
         NAMESPACE_MAP.put("http://www.w3.org/2001/xml.xsd", "schema/xml.xsd");
         NAMESPACE_MAP.put("http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd", "schema/ejb-jar_3_1.xsd");
-        NAMESPACE_MAP.put("http://www.jboss.org/j2ee/schema/jboss-common_6_0.xsd", "jboss-common_6_0.xsd");
+        NAMESPACE_MAP.put("http://www.jboss.org/j2ee/schema/jboss-common_7_0.xsd", "jboss-common_7_0.xsd");
 
         String asDir = System.getProperty(JBOSS_DIST_PROP_NAME);
         if (null == asDir) {
