@@ -51,11 +51,11 @@ public class AtomicTransactionExecutionService implements ExecutorService {
 
     private static final Logger LOGGER = Logger.getLogger(AtomicTransactionExecutionService.class);
 
-    private RemoteService remoteService;
+    private volatile RemoteService remoteService;
 
-    private TxContext currentTransaction;
+    private volatile TxContext currentTransaction;
 
-    private boolean wasInitialised;
+    private volatile boolean wasInitialised;
 
     @Override
     public void init(String activationServiceUrl, String remoteServiceUrl) {
