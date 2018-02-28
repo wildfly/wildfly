@@ -1,8 +1,7 @@
 [[Batch_(JSR-352)]]
 = Batch (JSR-352) Subsystem Configuration
 
-[[overview]]
-== Overview
+[abstract]
 
 The batch subsystem is used to configure an environment for running
 batch applications. http://wildfly.org[WildFly] uses

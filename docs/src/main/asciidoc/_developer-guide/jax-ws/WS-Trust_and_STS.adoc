@@ -113,7 +113,6 @@ proving the ws-requester has successfully authenticated with the STS.
 7.  The ws-provider executes the requested service and returns the
 results to the the ws-requester.
 
-[[web-service-provider]]
 === Web service provider
 
 This section examines the crucial elements in providing endpoint
@@ -126,7 +125,6 @@ scenario. The components that will be discussed are.
 * Crypto properties and keystore files
 * MANIFEST.MF
 
-[[web-service-provider-wsdl]]
 ==== Web service provider WSDL
 
 The web service provider is a contract-first endpoint. All the WS-trust
@@ -378,7 +376,6 @@ listing below.
 </definitions>
 ----
 
-[[web-service-provider-interface]]
 ==== Web service provider Interface
 
 The web service provider interface class, ServiceIface, is a simple

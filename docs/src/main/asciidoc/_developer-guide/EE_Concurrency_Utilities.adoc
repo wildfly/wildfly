@@ -1,8 +1,7 @@
 [[EE_Concurrency_Utilities]]
 = EE Concurrency Utilities
 
-[[overview]]
-== Overview
+[abstract]
 
 EE Concurrency Utilities (JSR 236) is a technology introduced with Java
 EE 7, which adapts well known Java SE concurrency utilities to the Java

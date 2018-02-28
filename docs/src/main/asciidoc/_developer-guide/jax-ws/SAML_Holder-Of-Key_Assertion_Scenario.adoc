@@ -19,7 +19,6 @@ policy that uses a sp:TransportBinding and sp:HttpsToken.
 with it, therefore a sp:IssuedToken of SymmetricKey or PublicKey keyType
 should be used with a sp:SignedEndorsingSupportingTokens.
 
-[[web-service-provider]]
 == Web service Provider
 
 This section examines the web service elements for the SAML
@@ -31,7 +30,6 @@ Holder-Of-Key scenario. The components are
 * Crypto properties and keystore files
 * MANIFEST.MF
 
-[[web-service-provider-wsdl]]
 === Web service provider WSDL
 
 The web service provider is a contract-first endpoint. All the WS-trust

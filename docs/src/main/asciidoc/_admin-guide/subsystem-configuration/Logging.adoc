@@ -1,8 +1,7 @@
 [[Logging]]
 = Logging Configuration
 
-[[overview]]
-== Overview
+[abstract]
 
 The overall server logging configuration is represented by the logging
 subsystem. It consists of four notable parts: `handler` configurations,
@@ -46,7 +45,7 @@ handlers). Each handler declares the log format and output:
 </subsystem>
 ----
 
-[[attributes]]
+[[logging-attributes]]
 == Attributes
 
 The root resource contains two notable attributes
@@ -119,7 +118,7 @@ the redeploy is not required for logging changes to take affect.
 [[default-log-file-locations]]
 == Default Log File Locations
 
-[[managed-domain]]
+[[logging-managed-domain]]
 === Managed Domain
 
 In a managed domain two types of log files do exist: Controller and
@@ -143,7 +142,7 @@ servers are located on the same host:
 |"Server Three" |./domain/servers/server-three/log/server.log
 |============================================================
 
-[[standalone-server]]
+[[logging-standalone-server]]
 === Standalone Server
 
 The default log files for a standalone server can be found in the log

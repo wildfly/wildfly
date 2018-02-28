@@ -6,7 +6,6 @@ WildFly can be booted in two different modes. A _managed domain_ allows
 you to run and manage a multi-server topology. Alternatively, you can
 run a _standalone server_ instance.
 
-[[standalone-server]]
 == Standalone Server
 
 For many use cases, the centralized management capability available via
@@ -26,7 +25,6 @@ It is perfectly possible to launch multiple standalone server instances
 and have them form an HA cluster, just like it was possible with JBoss
 Application Server 3, 4, 5 and 6.
 
-[[managed-domain]]
 == Managed Domain
 
 One of the primary new features of WildFly is the ability to manage

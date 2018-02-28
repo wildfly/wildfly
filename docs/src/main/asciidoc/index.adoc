@@ -1,6 +1,7 @@
 [[index]]
 = WildFly Documentation
 :ext-relative: {outfilesuffix}
+:toc!:
 
 image:images/splash_wildflylogo_small.png[WildFly, align="center"]
 

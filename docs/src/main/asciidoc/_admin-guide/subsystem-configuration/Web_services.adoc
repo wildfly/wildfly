@@ -218,7 +218,7 @@ A new handler chain can be added as follows:
 }
 ----
 
-[[handlers]]
+[[jaxws-handlers]]
 ==== Handlers
 
 JAXWS handler can be added in handler chains:
@@ -282,7 +282,7 @@ context and a WSDL Url:
 }
 ----
 
-[[component-reference]]
+[[ws-component-reference]]
 == Component Reference
 
 The web service subsystem is provided by the JBossWS project. For a

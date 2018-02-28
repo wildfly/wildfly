@@ -116,7 +116,7 @@ formatted as a command help content:
 help /subsystem=elytron/key-store=?:add
 ----
 
-[[non-interactive-mode]]
+[[cli-non-interactive-mode]]
 == Non-interactive Mode
 
 The CLI can also be run in non-interactive mode to support scripts and
@@ -458,7 +458,7 @@ previously recorded history);
 recorded command before the history expansion was disabled);
 * _clear_ - will clear the in-memory history (but not the file one).
 
-[[operation-formatting]]
+[[json-and-dmr-output]]
 == JSON and DMR output
 
 By default the CLI prints operation results using the DMR textual syntax. There are
@@ -483,7 +483,6 @@ actually, is executed as a composite operation request.
 
 The batch mode is entered by executing command _batch_.
 
-[source,ruby]
 ----
 [standalone@localhost:9990 /] batch
 [standalone@localhost:9990 / #] /subsystem=datasources/data-source="java\:\/H2DS":enable
@@ -525,7 +524,6 @@ name=mytopic_)
 * _move-batch-line_ (e.g. _move-batch-line 3 1_)
 * _discard-batch_
 
-[[operation-formatting]]
 == Operators
 
 CLI has some operators that are similar to shell operators:

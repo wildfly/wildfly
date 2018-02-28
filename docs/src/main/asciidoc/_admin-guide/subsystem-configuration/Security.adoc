@@ -30,7 +30,7 @@ the relevant container a number of capabilities from the configured
 security domain, the capabilities exposed are an authentication manager,
 an authorization manager, an audit manager and a mapping manager.
 
-[[authentication-manager]]
+[[security-authentication-manager]]
 === Authentication Manager
 
 The authentication manager is the component that performs the actual
@@ -38,7 +38,7 @@ authentication taking the declared users identity and their credential
 so that the login context for the security domain can be used to 'login'
 the user using the configured login module or modules.
 
-[[authorization-manager]]
+[[security-authorization-manager]]
 === Authorization Manager
 
 The authorization manager is a component which can be obtained by the
@@ -160,7 +160,6 @@ If this attribute is removed no cache will be used. Allowed values are
 The following elements can then be set within the security-domain to
 configure the domain behaviour.
 
-[[authentication]]
 ==== authentication
 
 The authentication element is used to hold the list of login modules
@@ -272,7 +271,6 @@ configured just like in the
 <<authentication,authentication>>
 part
 
-[[authorization]]
 ==== authorization
 
 Authorization in the AS container is normally done with RBAC (role based

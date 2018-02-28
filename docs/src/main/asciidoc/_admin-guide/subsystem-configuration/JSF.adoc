@@ -1,8 +1,7 @@
 [[JSF]]
 = JSF Configuration
 
-[[overview]]
-== Overview
+[abstract]
 
 JSF configuration is handled by the JSF subsystem. The JSF subsystem
 allows multiple JSF implementations to be installed on the same WildFly

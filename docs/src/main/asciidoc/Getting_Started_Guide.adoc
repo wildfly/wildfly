@@ -9,7 +9,7 @@ WildFly team;
 :doctype: book
 :icons: font
 :source-highlighter: coderay
-:wildflyVersion: 11
+:wildflyVersion: 12
 
 ifndef::ebook-format[:leveloffset: 1]
 
@@ -429,7 +429,6 @@ running instance:
 * web-based Administration Console
 * command-line interface
 
-[[authentication]]
 ===== Authentication
 
 By default WildFly 10 is now distributed with security enabled for the

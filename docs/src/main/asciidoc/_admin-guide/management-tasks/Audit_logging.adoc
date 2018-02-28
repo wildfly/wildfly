@@ -83,7 +83,7 @@ syslog handler you need to add the handler and its information as one
 step. Similarly if you are using a file handler, and want to change its
 `path` and `relative-to` attributes, that needs to happen as one step.
 
-[[json-formatter]]
+[[audit-logging-json-formatter]]
 == JSON Formatter
 
 The first thing that needs configuring is the formatter, we currently
@@ -185,7 +185,6 @@ override escape-new-line=false
 code in octal, e.g. "#012".
 |=======================================================================
 
-[[handlers]]
 == Handlers
 
 A handler is responsible for taking the formatted data and logging it to
@@ -193,7 +192,6 @@ a location. There are currently two types of handlers, File and Syslog.
 You can configure several of each type of handler and use them to log
 information.
 
-[[file-handler]]
 === File handler
 
 The file handlers log the audit log records to a file on the server. The
@@ -227,7 +225,7 @@ In our standard configuration `path=audit-log.log` and
 `relative-to=jboss.server.data.dir`, typically this will be
 `$JBOSS_HOME/standalone/data/audit-log.log`
 
-[[syslog-handler]]
+[[audit-syslog-handler]]
 === Syslog handler
 
 The default configuration does not have syslog audit logging set up.

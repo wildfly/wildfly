@@ -11,7 +11,7 @@ Even if you haven't used a curl command line you might already have used
 this channel since it is how the web console interact with the
 Management API.
 
-WildFly 9 is distributed secured by default, the default security
+WildFly is distributed secured by default, the default security
 mechanism is _username / password_ based making use of *HTTP Digest* for
 the authentication process.
 

@@ -1,8 +1,7 @@
 [[Domain_Mode_Subsystem_Transformers]]
 = Domain Mode Subsystem Transformers
 
-[[abstract]]
-== Abstract
+[abstract]
 
 A WildFly domain may consist of a new Domain Controller (DC) controlling
 slave Host Controllers (HC) running older versions. Each slave HC

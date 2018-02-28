@@ -8,7 +8,6 @@ default configuration is used. You can override the default
 configuration by providing arguments on the command line, or in your
 calling script.
 
-[[system-properties]]
 == System properties
 
 To set a system property, pass its new value using the standard jvm
@@ -101,7 +100,6 @@ storage. |jboss.server.base.dir/data
 |jboss.server.data.dir/content
 |=======================================================================
 
-[[managed-domain]]
 ==== Managed Domain
 
 [cols=",,",options="header"]

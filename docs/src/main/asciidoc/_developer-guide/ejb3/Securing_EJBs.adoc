@@ -10,7 +10,6 @@ into the details of Java EE specific annotations/deployment descriptor
 configurations in this chapter but instead will be looking at the vendor
 specific extensions to the security configurations.
 
-[[security-domain]]
 == Security Domain
 
 The Java EE spec doesn't mandate a specific way to configure security
@@ -27,11 +26,8 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 import javax.ejb.Stateless;
  
 @Stateless
- 
 @SecurityDomain("other")
- 
-﻿public class MyBean ...
- 
+﻿public class MyBean ... 
 {
  
 ...

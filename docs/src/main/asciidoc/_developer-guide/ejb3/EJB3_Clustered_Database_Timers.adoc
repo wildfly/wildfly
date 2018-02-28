@@ -1,8 +1,7 @@
 [[EJB3_Clustered_Database_Timers]]
 = EJB3 Clustered Database Timers
 
-[[overview]]
-== Overview
+[abstract]
 
 Wildfly now supports clustered database backed timers. The clustering
 support is provided through the database, and as a result it is not

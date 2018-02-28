@@ -8,7 +8,7 @@
 :doctype: book
 :icons: font
 :source-highlighter: coderay
-:wildflyVersion: 11
+:wildflyVersion: 12
 :numbered:
 
 ifdef::basebackend-html[toc::[]]
@@ -35,7 +35,7 @@ The project covers these main areas: -
 * SSL / TLS
 * Secure Credential Storage
 
-[[authentication]]
+[[elytron-authentication]]
 === Authentication
 
 One of the fundamental objectives of the project was to ensure that we
@@ -44,7 +44,7 @@ authentication, in both cases the new framework also makes it possible
 to bring in new implementations opening up various integration
 opportunities with external solutions.
 
-[[authorization]]
+[[elytron-authorization]]
 === Authorization
 
 The architecture of the project makes a very clear distinction between

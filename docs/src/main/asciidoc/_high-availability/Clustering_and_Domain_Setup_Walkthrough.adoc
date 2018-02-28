@@ -2,7 +2,7 @@
 = Clustering and Domain Setup Walkthrough
 ifdef::env-github[:imagesdir: ../]
 
-In this article, I'd like to show you how to setup WildFly 9 in domain
+In this article, I'd like to show you how to setup WildFly {wildflyVersion} in domain
 mode and enable clustering so we could get HA and session replication
 among the nodes. It's a step to step guide so you can follow the
 instructions in this article and build the sandbox by yourself icon:smile-o[role="yellow"]
@@ -32,11 +32,11 @@ Here are some details on what we are going to do:
 
 * Let's call one host as 'master', the other one as 'slave'.
 
-* Both master and slave will run WildFly 9, and master will run as
+* Both master and slave will run WildFly {wildflyVersion}, and master will run as
 domain controller, slave will under the domain management of master.
 
 * Apache httpd will be run on master, and in httpd we will enable the
-mod_cluster module. The WildFly 9 on master and slave will form a
+mod_cluster module. The WildFly {wildflyVersion} on master and slave will form a
 cluster and discovered by httpd.
 
 image:images/clustering/Clustering.jpg[images/clustering/Clustering.jpg]
@@ -66,23 +66,23 @@ image:images/clustering/test_scenario.jpg[images/clustering/test_scenario.jpg]
 Please don't worry if you cannot digest so many details currently. Let's
 move on and you will get the points step by step.
 
-[[download-wildfly-9]]
-== Download WildFly 9
+[[download-wildfly-{wildflyVersion}]]
+== Download WildFly {wildflyVersion}
 
-First we should download WildFly 9 from the website:
+First we should download WildFly {wildflyVersion} from the website:
 
 [source]
 ----
 http://wildfly.org/downloads/
 ----
 
-The version I downloaded is WildFly 9.0.0.Final.
+The version I downloaded is WildFly {wildflyVersion}.0.0.Final.
 
 After download finished, I got the zip file:
 
 [source, java]
 ----
-wildfly-9.0.0.Final.zip
+wildfly-{wildflyVersion}.0.0.Final.zip
 ----
 
 Note: The name of your archive will differ slightly due to version
@@ -91,8 +91,8 @@ Then I unzipped the package to master and try to make a test run:
 
 [source, java]
 ----
-unzip wildfly-9.0.0.Final.zip
-cd wildfly-9.0.0.Final/bin
+unzip wildfly-{wildflyVersion}.0.0.Final.zip
+cd wildfly-{wildflyVersion}.0.0.Final/bin
 ./domain.sh
 ----
 
@@ -101,12 +101,12 @@ mode:
 
 [source, java]
 ----
-wildfly-9.0.0.Final/bin$ ./domain.sh
+wildfly-{wildflyVersion}.0.0.Final/bin$ ./domain.sh
 =========================================================================
  
   JBoss Bootstrap Environment
  
-  JBOSS_HOME: /Users/weli/Downloads/wildfly-9.0.0.Final
+  JBOSS_HOME: /Users/weli/Downloads/wildfly-{wildflyVersion}.0.0.Final
  
   JAVA: /Library/Java/Home/bin/java
  
@@ -115,7 +115,7 @@ wildfly-9.0.0.Final/bin$ ./domain.sh
 =========================================================================
 ...
  
-[Server:server-two] 14:46:12,375 INFO  [org.jboss.as] (Controller Boot Thread) JBAS015874: WildFly 9.0.0.Final "Kenny" started in 8860ms - Started 210 of 258 services (89 services are lazy, passive or on-demand)
+[Server:server-two] 14:46:12,375 INFO  [org.jboss.as] (Controller Boot Thread) JBAS015874: WildFly {wildflyVersion}.0.0.Final "Kenny" started in 8860ms - Started 210 of 258 services (8{wildflyVersion} services are lazy, passive or on-demand)
 ----
 
 Now exit master and let's repeat the same steps on slave host. Finally
@@ -298,8 +298,8 @@ The username 'admin' is easy to guess
 Are you sure you want to add user 'admin' yes/no? yes
 About to add user 'admin' for realm 'ManagementRealm'
 Is this correct yes/no? yes
-Added user 'admin' to file '/home/weli/projs/wildfly-9.0.0.Final/standalone/configuration/mgmt-users.properties'
-Added user 'admin' to file '/home/weli/projs/wildfly-9.0.0.Final/domain/configuration/mgmt-users.properties'
+Added user 'admin' to file '/home/weli/projs/wildfly-{wildflyVersion}.0.0.Final/standalone/configuration/mgmt-users.properties'
+Added user 'admin' to file '/home/weli/projs/wildfly-{wildflyVersion}.0.0.Final/domain/configuration/mgmt-users.properties'
 ----
 
 As shown above, we have created a user named 'admin' and its password is
@@ -321,10 +321,10 @@ Re-enter Password : passw0rd!
 What groups do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)[  ]:
 About to add user 'slave' for realm 'ManagementRealm'
 Is this correct yes/no? yes
-Added user 'slave' to file '/home/weli/projs/wildfly-9.0.0.Final/standalone/configuration/mgmt-users.properties'
-Added user 'slave' to file '/home/weli/projs/wildfly-9.0.0.Final/domain/configuration/mgmt-users.properties'
-Added user 'slave' with groups  to file '/home/weli/projs/wildfly-9.0.0.Final/standalone/configuration/mgmt-groups.properties'
-Added user 'slave' with groups  to file '/home/weli/projs/wildfly-9.0.0.Final/domain/configuration/mgmt-groups.properties'
+Added user 'slave' to file '/home/weli/projs/wildfly-{wildflyVersion}.0.0.Final/standalone/configuration/mgmt-users.properties'
+Added user 'slave' to file '/home/weli/projs/wildfly-{wildflyVersion}.0.0.Final/domain/configuration/mgmt-users.properties'
+Added user 'slave' with groups  to file '/home/weli/projs/wildfly-{wildflyVersion}.0.0.Final/standalone/configuration/mgmt-groups.properties'
+Added user 'slave' with groups  to file '/home/weli/projs/wildfly-{wildflyVersion}.0.0.Final/domain/configuration/mgmt-groups.properties'
 Is this new user going to be used for one AS process to connect to another AS process?
 e.g. for a slave host controller connecting to the master or for a Remoting connection for server to server EJB calls.
 yes/no? yes

@@ -23,7 +23,6 @@ new. It is a utility that generates the content for the ActAs element.
 And lastly there are a couple of code additions in the STS to support
 the ActAs request.
 
-[[web-service-provider]]
 == Web service provider
 
 This section examines the web service elements from the basic WS-Trust
@@ -37,7 +36,6 @@ example. The components are
 * Crypto properties and keystore files
 * MANIFEST.MF
 
-[[web-service-provider-wsdl]]
 === Web service provider WSDL
 
 The ActAs web service provider's WSDL is a clone of the ws-provider's

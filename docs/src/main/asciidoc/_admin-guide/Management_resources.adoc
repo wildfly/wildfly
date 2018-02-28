@@ -1,4 +1,4 @@
-[[Management_resources]]
+[[management-resources]]
 = Management resources
 
 When WildFly parses your configuration files at boot, or when you use
@@ -130,7 +130,7 @@ details of one of them, via the CLI one would:
 }
 ----
 
-See <<descriptions,#Descriptions>>
+See <<descriptions,Descriptions>>
 below for more on how to learn about the operations a resource exposes.
 
 [[attributes]]
@@ -281,7 +281,7 @@ configuration:
 }
 ----
 
-See <<descriptions,#Descriptions>>
+See <<descriptions,Descriptions>>
 below for how to learn more about the attributes a particular resource
 exposes.
 
@@ -292,7 +292,7 @@ Management resources may support child resources. The
 <<children,_types_ of children>> a
 resource supports (e.g. `connector` for the web subsystem resource) can
 be obtained by querying the resource's description (see
-<<descriptions,#Descriptions>> below)
+<<descriptions,Descriptions>> below)
 or by invoking the `read-children-types` operation. Once you know the
 legal child types, you can query the names of all children of a given
 type by using the global `read-children-types` operation. The operation

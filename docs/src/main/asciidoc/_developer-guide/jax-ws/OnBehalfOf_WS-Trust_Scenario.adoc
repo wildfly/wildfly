@@ -32,7 +32,6 @@ Infor here [
 http://coheigea.blogspot.it/2012/01/apache-cxf-251-sts-updates.html[Open
 Source Security: Apache CXF 2.5.1 STS updates] ]
 
-[[web-service-provider]]
 == Web service provider
 
 This section examines the web service elements from the basic WS-Trust
@@ -43,7 +42,6 @@ example. The components are.
 * web service provider's Interface and Implementation classes.
 * OnBehalfOfCallbackHandler class
 
-[[web-service-provider-wsdl]]
 === Web service provider WSDL
 
 The OnBehalfOf web service provider's WSDL is a clone of the

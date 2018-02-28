@@ -1,8 +1,7 @@
 [[Scoped_EJB_client_contexts]]
 = Scoped EJB client contexts
 
-[[overview]]
-== Overview
+[abstract]
 
 WildFly {wildflyVersion} introduced the EJB client API for managing remote EJB
 invocations. The EJB client API works off EJBClientContext(s). An

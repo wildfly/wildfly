@@ -15,7 +15,7 @@ section we provide details on what's included in those descriptions.
 
 All portions of the management model exposed by WildFly are addressable
 via an ordered list of key/value pairs. For each addressable
-link:../Management_resources{outfilesuffix}[Management Resource], the following
+<<Management_resources#management-resources, Management Resource>>, the following
 descriptive information will be available:
 
 * `description` – String – text description of this portion of the model
@@ -30,20 +30,20 @@ i.e. there is no limit. If this value is some other string, the default
 value is 1.
 * `attributes` – Map of String (the attribute name) to complex structure
 – the configuration attributes available in this portion of the model.
-See the <<description-of-an-attribute,Description of an Attribute>> section 
+See the <<description-of-an-attribute,Description of an Attribute>> section
 for the representation of each attribute.
 * `operations` – Map of String (the operation name) to complex structure
-– the operations that can be targeted at this address. See the 
-<<description-of-an-operation,Description of an Operation>> section 
+– the operations that can be targeted at this address. See the
+<<description-of-an-operation,Description of an Operation>> section
 for the representation of each operation.
 * `children` – Map of String (the type of child) to complex structure –
 the relationship of this portion of the model to other addressable
-portions of the model. See the 
+portions of the model. See the
 <<description-of-parentchild-relationships,Description of Parent/Child Relationships>>
 section for the representation of each child relationship.
-* `head-comment-allowed` – boolean – This description key is for 
+* `head-comment-allowed` – boolean – This description key is for
 possible future use.
-* `tail-comment-allowed` – boolean – This description key is for 
+* `tail-comment-allowed` – boolean – This description key is for
 possible future use.
 
 For example:
@@ -76,8 +76,8 @@ For example:
 
 An attribute is a portion of the management model that is not directly
 addressable. Instead, it is conceptually a property of an addressable
-link:../Management_resources{outfilesuffix}[management resource]. For 
-each attribute in the model, the following descriptive information will 
+link:../Management_resources{outfilesuffix}[management resource]. For
+each attribute in the model, the following descriptive information will
 be available:
 
 * `description` – String – text description of the attribute
@@ -143,7 +143,7 @@ updating this attribute's value.
 access-type is read-write. Indicates whether execution of a
 write-attribute operation whose name parameter specifies this attribute
 requires a restart of services (or an entire JVM) in order for the
-change to take effect in the runtime . See the discussion of 
+change to take effect in the runtime . See the discussion of
 <<applying-updates-to-runtime-services,Applying
 Updates to Runtime Services>> below. Default value is "no-services".
 * `default` – the default value for the attribute that will be used in
@@ -172,9 +172,9 @@ specified capability provided by another resource. This indicates the
 attribute is a reference to another area of the management model. (Note
 that at present some attributes that reference other areas of the model
 may not provide this information.)
-* `head-comment-allowed` – boolean – This description key is for 
+* `head-comment-allowed` – boolean – This description key is for
 possible future use.
-* `tail-comment-allowed` – boolean – This description key is for 
+* `tail-comment-allowed` – boolean – This description key is for
 possible future use.
 * arbitrary key/value pairs that further describe the attribute value,
 e.g. "max" => 2. See the <<arbitrary-descriptors,Arbitrary
@@ -278,7 +278,7 @@ parameters listed as `alternatives` are defined.
 access-type is read-write. Indicates whether execution of a
 write-attribute operation whose name parameter specifies this attribute
 requires a restart of services (or an entire JVM) in order for the
-change to take effect in the runtime . See the discussion of 
+change to take effect in the runtime . See the discussion of
 <<applying-updates-to-runtime-services,Applying
 Updates to Runtime Services>> below. Default value is "no-services".
 * `alternatives` – List of string – Indicates an exclusive relationship
@@ -299,7 +299,7 @@ alternatives to each other; "c" and "d" are optional. But "b" requires
 "c" and "d", so if "b" is used, "c" and "d" must also be defined.
 Default is undefined; i.e. this does not apply to most parameters.
 * arbitrary key/value pairs that further describe the attribute value,
-e.g. "max" =>2. See the <<arbitrary-descriptors,Arbitrary Descriptors>> 
+e.g. "max" =>2. See the <<arbitrary-descriptors,Arbitrary Descriptors>>
 section.
 
 [[arbitrary-descriptors]]
@@ -439,7 +439,7 @@ If the recursive flag was false:
 [[applying-updates-to-runtime-services]]
 === Applying Updates to Runtime Services
 
-An attribute or operation description may include a `restart-required` 
+An attribute or operation description may include a `restart-required`
 descriptor; this section is an explanation of the
 meaning of that descriptor.
 
@@ -469,7 +469,7 @@ restart (e.g. a `/host=master/server-config=server-one:restart`
 operation in a managed domain, or a `/:reload` operation on a standalone
 server.) For all other cases, if an operation (or attribute write)
 cannot be performed without restarting a service, the metadata
-describing the operation or attribute will include a `restart-required` 
+describing the operation or attribute will include a `restart-required`
 descriptor whose value indicates what is necessary
 for the operation to affect the runtime:
 
@@ -492,7 +492,7 @@ configuration; applying the operation to the runtime will require a full
 process restart (i.e. stop the JVM and launch a new JVM). Executing the
 operation will put the server into a `restart-required` state. Until
 a restart is performed the response to this operation and to any
-subsequent operation will include a response header 
+subsequent operation will include a response header
 `"process-state" => "restart-required"`. For a standalone server, a full
 process restart requires first stopping the server via OS-level
 operations (Ctrl-C, kill) or via the `shutdown` CLI command, and then
@@ -506,5 +506,5 @@ resource. If the operation includes the request header
 `"allow-resource-service-restart" => true`, the handler for the
 operation will go ahead and restart the runtime service. Otherwise
 executing the operation will put the server into a `reload-required`
-state. (See the discussion of `all-services` above for more on the 
+state. (See the discussion of `all-services` above for more on the
 `reload-required` state.)

@@ -9,7 +9,6 @@ This is still a work in progress. Please feel free to edit any mistakes
 you find icon:smile-o[role="yellow"]
 
 
-[[overview]]
 == Overview
 
 Loggers are used to log messages. A logger is defined by a category
@@ -42,7 +41,6 @@ You may notice that the `category` and `filter` attributes are missing.
 While `filter` is writable it may be deprecated and removed in the
 future. Both attributes are still on the resource for legacy reasons.
 
-[[filter-spec]]
 ==== filter-spec
 
 The `filter-spec` attribute is an expression based string to define
@@ -52,7 +50,6 @@ filters for the logger.
 
 Filters on loggers are not inherited.
 
-[[handlers]]
 ==== handlers
 
 The `handlers` attribute is a list of handler names that should be
@@ -61,7 +58,6 @@ attached to the logger. If the
 attribute is set to `true` and the log messages is determined to be
 loggable, parent loggers will continue to be processed.
 
-[[level]]
 ==== level
 
 The `level` attribute allows the minimum level to allow messages to be
