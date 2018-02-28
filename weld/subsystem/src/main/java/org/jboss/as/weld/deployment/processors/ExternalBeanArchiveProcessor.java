@@ -70,7 +70,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleDependencySpec;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.Resource;
 import org.jboss.weld.bootstrap.api.Service;
 import org.jboss.weld.bootstrap.spi.BeanDiscoveryMode;
 import org.jboss.weld.bootstrap.spi.BeansXml;
@@ -328,21 +327,8 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
     }
 
     private Set<URL> findExportedResource(Module dependencyModule, String name) {
-        HashSet<URL> ret = new HashSet<>();
         Enumeration<URL> exported = dependencyModule.getExportedResources(name);
-        if (exported.hasMoreElements()) {
-            Set<URL> exportedSet = new HashSet<>(Collections.list(exported));
-            Collection<Resource> locals = dependencyModule.getClassLoader().loadResourceLocal(name);
-            if (!locals.isEmpty()) {
-                for(Resource local: locals) {
-                    URL url = local.getURL();
-                    if (exportedSet.contains(url)) {
-                        ret.add(url);
-                    }
-                }
-            }
-        }
-        return ret;
+        return new HashSet<>(Collections.list(exported));
     }
 
     private boolean hasBeanDefiningAnnotation(ClassInfo classInfo, Set<AnnotationType> beanDefiningAnnotations) {
