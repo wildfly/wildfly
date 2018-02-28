@@ -36,6 +36,7 @@ public enum RemoteCacheContainerComponent implements ResourceServiceNameFactory 
     CONNECTION_POOL(ConnectionPoolResourceDefinition.PATH.getValue()),
     MODULE("module"),
     NEAR_CACHE(NearCacheResourceDefinition.WILDCARD_PATH.getKey()),
+    SECURITY(SecurityResourceDefinition.PATH.getValue()),
     ;
 
     private final String[] components;

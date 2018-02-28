@@ -142,5 +142,6 @@
             <remote-cluster name="primary-site" socket-bindings="jdg1 jdg2 jdg3"/>
             <remote-cluster name="failover-site" socket-bindings="jdg4 jdg5 jdg6"/>
         </remote-clusters>
+        <security ssl-context="hotrod-elytron"/>
     </remote-cache-container>
 </subsystem>

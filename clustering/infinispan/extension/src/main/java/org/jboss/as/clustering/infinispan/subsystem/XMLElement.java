@@ -99,6 +99,7 @@ public enum XMLElement {
     INVALIDATION_NEAR_CACHE("invalidation-near-cache"),
     REMOTE_CLUSTERS("remote-clusters"),
     REMOTE_CLUSTER(RemoteClusterResourceDefinition.WILDCARD_PATH),
+    SECURITY("security"),
     HOTROD_STORE("hotrod-store"),
     ;
 

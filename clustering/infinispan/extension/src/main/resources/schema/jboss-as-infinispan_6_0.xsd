@@ -1160,6 +1160,13 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="security" type="tns:security" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Security configuration.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
         </xs:sequence>
         <xs:attribute name="connection-timeout" type="xs:int" default="60000">
             <xs:annotation>
@@ -1364,5 +1371,15 @@
             <xs:enumeration value="2.6"/>
         </xs:restriction>
     </xs:simpleType>
+
+    <xs:complexType name="security">
+        <xs:attribute name="ssl-context" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Reference to the Elytron-managed SSLContext to be used for connecting to the remote cluster.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
 
 </xs:schema>

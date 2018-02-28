@@ -30,6 +30,7 @@ import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourc
 import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.SecurityResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
@@ -154,6 +155,9 @@ public enum XMLAttribute {
 
     // remote-cache-container -> remote-clusters
     SOCKET_BINDINGS(RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS),
+
+    // remote-cache-container -> security
+    SSL_CONTEXT(SecurityResourceDefinition.Attribute.SSL_CONTEXT),
     ;
     private final String name;
 

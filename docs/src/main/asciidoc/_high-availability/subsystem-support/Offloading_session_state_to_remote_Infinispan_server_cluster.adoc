@@ -1,0 +1,80 @@
+== Offloading session state to remote Infinispan Server cluster
+
+While Infinispan project is used as a library internally by WildFly to provide data distribution, Infinispan project is also distributed in a standalone server mode.
+The Infinispan Server cluster operates as a language-independent service accessed remotely over a number of protocols (HotRod, REST, etc).
+
+HotRod is Infinispan's custom optimized binary protocol which was designed to:
+
+* enable faster client/server interactions compared to other existing text-based protocols,
+* allow clients to make more intelligent decisions with regards to load-balancing, failover,
+* and provide advanced cache operations.
+
+To learn more about the HotRod protocol itself and how to setup and run Infinispan Server,
+refer to http://infinispan.org/documentation/[Infinispan documentation] for the appropriate version.
+
+WildFly 13 introduced a custom optimized cache store based on HotRod protocol
+and integrating with security features provided by WildFly's Elytron subsystem.
+
+=== Configuring remote cache container
+
+To configure `remote-cache-container` ensure you have a list of available Infinispan Server nodes.
+The following example CLI script first adds socket bindings to two known Infinispan Server nodes,
+followed by configuration of the cluster.
+
+[source]
+----
+batch
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server-1:add(host=server1.example.com,port=11622)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server-2:add(host=server2.example.com,port=11722)
+/subsystem=infinispan/remote-cache-container=web-sessions:add(default-remote-cluster=infinispan-server-cluster-1)
+/subsystem=infinispan/remote-cache-container=web-sessions/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server-1,infinispan-server-2])
+run-batch
+----
+
+Upon reload, this will register necessary services for the client.
+A HotRod client can be injected directly into Java EE applications using the `@Resource` annotation.
+
+[source,java]
+----
+@Resource(lookup = "java:jboss/infinispan/remote-container/web-sessions")
+private org.infinispan.client.hotrod.RemoteCacheContainer client;
+----
+
+=== Configuring HotRod store
+
+The HotRod store uses one dedicated remote cache for each cache created by the server.
+For Infinispan Server versions supporting protocol version 2.7 and above (Infinispan Server version 9.2)
+a persistent remote cache will be automatically created based on default configuration.
+The recommended configuration for the remote cache where session data will be offloaded is transactional distribution mode cache with pessimistic locking.
+When using Infinispan Server version prior to 9.2, the caches need to be configured manually on the server where cache names correspond to the deployment file names (e.g. `test.war`).
+
+Once `remote-cache-container` is configured a `hotrod` store can be configured replacing any existing store.
+The following CLI script demonstrates a typical use case for offloading sessions is in conjunction with the `invalidation-cache`:
+
+[source]
+----
+batch
+/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:add()
+/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/store=hotrod:add(remote-cache-container=web-sessions,fetch-state=false,purge=false,passivation=false,shared=true)
+/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/component=transaction:add(mode=BATCH)
+/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/component=locking:add(isolation=REPEATABLE_READ)
+/subsystem=infinispan/cache-container=web:write-attribute(name=default-cache,value=hotrod-persistence)
+run-batch
+----
+
+The script configures a new invalidation cache.
+Session data is then maintained in the cache for performance and also written to the store for resilience.
+
+=== Security
+
+Securing the store is just a matter of configuring the `remote-cache-container` with SSL context.
+Please follow the Elytron security guide on how to configure new SSL context
+and http://infinispan.org/documentation/[Infinispan documentation] on how to secure Infinispan Server instances.
+
+Once the SSL Context is configured, use the following CLI script to configure remote-cache-container:
+
+[source]
+----
+/subsystem=infinispan/remote-cache-container=web-sessions/component=security:write-attribute(name=ssl-context,value=hotrod-ssl-context)
+----
+

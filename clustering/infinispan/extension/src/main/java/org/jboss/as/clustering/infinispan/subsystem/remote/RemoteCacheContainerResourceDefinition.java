@@ -139,6 +139,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
 
     public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ConnectionPoolResourceDefinition.buildTransformation(version, parent);
+        SecurityResourceDefinition.buildTransformation(version, parent);
         NoNearCacheResourceDefinition.buildTransformation(version, parent);
         InvalidationNearCacheResourceDefinition.buildTransformation(version, parent);
         RemoteClusterResourceDefinition.buildTransformation(version, parent);
@@ -162,12 +163,14 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 .addRequiredChildren(ConnectionPoolResourceDefinition.PATH)
                 .addRequiredChildren(ThreadPoolResourceDefinition.CLIENT.getPathElement())
                 .addRequiredSingletonChildren(NoNearCacheResourceDefinition.PATH)
+                .addRequiredChildren(SecurityResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new RemoteCacheContainerServiceHandler(builderFactory);
         new RestartParentResourceRegistration<>(builderFactory, descriptor, handler).register(registration);
 
         new ConnectionPoolResourceDefinition().register(registration);
         new RemoteClusterResourceDefinition(builderFactory).register(registration);
+        new SecurityResourceDefinition().register(registration);
 
         new InvalidationNearCacheResourceDefinition().register(registration);
         new NoNearCacheResourceDefinition().register(registration);

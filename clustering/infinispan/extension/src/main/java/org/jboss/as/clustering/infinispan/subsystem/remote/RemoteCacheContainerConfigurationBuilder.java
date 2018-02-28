@@ -38,6 +38,7 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.ConnectionPoolConfiguration;
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
+import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
@@ -70,6 +71,7 @@ public class RemoteCacheContainerConfigurationBuilder implements ResourceService
     private final Map<String, List<InjectedValueDependency<OutboundSocketBinding>>> clusters = new HashMap<>();
     private final InjectedValue<ConnectionPoolConfiguration> connectionPool = new InjectedValue<>();
     private final InjectedValue<NearCacheConfiguration> nearCache = new InjectedValue<>();
+    private final InjectedValue<SecurityConfiguration> security = new InjectedValue<>();
     private final Map<ThreadPoolResourceDefinition, ValueDependency<ExecutorFactoryConfiguration>> threadPools = new EnumMap<>(ThreadPoolResourceDefinition.class);
 
     private volatile int connectionTimeout;
@@ -127,6 +129,7 @@ public class RemoteCacheContainerConfigurationBuilder implements ResourceService
         ServiceBuilder<Configuration> builder = target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(RemoteCacheContainerComponent.CONNECTION_POOL.getServiceName(this.address), ConnectionPoolConfiguration.class, this.connectionPool)
                 .addDependency(RemoteCacheContainerComponent.NEAR_CACHE.getServiceName(address), NearCacheConfiguration.class, this.nearCache)
+                .addDependency(RemoteCacheContainerComponent.SECURITY.getServiceName(address), SecurityConfiguration.class, this.security)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 ;
         this.module.register(builder);
@@ -176,6 +179,8 @@ public class RemoteCacheContainerConfigurationBuilder implements ResourceService
                 }
             }
         }
+
+        builder.security().read(this.security.getValue());
 
         return builder.build();
     }
