@@ -101,16 +101,17 @@ public class CollectFiles extends JdrCommand {
         while(iter.hasNext() && !limiter.isDone()) {
 
             VirtualFile f = iter.next();
-            InputStream stream = limiter.limit(f);
+            try (InputStream stream = limiter.limit(f)) {
 
-            for (Sanitizer sanitizer : this.sanitizers) {
-                if(sanitizer.accepts(f)){
-                    stream = sanitizer.sanitize(stream);
+                InputStream modifiedStream = stream;
+                for (Sanitizer sanitizer : this.sanitizers) {
+                    if (sanitizer.accepts(f)) {
+                        modifiedStream = sanitizer.sanitize(modifiedStream);
+                    }
                 }
-            }
 
-            this.env.getZip().add(f, stream);
-            Utils.safelyClose(stream);
+                this.env.getZip().add(f, modifiedStream);
+            }
         }
     }
 
