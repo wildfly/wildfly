@@ -9,11 +9,10 @@ This is still a work in progress. Please feel free to edit any mistakes
 you find icon:smile-o[role="yellow"]
 
 
-[[overview]]
-== Overview
+[abstract]
 
 Handlers are used to determine what happens with a log message if the
-link:Loggers.html#src-557085_Loggers-Logger[logger] determines the
+<<Logging_Loggers#Logging_Loggers,logger>> determines the
 message is loggable.
 
 There are 6 main handlers provided with WildFly and 1 generic handler;
@@ -33,7 +32,6 @@ An `async-handler` is a handler that asynchronously writes log messages
 to it's child handlers. This type of handler is generally used for other
 handlers that take a substantial time to write logged messages.
 
-[[attributes]]
 ==== Attributes
 
 * <<enabled,#enabled>>
@@ -68,7 +66,6 @@ console. Generally this writes to `stdout`, but can be set to write to
 A `file-handler` is a handler that writes log messages to the specified
 file.
 
-[[attributes-2]]
 ==== Attributes
 
 * <<autoflush,#autoflush>>

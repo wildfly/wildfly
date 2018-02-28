@@ -76,7 +76,6 @@ stronger protection be required.
 The username for the outbound connection is specified at the point the
 outbound connection is defined.
 
-[[authentication]]
 == <authentication />
 
 The authentication element is predominantly used to configure the
@@ -244,7 +243,7 @@ some additional criteria for the filter.
 filter should contain '\{ `0`}' as a place holder for the username
 supplied by the user authenticating.
 
-[[properties]]
+[[security-realms-properties]]
 === <properties />
 
 [source, xml]

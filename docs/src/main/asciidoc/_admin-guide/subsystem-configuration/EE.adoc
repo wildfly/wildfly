@@ -85,10 +85,10 @@ specified:
 ----
 
 
-include::EE_Application_Deployment_Configuration.adoc[leveloffset=+1]
+include::EE_Application_Deployment_Configuration.adoc[]
 
-include::EE_Concurrency_Utilities_Configuration.adoc[leveloffset=+1]
+include::EE_Concurrency_Utilities_Configuration.adoc[]
 
-include::EE_Default_Bindings_Configuration.adoc[leveloffset=+1]
+include::EE_Default_Bindings_Configuration.adoc[]
 
 :leveloffset: -1

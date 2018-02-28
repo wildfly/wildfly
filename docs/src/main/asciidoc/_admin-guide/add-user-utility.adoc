@@ -68,7 +68,7 @@ For now just answer `n` or `no` to the final question, adding users to
 be used by processes is described in more detail in the domain
 management chapter.
 
-[[non-interactive-mode]]
+[[add-user-non-interactive-mode]]
 ==== Non-Interactive Mode
 
 To add a user in non-interactive mode the command

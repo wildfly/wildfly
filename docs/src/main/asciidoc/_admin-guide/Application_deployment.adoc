@@ -1,4 +1,4 @@
-[[Application_deployment]]
+[[application-deployment]]
 = Application deployment
 
 :toc:
@@ -6,7 +6,6 @@
 toc::[]
 
 
-[[managed-domain]]
 == Managed Domain
 
 In a managed domain, deployments are associated with a `server-group`
@@ -413,7 +412,6 @@ how it is used by that server group:
 
 ~(See domain/configuration/domain.xml)~
 
-[[standalone-server]]
 == Standalone Server
 
 Deployments on a standalone server work in a similar way to those on

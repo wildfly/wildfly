@@ -30,7 +30,6 @@ jboss-remote-naming project is backed by the jboss-remoting project (
 https://github.com/jboss-remoting/jboss-remoting) which allows much more
 and better control over security.
 
-[[overview]]
 == Overview
 
 Now that we know that for remote client JNDI communication with WildFly

@@ -18,7 +18,6 @@ a sp:TransportBinding and sp:HttpsToken.
 therefore a sp:IssuedToken of bearer keyType should be used with a
 sp:SupportingToken or a sp:SignedSupportingTokens.
 
-[[web-service-provider]]
 == Web service Provider
 
 This section examines the web service elements for the SAML Bearer
@@ -30,7 +29,6 @@ scenario. The components are
 * Crypto properties and keystore files
 * MANIFEST.MF
 
-[[web-service-provider-wsdl]]
 === Web service provider WSDL
 
 The web service provider is a contract-first endpoint. All the WS-trust

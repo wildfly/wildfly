@@ -1,7 +1,6 @@
 [[CLI_Recipes]]
 = CLI Recipes
 
-[[properties]]
 == Properties
 
 [[adding-reading-and-removing-system-property-using-cli]]
@@ -73,7 +72,6 @@ Domain
 [domain@IP_ADDRESS:9990 /] /host=master/server=server-one/core-service=platform-mbean/type=runtime:read-attribute(name=system-properties)
 ----
 
-[[configuration]]
 == Configuration
 
 [[list-subsystems]]

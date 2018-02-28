@@ -1,8 +1,7 @@
 [[Predefined_client_and_endpoint_configurations]]
 = Predefined client and endpoint configurations
 
-[[overview]]
-== Overview
+[abstract]
 
 JBossWS permits extra setup configuration data to be predefined and
 associated with an endpoint or a client. Configurations can include

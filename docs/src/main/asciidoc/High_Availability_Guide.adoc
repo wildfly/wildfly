@@ -9,7 +9,7 @@ WildFly clustering team;
 :doctype: book
 :icons: font
 :source-highlighter: coderay
-:wildflyVersion: 11
+:wildflyVersion: 12
 :leveloffset: +1
 
 ifndef::ebook-format[:leveloffset: 1]

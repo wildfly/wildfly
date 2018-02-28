@@ -156,7 +156,7 @@ domain controller it uses its configured name as its username. If you
 want to override the username used for authentication a `username`
 attribute can be added to the `<remote />` element.
 
-[[authentication]]
+[[security-realm-authentication]]
 == Authentication
 
 One of the primary functions of the security realms is to define the

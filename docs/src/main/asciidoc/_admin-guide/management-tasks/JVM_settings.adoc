@@ -8,7 +8,6 @@ hence determine the JVM settings. For a standalone server, it's the
 responsibility of the process that started the server (e.g. passing them
 as command line arguments).
 
-[[managed-domain]]
 == Managed Domain
 
 In a managed domain the JVM settings can be declared at different
@@ -80,7 +79,6 @@ heap size.
 }
 ----
 
-[[standalone-server]]
 == Standalone Server
 
 For a standalone sever you have to pass in the JVM settings either as

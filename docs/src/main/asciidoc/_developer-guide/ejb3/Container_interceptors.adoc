@@ -1,8 +1,7 @@
 [[Container_interceptors]]
 = Container interceptors
 
-[[overview]]
-== Overview
+[abstract]
 
 JBoss AS versions prior to WildFly8 allowed a JBoss specific way to
 plug-in user application specific interceptors on the server side so
