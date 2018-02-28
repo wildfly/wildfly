@@ -28,7 +28,7 @@
 
     <groupId>org.wildfly.bom</groupId>
     <artifactId>wildfly</artifactId>
-    <version>12.0.0.Alpha1-SNAPSHOT</version>
+    <version>12.0.0.CR1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -67,11 +67,11 @@
     </issueManagement>
 
     <properties>
-        <version.org.wildfly>11.0.0.Final</version.org.wildfly>
+        <version.org.wildfly>12.0.0.CR1</version.org.wildfly>
 
         <!-- Versions of JBoss projects -->
 
-        <version.io.undertow>2.0.0.Beta1</version.io.undertow>
+        <version.io.undertow>2.0.0.Final</version.io.undertow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
 
         <version.org.apache.cxf>3.2.2</version.org.apache.cxf>
@@ -85,15 +85,15 @@
         <version.org.jboss.logging.jboss-logging>3.3.1.Final</version.org.jboss.logging.jboss-logging>
         <version.org.jboss.logging.jboss-logging-tools>2.1.0.Final</version.org.jboss.logging.jboss-logging-tools>
         <version.org.jboss.narayana>5.5.31.Final</version.org.jboss.narayana>
-        <version.org.jboss.resteasy>3.5.0.CR4</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.5.0.Final</version.org.jboss.resteasy>
         <version.org.jboss.security.jboss-negotiation>3.0.4.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
         <version.org.jboss.spec.jboss.javaee7>1.1.1.Final</version.org.jboss.spec.jboss.javaee7>
         <version.org.jboss.shrinkwrap.resolver>2.2.6</version.org.jboss.shrinkwrap.resolver>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
-        <version.org.picketlink>2.5.5.SP8</version.org.picketlink>
-        <version.org.wildfly.arquillian.container>2.1.0.Beta1</version.org.wildfly.arquillian.container>
-        <version.org.wildfly.security.elytron>1.2.0.Final</version.org.wildfly.security.elytron>
+        <version.org.picketlink>2.5.5.SP9</version.org.picketlink>
+        <version.org.wildfly.arquillian>2.1.0.Final</version.org.wildfly.arquillian>
+        <version.org.wildfly.security.elytron>1.2.1.Final</version.org.wildfly.security.elytron>
         <version.org.wildfly.client.config>1.0.0.Final</version.org.wildfly.client.config>
         <version.org.wildfly.common>1.3.0.Final</version.org.wildfly.common>
         <version.org.wildfly.discovery>1.0.0.Final</version.org.wildfly.discovery>
@@ -103,6 +103,8 @@
         <version.org.hibernate.commons-annotations>5.0.1.Final</version.org.hibernate.commons-annotations>
         <version.org.hibernate-jpamodelgen>${version.org.hibernate}</version.org.hibernate-jpamodelgen>
         <version.org.hibernate.validator>6.0.7.Final</version.org.hibernate.validator>
+        <!-- TODO drop once we move to EE8 fully -->
+        <version.org.hibernate.validator.ee7>5.3.6.Final</version.org.hibernate.validator.ee7>
         <version.org.hibernate.search>5.5.8.Final</version.org.hibernate.search>
 
         <!-- Versions of projects not directly under JBoss umbrella -->
@@ -346,7 +348,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-validator</artifactId>
-                <version>${version.org.hibernate.validator}</version>
+                <version>${version.org.hibernate.validator.ee7}</version>
                 <scope>provided</scope>
             </dependency>
             <!-- Tools -->
