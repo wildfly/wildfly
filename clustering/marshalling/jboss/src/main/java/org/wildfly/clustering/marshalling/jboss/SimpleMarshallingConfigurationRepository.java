@@ -22,7 +22,8 @@
 
 package org.wildfly.clustering.marshalling.jboss;
 
-import java.util.EnumSet;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 
 import org.jboss.marshalling.MarshallingConfiguration;
@@ -44,7 +45,16 @@ public class SimpleMarshallingConfigurationRepository implements MarshallingConf
      * @param context the context with which to obtain the marshalling configuration
      */
     public <C, E extends Enum<E> & Function<C, MarshallingConfiguration>> SimpleMarshallingConfigurationRepository(Class<E> enumClass, E current, C context) {
-        this(current.ordinal() + 1, EnumSet.allOf(enumClass).stream().map(supplier -> supplier.apply(context)).toArray(MarshallingConfiguration[]::new));
+        this(current.ordinal() + 1, createConfigurations(enumClass, context));
+    }
+
+    private static <C, E extends Enum<E> & Function<C, MarshallingConfiguration>> MarshallingConfiguration[] createConfigurations(Class<E> enumClass, C context) {
+        List<Function<C, MarshallingConfiguration>> values = Arrays.asList(enumClass.getEnumConstants());
+        MarshallingConfiguration[] configurations = new MarshallingConfiguration[values.size()];
+        for (int i = 0; i < configurations.length; ++i) {
+            configurations[i] = values.get(i).apply(context);
+        }
+        return configurations;
     }
 
     /**

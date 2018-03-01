@@ -22,7 +22,10 @@
 package org.wildfly.clustering.marshalling.jboss;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import org.jboss.marshalling.ClassTable;
@@ -37,36 +40,50 @@ import org.wildfly.clustering.marshalling.spi.IntSerializer;
  */
 public class SimpleClassTable implements ClassTable {
 
-    private final Class<?>[] classes;
-    private final Map<Class<?>, Writer> writers = new IdentityHashMap<>();
+    private final List<Class<?>> classes;
+    private final Map<Class<?>, Integer> indexes = new IdentityHashMap<>();
     private final IntSerializer indexSerializer;
 
     public SimpleClassTable(Class<?>... classes) {
-        this(IndexSerializer.select(classes.length), classes);
+        this(Arrays.asList(classes));
     }
 
-    private SimpleClassTable(IntSerializer indexSerializer, Class<?>... classes) {
+    public SimpleClassTable(List<Class<?>> classes) {
+        this(IndexSerializer.select(classes.size()), classes);
+    }
+
+    private SimpleClassTable(IntSerializer indexSerializer, List<Class<?>> classes) {
         this.indexSerializer = indexSerializer;
         this.classes = classes;
-        for (int i = 0; i < classes.length; i++) {
-            final int index = i;
-            Writer writer = new Writer() {
-                @Override
-                public void writeClass(Marshaller output, Class<?> clazz) throws IOException {
-                    indexSerializer.writeInt(output, index);
-                }
-            };
-            this.writers.put(classes[i], writer);
+        ListIterator<Class<?>> iterator = classes.listIterator();
+        while (iterator.hasNext()) {
+            this.indexes.putIfAbsent(iterator.next(), iterator.previousIndex());
         }
     }
 
     @Override
-    public Writer getClassWriter(Class<?> clazz) {
-        return this.writers.get(clazz);
+    public Writer getClassWriter(Class<?> targetClass) {
+        Integer index = this.indexes.get(targetClass);
+        return (index != null) ? new ClassTableWriter(index, this.indexSerializer) : null;
     }
 
     @Override
     public Class<?> readClass(Unmarshaller input) throws IOException, ClassNotFoundException {
-        return this.classes[this.indexSerializer.readInt(input)];
+        return this.classes.get(this.indexSerializer.readInt(input));
+    }
+
+    private static class ClassTableWriter implements ClassTable.Writer {
+        private final int index;
+        private final IntSerializer serializer;
+
+        ClassTableWriter(int index, IntSerializer serializer) {
+            this.index = index;
+            this.serializer = serializer;
+        }
+
+        @Override
+        public void writeClass(Marshaller marshaller, Class<?> clazz) throws IOException {
+            this.serializer.writeInt(marshaller, this.index);
+        }
     }
 }
