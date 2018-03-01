@@ -6587,8 +6587,7 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>${version.compiler.plugin}</version>
                         <configuration>
-                            <!-- jdk.unsupported is needed for security subsystem FastConcurrentDirectDeque-->
-                            <compilerArgument>-J--add-modules=java.xml.ws.annotation,jdk.unsupported</compilerArgument>
+                            <release>8</release>
                         </configuration>
                     </plugin>
                 </plugins>

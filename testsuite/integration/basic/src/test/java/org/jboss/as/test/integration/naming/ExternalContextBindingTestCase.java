@@ -44,9 +44,8 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
+import javax.naming.ldap.LdapContext;
 
-import com.sun.jndi.ldap.LdapCtx;
-import com.sun.jndi.ldap.LdapCtxFactory;
 import org.apache.directory.api.ldap.model.entry.DefaultEntry;
 import org.apache.directory.api.ldap.model.ldif.LdifEntry;
 import org.apache.directory.api.ldap.model.ldif.LdifReader;
@@ -136,7 +135,7 @@ public class ExternalContextBindingTestCase {
             bindingAdd.get(CLASS).set(InitialDirContext.class.getName());
             bindingAdd.get(ENVIRONMENT).add("java.naming.provider.url", "ldap://"+managementClient.getMgmtAddress()+":"+
                     ExternalContextBindingTestCase.LDAP_PORT);
-            bindingAdd.get(ENVIRONMENT).add("java.naming.factory.initial", LdapCtxFactory.class.getName());
+            bindingAdd.get(ENVIRONMENT).add("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
             bindingAdd.get(ENVIRONMENT).add(Context.SECURITY_AUTHENTICATION, "simple");
             bindingAdd.get(ENVIRONMENT)
                     .add(Context.SECURITY_PRINCIPAL, "uid=jduke,ou=People,dc=jboss,dc=org");
@@ -155,7 +154,7 @@ public class ExternalContextBindingTestCase {
             bindingAdd.get(CACHE).set(true);
             bindingAdd.get(ENVIRONMENT).add("java.naming.provider.url", "ldap://"+managementClient.getMgmtAddress()+":"+
                     ExternalContextBindingTestCase.LDAP_PORT);
-            bindingAdd.get(ENVIRONMENT).add("java.naming.factory.initial", LdapCtxFactory.class.getName());
+            bindingAdd.get(ENVIRONMENT).add("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
             bindingAdd.get(ENVIRONMENT).add(Context.SECURITY_AUTHENTICATION, "simple");
             bindingAdd.get(ENVIRONMENT)
                     .add(Context.SECURITY_PRINCIPAL, "uid=jduke,ou=People,dc=jboss,dc=org");
@@ -373,8 +372,8 @@ public class ExternalContextBindingTestCase {
                 Assert.assertNotSame(ldapContext1, ldapContext2);
             }
             LOGGER.debug("acquired external LDAP context: " + ldapContext1.toString());
-            LdapCtx c = (LdapCtx)ldapContext1.lookup("dc=jboss,dc=org");
-            c = (LdapCtx)c.lookup("ou=People");
+            LdapContext c = (LdapContext)ldapContext1.lookup("dc=jboss,dc=org");
+            c = (LdapContext)c.lookup("ou=People");
             Attributes attributes = c.getAttributes("uid=jduke");
             Assert.assertTrue(attributes.get("description").contains("awesome"));
             // resource injection
@@ -382,7 +381,7 @@ public class ExternalContextBindingTestCase {
             Assert.assertNotNull(ejb);
             c = ejb.getLdapCtx();
             Assert.assertNotNull(c);
-            c = (LdapCtx)c.lookup("ou=People");
+            c = (LdapContext)c.lookup("ou=People");
             attributes = c.getAttributes("uid=jduke");
             Assert.assertTrue(attributes.get("description").contains("awesome"));
         } finally {

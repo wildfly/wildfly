@@ -25,15 +25,15 @@
 package org.jboss.as.security.lru;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.Consumer;
 
-import sun.misc.Unsafe;
 
 /**
  * A modified version of ConcurrentLinkedDequeue which includes direct
@@ -322,14 +322,14 @@ public class FastConcurrentDirectDeque<E>
 
         // Unsafe mechanics
 
-        private static final Unsafe UNSAFE;
+        private static final sun.misc.Unsafe UNSAFE;
         private static final long prevOffset;
         private static final long itemOffset;
         private static final long nextOffset;
 
         static {
             try {
-                UNSAFE = getUnsafe();
+                UNSAFE = sun.misc.Unsafe.getUnsafe();
                 Class<?> k = Node.class;
                 prevOffset = UNSAFE.objectFieldOffset
                     (k.getDeclaredField("prev"));
@@ -812,10 +812,10 @@ public class FastConcurrentDirectDeque<E>
      * Creates an array list and fills it with elements of this list.
      * Used by toArray.
      *
-     * @return the arrayList
+     * @return the array list
      */
     private ArrayList<E> toArrayList() {
-        ArrayList<E> list = new ArrayList<>();
+        ArrayList<E> list = new ArrayList<E>();
         for (Node<E> p = first(); p != null; p = succ(p)) {
             E item = p.item;
             if (item != null)
@@ -1047,23 +1047,40 @@ public class FastConcurrentDirectDeque<E>
         return offerLast(e);
     }
 
-    public E poll()           {
+    public E poll() {
         return pollFirst();
     }
-    public E remove()         {
-        return removeFirst();
-    }
-    public E peek()           {
+
+    public E peek() {
         return peekFirst();
     }
-    public E element()        {
+
+    /**
+     * @throws NoSuchElementException {@inheritDoc}
+     */
+    public E remove() {
+        return removeFirst();
+    }
+
+    /**
+     * @throws NoSuchElementException {@inheritDoc}
+     */
+    public E pop() {
+        return removeFirst();
+    }
+
+    /**
+     * @throws NoSuchElementException {@inheritDoc}
+     */
+    public E element() {
         return getFirst();
     }
-    public void push(E e)     {
+
+    /**
+     * @throws NullPointerException {@inheritDoc}
+     */
+    public void push(E e) {
         addFirst(e);
-    }
-    public E pop()            {
-        return removeFirst();
     }
 
     /**
@@ -1413,6 +1430,7 @@ public class FastConcurrentDirectDeque<E>
         Node<E> startNode() {
             return first();
         }
+
         Node<E> nextNode(Node<E> p) {
             return succ(p);
         }
@@ -1423,14 +1441,128 @@ public class FastConcurrentDirectDeque<E>
         Node<E> startNode() {
             return last();
         }
+
         Node<E> nextNode(Node<E> p) {
             return pred(p);
         }
     }
 
+    /** A customized variant of Spliterators.IteratorSpliterator */
+    static final class CLDSpliterator<E> implements Spliterator<E> {
+        static final int MAX_BATCH = 1 << 25;  // max batch array size;
+        final FastConcurrentDirectDeque<E> queue;
+        Node<E> current;    // current node; null until initialized
+        int batch;          // batch size for splits
+        boolean exhausted;  // true when no more nodes
+        CLDSpliterator(FastConcurrentDirectDeque<E> queue) {
+            this.queue = queue;
+        }
+
+        public Spliterator<E> trySplit() {
+            Node<E> p;
+            final FastConcurrentDirectDeque<E> q = this.queue;
+            int b = batch;
+            int n = (b <= 0) ? 1 : (b >= MAX_BATCH) ? MAX_BATCH : b + 1;
+            if (!exhausted &&
+                ((p = current) != null || (p = q.first()) != null)) {
+                if (p.item == null && p == (p = p.next))
+                    current = p = q.first();
+                if (p != null && p.next != null) {
+                    Object[] a = new Object[n];
+                    int i = 0;
+                    do {
+                        if ((a[i] = p.item) != null)
+                            ++i;
+                        if (p == (p = p.next))
+                            p = q.first();
+                    } while (p != null && i < n);
+                    if ((current = p) == null)
+                        exhausted = true;
+                    if (i > 0) {
+                        batch = i;
+                        return Spliterators.spliterator
+                            (a, 0, i, Spliterator.ORDERED | Spliterator.NONNULL |
+                             Spliterator.CONCURRENT);
+                    }
+                }
+            }
+            return null;
+        }
+
+        public void forEachRemaining(Consumer<? super E> action) {
+            Node<E> p;
+            if (action == null) throw new NullPointerException();
+            final FastConcurrentDirectDeque<E> q = this.queue;
+            if (!exhausted &&
+                ((p = current) != null || (p = q.first()) != null)) {
+                exhausted = true;
+                do {
+                    E e = p.item;
+                    if (p == (p = p.next))
+                        p = q.first();
+                    if (e != null)
+                        action.accept(e);
+                } while (p != null);
+            }
+        }
+
+        public boolean tryAdvance(Consumer<? super E> action) {
+            Node<E> p;
+            if (action == null) throw new NullPointerException();
+            final FastConcurrentDirectDeque<E> q = this.queue;
+            if (!exhausted &&
+                ((p = current) != null || (p = q.first()) != null)) {
+                E e;
+                do {
+                    e = p.item;
+                    if (p == (p = p.next))
+                        p = q.first();
+                } while (e == null && p != null);
+                if ((current = p) == null)
+                    exhausted = true;
+                if (e != null) {
+                    action.accept(e);
+                    return true;
+                }
+            }
+            return false;
+    }
+
+        public long estimateSize() {
+            return Long.MAX_VALUE;
+        }
+
+        public int characteristics() {
+            return Spliterator.ORDERED | Spliterator.NONNULL |
+                Spliterator.CONCURRENT;
+        }
+        }
+
+    /**
+     * Returns a {@link Spliterator} over the elements in this deque.
+     *
+     * <p>The returned spliterator is
+     * <a href="package-summary.html#Weakly"><i>weakly consistent</i></a>.
+     *
+     * <p>The {@code Spliterator} reports {@link Spliterator#CONCURRENT},
+     * {@link Spliterator#ORDERED}, and {@link Spliterator#NONNULL}.
+     *
+     * @implNote
+     * The {@code Spliterator} implements {@code trySplit} to permit limited
+     * parallelism.
+     *
+     * @return a {@code Spliterator} over the elements in this deque
+     * @since 1.8
+     */
+    public Spliterator<E> spliterator() {
+        return new CLDSpliterator<E>(this);
+    }
+
     /**
      * Saves this deque to a stream (that is, serializes it).
      *
+     * @param s the stream
+     * @throws java.io.IOException if an I/O error occurs
      * @serialData All of the elements (each an {@code E}) in
      * the proper order, followed by a null
      */
@@ -1453,6 +1585,10 @@ public class FastConcurrentDirectDeque<E>
 
     /**
      * Reconstitutes this deque from a stream (that is, deserializes it).
+     * @param s the stream
+     * @throws ClassNotFoundException if the class of a serialized object
+     *         could not be found
+     * @throws java.io.IOException if an I/O error occurs
      */
     private void readObject(java.io.ObjectInputStream s)
         throws java.io.IOException, ClassNotFoundException {
@@ -1485,7 +1621,7 @@ public class FastConcurrentDirectDeque<E>
 
     // Unsafe mechanics
 
-    private static final Unsafe UNSAFE;
+    private static final sun.misc.Unsafe UNSAFE;
     private static final long headOffset;
     private static final long tailOffset;
     static {
@@ -1494,7 +1630,7 @@ public class FastConcurrentDirectDeque<E>
         NEXT_TERMINATOR = new Node<>();
         NEXT_TERMINATOR.prev = NEXT_TERMINATOR;
         try {
-            UNSAFE = getUnsafe();
+            UNSAFE = sun.misc.Unsafe.getUnsafe();
             Class<?> k = FastConcurrentDirectDeque.class;
             headOffset = UNSAFE.objectFieldOffset
                 (k.getDeclaredField("head"));
@@ -1502,27 +1638,6 @@ public class FastConcurrentDirectDeque<E>
                 (k.getDeclaredField("tail"));
         } catch (Exception e) {
             throw new Error(e);
-        }
-    }
-
-    private static Unsafe getUnsafe() {
-        if (System.getSecurityManager() != null) {
-            return new PrivilegedAction<Unsafe>() {
-                public Unsafe run() {
-                    return getUnsafe0();
-                }
-            }.run();
-        }
-        return getUnsafe0();
-    }
-
-    private static Unsafe getUnsafe0()  {
-        try {
-            Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
-            theUnsafe.setAccessible(true);
-            return (Unsafe) theUnsafe.get(null);
-        } catch (Throwable t) {
-            throw new RuntimeException("JDK did not allow accessing unsafe", t);
         }
     }
 }
