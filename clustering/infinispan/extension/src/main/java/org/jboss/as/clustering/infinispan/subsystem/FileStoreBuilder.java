@@ -31,7 +31,6 @@ import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.SingleFileStoreConfiguration;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
 import org.jboss.as.clustering.controller.CommonRequirement;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -67,7 +66,7 @@ public class FileStoreBuilder extends StoreBuilder<SingleFileStoreConfiguration,
     @Override
     public Builder<PersistenceConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.pathManager = new InjectedValueDependency<>(CommonRequirement.PATH_MANAGER.getServiceName(context), PathManager.class);
-        this.relativePath = ModelNodes.optionalString(RELATIVE_PATH.resolveModelAttribute(context, model)).orElse(InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + this.containerName);
+        this.relativePath = RELATIVE_PATH.resolveModelAttribute(context, model).asString(InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + this.containerName);
         this.relativeTo = RELATIVE_TO.resolveModelAttribute(context, model).asString();
         return super.configure(context, model);
     }

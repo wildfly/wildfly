@@ -22,19 +22,21 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.*;
-import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.*;
-import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.*;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.CLUSTERING_CAPABILITIES;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.MODULE;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.CACHE;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.CONFIGURATION;
 
 import java.util.EnumSet;
 import java.util.ServiceLoader;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.ModuleBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -48,6 +50,7 @@ import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.CacheBuilderProvider;
+import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
 
@@ -89,7 +92,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName), CONFIGURATION.getServiceName(cacheAddress), Configuration.class).build(target).install();
         new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheBinding(containerName, cacheName), CACHE.getServiceName(cacheAddress), Cache.class).build(target).install();
 
-        ServiceNameRegistry<ClusteringCacheRequirement> registry = new CapabilityServiceNameRegistry(cacheAddress);
+        ServiceNameRegistry<ClusteringCacheRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, cacheAddress);
 
         for (CacheBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
             for (CapabilityServiceBuilder<?> builder : provider.getBuilders(registry, containerName, cacheName)) {
@@ -106,7 +109,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         String containerName = containerAddress.getLastElement().getValue();
         String cacheName = cacheAddress.getLastElement().getValue();
 
-        ServiceNameRegistry<ClusteringCacheRequirement> registry = new CapabilityServiceNameRegistry(cacheAddress);
+        ServiceNameRegistry<ClusteringCacheRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, cacheAddress);
 
         for (CacheBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
             for (ServiceNameProvider builder : provider.getBuilders(registry, containerName, cacheName)) {
@@ -120,6 +123,8 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         context.removeService(new XAResourceRecoveryBuilder(cacheAddress).getServiceName());
         context.removeService(CacheComponent.MODULE.getServiceName(cacheAddress));
 
-        EnumSet.allOf(CacheResourceDefinition.Capability.class).stream().map(capability -> capability.getServiceName(cacheAddress)).forEach(serviceName -> context.removeService(serviceName));
+        for (Capability capability : EnumSet.allOf(Capability.class)) {
+            context.removeService(capability.getServiceName(cacheAddress));
+        }
     }
 }

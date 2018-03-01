@@ -26,7 +26,6 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefiniti
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.*;
 
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -49,6 +48,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
@@ -85,8 +85,7 @@ public class CacheConfigurationBuilder extends CapabilityServiceNameProvider imp
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
         ServiceBuilder<Configuration> builder = this.builder.build(target);
-        Stream.of(this.memory, this.expiration, this.locking, this.persistence, this.transaction, this.module).forEach(dependency -> dependency.register(builder));
-        return builder;
+        return new CompositeDependency(this.memory, this.expiration, this.locking, this.persistence, this.transaction, this.module).register(builder);
     }
 
     @Override

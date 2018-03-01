@@ -26,8 +26,6 @@ import static org.jboss.as.clustering.infinispan.subsystem.JDBCStoreResourceDefi
 import static org.jboss.as.clustering.infinispan.subsystem.JDBCStoreResourceDefinition.Attribute.DIALECT;
 
 import java.util.ServiceLoader;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javax.sql.DataSource;
 
@@ -48,6 +46,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
@@ -72,8 +71,7 @@ public class JDBCStoreBuilder extends StoreBuilder<JdbcStringBasedStoreConfigura
     @Override
     public ServiceBuilder<PersistenceConfiguration> build(ServiceTarget target) {
         ServiceBuilder<PersistenceConfiguration> builder = super.build(target);
-        Stream.of(this.table, this.module, this.dataSource).forEach(dependency -> dependency.register(builder));
-        return builder;
+        return new CompositeDependency(this.table, this.module, this.dataSource).register(builder);
     }
 
     @Override
@@ -87,8 +85,10 @@ public class JDBCStoreBuilder extends StoreBuilder<JdbcStringBasedStoreConfigura
     @Override
     public void accept(JdbcStringBasedStoreConfigurationBuilder builder) {
         builder.table().read(this.table.getValue());
-        StreamSupport.stream(ServiceLoader.load(TwoWayKey2StringMapper.class, this.module.getValue().getClassLoader()).spliterator(), false).findFirst()
-                .ifPresent(impl -> builder.key2StringMapper(impl.getClass()));
+        for (TwoWayKey2StringMapper mapper : ServiceLoader.load(TwoWayKey2StringMapper.class, this.module.getValue().getClassLoader())) {
+            builder.key2StringMapper(mapper.getClass());
+            break;
+        }
         builder.dialect(this.dialect).connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).setDataSourceDependency(this.dataSource);
     }
 }

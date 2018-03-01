@@ -31,6 +31,6 @@ import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 public class LocalCacheServiceHandler extends CacheServiceHandler {
 
     LocalCacheServiceHandler() {
-        super(address -> new LocalCacheBuilder(address), LocalCacheBuilderProvider.class);
+        super(LocalCacheBuilder::new, LocalCacheBuilderProvider.class);
     }
 }

@@ -28,7 +28,6 @@ import static org.jboss.as.clustering.infinispan.subsystem.JGroupsTransportResou
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.ChannelFactoryTransport;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -64,7 +63,7 @@ public class JGroupsTransportBuilder extends GlobalComponentBuilder<TransportCon
     @Override
     public JGroupsTransportBuilder configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.lockTimeout = LOCK_TIMEOUT.resolveModelAttribute(context, model).asLong();
-        this.channel = ModelNodes.optionalString(CHANNEL.resolveModelAttribute(context, model)).orElse(null);
+        this.channel = CHANNEL.resolveModelAttribute(context, model).asStringOrNull();
         this.factory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, this.channel), ChannelFactory.class);
         this.cluster = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, this.channel), String.class);
         return this;

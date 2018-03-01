@@ -21,9 +21,9 @@
  */
 package org.wildfly.clustering.infinispan.spi.service;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
@@ -38,6 +38,7 @@ import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.SimpleDependency;
@@ -50,7 +51,7 @@ import org.wildfly.clustering.service.ValueDependency;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class CacheBuilder<K, V> implements CapabilityServiceBuilder<Cache<K, V>> {
+public class CacheBuilder<K, V> implements CapabilityServiceBuilder<Cache<K, V>>, Supplier<Cache<K, V>>, Consumer<Cache<K, V>> {
 
     private final ServiceName name;
     private final String containerName;
@@ -63,6 +64,18 @@ public class CacheBuilder<K, V> implements CapabilityServiceBuilder<Cache<K, V>>
         this.name = name;
         this.containerName = containerName;
         this.cacheName = cacheName;
+    }
+
+    @Override
+    public Cache<K, V> get() {
+        Cache<K, V> cache = this.container.getValue().getCache(this.cacheName);
+        cache.start();
+        return cache;
+    }
+
+    @Override
+    public void accept(Cache<K, V> cache) {
+        cache.stop();
     }
 
     @Override
@@ -79,14 +92,8 @@ public class CacheBuilder<K, V> implements CapabilityServiceBuilder<Cache<K, V>>
 
     @Override
     public ServiceBuilder<Cache<K, V>> build(ServiceTarget target) {
-        Supplier<Cache<K, V>> supplier = () -> {
-            Cache<K, V> cache = this.container.getValue().getCache(this.cacheName);
-            cache.start();
-            return cache;
-        };
-        Service<Cache<K, V>> service = new SuppliedValueService<>(Function.identity(), supplier, Cache::stop);
+        Service<Cache<K, V>> service = new SuppliedValueService<>(Function.identity(), this, this);
         ServiceBuilder<Cache<K, V>> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), service).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.configuration, this.container).forEach(dependency -> dependency.register(builder));
-        return builder;
+        return new CompositeDependency(this.configuration, this.container).register(builder);
     }
 }

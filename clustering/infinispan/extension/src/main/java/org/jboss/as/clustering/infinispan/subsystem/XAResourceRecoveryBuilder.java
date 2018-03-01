@@ -48,9 +48,8 @@ import org.wildfly.clustering.service.SuppliedValueService;
  * Builder for a {@link XAResourceRecovery} registration.
  * @author Paul Ferraro
  */
-public class XAResourceRecoveryBuilder implements Builder<XAResourceRecovery> {
-    @SuppressWarnings("rawtypes")
-    private final InjectedValue<Cache> cache = new InjectedValue<>();
+public class XAResourceRecoveryBuilder implements Builder<XAResourceRecovery>, Supplier<XAResourceRecovery>, Consumer<XAResourceRecovery> {
+    private final InjectedValue<Cache<?, ?>> cache = new InjectedValue<>();
     private final InjectedValue<XAResourceRecoveryRegistry> registry = new InjectedValue<>();
     private final PathAddress cacheAddress;
 
@@ -62,29 +61,34 @@ public class XAResourceRecoveryBuilder implements Builder<XAResourceRecovery> {
     }
 
     @Override
+    public XAResourceRecovery get() {
+        Cache<?, ?> cache = this.cache.getValue();
+        XAResourceRecovery recovery = cache.getCacheConfiguration().transaction().recovery().enabled() ? new InfinispanXAResourceRecovery(cache) : null;
+        if (recovery != null) {
+            this.registry.getValue().addXAResourceRecovery(recovery);
+        }
+        return recovery;
+    }
+
+    @Override
+    public void accept(XAResourceRecovery recovery) {
+        if (recovery != null) {
+            this.registry.getValue().removeXAResourceRecovery(recovery);
+        }
+    }
+
+    @Override
     public ServiceName getServiceName() {
         return CACHE.getServiceName(this.cacheAddress).append("recovery");
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public ServiceBuilder<XAResourceRecovery> build(ServiceTarget target) {
-        Supplier<XAResourceRecovery> supplier = () -> {
-            Cache<?, ?> cache = this.cache.getValue();
-            XAResourceRecovery recovery = cache.getCacheConfiguration().transaction().recovery().enabled() ? new InfinispanXAResourceRecovery(cache) : null;
-            if (recovery != null) {
-                this.registry.getValue().addXAResourceRecovery(recovery);
-            }
-            return recovery;
-        };
-        Consumer<XAResourceRecovery> destroyer = recovery -> {
-            if (recovery != null) {
-                this.registry.getValue().removeXAResourceRecovery(recovery);
-            }
-        };
-        Service<XAResourceRecovery> service = new SuppliedValueService<>(Function.identity(), supplier, destroyer);
+        Service<XAResourceRecovery> service = new SuppliedValueService<>(Function.identity(), this, this);
         return target.addService(this.getServiceName(), service)
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, this.registry)
-                .addDependency(CACHE.getServiceName(this.cacheAddress), Cache.class, this.cache)
+                .addDependency(CACHE.getServiceName(this.cacheAddress), (Class<Cache<?, ?>>) (Class<?>) Cache.class, this.cache)
                 .setInitialMode(ServiceController.Mode.PASSIVE);
     }
 

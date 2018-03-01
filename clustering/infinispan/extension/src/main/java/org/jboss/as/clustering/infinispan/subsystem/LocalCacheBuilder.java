@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.stream.Stream;
-
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -34,6 +32,7 @@ import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
@@ -56,8 +55,7 @@ public class LocalCacheBuilder extends CacheConfigurationBuilder {
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
         ServiceBuilder<Configuration> builder = super.build(target);
-        Stream.of(this.memory, this.persistence, this.transaction).forEach(dependency -> dependency.register(builder));
-        return builder;
+        return new CompositeDependency(this.memory, this.persistence, this.transaction).register(builder);
     }
 
     @Override

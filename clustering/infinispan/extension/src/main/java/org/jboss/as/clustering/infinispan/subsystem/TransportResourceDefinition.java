@@ -37,9 +37,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.spi.ClusteringRequirement;
-import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * @author Paul Ferraro
@@ -53,24 +51,13 @@ public abstract class TransportResourceDefinition extends ChildResourceDefinitio
 
     static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
     static {
-        EnumSet.allOf(ClusteringRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement) {
-            @Override
-            public RuntimeCapability<?> resolve(PathAddress address) {
-                return super.resolve(address.getParent());
-            }
-        }));
-    }
-
-    static class CapabilityServiceNameRegistry implements ServiceNameRegistry<ClusteringRequirement> {
-        private PathAddress address;
-
-        CapabilityServiceNameRegistry(PathAddress address) {
-            this.address = address;
-        }
-
-        @Override
-        public ServiceName getServiceName(ClusteringRequirement requirement) {
-            return CLUSTERING_CAPABILITIES.get(requirement).getServiceName(this.address);
+        for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
+            CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement) {
+                @Override
+                public RuntimeCapability<?> resolve(PathAddress address) {
+                    return super.resolve(address.getParent());
+                }
+            });
         }
     }
 

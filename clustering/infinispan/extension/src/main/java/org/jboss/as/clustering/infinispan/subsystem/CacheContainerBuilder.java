@@ -66,7 +66,7 @@ import org.wildfly.clustering.service.ValueDependency;
  * @author Paul Ferraro
  */
 @Listener
-public class CacheContainerBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<CacheContainer> {
+public class CacheContainerBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<CacheContainer>, Function<EmbeddedCacheManager, CacheContainer>, Supplier<EmbeddedCacheManager>, Consumer<EmbeddedCacheManager> {
 
     private final List<ServiceName> aliases = new LinkedList<>();
     private final String name;
@@ -80,6 +80,36 @@ public class CacheContainerBuilder extends CapabilityServiceNameProvider impleme
     }
 
     @Override
+    public CacheContainer apply(EmbeddedCacheManager manager) {
+        return new DefaultCacheContainer(manager, this.batcherFactory);
+    }
+
+    @Override
+    public EmbeddedCacheManager get() {
+        GlobalConfiguration config = this.configuration.getValue();
+        String defaultCacheName = config.defaultCacheName().orElse(null);
+        // We need to create a dummy default configuration if cache has a default cache
+        Configuration defaultConfiguration = (defaultCacheName != null) ? new ConfigurationBuilder().build() : null;
+        EmbeddedCacheManager manager = new DefaultCacheManager(config, defaultConfiguration, false);
+        // Undefine the default cache, if we defined one
+        if (defaultCacheName != null) {
+            manager.undefineConfiguration(defaultCacheName);
+        }
+        manager.addListener(this);
+
+        manager.start();
+        InfinispanLogger.ROOT_LOGGER.debugf("%s cache container started", this.name);
+        return manager;
+    }
+
+    @Override
+    public void accept(EmbeddedCacheManager manager) {
+        manager.stop();
+        manager.removeListener(this);
+        InfinispanLogger.ROOT_LOGGER.debugf("%s cache container stopped", this.name);
+    }
+
+    @Override
     public CacheContainerBuilder configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.aliases.clear();
         for (ModelNode alias : ModelNodes.optionalList(ALIASES.resolveModelAttribute(context, model)).orElse(Collections.emptyList())) {
@@ -90,32 +120,11 @@ public class CacheContainerBuilder extends CapabilityServiceNameProvider impleme
 
     @Override
     public ServiceBuilder<CacheContainer> build(ServiceTarget target) {
-        Function<EmbeddedCacheManager, CacheContainer> mapper = manager -> new DefaultCacheContainer(manager, this.batcherFactory);
-        Supplier<EmbeddedCacheManager> supplier = () -> {
-            GlobalConfiguration config = this.configuration.getValue();
-            String defaultCacheName = config.defaultCacheName().orElse(null);
-            // We need to create a dummy default configuration if cache has a default cache
-            Configuration defaultConfiguration = (defaultCacheName != null) ? new ConfigurationBuilder().build() : null;
-            EmbeddedCacheManager manager = new DefaultCacheManager(config, defaultConfiguration, false);
-            // Undefine the default cache, if we defined one
-            if (defaultCacheName != null) {
-                manager.undefineConfiguration(defaultCacheName);
-            }
-            manager.addListener(this);
-
-            manager.start();
-            InfinispanLogger.ROOT_LOGGER.debugf("%s cache container started", this.name);
-            return manager;
-        };
-        Consumer<EmbeddedCacheManager> destroyer = manager -> {
-            manager.stop();
-            manager.removeListener(this);
-            InfinispanLogger.ROOT_LOGGER.debugf("%s cache container stopped", this.name);
-        };
-        Service<CacheContainer> service = new SuppliedValueService<>(mapper, supplier, destroyer);
-        ServiceBuilder<CacheContainer> builder = target.addService(this.getServiceName(), service)
-                .addAliases(this.aliases.stream().toArray(ServiceName[]::new))
-                ;
+        Service<CacheContainer> service = new SuppliedValueService<>(this, this, this);
+        ServiceBuilder<CacheContainer> builder = target.addService(this.getServiceName(), service);
+        for (ServiceName alias : this.aliases) {
+            builder.addAliases(alias);
+        }
         return this.configuration.register(builder);
     }
 
