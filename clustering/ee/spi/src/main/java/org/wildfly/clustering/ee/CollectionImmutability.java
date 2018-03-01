@@ -22,13 +22,13 @@
 
 package org.wildfly.clustering.ee;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Tests the immutability of {@link Collections} wrappers.
@@ -38,19 +38,18 @@ import java.util.stream.Stream;
  */
 public class CollectionImmutability implements Predicate<Object> {
 
-    private final Set<Class<?>> unmodifiableClasses = Immutability.createIdentitySet(Stream.of(
-            Collections.singleton(null),
-            Collections.singletonList(null),
-            Collections.singletonMap(null, null),
-            Collections.unmodifiableCollection(Collections.emptyList()),
-            Collections.unmodifiableList(Collections.emptyList()),
-            Collections.unmodifiableMap(Collections.emptyMap()),
-            Collections.unmodifiableNavigableMap(Collections.emptyNavigableMap()),
-            Collections.unmodifiableNavigableSet(Collections.emptyNavigableSet()),
-            Collections.unmodifiableSet(Collections.emptySet()),
-            Collections.unmodifiableSortedMap(Collections.emptySortedMap()),
-            Collections.unmodifiableSortedSet(Collections.emptySortedSet())
-        ).map(o -> o.getClass()).collect(Collectors.toList()));
+    private final List<Class<?>> unmodifiableClasses = Arrays.asList(
+                Collections.singleton(null).getClass(),
+                Collections.singletonList(null).getClass(),
+                Collections.singletonMap(null, null).getClass(),
+                Collections.unmodifiableCollection(Collections.emptyList()).getClass(),
+                Collections.unmodifiableList(Collections.emptyList()).getClass(),
+                Collections.unmodifiableMap(Collections.emptyMap()).getClass(),
+                Collections.unmodifiableNavigableMap(Collections.emptyNavigableMap()).getClass(),
+                Collections.unmodifiableNavigableSet(Collections.emptyNavigableSet()).getClass(),
+                Collections.unmodifiableSet(Collections.emptySet()).getClass(),
+                Collections.unmodifiableSortedMap(Collections.emptySortedMap()).getClass(),
+                Collections.unmodifiableSortedSet(Collections.emptySortedSet()).getClass());
 
     private final Predicate<Object> elementImmutability;
 
@@ -60,13 +59,19 @@ public class CollectionImmutability implements Predicate<Object> {
 
     @Override
     public boolean test(Object object) {
-        if (this.unmodifiableClasses.stream().anyMatch(immutableClass -> immutableClass.isInstance(object))) {
-            // An unmodifiable set should be immutable.
-            if (object instanceof Set) return true;
-            // An unmodifiable collection is immutable if its members are immutable.
-            // An unmodifiable map should be immutable if its values are immutable.
-            Collection<?> collection = (object instanceof Map) ? ((Map<?, ?>) object).values() : (Collection<?>) object;
-            return collection.stream().allMatch(e -> this.elementImmutability.test(e));
+        for (Class<?> unmodifiableClass : this.unmodifiableClasses) {
+            if (unmodifiableClass.isInstance(object)) {
+                // An unmodifiable set should be immutable.
+                if (object instanceof Set) return true;
+                // An unmodifiable collection is immutable if its members are immutable.
+                // An unmodifiable map should be immutable if its values are immutable.
+                Collection<?> collection = (object instanceof Map) ? ((Map<?, ?>) object).values() : (Collection<?>) object;
+                // This is not an expensive predicate, so there is little to gain from parallel computation
+                for (Object element : collection) {
+                    if (!this.elementImmutability.test(element)) return false;
+                }
+                return true;
+            }
         }
         return false;
     }

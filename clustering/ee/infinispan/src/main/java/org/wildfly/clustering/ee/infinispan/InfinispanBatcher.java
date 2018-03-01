@@ -141,9 +141,7 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
         // Non-tx case, just swap batch references
         if ((batch == null) || (tx == null)) {
             setCurrentBatch(batch);
-            return () -> {
-                setCurrentBatch(existingBatch);
-            };
+            return () -> setCurrentBatch(existingBatch);
         }
         try {
             if (existingBatch != null) {
