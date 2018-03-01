@@ -64,7 +64,7 @@
         <product.release.name>WildFly Full</product.release.name>
         <verifier.slot.name>wildfly-full</verifier.slot.name>
         <verifier.product.release.name>WildFly Full</verifier.product.release.name>
-        <verifier.product.release.version>12.0</verifier.product.release.version>
+        <verifier.product.release.version>13.0</verifier.product.release.version>
     </properties>
 
     <build>
