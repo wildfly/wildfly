@@ -23,8 +23,8 @@ package org.wildfly.clustering.ejb.infinispan.group;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
@@ -38,10 +38,10 @@ import org.wildfly.clustering.marshalling.spi.MarshalledValue;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class InfinispanBeanGroupEntry<I, T> implements BeanGroupEntry<I, T> {
+public class InfinispanBeanGroupEntry<I, T> implements BeanGroupEntry<I, T>, Function<I, AtomicInteger> {
 
     private final MarshalledValue<Map<I, T>, MarshallingContext> beans;
-    private final ConcurrentMap<I, AtomicInteger> usage = new ConcurrentHashMap<>();
+    private final Map<I, AtomicInteger> usage = new ConcurrentHashMap<>();
 
     public InfinispanBeanGroupEntry(MarshalledValue<Map<I, T>, MarshallingContext> beans) {
         this.beans = beans;
@@ -54,7 +54,7 @@ public class InfinispanBeanGroupEntry<I, T> implements BeanGroupEntry<I, T> {
 
     @Override
     public int incrementUsage(I id) {
-        return this.usage.computeIfAbsent(id, (I key) -> new AtomicInteger(0)).getAndIncrement();
+        return this.usage.computeIfAbsent(id, this).getAndIncrement();
     }
 
     @Override
@@ -65,6 +65,15 @@ public class InfinispanBeanGroupEntry<I, T> implements BeanGroupEntry<I, T> {
 
     @Override
     public int totalUsage() {
-        return this.usage.values().stream().mapToInt((AtomicInteger usage) -> usage.get()).sum();
+        int total = 0;
+        for (AtomicInteger usage : this.usage.values()) {
+            total += usage.get();
+        }
+        return total;
+    }
+
+    @Override
+    public AtomicInteger apply(I key) {
+        return new AtomicInteger(0);
     }
 }
