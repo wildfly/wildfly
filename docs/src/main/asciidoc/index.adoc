@@ -3,7 +3,7 @@
 :ext-relative: {outfilesuffix}
 :toc!:
 
-image:images/splash_wildflylogo_small.png[WildFly, align="center"]
+image:splash_wildflylogo_small.png[WildFly, align="center"]
 
 Welcome to the WildFly Documentation. The documentation for WildFly is
 split into two categories:
