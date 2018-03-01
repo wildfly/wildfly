@@ -63,7 +63,7 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public class AbstractProtocolResourceDefinition<P extends Protocol, C extends ProtocolConfiguration<P>> extends ChildResourceDefinition<ManagementResourceRegistration> {
+public class AbstractProtocolResourceDefinition<P extends Protocol, C extends ProtocolConfiguration<P>> extends ChildResourceDefinition<ManagementResourceRegistration> implements BiConsumer<ManagementResourceRegistration, ManagementResourceRegistration> {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING, builder -> builder
@@ -165,17 +165,12 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
     private final ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory;
     private final BiConsumer<ManagementResourceRegistration, ManagementResourceRegistration> registrationConfigurator;
 
-    @SuppressWarnings("deprecation")
     AbstractProtocolResourceDefinition(Parameters parameters, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<C> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory, BiConsumer<ManagementResourceRegistration, ManagementResourceRegistration> registrationConfigurator) {
         super(parameters);
         this.descriptorConfigurator = descriptorConfigurator.andThen(descriptor -> descriptor.addAttributes(Attribute.class).addExtraParameters(DeprecatedAttribute.class));
         this.handler = new SimpleResourceServiceHandler<>(builderFactory);
         this.parentBuilderFactory = parentBuilderFactory;
-        this.registrationConfigurator = registrationConfigurator.andThen((parent, registration) -> {
-            if (registration.getPathAddress().getLastElement().isWildcard()) {
-                new PropertyResourceDefinition().register(registration);
-            }
-        });
+        this.registrationConfigurator = registrationConfigurator.andThen(this);
     }
 
     @Override
@@ -187,5 +182,13 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
         new RestartParentResourceRegistration<>(this.parentBuilderFactory, descriptor, this.handler).register(registration);
 
         this.registrationConfigurator.accept(parent, registration);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public void accept(ManagementResourceRegistration parent, ManagementResourceRegistration registration) {
+        if (registration.getPathAddress().getLastElement().isWildcard()) {
+            new PropertyResourceDefinition().register(registration);
+        }
     }
 }

@@ -23,11 +23,10 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Set;
 
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
@@ -36,7 +35,6 @@ import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
@@ -55,6 +53,8 @@ import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
+import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
@@ -69,10 +69,8 @@ public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implem
 
     private volatile boolean statisticsEnabled;
 
-    @SuppressWarnings("rawtypes")
-    private volatile ValueDependency<TransportConfiguration> transport = null;
-    @SuppressWarnings("rawtypes")
-    private volatile List<ValueDependency<ProtocolConfiguration>> protocols = null;
+    private volatile ValueDependency<TransportConfiguration<? extends TP>> transport = null;
+    private volatile List<ValueDependency<ProtocolConfiguration<? extends Protocol>>> protocols = null;
     private volatile ValueDependency<RelayConfiguration> relay = null;
 
     public JChannelFactoryBuilder(PathAddress address) {
@@ -86,22 +84,29 @@ public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implem
         ServiceBuilder<ChannelFactory> builder = target.addService(this.getServiceName(), new ValueService<>(value))
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.concat(Stream.of(this.transport, this.relay).filter(Objects::nonNull), this.protocols.stream()).forEach(dependency -> dependency.register(builder));
-        return builder;
+        for (Dependency dependency : this.protocols) {
+            dependency.register(builder);
+        }
+        return new CompositeDependency(this.transport, this.relay).register(builder);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Builder<ChannelFactory> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.statisticsEnabled = StackResourceDefinition.Attribute.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         Resource resource = context.readResourceFromRoot(this.address, false);
-        Optional<PathElement> transport = resource.getChildren(TransportResourceDefinition.WILDCARD_PATH.getKey()).stream().map(Resource.ResourceEntry::getPathElement).findFirst();
-        if (!transport.isPresent()) {
+        Iterator<Resource.ResourceEntry> transports = resource.getChildren(TransportResourceDefinition.WILDCARD_PATH.getKey()).iterator();
+        if (!transports.hasNext()) {
             throw JGroupsLogger.ROOT_LOGGER.transportNotDefined(this.getName());
         }
 
-        this.transport = new InjectedValueDependency<>(new SingletonProtocolServiceNameProvider(this.address, transport.get()), TransportConfiguration.class);
-        this.protocols = resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).stream().map(entry -> new InjectedValueDependency<>(new ProtocolServiceNameProvider(this.address, entry.getPathElement()), ProtocolConfiguration.class)).collect(Collectors.toList());
+        this.transport = new InjectedValueDependency<>(new SingletonProtocolServiceNameProvider(this.address, transports.next().getPathElement()), (Class<TransportConfiguration<? extends TP>>) (Class<?>) TransportConfiguration.class);
+        Set<Resource.ResourceEntry> entries = resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey());
+        this.protocols = new ArrayList<>(entries.size());
+        for (Resource.ResourceEntry entry : entries) {
+            this.protocols.add(new InjectedValueDependency<>(new ProtocolServiceNameProvider(this.address, entry.getPathElement()), (Class<ProtocolConfiguration<? extends Protocol>>) (Class<?>) ProtocolConfiguration.class));
+        }
         this.relay = resource.hasChild(RelayResourceDefinition.PATH) ? new InjectedValueDependency<>(new SingletonProtocolServiceNameProvider(this.address, RelayResourceDefinition.PATH), RelayConfiguration.class) : null;
 
         return this;
@@ -119,10 +124,8 @@ public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implem
 
     @Override
     public List<ProtocolConfiguration<? extends Protocol>> getProtocols() {
-        // This works in eclipse, but fails in openjdk 1.8.0_121
-        // return this.protocols.stream().map(Value::getValue).collect(Collectors.toList());
         List<ProtocolConfiguration<? extends Protocol>> protocols = new ArrayList<>(this.protocols.size());
-        for (@SuppressWarnings("rawtypes") Value<ProtocolConfiguration> protocolValue : this.protocols) {
+        for (Value<ProtocolConfiguration<? extends Protocol>> protocolValue : this.protocols) {
             ProtocolConfiguration<? extends Protocol> protocol = protocolValue.getValue();
             protocols.add(protocol);
         }

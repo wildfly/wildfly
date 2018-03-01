@@ -56,11 +56,13 @@ public class JGroupsExtension implements Extension {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, JGroupsModel.CURRENT.getVersion());
 
         new JGroupsSubsystemResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));
-        registration.registerXMLElementWriter(() -> new JGroupsSubsystemXMLWriter());
+        registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        EnumSet.allOf(JGroupsSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), () -> new JGroupsSubsystemXMLReader(schema)));
+        for (JGroupsSchema schema : EnumSet.allOf(JGroupsSchema.class)) {
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new JGroupsSubsystemXMLReader(schema));
+        }
     }
 }

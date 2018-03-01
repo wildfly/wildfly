@@ -22,9 +22,14 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.*;
-import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Attribute.*;
-import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Capability.*;
+import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.CLUSTERING_CAPABILITIES;
+import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Attribute.MODULE;
+import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Attribute.STACK;
+import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Attribute.STATISTICS_ENABLED;
+import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Capability.FORK_CHANNEL_FACTORY;
+import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Capability.JCHANNEL;
+import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Capability.JCHANNEL_FACTORY;
+import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Capability.JCHANNEL_MODULE;
 
 import java.util.EnumSet;
 import java.util.ServiceLoader;
@@ -33,6 +38,7 @@ import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.ModuleBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Capability;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -43,6 +49,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.ServiceNameProvider;
+import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
@@ -71,7 +78,7 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
 
         // Install group services for channel
-        ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry(address);
+        ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 
         for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
             for (CapabilityServiceBuilder<?> builder : provider.getBuilders(registry, name)) {
@@ -86,12 +93,14 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
         PathAddress address = context.getCurrentAddress();
         String name = context.getCurrentAddressValue();
 
-        EnumSet.allOf(Capability.class).forEach(capability -> context.removeService(capability.getServiceName(address)));
+        for (Capability capability : EnumSet.allOf(Capability.class)) {
+            context.removeService(capability.getServiceName(address));
+        }
 
         context.removeService(JGroupsBindingFactory.createChannelBinding(name).getBinderServiceName());
         context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());
 
-        ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry(address);
+        ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 
         for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
             for (ServiceNameProvider builder : provider.getBuilders(registry, name)) {
