@@ -25,13 +25,11 @@ package org.jboss.as.test.integration.ejb.transaction.usertransaction;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.naming.InitialContext;
-import java.io.File;
 
 /**
  * @author Jaikiran Pai
@@ -46,7 +44,6 @@ public class UserTransactionAccessTestCase {
     public static JavaArchive createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(UserTransactionAccessTestCase.class.getPackage());
-        jar.as(ZipExporter.class).exportTo(new File(".", jar.getName()), true);
         return jar;
     }
 

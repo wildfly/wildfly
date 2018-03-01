@@ -39,6 +39,7 @@ import org.jboss.as.test.integration.ws.wsse.trust.bearer.BearerIface;
 import org.jboss.as.test.integration.ws.wsse.trust.holderofkey.HolderOfKeyIface;
 import org.jboss.as.test.integration.ws.wsse.trust.onbehalfof.OnBehalfOfServiceIface;
 import org.jboss.as.test.integration.ws.wsse.trust.service.ServiceIface;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -268,7 +269,7 @@ public class WSTrustTestCase {
         jar.addManifest()
                 .addAsManifestResource(WSTrustTestCase.class.getPackage(), "META-INF/clientKeystore.properties", "clientKeystore.properties")
                 .addAsManifestResource(WSTrustTestCase.class.getPackage(), "META-INF/clientstore.jks", "clientstore.jks");
-        File jarFile = new File("jaxws-samples-wsse-policy-trust-client.jar");
+        File jarFile = new File(TestSuiteEnvironment.getTmpDir(), "jaxws-samples-wsse-policy-trust-client.jar");
         jar.as(ZipExporter.class).exportTo(jarFile, true);
         return jarFile.getAbsolutePath();
     }
