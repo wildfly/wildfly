@@ -103,6 +103,7 @@ public class CredentialSourceDependency implements ValueDependency<CredentialSou
             return this;
         }
 
+        @Deprecated
         @Override
         public ServiceBuilder<Object> addDependencies(ServiceBuilder.DependencyType dependencyType, ServiceName... serviceNames) {
             if (dependencyType != ServiceBuilder.DependencyType.REQUIRED) {
@@ -119,6 +120,7 @@ public class CredentialSourceDependency implements ValueDependency<CredentialSou
             return this;
         }
 
+        @Deprecated
         @Override
         public ServiceBuilder<Object> addDependencies(ServiceBuilder.DependencyType dependencyType, Iterable<ServiceName> serviceNames) {
             if (dependencyType != ServiceBuilder.DependencyType.REQUIRED) {
@@ -133,6 +135,7 @@ public class CredentialSourceDependency implements ValueDependency<CredentialSou
             return this;
         }
 
+        @Deprecated
         @Override
         public ServiceBuilder<Object> addDependency(ServiceBuilder.DependencyType dependencyType, ServiceName serviceName) {
             if (dependencyType != ServiceBuilder.DependencyType.REQUIRED) {
@@ -146,6 +149,7 @@ public class CredentialSourceDependency implements ValueDependency<CredentialSou
             return this.addDependency(serviceName, Object.class, target);
         }
 
+        @Deprecated
         @Override
         public ServiceBuilder<Object> addDependency(ServiceBuilder.DependencyType dependencyType, ServiceName serviceName, Injector<Object> target) {
             return this.addDependency(dependencyType, serviceName, Object.class, target);
@@ -157,6 +161,7 @@ public class CredentialSourceDependency implements ValueDependency<CredentialSou
             return this;
         }
 
+        @Deprecated
         @Override
         public <I> ServiceBuilder<Object> addDependency(ServiceBuilder.DependencyType dependencyType, ServiceName serviceName, Class<I> type, Injector<I> target) {
             if (dependencyType != ServiceBuilder.DependencyType.REQUIRED) {
