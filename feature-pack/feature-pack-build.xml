@@ -31,6 +31,10 @@
                 subsystems="configuration/standalone/subsystems.xml"
                 output-file="standalone/configuration/standalone.xml"/>
         <standalone
+                template="configuration/standalone/template-ee8.xml"
+                subsystems="configuration/standalone/subsystems.xml"
+                output-file="standalone/configuration/standalone-ee8.xml"/>
+        <standalone
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-full.xml"
                 output-file="standalone/configuration/standalone-full.xml"/>
