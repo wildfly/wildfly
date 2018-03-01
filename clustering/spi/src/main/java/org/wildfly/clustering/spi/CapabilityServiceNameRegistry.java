@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,18 +22,34 @@
 
 package org.wildfly.clustering.spi;
 
+import java.util.Map;
+
+import org.jboss.as.clustering.controller.Capability;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.Requirement;
 
 /**
- * Registry of services names for a set of requirements.
+ * Generic {@link ServiceNameRegistry} for a specific set of requirements.
  * @author Paul Ferraro
  */
-public interface ServiceNameRegistry<R extends Requirement> {
+public class CapabilityServiceNameRegistry<R extends Requirement, C extends Capability> implements ServiceNameRegistry<R> {
+
+    private final Map<R, C> capabilities;
+    private final PathAddress address;
+
     /**
-     * Returns the service name for the specified requirement
-     * @param requirement a requirement
-     * @return a service name.
+     * Constructs a new service name registry.
+     * @param capabilities a map of requirement to capability
+     * @param address the resource address from which to resolve service names
      */
-    ServiceName getServiceName(R requirement);
+    public CapabilityServiceNameRegistry(Map<R, C> capabilities, PathAddress address) {
+        this.capabilities = capabilities;
+        this.address = address;
+    }
+
+    @Override
+    public ServiceName getServiceName(R requirement) {
+        return this.capabilities.get(requirement).getServiceName(this.address);
+    }
 }
