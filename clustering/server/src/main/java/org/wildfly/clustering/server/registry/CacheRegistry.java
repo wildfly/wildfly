@@ -21,9 +21,9 @@
  */
 package org.wildfly.clustering.server.registry;
 
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,7 +36,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
@@ -77,9 +76,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
 
     private static ThreadFactory createThreadFactory(Class<?> targetClass) {
-        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
-        return new ClassLoaderThreadFactory(WildFlySecurityManager.doUnchecked(action),
-                AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> targetClass.getClassLoader()));
+        PrivilegedAction<ThreadFactory> action = () -> new ClassLoaderThreadFactory(new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null), targetClass.getClassLoader());
+        return WildFlySecurityManager.doUnchecked(action);
     }
 
     private final ExecutorService topologyChangeExecutor = Executors.newSingleThreadExecutor(createThreadFactory(this.getClass()));
@@ -123,7 +121,9 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
             ClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
         } finally {
             // Cleanup any unregistered listeners
-            this.listeners.values().forEach(executor -> this.shutdown(executor));
+            for (ExecutorService executor : this.listeners.values()) {
+                this.shutdown(executor);
+            }
             this.listeners.clear();
             this.closeTask.run();
         }
@@ -193,10 +193,12 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
                 if (!addresses.isEmpty()) {
                     Locality locality = new ConsistentHashLocality(event.getCache(), hash);
                     // We're only interested in the entries for which we are the primary owner
-                    List<Node> nodes = addresses.stream()
-                            .filter(address -> locality.isLocal(address))
-                            .map(address -> this.group.createNode(address))
-                            .collect(Collectors.toList());
+                    List<Node> nodes = new ArrayList<>(addresses.size());
+                    for (Address address : addresses) {
+                        if (locality.isLocal(address)) {
+                            nodes.add(this.group.createNode(address));
+                        }
+                    }
 
                     if (!nodes.isEmpty()) {
                         Cache<Node, Map.Entry<K, V>> cache = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);

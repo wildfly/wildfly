@@ -25,7 +25,6 @@ package org.wildfly.clustering.server.registry;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.function.Consumers;
@@ -39,6 +38,7 @@ import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.SuppliedValueService;
 import org.wildfly.clustering.service.ValueDependency;
@@ -48,16 +48,14 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  * Builds a {@link Registry} service.
  * @author Paul Ferraro
  */
-public class RegistryBuilder<K, V> implements CapabilityServiceBuilder<Registry<K, V>> {
+public class RegistryBuilder<K, V> implements CapabilityServiceBuilder<Registry<K, V>>, Supplier<Registry<K, V>> {
 
     private final ServiceName name;
     private final String containerName;
     private final String cacheName;
 
-    @SuppressWarnings("rawtypes")
-    private volatile ValueDependency<RegistryFactory> factory;
-    @SuppressWarnings("rawtypes")
-    private volatile ValueDependency<Map.Entry> entry;
+    private volatile ValueDependency<RegistryFactory<K, V>> factory;
+    private volatile ValueDependency<Map.Entry<K, V>> entry;
 
     public RegistryBuilder(ServiceName name, String containerName, String cacheName) {
         this.name = name;
@@ -66,23 +64,27 @@ public class RegistryBuilder<K, V> implements CapabilityServiceBuilder<Registry<
     }
 
     @Override
+    public Registry<K, V> get() {
+        return this.factory.getValue().createRegistry(this.entry.getValue());
+    }
+
+    @Override
     public ServiceName getServiceName() {
         return this.name;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Builder<Registry<K, V>> configure(CapabilityServiceSupport support) {
-        this.factory = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY_FACTORY.getServiceName(support, this.containerName, this.cacheName), RegistryFactory.class);
-        this.entry = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY_ENTRY.getServiceName(support, this.containerName, this.cacheName), Map.Entry.class);
+        this.factory = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY_FACTORY.getServiceName(support, this.containerName, this.cacheName), (Class<RegistryFactory<K, V>>) (Class<?>) RegistryFactory.class);
+        this.entry = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY_ENTRY.getServiceName(support, this.containerName, this.cacheName), (Class<Map.Entry<K, V>>) (Class<?>) Map.Entry.class);
         return this;
     }
 
     @Override
     public ServiceBuilder<Registry<K, V>> build(ServiceTarget target) {
-        Supplier<Registry<K, V>> supplier = () -> this.factory.getValue().createRegistry(this.entry.getValue());
-        Service<Registry<K, V>> service = new SuppliedValueService<>(Function.identity(), supplier, Consumers.close());
+        Service<Registry<K, V>> service = new SuppliedValueService<>(Function.identity(), this, Consumers.close());
         ServiceBuilder<Registry<K, V>> builder = new AsynchronousServiceBuilder<>(this.name, service).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.factory, this.entry).forEach(dependency -> dependency.register(builder));
-        return builder;
+        return new CompositeDependency(this.factory, this.entry).register(builder);
     }
 }

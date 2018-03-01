@@ -44,7 +44,7 @@ import org.wildfly.clustering.spi.ClusteringRequirement;
  * Builds a non-clustered {@link org.wildfly.clustering.dispatcher.CommandDispatcherFactory} service.
  * @author Paul Ferraro
  */
-public class LocalCommandDispatcherFactoryBuilder implements CapabilityServiceBuilder<CommandDispatcherFactory> {
+public class LocalCommandDispatcherFactoryBuilder implements CapabilityServiceBuilder<CommandDispatcherFactory>, Supplier<AutoCloseableCommandDispatcherFactory> {
 
     private final ServiceName name;
     private final String groupName;
@@ -54,6 +54,11 @@ public class LocalCommandDispatcherFactoryBuilder implements CapabilityServiceBu
     public LocalCommandDispatcherFactoryBuilder(ServiceName name, String groupName) {
         this.name = name;
         this.groupName = groupName;
+    }
+
+    @Override
+    public AutoCloseableCommandDispatcherFactory get() {
+        return new ManagedCommandDispatcherFactory(new LocalCommandDispatcherFactory(this.group.getValue()));
     }
 
     @Override
@@ -69,8 +74,7 @@ public class LocalCommandDispatcherFactoryBuilder implements CapabilityServiceBu
 
     @Override
     public ServiceBuilder<CommandDispatcherFactory> build(ServiceTarget target) {
-        Supplier<AutoCloseableCommandDispatcherFactory> supplier = () -> new ManagedCommandDispatcherFactory(new LocalCommandDispatcherFactory(this.group.getValue()));
-        Service<CommandDispatcherFactory> service = new SuppliedValueService<>(Functions.identity(), supplier, Consumers.close());
+        Service<CommandDispatcherFactory> service = new SuppliedValueService<>(Functions.identity(), this, Consumers.close());
         return this.group.register(target.addService(this.name, service).setInitialMode(ServiceController.Mode.ON_DEMAND));
     }
 }

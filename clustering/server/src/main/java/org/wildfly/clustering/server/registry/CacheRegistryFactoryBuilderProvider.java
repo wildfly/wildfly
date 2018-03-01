@@ -33,6 +33,6 @@ import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
 public class CacheRegistryFactoryBuilderProvider extends RegistryFactoryBuilderProvider implements DistributedCacheBuilderProvider {
 
     public CacheRegistryFactoryBuilderProvider() {
-        super((name, containerName, cacheName) -> new CacheRegistryFactoryBuilder<>(name, containerName, cacheName));
+        super(CacheRegistryFactoryBuilder::new);
     }
 }

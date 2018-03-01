@@ -85,10 +85,10 @@ public class CacheGroup implements Group<Address>, AutoCloseable {
         this.cache.removeListener(this);
         this.cache.getCacheManager().removeListener(this);
         // Cleanup any unregistered listeners
-        this.listeners.values().forEach(executor -> {
+        for (ExecutorService executor : this.listeners.values()) {
             PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
             WildFlySecurityManager.doUnchecked(action);
-        });
+        }
         this.listeners.clear();
     }
 

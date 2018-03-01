@@ -40,7 +40,7 @@ import org.wildfly.extension.clustering.singleton.SingletonLogger;
  * DUP that attaches the singleton DeploymentUnitPhaseBuilder if a deployment policy is attached.
  * @author Paul Ferraro
  */
-public class SingletonDeploymentProcessor implements DeploymentUnitProcessor, LifecycleListener{
+public class SingletonDeploymentProcessor implements DeploymentUnitProcessor, LifecycleListener {
 
     public static final AttachmentKey<SingletonPolicy> POLICY_KEY = AttachmentKey.create(SingletonPolicy.class);
 
@@ -68,15 +68,9 @@ public class SingletonDeploymentProcessor implements DeploymentUnitProcessor, Li
         // We intentionally leave any DEPLOYMENT_UNIT_PHASE_BUILDER attached to the deployment unit
     }
 
-    /**
-     * Process service State.DOWN state
-     *
-     * @param controller the controller
-     * @param event      the lifecycle event
-     */
     @Override
     public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
-        if(event.equals(LifecycleEvent.DOWN)) {
+        if (event == LifecycleEvent.DOWN) {
             controller.setMode(Mode.ACTIVE);
             controller.removeListener(this);
         }

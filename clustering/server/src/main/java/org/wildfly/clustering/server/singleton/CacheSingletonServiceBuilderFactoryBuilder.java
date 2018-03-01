@@ -44,14 +44,13 @@ import org.wildfly.clustering.spi.ClusteringRequirement;
  * Builds a clustered {@link SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-public class CacheSingletonServiceBuilderFactoryBuilder implements CapabilityServiceBuilder<SingletonServiceBuilderFactory>, DistributedSingletonServiceBuilderContext {
+public class CacheSingletonServiceBuilderFactoryBuilder implements CapabilityServiceBuilder<SingletonServiceBuilderFactory>, DistributedSingletonServiceBuilderContext, Value<SingletonServiceBuilderFactory> {
 
     private final ServiceName name;
     private final String containerName;
     private final String cacheName;
 
-    @SuppressWarnings("rawtypes")
-    private volatile Supplier<ValueDependency<ServiceProviderRegistry>> registry;
+    private volatile Supplier<ValueDependency<ServiceProviderRegistry<ServiceName>>> registry;
     private volatile Supplier<ValueDependency<CommandDispatcherFactory>> dispatcherFactory;
 
     public CacheSingletonServiceBuilderFactoryBuilder(ServiceName name, String containerName, String cacheName) {
@@ -61,26 +60,30 @@ public class CacheSingletonServiceBuilderFactoryBuilder implements CapabilitySer
     }
 
     @Override
+    public SingletonServiceBuilderFactory getValue() {
+        return new DistributedSingletonServiceBuilderFactory(this);
+    }
+
+    @Override
     public ServiceName getServiceName() {
         return this.name;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Builder<SingletonServiceBuilderFactory> configure(CapabilityServiceSupport support) {
-        this.registry = () -> new InjectedValueDependency<>(ClusteringCacheRequirement.SERVICE_PROVIDER_REGISTRY.getServiceName(support, this.containerName, this.cacheName), ServiceProviderRegistry.class);
+        this.registry = () -> new InjectedValueDependency<>(ClusteringCacheRequirement.SERVICE_PROVIDER_REGISTRY.getServiceName(support, this.containerName, this.cacheName), (Class<ServiceProviderRegistry<ServiceName>>) (Class<?>) ServiceProviderRegistry.class);
         this.dispatcherFactory = () -> new InjectedValueDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, this.containerName), CommandDispatcherFactory.class);
         return this;
     }
 
     @Override
     public ServiceBuilder<SingletonServiceBuilderFactory> build(ServiceTarget target) {
-        Value<SingletonServiceBuilderFactory> value = () -> new DistributedSingletonServiceBuilderFactory(this);
-        return target.addService(this.name, new ValueService<>(value));
+        return target.addService(this.name, new ValueService<>(this));
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
-    public ValueDependency<ServiceProviderRegistry> getServiceProviderRegistryDependency() {
+    public ValueDependency<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistryDependency() {
         return this.registry.get();
     }
 

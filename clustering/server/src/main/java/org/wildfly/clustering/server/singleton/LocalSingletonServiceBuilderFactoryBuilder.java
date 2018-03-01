@@ -36,12 +36,17 @@ import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
  * Builds a non-clustered {@link SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-public class LocalSingletonServiceBuilderFactoryBuilder<T extends Serializable> implements CapabilityServiceBuilder<SingletonServiceBuilderFactory> {
+public class LocalSingletonServiceBuilderFactoryBuilder<T extends Serializable> implements CapabilityServiceBuilder<SingletonServiceBuilderFactory>, Value<SingletonServiceBuilderFactory> {
 
     private final ServiceName name;
 
     public LocalSingletonServiceBuilderFactoryBuilder(ServiceName name) {
         this.name = name;
+    }
+
+    @Override
+    public SingletonServiceBuilderFactory getValue() {
+        return new LocalSingletonServiceBuilderFactory();
     }
 
     @Override
@@ -51,7 +56,6 @@ public class LocalSingletonServiceBuilderFactoryBuilder<T extends Serializable> 
 
     @Override
     public ServiceBuilder<SingletonServiceBuilderFactory> build(ServiceTarget target) {
-        Value<SingletonServiceBuilderFactory> value = () -> new LocalSingletonServiceBuilderFactory();
-        return target.addService(this.name, new ValueService<>(value));
+        return target.addService(this.name, new ValueService<>(this));
     }
 }

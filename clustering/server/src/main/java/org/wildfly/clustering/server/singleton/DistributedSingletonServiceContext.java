@@ -25,6 +25,7 @@ package org.wildfly.clustering.server.singleton;
 import java.util.Optional;
 
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
@@ -35,8 +36,7 @@ import org.wildfly.clustering.singleton.SingletonElectionPolicy;
  * @author Paul Ferraro
  */
 public interface DistributedSingletonServiceContext<T> extends ServiceNameProvider {
-    @SuppressWarnings("rawtypes")
-    Value<ServiceProviderRegistry> getServiceProviderRegistry();
+    Value<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistry();
     Value<CommandDispatcherFactory> getCommandDispatcherFactory();
     Service<T> getPrimaryService();
     Optional<Service<T>> getBackupService();

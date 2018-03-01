@@ -25,6 +25,7 @@ package org.wildfly.extension.clustering.singleton;
 import static org.wildfly.extension.clustering.singleton.ElectionPolicyResourceDefinition.Attribute.*;
 import static org.wildfly.extension.clustering.singleton.ElectionPolicyResourceDefinition.Capability.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -67,7 +68,9 @@ public abstract class ElectionPolicyBuilder extends CapabilityServiceNameProvide
     public ServiceBuilder<SingletonElectionPolicy> build(ServiceTarget target) {
         Value<SingletonElectionPolicy> value = () -> this.preferences.isEmpty() ? this.getValue() : new PreferredSingletonElectionPolicy(this.getValue(), this.preferences);
         ServiceBuilder<SingletonElectionPolicy> builder = target.addService(this.getServiceName(), new ValueService<>(value));
-        this.dependencies.forEach(dependency -> dependency.register(builder));
+        for (Dependency dependency : this.dependencies) {
+            dependency.register(builder);
+        }
         return builder;
     }
 
@@ -75,16 +78,14 @@ public abstract class ElectionPolicyBuilder extends CapabilityServiceNameProvide
     public Builder<SingletonElectionPolicy> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.preferences.clear();
         this.dependencies.clear();
-        ModelNodes.optionalList(SOCKET_BINDING_PREFERENCES.resolveModelAttribute(context, model)).ifPresent(bindings -> {
-            bindings.stream().map(ModelNode::asString).forEach(bindingName -> {
-                InjectedValueDependency<OutboundSocketBinding> binding = new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, bindingName), OutboundSocketBinding.class);
-                this.preferences.add(new OutboundSocketBindingPreference(binding));
-                this.dependencies.add(binding);
-            });
-        });
-        ModelNodes.optionalList(NAME_PREFERENCES.resolveModelAttribute(context, model)).ifPresent(names -> {
-            names.stream().map(ModelNode::asString).forEach(name -> this.preferences.add(new NamePreference(name)));
-        });
+        for (ModelNode preference : ModelNodes.optionalList(SOCKET_BINDING_PREFERENCES.resolveModelAttribute(context, model)).orElse(Collections.emptyList())) {
+            InjectedValueDependency<OutboundSocketBinding> binding = new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, preference.asString()), OutboundSocketBinding.class);
+            this.preferences.add(new OutboundSocketBindingPreference(binding));
+            this.dependencies.add(binding);
+        }
+        for (ModelNode preference : ModelNodes.optionalList(NAME_PREFERENCES.resolveModelAttribute(context, model)).orElse(Collections.emptyList())) {
+            this.preferences.add(new NamePreference(preference.asString()));
+        }
         return this;
     }
 }

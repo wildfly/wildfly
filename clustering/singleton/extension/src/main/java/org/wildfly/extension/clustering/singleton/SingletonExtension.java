@@ -47,11 +47,13 @@ public class SingletonExtension implements Extension {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, SingletonModel.CURRENT.getVersion());
 
         new SingletonResourceDefinition().register(registration);
-        registration.registerXMLElementWriter(() -> new SingletonXMLWriter());
+        registration.registerXMLElementWriter(new SingletonXMLWriter());
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        EnumSet.allOf(SingletonSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), () -> new SingletonXMLReader(schema)));
+        for (SingletonSchema schema : EnumSet.allOf(SingletonSchema.class)) {
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new SingletonXMLReader(schema));
+        }
     }
 }
