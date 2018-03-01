@@ -26,7 +26,7 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>25</version>
+      <version>26</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
@@ -73,8 +73,6 @@
             For example: <version.surefire.plugin>2.11</version.surefire.plugin>
           -->
         <maven.min.version>3.3.1</maven.min.version>
-        <!-- 2.20.x is broken on JDK10 -->
-        <version.surefire.plugin>2.19.1</version.surefire.plugin>
         <!-- use older version of checkstyle as otherwise lots of checks fail -->
         <version.checkstyle>6.8</version.checkstyle>
         <!--
@@ -4642,20 +4640,6 @@
 
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
-                <artifactId>ironjacamar-spec-api</artifactId>
-                <version>${version.org.jboss.ironjacamar}</version>
-                <exclusions>
-                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
-                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-jdbc</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
                 <exclusions>
@@ -4672,6 +4656,12 @@
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-validator</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.ironjacamar</groupId>
+                        <artifactId>ironjacamar-spec-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -6597,16 +6587,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        <profile>
-            <id>jdk9-surefire</id>
-            <activation>
-                <jdk>9</jdk>
-            </activation>
-            <properties>
-                <!-- 2.20.1 works fine on JDK9 but breaks on JDK10, so we set it only for 9-->
-                <version.surefire.plugin>2.20.1</version.surefire.plugin>
-            </properties>
         </profile>
         <profile>
             <id>docs</id>
