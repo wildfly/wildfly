@@ -21,8 +21,6 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import java.util.stream.Stream;
-
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
@@ -36,6 +34,7 @@ import org.jboss.msc.value.Value;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
@@ -46,7 +45,7 @@ import org.wildfly.clustering.web.session.RouteLocator;
  * Service providing an Infinispan-based {@link RouteLocator}.
  * @author Paul Ferraro
  */
-public class InfinispanRouteLocatorBuilder implements CapabilityServiceBuilder<RouteLocator>, InfinispanRouteLocatorConfiguration {
+public class InfinispanRouteLocatorBuilder implements CapabilityServiceBuilder<RouteLocator>, InfinispanRouteLocatorConfiguration, Value<RouteLocator> {
 
     private final String containerName = InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER;
     private final String serverName;
@@ -65,6 +64,11 @@ public class InfinispanRouteLocatorBuilder implements CapabilityServiceBuilder<R
     }
 
     @Override
+    public RouteLocator getValue() {
+        return new InfinispanRouteLocator(this);
+    }
+
+    @Override
     public ServiceName getServiceName() {
         return ServiceName.JBOSS.append("clustering", "web", "locator", this.deploymentName);
     }
@@ -79,10 +83,8 @@ public class InfinispanRouteLocatorBuilder implements CapabilityServiceBuilder<R
 
     @Override
     public ServiceBuilder<RouteLocator> build(ServiceTarget target) {
-        Value<RouteLocator> value = () -> new InfinispanRouteLocator(this);
-        ServiceBuilder<RouteLocator> builder = target.addService(this.getServiceName(), new ValueService<>(value));
-        Stream.of(this.factory, this.registry, this.cache).forEach(dependency -> dependency.register(builder));
-        return builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
+        ServiceBuilder<RouteLocator> builder = target.addService(this.getServiceName(), new ValueService<>(this)).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        return new CompositeDependency(this.factory, this.registry, this.cache).register(builder);
     }
 
     @Override

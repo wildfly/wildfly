@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -306,7 +307,9 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         List<HttpSessionActivationListener> listeners = findListeners(session);
         if (!listeners.isEmpty()) {
             HttpSessionEvent event = new HttpSessionEvent(new ImmutableHttpSessionAdapter(session, this.context));
-            listeners.forEach(listener -> listener.sessionWillPassivate(event));
+            for (HttpSessionActivationListener listener : listeners) {
+                listener.sessionWillPassivate(event);
+            }
         }
     }
 
@@ -314,13 +317,22 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         List<HttpSessionActivationListener> listeners = findListeners(session);
         if (!listeners.isEmpty()) {
             HttpSessionEvent event = new HttpSessionEvent(new ImmutableHttpSessionAdapter(session, this.context));
-            listeners.forEach(listener -> listener.sessionDidActivate(event));
+            for (HttpSessionActivationListener listener : listeners) {
+                listener.sessionDidActivate(event);
+            }
         }
     }
 
     private static List<HttpSessionActivationListener> findListeners(ImmutableSession session) {
         ImmutableSessionAttributes attributes = session.getAttributes();
-        return attributes.getAttributeNames().stream().map(name -> attributes.getAttribute(name)).filter(attribute -> attribute instanceof HttpSessionActivationListener).map(attribute -> (HttpSessionActivationListener) attribute).collect(Collectors.toList());
+        List<HttpSessionActivationListener> listeners = new ArrayList<>(attributes.getAttributeNames().size());
+        for (String name : attributes.getAttributeNames()) {
+            Object attribute = attributes.getAttribute(name);
+            if (attribute instanceof HttpSessionActivationListener) {
+                listeners.add((HttpSessionActivationListener) attribute);
+            }
+        }
+        return listeners;
     }
 
     // Session decorator that performs scheduling on close().

@@ -44,10 +44,9 @@ import io.undertow.server.session.SessionListener;
 public class SessionListenerBuilder implements CapabilityServiceBuilder<SessionListener>, Value<SessionListener>, SessionListener {
 
     private final ServiceName name;
-    @SuppressWarnings("rawtypes")
-    private final ValueDependency<SSOManager> manager;
+    private final ValueDependency<SSOManager<AuthenticatedSession, String, String, Void, Batch>> manager;
 
-    public SessionListenerBuilder(ServiceName name, @SuppressWarnings("rawtypes") ValueDependency<SSOManager> manager) {
+    public SessionListenerBuilder(ServiceName name, ValueDependency<SSOManager<AuthenticatedSession, String, String, Void, Batch>> manager) {
         this.name = name;
         this.manager = manager;
     }
@@ -73,9 +72,13 @@ public class SessionListenerBuilder implements CapabilityServiceBuilder<SessionL
         try (Batch batch = manager.getBatcher().createBatch()) {
             Sessions<String, String> sessions = manager.findSessionsContaining(oldSessionId);
             if (sessions != null) {
-                String deployment = sessions.getDeployments().stream().filter(key -> sessions.getSession(key) != null).findFirst().get();
-                sessions.removeSession(deployment);
-                sessions.addSession(deployment, session.getId());
+                for (String deployment : sessions.getDeployments()) {
+                    if (sessions.getSession(deployment) != null) {
+                        sessions.removeSession(deployment);
+                        sessions.addSession(deployment, session.getId());
+                        break;
+                    }
+                }
             }
         }
     }

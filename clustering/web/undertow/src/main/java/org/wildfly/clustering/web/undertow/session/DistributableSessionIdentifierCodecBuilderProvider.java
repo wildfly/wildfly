@@ -24,9 +24,7 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.stream.StreamSupport;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.web.session.SessionIdentifierCodec;
@@ -43,12 +41,18 @@ import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecBuilde
 @MetaInfServices(org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderProvider.class)
 public class DistributableSessionIdentifierCodecBuilderProvider implements org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderProvider {
 
-    private static final Optional<RouteLocatorBuilderProvider> PROVIDER = StreamSupport.stream(ServiceLoader.load(RouteLocatorBuilderProvider.class, RouteLocatorBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst();
+    private static final RouteLocatorBuilderProvider PROVIDER = loadProvider();
+
+    private static RouteLocatorBuilderProvider loadProvider() {
+        for (RouteLocatorBuilderProvider provider : ServiceLoader.load(RouteLocatorBuilderProvider.class, RouteLocatorBuilderProvider.class.getClassLoader())) {
+            return provider;
+        }
+        return null;
+    }
 
     @Override
     public CapabilityServiceBuilder<SessionIdentifierCodec> getDeploymentBuilder(ServiceName name, String serverName, String deploymentName) {
-        Optional<CapabilityServiceBuilder<SessionIdentifierCodec>> builder = PROVIDER.map(provider -> new DistributableSessionIdentifierCodecBuilder(name, serverName, deploymentName, provider));
-        return builder.orElse(new SimpleSessionIdentifierCodecBuilder(name, serverName));
+        return (PROVIDER != null) ? new DistributableSessionIdentifierCodecBuilder(name, serverName, deploymentName, PROVIDER) : new SimpleSessionIdentifierCodecBuilder(name, serverName);
     }
 
     @Override
@@ -57,7 +61,9 @@ public class DistributableSessionIdentifierCodecBuilderProvider implements org.w
         CapabilityServiceBuilder<String> routeBuilder = new RouteBuilder(serverName);
         builders.add(routeBuilder);
         ValueDependency<String> routeDependency = new InjectedValueDependency<>(routeBuilder, String.class);
-        PROVIDER.ifPresent(provider -> builders.addAll(provider.getRouteLocatorConfigurationBuilders(serverName, routeDependency)));
+        if (PROVIDER != null) {
+            builders.addAll(PROVIDER.getRouteLocatorConfigurationBuilders(serverName, routeDependency));
+        }
         return builders;
     }
 }

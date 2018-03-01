@@ -22,14 +22,13 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
-import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.stream.StreamSupport;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.SimpleCapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerConfiguration;
@@ -43,16 +42,21 @@ import io.undertow.servlet.core.InMemorySessionManagerFactory;
 @MetaInfServices(org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderProvider.class)
 public class DistributableSessionManagerFactoryBuilderProvider implements org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderProvider {
 
-    @SuppressWarnings("rawtypes")
-    private static final Optional<SessionManagerFactoryBuilderProvider> PROVIDER = StreamSupport.stream(ServiceLoader.load(SessionManagerFactoryBuilderProvider.class, SessionManagerFactoryBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst();
+    private static final SessionManagerFactoryBuilderProvider<Batch> PROVIDER = loadProvider();
+
+    private static SessionManagerFactoryBuilderProvider<Batch> loadProvider() {
+        for (SessionManagerFactoryBuilderProvider<Batch> provider : ServiceLoader.load(SessionManagerFactoryBuilderProvider.class, SessionManagerFactoryBuilderProvider.class.getClassLoader())) {
+            return provider;
+        }
+        return null;
+    }
 
     @Override
     public CapabilityServiceBuilder<SessionManagerFactory> getBuilder(ServiceName name, DistributableSessionManagerConfiguration configuration) {
-        @SuppressWarnings("unchecked")
-        Optional<CapabilityServiceBuilder<SessionManagerFactory>> builder = PROVIDER.map(provider -> new DistributableSessionManagerFactoryBuilder(name, configuration, provider));
-        return builder.orElseGet(() -> {
+        if (PROVIDER == null) {
             UndertowLogger.ROOT_LOGGER.clusteringNotSupported();
             return new SimpleCapabilityServiceBuilder<>(name, new InMemorySessionManagerFactory(configuration.getMaxActiveSessions()));
-        });
+        }
+        return new DistributableSessionManagerFactoryBuilder(name, configuration, PROVIDER);
     }
 }

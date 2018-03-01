@@ -117,16 +117,20 @@ public class SessionExpirationScheduler implements Scheduler {
     @Override
     public void close() {
         this.executor.shutdown();
-        this.expirationFutures.values().forEach(future -> future.cancel(false));
-        this.expirationFutures.values().stream().filter(future -> !future.isDone()).forEach(future -> {
-            try {
-                future.get();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } catch (ExecutionException e) {
-                // Ignore
+        for (Future<?> future : this.expirationFutures.values()) {
+            future.cancel(true);
+        }
+        for (Future<?> future : this.expirationFutures.values()) {
+            if (!future.isDone()) {
+                try {
+                    future.get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException e) {
+                    // Ignore
+                }
             }
-        });
+        }
         this.expirationFutures.clear();
     }
 

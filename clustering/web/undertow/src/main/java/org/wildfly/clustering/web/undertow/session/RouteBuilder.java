@@ -22,6 +22,8 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
+import java.util.function.Function;
+
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.Service;
@@ -40,7 +42,7 @@ import org.wildfly.extension.undertow.Server;
  * Builds a service providing the route of a server.
  * @author Paul Ferraro
  */
-public class RouteBuilder implements CapabilityServiceBuilder<String> {
+public class RouteBuilder implements CapabilityServiceBuilder<String>, Function<Server, String> {
 
     private final String serverName;
 
@@ -48,6 +50,11 @@ public class RouteBuilder implements CapabilityServiceBuilder<String> {
 
     public RouteBuilder(String serverName) {
         this.serverName = serverName;
+    }
+
+    @Override
+    public String apply(Server server) {
+        return server.getRoute();
     }
 
     @Override
@@ -63,7 +70,7 @@ public class RouteBuilder implements CapabilityServiceBuilder<String> {
 
     @Override
     public ServiceBuilder<String> build(ServiceTarget target) {
-        Service<String> service = new MappedValueService<>(server -> server.getRoute(), this.server);
+        Service<String> service = new MappedValueService<>(this, this.server);
         return this.server.register(target.addService(this.getServiceName(), service)).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

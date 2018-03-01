@@ -22,14 +22,13 @@
 
 package org.wildfly.clustering.web.undertow.sso;
 
-import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.stream.StreamSupport;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.SimpleCapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
 import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerBuilderProvider;
 
@@ -41,13 +40,18 @@ import io.undertow.security.impl.SingleSignOnManager;
  */
 @MetaInfServices(DistributableHostSingleSignOnManagerBuilderProvider.class)
 public class DistributableSingleSignOnManagerBuilderProvider implements DistributableHostSingleSignOnManagerBuilderProvider {
-    @SuppressWarnings("rawtypes")
-    private static final Optional<SSOManagerFactoryBuilderProvider> PROVIDER = StreamSupport.stream(ServiceLoader.load(SSOManagerFactoryBuilderProvider.class, SSOManagerFactoryBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst();
+
+    private static final SSOManagerFactoryBuilderProvider<Batch> PROVIDER = loadProvider();
+
+    private static SSOManagerFactoryBuilderProvider<Batch> loadProvider() {
+        for (SSOManagerFactoryBuilderProvider<Batch> provider : ServiceLoader.load(SSOManagerFactoryBuilderProvider.class, SSOManagerFactoryBuilderProvider.class.getClassLoader())) {
+            return provider;
+        }
+        return null;
+    }
 
     @Override
     public CapabilityServiceBuilder<SingleSignOnManager> getBuilder(ServiceName name, String serverName, String hostName) {
-        @SuppressWarnings("unchecked")
-        Optional<CapabilityServiceBuilder<SingleSignOnManager>> builder = PROVIDER.map(provider -> new DistributableSingleSignOnManagerBuilder(name, serverName, hostName, provider));
-        return builder.orElse(new SimpleCapabilityServiceBuilder<>(name, new InMemorySingleSignOnManager()));
+        return (PROVIDER != null) ? new DistributableSingleSignOnManagerBuilder(name, serverName, hostName, PROVIDER) : new SimpleCapabilityServiceBuilder<>(name, new InMemorySingleSignOnManager());
     }
 }
