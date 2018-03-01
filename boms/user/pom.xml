@@ -67,7 +67,7 @@
     </issueManagement>
 
     <properties>
-        <version.org.wildfly>12.0.0.CR1</version.org.wildfly>
+        <version.org.wildfly>12.0.0.Final</version.org.wildfly>
 
         <!-- Versions of JBoss projects -->
 
