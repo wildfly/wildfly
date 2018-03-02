@@ -25,6 +25,7 @@ package org.jboss.as.connector.services.resourceadapters;
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -37,7 +38,6 @@ import org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes;
 import org.jboss.as.connector.subsystems.resourceadapters.Constants;
 import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResource;
 import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResourceCreator;
-import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResourceDefinition;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
@@ -51,6 +51,8 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.api.management.AdminObject;
 import org.jboss.jca.core.api.management.ConnectionFactory;
+import org.jboss.jca.core.api.management.Connector;
+import org.jboss.jca.core.api.management.ManagedConnectionFactory;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 import org.jboss.jca.deployers.common.CommonDeployment;
@@ -61,26 +63,31 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-public class IronJacamarActivationResourceService implements Service<ManagementResourceRegistration> {
+/**
+ * Registers the {@link ManagementResourceRegistration} and {@link Resource} for displaying various
+ * statistics reported by a {@link ResourceAdapterDeployment}. The available statistics depend on
+ * the deployment implementation, so they cannot be known/registered before the deployment is processed.
+ */
+public final class IronJacamarActivationResourceService implements Service<ManagementResourceRegistration> {
 
     private static PathElement SUBSYSTEM_PATH_ELEMENT = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
-    private static PathElement IJ_PATH_ELEMENT = PathElement.pathElement(Constants.IRONJACAMAR_NAME, Constants.IRONJACAMAR_NAME);
-
+    private static PathAddress RA_ADDRESS = PathAddress.pathAddress(SUBSYSTEM_PATH_ELEMENT,
+            PathElement.pathElement(Constants.IRONJACAMAR_NAME, Constants.IRONJACAMAR_NAME),
+            PathElement.pathElement(Constants.RESOURCEADAPTER_NAME));
 
     private final ManagementResourceRegistration registration;
     private final Resource deploymentResource;
     private final boolean statsEnabled;
 
-    protected final InjectedValue<ResourceAdapterDeployment> deployment = new InjectedValue<>();
+    private final InjectedValue<ResourceAdapterDeployment> deployment = new InjectedValue<>();
 
-    protected final InjectedValue<AS7MetadataRepository> mdr = new InjectedValue<AS7MetadataRepository>();
+    private final InjectedValue<AS7MetadataRepository> mdr = new InjectedValue<>();
 
     /**
      * create an instance *
      */
     public IronJacamarActivationResourceService(final ManagementResourceRegistration registration, final Resource deploymentResource,
                                                 final boolean statsEnabled) {
-        super();
         this.registration = registration;
         this.deploymentResource = deploymentResource;
         this.statsEnabled = statsEnabled;
@@ -89,168 +96,111 @@ public class IronJacamarActivationResourceService implements Service<ManagementR
 
     @Override
     public void start(StartContext context) throws StartException {
-        ManagementResourceRegistration subRegistration;
         final CommonDeployment deploymentMD = deployment.getValue().getDeployment();
-        ROOT_LOGGER.debugf("Starting IronJacamarActivationResourceService %s", deploymentMD.getDeploymentName());
+        final String deploymentName = deploymentMD.getDeploymentName();
+        ROOT_LOGGER.debugf("Starting IronJacamarActivationResourceService %s", deploymentName);
 
         try {
-            ResourceBuilder resourceBuilder = ResourceBuilder.Factory.create(SUBSYSTEM_PATH_ELEMENT,
-                    new StandardResourceDescriptionResolver(Constants.STATISTICS_NAME, CommonAttributes.RESOURCE_NAME, CommonAttributes.class.getClassLoader()));
-            subRegistration = registration.registerSubModel(resourceBuilder.build());
+            Connector connector = deploymentMD.getConnector();
+            if (connector != null && connector.getResourceAdapter() != null) {
 
-        } catch (IllegalArgumentException iae) {
-            subRegistration = registration.getSubModel(PathAddress.pathAddress(SUBSYSTEM_PATH_ELEMENT));
-        }
-        ManagementResourceRegistration ijRegistration;
-
-        try {
-            ijRegistration = subRegistration.registerSubModel(new IronJacamarResourceDefinition());
-
-        } catch (IllegalArgumentException iae) {
-            ijRegistration = subRegistration.getSubModel(PathAddress.pathAddress(Constants.IRONJACAMAR_NAME, Constants.IRONJACAMAR_NAME));
-
-        }
-
-        try {
-            if (deploymentResource != null) {
-
-
-                PathElement peLocalStats = PathElement.pathElement(Constants.STATISTICS_NAME, "extended");
-
-                if (deploymentMD.getConnector() != null && deploymentMD.getConnector().getResourceAdapter() != null) {
-                    ManagementResourceRegistration raRegistration = ijRegistration.
-                            getSubModel(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(Constants.RESOURCEADAPTER_NAME)))
-                            .registerOverrideModel(deploymentMD.getDeploymentName(), new OverrideDescriptionProvider() {
-                                @Override
-                                public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
-                                    return Collections.emptyMap();
-                                }
-
-                                @Override
-                                public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                                    return Collections.emptyMap();
-                                }
-
-                            });
-
-                    ResourceBuilder resourceBuilder = ResourceBuilder.Factory.create(peLocalStats,
-                            new StandardResourceDescriptionResolver(Constants.STATISTICS_NAME + "." + Constants.WORKMANAGER_NAME, CommonAttributes.RESOURCE_NAME, CommonAttributes.class.getClassLoader()));
-
-                    ManagementResourceRegistration raStatsSubRegistration = raRegistration.registerSubModel(resourceBuilder.build());
-
-
-                    if (deploymentMD.getConnector().getResourceAdapter().getStatistics() != null) {
-                        StatisticsPlugin raStats = deploymentMD.getConnector().getResourceAdapter().getStatistics();
-                        raStats.setEnabled(statsEnabled);
-                        PoolMetrics.ParametrizedPoolMetricsHandler handler = new PoolMetrics.ParametrizedPoolMetricsHandler(raStats);
-                        for (AttributeDefinition attribute : StatisticsResourceDefinition.getAttributesFromPlugin(raStats)) {
-                            raStatsSubRegistration.registerMetric(attribute, handler);
-                        }
-                        raStatsSubRegistration.registerOperationHandler(ClearStatisticsHandler.DEFINITION, new ClearStatisticsHandler(raStats));
-                    }
-                    if (deploymentMD.getConnector() != null && deploymentMD.getConnector().getConnectionFactories() != null) {
-                        for (ConnectionFactory cf : deploymentMD.getConnector().getConnectionFactories()) {
-                            if (cf.getManagedConnectionFactory() != null && cf.getManagedConnectionFactory().getStatistics() != null) {
-                                PathElement peCD = PathElement.pathElement(Constants.CONNECTIONDEFINITIONS_NAME, cf.getJndiName());
-                                PathElement peCdStats = PathElement.pathElement(Constants.STATISTICS_NAME, "extended");
-                                StatisticsPlugin extendStats = cf.getManagedConnectionFactory().getStatistics();
-                                extendStats.setEnabled(statsEnabled);
-                                if (extendStats.getNames().size() != 0) {
-
-
-                                    if (extendStats.getNames().size() != 0) {
-                                        ManagementResourceRegistration cdRegistration = raRegistration.getSubModel(PathAddress.pathAddress(peCD));
-                                        ManagementResourceRegistration overrideCdRegistration = cdRegistration.registerOverrideModel(cf.getJndiName(), new OverrideDescriptionProvider() {
-                                            @Override
-                                            public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
-                                                return Collections.emptyMap();
-                                            }
-
-                                            @Override
-                                            public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                                                return Collections.emptyMap();
-                                            }
-
-                                        });
-                                        if (extendStats.getNames().size() != 0 && overrideCdRegistration.getSubModel(PathAddress.pathAddress(peCdStats)) == null) {
-                                            overrideCdRegistration.registerSubModel(new StatisticsResourceDefinition(peCdStats, CommonAttributes.RESOURCE_NAME, extendStats));
-                                        }
-
-
-                                    }
-                                }
-                            }
-                        }
+                final OverrideDescriptionProvider OD_PROVIDER = new OverrideDescriptionProvider() {
+                    @Override
+                    public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
+                        return Collections.emptyMap();
                     }
 
-                    if (deploymentMD.getConnectionManagers() != null) {
-                        for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
-                            if (cm.getPool() != null) {
-                                PathElement peCD = PathElement.pathElement(Constants.CONNECTIONDEFINITIONS_NAME, cm.getJndiName());
-                                PathElement peCdStats = PathElement.pathElement(Constants.STATISTICS_NAME, "pool");
-                                StatisticsPlugin poolStats = cm.getPool().getStatistics();
-                                poolStats.setEnabled(statsEnabled);
-
-                                if (poolStats.getNames().size() != 0) {
-                                    ManagementResourceRegistration cdRegistration = raRegistration.getSubModel(PathAddress.pathAddress(peCD));
-                                    ManagementResourceRegistration overrideCdRegistration = cdRegistration.registerOverrideModel(cm.getJndiName(), new OverrideDescriptionProvider() {
-                                        @Override
-                                        public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
-                                            return Collections.emptyMap();
-                                        }
-
-                                        @Override
-                                        public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                                            return Collections.emptyMap();
-                                        }
-
-                                    });
-                                    if (poolStats.getNames().size() != 0 && overrideCdRegistration.getSubModel(PathAddress.pathAddress(peCdStats)) == null) {
-                                        overrideCdRegistration.registerSubModel(new StatisticsResourceDefinition(peCdStats, CommonAttributes.RESOURCE_NAME, poolStats));
-                                    }
-
-
-                                }
-                            }
-                        }
+                    @Override
+                    public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
+                        return Collections.emptyMap();
                     }
 
-                    if (deploymentMD.getConnector() != null && deploymentMD.getConnector().getAdminObjects() != null) {
-                        for (AdminObject ao : deploymentMD.getConnector().getAdminObjects()) {
-                            if (ao.getStatistics() != null) {
-                                PathElement peCD = PathElement.pathElement(Constants.ADMIN_OBJECTS_NAME, ao.getJndiName());
-                                PathElement peCdStats = PathElement.pathElement(Constants.STATISTICS_NAME, "extended");
-                                StatisticsPlugin extendStats = ao.getStatistics();
-                                extendStats.setEnabled(statsEnabled);
-                                if (extendStats.getNames().size() != 0) {
+                };
+
+                final PathElement EXTENDED_STATS = PathElement.pathElement(Constants.STATISTICS_NAME, "extended");
+                final PathAddress EXTENDED_STATS_ADDR = PathAddress.pathAddress(EXTENDED_STATS);
+                final PathAddress CON_DEF_ADDR = PathAddress.EMPTY_ADDRESS.append(Constants.CONNECTIONDEFINITIONS_NAME);
+
+                ManagementResourceRegistration raRegistration =
+                        registration.getSubModel(RA_ADDRESS).registerOverrideModel(deploymentName, OD_PROVIDER);
+
+                ResourceBuilder resourceBuilder = ResourceBuilder.Factory.create(EXTENDED_STATS,
+                        new StandardResourceDescriptionResolver(Constants.STATISTICS_NAME + "." + Constants.WORKMANAGER_NAME, CommonAttributes.RESOURCE_NAME, CommonAttributes.class.getClassLoader()));
+
+                ManagementResourceRegistration raStatsSubRegistration = raRegistration.registerSubModel(resourceBuilder.build());
 
 
-                                    if (extendStats.getNames().size() != 0) {
-                                        ManagementResourceRegistration cdRegistration = raRegistration.getSubModel(PathAddress.pathAddress(peCD));
-                                        ManagementResourceRegistration overrideCdRegistration = cdRegistration.registerOverrideModel(ao.getJndiName(), new OverrideDescriptionProvider() {
-                                            @Override
-                                            public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
-                                                return Collections.emptyMap();
-                                            }
-
-                                            @Override
-                                            public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                                                return Collections.emptyMap();
-                                            }
-
-                                        });
-                                        if (extendStats.getNames().size() != 0 && overrideCdRegistration.getSubModel(PathAddress.pathAddress(peCdStats)) == null) {
-                                            overrideCdRegistration.registerSubModel(new StatisticsResourceDefinition(peCdStats, CommonAttributes.RESOURCE_NAME, extendStats));
-                                        }
-
-
-                                    }
-                                }
-                            }
-                        }
+                StatisticsPlugin raStats = connector.getResourceAdapter().getStatistics();
+                if (raStats != null) {
+                    raStats.setEnabled(statsEnabled);
+                    PoolMetrics.ParametrizedPoolMetricsHandler handler = new PoolMetrics.ParametrizedPoolMetricsHandler(raStats);
+                    for (AttributeDefinition attribute : StatisticsResourceDefinition.getAttributesFromPlugin(raStats)) {
+                        raStatsSubRegistration.registerMetric(attribute, handler);
                     }
-
+                    raStatsSubRegistration.registerOperationHandler(ClearStatisticsHandler.DEFINITION, new ClearStatisticsHandler(raStats));
                 }
+
+                List<ConnectionFactory> connectionFactories = connector.getConnectionFactories();
+                if (connectionFactories != null) {
+                    for (ConnectionFactory cf : connectionFactories) {
+                        ManagedConnectionFactory mcf = cf.getManagedConnectionFactory();
+                        StatisticsPlugin extendStats = mcf == null ? null : mcf.getStatistics();
+                        if (extendStats != null) {
+                            extendStats.setEnabled(statsEnabled);
+                            if (extendStats.getNames().size() != 0) {
+
+                                ManagementResourceRegistration cdRegistration = raRegistration.getSubModel(CON_DEF_ADDR);
+                                ManagementResourceRegistration overrideCdRegistration =
+                                        cdRegistration.registerOverrideModel(cf.getJndiName(), OD_PROVIDER);
+                                if (overrideCdRegistration.getSubModel(EXTENDED_STATS_ADDR) == null) {
+                                    overrideCdRegistration.registerSubModel(new StatisticsResourceDefinition(EXTENDED_STATS, CommonAttributes.RESOURCE_NAME, extendStats));
+                                }
+                            }
+                        }
+                    }
+                }
+
+                ConnectionManager[] connectionManagers = deploymentMD.getConnectionManagers();
+                if (connectionManagers != null) {
+                    PathElement POOL_STATS = PathElement.pathElement(Constants.STATISTICS_NAME, "pool");
+                    PathAddress POOL_STATS_ADDR = PathAddress.pathAddress(POOL_STATS);
+                    for (ConnectionManager cm : connectionManagers) {
+                        if (cm.getPool() != null) {
+                            StatisticsPlugin poolStats = cm.getPool().getStatistics();
+                            poolStats.setEnabled(statsEnabled);
+
+                            if (poolStats.getNames().size() != 0) {
+                                ManagementResourceRegistration cdRegistration = raRegistration.getSubModel(CON_DEF_ADDR);
+                                ManagementResourceRegistration overrideCdRegistration =
+                                        cdRegistration.registerOverrideModel(cm.getJndiName(), OD_PROVIDER);
+                                if (overrideCdRegistration.getSubModel(POOL_STATS_ADDR) == null) {
+                                    overrideCdRegistration.registerSubModel(new StatisticsResourceDefinition(POOL_STATS, CommonAttributes.RESOURCE_NAME, poolStats));
+                                }
+                            }
+                        }
+                    }
+                }
+
+                List<AdminObject> adminObjects = connector.getAdminObjects();
+                if (adminObjects != null) {
+                    PathAddress AO_ADDR = PathAddress.EMPTY_ADDRESS.append(Constants.ADMIN_OBJECTS_NAME);
+                    for (AdminObject ao : adminObjects) {
+                        StatisticsPlugin extendStats = ao.getStatistics();
+                        if (extendStats != null) {
+                            extendStats.setEnabled(statsEnabled);
+                            if (extendStats.getNames().size() != 0) {
+
+                                ManagementResourceRegistration cdRegistration = raRegistration.getSubModel(AO_ADDR);
+                                ManagementResourceRegistration overrideCdRegistration =
+                                        cdRegistration.registerOverrideModel(ao.getJndiName(), OD_PROVIDER);
+                                if (overrideCdRegistration.getSubModel(EXTENDED_STATS_ADDR) == null) {
+                                    overrideCdRegistration.registerSubModel(new StatisticsResourceDefinition(EXTENDED_STATS, CommonAttributes.RESOURCE_NAME, extendStats));
+                                }
+                            }
+                        }
+                    }
+                }
+
             }
         } catch (IllegalArgumentException e) {
             //ignore it, already restered
@@ -264,24 +214,57 @@ public class IronJacamarActivationResourceService implements Service<ManagementR
             subsystemResource = deploymentResource.getChild(SUBSYSTEM_PATH_ELEMENT);
         }
 
-
         IronJacamarResourceCreator.INSTANCE.execute(subsystemResource, mdr.getValue(), deployment.getValue().getRaName());
-
 
     }
 
     @Override
     public void stop(StopContext context) {
-        ManagementResourceRegistration subsystemResourceRegistration;
 
-        subsystemResourceRegistration = registration.getSubModel(PathAddress.pathAddress(SUBSYSTEM_PATH_ELEMENT));
+        final CommonDeployment deploymentMD = deployment.getValue().getDeployment();
+        final String deploymentName = deploymentMD.getDeploymentName();
 
-        if (subsystemResourceRegistration != null) {
-            if (subsystemResourceRegistration.getSubModel(PathAddress.pathAddress(IJ_PATH_ELEMENT)) != null) {
-                subsystemResourceRegistration.unregisterSubModel(IJ_PATH_ELEMENT);
+        ROOT_LOGGER.debugf("Stopping IronJacamarActivationResourceService %s", deploymentName);
+
+        Connector connector = deploymentMD.getConnector();
+        if (connector != null && connector.getResourceAdapter() != null) {
+
+            // We may have registered override resource registrations so we need to remove those
+            ManagementResourceRegistration raReg = registration.getSubModel(RA_ADDRESS.getParent().append(Constants.RESOURCEADAPTER_NAME, deploymentName));
+            ManagementResourceRegistration cdefReg = raReg.getSubModel(PathAddress.pathAddress(PathElement.pathElement(Constants.CONNECTIONDEFINITIONS_NAME)));
+
+            List<ConnectionFactory> connectionFactories = connector.getConnectionFactories();
+            if (connectionFactories != null) { // code reads that it won't be null but it's not documented, so...
+                for (ConnectionFactory cf : connectionFactories) {
+                    // We might not have registered an override for this one but it's no harm to remove
+                    // and simpler to just do it vs analyzing to see if we did
+                    cdefReg.unregisterOverrideModel(cf.getJndiName());
+                }
             }
-            registration.unregisterSubModel(SUBSYSTEM_PATH_ELEMENT);
+
+            ConnectionManager[] connectionManagers = deploymentMD.getConnectionManagers();
+            if (connectionManagers != null) {
+                for (ConnectionManager cm : connectionManagers) {
+                    // We might not have registered an override for this one but it's no harm to remove
+                    // and simpler to just do it vs analyzing to see if we did
+                    cdefReg.unregisterOverrideModel(cm.getJndiName());
+                }
+            }
+
+            List<AdminObject> adminObjects = connector.getAdminObjects();
+            if (adminObjects != null) { // code reads that it won't be null but it's not documented, so...
+                ManagementResourceRegistration aoReg = raReg.getSubModel(PathAddress.pathAddress(PathElement.pathElement(Constants.ADMIN_OBJECTS_NAME)));
+                for (AdminObject ao : adminObjects) {
+                    // We might not have registered an override for this one but it's no harm to remove
+                    // and simpler to just do it vs analyzing to see if we did
+                    aoReg.unregisterOverrideModel(ao.getJndiName());
+                }
+            }
+
+            ManagementResourceRegistration raBaseReg = registration.getSubModel(RA_ADDRESS);
+            raBaseReg.unregisterOverrideModel(deploymentName);
         }
+
         deploymentResource.removeChild(SUBSYSTEM_PATH_ELEMENT);
     }
 

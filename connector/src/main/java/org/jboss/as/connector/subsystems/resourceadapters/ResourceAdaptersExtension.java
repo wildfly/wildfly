@@ -29,12 +29,14 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
 more  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
@@ -70,6 +72,14 @@ public class ResourceAdaptersExtension implements Extension {
 
         // Remoting subsystem description and operation handlers
         registration.registerSubsystemModel(new ResourceAdaptersRootResourceDefinition(context.isRuntimeOnlyRegistrationValid()));
+
+        if (context.isRuntimeOnlyRegistrationValid()) {
+            ManagementResourceRegistration deployments = registration.registerDeploymentModel(new SimpleResourceDefinition(
+                    new SimpleResourceDefinition.Parameters(SUBSYSTEM_PATH,
+                            new StandardResourceDescriptionResolver(Constants.STATISTICS_NAME,
+                                    CommonAttributes.RESOURCE_NAME, CommonAttributes.class.getClassLoader()))));
+            deployments.registerSubModel(new IronJacamarResourceDefinition());
+        }
     }
 
     @Override
