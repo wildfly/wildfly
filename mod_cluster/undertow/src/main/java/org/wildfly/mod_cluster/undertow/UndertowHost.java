@@ -61,8 +61,12 @@ public class UndertowHost implements Host {
     @Override
     public Iterable<Context> getContexts() {
         List<Context> contexts = new ArrayList<>();
-        this.host.getDeployments().forEach(deployment -> contexts.add(new UndertowContext(deployment, this)));
-        this.host.getLocations().forEach(path -> contexts.add(new LocationContext(path, this)));
+        for (Deployment deployment : this.host.getDeployments()) {
+            contexts.add(new UndertowContext(deployment, this));
+        }
+        for (String path : this.host.getLocations()) {
+            contexts.add(new LocationContext(path, this));
+        }
         return contexts;
     }
 

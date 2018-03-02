@@ -23,7 +23,7 @@
 package org.wildfly.mod_cluster.undertow;
 
 import java.time.Duration;
-import java.util.stream.Stream;
+import java.util.Arrays;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -77,7 +77,9 @@ public class UndertowEventHandlerAdapterBuilder implements CapabilityServiceBuil
                 .addDependency(ContainerEventHandlerService.SERVICE_NAME, ContainerEventHandler.class, this.eventHandler)
                 .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, this.suspendController)
                 ;
-        Stream.of(this.service, this.listener).forEach(dependency -> dependency.register(builder));
+        for (ValueDependency<?> dependency : Arrays.asList(this.service, this.listener)) {
+            dependency.register(builder);
+        }
         return builder;
     }
 

@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.mod_cluster;
 
-import static org.jboss.as.clustering.dmr.ModelNodes.optionalList;
 import static org.jboss.as.clustering.dmr.ModelNodes.optionalString;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.ADVERTISE;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.ADVERTISE_SECURITY_KEY;
@@ -68,7 +67,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -206,14 +204,21 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
                 .setTtl(TTL.resolveModelAttribute(context, model).asInt())
                 .setNodeTimeout(NODE_TIMEOUT.resolveModelAttribute(context, model).asInt())
         ;
-        optionalString(BALANCER.resolveModelAttribute(context, model)).ifPresent(balancer -> builder.node().setBalancer(balancer));
-        optionalString(LOAD_BALANCING_GROUP.resolveModelAttribute(context, model)).ifPresent(group -> builder.node().setLoadBalancingGroup(group));
-
-        optionalList(PROXIES.resolveModelAttribute(context, model)).ifPresent(
-                refs -> refs.stream()
-                        .map(ModelNode::asString)
-                        .forEach(ref -> this.outboundSocketBindings.add(new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, ref), OutboundSocketBinding.class)))
-        );
+        ModelNode node = BALANCER.resolveModelAttribute(context, model);
+        if (node.isDefined()) {
+            builder.node().setBalancer(node.asString());
+        }
+        node = LOAD_BALANCING_GROUP.resolveModelAttribute(context, model);
+        if (node.isDefined()) {
+            builder.node().setLoadBalancingGroup(node.asString());
+        }
+        node = PROXIES.resolveModelAttribute(context, model);
+        if (node.isDefined()) {
+            for (ModelNode ref : node.asList()) {
+                String asString = ref.asString();
+                this.outboundSocketBindings.add(new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, asString), OutboundSocketBinding.class));
+            }
+        }
 
         if (model.hasDefined(CommonAttributes.PROXY_LIST)) {
             throw new OperationFailedException(ROOT_LOGGER.proxyListNotAllowedInCurrentModel());
@@ -222,29 +227,51 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
 
         // Elytron-based security support
 
-        Optional<String> sslContextRef = optionalString(SSL_CONTEXT.resolveModelAttribute(context, model));
-        sslContextRef.ifPresent(
-                ref -> this.sslContextDependency = new InjectedValueDependency<>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, ref), SSLContext.class)
-        );
+        node = SSL_CONTEXT.resolveModelAttribute(context, model);
+        if (node.isDefined()) {
+            this.sslContextDependency = new InjectedValueDependency<>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, node.asString()), SSLContext.class);
+        }
 
         // Legacy security support
 
         if (model.get(ModClusterSSLResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
-            if (sslContextRef.isPresent()) {
+            if (node.isDefined()) {
                 throw ROOT_LOGGER.bothElytronAndLegacySslContextDefined();
             }
             ModelNode sslModel = model.get(ModClusterSSLResourceDefinition.PATH.getKeyValuePair());
 
             ModClusterConfig sslConfiguration = new ModClusterConfig();
 
-            optionalString(KEY_ALIAS.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslKeyAlias);
-            optionalString(PASSWORD.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslTrustStorePassword);
-            optionalString(PASSWORD.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslKeyStorePassword);
-            optionalString(CERTIFICATE_KEY_FILE.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslKeyStore);
-            optionalString(CIPHER_SUITE.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslCiphers);
-            optionalString(PROTOCOL.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslProtocol);
-            optionalString(CA_CERTIFICATE_FILE.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslTrustStore);
-            optionalString(CA_REVOCATION_URL.resolveModelAttribute(context, sslModel)).ifPresent(sslConfiguration::setSslCrlFile);
+            node = KEY_ALIAS.resolveModelAttribute(context, sslModel);
+            if (node.isDefined()) {
+                sslConfiguration.setSslKeyAlias(node.asString());
+            }
+            node = PASSWORD.resolveModelAttribute(context, sslModel);
+            if (node.isDefined()) {
+                String str = node.toString();
+                sslConfiguration.setSslTrustStorePassword(str);
+                sslConfiguration.setSslKeyStorePassword(str);
+            }
+            node = CERTIFICATE_KEY_FILE.resolveModelAttribute(context, sslModel);
+            if (node.isDefined()) {
+                sslConfiguration.setSslKeyStore(node.asString());
+            }
+            node = CIPHER_SUITE.resolveModelAttribute(context, sslModel);
+            if (node.isDefined()) {
+                sslConfiguration.setSslCiphers(node.asString());
+            }
+            node = PROTOCOL.resolveModelAttribute(context, sslModel);
+            if (node.isDefined()) {
+                sslConfiguration.setSslProtocol(node.asString());
+            }
+            node = CA_CERTIFICATE_FILE.resolveModelAttribute(context, sslModel);
+            if (node.isDefined()) {
+                sslConfiguration.setSslTrustStore(node.asString());
+            }
+            node = CA_REVOCATION_URL.resolveModelAttribute(context, sslModel);
+            if (node.isDefined()) {
+                sslConfiguration.setSslCrlFile(node.asString());
+            }
 
             builder.mcmp().setSocketFactory(new JSSESocketFactory(sslConfiguration));
         }
