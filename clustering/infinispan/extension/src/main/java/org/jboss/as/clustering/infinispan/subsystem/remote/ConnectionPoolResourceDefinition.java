@@ -33,7 +33,6 @@ import org.jboss.as.clustering.infinispan.subsystem.ComponentResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -67,7 +66,7 @@ public class ConnectionPoolResourceDefinition extends ComponentResourceDefinitio
         TIME_BETWEEN_EVICTION_RUNS("time-between-eviction-runs", ModelType.LONG, new ModelNode(120000L)),
         ;
 
-        private final SimpleAttributeDefinition definition;
+        private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = createBuilder(name, type, defaultValue).build();

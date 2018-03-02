@@ -29,7 +29,7 @@ import org.infinispan.commons.marshall.Marshaller;
 import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
 
 /**
- * Default implementation of container controller {@link RemoteCacheContainer}.
+ * Default implementation of container managed {@link RemoteCacheContainer}.
  *
  * @author Radoslav Husar
  */
@@ -45,52 +45,52 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
 
     @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
     @Override
     public Configuration getConfiguration() {
-        return remoteCacheManager.getConfiguration();
+        return this.remoteCacheManager.getConfiguration();
     }
 
     @Override
     public <K, V> RemoteCache<K, V> getCache(boolean forceReturnValue) {
-        return remoteCacheManager.getCache();
+        return this.remoteCacheManager.getCache();
     }
 
     @Override
     public <K, V> RemoteCache<K, V> getCache(String cacheName, boolean forceReturnValue) {
-        return remoteCacheManager.getCache(cacheName, forceReturnValue);
+        return this.remoteCacheManager.getCache(cacheName, forceReturnValue);
     }
 
     @Override
     public boolean isStarted() {
-        return remoteCacheManager.isStarted();
+        return this.remoteCacheManager.isStarted();
     }
 
     @Override
     public boolean switchToCluster(String clusterName) {
-        return remoteCacheManager.switchToCluster(clusterName);
+        return this.remoteCacheManager.switchToCluster(clusterName);
     }
 
     @Override
     public boolean switchToDefaultCluster() {
-        return remoteCacheManager.switchToDefaultCluster();
+        return this.remoteCacheManager.switchToDefaultCluster();
     }
 
     @Override
     public Marshaller getMarshaller() {
-        return remoteCacheManager.getMarshaller();
+        return this.remoteCacheManager.getMarshaller();
     }
 
     @Override
     public <K, V> RemoteCache<K, V> getCache() {
-        return remoteCacheManager.getCache();
+        return this.remoteCacheManager.getCache();
     }
 
     @Override
     public <K, V> RemoteCache<K, V> getCache(String cacheName) {
-        return remoteCacheManager.getCache(cacheName);
+        return this.remoteCacheManager.getCache(cacheName);
     }
 
     @Override

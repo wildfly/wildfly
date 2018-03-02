@@ -52,8 +52,8 @@ public class ClientThreadPoolBuilder extends ComponentBuilder<ExecutorFactoryCon
     private final ExecutorFactoryConfigurationBuilder builder = new ConfigurationBuilder().asyncExecutorFactory();
     private final ThreadPoolDefinition definition;
 
-    public ClientThreadPoolBuilder(ThreadPoolDefinition definition, PathAddress containerAddress) {
-        super(definition, containerAddress);
+    public ClientThreadPoolBuilder(ThreadPoolDefinition definition, PathAddress address) {
+        super(definition, address);
         this.definition = definition;
     }
 

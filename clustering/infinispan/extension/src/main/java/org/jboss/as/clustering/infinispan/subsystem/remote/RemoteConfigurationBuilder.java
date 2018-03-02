@@ -26,11 +26,11 @@ import static org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheCon
 import static org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.configuration.ClusterConfigurationBuilder;
@@ -109,9 +109,11 @@ public class RemoteConfigurationBuilder implements ResourceServiceBuilder<Config
         if (model.hasDefined(RemoteClusterResourceDefinition.WILDCARD_PATH.getKey())) {
             for (Property property : model.get(RemoteClusterResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 String clusterName = property.getName();
-                List<InjectedValueDependency<OutboundSocketBinding>> valueDependencies = StringListAttributeDefinition.unwrapValue(context, RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS.resolveModelAttribute(context, property.getValue())).stream()
-                        .map(binding -> new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class))
-                        .collect(Collectors.toList());
+                List<InjectedValueDependency<OutboundSocketBinding>> valueDependencies = new ArrayList<>();
+                for (String binding : StringListAttributeDefinition.unwrapValue(context, RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS.resolveModelAttribute(context, property.getValue()))) {
+                    InjectedValueDependency<OutboundSocketBinding> outboundSocketBindingInjectedValueDependency = new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class);
+                    valueDependencies.add(outboundSocketBindingInjectedValueDependency);
+                }
                 this.clusters.put(clusterName, valueDependencies);
             }
         }

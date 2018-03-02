@@ -40,8 +40,8 @@ public class InvalidationNearCacheBuilder extends ComponentBuilder<NearCacheConf
 
     private volatile int maxEntries;
 
-    InvalidationNearCacheBuilder(PathAddress remoteContainer) {
-        super(RemoteCacheContainerComponent.NEAR_CACHE, remoteContainer);
+    InvalidationNearCacheBuilder(PathAddress address) {
+        super(RemoteCacheContainerComponent.NEAR_CACHE, address);
     }
 
     @Override

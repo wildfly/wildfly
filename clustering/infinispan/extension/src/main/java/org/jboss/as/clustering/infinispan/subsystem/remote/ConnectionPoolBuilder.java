@@ -53,8 +53,8 @@ public class ConnectionPoolBuilder extends ComponentBuilder<ConnectionPoolConfig
     private volatile boolean testWhileIdle;
     private volatile long timeBetweenEvictionRuns;
 
-    ConnectionPoolBuilder(PathAddress remoteContainer) {
-        super(RemoteCacheContainerComponent.CONNECTION_POOL, remoteContainer);
+    ConnectionPoolBuilder(PathAddress address) {
+        super(RemoteCacheContainerComponent.CONNECTION_POOL, address);
     }
 
     @Override

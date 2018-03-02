@@ -30,7 +30,6 @@ import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -50,7 +49,7 @@ public class InvalidationNearCacheResourceDefinition extends NearCacheResourceDe
         MAX_ENTRIES("max-entries", ModelType.INT, new ModelNode(-1)),
         ;
 
-        private final SimpleAttributeDefinition definition;
+        private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = createBuilder(name, type, defaultValue).build();

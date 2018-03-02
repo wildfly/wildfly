@@ -34,8 +34,8 @@ import org.jboss.as.controller.PathAddress;
  */
 public class NoNearCacheBuilder extends ComponentBuilder<NearCacheConfiguration> implements ResourceServiceBuilder<NearCacheConfiguration> {
 
-    NoNearCacheBuilder(PathAddress cacheAddress) {
-        super(RemoteCacheContainerComponent.NEAR_CACHE, cacheAddress);
+    NoNearCacheBuilder(PathAddress address) {
+        super(RemoteCacheContainerComponent.NEAR_CACHE, address);
     }
 
     @Override

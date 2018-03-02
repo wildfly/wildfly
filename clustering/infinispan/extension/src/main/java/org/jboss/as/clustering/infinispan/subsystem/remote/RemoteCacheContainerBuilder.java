@@ -48,7 +48,7 @@ import org.wildfly.clustering.service.ValueDependency;
 /**
  * @author Radoslav Husar
  */
-public class RemoteCacheContainerBuilder implements ResourceServiceBuilder<RemoteCacheContainer> {
+public class RemoteCacheContainerBuilder implements ResourceServiceBuilder<RemoteCacheContainer>, Function<RemoteCacheManager, RemoteCacheContainer>, Supplier<RemoteCacheManager>, Consumer<RemoteCacheManager> {
 
     private ValueDependency<Configuration> configuration;
     private final PathAddress address;
@@ -72,25 +72,29 @@ public class RemoteCacheContainerBuilder implements ResourceServiceBuilder<Remot
 
     @Override
     public ServiceBuilder<RemoteCacheContainer> build(ServiceTarget target) {
-        Function<RemoteCacheManager, RemoteCacheContainer> mapper = remoteCacheManager -> new ManagedRemoteCacheContainer(this.name, remoteCacheManager);
-
-        Supplier<RemoteCacheManager> supplier = () -> {
-            Configuration configuration = this.configuration.getValue();
-            RemoteCacheManager remoteCacheManager = new RemoteCacheManager(configuration);
-            remoteCacheManager.start();
-            InfinispanLogger.ROOT_LOGGER.debugf("%s remote cache container started", this.name);
-            return remoteCacheManager;
-        };
-
-        Consumer<RemoteCacheManager> destroyer = remoteCacheManager -> {
-            remoteCacheManager.stop();
-            InfinispanLogger.ROOT_LOGGER.debugf("%s remote cache container stopped", this.name);
-        };
-
-        Service<RemoteCacheContainer> service = new SuppliedValueService<>(mapper, supplier, destroyer);
+        Service<RemoteCacheContainer> service = new SuppliedValueService<>(this, this, this);
         ServiceBuilder<RemoteCacheContainer> builder = target.addService(this.getServiceName(), service)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                ;
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
         return this.configuration.register(builder);
+    }
+
+    @Override
+    public RemoteCacheManager get() {
+        Configuration configuration = RemoteCacheContainerBuilder.this.configuration.getValue();
+        RemoteCacheManager remoteCacheManager = new RemoteCacheManager(configuration);
+        remoteCacheManager.start();
+        InfinispanLogger.ROOT_LOGGER.debugf("%s remote cache container started", RemoteCacheContainerBuilder.this.name);
+        return remoteCacheManager;
+    }
+
+    @Override
+    public void accept(RemoteCacheManager remoteCacheManager) {
+        remoteCacheManager.stop();
+        InfinispanLogger.ROOT_LOGGER.debugf("%s remote cache container stopped", RemoteCacheContainerBuilder.this.name);
+    }
+
+    @Override
+    public RemoteCacheContainer apply(RemoteCacheManager remoteCacheManager) {
+        return new ManagedRemoteCacheContainer(RemoteCacheContainerBuilder.this.name, remoteCacheManager);
     }
 }
