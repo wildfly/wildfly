@@ -128,7 +128,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
 
-    private final ResourceServiceBuilderFactory<Configuration> builderFactory = RemoteConfigurationBuilder::new;
+    private final ResourceServiceBuilderFactory<Configuration> builderFactory = RemoteCacheContainerConfigurationBuilder::new;
 
     @Override
     public void register(ManagementResourceRegistration parentRegistration) {

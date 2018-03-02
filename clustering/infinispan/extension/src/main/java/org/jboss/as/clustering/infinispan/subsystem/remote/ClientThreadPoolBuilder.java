@@ -34,7 +34,6 @@ import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfigurationBuilder;
 import org.infinispan.client.hotrod.impl.async.DefaultAsyncExecutorFactory;
 import org.infinispan.commons.executors.ExecutorFactory;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -47,7 +46,7 @@ import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
 /**
  * @author Radoslav Husar
  */
-public class ClientThreadPoolBuilder extends ComponentBuilder<ExecutorFactoryConfiguration> implements ResourceServiceBuilder<ExecutorFactoryConfiguration> {
+public class ClientThreadPoolBuilder extends ComponentBuilder<ExecutorFactoryConfiguration> {
 
     private final ExecutorFactoryConfigurationBuilder builder = new ConfigurationBuilder().asyncExecutorFactory();
     private final ThreadPoolDefinition definition;

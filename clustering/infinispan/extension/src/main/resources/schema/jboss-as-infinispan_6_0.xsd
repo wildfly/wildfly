@@ -1261,25 +1261,6 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="max-idle" type="xs:int" default="-1">
-            <xs:annotation>
-                <xs:documentation>
-                    Controls the maximum number of idle persistent connections, per server, at any time.
-                    When negative, there is no limit to the number of connections that may be idle per server.
-                    Value -1 means no limit.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="max-total" type="xs:int" default="-1">
-            <xs:annotation>
-                <xs:documentation>
-                    Sets a global limit on the number persistent connections that can be in circulation within the combined set of servers.
-                    When non-positive, there is no limit to the total number of persistent connections in circulation.
-                    When maxTotal is exceeded, all connections pools are exhausted.
-                    Value -1 means no limit.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="max-wait" type="xs:int" default="-1">
             <xs:annotation>
                 <xs:documentation>
@@ -1307,53 +1288,6 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="num-tests-per-eviction-run" type="xs:int" default="3">
-            <xs:annotation>
-                <xs:documentation>
-                    Indicates the maximum number of connections to test during idle eviction runs.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="strategy" type="tns:connection-pool-strategy" default="LIFO">
-            <xs:annotation>
-                <xs:documentation>
-                    Configures connection pool usage strategy.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="test-on-borrow" type="xs:boolean" default="false">
-            <xs:annotation>
-                <xs:documentation>
-                    Indicates whether connections should be validated before being taken from the pool by sending an TCP packet to the server.
-                    Connections that fail to validate will be dropped from the pool.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="test-on-return" type="xs:boolean" default="false">
-            <xs:annotation>
-                <xs:documentation>
-                    Indicates whether connections should be validated when being returned to the pool sending an TCP packet to the server.
-                    Connections that fail to validate will be dropped from the pool.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="test-while-idle" type="xs:boolean" default="true">
-            <xs:annotation>
-                <xs:documentation>
-                    Indicates whether or not idle connections should be validated by sending an TCP packet to the server, during idle connection eviction runs.
-                    Connections that fail to validate will be dropped from the pool.
-                    This setting has no effect unless timeBetweenEvictionRunsMillis > 0.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="time-between-eviction-runs" type="xs:long" default="120000">
-            <xs:annotation>
-                <xs:documentation>
-                    Indicates how long the eviction thread should sleep before "runs" of examining idle connections.
-                    When non-positive, no eviction thread will be launched.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 
     <xs:simpleType name="exhausted-action">
@@ -1376,25 +1310,6 @@
                 <xs:annotation>
                     <xs:documentation>
                         A new persistent connection will be created and returned thus rendering maxActive meaningless.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-        </xs:restriction>
-    </xs:simpleType>
-
-    <xs:simpleType name="connection-pool-strategy">
-        <xs:restriction base="xs:token">
-            <xs:enumeration value="LIFO">
-                <xs:annotation>
-                    <xs:documentation>
-                        Pool returns the most recently used ("last in") idle object in a pool (if there are idle instances available).
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="FIFO">
-                <xs:annotation>
-                    <xs:documentation>
-                        Pool behaves as a FIFO queue where objects are taken from idle object pools in the order that they are returned.
                     </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>

@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.commons.marshall.Marshaller;
 import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
@@ -46,6 +47,11 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     @Override
     public String getName() {
         return this.name;
+    }
+
+    @Override
+    public RemoteCacheManagerAdmin administration() {
+        return this.remoteCacheManager.administration();
     }
 
     @Override

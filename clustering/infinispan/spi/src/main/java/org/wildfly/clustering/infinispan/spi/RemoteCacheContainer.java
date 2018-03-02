@@ -22,9 +22,11 @@
 
 package org.wildfly.clustering.infinispan.spi;
 
+import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
+
 /**
  * Exposes Infinispan's {@link org.infinispan.client.hotrod.RemoteCacheContainer} additionally exposing the name of the
- * remote cache container.
+ * remote cache container and an administration utility.
  *
  * @author Radoslav Husar
  */
@@ -36,4 +38,11 @@ public interface RemoteCacheContainer extends org.infinispan.client.hotrod.Remot
      * @return the remote cache container name
      */
     String getName();
+
+    /**
+     * Returns administration utility to administer (create, remove or reindex) caches.
+     *
+     * @return administration utility
+     */
+    RemoteCacheManagerAdmin administration();
 }

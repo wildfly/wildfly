@@ -53,17 +53,9 @@ public class ConnectionPoolResourceDefinition extends ComponentResourceDefinitio
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         EXHAUSTED_ACTION("exhausted-action", ModelType.STRING, new ModelNode(ExhaustedAction.WAIT.name()), new EnumValidator<>(ExhaustedAction.class)),
         MAX_ACTIVE("max-active", ModelType.INT, new ModelNode(-1)),
-        MAX_IDLE("max-idle", ModelType.INT, new ModelNode(-1)),
-        MAX_TOTAL("max-total", ModelType.INT, new ModelNode(-1)),
         MAX_WAIT("max-wait", ModelType.LONG, new ModelNode(-1L)),
         MIN_EVICTABLE_IDLE_TIME("min-evictable-idle-time", ModelType.LONG, new ModelNode(1800000L)),
         MIN_IDLE("min-idle", ModelType.INT, new ModelNode(1)),
-        NUM_TESTS_PER_EVICTION_RUN("num-tests-per-eviction-run", ModelType.INT, new ModelNode(3)),
-        STRATEGY("strategy", ModelType.STRING, new ModelNode(ConnectionPoolStrategy.LIFO.name()), new EnumValidator<>(ConnectionPoolStrategy.class)),
-        TEST_ON_BORROW("test-on-borrow", ModelType.BOOLEAN, new ModelNode(false)),
-        TEST_ON_RETURN("test-on-return", ModelType.BOOLEAN, new ModelNode(false)),
-        TEST_WHILE_IDLE("test-while-idle", ModelType.BOOLEAN, new ModelNode(true)),
-        TIME_BETWEEN_EVICTION_RUNS("time-between-eviction-runs", ModelType.LONG, new ModelNode(120000L)),
         ;
 
         private final AttributeDefinition definition;
@@ -106,7 +98,8 @@ public class ConnectionPoolResourceDefinition extends ComponentResourceDefinitio
         ManagementResourceRegistration subModel = registration.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class);
+                .addAttributes(Attribute.class)
+                ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(ConnectionPoolBuilder::new);
         new SimpleResourceRegistration(descriptor, handler).register(subModel);
     }

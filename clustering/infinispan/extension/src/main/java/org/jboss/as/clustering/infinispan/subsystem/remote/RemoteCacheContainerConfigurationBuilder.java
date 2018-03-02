@@ -64,7 +64,7 @@ import org.wildfly.clustering.service.ValueDependency;
 /**
  * @author Radoslav Husar
  */
-public class RemoteConfigurationBuilder implements ResourceServiceBuilder<Configuration>, Value<Configuration> {
+public class RemoteCacheContainerConfigurationBuilder implements ResourceServiceBuilder<Configuration>, Value<Configuration> {
 
     private final PathAddress address;
 
@@ -83,7 +83,7 @@ public class RemoteConfigurationBuilder implements ResourceServiceBuilder<Config
     private volatile boolean tcpKeepAlive;
     private volatile int valueSizeEstimate;
 
-    RemoteConfigurationBuilder(PathAddress address) {
+    RemoteCacheContainerConfigurationBuilder(PathAddress address) {
         this.address = address;
         this.threadPools.put(ThreadPoolResourceDefinition.CLIENT, new InjectedValueDependency<>(ThreadPoolResourceDefinition.CLIENT.getServiceName(address), ExecutorFactoryConfiguration.class));
     }

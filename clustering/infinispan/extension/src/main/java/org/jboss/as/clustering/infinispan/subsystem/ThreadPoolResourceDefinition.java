@@ -154,11 +154,6 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
         return this.keepAliveTime;
     }
 
-    @Override
-    public PathElement getPathElement() {
-        return definition.getPathElement();
-    }
-
     Collection<Attribute> getAttributes() {
         return Arrays.asList(this.minThreads, this.maxThreads, this.queueLength, this.keepAliveTime);
     }

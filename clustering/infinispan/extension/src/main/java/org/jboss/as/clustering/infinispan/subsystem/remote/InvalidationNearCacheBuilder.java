@@ -25,7 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -36,7 +35,7 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Radoslav Husar
  */
-public class InvalidationNearCacheBuilder extends ComponentBuilder<NearCacheConfiguration> implements ResourceServiceBuilder<NearCacheConfiguration> {
+public class InvalidationNearCacheBuilder extends ComponentBuilder<NearCacheConfiguration> {
 
     private volatile int maxEntries;
 

@@ -142,15 +142,9 @@ public enum XMLAttribute {
     // remote-cache-container -> connection-pool
     EXHAUSTED_ACTION(ConnectionPoolResourceDefinition.Attribute.EXHAUSTED_ACTION),
     MAX_ACTIVE(ConnectionPoolResourceDefinition.Attribute.MAX_ACTIVE),
-    MAX_TOTAL(ConnectionPoolResourceDefinition.Attribute.MAX_TOTAL),
     MAX_WAIT(ConnectionPoolResourceDefinition.Attribute.MAX_WAIT),
     MIN_EVICTABLE_IDLE_TIME(ConnectionPoolResourceDefinition.Attribute.MIN_EVICTABLE_IDLE_TIME),
     MIN_IDLE(ConnectionPoolResourceDefinition.Attribute.MIN_IDLE),
-    NUM_TESTS_PER_EVICTION_RUN(ConnectionPoolResourceDefinition.Attribute.NUM_TESTS_PER_EVICTION_RUN),
-    TEST_ON_BORROW(ConnectionPoolResourceDefinition.Attribute.TEST_ON_BORROW),
-    TEST_ON_RETURN(ConnectionPoolResourceDefinition.Attribute.TEST_ON_RETURN),
-    TEST_WHILE_IDLE(ConnectionPoolResourceDefinition.Attribute.TEST_WHILE_IDLE),
-    TIME_BETWEEN_EVICTION_RUNS(ConnectionPoolResourceDefinition.Attribute.TIME_BETWEEN_EVICTION_RUNS),
 
     // remote-cache-container -> remote-clusters
     SOCKET_BINDINGS(RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS)

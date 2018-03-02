@@ -1873,20 +1873,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.EXHAUSTED_ACTION);
                     break;
                 }
-                case STRATEGY: {
-                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.STRATEGY);
-                    break;
-                }
                 case MAX_ACTIVE: {
                     readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.MAX_ACTIVE);
-                    break;
-                }
-                case MAX_IDLE: {
-                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.MAX_IDLE);
-                    break;
-                }
-                case MAX_TOTAL: {
-                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.MAX_TOTAL);
                     break;
                 }
                 case MAX_WAIT: {
@@ -1899,26 +1887,6 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
                 case MIN_IDLE: {
                     readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.MIN_IDLE);
-                    break;
-                }
-                case NUM_TESTS_PER_EVICTION_RUN: {
-                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.NUM_TESTS_PER_EVICTION_RUN);
-                    break;
-                }
-                case TEST_ON_BORROW: {
-                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.TEST_ON_BORROW);
-                    break;
-                }
-                case TEST_ON_RETURN: {
-                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.TEST_ON_RETURN);
-                    break;
-                }
-                case TEST_WHILE_IDLE: {
-                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.TEST_WHILE_IDLE);
-                    break;
-                }
-                case TIME_BETWEEN_EVICTION_RUNS: {
-                    readAttribute(reader, i, operation, ConnectionPoolResourceDefinition.Attribute.TIME_BETWEEN_EVICTION_RUNS);
                     break;
                 }
                 default: {

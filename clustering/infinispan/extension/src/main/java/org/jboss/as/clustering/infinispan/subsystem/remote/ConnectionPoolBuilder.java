@@ -25,8 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.ConnectionPoolConfiguration;
 import org.infinispan.client.hotrod.configuration.ExhaustedAction;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -37,21 +35,13 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Radoslav Husar
  */
-public class ConnectionPoolBuilder extends ComponentBuilder<ConnectionPoolConfiguration> implements ResourceServiceBuilder<ConnectionPoolConfiguration> {
+public class ConnectionPoolBuilder extends ComponentBuilder<ConnectionPoolConfiguration> {
 
     private volatile ExhaustedAction exhaustedAction;
-    private volatile ConnectionPoolStrategy connectionPoolStrategy;
     private volatile int maxActive;
-    private volatile int maxIdle;
-    private volatile int maxTotal;
     private volatile long maxWait;
     private volatile long minEvictableIdleTime;
     private volatile int minIdle;
-    private volatile int numTestsPerEvictionRun;
-    private volatile boolean testOnBorrow;
-    private volatile boolean testOnReturn;
-    private volatile boolean testWhileIdle;
-    private volatile long timeBetweenEvictionRuns;
 
     ConnectionPoolBuilder(PathAddress address) {
         super(RemoteCacheContainerComponent.CONNECTION_POOL, address);
@@ -60,18 +50,10 @@ public class ConnectionPoolBuilder extends ComponentBuilder<ConnectionPoolConfig
     @Override
     public Builder<ConnectionPoolConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.exhaustedAction = ExhaustedAction.valueOf(ConnectionPoolResourceDefinition.Attribute.EXHAUSTED_ACTION.resolveModelAttribute(context, model).asString());
-        this.connectionPoolStrategy = ModelNodes.asEnum(ConnectionPoolResourceDefinition.Attribute.STRATEGY.resolveModelAttribute(context, model), ConnectionPoolStrategy.class);
         this.maxActive = ConnectionPoolResourceDefinition.Attribute.MAX_ACTIVE.resolveModelAttribute(context, model).asInt();
-        this.maxIdle = ConnectionPoolResourceDefinition.Attribute.MAX_IDLE.resolveModelAttribute(context, model).asInt();
-        this.maxTotal = ConnectionPoolResourceDefinition.Attribute.MAX_TOTAL.resolveModelAttribute(context, model).asInt();
         this.maxWait = ConnectionPoolResourceDefinition.Attribute.MAX_WAIT.resolveModelAttribute(context, model).asLong();
         this.minEvictableIdleTime = ConnectionPoolResourceDefinition.Attribute.MIN_EVICTABLE_IDLE_TIME.resolveModelAttribute(context, model).asLong();
         this.minIdle = ConnectionPoolResourceDefinition.Attribute.MIN_IDLE.resolveModelAttribute(context, model).asInt();
-        this.numTestsPerEvictionRun = ConnectionPoolResourceDefinition.Attribute.NUM_TESTS_PER_EVICTION_RUN.resolveModelAttribute(context, model).asInt();
-        this.testOnBorrow = ConnectionPoolResourceDefinition.Attribute.TEST_ON_BORROW.resolveModelAttribute(context, model).asBoolean();
-        this.testOnReturn = ConnectionPoolResourceDefinition.Attribute.TEST_ON_RETURN.resolveModelAttribute(context, model).asBoolean();
-        this.testWhileIdle = ConnectionPoolResourceDefinition.Attribute.TEST_WHILE_IDLE.resolveModelAttribute(context, model).asBoolean();
-        this.timeBetweenEvictionRuns = ConnectionPoolResourceDefinition.Attribute.TIME_BETWEEN_EVICTION_RUNS.resolveModelAttribute(context, model).asLong();
         return this;
     }
 
@@ -79,18 +61,10 @@ public class ConnectionPoolBuilder extends ComponentBuilder<ConnectionPoolConfig
     public ConnectionPoolConfiguration getValue() throws IllegalStateException, IllegalArgumentException {
         return new ConfigurationBuilder().connectionPool()
                 .exhaustedAction(this.exhaustedAction)
-                .lifo(this.connectionPoolStrategy == ConnectionPoolStrategy.LIFO)
                 .maxActive(this.maxActive)
-                .maxIdle(this.maxIdle)
-                .maxTotal(this.maxTotal)
                 .maxWait(this.maxWait)
                 .minEvictableIdleTime(this.minEvictableIdleTime)
                 .minIdle(this.minIdle)
-                .numTestsPerEvictionRun(this.numTestsPerEvictionRun)
-                .testOnBorrow(this.testOnBorrow)
-                .testOnReturn(this.testOnReturn)
-                .testWhileIdle(this.testWhileIdle)
-                .timeBetweenEvictionRuns(this.timeBetweenEvictionRuns)
                 .create();
     }
 }

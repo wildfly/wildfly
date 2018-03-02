@@ -41,6 +41,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.SuppliedValueService;
 import org.wildfly.clustering.service.ValueDependency;
@@ -73,7 +74,7 @@ public class RemoteCacheContainerBuilder implements ResourceServiceBuilder<Remot
     @Override
     public ServiceBuilder<RemoteCacheContainer> build(ServiceTarget target) {
         Service<RemoteCacheContainer> service = new SuppliedValueService<>(this, this, this);
-        ServiceBuilder<RemoteCacheContainer> builder = target.addService(this.getServiceName(), service)
+        ServiceBuilder<RemoteCacheContainer> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), service).build(target)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
         return this.configuration.register(builder);
     }

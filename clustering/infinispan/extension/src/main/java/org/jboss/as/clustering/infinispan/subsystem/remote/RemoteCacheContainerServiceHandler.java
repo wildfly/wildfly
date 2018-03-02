@@ -48,7 +48,7 @@ public class RemoteCacheContainerServiceHandler extends ParentResourceServiceHan
 
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
-        super.installServices(context,model);
+        super.installServices(context, model);
 
         PathAddress address = context.getCurrentAddress();
         String name = context.getCurrentAddressValue();

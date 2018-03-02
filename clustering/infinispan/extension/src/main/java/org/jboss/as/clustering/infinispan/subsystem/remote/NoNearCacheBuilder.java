@@ -25,14 +25,13 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentBuilder;
 import org.jboss.as.controller.PathAddress;
 
 /**
  * @author Radoslav Husar
  */
-public class NoNearCacheBuilder extends ComponentBuilder<NearCacheConfiguration> implements ResourceServiceBuilder<NearCacheConfiguration> {
+public class NoNearCacheBuilder extends ComponentBuilder<NearCacheConfiguration> {
 
     NoNearCacheBuilder(PathAddress address) {
         super(RemoteCacheContainerComponent.NEAR_CACHE, address);

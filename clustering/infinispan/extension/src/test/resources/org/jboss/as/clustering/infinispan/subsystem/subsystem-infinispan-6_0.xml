@@ -128,18 +128,11 @@
                            queue-length="500"
                            keepalive-time="1000"/>
         <connection-pool exhausted-action="EXCEPTION"
-                         max-active="-1"
-                         max-idle="1"
-                         max-total="2"
+                         max-active="1"
                          max-wait="3"
                          min-evictable-idle-time="4"
                          min-idle="5"
-                         num-tests-per-eviction-run="6"
-                         strategy="FIFO"
-                         test-on-borrow="true"
-                         test-on-return="true"
-                         test-while-idle="false"
-                         time-between-eviction-runs="7"/>
+        />
         <invalidation-near-cache max-entries="20"/>
         <remote-clusters>
             <remote-cluster name="primary-site" socket-bindings="jdg1 jdg2 jdg3"/>
