@@ -354,7 +354,6 @@ class ServerAdd extends AbstractAddStepHandler {
                             ModelNode channel = BroadcastGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel);
                             ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
                             String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
-                            System.out.println("Command dispatcher dependency = " + commandDispatcherFactoryServiceName);
                             serviceBuilder.addDependency(commandDispatcherFactoryServiceName, CommandDispatcherFactory.class, serverService.getCommandDispatcherFactoryInjector(key));
                             serverService.getClusterNames().put(key, clusterName);
                         } else {
@@ -372,7 +371,6 @@ class ServerAdd extends AbstractAddStepHandler {
                             ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
                             ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
                             String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
-                            System.out.println("Command dispatcher dependency = " + commandDispatcherFactoryServiceName);
                             serviceBuilder.addDependency(commandDispatcherFactoryServiceName, CommandDispatcherFactory.class, serverService.getCommandDispatcherFactoryInjector(key));
                             serverService.getClusterNames().put(key, clusterName);
                         } else {
