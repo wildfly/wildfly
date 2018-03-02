@@ -30,11 +30,15 @@
         ucast_recv_buf_size="20m"
         ucast_send_buf_size="1m"
         port_range="0"
+        bundler_type="no-bundler"
+        max_bundle_size="8500"
     />
     <TCP
         send_buf_size="640k"
         sock_conn_timeout="300"
         port_range="0"
+        bundler_type="no-bundler"
+        max_bundle_size="8500"
     />
     <TCP_NIO2
         send_buf_size="640k"
@@ -58,9 +62,12 @@
         timeout_check_interval="5000"/>
     <FD_SOCK port_range="0"/>
     <VERIFY_SUSPECT timeout="5000"/>
-    <pbcast.NAKACK2 xmit_table_num_rows="50"/>
+    <pbcast.NAKACK2
+        xmit_interval="100"
+        xmit_table_num_rows="50"/>
     <UNICAST3
         conn_expiry_timeout="0"
+        xmit_interval="100"
         xmit_table_num_rows="50"
     />
     <pbcast.STABLE
@@ -68,8 +75,11 @@
         desired_avg_gossip="5000"
         max_bytes="1m"
     />
-    <pbcast.GMS print_local_addr="false"/>
+    <pbcast.GMS print_local_addr="false"
+        install_view_locally_first="true"
+    />
     <UFC max_credits="2m"/>
     <MFC max_credits="2m"/>
-    <FRAG2 frag_size="30k"/>
+    <FRAG2 frag_size="8000"/>
+    <FRAG3 frag_size="8000"/>
 </config>
