@@ -83,7 +83,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case REMOTE_CACHE_CONTAINER: {
-                    if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                    if (this.schema.since(InfinispanSchema.VERSION_6_0)) {
                         this.parseRemoteContainer(reader, address, operations);
                         break;
                     }

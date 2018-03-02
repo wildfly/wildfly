@@ -21,9 +21,9 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.Schema;
-
 import java.util.Locale;
+
+import org.jboss.as.clustering.controller.Schema;
 
 /**
  * Enumeration of the supported subsystem xml schemas.

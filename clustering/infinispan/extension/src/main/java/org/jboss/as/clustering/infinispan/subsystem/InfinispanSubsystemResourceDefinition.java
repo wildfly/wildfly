@@ -83,7 +83,7 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         CacheContainerResourceDefinition.buildTransformation(version, builder);
-        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
+        if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
             builder.rejectChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
         } else {
             RemoteCacheContainerResourceDefinition.buildTransformation(version, builder);
