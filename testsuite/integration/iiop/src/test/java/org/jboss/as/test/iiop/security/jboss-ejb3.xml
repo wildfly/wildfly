@@ -6,7 +6,7 @@
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd
                   http://java.sun.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd
-                  urn:iiop jboss-ejb-iiop_1_0.xsd"
+                  urn:iiop http://www.jboss.org/j2ee/schema/jboss-ejb-iiop_1_1.xsd"
                version="3.1"
                impl-version="2.0">
     <assembly-descriptor>
@@ -17,20 +17,9 @@
         <iiop:iiop>
             <ejb-name>*</ejb-name>
             <iiop:ior-security-config>
-                <iiop:transport-config>
-                    <iiop:integrity>supported</iiop:integrity>
-                    <iiop:confidentiality>supported</iiop:confidentiality>
-                    <iiop:establish-trust-in-target>supported</iiop:establish-trust-in-target>
-                    <iiop:establish-trust-in-client>supported</iiop:establish-trust-in-client>
-                </iiop:transport-config>
-                <iiop:as-context>
-                    <iiop:auth-method>username_password</iiop:auth-method>
-                    <iiop:realm>default</iiop:realm>
-                    <iiop:required>false</iiop:required>
-                </iiop:as-context>
-                <iiop:sas-context>
-                    <iiop:caller-propagation>supported</iiop:caller-propagation>
-                </iiop:sas-context>
+                <iiop:transport-config integrity="supported" confidentiality="supported"  establish-trust-in-target="supported" establish-trust-in-client="supported" />
+                <iiop:as-context auth-method="username_password" realm="default" required="false" />
+                <iiop:sas-context caller-propagation="supported" />
             </iiop:ior-security-config>
         </iiop:iiop>
     </assembly-descriptor>
