@@ -232,6 +232,16 @@ public class ClientCompatibilityUnitTestCase {
     }
 
     @Test
+    public void testCore3010Final() throws Exception {
+        testWF("3.0.10.Final", 9999);
+    }
+
+    @Test
+    public void testCore3010FinalHttp() throws Exception {
+        testWF("3.0.10.Final", 9990);
+    }
+
+    @Test
     public void testCurrent() throws Exception {
         test(ModelControllerClient.Factory.create(CONTROLLER_ADDRESS, 9999));
     }
@@ -295,7 +305,6 @@ public class ClientCompatibilityUnitTestCase {
 
         final ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder(false);
         classLoaderBuilder.addRecursiveMavenResourceURL(artifact + ":" + version, excludes);
-        classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.controller.client.ModelControllerClientConfiguration");
         classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.controller.client.ModelControllerClient");
         classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.controller.client.OperationMessageHandler");
         classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.controller.client.Operation");
