@@ -126,7 +126,6 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
         if (service != null) {
             context.reloadRequired();
         } else {
-            final PathAddress address = context.getCurrentAddress();
             final String name = context.getCurrentAddressValue();
 
             final ServiceTarget target = context.getServiceTarget();
