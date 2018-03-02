@@ -4303,18 +4303,6 @@
             </dependency>
 
             <dependency>
-               <groupId>org.hornetq</groupId>
-               <artifactId>hornetq-journal</artifactId>
-               <version>${version.org.hornetq}</version>
-               <exclusions>
-                   <exclusion>
-                       <groupId>org.jboss.logmanager</groupId>
-                       <artifactId>jboss-logmanager</artifactId>
-                   </exclusion>
-               </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-core-client</artifactId>
                 <version>${version.org.hornetq}</version>
@@ -4323,12 +4311,6 @@
             <dependency>
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-jms-client</artifactId>
-                <version>${version.org.hornetq}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hornetq</groupId>
-                <artifactId>hornetq-native</artifactId>
                 <version>${version.org.hornetq}</version>
             </dependency>
 
