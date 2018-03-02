@@ -29,7 +29,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.wildfly.clustering.singleton.SingletonPolicy;
@@ -39,7 +40,7 @@ import org.wildfly.extension.clustering.singleton.SingletonLogger;
  * DUP that attaches the singleton DeploymentUnitPhaseBuilder if a deployment policy is attached.
  * @author Paul Ferraro
  */
-public class SingletonDeploymentProcessor implements DeploymentUnitProcessor {
+public class SingletonDeploymentProcessor implements DeploymentUnitProcessor, LifecycleListener{
 
     public static final AttachmentKey<SingletonPolicy> POLICY_KEY = AttachmentKey.create(SingletonPolicy.class);
 
@@ -55,15 +56,7 @@ public class SingletonDeploymentProcessor implements DeploymentUnitProcessor {
                 if (unit.putAttachment(Attachments.DEPLOYMENT_UNIT_PHASE_BUILDER, new SingletonDeploymentUnitPhaseBuilder(support, policy)) == null) {
                     SingletonLogger.ROOT_LOGGER.singletonDeploymentDetected(policy);
                     ServiceController<?> controller = context.getServiceRegistry().getRequiredService(unit.getServiceName());
-                    controller.addListener(new AbstractServiceListener<Object>() {
-                        @Override
-                        public void transition(final ServiceController<?> controller, final ServiceController.Transition transition) {
-                            if(transition.getAfter().equals(ServiceController.Substate.DOWN)) {
-                                controller.setMode(Mode.ACTIVE);
-                                controller.removeListener(this);
-                            }
-                        }
-                    });
+                    controller.addListener(this);
                     controller.setMode(Mode.NEVER);
                 }
             }
@@ -73,5 +66,19 @@ public class SingletonDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(DeploymentUnit unit) {
         // We intentionally leave any DEPLOYMENT_UNIT_PHASE_BUILDER attached to the deployment unit
+    }
+
+    /**
+     * Process service State.DOWN state
+     *
+     * @param controller the controller
+     * @param event      the lifecycle event
+     */
+    @Override
+    public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
+        if(event.equals(LifecycleEvent.DOWN)) {
+            controller.setMode(Mode.ACTIVE);
+            controller.removeListener(this);
+        }
     }
 }
