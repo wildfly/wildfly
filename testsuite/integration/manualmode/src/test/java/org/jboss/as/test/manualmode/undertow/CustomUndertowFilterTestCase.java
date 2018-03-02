@@ -32,7 +32,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.management.util.ModelUtil;
-import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
@@ -123,7 +122,7 @@ public class CustomUndertowFilterTestCase {
                 ModelUtil.createCompositeNode(new ModelNode[]{addCustomFilter, addFilterRef}));
 
         // reload the server for changes to take effect
-        ServerReload.executeReloadAndWaitForCompletion(controllerClient);
+        serverController.reload();
     }
 
     private static void resetServerConfiguration() throws Exception {
@@ -141,7 +140,7 @@ public class CustomUndertowFilterTestCase {
         // remove the custom module
         customHandlerModule.remove();
         // reload the server
-        ServerReload.executeReloadAndWaitForCompletion(controllerClient);
+        serverController.reload();
     }
 
     private static void deploy() throws Exception {
