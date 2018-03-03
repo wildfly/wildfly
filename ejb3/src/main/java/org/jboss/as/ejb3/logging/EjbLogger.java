@@ -3143,4 +3143,7 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 500, value = "Legacy org.jboss.security.annotation.SecurityDomain annotation is used in class: %s, please use org.jboss.ejb3.annotation.SecurityDomain instead.")
     void legacySecurityDomainAnnotationIsUsed(String cls);
+
+    @Message(id = 501, value = "Failed to activate MDB %s")
+    RuntimeException failedToActivateMdb(String componentName, @Cause Exception e);
 }
