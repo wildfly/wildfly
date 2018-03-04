@@ -92,7 +92,7 @@
         <version.ch.qos.cal10n>0.8.1</version.ch.qos.cal10n>
         <version.com.fasterxml.classmate>1.3.4</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.9.4</version.com.fasterxml.jackson>
-        <version.com.github.ben-manes.caffeine>2.6.1</version.com.github.ben-manes.caffeine>
+        <version.com.github.ben-manes.caffeine>2.6.2</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.json-patch>1.3</version.com.github.fge.json-patch>
         <version.com.github.fge.jackson-coreutils>1.0</version.com.github.fge.jackson-coreutils>
         <version.com.github.relaxng>2011.1</version.com.github.relaxng>
@@ -120,6 +120,7 @@
         <version.groovy-all>2.4.7</version.groovy-all>
         <version.httpunit>1.7.2</version.httpunit>
         <version.io.netty>4.1.9.Final</version.io.netty>
+        <version.io.reactivex.rxjava>2.1.9</version.io.reactivex.rxjava>
         <version.io.undertow.jastow>2.0.3.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
         <version.javax.activation>1.1.1</version.javax.activation>
@@ -172,7 +173,7 @@
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.2.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
         <version.org.hibernate.search>5.5.8.Final</version.org.hibernate.search>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
-        <version.org.infinispan>9.1.6.Final</version.org.infinispan>
+        <version.org.infinispan>9.2.0.Final</version.org.infinispan>
         <version.org.jasypt>1.9.2</version.org.jasypt>
         <version.org.javassist>3.22.0-GA</version.org.javassist>
         <version.org.jberet>1.2.4.Final</version.org.jberet>
@@ -243,7 +244,7 @@
         <version.org.ow2.asm>6.0</version.org.ow2.asm>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP9</version.org.picketlink>
-        <version.org.reactivestreams>1.0.1</version.org.reactivestreams>
+        <version.org.reactivestreams>1.0.2</version.org.reactivestreams>
         <version.org.slf4j>1.7.22</version.org.slf4j>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.arquillian>2.1.0.Final</version.org.wildfly.arquillian>
@@ -4364,6 +4365,10 @@
                         <groupId>org.jboss.spec.javax.transaction</groupId>
                         <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>io.reactivex.rxjava2</groupId>
+                        <artifactId>rxjava</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -4385,6 +4390,12 @@
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-cachestore-remote</artifactId>
                 <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.infinispan</groupId>
+                        <artifactId>infinispan-multimap</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
@@ -4399,32 +4410,35 @@
                         <groupId>org.jboss.marshalling</groupId>
                         <artifactId>jboss-marshalling-osgi</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-handler</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-transport-native-epoll</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-hibernate-cache</artifactId>
+                <artifactId>infinispan-hibernate-cache-commons</artifactId>
                 <version>${version.org.infinispan}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.hibernate</groupId>
                         <artifactId>hibernate-core</artifactId>
                     </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-hibernate-cache-v51</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
                     <exclusion>
                         <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-entitymanager</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-java8</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.rhq.helpers</groupId>
-                        <artifactId>rhq-pluginAnnotations</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-annotations</artifactId>
+                        <artifactId>hibernate-core</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4853,6 +4867,12 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>
                 <version>${version.io.netty}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.reactivex.rxjava2</groupId>
+                <artifactId>rxjava</artifactId>
+                <version>${version.io.reactivex.rxjava}</version>
             </dependency>
 
             <dependency>

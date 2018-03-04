@@ -1125,6 +1125,11 @@
         </dependency>
 
         <dependency>
+            <groupId>io.reactivex.rxjava2</groupId>
+            <artifactId>rxjava</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>io.undertow.js</groupId>
             <artifactId>undertow-js</artifactId>
         </dependency>
@@ -2242,7 +2247,17 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-hibernate-cache</artifactId>
+            <artifactId>infinispan-hibernate-cache-commons</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-hibernate-cache-v51</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

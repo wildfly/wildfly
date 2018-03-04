@@ -26,8 +26,13 @@
          version="3.0">
     <!-- No need for this app to be distributable and trigger the creation of a session cache -->
     <resource-ref>
-        <res-ref-name>TheTargetCache</res-ref-name>
+        <res-ref-name>infinispan/container</res-ref-name>
         <res-type>org.infinispan.Cache</res-type>
-        <lookup-name>java:jboss/infinispan/cache/web/default</lookup-name>
+        <lookup-name>java:jboss/infinispan/container/web</lookup-name>
+    </resource-ref>
+    <resource-ref>
+        <res-ref-name>infinispan/cache/config</res-ref-name>
+        <res-type>org.infinispan.configuration.cache.Configuration</res-type>
+        <lookup-name>java:jboss/infinispan/configuration/web/default</lookup-name>
     </resource-ref>
 </web-app>
