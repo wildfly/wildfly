@@ -26,8 +26,7 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <iiop.endorsed.argline>-Djava.endorsed.dirs=${project.build.directory}/endorsed</iiop.endorsed.argline>
         <ts.elytron.cli>ssl-enable-elytron.cli</ts.elytron.cli>
-        <jbossas>jbossas</jbossas>
-        <wildfly.config.dir>${basedir}/target/${jbossas}/standalone/configuration</wildfly.config.dir>
+        <wildfly.config.dir>${basedir}/target/wildfly/standalone/configuration</wildfly.config.dir>
     </properties>
 
     <profiles>
@@ -118,6 +117,7 @@
                                 -Dcom.sun.CORBA.ORBUseDynamicStub=true
                                 -Dcom.arjuna.ats.arjuna.common.propertiesFile=jbossts-properties.xml ${surefire.jacoco.args}
                             </argLine>
+                            <workingDirectory>${basedir}/target</workingDirectory>
                         </configuration>
                         <executions combine.children="append">
 
