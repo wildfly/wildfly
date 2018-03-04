@@ -275,8 +275,8 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
 
             this.endpoint.activate(endpointFactory, activationSpec);
-        } catch (ResourceException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw EjbLogger.ROOT_LOGGER.failedToActivateMdb(getComponentName(), e);
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }
