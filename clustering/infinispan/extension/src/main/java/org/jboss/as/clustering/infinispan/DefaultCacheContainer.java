@@ -108,6 +108,12 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     }
 
     @Override
+    public void undefineConfiguration(String configurationName) {
+        super.undefineConfiguration(configurationName);
+        this.getGlobalComponentRegistry().removeCache(configurationName);
+    }
+
+    @Override
     public EmbeddedCacheManager startCaches(String... cacheNames) {
         super.startCaches(cacheNames);
         return this;
