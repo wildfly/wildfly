@@ -22,13 +22,22 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="javax.persistence.api">
+<module xmlns="urn:jboss:module:1.7" name="javax.persistence.api">
     <dependencies>
         <!-- PersistenceUnitInfo needs javax.sql.DataSource -->
         <module name="javax.api" export="true"/>
     </dependencies>
 
     <resources>
-        <artifact name="${org.hibernate.javax.persistence:hibernate-jpa-2.1-api}"/>
+        <artifact name="${javax.persistence:javax.persistence-api}">
+            <conditions>
+                <property-equal name="ee8.preview.mode" value="true" />
+            </conditions>
+        </artifact>
+        <artifact name="org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.2.Final">
+            <conditions>
+                <property-not-equal name="ee8.preview.mode" value="true" />
+            </conditions>
+        </artifact>
     </resources>
 </module>

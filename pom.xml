@@ -170,7 +170,7 @@
         <version.org.hibernate.commons.annotations>5.0.2.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.validator>6.0.7.Final</version.org.hibernate.validator>
         <version.org.hibernate.validator.ee7>5.3.6.Final</version.org.hibernate.validator.ee7>
-        <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.2.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
+        <version.javax.persistence>2.2</version.javax.persistence>
         <version.org.hibernate.search>5.5.8.Final</version.org.hibernate.search>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <version.org.infinispan>9.2.0.Final</version.org.infinispan>
@@ -4240,9 +4240,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.hibernate.javax.persistence</groupId>
-                <artifactId>hibernate-jpa-2.1-api</artifactId>
-                <version>${version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api}</version>
+                <groupId>javax.persistence</groupId>
+                <artifactId>javax.persistence-api</artifactId>
+                <version>${version.javax.persistence}</version>
             </dependency>
 
             <dependency>
