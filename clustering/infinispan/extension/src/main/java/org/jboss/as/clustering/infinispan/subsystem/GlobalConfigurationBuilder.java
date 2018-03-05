@@ -41,6 +41,7 @@ import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.SiteConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
+import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
@@ -157,6 +158,10 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
                 .allowDuplicateDomains(true);
 
         builder.site().read(this.site.getValue());
+
+        // Disable triangle algorithm
+        // We optimize for originator as primary owner
+        builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
 
         return builder.build();
     }
