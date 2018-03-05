@@ -63,7 +63,7 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
 
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        TABLE("string-keyed-table", StringTableResourceDefinition.Attribute.values(), TableResourceDefinition.Attribute.values(), TableResourceDefinition.ColumnAttribute.values()),
+        TABLE("string-keyed-table", StringTableResourceDefinition.Attribute.values(), TableResourceDefinition.Attribute.values(), TableResourceDefinition.DeprecatedAttribute.values(), TableResourceDefinition.ColumnAttribute.values()),
         ;
         private final AttributeDefinition definition;
 
@@ -98,13 +98,16 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
 
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.setCustomResourceTransformer(new ResourceTransformer() {
+                @SuppressWarnings("deprecation")
                 @Override
                 public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
                     final ModelNode model = resource.getModel();
+                    final ModelNode maxBatchSize = model.remove(StoreResourceDefinition.Attribute.MAX_BATCH_SIZE.getName());
 
                     final ModelNode stringTableModel = Resource.Tools.readModel(resource.removeChild(StringTableResourceDefinition.PATH));
                     if (stringTableModel != null && stringTableModel.isDefined()) {
                         model.get(DeprecatedAttribute.TABLE.getName()).set(stringTableModel);
+                        model.get(DeprecatedAttribute.TABLE.getName()).get(TableResourceDefinition.DeprecatedAttribute.BATCH_SIZE.getName()).set((maxBatchSize != null) ? maxBatchSize : new ModelNode());
                     }
 
                     final ModelNode properties = model.remove(StoreResourceDefinition.Attribute.PROPERTIES.getName());
@@ -150,11 +153,12 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     };
 
     static final OperationStepHandler LEGACY_WRITE_TABLE_HANDLER = new OperationStepHandler() {
+        @SuppressWarnings("deprecation")
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             PathAddress address = context.getCurrentAddress().append(StringTableResourceDefinition.PATH);
             ModelNode table = Operations.getAttributeValue(operation);
-            for (Class<? extends org.jboss.as.clustering.controller.Attribute> attributeClass : Arrays.asList(StringTableResourceDefinition.Attribute.class, TableResourceDefinition.Attribute.class)) {
+            for (Class<? extends org.jboss.as.clustering.controller.Attribute> attributeClass : Arrays.asList(StringTableResourceDefinition.Attribute.class, TableResourceDefinition.Attribute.class, TableResourceDefinition.DeprecatedAttribute.class)) {
                 for (org.jboss.as.clustering.controller.Attribute attribute : attributeClass.getEnumConstants()) {
                     ModelNode writeAttributeOperation = Operations.createWriteAttributeOperation(address, attribute, table.get(attribute.getName()));
                     context.addStep(writeAttributeOperation, context.getResourceRegistration().getAttributeAccess(PathAddress.pathAddress(StringTableResourceDefinition.PATH), attribute.getName()).getWriteHandler(), context.getCurrentStage());

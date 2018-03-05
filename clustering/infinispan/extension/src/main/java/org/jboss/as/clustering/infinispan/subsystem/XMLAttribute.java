@@ -42,7 +42,7 @@ public enum XMLAttribute {
     ALIASES(CacheContainerResourceDefinition.Attribute.ALIASES),
     @Deprecated ASYNC_MARSHALLING(ClusteredCacheResourceDefinition.DeprecatedAttribute.ASYNC_MARSHALLING),
     BACKUP_FAILURE_POLICY(BackupResourceDefinition.Attribute.FAILURE_POLICY),
-    BATCH_SIZE(TableResourceDefinition.Attribute.BATCH_SIZE),
+    @Deprecated BATCH_SIZE(TableResourceDefinition.DeprecatedAttribute.BATCH_SIZE),
     @Deprecated BATCHING(CacheResourceDefinition.DeprecatedAttribute.BATCHING),
     CACHE(RemoteStoreResourceDefinition.Attribute.CACHE),
     CAPACITY_FACTOR(DistributedCacheResourceDefinition.Attribute.CAPACITY_FACTOR),

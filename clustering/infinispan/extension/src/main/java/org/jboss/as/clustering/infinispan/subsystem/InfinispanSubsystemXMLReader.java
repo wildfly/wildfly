@@ -610,6 +610,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case STRING_KEYED_JDBC_STORE: {
+                if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
                 if (this.schema.since(InfinispanSchema.VERSION_1_2)) {
                     this.parseStringKeyedJDBCStore(reader, cacheAddress, operations);
                     break;
@@ -1483,12 +1486,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case BATCH_SIZE: {
-/*
                 if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 }
-*/
-                readAttribute(reader, index, operation, TableResourceDefinition.Attribute.BATCH_SIZE);
+                readAttribute(reader, index, operation, TableResourceDefinition.DeprecatedAttribute.BATCH_SIZE);
                 break;
             }
             default: {

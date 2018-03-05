@@ -58,7 +58,7 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
 
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        TABLE("binary-keyed-table", BinaryTableResourceDefinition.Attribute.values(), TableResourceDefinition.Attribute.values(), TableResourceDefinition.ColumnAttribute.values()),
+        TABLE("binary-keyed-table", BinaryTableResourceDefinition.Attribute.values(), TableResourceDefinition.Attribute.values(), TableResourceDefinition.DeprecatedAttribute.values(), TableResourceDefinition.ColumnAttribute.values()),
         ;
         private final AttributeDefinition definition;
 
@@ -93,13 +93,16 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
 
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.setCustomResourceTransformer(new ResourceTransformer() {
+                @SuppressWarnings("deprecation")
                 @Override
                 public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
                     final ModelNode model = resource.getModel();
+                    final ModelNode maxBatchSize = model.remove(StoreResourceDefinition.Attribute.MAX_BATCH_SIZE.getName());
 
                     final ModelNode binaryTableModel = Resource.Tools.readModel(resource.removeChild(BinaryTableResourceDefinition.PATH));
                     if (binaryTableModel != null && binaryTableModel.isDefined()) {
                         model.get(DeprecatedAttribute.TABLE.getName()).set(binaryTableModel);
+                        model.get(DeprecatedAttribute.TABLE.getName()).get(TableResourceDefinition.DeprecatedAttribute.BATCH_SIZE.getName()).set((maxBatchSize != null) ? maxBatchSize : new ModelNode());
                     }
 
                     final ModelNode properties = model.remove(StoreResourceDefinition.Attribute.PROPERTIES.getName());
@@ -140,11 +143,12 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     };
 
     static final OperationStepHandler LEGACY_WRITE_TABLE_HANDLER = new OperationStepHandler() {
+        @SuppressWarnings("deprecation")
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             PathAddress address = context.getCurrentAddress().append(BinaryTableResourceDefinition.PATH);
             ModelNode table = Operations.getAttributeValue(operation);
-            for (Class<? extends org.jboss.as.clustering.controller.Attribute> attributeClass : Arrays.asList(BinaryTableResourceDefinition.Attribute.class, TableResourceDefinition.Attribute.class)) {
+            for (Class<? extends org.jboss.as.clustering.controller.Attribute> attributeClass : Arrays.asList(BinaryTableResourceDefinition.Attribute.class, TableResourceDefinition.Attribute.class, TableResourceDefinition.DeprecatedAttribute.class)) {
                 for (org.jboss.as.clustering.controller.Attribute attribute : attributeClass.getEnumConstants()) {
                     ModelNode writeAttributeOperation = Operations.createWriteAttributeOperation(address, attribute, table.get(attribute.getName()));
                     context.addStep(writeAttributeOperation, context.getResourceRegistration().getAttributeAccess(PathAddress.pathAddress(BinaryTableResourceDefinition.PATH), attribute.getName()).getWriteHandler(), context.getCurrentStage());
