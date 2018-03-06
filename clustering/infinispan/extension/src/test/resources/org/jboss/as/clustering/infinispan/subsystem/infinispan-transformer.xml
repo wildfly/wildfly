@@ -79,7 +79,7 @@
                     <timestamp-column name="version" type="BIGINT"/>
                 </string-keyed-table>
             </mixed-keyed-jdbc-store>
-            <state-transfer timeout="60000" chunk-size="10000"/>
+            <state-transfer enabled="true" timeout="60000" chunk-size="10000"/>
         </distributed-cache>
         <replicated-cache name="cache-with-binary-keyed-store" statistics-enabled="true">
             <binary-keyed-jdbc-store data-source="ExampleDS">
