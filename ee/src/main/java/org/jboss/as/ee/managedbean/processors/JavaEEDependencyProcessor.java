@@ -57,6 +57,8 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
             ModuleIdentifier.create("javax.rmi.api"),
             ModuleIdentifier.create("javax.xml.bind.api"),
             ModuleIdentifier.create("javax.api"),
+            // javax.json.bind.api (JSON-B) implementation
+            ModuleIdentifier.create("org.eclipse.yasson"),
             ModuleIdentifier.create("org.glassfish.javax.el"),
             ModuleIdentifier.create("org.glassfish.javax.enterprise.concurrent")
     };

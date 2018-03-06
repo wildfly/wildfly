@@ -30,6 +30,5 @@
     </resources>
     <dependencies>
         <module name="javax.json.api"/>
-        <module name="org.eclipse.yasson" services="import"/>
     </dependencies>
 </module>
