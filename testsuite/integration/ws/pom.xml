@@ -90,6 +90,8 @@
                                         <javax.net.ssl.keyStore>${project.build.testOutputDirectory}/org/jboss/as/test/integration/ws/wsse/trust/client.keystore</javax.net.ssl.keyStore>
                                         <javax.net.ssl.keyStorePassword>changeit</javax.net.ssl.keyStorePassword>
                                         <javax.net.ssl.keyStoreType>jks</javax.net.ssl.keyStoreType>
+                                        <test.resources.directory>${project.build.directory}/test-classes</test.resources.directory>
+                                        <test.jbossas>${project.build.directory}/jbossas</test.jbossas>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
