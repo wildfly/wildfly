@@ -1,10 +1,7 @@
 [[mod_cluster_Subsystem]]
-[[mod_cluster-subsystem]]
 = mod_cluster Subsystem
 
-The mod_cluster integration is done via the
-http://docs.jboss.org/mod_cluster/1.1.0/html/java.AS7config.html[modcluster
-subsystem].
+The mod_cluster integration is done via the `mod_cluster` subsystem.
 
 [[configuration]]
 == Configuration
@@ -12,10 +9,10 @@ subsystem].
 [[instance-id-or-jvmroute]]
 === Instance ID or JVMRoute
 
-The instance-id or JVMRoute defaults to jboss.node.name property passed
-on server startup (e.g. via -Djboss.node.name=XYZ).
+The instance-id or JVMRoute defaults to `jboss.node.name` property passed
+on server startup (e.g. via `-Djboss.node.name=XYZ`).
 
-[source, ruby]
+[source]
 ----
 [standalone@localhost:9990 /] /subsystem=undertow/:read-attribute(name=instance-id)
 {
@@ -27,7 +24,7 @@ on server startup (e.g. via -Djboss.node.name=XYZ).
 To configure instance-id statically, configure the corresponding
 property in Undertow subsystem:
 
-[source, ruby]
+[source]
 ----
 [standalone@localhost:9990 /] /subsystem=undertow/:write-attribute(name=instance-id,value=myroute)
 {
@@ -47,7 +44,7 @@ specify a static list of proxies, create a remote-socket-binding for
 each proxy and then reference them in the 'proxies' attribute. See the
 following example for configuration in the domain mode:
 
-[source, ruby]
+[source]
 ----
 [domain@localhost:9990 /] /socket-binding-group=ha-sockets/remote-destination-outbound-socket-binding=proxy1:add(host=10.21.152.86, port=6666)
 {
@@ -61,7 +58,7 @@ following example for configuration in the domain mode:
     "result" => undefined,
     "server-groups" => undefined
 }
-[domain@localhost:9990 /] /profile=ha/subsystem=modcluster/mod-cluster-config=configuration/:write-attribute(name=proxies, value=[proxy1, proxy2]
+[domain@localhost:9990 /] /profile=ha/subsystem=modcluster/mod-cluster-config=configuration/:write-attribute(name=proxies, value=[proxy1, proxy2])
 {
     "outcome" => "success",
     "result" => undefined,
@@ -80,7 +77,7 @@ following example for configuration in the domain mode:
 
 The modcluster subsystem supports several operations:
 
-[source, ruby]
+[source]
 ----
 [standalone@localhost:9999 subsystem=modcluster] :read-operation-names
 {
@@ -124,7 +121,7 @@ of the subsystem, the one that just modify the behaviour temporarily and
 the ones that display information from the httpd part.
 
 [[operations-displaying-httpd-informations]]
-=== operations displaying httpd informations
+=== operations displaying httpd information
 
 There are 2 operations that display how Apache httpd sees the node:
 
@@ -134,7 +131,7 @@ There are 2 operations that display how Apache httpd sees the node:
 Send a DUMP message to all Apache httpd the node is connected to and
 display the message received from Apache httpd.
 
-[source, ruby]
+[source]
 ----
 [standalone@localhost:9999 subsystem=modcluster] :read-proxies-configuration
 {
@@ -168,7 +165,7 @@ context: 2 [/myapp] vhost: 1 node: 1 status: 1
 Send a INFO message to all Apache httpd the node is connected to and
 display the message received from Apache httpd.
 
-[source, ruby]
+[source]
 ----
 [standalone@localhost:9999 subsystem=modcluster] :read-proxies-info
 {
@@ -197,16 +194,16 @@ Context: [1:1:2], Context: /myapp, Status: ENABLED
 [[operations-that-handle-the-proxies-the-node-is-connected-too]]
 ==== operations that handle the proxies the node is connected too
 
-there are 3 operation that could be used to manipulate the list of
-Apache httpd the node is connected too.
+There are 3 operation that could be used to manipulate the list of
+Apache httpd the node is connected to.
 
 [[list-proxies]]
-==== list-proxies:
+==== list-proxies
 
 Displays the httpd that are connected to the node. The httpd could be
 discovered via the Advertise protocol or via the proxy-list attribute.
 
-[source, ruby]
+[source]
 ----
 [standalone@localhost:9999 subsystem=modcluster] :list-proxies
 {
@@ -224,7 +221,7 @@ discovered via the Advertise protocol or via the proxy-list attribute.
 Remove a proxy from the discovered proxies or temporarily from the
 proxy-list attribute.
 
-[source, ruby]
+[source]
 ----
 [standalone@localhost:9999 subsystem=modcluster] :remove-proxy(host=jfcpc, port=6666)
 {"outcome" => "success"}
@@ -236,7 +233,7 @@ proxy-list attribute.
 Add a proxy to the discovered proxies or temporarily to the proxy-list
 attribute.
 
-[source, java]
+[source]
 ----
 [standalone@localhost:9999 subsystem=modcluster] :add-proxy(host=jfcpc, port=6666)
 {"outcome" => "success"}
@@ -253,7 +250,7 @@ They are send automatically when deploying or undeploying webapps.
 
 Tell Apache httpd that the context is ready receive requests.
 
-[source, ruby]
+[source]
 ----
 [standalone@localhost:9999 subsystem=modcluster] :enable-context(context=/myapp, virtualhost=default-host)
 {"outcome" => "success"}
@@ -265,7 +262,7 @@ Tell Apache httpd that the context is ready receive requests.
 Tell Apache httpd that it shouldn't send new session requests to the
 context of the virtualhost.
 
-[source, java]
+[source]
 ----
 [standalone@localhost:9999 subsystem=modcluster] :disable-context(context=/myapp, virtualhost=default-host)
 {"outcome" => "success"}
@@ -277,7 +274,7 @@ context of the virtualhost.
 Tell Apache httpd that it shouldn't send requests to the context of the
 virtualhost.
 
-[source, java]
+[source]
 ----
 [standalone@localhost:9999 subsystem=modcluster] :stop-context(context=/myapp, virtualhost=default-host, waittime=50)
 {"outcome" => "success"}
@@ -297,7 +294,7 @@ Refresh the node by sending a new CONFIG message to Apache httpd.
 [[reset]]
 ==== reset
 
-reset the connection between Apache httpd and the node
+Reset the connection between Apache httpd and the node.
 
 [[configuration-1]]
 === Configuration
@@ -309,7 +306,7 @@ There are 4 metric operations corresponding to add and remove load
 metrics to the dynamic-load-provider. Note that when nothing is defined
 a simple-load-provider is use with a fixed load factor of one.
 
-[source, ruby]
+[source]
 ----
 [standalone@localhost:9999 subsystem=modcluster] :read-resource(name=mod-cluster-config)
 {
@@ -359,7 +356,7 @@ configuration is created if needed.
 
 Remove a metric from the dynamic-load-provider.
 
-[source, ruby]
+[source]
 ----
 [standalone@localhost:9999 subsystem=modcluster] :remove-metric(type=cpu)
 {"outcome" => "success"}
@@ -372,7 +369,7 @@ like the add-metric and remove-metric except they require a class
 parameter instead the type. Usually they needed additional properties
 which can be specified
 
-[source, ruby]
+[source]
 ----
 [standalone@localhost:9999 subsystem=modcluster] :add-custom-metric(class=myclass, property=[("pro1" => "value1"), ("pro2" => "value2")]
 {"outcome" => "success"}

@@ -1,7 +1,7 @@
 [[Singleton_deployments]]
 = Singleton deployments
 
-WildFly 10 resurrects the ability to start a given deployment on a
+WildFly 10 resurrected the ability to start a given deployment on a
 single node in the cluster at any given time. If that node shuts down,
 or fails, the application will automatically start on another node on
 which the given deployment exists. Long time users of JBoss AS will
@@ -16,7 +16,7 @@ feature of AS6 and earlier.
 
 A deployment indicates that it should be deployed as a singleton via a
 deployment descriptor. This can either be a standalone
-"/META-INF/singleton-deployment.xml" file or embedded within an existing
+`/META-INF/singleton-deployment.xml` file or embedded within an existing
 jboss-all.xml descriptor. This descriptor may be applied to any
 deployment type, e.g. JAR, WAR, EAR, etc., with the exception of a
 subdeployment within an EAR. +

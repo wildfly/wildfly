@@ -1,12 +1,12 @@
 [[Singleton_subsystem]]
 = Singleton subsystem
 
-WildFly 10 introduces a "singleton" subsystem, which defines a set of
+WildFly 10 introduced a "singleton" subsystem, which defines a set of
 policies that define how an HA singleton should behave. A singleton
 policy can be used to instrument singleton deployments or to create
 singleton MSC services.
 
-[[configuration]]
+[[singleton-configuration]]
 == Configuration
 
 The
@@ -27,16 +27,15 @@ like:
 
 A singleton policy defines:
 
-1.  A unique name
-2.  A cache container and cache with which to register singleton
-provider candidates
-3.  An election policy
-4.  A quorum (optional)
+1. A unique name
+2. A cache container and cache with which to register singleton provider candidates
+3. An election policy
+4. A quorum (optional)
 
 One can add a new singleton policy via the following management
 operation:
 
-[source, xml]
+[source]
 ----
 /subsystem=singleton/singleton-policy=foo:add(cache-container=server)
 ----
@@ -53,7 +52,7 @@ service and will typically use a replicated-cache configuration.
 [[election-policies]]
 === Election policies
 
-WildFly 10 includes 2 singleton election policy implementations:
+WildFly includes two singleton election policy implementations:
 
 * *simple* +
 Elects the provider (a.k.a. master) of a singleton service based on a
@@ -63,7 +62,7 @@ node, 1 is second oldest, etc. ; while position=-1 refers to the
 youngest node, -2 to the second youngest, etc. +
 e.g.
 +
-[source, xml]
+[source]
 ----
 /subsystem=singleton/singleton-policy=foo/election-policy=simple:add(position=-1)
 ----
@@ -72,7 +71,7 @@ e.g.
 Elects a random member to be the provider of a singleton service +
 e.g.
 +
-[source, xml]
+[source]
 ----
 /subsystem=singleton/singleton-policy=foo/election-policy=random:add()
 ----
@@ -86,7 +85,7 @@ via node name or via outbound socket binding name. Node preferences
 always take precedent over the results of an election policy. +
 e.g.
 
-[source, java]
+[source]
 ----
 /subsystem=singleton/singleton-policy=foo/election-policy=simple:list-add(name=name-preferences, value=nodeA)
 /subsystem=singleton/singleton-policy=bar/election-policy=random:list-add(name=socket-binding-preferences, value=nodeA)
