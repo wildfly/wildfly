@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.web.handlers;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -35,15 +34,9 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * @author Jan Stourac
  */
-@WebServlet(name = "ForwardedHelperServlet", urlPatterns = {"/forwarded"})
+@WebServlet(name = "ForwardedHelperServlet", urlPatterns = {ForwardedTestHelperServlet.URL_PATTERN})
 public class ForwardedTestHelperServlet extends HttpServlet {
-
-    private String message;
-
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-        message = config.getInitParameter("message");
-    }
+    public static final String URL_PATTERN = "/forwarded";
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
