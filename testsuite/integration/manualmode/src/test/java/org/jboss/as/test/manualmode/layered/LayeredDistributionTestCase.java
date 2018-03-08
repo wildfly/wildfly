@@ -22,6 +22,7 @@
 package org.jboss.as.test.manualmode.layered;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -32,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -159,7 +161,10 @@ public class LayeredDistributionTestCase {
         Assert.assertTrue(Files.exists(layersDir));
 
         Path layerDir = layersDir.resolve(layer);
-        Files.deleteIfExists(layerDir);
+        File layerDirFile = layerDir.toFile();
+        if(layerDirFile.exists()) {
+            FileUtils.deleteDirectory(layerDirFile);
+        }
 
         // set layers.conf
         Path layersConf = AS_PATH.resolve("modules").resolve("layers.conf");
