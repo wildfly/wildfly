@@ -28,7 +28,6 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.security.Permission;
 
-import javax.annotation.Resource;
 import javax.naming.Context;
 import javax.naming.InvalidNameException;
 import javax.naming.Name;
@@ -551,7 +550,7 @@ public interface NamingLogger extends BasicLogger {
 //    String failedToTransformExternalContext(String modelVersion);
 
     /**
-     * Creates an exception indicating a lookup failed, wrt {@link Resource} injection.
+     * Creates an exception indicating a lookup failed, wrt {@link javax.annotation.Resource} injection.
      *
      * @param jndiName the JNDI name.
      *
