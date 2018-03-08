@@ -83,12 +83,6 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
         }
     }
 
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
-
-        addTransformations(version, builder);
-    }
-
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
         AbstractProtocolResourceDefinition.addTransformations(version, builder);
 

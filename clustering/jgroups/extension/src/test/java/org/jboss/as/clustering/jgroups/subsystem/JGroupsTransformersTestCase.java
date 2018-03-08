@@ -77,6 +77,8 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
                 return JGroupsModel.VERSION_1_3_0;
             case EAP_7_0_0:
                 return JGroupsModel.VERSION_4_0_0;
+            case EAP_7_1_0:
+                return JGroupsModel.VERSION_5_0_0;
             default:
                 throw new IllegalArgumentException();
         }
@@ -95,6 +97,14 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
+                };
+            case EAP_7_1_0:
+                return new String[] {
+                        formatEAP7SubsystemArtifact(version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s", version),
                 };
             default:
                 throw new IllegalArgumentException();
@@ -117,6 +127,11 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         testTransformation(ModelTestControllerVersion.EAP_7_0_0);
     }
 
+    @Test
+    public void testTransformerEAP710() throws Exception {
+        testTransformation(ModelTestControllerVersion.EAP_7_1_0);
+    }
+
     /**
      * Tests transformation of model from current version into specified version.
      */
@@ -129,7 +144,11 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
                 .setSubsystemXmlResource("subsystem-jgroups-transform.xml");
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controller, version).addMavenResourceURL(dependencies).skipReverseControllerCheck();
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controller, version)
+                .addMavenResourceURL(dependencies)
+                .addSingleChildFirstClass(AdditionalInitialization.class)
+                .skipReverseControllerCheck()
+                .dontPersistXml();
 
         KernelServices services = builder.build();
 
@@ -302,6 +321,11 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
     @Test
     public void testRejectionsEAP700() throws Exception {
         testRejections(ModelTestControllerVersion.EAP_7_0_0);
+    }
+
+    @Test
+    public void testRejectionsEAP710() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_1_0);
     }
 
     private void testRejections(final ModelTestControllerVersion controller) throws Exception {

@@ -210,7 +210,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
                         ;
             }
 
-            ProtocolRegistration.buildTransformation(version, builder);
+            ForkResourceDefinition.buildTransformation(version, builder);
         }
     }
 
