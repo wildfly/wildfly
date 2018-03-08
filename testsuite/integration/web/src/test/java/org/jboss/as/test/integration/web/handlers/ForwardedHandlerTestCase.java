@@ -25,6 +25,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -42,7 +43,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class ForwardedHandlerTestCase {
 
-    private static final String FORWARDED_HANDLER = "forwarded-handler";
     private static final String FORWARDED_HANDLER_NO_UT_HANDLERS = "forwarded-handler-no-ut-handlers";
     private static final String FORWARDED_SERVLET = "forwarded-servlet";
     private static final String FORWARDED_SERVLET_NO_UT_HANDLERS = "forwarded-servlet-no-ut-handlers";
@@ -64,42 +64,29 @@ public class ForwardedHandlerTestCase {
     @ContainerResource
     private ManagementClient managementClient;
 
-    @Deployment(name = FORWARDED_HANDLER)
-    public static WebArchive deploy() {
-        return ShrinkWrap.create(WebArchive.class, FORWARDED_HANDLER + ".war")
-                .addPackage(ForwardedHandlerTestCase.class.getPackage())
-                .addAsWebInfResource(new StringAsset(JBOSS_WEB_TEXT), "jboss-web.xml")
-                .addAsWebInfResource(new StringAsset(FORWARDER_HANDLER_NAME), "undertow-handlers.conf")
-                .addAsWebResource(new StringAsset("A file"), "index.html");
-    }
-
     @Deployment(name = FORWARDED_HANDLER_NO_UT_HANDLERS)
     public static WebArchive deployWithoutUndertowHandlers() {
-        return ShrinkWrap.create(WebArchive.class, FORWARDED_HANDLER_NO_UT_HANDLERS + ".war")
-                .addPackage(ForwardedHandlerTestCase.class.getPackage())
-                .addAsWebInfResource(new StringAsset(JBOSS_WEB_TEXT), "jboss-web.xml")
-                .addAsWebResource(new StringAsset("A file"), "index.html");
+        return getBaseWar(FORWARDED_HANDLER_NO_UT_HANDLERS)
+                .addClass(ForwardedTestHelperHandler.class)
+                .addAsWebInfResource(new StringAsset(JBOSS_WEB_TEXT), "jboss-web.xml");
     }
 
     @Deployment(name = FORWARDED_SERVLET)
     public static WebArchive deploy_servlet() {
-        return ShrinkWrap.create(WebArchive.class, FORWARDED_SERVLET + ".war")
+        return getBaseWar(FORWARDED_SERVLET)
                 .addClass(ForwardedTestHelperServlet.class)
-                .addAsWebInfResource(new StringAsset(FORWARDER_HANDLER_NAME), "undertow-handlers.conf")
-                .addAsWebResource(new StringAsset("A file"), "index.html");
+                .addAsWebInfResource(new StringAsset(FORWARDER_HANDLER_NAME), "undertow-handlers.conf");
     }
 
     @Deployment(name = FORWARDED_SERVLET_NO_UT_HANDLERS)
     public static WebArchive deployWithoutUndertowHandlers_servlet() {
-        return ShrinkWrap.create(WebArchive.class, FORWARDED_SERVLET_NO_UT_HANDLERS + ".war")
-                .addClass(ForwardedTestHelperServlet.class)
-                .addAsWebResource(new StringAsset("A file"), "index.html");
+        return getBaseWar(FORWARDED_SERVLET_NO_UT_HANDLERS)
+                .addClass(ForwardedTestHelperServlet.class);
     }
 
-    @Test
-    @OperateOnDeployment(FORWARDED_HANDLER)
-    public void testRewriteWithUndertowHandlers(@ArquillianResource URL url) throws Exception {
-        commonTestPart(url, true);
+    private static WebArchive getBaseWar(String warName) {
+        return ShrinkWrap.create(WebArchive.class, warName + ".war")
+                .addAsWebResource(new StringAsset("A file"), "index.html");
     }
 
     @Test
@@ -111,13 +98,13 @@ public class ForwardedHandlerTestCase {
     @Test
     @OperateOnDeployment(FORWARDED_SERVLET)
     public void testRewriteWithUndertowHandlersServlet(@ArquillianResource URL url) throws Exception {
-        commonTestPart(new URL(url + "/forwarded"), false);
+        commonTestPart(new URL(url + ForwardedTestHelperServlet.URL_PATTERN), false);
     }
 
     @Test
     @OperateOnDeployment(FORWARDED_SERVLET_NO_UT_HANDLERS)
     public void testRewriteGlobalSettingsServlet(@ArquillianResource URL url) throws Exception {
-        commonConfigureExpression(new URL(url + "/forwarded"), false);
+        commonConfigureExpression(new URL(url + ForwardedTestHelperServlet.URL_PATTERN), false);
     }
 
     private void commonConfigureExpression(URL url, boolean header) throws IOException, MgmtOperationException {
@@ -134,6 +121,7 @@ public class ForwardedHandlerTestCase {
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
             op = Util.createRemoveOperation(FORWARDER_CONF_ADDR);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         }
     }
 
