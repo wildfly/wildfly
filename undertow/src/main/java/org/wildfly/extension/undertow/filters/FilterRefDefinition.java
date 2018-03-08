@@ -33,7 +33,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.dmr.ModelNode;
@@ -74,7 +74,12 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
         super(UndertowExtension.PATH_FILTER_REF,
                 UndertowExtension.getResolver(Constants.FILTER_REF),
                 new FilterRefAdd(),
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+                new ServiceRemoveStepHandler(new FilterRefAdd()) {
+                    @Override
+                    protected ServiceName serviceName(String name, PathAddress address) {
+                        return UndertowService.getFilterRefServiceName(address, name);
+                    }
+                });
     }
 
     @Override
