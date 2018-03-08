@@ -39,7 +39,7 @@
    else
    {
       response.setHeader("X-NoJException", "true");
-      Thread.dumpStack();
+      //Thread.dumpStack();
    }
 %>
 </ul>
