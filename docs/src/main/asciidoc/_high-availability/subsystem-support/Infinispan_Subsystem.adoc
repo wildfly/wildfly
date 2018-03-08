@@ -1,7 +1,7 @@
 [[Infinispan_Subsystem]]
 = Infinispan Subsystem
 
-[[purpose]]
+[[infinispan-purpose]]
 == Purpose
 
 The Infinispan subsystem provides caching support for HA services in the
@@ -21,22 +21,20 @@ Infinispan cache.
 
 The Infinispan subsystem provides the following features:
 
-* allows definition and configuration of named cache containers and
-caches
-* view run-time metrics associated with cache container and cache
-instances
+* allows definition and configuration of named cache containers and caches
+* view run-time metrics associated with cache container and cache instances
 
 In the following sections, we describe the Infinispan subsystem.
 
 [IMPORTANT]
 
-Infiispan cache containers and caches are created transparently as part
+Infinispan cache containers and caches are created transparently as part
 of the clustering functionality (e.g. on clustered application
 deployment, cache containers and their associated caches will be created
 behind the scenes to support clustered features such as session
 replication or caching of entities around the cluster).
 
-[[configuration-example]]
+[[infinispan-configuration-example]]
 == Configuration Example
 
 In this section, we provide an example XML configuration of the
@@ -46,61 +44,47 @@ attributes.
 [IMPORTANT]
 
 The schema for the subsystem, describing all valid elements and
-attributes, can be found in the Wildfly distribution, in the docs/schema
+attributes, can be found in the WildFly distribution, in the `docs/schema`
 directory.
 
-[source, java]
+[source, xml]
 ----
-<subsystem xmlns="urn:jboss:domain:infinispan:2.0">
-  <cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">
-      <transport lock-timeout="60000"/>
-      <replicated-cache name="default" mode="SYNC" batching="true">
-          <locking isolation="REPEATABLE_READ"/>
-      </replicated-cache>
-  </cache-container>
-  <cache-container name="web" aliases="standard-session-cache" default-cache="repl" module="org.wildfly.clustering.web.infinispan">
-      <transport lock-timeout="60000"/>
-      <replicated-cache name="repl" mode="ASYNC" batching="true">
-          <file-store/>
-      </replicated-cache>
-      <replicated-cache name="sso" mode="SYNC" batching="true"/>
-      <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
-          <file-store/>
-      </distributed-cache>
-  </cache-container>
-  <cache-container name="ejb" aliases="sfsb sfsb-cache" default-cache="repl" module="org.jboss.as.clustering.ejb3.infinispan">
-      <transport lock-timeout="60000"/>
-      <replicated-cache name="repl" mode="ASYNC" batching="true">
-          <eviction strategy="LRU" max-entries="10000"/>
-          <file-store/>
-      </replicated-cache>
-      <!--
-        ~  Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
-        ~                 the socketbinding referenced by the EJB remoting connector
-        -->
-      <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
-      <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
-          <eviction strategy="LRU" max-entries="10000"/>
-          <file-store/>
-      </distributed-cache>
-  </cache-container>
-  <cache-container name="hibernate" default-cache="local-query" module="org.hibernate">
-      <transport lock-timeout="60000"/>
-      <local-cache name="local-query">
-          <transaction mode="NONE"/>
-          <eviction strategy="LRU" max-entries="10000"/>
-          <expiration max-idle="100000"/>
-      </local-cache>
-      <invalidation-cache name="entity" mode="SYNC">
-          <transaction mode="NON_XA"/>
-          <eviction strategy="LRU" max-entries="10000"/>
-          <expiration max-idle="100000"/>
-      </invalidation-cache>
-      <replicated-cache name="timestamps" mode="ASYNC">
-          <transaction mode="NONE"/>
-          <eviction strategy="NONE"/>
-       </replicated-cache>
-  </cache-container>
+<subsystem xmlns="urn:jboss:domain:infinispan:6.0">
+    <cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">
+        <transport lock-timeout="60000"/>
+        <replicated-cache name="default">
+            <transaction mode="BATCH"/>
+        </replicated-cache>
+    </cache-container>
+    <cache-container name="web" default-cache="dist" module="org.wildfly.clustering.web.infinispan">
+        <transport lock-timeout="60000"/>
+        <distributed-cache name="dist">
+            <locking isolation="REPEATABLE_READ"/>
+            <transaction mode="BATCH"/>
+            <file-store/>
+        </distributed-cache>
+    </cache-container>
+    <cache-container name="ejb" aliases="sfsb" default-cache="dist" module="org.wildfly.clustering.ejb.infinispan">
+        <transport lock-timeout="60000"/>
+        <distributed-cache name="dist">
+            <locking isolation="REPEATABLE_READ"/>
+            <transaction mode="BATCH"/>
+            <file-store/>
+        </distributed-cache>
+    </cache-container>
+    <cache-container name="hibernate" default-cache="local-query" module="org.infinispan.hibernate-cache">
+        <transport lock-timeout="60000"/>
+        <local-cache name="local-query">
+            <object-memory size="10000"/>
+            <expiration max-idle="100000"/>
+        </local-cache>
+        <invalidation-cache name="entity">
+            <transaction mode="NON_XA"/>
+            <object-memory size="10000"/>
+            <expiration max-idle="100000"/>
+        </invalidation-cache>
+        <replicated-cache name="timestamps"/>
+    </cache-container>
 </subsystem>
 ----
 
@@ -136,7 +120,7 @@ This element has the following child elements: *<transport>*,
 *<local-cache>*, *<invalidation-cache>*, *<replicated-cache>*, and
 *<distributed-cache>*.
 
-[[transport]]
+[[infinispan-transport]]
 ==== <transport>
 
 This element is used to configure the JGroups transport used by the
@@ -521,14 +505,14 @@ entry placed in the L1 cache. Configures the L1 cache behaviour in
 'distributed' caches instances. In any other cache modes, this element
 is ignored.
 
-[[use-cases]]
+[[infinispan-use-cases]]
 == Use Cases
 
 In many cases, cache containers and caches will be configured via XML as
 in the example above, so that they will be available upon server
 start-up. However, cache containers and caches may also be added,
 removed or have their configurations changed in a running server by
-making use of the Wildfly management API command-line interface (CLI).
+making use of the WildFly management API command-line interface (CLI).
 In this section, we present some key use cases for the Infinispan
 management API.
 
@@ -537,17 +521,17 @@ The key use cases covered are:
 * adding a cache container
 * adding a cache to an existing cache container
 * configuring the transaction subsystem of a cache
-+
+
 [IMPORTANT]
 
-The Wildfly management API command-line interface (CLI) can be used to
+The WildFly management API command-line interface (CLI) can be used to
 provide extensive information on the attributes and commands available
 in the Infinispan subsystem interface used in these examples.
 
 [[add-a-cache-container]]
 === Add a cache container
 
-[source, java]
+[source]
 ----
 /subsystem=infinispan/cache-container=mycontainer:add(default-cache=<default-cache-name>)
 /subsystem=infinispan/cache-container=mycontainer/transport=TRANSPORT:add(lock-timeout=<timeout>)
@@ -556,7 +540,7 @@ in the Infinispan subsystem interface used in these examples.
 [[add-a-cache]]
 === Add a cache
 
-[source, java]
+[source]
 ----
 /subsystem=infinispan/cache-container=mycontainer/local-cache=mylocalcache:add()
 ----
@@ -564,7 +548,7 @@ in the Infinispan subsystem interface used in these examples.
 [[configure-the-transaction-component-of-a-cache]]
 === Configure the transaction component of a cache
 
-[source, java]
+[source]
 ----
 /subsystem=infinispan/cache-container=mycontainer/local-cache=mylocalcache/transaction=TRANSACTION:add(mode=<transaction-mode>)
 ----

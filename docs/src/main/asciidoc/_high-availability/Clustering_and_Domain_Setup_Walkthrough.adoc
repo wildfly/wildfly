@@ -2,10 +2,10 @@
 = Clustering and Domain Setup Walkthrough
 ifdef::env-github[:imagesdir: ../]
 
-In this article, I'd like to show you how to setup WildFly {wildflyVersion} in domain
+In this article, I'd like to show you how to setup WildFly in domain
 mode and enable clustering so we could get HA and session replication
 among the nodes. It's a step to step guide so you can follow the
-instructions in this article and build the sandbox by yourself icon:smile-o[role="yellow"]
+instructions in this article and build the sandbox by yourself.
 
 [[preparation-scenario]]
 == Preparation & Scenario
@@ -16,13 +16,13 @@ instructions in this article and build the sandbox by yourself icon:smile-o[role
 We need to prepare two hosts (or virtual hosts) to do the experiment. We
 will use these two hosts as following:
 
-* Install Fedora 16 on them (Other linux version may also fine but I'll
-use Fedora 16 in this article)
+* Install Fedora on them (Other linux version may also fine but I'll
+use Fedora in this article)
 
 * Make sure that they are in same local network
 
 * Make sure that they can access each other via different TCP/UDP
-ports(better turn off firewall and disable SELinux during the experiment
+ports (better turn off firewall and disable SELinux during the experiment
 or they will cause network problems).
 
 [[scenario]]
@@ -32,14 +32,14 @@ Here are some details on what we are going to do:
 
 * Let's call one host as 'master', the other one as 'slave'.
 
-* Both master and slave will run WildFly {wildflyVersion}, and master will run as
+* Both master and slave will run WildFly, and master will run as
 domain controller, slave will under the domain management of master.
 
 * Apache httpd will be run on master, and in httpd we will enable the
-mod_cluster module. The WildFly {wildflyVersion} on master and slave will form a
+mod_cluster module. The WildFly on master and slave will form a
 cluster and discovered by httpd.
 
-image:images/clustering/Clustering.jpg[images/clustering/Clustering.jpg]
+image:clustering/Clustering.jpg[images/clustering/Clustering.jpg]
 
 * We will deploy a demo project into domain, and verify that the project
 is deployed into both master and slave by domain controller. Thus we
@@ -61,35 +61,19 @@ it. We should see the master is registered back into cluster, also we
 should see slave sees master as domain controller again and connect to
 it.
 
-image:images/clustering/test_scenario.jpg[images/clustering/test_scenario.jpg]
+image:clustering/test_scenario.jpg[images/clustering/test_scenario.jpg]
 
 Please don't worry if you cannot digest so many details currently. Let's
 move on and you will get the points step by step.
 
-[[download-wildfly-{wildflyVersion}]]
-== Download WildFly {wildflyVersion}
+[[download-wildfly]]
+== Download WildFly
 
-First we should download WildFly {wildflyVersion} from the website:
+First we should download WildFly from the http://wildfly.org/downloads/[WildFly website].
 
-[source]
-----
-http://wildfly.org/downloads/
-----
-
-The version I downloaded is WildFly {wildflyVersion}.0.0.Final.
-
-After download finished, I got the zip file:
-
-[source, java]
-----
-wildfly-{wildflyVersion}.0.0.Final.zip
-----
-
-Note: The name of your archive will differ slightly due to version
-naming conventions. +
 Then I unzipped the package to master and try to make a test run:
 
-[source, java]
+[source, bash, subs="verbatim,attributes"]
 ----
 unzip wildfly-{wildflyVersion}.0.0.Final.zip
 cd wildfly-{wildflyVersion}.0.0.Final/bin
@@ -99,7 +83,7 @@ cd wildfly-{wildflyVersion}.0.0.Final/bin
 If everything ok we should see WildFly successfully startup in domain
 mode:
 
-[source, java]
+[source, bash, subs="verbatim,attributes"]
 ----
 wildfly-{wildflyVersion}.0.0.Final/bin$ ./domain.sh
 =========================================================================
@@ -119,7 +103,7 @@ wildfly-{wildflyVersion}.0.0.Final/bin$ ./domain.sh
 ----
 
 Now exit master and let's repeat the same steps on slave host. Finally
-we get WildFly {wildflyVersion} run on both master and slave, then we could move on to
+we get WildFly run on both master and slave, then we could move on to
 next step.
 
 [[domain-configuration]]
@@ -182,7 +166,7 @@ config to:
 Now we will setup interfaces on slave. Let's edit host.xml. Similar to
 the steps on master, open host.xml first:
 
-[source, java]
+[source, bash]
 ----
 vi domain/configuration/host.xml
 ----
@@ -213,7 +197,7 @@ master's management port:
 </domain-controller>
 ----
 
-As we know, 10.211.55.7 is the ip address of master. +
+As we know, 10.211.55.7 is the ip address of master.
 You may use discovery options to define multiple mechanisms to connect
 to the remote domain controller :
 
@@ -226,8 +210,8 @@ to the remote domain controller :
      <static-discovery name="master-https" protocol="https-remoting" host="10.211.55.7" port="9993" security-realm="ManagementRealm"/>
      <static-discovery name="master-http" protocol="http-remoting" host="10.211.55.7" port="9990" />
    </discovery-options>
-        </remote>
-    </domain-controller>
+ </remote>
+</domain-controller>
 ----
 
 Finally, we also need to configure interfaces section and expose the
@@ -264,7 +248,7 @@ you need to enable the firewall and allow access to the following ports:
 If you start WildFly on both master and slave now, you will see the
 slave cannot be started with following error:
 
-[source, java]
+[source]
 ----
 [Host Controller] 20:31:24,575 ERROR [org.jboss.remoting.remote] (Remoting "endpoint" read-1) JBREM000200: Remote connection failed: javax.security.sasl.SaslException: Authentication failed: all available authentication mechanisms failed
 [Host Controller] 20:31:24,579 WARN  [org.jboss.as.host.controller] (Controller Boot Thread) JBAS010900: Could not connect to remote domain controller 10.211.55.7:9999
@@ -281,7 +265,7 @@ In bin directory there is a script called add-user.sh, we'll use it to
 add new users to the properties file used for domain management
 authentication:
 
-[source, bash]
+[source, bash, subs="verbatim,attributes"]
 ----
 ./add-user.sh
  
@@ -305,7 +289,7 @@ Added user 'admin' to file '/home/weli/projs/wildfly-{wildflyVersion}.0.0.Final/
 As shown above, we have created a user named 'admin' and its password is
 'passw0rd!'. Then we add another user called 'slave':
 
-[source, bash]
+[source, bash, subs="verbatim,attributes"]
 ----
 ./add-user.sh
  
@@ -498,14 +482,14 @@ to 'other-server-group', so 'server-three' is our choice.
 
 In newer version of WildFly, the profile 'ha' changes to 'full-ha':
 
-[source, java]
+[source, xml]
 ----
 <server-group name="other-server-group" profile="full-ha">
 ----
 
 Let's go back to domain controller's management console:
 
-[source, java]
+[source]
 ----
 http://10.211.55.7:9990
 ----
@@ -531,7 +515,7 @@ After server-three on both master and slave are started, we will add our
 cluster-demo.war for deployment. Click on the 'Manage Deployments' link
 at the bottom of left menu list.
 
-image:images/clustering/JBoss_Management.png[images/clustering/JBoss_Management.png] +
+image:clustering/JBoss_Management.png[images/clustering/JBoss_Management.png] +
 (We should ensure the server-three should be started on both master and
 slave)
 
@@ -545,7 +529,7 @@ button and add the war to 'other-server-group' and then click 'save'.
 Wait a few seconds, management console will tell you that the project is
 deployed into 'other-server-group'.：
 
-image:images/clustering/JBoss_Management_2.png[images/clustering/JBoss_Management_2.png]
+image:clustering/JBoss_Management_2.png[images/clustering/JBoss_Management_2.png]
 
 Please note we have two hosts participate in this server group, so the
 project should be deployed in both master and slave now - that's the
@@ -559,14 +543,14 @@ and slave, and they should all work now:
 http://10.211.55.7:8330/cluster-demo/
 ----
 
-image:images/clustering/http---10.211.55.7-8330-cluster-demo-.png[images/clustering/http---10.211.55.7-8330-cluster-demo-.png]
+image:clustering/http---10.211.55.7-8330-cluster-demo-.png[images/clustering/http---10.211.55.7-8330-cluster-demo-.png]
 
 [source]
 ----
 http://10.211.55.2:8330/cluster-demo/
 ----
 
-image:images/clustering/http---10.211.55.2-8330-cluster-demo-.png[images/clustering/http---10.211.55.2-8330-cluster-demo-.png]
+image:clustering/http---10.211.55.2-8330-cluster-demo-.png[images/clustering/http---10.211.55.2-8330-cluster-demo-.png]
 
 Now that we have finished the project deployment and see the usages of
 domain controller, we will then head up for using these two hosts to
@@ -637,12 +621,12 @@ go on cluster configuration.
 == Cluster Configuration
 
 We will use mod_cluster + apache httpd on master as our cluster
-controller here. Because WildFly {wildflyVersion} has been configured to support
+controller here. Because WildFly has been configured to support
 mod_cluster out of box so it's the easiest way.
 
 [IMPORTANT]
 
-The WildFly {wildflyVersion} domain controller and httpd are not necessary to be on
+The WildFly domain controller and httpd are not necessary to be on
 same host. But in this article I just install them all on master for
 convenience.
 
@@ -779,7 +763,7 @@ Now we access the cluster:
 http://10.211.55.7/cluster-demo/put.jsp
 ----
 
-image:images/clustering/http---10.211.55.7-cluster-demo-put.jsp.png[images/clustering/http---10.211.55.7-cluster-demo-put.jsp.png]
+image:clustering/http---10.211.55.7-cluster-demo-put.jsp.png[images/clustering/http---10.211.55.7-cluster-demo-put.jsp.png]
 
 We should see the request is distributed to one of the hosts(master or
 slave) from the WildFly log. For me the request is sent to master:
@@ -796,7 +780,7 @@ Select 'server-three' and kick the stop button, the active-icon should
 change.
 
 Killing the server by using system commands will have the effect that
-the Host-Controller restart the instance imediately!
+the Host-Controller restart the instance immediately!
 
 Then wait for a few seconds and access cluster:
 
@@ -805,7 +789,7 @@ Then wait for a few seconds and access cluster:
 http://10.211.55.7/cluster-demo/get.jsp
 ----
 
-image:images/clustering/http---10.211.55.7-cluster-demo-get.jsp.png[images/clustering/http---10.211.55.7-cluster-demo-get.jsp.png]
+image:clustering/http---10.211.55.7-cluster-demo-get.jsp.png[images/clustering/http---10.211.55.7-cluster-demo-get.jsp.png]
 
 Now the request should be served by slave and we should see the log from
 slave:

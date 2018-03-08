@@ -10,7 +10,7 @@ installed will start automatically.
 [[installing-an-msc-service-using-an-existing-singleton-policy]]
 == Installing an MSC service using an existing singleton policy
 
-While singleton MSC services have been around since AS7, WildFly 10 adds
+While singleton MSC services have been around since AS7, WildFly adds
 the ability to leverage the singleton subsystem to create singleton MSC
 services from existing singleton policies.
 

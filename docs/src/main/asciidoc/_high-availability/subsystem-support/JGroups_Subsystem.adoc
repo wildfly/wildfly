@@ -1,7 +1,7 @@
 [[JGroups_Subsystem]]
 = JGroups Subsystem
 
-[[purpose]]
+[[jgroups-purpose]]
 == Purpose
 
 The JGroups subsystem provides group communication support for HA
@@ -32,7 +32,7 @@ functionality (e.g. on clustered application deployment, channels will
 be created behind the scenes to support clustered features such as
 session replication or transmission of SSO contexts around the cluster).
 
-[[configuration-example]]
+[[jgroups-configuration-example]]
 == Configuration example
 
 What follows is a sample JGroups subsystem configuration showing all of
@@ -43,74 +43,53 @@ attributes.
 [IMPORTANT]
 
 The schema for the subsystem, describing all valid elements and
-attributes, can be found in the Wildfly distribution, in the docs/schema
+attributes, can be found in the WildFly distribution, in the `docs/schema`
 directory.
 
-[source, java]
+[source, xml]
 ----
-<subsystem xmlns="urn:jboss:domain:jgroups:2.0" default-stack="udp">
-    <stack name="udp">
-        <transport type="UDP" socket-binding="jgroups-udp" diagnostics-socket-binding="jgroups-diagnostics"
-            default-executor="jgroups" oob-executor="jgroups-oob" timer-executor="jgroups-timer"
-            shared="false" thread-factory="jgroups-thread-factory"
-            machine="machine1" rack="rack1" site="site1"/>
-        <protocol type="PING">
-            <property name="timeout">100</property>
-        </protocol>
-        <protocol type="MERGE3"/>
-        <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
-        <protocol type="FD"/>
-        <protocol type="VERIFY_SUSPECT"/>
-        <protocol type="pbcast.NAKACK2"/>
-        <protocol type="UNICAST2"/>
-        <protocol type="pbcast.STABLE"/>
-        <protocol type="pbcast.GMS"/>
-        <protocol type="UFC"/>
-        <protocol type="MFC"/>
-        <protocol type="FRAG2"/>
-        <protocol type="RSVP"/>
-    </stack>
-    <stack name="tcp">
-        <transport type="TCP" socket-binding="jgroups-tcp"/>
-        <protocol type="MPING" socket-binding="jgroups-mping"/>
-        <protocol type="MERGE2"/>
-        <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
-        <protocol type="FD"/>
-        <protocol type="VERIFY_SUSPECT"/>
-        <protocol type="pbcast.NAKACK2"/>
-        <protocol type="UNICAST2"/>
-        <protocol type="pbcast.STABLE"/>
-        <protocol type="pbcast.GMS"/>
-        <protocol type="MFC"/>
-        <protocol type="FRAG2"/>
-        <protocol type="RSVP"/>
-    </stack>
-    <stack name="udp-xsite">
-        <transport type="UDP" socket-binding="jgroups-udp"/>
-        <protocol type="PING" socket-binding="jgroups-mping"/>
-        <protocol type="MERGE2"/>
-        <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
-        <protocol type="FD"/>
-        <protocol type="VERIFY_SUSPECT"/>
-        <protocol type="pbcast.NAKACK2"/>
-        <protocol type="UNICAST2"/>
-        <protocol type="pbcast.STABLE"/>
-        <protocol type="pbcast.GMS"/>
-        <protocol type="MFC"/>
-        <protocol type="FRAG2"/>
-        <protocol type="RSVP"/>
-        <relay site="LONDON">
-            <remote-site name="SFO" stack="tcp" cluster="global"/>
-            <remote-site name="NYC" stack="tcp" cluster="global"/>
-        </relay>
-    </stack>
+<subsystem xmlns="urn:jboss:domain:jgroups:6.0">
+    <channels default="ee">
+        <channel name="ee" stack="udp" cluster="ejb"/>
+    </channels>
+    <stacks>
+        <stack name="udp">
+            <transport type="UDP" socket-binding="jgroups-udp"/>
+            <protocol type="PING"/>
+            <protocol type="MERGE3"/>
+            <protocol type="FD_SOCK"/>
+            <protocol type="FD_ALL"/>
+            <protocol type="VERIFY_SUSPECT"/>
+            <protocol type="pbcast.NAKACK2"/>
+            <protocol type="UNICAST3"/>
+            <protocol type="pbcast.STABLE"/>
+            <protocol type="pbcast.GMS"/>
+            <protocol type="UFC"/>
+            <protocol type="MFC"/>
+            <protocol type="FRAG3"/>
+        </stack>
+        <stack name="tcp">
+            <transport type="TCP" socket-binding="jgroups-tcp"/>
+            <socket-protocol type="MPING" socket-binding="jgroups-mping"/>
+            <protocol type="MERGE3"/>
+            <protocol type="FD_SOCK"/>
+            <protocol type="FD_ALL"/>
+            <protocol type="VERIFY_SUSPECT"/>
+            <protocol type="pbcast.NAKACK2"/>
+            <protocol type="UNICAST3"/>
+            <protocol type="pbcast.STABLE"/>
+            <protocol type="pbcast.GMS"/>
+            <protocol type="MFC"/>
+            <protocol type="FRAG3"/>
+        </stack>
+    </stacks>
 </subsystem>
 ----
 
 [[subsystem]]
 === <subsystem>
 
-This element is used to configure the subsystem within a Wildfly system
+This element is used to configure the subsystem within a WildFly system
 profile.
 
 * `xmlns` This attribute specifies the XML namespace of the JGroups
@@ -127,7 +106,7 @@ This element is used to configure a JGroups protocol stack.
 
 * `name` This attribute is used to specify the name of the stack.
 
-[[transport]]
+[[jgroups-transport]]
 === <transport>
 
 This element is used to configure the transport layer (required) of the
@@ -190,14 +169,6 @@ org.jgroups.protocols removed.
 the server profile. It is used when JGroups needs to create general
 sockets internally for this protocol instance.
 
-[[property-1]]
-==== <property>
-
-This element is used to configure a protocol property.
-
-* `name` This attribute specifies the name of the protocol property. The
-value is provided as text for the property element.
-
 [[relay]]
 === <relay>
 
@@ -226,13 +197,13 @@ communication between this site and the remote site.
 * `cluster` This attribute specifies the name of the JGroups channel to
 use for communication between this site and the remote site.
 
-[[use-cases]]
+[[jgroups-use-cases]]
 == Use Cases
 
 In many cases, channels will be configured via XML as in the example
 above, so that the channels will be available upon server startup.
 However, channels may also be added, removed or have their
-configurations changed in a running server by making use of the Wildfly
+configurations changed in a running server by making use of the WildFly
 management API command-line interface (CLI). In this section, we present
 some key use cases for the JGroups management API.
 
@@ -244,14 +215,14 @@ The key use cases covered are:
 
 [IMPORTANT]
 
-The Wildfly management API command-line interface (CLI) itself can be
+The WildFly management API command-line interface (CLI) itself can be
 used to provide extensive information on the attributes and commands
 available in the JGroups subsystem interface used in these examples.
 
 [[add-a-stack]]
 === Add a stack
 
-[source, java]
+[source]
 ----
 /subsystem=jgroups/stack=mystack:add(transport={}, protocols={})
 ----
@@ -259,12 +230,12 @@ available in the JGroups subsystem interface used in these examples.
 [[add-a-protocol-to-a-stack]]
 === Add a protocol to a stack
 
-[source, java]
+[source]
 ----
 /subsystem=jgroups/stack=mystack/transport=TRANSPORT:add(type=<type>, socket-binding=<socketbinding>)
 ----
 
-[source, java]
+[source]
 ----
 /subsystem=jgroups/stack=mystack:add-protocol(type=<type>, socket-binding=<socketbinding>)
 ----
@@ -272,7 +243,7 @@ available in the JGroups subsystem interface used in these examples.
 [[add-a-property-to-a-protocol]]
 === Add a property to a protocol
 
-[source, java]
+[source]
 ----
 /subsystem=jgroups/stack=mystack/transport=TRANSPORT/property=<property>:add(value=<value>)
 ----

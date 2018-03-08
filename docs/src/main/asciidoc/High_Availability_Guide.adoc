@@ -25,13 +25,7 @@ include::_high-availability/HTTP_Services.adoc[]
 
 include::_high-availability/EJB_Services.adoc[]
 
-include::_high-availability/Hibernate.adoc[]
-
 include::_high-availability/HA_Singleton_Features.adoc[]
-
-include::_high-availability/Related_Topics.adoc[]
-
-include::_high-availability/Changes_From_Previous_Versions.adoc[]
 
 include::_high-availability/Clustering_and_Domain_Setup_Walkthrough.adoc[]
 
