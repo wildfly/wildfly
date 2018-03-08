@@ -24,16 +24,10 @@ package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
-import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
@@ -68,6 +62,8 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
                 return ModClusterModel.VERSION_1_5_0;
             case EAP_7_0_0:
                 return ModClusterModel.VERSION_4_0_0;
+            case EAP_7_1_0:
+                return ModClusterModel.VERSION_5_0_0;
         }
         throw new IllegalArgumentException();
     }
@@ -79,18 +75,29 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
                 return new String[] {formatEAP6SubsystemArtifact(version), "org.jboss.mod_cluster:mod_cluster-core:1.2.11.Final-redhat-1"};
             case EAP_7_0_0:
                 return new String[] {formatEAP7SubsystemArtifact(version), "org.jboss.mod_cluster:mod_cluster-core:1.3.2.Final-redhat-1"};
+            case EAP_7_1_0:
+                return new String[] {
+                        formatEAP7SubsystemArtifact(version),
+                        "org.jboss.mod_cluster:mod_cluster-core:1.3.7.Final-redhat-1",
+                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+                };
         }
         throw new IllegalArgumentException();
     }
 
     @Test
     public void testTransformerEAP_6_4_0() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_6_4_0);
+        this.testTransformation(ModelTestControllerVersion.EAP_6_4_0);
     }
 
     @Test
     public void testTransformerEAP_7_0_0() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_7_0_0);
+        this.testTransformation(ModelTestControllerVersion.EAP_7_0_0);
+    }
+
+    @Test
+    public void testTransformerEAP_7_1_0() throws Exception {
+        this.testTransformation(ModelTestControllerVersion.EAP_7_1_0);
     }
 
     private void testTransformation(ModelTestControllerVersion controllerVersion) throws Exception {
@@ -100,12 +107,13 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         ModelVersion modelVersion = model.getVersion();
         String extensionClassName = (model.getVersion().getMajor() == 1) ? "org.jboss.as.modcluster.ModClusterExtension" : "org.wildfly.extension.mod_cluster.ModClusterExtension";
 
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+        KernelServicesBuilder builder = createKernelServicesBuilder(new ModClusterAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL(dependencies)
                 .setExtensionClassName(extensionClassName)
-                .skipReverseControllerCheck();
+                .skipReverseControllerCheck()
+                .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -119,12 +127,17 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testRejectionsEAP_6_4_0() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_6_4_0);
+        this.testRejections(ModelTestControllerVersion.EAP_6_4_0);
     }
 
     @Test
     public void testRejectionsEAP_7_0_0() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_7_0_0);
+        this.testRejections(ModelTestControllerVersion.EAP_7_0_0);
+    }
+
+    @Test
+    public void testRejectionsEAP_7_1_0() throws Exception {
+        this.testRejections(ModelTestControllerVersion.EAP_7_1_0);
     }
 
     private void testRejections(ModelTestControllerVersion controllerVersion) throws Exception {
@@ -134,10 +147,12 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         ModelVersion modelVersion = model.getVersion();
         String extensionClassName = (model.getVersion().getMajor() == 1) ? "org.jboss.as.modcluster.ModClusterExtension" : "org.wildfly.extension.mod_cluster.ModClusterExtension";
 
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+        KernelServicesBuilder builder = createKernelServicesBuilder(new ModClusterAdditionalInitialization());
+        builder.createLegacyKernelServicesBuilder(model.getVersion().getMajor() >= 4 ? new ModClusterAdditionalInitialization() : null, controllerVersion, modelVersion)
+                .addSingleChildFirstClass(ModClusterAdditionalInitialization.class)
                 .addMavenResourceURL(dependencies)
-                .setExtensionClassName(extensionClassName);
+                .setExtensionClassName(extensionClassName)
+                .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -241,25 +256,5 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
             return new ModelNode(10);
         }
-    }
-
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization.ManagementAdditionalInitialization() {
-
-            @Override
-            protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
-                registerCapabilities(capabilityRegistry, "org.wildfly.undertow.listener.ajp");
-            }
-
-            @Override
-            protected void setupController(ControllerInitializer controllerInitializer) {
-                super.setupController(controllerInitializer);
-
-                controllerInitializer.addSocketBinding("modcluster", 0); // "224.0.1.105", "23364"
-                controllerInitializer.addRemoteOutboundSocketBinding("proxy1", "localhost", 6666);
-                controllerInitializer.addRemoteOutboundSocketBinding("proxy2", "localhost", 6766);
-                controllerInitializer.addRemoteOutboundSocketBinding("proxy3", "localhost", 6866);
-            }
-        };
     }
 }
