@@ -1,5 +1,7 @@
 package org.jboss.as.test.integration.web.handlers;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.junit.Assert.assertEquals;
 
@@ -42,7 +44,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class ForwardedHandlerTestCase {
 
-    private static final String FORWARDED_HANDLER = "forwarded-handler";
     private static final String FORWARDED_HANDLER_NO_UT_HANDLERS = "forwarded-handler-no-ut-handlers";
     private static final String FORWARDED_SERVLET = "forwarded-servlet";
     private static final String FORWARDED_SERVLET_NO_UT_HANDLERS = "forwarded-servlet-no-ut-handlers";
@@ -63,15 +64,6 @@ public class ForwardedHandlerTestCase {
 
     @ContainerResource
     private ManagementClient managementClient;
-
-    @Deployment(name = FORWARDED_HANDLER)
-    public static WebArchive deploy() {
-        return ShrinkWrap.create(WebArchive.class, FORWARDED_HANDLER + ".war")
-                .addPackage(ForwardedHandlerTestCase.class.getPackage())
-                .addAsWebInfResource(new StringAsset(JBOSS_WEB_TEXT), "jboss-web.xml")
-                .addAsWebInfResource(new StringAsset(FORWARDER_HANDLER_NAME), "undertow-handlers.conf")
-                .addAsWebResource(new StringAsset("A file"), "index.html");
-    }
 
     @Deployment(name = FORWARDED_HANDLER_NO_UT_HANDLERS)
     public static WebArchive deployWithoutUndertowHandlers() {
@@ -94,12 +86,6 @@ public class ForwardedHandlerTestCase {
         return ShrinkWrap.create(WebArchive.class, FORWARDED_SERVLET_NO_UT_HANDLERS + ".war")
                 .addClass(ForwardedTestHelperServlet.class)
                 .addAsWebResource(new StringAsset("A file"), "index.html");
-    }
-
-    @Test
-    @OperateOnDeployment(FORWARDED_HANDLER)
-    public void testRewriteWithUndertowHandlers(@ArquillianResource URL url) throws Exception {
-        commonTestPart(url, true);
     }
 
     @Test
@@ -131,8 +117,10 @@ public class ForwardedHandlerTestCase {
             commonTestPart(url, header);
         } finally {
             op = Util.createRemoveOperation(FORWARDER_FILTER_REF_ADDR);
+            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
             op = Util.createRemoveOperation(FORWARDER_CONF_ADDR);
+            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         }
     }

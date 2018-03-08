@@ -30,12 +30,13 @@ import io.undertow.Handlers;
 import io.undertow.predicate.Predicate;
 import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.undertow.AbstractHandlerDefinition;
 import org.wildfly.extension.undertow.Constants;
+import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
@@ -54,7 +55,7 @@ abstract class Filter extends AbstractHandlerDefinition {
         FilterAdd add = new FilterAdd(this);
         registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
         //registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.FILTER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
-        registerRemoveOperation(resourceRegistration, ReloadRequiredRemoveStepHandler.INSTANCE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.FILTER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
 
     }
 
