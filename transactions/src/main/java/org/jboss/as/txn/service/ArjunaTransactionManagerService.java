@@ -99,8 +99,6 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
 
         if (!jts) {
             // No IIOP, stick with JTA mode.
-            jtaEnvironmentBean.getValue().setTransactionManagerClassName(com.arjuna.ats.jbossatx.jta.TransactionManagerDelegate.class.getName());
-
             final com.arjuna.ats.jbossatx.jta.TransactionManagerService service = new com.arjuna.ats.jbossatx.jta.TransactionManagerService();
             final LocalUserTransaction userTransaction = LocalUserTransaction.getInstance();
             jtaEnvironmentBean.getValue().setUserTransaction(userTransaction);
@@ -119,8 +117,6 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
             new PostInitLoader(PostInitLoader.generateORBPropertyName("com.arjuna.orbportability.orb"), orb);
 
             // IIOP is enabled, so fire up JTS mode.
-            jtaEnvironmentBean.getValue().setTransactionManagerClassName(com.arjuna.ats.jbossatx.jts.TransactionManagerDelegate.class.getName());
-
             final com.arjuna.ats.jbossatx.jts.TransactionManagerService service = new com.arjuna.ats.jbossatx.jts.TransactionManagerService();
             final LocalUserTransaction userTransaction = LocalUserTransaction.getInstance();
             jtaEnvironmentBean.getValue().setUserTransaction(userTransaction);
